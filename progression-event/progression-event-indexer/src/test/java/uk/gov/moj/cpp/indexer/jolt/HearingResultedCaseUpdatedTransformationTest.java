@@ -46,7 +46,8 @@ public class HearingResultedCaseUpdatedTransformationTest {
         with(outputCase.toString())
                 .assertThat("$.caseId", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.id")).getString()))
                 .assertThat("$.caseStatus", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.caseStatus")).getString()))
-                .assertThat("$._case_type", equalTo("PROSECUTION"));
+                .assertThat("$._case_type", equalTo("PROSECUTION"))
+                .assertThat("$.prosecutingAuthority", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityCode")).getString()));
 
         assertThat(outputCase.getJsonArray("parties").size(), is(1));
 
@@ -72,6 +73,24 @@ public class HearingResultedCaseUpdatedTransformationTest {
                 .assertThat("$.parties[0].offences[0].arrestDate", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.defendants[0].offences[0].arrestDate")).getString()))
                 .assertThat("$.parties[0].offences[0].chargeDate", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.defendants[0].offences[0].chargeDate")).getString()))
                 .assertThat("$.parties[0].offences[0].orderIndex", equalTo(((JsonNumber) inputProsecutionCase.read("$.prosecutionCase.defendants[0].offences[0].orderIndex")).intValue()));
+    }
+
+    @Test
+    public void shouldTransformHearingResultedWhenProsecutorIsNotNull() throws IOException {
+        final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.hearing-resulted-case-updated-spec.json");
+        assertNotNull(specJson);
+
+        final JsonObject inputJson = readJson("/progression.event.hearing-resulted-case-updated-with-prosecutor.json");
+        final DocumentContext inputProsecutionCase = parse(inputJson);
+
+        final JsonObject outputCase = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
+
+        with(outputCase.toString())
+                .assertThat("$.caseId", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.id")).getString()))
+                .assertThat("$.caseStatus", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.caseStatus")).getString()))
+                .assertThat("$._case_type", equalTo("PROSECUTION"))
+                .assertThat("$.prosecutingAuthority", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.prosecutor.prosecutorCode")).getString()));
+
     }
 
     @Test

@@ -87,5 +87,6 @@
     <include file="liquibase/delete-linked-case-id-from-application.xml"/>
     <include file="liquibase/create-court-application-case.xml"/>
     <include file="liquibase/add-initiate-court-application.xml"/>
+    <include file="liquibase/add-cps-prosecutor-search-prosecution-case.xml"/>
 
 </databaseChangeLog>

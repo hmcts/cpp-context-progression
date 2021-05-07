@@ -138,21 +138,9 @@ public class ProsecutionCaseEventListener {
 
     private ProsecutionCase updateProsecutionCase(final ProsecutionCase persistentProsecutionCase, final String removalReason) {
         return ProsecutionCase.prosecutionCase()
-                .withId(persistentProsecutionCase.getId())
-                .withProsecutionCaseIdentifier(persistentProsecutionCase.getProsecutionCaseIdentifier())
-                .withInitiationCode(persistentProsecutionCase.getInitiationCode())
-                .withDefendants(persistentProsecutionCase.getDefendants())
-                .withAppealProceedingsPending(persistentProsecutionCase.getAppealProceedingsPending())
-                .withBreachProceedingsPending(persistentProsecutionCase.getBreachProceedingsPending())
-                .withCaseMarkers(persistentProsecutionCase.getCaseMarkers())
+                .withValuesFrom(persistentProsecutionCase)
                 .withCaseStatus(CASE_STATUS_EJECTED)
-                .withOriginatingOrganisation(persistentProsecutionCase.getOriginatingOrganisation())
-                .withCpsOrganisation(persistentProsecutionCase.getCpsOrganisation())
-                .withIsCpsOrgVerifyError(persistentProsecutionCase.getIsCpsOrgVerifyError())
-                .withPoliceOfficerInCase(persistentProsecutionCase.getPoliceOfficerInCase())
                 .withRemovalReason(removalReason)
-                .withStatementOfFacts(persistentProsecutionCase.getStatementOfFacts())
-                .withStatementOfFactsWelsh(persistentProsecutionCase.getStatementOfFactsWelsh())
                 .build();
     }
 

@@ -112,10 +112,8 @@ public class ReferredProsecutionCaseTransformer {
                         .getProsecutionAuthorityId().toString()));
 
         return ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
-                .withProsecutionAuthorityId(prosecutionCaseIdentifier.getProsecutionAuthorityId())
-                .withCaseURN(prosecutionCaseIdentifier.getCaseURN())
+                .withValuesFrom(prosecutionCaseIdentifier)
                 .withProsecutionAuthorityCode(defaultString(fetchValueFromKey(prosecutorJson, SHORT_NAME)))
-                .withProsecutionAuthorityReference(prosecutionCaseIdentifier.getProsecutionAuthorityReference())
                 .build();
 
     }

@@ -1,9 +1,11 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -15,6 +17,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
 import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -26,6 +29,7 @@ import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.util.FeatureToggleUtil;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,6 +39,8 @@ import javax.jms.MessageProducer;
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import com.jayway.jsonpath.ReadContext;
+import org.apache.http.HttpStatus;
 import com.google.common.collect.ImmutableMap;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
@@ -113,10 +119,17 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
     @Test
     public void shouldSetJudiciaryResultsAtHearingsLevelForHearingAtAGlance() throws Exception {
+        stubQueryCpsProsecutorData("/restResource/referencedata.query.prosecutor.by.oucode.json", randomUUID(), HttpStatus.SC_OK);
         enableAmendReshareFeature(false);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        //validate enrichment for refer-cases-to-court
+        List<Matcher<? super ReadContext>> additionalMatchers = newArrayList(
+                withJsonPath("$.prosecutionCase.prosecutionCaseIdentifier.majorCreditorCode", is("TFL2")),
+                withJsonPath("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityOUCode", is("GB10056"))
+        );
+
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, additionalMatchers));
 
         hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
 

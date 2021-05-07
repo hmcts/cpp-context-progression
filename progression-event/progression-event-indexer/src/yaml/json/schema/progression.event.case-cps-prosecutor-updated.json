@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.case-cps-prosecutor-updated.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCaseId": {
+      "description": "Prosecution case Id",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "prosecutionAuthorityReference": {
+      "type": "string"
+    },
+    "prosecutionAuthorityCode": {
+      "type": "string"
+    },
+    "prosecutionAuthorityId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "prosecutionAuthorityName": {
+      "type": "string"
+    },
+    "address": {
+      "$ref": "http://justice.gov.uk/core/courts/address.json#"
+    },
+    "caseURN": {
+      "type": "string"
+    },
+    "oldCpsProsecutor": {
+      "description": "Old CPS Prosecutor for the case",
+      "type": "string"
+    },
+    "prosecutionAuthorityOUCode": {
+      "type": "string"
+    },
+    "contact": {
+      "$ref": "http://justice.gov.uk/core/courts/contactNumber.json"
+    },
+    "majorCreditorCode": {
+      "type": "string"
+    },
+    "isCpsOrgVerifyError": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "prosecutionAuthorityCode",
+    "prosecutionCaseId"
+  ],
+  "additionalProperties": false
+}

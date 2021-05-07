@@ -164,6 +164,7 @@ public class HearingResultEventListener {
                     .withInitiationCode(prosecutionCase.getInitiationCode())
                     .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
                     .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                    .withCpsOrganisationId(prosecutionCase.getCpsOrganisationId())
                     .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
                     .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
                     .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
@@ -302,15 +303,16 @@ public class HearingResultEventListener {
                 .filter(resultedCase -> resultedCase.getId().equals(prosecutionCaseFromPayload.getId()))
                 .findFirst();
         if (optionalResultedCase.isPresent()) {
-            final ProsecutionCase prosecutionCaseFromDatabase = optionalResultedCase.get();
+            final ProsecutionCase originalProsecutionCase = optionalResultedCase.get();
             return ProsecutionCase.prosecutionCase()
                     .withPoliceOfficerInCase(prosecutionCaseFromPayload.getPoliceOfficerInCase())
                     .withProsecutionCaseIdentifier(prosecutionCaseFromPayload.getProsecutionCaseIdentifier())
                     .withId(prosecutionCaseFromPayload.getId())
-                    .withDefendants(getUpdatedDefendants(prosecutionCaseFromPayload, prosecutionCaseFromDatabase, hearingDay))
+                    .withDefendants(getUpdatedDefendants(prosecutionCaseFromPayload, originalProsecutionCase, hearingDay))
                     .withInitiationCode(prosecutionCaseFromPayload.getInitiationCode())
                     .withOriginatingOrganisation(prosecutionCaseFromPayload.getOriginatingOrganisation())
-                    .withCpsOrganisation(prosecutionCaseFromPayload.getCpsOrganisation())
+                    .withCpsOrganisation(originalProsecutionCase.getCpsOrganisation())
+                    .withCpsOrganisationId(originalProsecutionCase.getCpsOrganisationId())
                     .withIsCpsOrgVerifyError(prosecutionCaseFromPayload.getIsCpsOrgVerifyError())
                     .withStatementOfFacts(prosecutionCaseFromPayload.getStatementOfFacts())
                     .withStatementOfFactsWelsh(prosecutionCaseFromPayload.getStatementOfFactsWelsh())
@@ -318,7 +320,7 @@ public class HearingResultEventListener {
                     .withAppealProceedingsPending(prosecutionCaseFromPayload.getAppealProceedingsPending())
                     .withBreachProceedingsPending(prosecutionCaseFromPayload.getBreachProceedingsPending())
                     .withRemovalReason(prosecutionCaseFromPayload.getRemovalReason())
-                    .withCaseStatus(prosecutionCaseFromDatabase.getCaseStatus())
+                    .withCaseStatus(originalProsecutionCase.getCaseStatus())
                     .build();
         } else {
             return prosecutionCaseFromPayload;

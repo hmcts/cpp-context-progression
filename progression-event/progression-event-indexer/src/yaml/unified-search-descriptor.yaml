@@ -31,4 +31,7 @@ unified_search_descriptor:
      - name: progression.event.court-application-proceedings-edited
        transformer_config: progression.event.court-application-proceedings-edited-spec.json
        index_name: crime_case_index
+     - name: progression.event.case-cps-prosecutor-updated
+       transformer_config: progression.event.case-cps-prosecutor-updated-spec.json
+       index_name: crime_case_index
 ...

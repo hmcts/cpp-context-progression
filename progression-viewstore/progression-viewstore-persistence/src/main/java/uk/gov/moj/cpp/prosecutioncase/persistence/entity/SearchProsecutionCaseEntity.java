@@ -42,6 +42,9 @@ public class SearchProsecutionCaseEntity implements Serializable {
     @Column(name = "prosecutor", nullable = false)
     private String prosecutor;
 
+    @Column(name = "cps_prosecutor")
+    private String cpsProsecutor;
+
     @Column(name = "case_status", nullable = false)
     private String status;
 
@@ -114,6 +117,12 @@ public class SearchProsecutionCaseEntity implements Serializable {
 
     public void setProsecutor(final String prosecutor) {
         this.prosecutor = prosecutor;
+    }
+
+    public String getCpsProsecutor() { return cpsProsecutor; }
+
+    public void setCpsProsecutor(final String cpsProsecutor) {
+        this.cpsProsecutor = cpsProsecutor;
     }
 
     public String getStatus() {

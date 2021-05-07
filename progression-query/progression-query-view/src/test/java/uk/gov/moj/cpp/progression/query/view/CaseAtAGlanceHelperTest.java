@@ -46,6 +46,7 @@ import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.core.courts.VerdictType;
 import uk.gov.justice.progression.courts.CaagDefendantOffences;
 import uk.gov.justice.progression.courts.CaagDefendants;
@@ -74,6 +75,9 @@ public class CaseAtAGlanceHelperTest {
     private static final String CASE_URN = "CASEURN";
     private static final String PROSECUTION_AUTHORITY_CODE = "CPS";
     private static final String PROSECUTION_AUTHORITY_REFERENCE = "3603e667";
+    private static final String PROSECUTOR_CODE = "CPS_CODE";
+    private static final String PROSECUTOR_NAME = "CPS_NAME";
+    private static final UUID PROSECUTOR_ID = randomUUID();
     private static final String INTERPRETER_LANGUAGE_NEEDS = "Spanish";
     private static final String NATIONALITY_DESCRIPTION = "British";
     private static final String ADD_NATIONALITY_DESCRIPTION = "Australian";
@@ -177,6 +181,23 @@ public class CaseAtAGlanceHelperTest {
         assertThat(prosecutorDetails.getProsecutionAuthorityCode(), is(PROSECUTION_AUTHORITY_CODE));
         assertThat(prosecutorDetails.getProsecutionAuthorityReference(), is(PROSECUTION_AUTHORITY_REFERENCE));
         assertThat(prosecutorDetails.getProsecutionAuthorityId(), notNullValue());
+        assertThat(prosecutorDetails.getAddress().getAddress1(), is("address1"));
+        assertThat(prosecutorDetails.getAddress().getAddress2(), is("address2"));
+        assertThat(prosecutorDetails.getAddress().getPostcode(), is("postcode"));
+        assertThat(prosecutorDetails.getIsCpsOrgVerifyError(), is(true));
+    }
+
+    @Test
+    public void shouldGetProsecutorDetailsFromProsecutionCaseWhenProsecutorIsNotNull() {
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithProsecutor(), new ArrayList<>(), referenceDataService);
+        when(referenceDataService.getProsecutor(anyString())).thenReturn(getProsecutorFromReferenceData(randomUUID().toString()));
+
+        final ProsecutorDetails prosecutorDetails = caseAtAGlanceHelper.getProsecutorDetails();
+
+        assertThat(prosecutorDetails, notNullValue());
+        assertThat(prosecutorDetails.getProsecutionAuthorityCode(), is(PROSECUTOR_CODE));
+        assertThat(prosecutorDetails.getProsecutionAuthorityReference(), is(PROSECUTION_AUTHORITY_REFERENCE));
+        assertThat(prosecutorDetails.getProsecutionAuthorityId(), is(PROSECUTOR_ID));
         assertThat(prosecutorDetails.getAddress().getAddress1(), is("address1"));
         assertThat(prosecutorDetails.getAddress().getAddress2(), is("address2"));
         assertThat(prosecutorDetails.getAddress().getPostcode(), is("postcode"));
@@ -384,6 +405,69 @@ public class CaseAtAGlanceHelperTest {
         assertThat(thirdDefendant.getDefendantCaseJudicialResults(), nullValue());
     }
 
+    private ProsecutionCase getProsecutionCaseWithProsecutor(){
+        return prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(CASE_URN)
+                        .withProsecutionAuthorityId(randomUUID())
+                        .withProsecutionAuthorityCode(PROSECUTION_AUTHORITY_CODE)
+                        .withProsecutionAuthorityReference(PROSECUTION_AUTHORITY_REFERENCE)
+                        .build())
+                .withProsecutor(Prosecutor.prosecutor()
+                        .withProsecutorId(PROSECUTOR_ID)
+                        .withProsecutorCode(PROSECUTOR_CODE)
+                        .withProsecutorName(PROSECUTOR_NAME)
+                        .build())
+                .withIsCpsOrgVerifyError(true)
+                .withCaseStatus(CASE_STATUS)
+                .withRemovalReason(REMOVAL_REASON)
+                .withInitiationCode(InitiationCode.J)
+                .withCaseMarkers(asList(marker().withId(randomUUID()).withMarkerTypeDescription("Vulnerable or intimidated victim").build(),
+                        marker().withId(randomUUID()).withMarkerTypeDescription("Prohibited Weapons").build()))
+                .withDefendants(asList(defendant().withId(JOHN_SMITH_ID)
+                                .withMasterDefendantId(JOHN_SMITH_MASTER_ID)
+                                .withPersonDefendant(personDefendant()
+                                        .withBailStatus(BailStatus.bailStatus().withDescription(REMAND_STATUS).build())
+                                        .withPersonDetails(Person.person()
+                                                .withFirstName("John").withLastName("Smith")
+                                                .withNationalityDescription(NATIONALITY_DESCRIPTION)
+                                                .withDateOfBirth(DATE_OF_BIRTH)
+                                                .withAddress(ADDRESS)
+                                                .withInterpreterLanguageNeeds(INTERPRETER_LANGUAGE_NEEDS).build())
+                                        .build())
+                                .withDefenceOrganisation(organisation().withName(LEGAL_REP_NAME).build())
+                                .withOffences(asList(offence().withId(OFFENCE_ID)
+                                                .withOffenceCode(OFFENCE_CODE)
+                                                .withOffenceTitle(OFFENCE_TITLE)
+                                                .withOffenceTitleWelsh(OFFENCE_TITLE_WELSH)
+                                                .withCount(2)
+                                                .withOrderIndex(2)
+                                                .withPlea(plea().withPleaDate(PLEA_DATE).withPleaValue(PLEA_GUILTY).build())
+                                                .withVerdict(verdict().withVerdictDate(VERDICT_DATE).withVerdictType(VerdictType.verdictType().withCategory(GUILTY).build()).build())
+                                                .withOffenceLegislation(OFFENCE_LEGISLATION)
+                                                .withStartDate(LocalDate.now())
+                                                .withEndDate(LocalDate.now())
+                                                .withJudicialResults(emptyList())
+                                                .build(),
+                                        offence().withId(randomUUID()).withOffenceCode(OTHER_OFFENCE_CODE).build()))
+                                .withLegalAidStatus(LEGAL_AID_STATUS)
+                                .build(),
+                        defendant().withId(JOHN_RAMBO_ID)
+                                .withMasterDefendantId(JOHN_RAMBO_ID)
+                                .withPersonDefendant(personDefendant().withPersonDetails(Person.person().withFirstName("John").withLastName("Rambo").build()).build())
+                                .withOffences(singletonList(offence().withId(randomUUID()).withOffenceCode(OFFENCE_CODE).build()))
+                                .build(),
+                        defendant().withId(ALAN_SMITH_ID)
+                                .withMasterDefendantId(ALAN_SMITH_ID)
+                                .withIsYouth(Boolean.TRUE)
+                                .withPersonDefendant(personDefendant()
+                                        .withPersonDetails(Person.person().withFirstName("Alan").withLastName("Smith")
+                                                .withNationalityDescription(NATIONALITY_DESCRIPTION)
+                                                .withAdditionalNationalityDescription(ADD_NATIONALITY_DESCRIPTION)
+                                                .build()).build())
+                                .withOffences(singletonList(offence().withId(randomUUID()).withOffenceCode(OFFENCE_CODE).build()))
+                                .build()))
+                .build();
+    }
     private ProsecutionCase getProsecutionCaseWithCaseDetails() {
         return prosecutionCase()
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(CASE_URN)

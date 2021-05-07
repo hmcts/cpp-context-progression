@@ -1,8 +1,11 @@
 package uk.gov.justice.services;
 
+import static java.util.Objects.nonNull;
+
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.HearingConfirmedCaseStatusUpdated;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.unifiedsearch.client.domain.CaseDetails;
 import uk.gov.justice.services.unifiedsearch.client.domain.Party;
@@ -44,7 +47,12 @@ public class HearingConfirmedCaseStatusUpdatedTransformer implements Transform {
             } else if (!Objects.isNull(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())) {
                 caseDetails.setCaseReference(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference());
             }
-            caseDetails.setProsecutingAuthority(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityCode());
+            final Prosecutor prosecutor = prosecutionCase.getProsecutor();
+            if (nonNull(prosecutor)) {
+                caseDetails.setProsecutingAuthority(prosecutor.getProsecutorCode());
+            } else {
+                caseDetails.setProsecutingAuthority(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityCode());
+            }
         }
 
         final List<Defendant> defendants = prosecutionCase.getDefendants();

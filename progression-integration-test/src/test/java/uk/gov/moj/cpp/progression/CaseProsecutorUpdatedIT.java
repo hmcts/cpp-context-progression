@@ -88,7 +88,13 @@ public class CaseProsecutorUpdatedIT extends AbstractIT {
 
         caseProsecutorUpdateHelper.verifyInMessagingQueueForProsecutorUpdated(1);
         final List<Matcher<? super ReadContext>> customMatchers = newArrayList(
-                withJsonPath("$.prosecutionCase.isCpsOrgVerifyError", is(false))
+                withJsonPath("$.prosecutionCase.isCpsOrgVerifyError", is(false)),
+                //verify prosecutionCaseIdentifier is not updated
+                withJsonPath("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityName", is("Transport for London")),
+                withJsonPath("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityOUCode", is("GB10056")),
+                //verify prosecutor is updated
+                withJsonPath("$.prosecutionCase.prosecutor.prosecutorCode", is("TFL-CM")),
+                withJsonPath("$.prosecutionCase.prosecutor.prosecutorName", is("BL001"))
         );
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, customMatchers));
     }

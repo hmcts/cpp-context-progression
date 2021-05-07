@@ -64,6 +64,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequested;
 import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.core.courts.ReceiveRepresentationOrderForDefendant;
 import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
 import uk.gov.justice.domain.aggregate.Aggregate;
@@ -670,6 +671,7 @@ public class CaseAggregate implements Aggregate {
                 .withInitiationCode(prosecutionCase.getInitiationCode())
                 .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
                 .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                .withCpsOrganisationId(prosecutionCase.getCpsOrganisationId())
                 .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
                 .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
                 .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
@@ -1378,10 +1380,46 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> updateCaseProsecutorDetails(final ProsecutionCaseIdentifier prosecutionCaseIdentifier,
                                                       final String oldCpsProsecutor) {
         LOGGER.debug("update case Prosecution details for caseId");
-        final UUID caseId = this.prosecutionCase.getId();
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(CaseCpsProsecutorUpdated.caseCpsProsecutorUpdated()
-                .withProsecutionCaseId(caseId)
+        streamBuilder.add(buildCaseCpsProsecutorUpdated(prosecutionCaseIdentifier, oldCpsProsecutor));
+
+        if (oldCpsProsecutor != null && !oldCpsProsecutor.isEmpty()) {
+            streamBuilder.add(buildCpsProsecutorUpdated(prosecutionCaseIdentifier, oldCpsProsecutor));
+        }
+
+        return apply(streamBuilder.build());
+    }
+
+    /**
+     * When CPS sends the document , if either the prosecutor(cpsOrg) details is not in reference
+     * data or if the cpsFlag is false then set isCPSVerifyError to true
+     *
+     * @param prosecutionCaseIdentifier
+     * @return
+     */
+    public Stream<Object> updateCaseProsecutorDetails(final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
+        LOGGER.debug("update case Prosecution details for caseId");
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        if (isNull(prosecutionCaseIdentifier)) {
+            streamBuilder.add(buildCaseCpsProsecutorUpdatedWithCpsOrgVerifyError());
+        } else {
+            streamBuilder.add(buildCaseCpsProsecutorUpdated(prosecutionCaseIdentifier, null));
+        }
+        return apply(streamBuilder.build());
+    }
+
+
+    private CpsProsecutorUpdated buildCpsProsecutorUpdated(final ProsecutionCaseIdentifier prosecutionCaseIdentifier, final String oldCpsProsecutor) {
+        return CpsProsecutorUpdated.cpsProsecutorUpdated()
+                .withProsecutionCaseId(this.prosecutionCase.getId())
+                .withOldCpsProsecutor(oldCpsProsecutor)
+                .withProsecutionAuthorityCode(prosecutionCaseIdentifier.getProsecutionAuthorityCode())
+                .build();
+    }
+
+    private CaseCpsProsecutorUpdated buildCaseCpsProsecutorUpdated(final ProsecutionCaseIdentifier prosecutionCaseIdentifier, final String oldCpsProsecutor) {
+        return CaseCpsProsecutorUpdated.caseCpsProsecutorUpdated()
+                .withProsecutionCaseId(this.prosecutionCase.getId())
                 .withAddress(prosecutionCaseIdentifier.getAddress())
                 .withCaseURN(this.prosecutionCase.getProsecutionCaseIdentifier().getCaseURN())
                 .withOldCpsProsecutor(oldCpsProsecutor)
@@ -1393,17 +1431,7 @@ public class CaseAggregate implements Aggregate {
                 .withMajorCreditorCode(prosecutionCaseIdentifier.getMajorCreditorCode())
                 .withProsecutionAuthorityOUCode(prosecutionCaseIdentifier.getProsecutionAuthorityOUCode())
                 .withIsCpsOrgVerifyError(false)// this method is called for valid cps organisation so we should set the error flag as false.
-                .build());
-
-        if (oldCpsProsecutor != null && !oldCpsProsecutor.isEmpty()) {
-            streamBuilder.add(CpsProsecutorUpdated.cpsProsecutorUpdated()
-                    .withProsecutionCaseId(caseId)
-                    .withOldCpsProsecutor(oldCpsProsecutor)
-                    .withProsecutionAuthorityCode(prosecutionCaseIdentifier.getProsecutionAuthorityCode())
-                    .build());
-        }
-
-        return apply(streamBuilder.build());
+                .build();
     }
 
     public ProsecutionCase getProsecutionCase() {
@@ -1580,31 +1608,26 @@ public class CaseAggregate implements Aggregate {
     }
 
     private void updateProsecutionCaseIdentifier(final CaseCpsProsecutorUpdated caseCpsProsecutorUpdated) {
-        ProsecutionCaseIdentifier newProsecutionCaseIdentifier;
-        if (!isNull(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) && caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) {
-            newProsecutionCaseIdentifier = this.prosecutionCase.getProsecutionCaseIdentifier();
-        } else {
-            newProsecutionCaseIdentifier = ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
-                    .withProsecutionAuthorityCode(caseCpsProsecutorUpdated.getProsecutionAuthorityCode())
-                    .withCaseURN(caseCpsProsecutorUpdated.getCaseURN())
-                    .withProsecutionAuthorityId(caseCpsProsecutorUpdated.getProsecutionAuthorityId())
-                    .withProsecutionAuthorityReference(caseCpsProsecutorUpdated.getProsecutionAuthorityReference())
-                    .withProsecutionAuthorityName(caseCpsProsecutorUpdated.getProsecutionAuthorityName())
+        Prosecutor prosecutor = null;
+        if (isNull(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) || !caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) {
+            prosecutor = Prosecutor.prosecutor()
                     .withAddress(caseCpsProsecutorUpdated.getAddress())
-                    .withProsecutionAuthorityOUCode(caseCpsProsecutorUpdated.getProsecutionAuthorityOUCode())
-                    .withContact(caseCpsProsecutorUpdated.getContact())
-                    .withMajorCreditorCode(caseCpsProsecutorUpdated.getMajorCreditorCode())
+                    .withProsecutorCode(caseCpsProsecutorUpdated.getProsecutionAuthorityCode())
+                    .withProsecutorId(caseCpsProsecutorUpdated.getProsecutionAuthorityId())
+                    .withProsecutorName(caseCpsProsecutorUpdated.getProsecutionAuthorityName())
                     .build();
         }
 
         final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase()
                 .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
-                .withProsecutionCaseIdentifier(newProsecutionCaseIdentifier)
+                .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
+                .withProsecutor(prosecutor)
                 .withId(prosecutionCase.getId())
                 .withDefendants(prosecutionCase.getDefendants())
                 .withInitiationCode(prosecutionCase.getInitiationCode())
                 .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
                 .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                .withCpsOrganisationId(prosecutionCase.getCpsOrganisationId())
                 .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
                 .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
                 .withCaseMarkers(prosecutionCase.getCaseMarkers())
@@ -1625,14 +1648,12 @@ public class CaseAggregate implements Aggregate {
         }
     }
 
-    public Stream<Object> updateCpsOrganisationInvalid() {
+    private CaseCpsProsecutorUpdated buildCaseCpsProsecutorUpdatedWithCpsOrgVerifyError() {
         final UUID caseId = this.prosecutionCase.getId();
-        final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(CaseCpsProsecutorUpdated.caseCpsProsecutorUpdated()
+        return CaseCpsProsecutorUpdated.caseCpsProsecutorUpdated()
                 .withProsecutionCaseId(caseId)
                 .withProsecutionAuthorityCode(this.prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityCode())
-                .withIsCpsOrgVerifyError(true).build());
+                .withIsCpsOrgVerifyError(true).build();
 
-        return apply(streamBuilder.build());
     }
 }

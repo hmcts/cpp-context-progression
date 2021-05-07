@@ -274,6 +274,16 @@ public class PreAndPostConditionHelper {
                 "application/vnd.progression.initiate-court-proceedings+json", jsonPayload.toString());
     }
 
+    public static Response initiateCourtProceedingsWithoutCourtDocument(final String resourceLocation, final String caseId, final String defendantId,
+                                                                        final String listedStartDateTime, final String earliestStartDateTime, final String dob) throws IOException {
+        final JSONObject jsonPayload = new JSONObject(getInitiateCourtProceedingsJsonFromResource(resourceLocation, caseId, defendantId, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), listedStartDateTime, earliestStartDateTime, dob));
+        jsonPayload.getJSONObject("initiateCourtProceedings").remove("courtDocuments");
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings+json", jsonPayload.toString());
+    }
+
+
+
     public static Response initiateCourtProceedingsWithoutCourtDocumentAndCpsOrganisation(final String caseId, final String defendantId,
                                                                                           final String listedStartDateTime, final String earliestStartDateTime, final String dob) throws IOException {
         final JSONObject jsonPayload = new JSONObject(getInitiateCourtProceedingsJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), listedStartDateTime, earliestStartDateTime, dob));
@@ -288,6 +298,13 @@ public class PreAndPostConditionHelper {
         String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
         String defendantDOB = LocalDate.now().minusYears(15).toString();
         return initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+    }
+
+    public static Response initiateCourtProceedingsWithoutCourtDocument(final String resource, final String caseId, final String defendantId) throws IOException {
+        String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
+        String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
+        String defendantDOB = LocalDate.now().minusYears(15).toString();
+        return initiateCourtProceedingsWithoutCourtDocument(resource, caseId, defendantId, listedStartDateTime, earliestStartDateTime, defendantDOB);
     }
 
     public static Response initiateCourtProceedingsWithoutCourtDocumentAndCpsOrganisation(final String caseId, final String defendantId) throws IOException {

@@ -54,21 +54,9 @@ public class ProsecutionCaseMarkersUpdatedListener {
 
     }
 
-    private ProsecutionCase updateCaseMarkers(final ProsecutionCase prosecutionCase, final List<Marker> caseMarkers) {
+    private ProsecutionCase updateCaseMarkers(final ProsecutionCase origProsecutionCase, final List<Marker> caseMarkers) {
         return ProsecutionCase.prosecutionCase()
-                .withDefendants(prosecutionCase.getDefendants())
-                .withId(prosecutionCase.getId())
-                .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
-                .withInitiationCode(prosecutionCase.getInitiationCode())
-                .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
-                .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
-                .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
-                .withCaseStatus(prosecutionCase.getCaseStatus())
-                .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
-                .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
-                .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
-                .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
-                .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
+                .withValuesFrom(origProsecutionCase)
                 .withCaseMarkers(caseMarkers)
                 .build();
     }

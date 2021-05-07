@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.lang.Boolean.TRUE;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -8,7 +9,6 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
-import javax.json.JsonValue;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,7 @@ public class ReferenceDataService {
     public static final String REFERENCEDATA_QUERY_NATIONALITIES = "referencedata.query.country-nationality";
     public static final String REFERENCEDATA_GET_REFERRAL_REASONS = "referencedata.query.referral-reasons";
     public static final String REFERENCEDATA_QUERY_PROSECUTOR = "referencedata.query.prosecutor";
+    public static final String ID = "id";
     public static final String REFERENCEDATA_QUERY_PROSECUTOR_BY_OUCODE = "referencedata.query.get.prosecutor.by.oucode";
     public static final String REFERENCEDATA_QUERY_COURT_ROOM = "referencedata.query.courtroom";
     public static final String REFERENCEDATA_QUERY_JUDICIARIES = "referencedata.query.judiciaries";
@@ -63,9 +65,10 @@ public class ReferenceDataService {
     public static final String ETHNICITY = "description";
     public static final String SHORT_NAME = "shortName";
     public static final String COUNTRY_NATIONALITY = "countryNationality";
-    public static final String ID = "id";
+
     public static final String IDS = "ids";
     public static final String OUCODE = "oucode";
+    public static final String CPS_FLAG = "cpsFlag";
     public static final String HEARING_TYPES = "hearingTypes";
     public static final String ETHNICITIES = "ethnicities";
     public static final String ORGANISATIONUNITS = "organisationunits";
@@ -353,11 +356,13 @@ public class ReferenceDataService {
         return Optional.of(response.payloadAsJsonObject());
     }
 
-    public Optional<JsonObject> getProsecutorByOuCode(final JsonEnvelope event, final String id, final Requester requester) {
+    public Optional<JsonObject> getCPSProsecutorByOuCode(final JsonEnvelope event, final String id, final Requester requester) {
 
         LOGGER.info(" Calling {} to get prosecutors for {} ", REFERENCEDATA_QUERY_PROSECUTOR_BY_OUCODE, id);
 
-        final JsonObject payload = Json.createObjectBuilder().add(OUCODE, id).build();
+        final JsonObject payload = Json.createObjectBuilder().add(OUCODE, id)
+                .add(CPS_FLAG, TRUE)
+                .build();
 
 
         final JsonEnvelope response = requester.request(envelop(payload)

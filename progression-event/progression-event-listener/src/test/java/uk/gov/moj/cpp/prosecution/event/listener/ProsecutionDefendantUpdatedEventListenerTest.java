@@ -5,8 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -486,6 +485,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         final ProsecutionCase prosCase = ProsecutionCase.prosecutionCase()
                 .withDefendants(getDefendants(def1, def2, def3, prosecutionCaseId, Arrays.asList(of1, of2)))
                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
+                .withCpsOrganisationId(randomUUID())
                 .withCpsOrganisation("A01")
                 .build();
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosCase);
@@ -504,6 +504,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         final ProsecutionCase prosecutionCase = this.jsonObjectToObjectConverter.convert
                 (jsonFromString(argumentCaptor.getValue().getPayload()), ProsecutionCase.class);
         assertThat(prosecutionCase.getCpsOrganisation(), is("A01"));
+        assertThat(prosecutionCase.getCpsOrganisationId(), is(prosCase.getCpsOrganisationId()));
         assertThat(prosecutionCase.getDefendants().get(0).getProceedingsConcluded(), equalTo(true));
         assertThat(prosecutionCase.getDefendants().get(0).getAssociationLockedByRepOrder(), equalTo(true));
         final Optional<Defendant> defendant = prosecutionCase.getDefendants().stream().filter(def -> def.getId().equals(def1)).findFirst();
@@ -729,12 +730,12 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     }
 
     private void verifyProsecutionCaseHasBeenUpdated(ProsecutionCaseEntity value) {
-        assertTrue(value.getPayload().contains("\"occupation\":\"Plumber\""));
-        assertTrue(value.getPayload().contains("\"occupationCode\":\"PL01\""));
-        assertTrue(value.getPayload().contains("\"lastName\":\"UpdatedLastName\""));
-        assertTrue(value.getPayload().contains("\"firstName\":\"newFirstName\""));
-        assertTrue(value.getPayload().contains("\"driverNumber\":\"newDriverNumber\""));
-        assertTrue(value.getPayload().contains("\"bailConditions\":\"bailConditions\""));
+        assertThat(value.getPayload().contains("\"occupation\":\"Plumber\""), is(true));
+        assertThat(value.getPayload().contains("\"occupationCode\":\"PL01\""), is(true));
+        assertThat(value.getPayload().contains("\"lastName\":\"UpdatedLastName\""), is(true));
+        assertThat(value.getPayload().contains("\"firstName\":\"newFirstName\""), is(true));
+        assertThat(value.getPayload().contains("\"driverNumber\":\"newDriverNumber\""), is(true));
+        assertThat(value.getPayload().contains("\"bailConditions\":\"bailConditions\""), is(true));
     }
 
     private void verifyProsecutionCaseAllValues(final ProsecutionCase allValues, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID selfDefinedEthnicityId, final UUID observedEthnicityId, final LocalDate updatedDoB) {

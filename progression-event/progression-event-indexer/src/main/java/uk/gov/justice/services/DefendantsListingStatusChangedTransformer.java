@@ -1,5 +1,6 @@
 package uk.gov.justice.services;
 
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
 import uk.gov.justice.core.courts.CourtApplication;
@@ -8,6 +9,7 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.services.transformer.BaseCourtApplicationTransformer;
 import uk.gov.justice.services.unifiedsearch.client.domain.CaseDetails;
 
@@ -44,7 +46,7 @@ public class DefendantsListingStatusChangedTransformer extends BaseCourtApplicat
     }
 
     @Override
-    public String getDefaultCaseStatus(){
+    public String getDefaultCaseStatus() {
         //caseStatus should not be set as we do not want to overwrite existing info
         return null;
     }
@@ -54,7 +56,7 @@ public class DefendantsListingStatusChangedTransformer extends BaseCourtApplicat
                                   final Hearing hearing,
                                   final List<ProsecutionCase> prosecutionCases,
                                   final Map<UUID, CaseDetails> caseDocumentsMap) {
-        if (prosecutionCases!= null) {
+        if (prosecutionCases != null) {
             for (final ProsecutionCase prosecutionCase : prosecutionCases) {
                 final List<String> defendantIds = new ArrayList<>();
                 final List<Defendant> defendants = prosecutionCase.getDefendants();
@@ -73,6 +75,7 @@ public class DefendantsListingStatusChangedTransformer extends BaseCourtApplicat
 
     private void populateProsecutingAuthorityDetails(final ProsecutionCase prosecutionCase, final CaseDetails caseDetails) {
         final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+        final Prosecutor prosecutor = prosecutionCase.getProsecutor();
         if (prosecutionCaseIdentifier != null) {
             if (prosecutionCaseIdentifier.getCaseURN() != null) {
                 caseDetails.setCaseReference(prosecutionCaseIdentifier.getCaseURN());
@@ -80,7 +83,12 @@ public class DefendantsListingStatusChangedTransformer extends BaseCourtApplicat
             if (prosecutionCaseIdentifier.getProsecutionAuthorityReference() != null) {
                 caseDetails.setCaseReference(prosecutionCaseIdentifier.getProsecutionAuthorityReference());
             }
-            caseDetails.setProsecutingAuthority(prosecutionCaseIdentifier.getProsecutionAuthorityCode());
+            if (nonNull(prosecutor)) {
+                caseDetails.setProsecutingAuthority(prosecutor.getProsecutorCode());
+            } else {
+                caseDetails.setProsecutingAuthority(prosecutionCaseIdentifier.getProsecutionAuthorityCode());
+            }
+
         }
     }
 
@@ -98,7 +106,7 @@ public class DefendantsListingStatusChangedTransformer extends BaseCourtApplicat
         }
     }
 
-    private List<uk.gov.justice.services.unifiedsearch.client.domain.Hearing> hearings(final Hearing hearing,final List<String> defendantIds) {
+    private List<uk.gov.justice.services.unifiedsearch.client.domain.Hearing> hearings(final Hearing hearing, final List<String> defendantIds) {
         final List<uk.gov.justice.services.unifiedsearch.client.domain.Hearing> hearings = new ArrayList<>();
         hearings.add(hearingMapper.hearing(hearing, defendantIds));
         return hearings;

@@ -29,6 +29,7 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
@@ -104,6 +105,7 @@ public class SearchProsecutionCaseTest {
         prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withId(UUID.fromString("5002d600-af66-11e8-b568-0800200c9a66"))
                 .withProsecutionCaseIdentifier(prosecutionCaseIdentifier)
+                .withProsecutor(Prosecutor.prosecutor().withProsecutorCode("CPS").build())
                 .withCaseStatus("SJP Referral")
                 .withDefendants(Collections.singletonList(defendant))
                 .build();
@@ -175,6 +177,7 @@ public class SearchProsecutionCaseTest {
 
         assertEquals("1977-01-01", searchProsecutionCaseDetails.getDefendantDob());
         assertEquals("TFL", searchProsecutionCaseDetails.getProsecutor());
+        assertEquals("CPS", searchProsecutionCaseDetails.getCpsProsecutor());
         assertEquals("SJP Referral", searchProsecutionCaseDetails.getStatus());
     }
 

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.entity.utils;
 
+import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.defaultString;
 
 import uk.gov.justice.core.courts.LegalEntityDefendant;
@@ -7,17 +8,17 @@ import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SearchProsecutionCaseEntity;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import javax.json.Json;
 
 import org.apache.commons.lang3.StringUtils;
 
-@SuppressWarnings({"squid:S1067", "squid:S00107", "squid:S1845", "pmd:BeanMembersShouldSerialize"})
+@SuppressWarnings({"squid:S00107", "squid:S1845", "PMD.BeanMembersShouldSerialize"})
 public class SearchCaseBuilder {
 
     private static final String DELIMITER = " | ";
@@ -27,6 +28,7 @@ public class SearchCaseBuilder {
     private static final String DOB = "dob";
     private static final String STATUS = "status";
     private static final String PROSECUTOR = "prosecutor";
+    private static final String CPSPROSECUTOR = "cpsProsecutor";
     private static final String IS_STANDALONE_APPLICATION = "isStandaloneApplication";
 
     private UUID defendantId;
@@ -45,6 +47,8 @@ public class SearchCaseBuilder {
 
     private String prosecutor;
 
+    private String cpsProsecutor;
+
     private String status;
 
     private String searchTarget;
@@ -57,7 +61,7 @@ public class SearchCaseBuilder {
 
     public SearchCaseBuilder(final UUID defendantId, final String caseId, final String reference, final String defendantFirstName,
                              final String defendantMiddleName, final String defendantLastName, final String defendantFullName,
-                             final String defendantDob, final String prosecutor, final String status, final String searchTarget,
+                             final String defendantDob, final String prosecutor, final String cpsProsecutor, final String status, final String searchTarget,
                              final String resultPayload, final Boolean isStandaloneApplication) {
 
         this.defendantId = defendantId;
@@ -69,6 +73,7 @@ public class SearchCaseBuilder {
         this.defendantFullName = defendantFullName;
         this.defendantDob = defendantDob;
         this.prosecutor = prosecutor;
+        this.cpsProsecutor = cpsProsecutor;
         this.status = status;
         this.searchTarget = searchTarget;
         this.resultPayload = resultPayload;
@@ -116,6 +121,10 @@ public class SearchCaseBuilder {
         return prosecutor;
     }
 
+    public String getCpsProsecutor() {
+        return cpsProsecutor;
+    }
+
     public String getStatus() {
         return status;
     }
@@ -154,6 +163,8 @@ public class SearchCaseBuilder {
 
         private String prosecutor;
 
+        private String cpsProsecutor;
+
         private String status;
 
         private String searchTarget;
@@ -182,8 +193,15 @@ public class SearchCaseBuilder {
             return this;
         }
 
+        public SearchCaseBuilder.CaseBuilder withCpsProsecutor(final Prosecutor prosecutor) {
+            if(nonNull(prosecutor)){
+                cpsProsecutor = prosecutor.getProsecutorCode();
+            }
+            return this;
+        }
+
         public SearchCaseBuilder.CaseBuilder withPersonDefendant(final PersonDefendant personDefendant) {
-            if (Objects.nonNull(personDefendant)) {
+            if (nonNull(personDefendant)) {
                 final Person person = personDefendant.getPersonDetails();
                 defendantFirstName = defaultString(person.getFirstName());
                 defendantMiddleName = defaultString(person.getMiddleName());
@@ -196,7 +214,7 @@ public class SearchCaseBuilder {
         }
 
         public SearchCaseBuilder.CaseBuilder withLegalEntityDefendant(final LegalEntityDefendant legalEntityDefendant) {
-            if (Objects.nonNull(legalEntityDefendant)) {
+            if (nonNull(legalEntityDefendant)) {
                 final Organisation organisation = legalEntityDefendant.getOrganisation();
                 defendantFirstName = defaultString(organisation.getName());
             }
@@ -212,6 +230,7 @@ public class SearchCaseBuilder {
             this.defendantLastName = searchCaseEntity.getDefendantLastName();
             this.defendantDob = searchCaseEntity.getDefendantDob();
             this.prosecutor = searchCaseEntity.getProsecutor();
+            this.cpsProsecutor = searchCaseEntity.getCpsProsecutor();
             this.status = searchCaseEntity.getStatus();
             this.isStandaloneApplication = searchCaseEntity.getStandaloneApplication();
             return this;
@@ -255,13 +274,14 @@ public class SearchCaseBuilder {
                     .add(DOB, defaultString(this.defendantDob))
                     .add(STATUS, defaultString(this.status))
                     .add(PROSECUTOR, defaultString(this.prosecutor))
+                    .add(CPSPROSECUTOR, defaultString(this.cpsProsecutor))
                     .add(IS_STANDALONE_APPLICATION, this.isStandaloneApplication)
                     .build().toString();
             return this;
         }
 
         public SearchCaseBuilder build() {
-            return new SearchCaseBuilder(defendantId, caseId, reference, defendantFirstName, defendantMiddleName, defendantLastName, defendantFullName, defendantDob, prosecutor, status, searchTarget, resultPayload, isStandaloneApplication);
+            return new SearchCaseBuilder(defendantId, caseId, reference, defendantFirstName, defendantMiddleName, defendantLastName, defendantFullName, defendantDob, prosecutor, cpsProsecutor, status, searchTarget, resultPayload, isStandaloneApplication);
         }
     }
 

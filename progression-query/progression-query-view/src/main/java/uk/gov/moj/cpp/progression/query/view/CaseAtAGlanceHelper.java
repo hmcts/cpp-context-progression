@@ -24,6 +24,7 @@ import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.progression.courts.CaagDefendantOffences;
 import uk.gov.justice.progression.courts.CaagDefendants;
@@ -69,6 +70,10 @@ public class CaseAtAGlanceHelper {
         this.referenceDataService = referenceDataService;
     }
 
+    static Integer getAge(final LocalDate dateOfBirth) {
+        return nonNull(dateOfBirth) ? between(dateOfBirth, now()).getYears() : null;
+    }
+
     public CaseDetails getCaseDetails() {
         final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
         final CaseDetails.Builder caseDetailsBuilder = CaseDetails.caseDetails();
@@ -93,8 +98,17 @@ public class CaseAtAGlanceHelper {
     public ProsecutorDetails getProsecutorDetails() {
         final ProsecutorDetails.Builder prosecutorDetailsBuilder = ProsecutorDetails.prosecutorDetails();
         final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+        final Prosecutor prosecutor = prosecutionCase.getProsecutor();
+        if (nonNull(prosecutor)) {
+            prosecutorDetailsBuilder.withProsecutionAuthorityCode(prosecutor.getProsecutorCode());
+            if (nonNull(prosecutionCaseIdentifier)) {
+                prosecutorDetailsBuilder.withProsecutionAuthorityReference(prosecutionCaseIdentifier.getProsecutionAuthorityReference());
+            }
+            final UUID prosecutionAuthorityId = prosecutor.getProsecutorId();
+            prosecutorDetailsBuilder.withProsecutionAuthorityId(prosecutionAuthorityId);
+            prosecutorDetailsBuilder.withAddress(getProsecutorAddress(prosecutionAuthorityId));
 
-        if (nonNull(prosecutionCaseIdentifier)) {
+        } else if (nonNull(prosecutionCaseIdentifier)) {
             prosecutorDetailsBuilder.withProsecutionAuthorityReference(prosecutionCaseIdentifier.getProsecutionAuthorityReference());
             prosecutorDetailsBuilder.withProsecutionAuthorityCode(prosecutionCaseIdentifier.getProsecutionAuthorityCode());
 
@@ -254,10 +268,6 @@ public class CaseAtAGlanceHelper {
         return nonNull(person.getNationalityDescription()) && nonNull(person.getAdditionalNationalityDescription())
                 ? format("%s, %s", person.getNationalityDescription(), person.getAdditionalNationalityDescription())
                 : person.getNationalityDescription();
-    }
-
-    static Integer getAge(final LocalDate dateOfBirth) {
-        return nonNull(dateOfBirth) ? between(dateOfBirth, now()).getYears() : null;
     }
 
     private Address getProsecutorAddress(final UUID prosecutionAuthorityId) {

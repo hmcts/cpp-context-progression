@@ -82,21 +82,7 @@ public class HearingConfirmedCaseUpdatedEventListener {
 
     private ProsecutionCase updateProsecutionCaseWithCaseStatus(final ProsecutionCase prosecutionCase, final String caseStatus) {
         return ProsecutionCase.prosecutionCase()
-                .withId(prosecutionCase.getId())
-                .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
-                .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
-                .withCaseMarkers(prosecutionCase.getCaseMarkers())
-                .withDefendants(prosecutionCase.getDefendants())
-                .withClassOfCase(prosecutionCase.getClassOfCase())
-                .withInitiationCode(prosecutionCase.getInitiationCode())
-                .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
-                .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
-                .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
-                .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
-                .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
-                .withRemovalReason(prosecutionCase.getRemovalReason())
-                .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
-                .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
+                .withValuesFrom(prosecutionCase)
                 .withCaseStatus(caseStatus)
                 .build();
     }
@@ -148,6 +134,7 @@ public class HearingConfirmedCaseUpdatedEventListener {
                 .withInitiationCode(prosecutionCase.getInitiationCode())
                 .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
                 .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                .withCpsOrganisationId(prosecutionCase.getCpsOrganisationId())
                 .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
                 .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
                 .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())

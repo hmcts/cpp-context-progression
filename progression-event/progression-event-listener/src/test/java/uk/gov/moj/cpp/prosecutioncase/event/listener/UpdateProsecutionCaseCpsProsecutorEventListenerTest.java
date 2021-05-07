@@ -3,6 +3,8 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -26,6 +28,7 @@ import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -33,6 +36,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateProsecutionCaseCpsProsecutorEventListenerTest {
@@ -45,6 +49,9 @@ public class UpdateProsecutionCaseCpsProsecutorEventListenerTest {
 
     @Mock
     private ProsecutionCaseRepository repository;
+
+    @Mock
+    private SearchProsecutionCase searchCase;
 
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
@@ -86,12 +93,14 @@ public class UpdateProsecutionCaseCpsProsecutorEventListenerTest {
         JsonObject jsonObject = objectToJsonObjectConverter.convert(caseCpsProsecutorUpdated);
         when(envelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(repository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
+        doNothing().when(searchCase).updateSearchable(any());
+
 
         updateProsecutionCaseCpsProsecutorEventListener.handleUpdateCaseCpsProsecutor(envelope);
-
+        verify(searchCase, times(1)).updateSearchable(any());
         verify(repository).save(entityArgumentCaptor.capture());
 
-        assertThat(stringToJsonObjectConverter.convert(entityArgumentCaptor.getValue().getPayload()).get("prosecutionCaseIdentifier"), is(objectToJsonObjectConverter.convert(expectedEntity(caseCpsProsecutorUpdated))));
+        assertThat(stringToJsonObjectConverter.convert(entityArgumentCaptor.getValue().getPayload()).get("prosecutor"), is(objectToJsonObjectConverter.convert(expectedEntity(caseCpsProsecutorUpdated))));
 
 
     }
@@ -119,17 +128,12 @@ public class UpdateProsecutionCaseCpsProsecutorEventListenerTest {
         assertThat(actualEntity.get("isCpsOrgVerifyError"), is(JsonValue.TRUE));
     }
 
-    private ProsecutionCaseIdentifier expectedEntity(CaseCpsProsecutorUpdated caseCpsProsecutorUpdated){
-        return ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
-                .withProsecutionAuthorityCode(caseCpsProsecutorUpdated.getProsecutionAuthorityCode())
-                .withCaseURN(caseCpsProsecutorUpdated.getCaseURN())
-                .withProsecutionAuthorityId(caseCpsProsecutorUpdated.getProsecutionAuthorityId())
-                .withProsecutionAuthorityReference(caseCpsProsecutorUpdated.getProsecutionAuthorityReference())
+    private Prosecutor expectedEntity(CaseCpsProsecutorUpdated caseCpsProsecutorUpdated){
+        return Prosecutor.prosecutor()
+                .withProsecutorCode(caseCpsProsecutorUpdated.getProsecutionAuthorityCode())
+                .withProsecutorId(caseCpsProsecutorUpdated.getProsecutionAuthorityId())
                 .withAddress(caseCpsProsecutorUpdated.getAddress())
-                .withProsecutionAuthorityName(caseCpsProsecutorUpdated.getProsecutionAuthorityName())
-                .withContact(caseCpsProsecutorUpdated.getContact())
-                .withMajorCreditorCode(caseCpsProsecutorUpdated.getMajorCreditorCode())
-                .withProsecutionAuthorityOUCode(caseCpsProsecutorUpdated.getProsecutionAuthorityOUCode())
+                .withProsecutorName(caseCpsProsecutorUpdated.getProsecutionAuthorityName())
                 .build();
     }
 }

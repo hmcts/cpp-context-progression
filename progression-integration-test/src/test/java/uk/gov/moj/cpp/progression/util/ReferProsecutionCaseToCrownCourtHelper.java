@@ -148,7 +148,6 @@ public class ReferProsecutionCaseToCrownCourtHelper {
         return newArrayList(
                 // assert person
                 withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.title", is("DR")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.firstName", is("Harry")),
                 withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.middleName", is("Jack")),
                 withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.lastName", is("Kane")),
                 withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.dateOfBirth", is("1995-01-01")),

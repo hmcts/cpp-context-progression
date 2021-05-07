@@ -16,6 +16,5 @@
   "stackType": "Regional",
   "informantEmailAddress": "tfl.enforcement@tfl.cjsm.net",
   "sjpFlag": true,
-  "cpsFlag": true,
   "policeFlag": false
 }

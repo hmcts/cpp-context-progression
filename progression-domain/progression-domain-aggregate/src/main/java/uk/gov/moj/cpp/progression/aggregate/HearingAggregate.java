@@ -496,6 +496,7 @@ public class HearingAggregate implements Aggregate {
                 .withInitiationCode(prosecutionCase.getInitiationCode())
                 .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
                 .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
+                .withCpsOrganisationId(prosecutionCase.getCpsOrganisationId())
                 .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
                 .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
                 .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())

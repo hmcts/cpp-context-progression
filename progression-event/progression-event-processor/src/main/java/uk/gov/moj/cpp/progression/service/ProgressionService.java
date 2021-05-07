@@ -1063,17 +1063,8 @@ public class ProgressionService {
                 if (prosecutionCaseJson.isPresent()) {
                     final ProsecutionCase prosecutionCaseEntity = jsonObjectConverter.convert(prosecutionCaseJson.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
                     final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
-                            .withId(prosecutionCaseEntity.getId())
-                            .withCaseStatus(prosecutionCaseEntity.getCaseStatus())
+                            .withValuesFrom(prosecutionCaseEntity)
                             .withDefendants(filterDefendantsAndUpdateOffences(pc, prosecutionCaseEntity, earliestHearingDate, seedingHearing))
-                            .withInitiationCode(prosecutionCaseEntity.getInitiationCode())
-                            .withOriginatingOrganisation(prosecutionCaseEntity.getOriginatingOrganisation())
-                            .withCpsOrganisation(prosecutionCaseEntity.getCpsOrganisation())
-                            .withIsCpsOrgVerifyError(prosecutionCaseEntity.getIsCpsOrgVerifyError())
-                            .withProsecutionCaseIdentifier(prosecutionCaseEntity.getProsecutionCaseIdentifier())
-                            .withStatementOfFacts(prosecutionCaseEntity.getStatementOfFacts())
-                            .withStatementOfFactsWelsh(prosecutionCaseEntity.getStatementOfFactsWelsh())
-                            .withCaseMarkers(prosecutionCaseEntity.getCaseMarkers())
                             .build();
                     prosecutionCases.add(prosecutionCase);
                 }

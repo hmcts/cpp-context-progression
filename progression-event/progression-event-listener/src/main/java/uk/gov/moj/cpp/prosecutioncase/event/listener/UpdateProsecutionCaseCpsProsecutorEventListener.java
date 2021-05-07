@@ -5,7 +5,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -14,6 +14,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -39,6 +40,9 @@ public class UpdateProsecutionCaseCpsProsecutorEventListener {
     @Inject
     private ProsecutionCaseRepository repository;
 
+    @Inject
+    private SearchProsecutionCase searchCase;
+
 
     @Handles("progression.event.case-cps-prosecutor-updated")
     public void handleUpdateCaseCpsProsecutor(final JsonEnvelope event) {
@@ -51,48 +55,27 @@ public class UpdateProsecutionCaseCpsProsecutorEventListener {
         final ProsecutionCase persistentProsecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
         final ProsecutionCase updatedProsecutionCase = updateProsecutionCase(persistentProsecutionCase, caseCpsProsecutorUpdated);
         repository.save(getProsecutionCaseEntity(updatedProsecutionCase));
+        searchCase.updateSearchable(updatedProsecutionCase);
     }
 
     private ProsecutionCase updateProsecutionCase(final ProsecutionCase prosecutionCase, final CaseCpsProsecutorUpdated caseCpsProsecutorUpdated) {
-        final ProsecutionCaseIdentifier newProsecutionCaseIdentifier;
-        if(!isNull(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) && caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()){
-            newProsecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
-        }else{
-            newProsecutionCaseIdentifier = createProsecutionCaseIdentifier(caseCpsProsecutorUpdated);
+        Prosecutor prosecutor = null;
+        if (isNull(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) || !caseCpsProsecutorUpdated.getIsCpsOrgVerifyError()) {
+            prosecutor = Prosecutor.prosecutor()
+                    .withAddress(caseCpsProsecutorUpdated.getAddress())
+                    .withProsecutorCode(caseCpsProsecutorUpdated.getProsecutionAuthorityCode())
+                    .withProsecutorId(caseCpsProsecutorUpdated.getProsecutionAuthorityId())
+                    .withProsecutorName(caseCpsProsecutorUpdated.getProsecutionAuthorityName())
+                    .build();
         }
 
         return ProsecutionCase.prosecutionCase()
-                .withId(prosecutionCase.getId())
-                .withProsecutionCaseIdentifier(newProsecutionCaseIdentifier)
-                .withInitiationCode(prosecutionCase.getInitiationCode())
-                .withDefendants(prosecutionCase.getDefendants())
-                .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
-                .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
-                .withCaseMarkers(prosecutionCase.getCaseMarkers())
-                .withCaseStatus(prosecutionCase.getCaseStatus())
-                .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
-                .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
-                .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
-                .withRemovalReason(prosecutionCase.getRemovalReason())
-                .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
-                .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
+                .withValuesFrom(prosecutionCase)
+                .withProsecutor(prosecutor)
                 .withIsCpsOrgVerifyError(caseCpsProsecutorUpdated.getIsCpsOrgVerifyError())
                 .build();
     }
 
-    private ProsecutionCaseIdentifier createProsecutionCaseIdentifier(final CaseCpsProsecutorUpdated caseCpsProsecutorUpdated) {
-        return ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
-                .withProsecutionAuthorityCode(caseCpsProsecutorUpdated.getProsecutionAuthorityCode())
-                .withCaseURN(caseCpsProsecutorUpdated.getCaseURN())
-                .withProsecutionAuthorityId(caseCpsProsecutorUpdated.getProsecutionAuthorityId())
-                .withProsecutionAuthorityReference(caseCpsProsecutorUpdated.getProsecutionAuthorityReference())
-                .withAddress(caseCpsProsecutorUpdated.getAddress())
-                .withProsecutionAuthorityName(caseCpsProsecutorUpdated.getProsecutionAuthorityName())
-                .withContact(caseCpsProsecutorUpdated.getContact())
-                .withMajorCreditorCode(caseCpsProsecutorUpdated.getMajorCreditorCode())
-                .withProsecutionAuthorityOUCode(caseCpsProsecutorUpdated.getProsecutionAuthorityOUCode())
-                .build();
-    }
 
     private ProsecutionCaseEntity getProsecutionCaseEntity(final ProsecutionCase prosecutionCase) {
         final ProsecutionCaseEntity pCaseEntity = new ProsecutionCaseEntity();

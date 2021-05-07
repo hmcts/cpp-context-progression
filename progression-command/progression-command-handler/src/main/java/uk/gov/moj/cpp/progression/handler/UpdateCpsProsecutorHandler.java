@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.moj.cpp.progression.service.MatchedDefendantLoadService.appendEventsToStream;
 
@@ -33,20 +34,15 @@ public class UpdateCpsProsecutorHandler {
 
     @Inject
     private EventSource eventSource;
-
     @Inject
     private AggregateService aggregateService;
-
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
     @Inject
     private ReferenceDataService referenceDataService;
-
     @Inject
     @ServiceComponent(COMMAND_HANDLER)
     private Requester requester;
-
 
     @Handles("progression.command.update-cps-prosecutor-details")
     public void handleUpdateCpsProsecutor(final Envelope<UpdateCpsProsecutorDetails> envelope) throws EventStreamException {
@@ -57,41 +53,44 @@ public class UpdateCpsProsecutorHandler {
         final CaseAggregate caseAggregate = aggregateService.get(streamById, CaseAggregate.class);
         final ProsecutionCaseIdentifier prosecutionCaseIdentifier = getProsecutionCaseIdentifier(prosecutorDetails);
         final Stream<Object> events = caseAggregate.updateCaseProsecutorDetails(prosecutionCaseIdentifier,
-                        prosecutorDetails.getOldCpsProsecutor());
+                prosecutorDetails.getOldCpsProsecutor());
         appendEventsToStream(envelope, streamById, events);
     }
 
     @Handles("progression.command.update-case-for-cps-prosecutor")
     public void handleUpdateCpsProsecutorFromReferenceData(final JsonEnvelope envelope) throws EventStreamException {
         final String caseId = envelope.payloadAsJsonObject().getString("caseId");
-
         final EventStream eventStream = eventSource.getStreamById(UUID.fromString(caseId));
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
         final ProsecutionCase prosecutionCase = caseAggregate.getProsecutionCase();
-        boolean isCpsValid = false;
-        Stream<Object> events = null;
-        if(prosecutionCase.getIsCpsOrgVerifyError() != null && !prosecutionCase.getIsCpsOrgVerifyError().booleanValue()){
+        if (prosecutionCase.getIsCpsOrgVerifyError() != null && !prosecutionCase.getIsCpsOrgVerifyError().booleanValue()) {
             return;
         }
-        if(prosecutionCase.getCpsOrganisation() != null ){
-            final String  queryOrganisation = prosecutionCase.getCpsOrganisation();
-            final Optional<JsonObject> cpsProsecutor = referenceDataService.getProsecutorByOuCode(envelope, queryOrganisation, requester);
-            if(cpsProsecutor.isPresent()){
-                final ProsecutionCaseIdentifier prosecutionCaseIdentifier = getProsecutionCaseIdentifier(cpsProsecutor.get());
-                events = caseAggregate.updateCaseProsecutorDetails(prosecutionCaseIdentifier,
-                        null);
-                isCpsValid = true;
-            }
-        }
-        if(! isCpsValid){
-            events = caseAggregate.updateCpsOrganisationInvalid();
-        }
+
+        final Optional<JsonObject> prosecutor = getProsecutor(prosecutionCase.getCpsOrganisation(), prosecutionCase.getCpsOrganisationId(), envelope);
+        final Stream<Object> events = caseAggregate.updateCaseProsecutorDetails(getProsecutionCaseIdentifier(prosecutor));
         appendEventsToStream(envelope, eventStream, events);
     }
 
-    private ProsecutionCaseIdentifier getProsecutionCaseIdentifier(UpdateCpsProsecutorDetails prosecutorDetails){
+    private Optional<JsonObject> getProsecutor(final String cpsOrganisation, final UUID cpsOrganisationId, final JsonEnvelope envelope) {
+        if (nonNull(cpsOrganisation)) {
+            return referenceDataService.getCPSProsecutorByOuCode(envelope, cpsOrganisation, requester);
+        } else if (nonNull(cpsOrganisationId)) {
+            return referenceDataService.getProsecutor(envelope, cpsOrganisationId, requester);
+        }
+        return Optional.empty();
+    }
+
+    private ProsecutionCaseIdentifier getProsecutionCaseIdentifier(Optional<JsonObject> prosecutor) {
+        if (prosecutor.isPresent()) {
+            return buildProsecutionCaseIdentifier(prosecutor.get());
+        }
+        return null;
+    }
+
+    private ProsecutionCaseIdentifier getProsecutionCaseIdentifier(UpdateCpsProsecutorDetails prosecutorDetails) {
         return ProsecutionCaseIdentifier.prosecutionCaseIdentifier().
-                withCaseURN(prosecutorDetails.getCaseURN() ).
+                withCaseURN(prosecutorDetails.getCaseURN()).
                 withAddress(prosecutorDetails.getAddress())
                 .withProsecutionAuthorityReference(prosecutorDetails.getProsecutionAuthorityReference())
                 .withProsecutionAuthorityCode(prosecutorDetails.getProsecutionAuthorityCode())
@@ -104,24 +103,25 @@ public class UpdateCpsProsecutorHandler {
 
     }
 
-    private ProsecutionCaseIdentifier getProsecutionCaseIdentifier(JsonObject cpsProsecutor){
+
+    private ProsecutionCaseIdentifier buildProsecutionCaseIdentifier(JsonObject cpsProsecutor) {
 
         final Address address = jsonObjectToObjectConverter.convert((JsonObject) cpsProsecutor.get("address"), Address.class);
 
-        final ProsecutionCaseIdentifier.Builder builder=  ProsecutionCaseIdentifier.prosecutionCaseIdentifier();
-        if(cpsProsecutor.get("informantEmailAddress") != null){
+        final ProsecutionCaseIdentifier.Builder builder = ProsecutionCaseIdentifier.prosecutionCaseIdentifier();
+        if (cpsProsecutor.get("informantEmailAddress") != null) {
             builder.withContact(ContactNumber.contactNumber().withPrimaryEmail(cpsProsecutor.getString("informantEmailAddress")).build());
         }
-        if(cpsProsecutor.get("majorCreditorCode") != null){
-          builder.withMajorCreditorCode(cpsProsecutor.getString("majorCreditorCode"));
+        if (cpsProsecutor.get("majorCreditorCode") != null) {
+            builder.withMajorCreditorCode(cpsProsecutor.getString("majorCreditorCode"));
         }
-        if(cpsProsecutor.get("shortName") != null){
+        if (cpsProsecutor.get("shortName") != null) {
             builder.withProsecutionAuthorityCode(cpsProsecutor.getString("shortName"));
         }
-        if(cpsProsecutor.get("fullName") != null){
-          builder.withProsecutionAuthorityName(cpsProsecutor.getString("fullName"));
+        if (cpsProsecutor.get("fullName") != null) {
+            builder.withProsecutionAuthorityName(cpsProsecutor.getString("fullName"));
         }
-        if(cpsProsecutor.get("oucode") != null){
+        if (cpsProsecutor.get("oucode") != null) {
             builder.withProsecutionAuthorityOUCode(cpsProsecutor.getString("oucode"));
         }
         return builder.withAddress(address)

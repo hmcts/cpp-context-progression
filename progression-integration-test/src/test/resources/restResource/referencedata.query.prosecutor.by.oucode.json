@@ -10,6 +10,7 @@
   "stackType": "Regional",
   "informantEmailAddress": "tfl.enforcement@tfl.cjsm.net",
   "sjpFlag": true,
+  "cpsFlag": true,
   "policeFlag": false,
   "address": {
     "address1": "6th Floor Windsor House",

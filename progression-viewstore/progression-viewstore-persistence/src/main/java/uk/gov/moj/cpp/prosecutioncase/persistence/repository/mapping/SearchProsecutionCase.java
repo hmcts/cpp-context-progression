@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping;
 
+import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.defaultString;
 import static uk.gov.moj.cpp.progression.domain.constant.ProsecutingAuthority.CPS;
 
@@ -16,7 +17,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCa
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -35,6 +35,21 @@ public class SearchProsecutionCase {
     @Inject
     private SearchProsecutionCaseRepository searchRepository;
 
+    public void updateSearchable(final ProsecutionCase updatedProsecutionCase) {
+        updatedProsecutionCase.getDefendants().forEach(defendant -> {
+            final SearchProsecutionCaseEntity searchEntity = searchRepository.findBy(defendant.getId());
+            if(nonNull(searchEntity) && nonNull(updatedProsecutionCase.getProsecutor())) {
+                searchEntity.setCpsProsecutor(updatedProsecutionCase.getProsecutor().getProsecutorCode());
+                searchEntity.setSearchTarget(SearchCaseBuilder.searchCaseBuilder()
+                        .withSearchCaseEntity(searchEntity)
+                        .withDefendantFullName()
+                        .withSearchTarget()
+                        .build().getSearchTarget().trim());
+                searchRepository.save(searchEntity);
+            }
+        });
+    }
+
     public SearchProsecutionCaseEntity makeSearchable(final ProsecutionCase prosecutionCase, final Defendant defendant) {
         final SearchCaseBuilder builder = prepareSearch(prosecutionCase, defendant);
         SearchProsecutionCaseEntity searchEntity = searchRepository.findBy(defendant.getId());
@@ -51,6 +66,7 @@ public class SearchProsecutionCase {
             final String dob = safeUnbox(builder.getDefendantDob(), searchEntity.getDefendantDob());
             searchEntity.setDefendantDob(StringUtils.isNotEmpty(dob) ? DOB_FORMATTER.format(LocalDate.parse(dob)) : StringUtils.EMPTY);
             searchEntity.setProsecutor(safeUnbox(builder.getProsecutor(), searchEntity.getProsecutor()));
+            searchEntity.setCpsProsecutor(builder.getCpsProsecutor());
             searchEntity.setStatus(prosecutionCase.getCaseStatus());
             searchEntity.setStandaloneApplication(false);
             searchEntity.setSearchTarget(SearchCaseBuilder.searchCaseBuilder()
@@ -77,17 +93,17 @@ public class SearchProsecutionCase {
             searchEntity.setReference(courtApplication.getApplicationReference());
 
             final uk.gov.justice.core.courts.Person applicantPerson = courtApplication.getApplicant().getPersonDetails();
-            if (Objects.nonNull(applicantPerson)) {
+            if (nonNull(applicantPerson)) {
                 searchEntity.setDefendantFirstName(safeUnbox(applicantPerson.getFirstName(), searchEntity.getDefendantFirstName()));
                 searchEntity.setDefendantMiddleName(safeUnbox(applicantPerson.getMiddleName(), searchEntity.getDefendantMiddleName()));
                 searchEntity.setDefendantLastName(safeUnbox(applicantPerson.getLastName(), searchEntity.getDefendantLastName()));
             }
 
-            if (Objects.nonNull(courtApplication.getApplicant().getOrganisation())) {
+            if (nonNull(courtApplication.getApplicant().getOrganisation())) {
                 searchEntity.setDefendantFirstName(safeUnbox(courtApplication.getApplicant().getOrganisation().getName(), searchEntity.getDefendantFirstName()));
             }
 
-            if (Objects.nonNull(courtApplication.getRespondents())) {
+            if (nonNull(courtApplication.getRespondents())) {
                 searchEntity.setProsecutor(safeUnbox(buildProsecutorFromApplicationRespondents(courtApplication.getRespondents()), searchEntity.getProsecutor()));
             }
             searchEntity.setStatus(safeUnbox(courtApplication.getApplicationStatus().toString(), searchEntity.getStatus()));
@@ -111,15 +127,15 @@ public class SearchProsecutionCase {
         return respondents.stream().map(respondent -> {
             String result = StringUtils.EMPTY;
 
-            if (Objects.nonNull(respondent.getPersonDetails())) {
+            if (nonNull(respondent.getPersonDetails())) {
                 final uk.gov.justice.core.courts.Person respondentPerson = respondent.getPersonDetails();
-                if (Objects.nonNull(respondentPerson)) {
+                if (nonNull(respondentPerson)) {
                     result = defaultString(respondentPerson.getFirstName()).concat(SPACE);
                     result = result.concat(defaultString(respondentPerson.getMiddleName())).concat(SPACE);
                     result = result.concat(defaultString(respondentPerson.getLastName()));
                 }
 
-                if (Objects.nonNull(respondent.getOrganisation())) {
+                if (nonNull(respondent.getOrganisation())) {
                     result = respondent.getOrganisation().getName();
                 }
             }
@@ -136,6 +152,7 @@ public class SearchProsecutionCase {
                 .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
                 .withPersonDefendant(defendant.getPersonDefendant())
                 .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
+                .withCpsProsecutor(prosecutionCase.getProsecutor())
                 .build();
     }
 

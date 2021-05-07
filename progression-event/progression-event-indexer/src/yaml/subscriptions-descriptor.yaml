@@ -23,4 +23,7 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-confirmed-case-status-updated.json
         - name: progression.event.court-application-proceedings-edited
           schema_uri: http://justice.gov.uk/core/courts/court-application-proceedings-edited.json
+        - name: progression.event.case-cps-prosecutor-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.case-cps-prosecutor-updated.json
       event_source_name: progression
+

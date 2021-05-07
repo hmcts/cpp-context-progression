@@ -48,23 +48,10 @@ public class HearingEntityUtil {
                 .build();
     }
 
-    private static ProsecutionCase updateProsecutionCaseWithEjectStatus(final ProsecutionCase prosecutionCase) {
+    private static ProsecutionCase updateProsecutionCaseWithEjectStatus(final ProsecutionCase origProsecutionCase) {
         return ProsecutionCase.prosecutionCase()
-                .withId(prosecutionCase.getId())
-                .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
-                .withInitiationCode(prosecutionCase.getInitiationCode())
-                .withDefendants(prosecutionCase.getDefendants())
-                .withAppealProceedingsPending(prosecutionCase.getAppealProceedingsPending())
-                .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
-                .withCaseMarkers(prosecutionCase.getCaseMarkers())
+                .withValuesFrom(origProsecutionCase)
                 .withCaseStatus(CASE_STATUS_EJECTED)
-                .withOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation())
-                .withCpsOrganisation(prosecutionCase.getCpsOrganisation())
-                .withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError())
-                .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
-                .withRemovalReason(prosecutionCase.getRemovalReason())
-                .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
-                .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
                 .build();
     }
 }

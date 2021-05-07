@@ -1,10 +1,12 @@
 package uk.gov.moj.cpp.progression.handler;
 
 
+import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static junit.framework.TestCase.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -18,7 +20,6 @@ import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.UpdateCpsProsecutorDetails;
-import uk.gov.justice.progression.courts.exract.Contact;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -34,7 +35,6 @@ import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -56,7 +56,7 @@ public class UpdateCpsProsecutorHandlerTest {
     private static final String CONTACT = "abx.xqz.com";
     private static final String MAJOR_CREDITOR_CODE = "OUCode";
     private static final String AUTH_OU_CODE = "B01EF01";
-    private static final String PROSECUTOR_CODE= "BLOO1";
+    private static final String PROSECUTOR_CODE = "BLOO1";
 
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -107,7 +107,7 @@ public class UpdateCpsProsecutorHandlerTest {
                         .withProsecutionAuthorityCode("SL00Q")
                         .withProsecutionAuthorityName("TFL")
                         .build())
-                .withDefendants(Collections.emptyList() )
+                .withDefendants(Collections.emptyList())
                 .build());
 
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
@@ -157,41 +157,73 @@ public class UpdateCpsProsecutorHandlerTest {
     }
 
     @Test
-    public void shouldUpdateProsecutionAuthorityWhenCpsOrganisationIsValid() throws Exception{
+    public void shouldUpdateProsecutionAuthorityWhenCpsOrganisationIsValid() throws Exception {
         final JsonObject prosecutorFromReferenceData = handlerTestHelper.convertFromFile("json/cps_prosecutor_from_reference_data.json", JsonObject.class);
         final ProsecutionCaseIdentifier expectedProsecutor = handlerTestHelper.convertFromFile("json/cps_prosecutor.json", ProsecutionCaseIdentifier.class);
         when(caseAggregate.getProsecutionCase()).thenReturn(ProsecutionCase.prosecutionCase().withCpsOrganisation("GAFTL00").withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build()).build());
-        when(referenceDataService.getProsecutorByOuCode(any(), eq("GAFTL00"), any())).thenReturn(Optional.of(prosecutorFromReferenceData));
-        when(caseAggregate.updateCaseProsecutorDetails(any(), any())).thenReturn(events);
+        when(referenceDataService.getCPSProsecutorByOuCode(any(), eq("GAFTL00"), any())).thenReturn(of(prosecutorFromReferenceData));
+        when(caseAggregate.updateCaseProsecutorDetails(any(ProsecutionCaseIdentifier.class))).thenReturn(events);
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.command.update-case-for-cps-prosecutor"),
                 createObjectBuilder().add("caseId", caseId.toString()).build());
 
         updateCpsProsecutorHandler.handleUpdateCpsProsecutorFromReferenceData(jsonEnvelope);
 
-        verify(referenceDataService, times(1)).getProsecutorByOuCode(any(), eq("GAFTL00"), any());
-        verify(caseAggregate, times(0)).updateCpsOrganisationInvalid();
-        verify(caseAggregate, times(1)).updateCaseProsecutorDetails(cpsProsecutorCaptor.capture(), any());
-        ProsecutionCaseIdentifier prosecutionCaseIdentifier =  cpsProsecutorCaptor.getValue();
+        verify(referenceDataService, times(1)).getCPSProsecutorByOuCode(any(), eq("GAFTL00"), any());
+        verify(caseAggregate, times(1)).updateCaseProsecutorDetails(cpsProsecutorCaptor.capture());
+        ProsecutionCaseIdentifier prosecutionCaseIdentifier = cpsProsecutorCaptor.getValue();
 
         assertThat(objectToJsonObjectConverter.convert(prosecutionCaseIdentifier), is(objectToJsonObjectConverter.convert(expectedProsecutor)));
     }
 
     @Test
-    public void shouldNotUpdateProsecutionAuthorityWhenCpsOrganisationIsInValid() throws Exception{
-        final JsonObject prosecutorFromReferenceData = handlerTestHelper.convertFromFile("json/cps_prosecutor_from_reference_data.json", JsonObject.class);
-        final ProsecutionCaseIdentifier expectedProsecutor = handlerTestHelper.convertFromFile("json/cps_prosecutor.json", ProsecutionCaseIdentifier.class);
-        when(caseAggregate.getProsecutionCase()).thenReturn(ProsecutionCase.prosecutionCase().withCpsOrganisation("GAFTL00").withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build()).build());
-        when(referenceDataService.getProsecutorByOuCode(any(), eq("GAFTL00"), any())).thenReturn(Optional.empty());
-        when(caseAggregate.updateCpsOrganisationInvalid()).thenReturn(events);
+    public void shouldUpdateWithNullProsecutorCaseIdentifierWhenCpsOrganisationIsInNull() throws Exception {
+        when(caseAggregate.getProsecutionCase()).thenReturn(ProsecutionCase.prosecutionCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build()).build());
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.command.update-case-for-cps-prosecutor"),
                 createObjectBuilder().add("caseId", caseId.toString()).build());
+        when(caseAggregate.updateCaseProsecutorDetails(any(ProsecutionCaseIdentifier.class))).thenReturn(events);
 
         updateCpsProsecutorHandler.handleUpdateCpsProsecutorFromReferenceData(jsonEnvelope);
 
-        verify(referenceDataService, times(1)).getProsecutorByOuCode(any(), eq("GAFTL00"), any());
-        verify(caseAggregate, times(0)).updateCaseProsecutorDetails(cpsProsecutorCaptor.capture(), any());
-        verify(caseAggregate, times(1)).updateCpsOrganisationInvalid();
+        verify(referenceDataService, times(0)).getCPSProsecutorByOuCode(any(), eq("GAFTL00"), any());
+        verify(caseAggregate, times(1)).updateCaseProsecutorDetails(cpsProsecutorCaptor.capture());
+        assertNull(cpsProsecutorCaptor.getValue());
+    }
+
+    @Test
+    public void shouldUpdateProsecutionAuthorityWhenCpsOrganisationIsInNullAndCpsOrganisationIdIsNotNull() throws Exception {
+        final UUID cpsOrgId = randomUUID();
+        when(caseAggregate.getProsecutionCase()).thenReturn(ProsecutionCase.prosecutionCase().withCpsOrganisationId(cpsOrgId).withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build()).build());
+        final JsonObject prosecutorFromReferenceData = handlerTestHelper.convertFromFile("json/cps_prosecutor_from_reference_data.json", JsonObject.class);
+        when(referenceDataService.getProsecutor(any(), eq(cpsOrgId), any())).thenReturn(of(prosecutorFromReferenceData));
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.command.update-case-for-cps-prosecutor"),
+                createObjectBuilder().add("caseId", caseId.toString()).build());
+        when(caseAggregate.updateCaseProsecutorDetails(any(ProsecutionCaseIdentifier.class))).thenReturn(events);
+
+        updateCpsProsecutorHandler.handleUpdateCpsProsecutorFromReferenceData(jsonEnvelope);
+
+        verify(referenceDataService, times(1)).getProsecutor(any(), eq(cpsOrgId), any());
+        verify(caseAggregate, times(1)).updateCaseProsecutorDetails(cpsProsecutorCaptor.capture());
+        ProsecutionCaseIdentifier prosecutionCaseIdentifier = cpsProsecutorCaptor.getValue();
+        final ProsecutionCaseIdentifier expectedProsecutor = handlerTestHelper.convertFromFile("json/cps_prosecutor.json", ProsecutionCaseIdentifier.class);
+        assertThat(objectToJsonObjectConverter.convert(prosecutionCaseIdentifier), is(objectToJsonObjectConverter.convert(expectedProsecutor)));
+    }
+
+    @Test
+    public void shouldUpdateWithCpsProsecutorFlagAsFalseWhenCpsOrganisationIsInValid() throws Exception {
+        final JsonObject prosecutorFromReferenceData = handlerTestHelper.convertFromFile("json/cps_prosecutor_from_reference_data_invalid_cps.json", JsonObject.class);
+        when(caseAggregate.getProsecutionCase()).thenReturn(ProsecutionCase.prosecutionCase().withCpsOrganisation("GAFTL00").withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build()).build());
+        when(referenceDataService.getCPSProsecutorByOuCode(any(), eq("GAFTL00"), any())).thenReturn(of(prosecutorFromReferenceData));
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.command.update-case-for-cps-prosecutor"),
+                createObjectBuilder().add("caseId", caseId.toString()).build());
+        when(caseAggregate.updateCaseProsecutorDetails(any(ProsecutionCaseIdentifier.class))).thenReturn(events);
+        updateCpsProsecutorHandler.handleUpdateCpsProsecutorFromReferenceData(jsonEnvelope);
+
+        verify(referenceDataService, times(1)).getCPSProsecutorByOuCode(any(), eq("GAFTL00"), any());
+        verify(caseAggregate, times(1)).updateCaseProsecutorDetails(cpsProsecutorCaptor.capture());
     }
 }

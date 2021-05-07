@@ -175,6 +175,7 @@ public class HearingResultEventListenerTest {
                         .withId(prosecutionCaseId)
                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
                         .withDefendants(defendants)
+                        .withCpsOrganisationId(randomUUID())
                         .build()))
                 .withHasSharedResults(false)
                 .build();
@@ -257,7 +258,9 @@ public class HearingResultEventListenerTest {
         assertThat(savedHearing2, notNullValue());
         assertThat(savedHearing2.getProsecutionCases().get(0).getCaseStatus(), is(CaseStatusEnum.INACTIVE.getDescription()));
         assertThat(savedHearing2.getProsecutionCases().get(0).getDefendants().get(0).getProceedingsConcluded(), is(true));
+        assertThat(savedHearing2.getProsecutionCases().get(0).getCpsOrganisationId(), is(hearing2.getProsecutionCases().get(0).getCpsOrganisationId()));
         assertThat(savedHearingEntity2.getListingStatus(), equalTo(HearingListingStatus.SENT_FOR_LISTING));
+
 
     }
 
