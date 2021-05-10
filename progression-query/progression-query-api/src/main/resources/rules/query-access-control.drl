@@ -363,7 +363,7 @@ rule "Query - Access control for  progression.query.partial-match-defendants"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.partial-match-defendants");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Court Admin", "Court Associate", "Court Clerk", "Listing Officers", "Legal Advisers"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Court Admin", "Court Associate", "Court Clerk", "Listing Officers", "Legal Advisers", "Court Administrators"))
   then
     $outcome.setSuccess(true);
 end

@@ -314,6 +314,16 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
                 "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin", "Court Associate", "Eject Case Group");
     }
 
+    @Test
+    public void shouldAllowUserInAuthorisedGroupToPartialMatchDefendants() {
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.partial-match-defendants", "System Users", "Court Admin", "Court Associate", "Court Clerk", "Listing Officers", "Legal Advisers", "Court Administrators");
+    }
+
+    @Test
+    public void shouldNotAllowUserInAuthorisedGroupToPartialMatchDefendants() {
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.partial-match-defendants", "System Users", "Court Admin", "Court Associate", "Court Clerk", "Listing Officers", "Legal Advisers", "Court Administrators");
+    }
+
     private void assertFailureOutcomeOnActionForTheSuppliedGroups(final String actionName, final String... groupNames) {
         final Action action = createActionFor(actionName);
         when(progressionProvider.getAllowedUserGroups(action)).thenReturn(ALLOWED_USER_GROUPS);
