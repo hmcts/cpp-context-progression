@@ -68,7 +68,10 @@ public class ProsecutionCaseCreatedIT extends AbstractIT {
         final String caseUrn = PreAndPostConditionHelper.generateUrn();
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        final Matcher[] caseMatcher = {withJsonPath("$.caseId", equalTo(caseId))};
+        final Matcher[] caseMatcher = {withJsonPath("$.caseId", equalTo(caseId))
+                , withJsonPath("$._case_type", equalTo("PROSECUTION"))
+                , withJsonPath("$.parties.length()", equalTo(1))
+        };
 
         final Optional<JsonObject> prosecussionCaseResponseJsonObject = findBy(caseMatcher);
 
