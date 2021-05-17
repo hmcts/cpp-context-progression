@@ -459,7 +459,6 @@ public class HearingResultHelperTest {
         assertThat(HearingResultHelper.hasNewNextHearingsAndNextHearingOutsideOfMultiDaysHearing(hearing), is(true));
     }
 
-
     @Test
     public void shouldReturnTrueForProsecutionCasesContainNewNextHearing() {
         final Hearing hearing = buildHearingWithCourtApplications(

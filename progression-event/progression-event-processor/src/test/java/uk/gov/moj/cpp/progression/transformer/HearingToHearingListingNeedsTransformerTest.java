@@ -378,6 +378,25 @@ public class HearingToHearingListingNeedsTransformerTest {
     }
 
     @Test
+    public void shouldReturnHearingNeedsWithSeededHearingIdsOnOffencesWhenSingleDayHearing() {
+        final UUID seedingHearingId = randomUUID();
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final ZonedDateTime listedStartDateTime = ZonedDateTime.now();
+        final Hearing hearing = TestHelper.buildSingleDayHearing(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, listedStartDateTime)),
+                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, listedStartDateTime))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transformWithSeedHearing(hearing, Optional.empty(), SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build(), null);
+
+        assertThat(hearingListingNeedsList.size(), is(1));
+    }
+
+    @Test
     public void shouldReturnOneHearingNeedsWithSeededHearingIdsOnOffencesWhenOneListingStartDateWithInMultiDaysHearingAndAnotherOutside() {
         final UUID seedingHearingId = randomUUID();
         when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());

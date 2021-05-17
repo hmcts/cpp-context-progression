@@ -82,14 +82,25 @@ public class TestHelper {
 
     public static Hearing buildHearing(final List<ProsecutionCase> prosecutionCases) {
 
-        HearingDay hearingDay0 = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now())
+        final HearingDay hearingDay0 = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now())
                 .withCourtCentreId(UUID.randomUUID()).build();
-        HearingDay hearingDay1 = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1))
+        final HearingDay hearingDay1 = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1))
                 .withCourtCentreId(UUID.randomUUID()).build();
         return Hearing.hearing()
                 .withId(UUID.randomUUID())
                 .withProsecutionCases(prosecutionCases)
                 .withHearingDays(Arrays.asList(hearingDay0, hearingDay1))
+                .build();
+    }
+
+    public static Hearing buildSingleDayHearing(final List<ProsecutionCase> prosecutionCases) {
+
+        final HearingDay hearingDay0 = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now())
+                .withCourtCentreId(UUID.randomUUID()).build();
+        return Hearing.hearing()
+                .withId(UUID.randomUUID())
+                .withProsecutionCases(prosecutionCases)
+                .withHearingDays(Arrays.asList(hearingDay0))
                 .build();
     }
 

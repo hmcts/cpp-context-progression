@@ -14,16 +14,16 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.NextHearing;
+import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
+import uk.gov.justice.core.courts.ProsecutionCasesResultedV2;
 import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
 import uk.gov.justice.hearing.courts.HearingResult;
 import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.progression.courts.BookingReferencesAndCourtScheduleIdsStored;
 import uk.gov.justice.progression.courts.HearingResulted;
-import uk.gov.justice.core.courts.NextHearingsRequested;
-import uk.gov.justice.core.courts.ProsecutionCasesResultedV2;
 import uk.gov.justice.progression.courts.StoreBookingReferenceCourtScheduleIds;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -119,11 +119,37 @@ public class HearingResultsCommandHandlerTest {
     }
 
     @Test
-    public void shouldProcessHearingResultsWithoutNextHearingsEventsWhenEarliestNextHearingDateIsNotInFuture() throws EventStreamException {
+    public void shouldProcessHearingResultsWithNextHearingsEventsWhenEarliestNextHearingDateIsNotInFutureAndSingleDayHearing() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
         final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).build();
         final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build());
+
+        final HearingResult hearingResult = createCommandPayload(hearingId, caseId, utcClock.now(), nextHearing, hearingDays);
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.hearing-result")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+
+        handler.processHearingResults(envelope);
+
+        final List<JsonEnvelope> events = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        assertThat(events.size(), is(5));
+
+        checkEventsContentOfHearingResultedAndListingStatusChangedAndProsecutionCasesResulted(hearingId, caseId, events);
+    }
+
+    @Test
+    public void shouldProcessHearingResultsWithoutNextHearingsEventsWhenEarliestNextHearingDateIsNotInFutureAndMultiDayHearing() throws EventStreamException {
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).build();
+        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build(),
+                HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(2)).build());
 
         final HearingResult hearingResult = createCommandPayload(hearingId, caseId, utcClock.now(), nextHearing, hearingDays);
 

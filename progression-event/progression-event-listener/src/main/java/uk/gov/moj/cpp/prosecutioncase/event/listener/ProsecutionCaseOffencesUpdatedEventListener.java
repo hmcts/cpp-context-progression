@@ -74,16 +74,16 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
             repository.save(getProsecutionCaseEntity(prosecutionCase));
             final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByDefendantId(defendantCaseOffences.getDefendantId());
 
-
-
             caseDefendantHearingEntities.stream().forEach(caseDefendantHearingEntity -> {
                 final HearingEntity hearingEntity = caseDefendantHearingEntity.getHearing();
                 final JsonObject hearingJson = jsonFromString(hearingEntity.getPayload());
                 final Hearing hearing = jsonObjectConverter.convert(hearingJson, Hearing.class);
-                final DefendantCaseOffences defendantCaseOffencesForHearing = getDefendantCaseOffencesForHearing(defendantCaseOffences, caseOffencesIds, hearing);
-                hearing.getProsecutionCases().stream().forEach(hearingProsecutionCase ->
-                        updateOffenceForDefendant(defendantCaseOffencesForHearing, hearingProsecutionCase)
-                );
+                if (hearing.getProsecutionCases() != null) {
+                    final DefendantCaseOffences defendantCaseOffencesForHearing = getDefendantCaseOffencesForHearing(defendantCaseOffences, caseOffencesIds, hearing);
+                    hearing.getProsecutionCases().stream().forEach(hearingProsecutionCase ->
+                            updateOffenceForDefendant(defendantCaseOffencesForHearing, hearingProsecutionCase)
+                    );
+                }
                 hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
                 hearingRepository.save(hearingEntity);
             });

@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.domain.aggregate.utils;
 
 
+import static java.util.Objects.nonNull;
+
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.services.common.util.UtcClock;
 
@@ -24,7 +26,8 @@ public class HearingHelper {
     public static boolean isEligibleForNextHearings(final Hearing hearing) {
         boolean eligibleForNextHearings = true;
 
-        if (hearing.getEarliestNextHearingDate() != null) {
+        final boolean isSingleDayHearing = nonNull(hearing.getHearingDays()) && hearing.getHearingDays().size() == 1;
+        if (!isSingleDayHearing && hearing.getEarliestNextHearingDate() != null) {
             final LocalDate currentDay = utcClock.now().toLocalDate();
             final LocalDate earliestNextHearingDate = hearing.getEarliestNextHearingDate().toLocalDate();
 

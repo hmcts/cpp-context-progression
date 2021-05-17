@@ -126,14 +126,18 @@ public class HearingResultHelper {
                 .flatMap(offence -> offence.getJudicialResults().stream())
                 .anyMatch(judicialResult -> {
                     final NextHearing nextHearing = judicialResult.getNextHearing();
-                    return !isExistingHearingIdPresent(nextHearing) && isNextHearingOutsideOfMultiDaysHearing(nextHearing, hearing);
+                    return !isExistingHearingIdPresent(nextHearing) && (
+                            isSingleDayHearing(hearing)
+                                    || isNextHearingOutsideOfMultiDaysHearing(nextHearing, hearing));
                 });
 
         boolean haveCourtApplicationContainNewNextHearing = isNotEmpty(hearing.getCourtApplications()) && hearing.getCourtApplications().stream()
                 .flatMap(courtApplication -> getAllJudicialResultsFromApplication(courtApplication).stream())
                 .anyMatch(judicialResult -> {
                     final NextHearing nextHearing = judicialResult.getNextHearing();
-                    return !isExistingHearingIdPresent(nextHearing) && isNextHearingOutsideOfMultiDaysHearing(nextHearing, hearing);
+                    return !isExistingHearingIdPresent(nextHearing) && (
+                            isSingleDayHearing(hearing)
+                                    || isNextHearingOutsideOfMultiDaysHearing(nextHearing, hearing));
                 });
 
         return haveCourtApplicationContainNewNextHearing || haveProsecutionCasesContainNewNextHearing;
@@ -304,6 +308,10 @@ public class HearingResultHelper {
 
     private static boolean isExistingHearingIdPresent(final NextHearing nextHearing) {
         return nonNull(nextHearing) && nonNull(nextHearing.getExistingHearingId());
+    }
+
+    private static boolean isSingleDayHearing(final Hearing hearing) {
+        return nonNull(hearing.getHearingDays()) && hearing.getHearingDays().size() == 1;
     }
 
     private static ProsecutionCase createProsecutionCase(final ProsecutionCase prosecutionCase) {

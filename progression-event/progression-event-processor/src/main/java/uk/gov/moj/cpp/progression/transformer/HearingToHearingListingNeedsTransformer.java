@@ -87,7 +87,8 @@ public class HearingToHearingListingNeedsTransformer {
 
     /**
      * Transform the Hearing information with SeedHearing to List of hearing and If next hearing is
-     * not within the multi days hearing then create a new hearing record
+     * from a single day hearing or not within the multi days hearing then create a new hearing
+     * record
      */
     public List<HearingListingNeeds> transformWithSeedHearing(final Hearing hearing, final Optional<CommittingCourt> committingCourt, final SeedingHearing seedingHearing, final Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIds) {
         final Map<String, HearingListingNeeds> hearingListingNeedsMap = new HashMap<>();
@@ -99,7 +100,7 @@ public class HearingToHearingListingNeedsTransformer {
                                         .map(offence -> Offence.offence().withValuesFrom(offence).withSeedingHearing(seedingHearing).build())
                                         .forEach(offence -> offence.getJudicialResults().stream()
                                                 .forEach(judicialResult -> {
-                                                            if (isNextHearingOutsideOfMultiDaysHearing(judicialResult.getNextHearing(), hearing)) {
+                                                            if (isSingleDayHearingWithNextHearing(judicialResult.getNextHearing(), hearing) || isNextHearingOutsideOfMultiDaysHearing(judicialResult.getNextHearing(), hearing)) {
                                                                 transform(prosecutionCase, defendant, offence, judicialResult, hearingListingNeedsMap, bookingReferenceCourtScheduleIds,
                                                                         hearing, committingCourt.isPresent(), committingCourt);
                                                             }
@@ -362,6 +363,14 @@ public class HearingToHearingListingNeedsTransformer {
     private String createMapKey(final Set<UUID> courtScheduleIds) {
         final String mergedCourtScheduleIds = courtScheduleIds.stream().map(UUID::toString).sorted().collect(Collectors.joining(","));
         return "CourtScheduleId:" + mergedCourtScheduleIds;
+    }
+
+
+    private boolean isSingleDayHearingWithNextHearing(final NextHearing nextHearing, final Hearing hearing) {
+        if (nonNull(nextHearing)) {
+            return hearing.getHearingDays() != null && hearing.getHearingDays().size() == 1;
+        }
+        return false;
     }
 
     private boolean isNextHearingOutsideOfMultiDaysHearing(final NextHearing nextHearing, final Hearing hearing) {
