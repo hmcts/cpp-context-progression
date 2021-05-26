@@ -13,8 +13,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.contains;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.LaaReference.laaReference;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
@@ -248,11 +246,15 @@ public class CaseAggregateTest {
         final HearingResultedCaseUpdated prosecutionCaseUpdated = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase).build();
 
         final Object response = this.caseAggregate.apply(prosecutionCaseUpdated);
+        final Map<UUID, uk.gov.justice.core.courts.Offence> defendantCaseOffences = ReflectionUtil.getValueOfField(this.caseAggregate, "defendantCaseOffences", Map.class);
 
         assertThat(((HearingResultedCaseUpdated) response).getProsecutionCase().getId(), is(caseId));
         assertThat(((HearingResultedCaseUpdated) response).getProsecutionCase().getDefendants().get(0).getId().toString(), is(defendantId1.toString()));
         assertThat(((HearingResultedCaseUpdated) response).getProsecutionCase().getDefendants().get(1).getId().toString(), is(defendantId2.toString()));
         assertThat(((HearingResultedCaseUpdated) response).getProsecutionCase().getDefendants().get(2).getId().toString(), is(defendantId3.toString()));
+        assertThat(defendantCaseOffences.containsKey(defendantId1), is(true));
+        assertThat(defendantCaseOffences.containsKey(defendantId2), is(true));
+        assertThat(defendantCaseOffences.containsKey(defendantId3), is(true));
 
     }
 

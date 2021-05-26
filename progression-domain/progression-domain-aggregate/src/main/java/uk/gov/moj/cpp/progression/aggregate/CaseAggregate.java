@@ -356,10 +356,10 @@ public class CaseAggregate implements Aggregate {
     }
 
     private void updateDefendantProceedingConcludedAndCaseStatus(final HearingResultedCaseUpdated hearingResultedCaseUpdated) {
-        hearingResultedCaseUpdated.getProsecutionCase().getDefendants().stream().forEach(defendant ->
-                defendantProceedingConcluded.put(defendant.getId(), defendant.getProceedingsConcluded())
-        );
-
+        hearingResultedCaseUpdated.getProsecutionCase().getDefendants().stream().forEach(defendant -> {
+                    this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
+                    defendantProceedingConcluded.put(defendant.getId(), defendant.getProceedingsConcluded());
+        });
     }
 
     private void populateFinancialData(final FinancialDataAdded financialDataAdded) {
