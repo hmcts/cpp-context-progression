@@ -9,8 +9,10 @@ import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseNoteAdded;
 import uk.gov.justice.core.courts.CaseNoteEdited;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -33,6 +35,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplic
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -79,7 +82,10 @@ public class ProsecutionCaseEventListener {
     public void processProsecutionCaseCreated(final JsonEnvelope event) {
         final ProsecutionCaseCreated prosecutionCaseCreated = jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseCreated.class);
         final ProsecutionCase prosecutionCase = prosecutionCaseCreated.getProsecutionCase();
-        repository.save(getProsecutionCaseEntity(prosecutionCase));
+
+        final List<Defendant> defendants = enrichDefendantsWithPoliceBailInformation(prosecutionCase);
+
+        repository.save(getProsecutionCaseEntity(ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase).withDefendants(defendants).build()));
         makeSearchable(prosecutionCase);
     }
 
@@ -154,6 +160,25 @@ public class ProsecutionCaseEventListener {
         pCaseEntity.setCaseId(prosecutionCase.getId());
         pCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
         return pCaseEntity;
+    }
+
+    private List<Defendant> enrichDefendantsWithPoliceBailInformation(final ProsecutionCase prosecutionCase) {
+        final List<Defendant> defendants = new ArrayList<>();
+        prosecutionCase.getDefendants()
+                .forEach(defendant -> {
+                    final PersonDefendant personDefendant = defendant.getPersonDefendant();
+
+                    final Defendant.Builder defendantBuilder = Defendant.defendant().withValuesFrom(defendant);
+                    if (nonNull(personDefendant)) {
+                        defendantBuilder
+                                .withPersonDefendant(PersonDefendant.personDefendant()
+                                        .withValuesFrom(personDefendant)
+                                        .withPoliceBailConditions(personDefendant.getBailConditions())
+                                        .withPoliceBailStatus(personDefendant.getBailStatus()).build());
+                    }
+                    defendants.add(defendantBuilder.build());
+                });
+        return defendants;
     }
 
     @Handles("progression.event.case-note-added")

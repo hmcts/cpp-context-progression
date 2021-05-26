@@ -149,12 +149,14 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
             });
         }
 
+        final PersonDefendant updatedPersonDefendant = getUpdatedPersonDefendant(originalDefendant, defendant);
+
         return Defendant.defendant()
                 .withId(defendant.getId())
                 .withMasterDefendantId(defendant.getMasterDefendantId())
                 .withCourtProceedingsInitiated(defendant.getCourtProceedingsInitiated())
                 .withOffences(offences)
-                .withPersonDefendant(defendant.getPersonDefendant())
+                .withPersonDefendant(updatedPersonDefendant)
                 .withLegalAidStatus(defendant.getLegalAidStatus())
                 .withProceedingsConcluded(defendant.getProceedingsConcluded())
                 .withDefendantCaseJudicialResults(getNonNowsResults(defendant.getDefendantCaseJudicialResults()))
@@ -175,6 +177,20 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 .withCroNumber(originalDefendant.getCroNumber())
                 .withAssociationLockedByRepOrder(originalDefendant.getAssociationLockedByRepOrder())
                 .build();
+    }
+
+    private PersonDefendant getUpdatedPersonDefendant(final Defendant originalDefendant, final Defendant defendant) {
+        PersonDefendant updatedPersonDefendant = null;
+        if (nonNull(defendant.getPersonDefendant())) {
+             updatedPersonDefendant = PersonDefendant.personDefendant()
+                    .withValuesFrom(defendant.getPersonDefendant())
+                    .withPoliceBailStatus(getUpdatedValueIfNotPresent(originalDefendant.getPersonDefendant().getPoliceBailStatus(),
+                            defendant.getPersonDefendant().getPoliceBailStatus()))
+                    .withPoliceBailConditions(getUpdatedValueIfNotPresent(originalDefendant.getPersonDefendant().getPoliceBailConditions(),
+                            defendant.getPersonDefendant().getPoliceBailConditions()))
+                    .build();
+        }
+        return updatedPersonDefendant;
     }
 
     private List<Offence> getUpdatedOffencesWithNonNowsJudicialResults(final List<Offence> offences) {
@@ -284,6 +300,8 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                     .withEmployerOrganisation(personDefendant.getEmployerOrganisation())
                     .withCustodialEstablishment(personDefendant.getCustodialEstablishment())
                     .withBailStatus(personDefendant.getBailStatus())
+                    .withPoliceBailConditions(getUpdatedValueIfNotPresent(originalPersonDefendant.getPoliceBailConditions(), personDefendant.getPoliceBailConditions()))
+                    .withPoliceBailStatus(getUpdatedValueIfNotPresent(originalPersonDefendant.getPoliceBailStatus(), personDefendant.getPoliceBailStatus()))
                     .build();
         } else {
             updatedPersonDefendant = originDefendant.getPersonDefendant();
@@ -398,6 +416,10 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                     .findFirst();
         }
         return Optional.empty();
+    }
+
+    private <T> T getUpdatedValueIfNotPresent(T originalValue, T newValue) {
+        return nonNull(originalValue) ? originalValue : newValue;
     }
 
     private <T> T getUpdatedValue(T originalValue, T newValue) {

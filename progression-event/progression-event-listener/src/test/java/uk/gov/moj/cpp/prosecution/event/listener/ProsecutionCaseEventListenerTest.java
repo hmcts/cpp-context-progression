@@ -22,6 +22,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -152,8 +153,9 @@ public class ProsecutionCaseEventListenerTest {
         when(envelope.metadata()).thenReturn(metadata);
         when(prosecutionCase.getId()).thenReturn(randomUUID());
         when(prosecutionCase.getDefendants()).thenReturn(singletonList(defendant));
+        when(defendant.getPersonDefendant()).thenReturn(PersonDefendant.personDefendant().build());
         when(prosecutionCaseCreated.getProsecutionCase()).thenReturn(prosecutionCase);
-        when(objectToJsonObjectConverter.convert(prosecutionCase)).thenReturn(jsonObject);
+        when(objectToJsonObjectConverter.convert(any(ProsecutionCase.class))).thenReturn(jsonObject);
         eventListener.processProsecutionCaseCreated(envelope);
         verify(repository).save(argumentCaptor.capture());
     }

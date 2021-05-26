@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -18,13 +19,17 @@ import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUER
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithPoliceBailInfo;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.moj.cpp.progression.helper.RestHelper;
+import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
 import java.time.LocalDate;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.Matcher;
@@ -35,6 +40,7 @@ import org.junit.Test;
 public class CaseAtAGlanceIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS = "progression.command.initiate-court-proceedings.json";
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_NON_STD_ORGANISATION_PROSECUTOR = "progression.command.initiate-court-proceedings-non-std-organisation.json";
+    private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_WITHOUT_BAIL_CONDITION = "progression.command.initiate-court-proceedings-without-bail-condition.json";
     public static final String PROGRESSION_QUERY_GET_CASE_HEARINGS = "application/vnd.progression.query.casehearings+json";
 
     private String caseId;
@@ -46,6 +52,8 @@ public class CaseAtAGlanceIT extends AbstractIT {
     private String earliestStartDateTime;
     private String defendantDOB;
     private String linkedApplicationId;
+
+    ProsecutionCaseUpdateDefendantHelper helper;
 
 
     @Before
@@ -60,6 +68,8 @@ public class CaseAtAGlanceIT extends AbstractIT {
         earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
         defendantDOB = LocalDate.now().minusYears(15).toString();
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
+
+        helper = new ProsecutionCaseUpdateDefendantHelper(caseId, defendantId);
     }
 
     @Test
@@ -67,9 +77,80 @@ public class CaseAtAGlanceIT extends AbstractIT {
         //given
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
-        verifyCaseAtAGlance(caseId, defendantDOB);
+        final Matcher withBailConditionMatcher = withJsonPath("$.defendants[0].remandStatus", equalTo("Remanded into Custody"));
+
+        verifyCaseAtAGlance(caseId, defendantDOB, withBailConditionMatcher);
         verifyCaseForCpsOrganisation(caseId);
         verifyCaseHearings(caseId);
+
+        final Matcher[] defendantUpdatedMatchers = new Matcher[] {
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailConditions", is("bail conditions...")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.description", is("Remanded into Custody")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailConditions", is("bail conditions...")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.description", is("Remanded into Custody"))
+        };
+
+        pollProsecutionCasesProgressionFor(caseId, defendantUpdatedMatchers);
+    }
+
+    @Test
+    public void shouldVerifyCaseDetailsForCaseAtAGlanceIfBailConditionIsNotPresent() throws Exception {
+        //given
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_WITHOUT_BAIL_CONDITION, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+
+        final Matcher withoutBailConditionMatcher = withoutJsonPath("$.defendants[0].remandStatus");
+
+        verifyCaseAtAGlance(caseId, defendantDOB, withoutBailConditionMatcher);
+        verifyCaseForCpsOrganisation(caseId);
+        verifyCaseHearings(caseId);
+
+        final Matcher[] defendantUpdatedMatchers = new Matcher[] {
+                withoutJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailConditions"),
+                withoutJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.id"),
+                withoutJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.description"),
+                withoutJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailConditions"),
+                withoutJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.id"),
+                withoutJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.description")
+        };
+
+        pollProsecutionCasesProgressionFor(caseId, defendantUpdatedMatchers);
+    }
+
+    @Test
+    public void shouldCreateCaseWithPoliceBailInformationAndShouldNotOverwriteWhilstUpdatingDefendant() throws Exception {
+        //given
+        final UUID policeBailStatusId = randomUUID();
+        final String policeBailStatusDesc = "police bail status description";
+        final String policeBailConditions = "police bail conditions";
+
+        initiateCourtProceedingsWithPoliceBailInfo(caseId, defendantId, listedStartDateTime, earliestStartDateTime, policeBailStatusId.toString(), policeBailStatusDesc, policeBailConditions);
+
+        final Matcher[] defendantMatchers = new Matcher[] {
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.description", is("Remanded into Custody"))
+        };
+
+        pollProsecutionCasesProgressionFor(caseId, defendantMatchers);
+
+        // when
+        final String updateDefendantPoliceBailStatusId = randomUUID().toString();
+        final String updateDefendantPoliceBailStatusDesc = "police bail status description for update defendant";
+        final String updateDefendantPoliceBailConditions = "police bail conditions for update defendant";
+
+        helper.updateDefendantWithPoliceBailInfo(updateDefendantPoliceBailStatusId, updateDefendantPoliceBailStatusDesc, updateDefendantPoliceBailConditions);
+
+        helper.verifyInActiveMQ();
+
+        final Matcher[] defendantUpdatedMatchers = new Matcher[] {
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailConditions", is(policeBailConditions)),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.description", is("Remanded into Custody"))
+        };
+
+        pollProsecutionCasesProgressionFor(caseId, defendantUpdatedMatchers);
+        helper.verifyInMessagingQueueForDefendentChanged();
     }
 
     @Test
@@ -105,7 +186,7 @@ public class CaseAtAGlanceIT extends AbstractIT {
         verifyProsecutionCaseCourtOrders(caseId);
     }
 
-    private static void verifyCaseAtAGlance(final String caseId, final String defendantDOB) {
+    private static void verifyCaseAtAGlance(final String caseId, final String defendantDOB, final Matcher bailConditionMatcher) {
         poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_CAAG_JSON)
                 .withHeader(USER_ID, randomUUID()))
                 .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
@@ -126,7 +207,7 @@ public class CaseAtAGlanceIT extends AbstractIT {
                                 withJsonPath("$.defendants[0].firstName", equalTo("Harry")),
                                 withJsonPath("$.defendants[0].lastName", equalTo("Kane Junior")),
                                 withJsonPath("$.defendants[0].interpreterLanguageNeeds", equalTo("Welsh")),
-                                withJsonPath("$.defendants[0].remandStatus", equalTo("Remanded into Custody")),
+                                bailConditionMatcher,
                                 withJsonPath("$.defendants[0].address.address1", equalTo("22")),
                                 withJsonPath("$.defendants[0].address.address2", equalTo("Acacia Avenue")),
                                 withJsonPath("$.defendants[0].dateOfBirth", equalTo(defendantDOB)),

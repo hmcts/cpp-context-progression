@@ -21,7 +21,6 @@ import java.util.List;
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -43,12 +42,16 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
     @Test
     public void shouldUpdateProsecutionCaseDefendant() throws Exception {
         // given
+        final String policeBailStatusId = randomUUID().toString();
+        final String policeBailStatusDesc = "police bail status description";
+        final String policeBailConditions = "police bail conditions";
+
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
                 singletonList(withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("Harry")))));
 
         // when
-        helper.updateDefendant();
+        helper.updateDefendantWithPoliceBailInfo(policeBailStatusId, policeBailStatusDesc, policeBailConditions);
 
         // then
         helper.verifyInActiveMQ();
@@ -58,7 +61,11 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].pncId", is("1234567")),
                 withJsonPath("$.prosecutionCase.defendants[0].aliases", hasSize(1)),
                 withoutJsonPath("$.prosecutionCase.defendants[0].isYouth"),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailConditions", is(policeBailConditions)),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.description", is("Remanded into Custody"))
         };
+
         pollProsecutionCasesProgressionFor(caseId, defendantUpdatedMatchers);
         helper.verifyInMessagingQueueForDefendentChanged();
     }

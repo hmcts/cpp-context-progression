@@ -63,6 +63,22 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         updateDefendantWithCustody(jsonString);
     }
 
+    public void updateDefendantWithPoliceBailInfo(final String policeBailStatusId, final String policeBailStatusDesc, final String policeBailConditions) {
+        final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
+        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
+        jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("policeBailStatus").put("id", policeBailStatusId);
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("policeBailStatus").put("description", policeBailStatusDesc);
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").put("policeBailConditions", policeBailConditions);
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("bailStatus").put("id", policeBailStatusId);
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("bailStatus").put("description", policeBailStatusDesc);
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").put("bailConditions", policeBailConditions);
+
+        request = jsonObjectPayload.toString();
+        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+    }
+
     public void updateDefendant(final String jsonString) {
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);

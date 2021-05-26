@@ -209,12 +209,6 @@
                   "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
                 }
               },
-              "bailStatus": {
-                "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5",
-                "code": "C",
-                "description": "Remanded into Custody"
-              },
-              "bailConditions": "bail conditions...",
               "custodyTimeLimit": "2018-01-01",
               "perceivedBirthYear": 2015,
               "driverNumber": "AACC12345",

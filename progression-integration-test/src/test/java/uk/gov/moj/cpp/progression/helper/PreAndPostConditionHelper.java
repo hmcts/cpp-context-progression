@@ -266,6 +266,13 @@ public class PreAndPostConditionHelper {
 
     }
 
+    public static Response initiateCourtProceedingsWithPoliceBailInfo(final String caseId, final String defendantId, final String listedStartDateTime, final String earliestStartDateTime, final String policeBailStatusId, final String policeBailStatusDesc, final String policeBailConditions) throws IOException {
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings+json",
+                getInitiateCourtProceedingsWithPoliceBailInfoJsonBody(caseId, defendantId, listedStartDateTime, earliestStartDateTime, policeBailStatusId, policeBailStatusDesc, policeBailConditions));
+
+    }
+
     public static Response initiateCourtProceedingsWithoutCourtDocument(final String caseId, final String defendantId,
                                                                         final String listedStartDateTime, final String earliestStartDateTime, final String dob) throws IOException {
         final JSONObject jsonPayload = new JSONObject(getInitiateCourtProceedingsJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), listedStartDateTime, earliestStartDateTime, dob));
@@ -587,6 +594,28 @@ public class PreAndPostConditionHelper {
                                                                       final String materialIdTwo,
                                                                       final String referralId, final String caseUrn,
                                                                       final String listedStartDateTime, final String earliestStartDateTime,
+                                                                      final String dob,
+                                                                      final String policeBailStatusId, final String policeBailStatusDesc, final String policeBailConditions) {
+        return getPayload(resourceLocation)
+                .replace("RANDOM_CASE_ID", caseId)
+                .replace("RANDOM_REFERENCE", caseUrn)
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId)
+                .replace("RANDOM_MATERIAL_ID_ONE", materialIdOne)
+                .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
+                .replace("RANDOM_REFERRAL_ID", referralId)
+                .replace("LISTED_START_DATE_TIME", listedStartDateTime)
+                .replace("EARLIEST_START_DATE_TIME", earliestStartDateTime)
+                .replace("DOB", dob)
+                .replace("POLICE_BAIL_STATUS_ID", policeBailStatusId)
+                .replace("POLICE_BAIL_STATUS_DESC", policeBailStatusDesc)
+                .replaceAll("POLICE_BAIL_CONDITIONS", policeBailConditions);
+
+    }
+
+    private static String getInitiateCourtProceedingsJsonFromResource(final String resourceLocation, final String caseId, final String defendantId, final String materialIdOne,
+                                                                      final String materialIdTwo,
+                                                                      final String referralId, final String caseUrn,
+                                                                      final String listedStartDateTime, final String earliestStartDateTime,
                                                                       final String dob) {
         return getPayload(resourceLocation)
                 .replace("RANDOM_CASE_ID", caseId)
@@ -670,6 +699,13 @@ public class PreAndPostConditionHelper {
         return getInitiateCourtProceedingsJsonFromResource("progression.command.initiate-court-proceedings-with-committing-court.json", caseId,
                 defendantId, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(),
                 listedStartDateTime, earliestStartDateTime, LocalDate.now().minusYears(15).toString());
+    }
+
+    private static String getInitiateCourtProceedingsWithPoliceBailInfoJsonBody(final String caseId, final String defendantId, final String listedStartDateTime, final String earliestStartDateTime, final String policeBailStatusId, final String policeBailStatusDesc, final String policeBailConditions) {
+        return getInitiateCourtProceedingsJsonFromResource("progression.command.initiate-court-proceedings-with-police-bail-info.json", caseId,
+                defendantId, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(),
+                listedStartDateTime, earliestStartDateTime, LocalDate.now().minusYears(15).toString(),
+                policeBailStatusId, policeBailStatusDesc, policeBailConditions);
     }
 
     private static String getReferProsecutionCaseToCrownCourtWithMinimumAttribute(final String caseId, final String defendantId, final String caseUrn) {
