@@ -11,6 +11,7 @@ import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearing;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
+import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtHouseType;
@@ -21,7 +22,11 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.core.courts.SeedingHearing;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.moj.cpp.progression.helper.HearingBookingReferenceListExtractor;
+import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.TestHelper;
 import uk.gov.moj.cpp.progression.service.ProvisionalBookingServiceAdapter;
 import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
@@ -38,6 +43,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.json.JsonObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -77,14 +85,25 @@ public class HearingToHearingListingNeedsTransformerTest {
     @InjectMocks
     private HearingToHearingListingNeedsTransformer transformer;
 
-    @Spy
+    @Mock
     private HearingBookingReferenceListExtractor hearingBookingReferenceListExtractor;
 
     @Mock
     private ProvisionalBookingServiceAdapter provisionalBookingServiceAdapter;
 
+    @Spy
+    private HearingResultHelper hearingResultHelper;
+
     @Mock
     private OffenceToCommittingCourtConverter offenceToCommittingCourtConverter;
+
+    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+
+    @Spy
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+    @InjectMocks
+    private final JsonObjectToObjectConverter jsonObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @Test
     public void shouldReturnOneHearingNeedsWhenTwoHearingMatch() {
@@ -510,5 +529,25 @@ public class HearingToHearingListingNeedsTransformerTest {
 
     }
 
+    @Test
+    public void shouldAdjournmentSingleHearing() {
+        final UUID bookingId = UUID.fromString("e42fc616-be2f-41a1-81ce-c04d8c0454a1");
+        final Map<UUID, Set<UUID>> slotsMap = new HashMap<>();
+        slotsMap.put(bookingId, new HashSet<>(Arrays.asList(COURT_SCHEDULE_ID_1)));
 
+        when(hearingBookingReferenceListExtractor.extractBookingReferenceList(any())).thenReturn(Arrays.asList(bookingId));
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(slotsMap);
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final Hearing hearing = jsonObjectConverter.convert(getHearing("public.hearing.resulted-adjournment.json"), Hearing.class);
+        List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing);
+        assertThat(hearingListingNeedsList.size(), is(1));
+        HearingListingNeeds hearingListingNeeds = hearingListingNeedsList.get(0);
+        assertThat(hearingListingNeeds.getCourtApplications().size(), is(1));
+        assertThat(hearingListingNeeds.getProsecutionCases().size(), is(1));
+    }
+
+    private JsonObject getHearing(final String path) {
+        return stringToJsonObjectConverter.convert(getPayload(path));
+    }
 }

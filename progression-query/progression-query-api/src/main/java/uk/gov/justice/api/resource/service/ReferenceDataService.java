@@ -1,16 +1,9 @@
 package uk.gov.justice.api.resource.service;
 
-import static java.util.Objects.isNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
-import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
-import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.exract.ProsecutingAuthority;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -20,18 +13,25 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 
+import javax.inject.Inject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.isNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
+import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 @SuppressWarnings({"squid:S1067", "squid:S1192"})
 public class ReferenceDataService {
@@ -109,20 +109,33 @@ public class ReferenceDataService {
 
     }
 
-    public ProsecutingAuthority getProsecutor(final JsonEnvelope event, final String prosecutorId) {
-        final JsonObject prosecutorJson = getProsecutorById(event, prosecutorId).orElseThrow(RuntimeException::new);
-        final JsonObject addressJson = prosecutorJson.getJsonObject("address");
-        return ProsecutingAuthority.prosecutingAuthority().withName(prosecutorJson.getString("fullName"))
-                .withAddress(
-                        Address.address()
-                                .withAddress1(addressJson.getString(ADDRESS_1, null))
-                                .withAddress2(addressJson.getString(ADDRESS_2, null))
-                                .withAddress3(addressJson.getString(ADDRESS_3, null))
-                                .withAddress4(addressJson.getString(ADDRESS_4, null))
-                                .withAddress5(addressJson.getString(ADDRESS_5, null))
-                                .withPostcode(addressJson.getString(POSTCODE, null))
-                                .build())
-                .build();
+    public ProsecutingAuthority getProsecutor(final JsonEnvelope event, final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
+
+        final ProsecutingAuthority.Builder prosecutingAuthorityBuilder = ProsecutingAuthority.prosecutingAuthority();
+
+        if (isNameInformationEmpty(prosecutionCaseIdentifier)) {
+            final JsonObject prosecutorJson = getProsecutorById(event, prosecutionCaseIdentifier.getProsecutionAuthorityId().toString()).orElseThrow(RuntimeException::new);
+            final JsonObject addressJson = prosecutorJson.getJsonObject("address");
+            prosecutingAuthorityBuilder
+                    .withName(prosecutorJson.getString("fullName"))
+                    .withAddress(
+                            Address.address()
+                                    .withAddress1(addressJson.getString(ADDRESS_1, null))
+                                    .withAddress2(addressJson.getString(ADDRESS_2, null))
+                                    .withAddress3(addressJson.getString(ADDRESS_3, null))
+                                    .withAddress4(addressJson.getString(ADDRESS_4, null))
+                                    .withAddress5(addressJson.getString(ADDRESS_5, null))
+                                    .withPostcode(addressJson.getString(POSTCODE, null))
+                                    .build());
+
+        }
+
+        return prosecutingAuthorityBuilder.build();
+
+    }
+
+    private boolean isNameInformationEmpty(final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
+        return isBlank(prosecutionCaseIdentifier.getProsecutionAuthorityName());
     }
 
     public Map<UUID, ReferenceHearingDetails> getHearingTypes(final JsonEnvelope event) {

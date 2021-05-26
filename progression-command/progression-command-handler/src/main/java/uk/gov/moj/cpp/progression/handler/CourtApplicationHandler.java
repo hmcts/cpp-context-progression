@@ -8,6 +8,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.core.courts.ContactNumber.contactNumber;
 import static uk.gov.justice.core.courts.CourtApplicationCase.courtApplicationCase;
 import static uk.gov.justice.core.courts.ProsecutingAuthority.Builder;
@@ -75,6 +76,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ServiceComponent(COMMAND_HANDLER)
+@SuppressWarnings({"pmd:NullAssignment"})
 public class CourtApplicationHandler extends AbstractCommandHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtApplicationHandler.class.getName());
@@ -390,9 +392,8 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
     }
 
     private CourtApplicationParty enrichCourtApplicationParty(final CourtApplicationParty courtApplicationParty, final JsonEnvelope jsonEnvelope) {
-        final CourtApplicationParty.Builder builder = CourtApplicationParty.courtApplicationParty()
-                .withValuesFrom(courtApplicationParty);
-        if (nonNull(courtApplicationParty.getProsecutingAuthority())) {
+        final CourtApplicationParty.Builder builder = CourtApplicationParty.courtApplicationParty().withValuesFrom(courtApplicationParty);
+        if (isNameInformationEmpty(courtApplicationParty.getProsecutingAuthority())) {
             builder.withProsecutingAuthority(fetchProsecutingAuthorityInformation(courtApplicationParty.getProsecutingAuthority(), jsonEnvelope));
         }
         return builder.build();
@@ -427,6 +428,9 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         return prosecutingAuthorityBuilder.build();
     }
 
+    private boolean isNameInformationEmpty(final ProsecutingAuthority prosecutingAuthority) {
+        return nonNull(prosecutingAuthority) && isBlank(prosecutingAuthority.getFirstName()) && isBlank(prosecutingAuthority.getName());
+    }
 
     private Offence updateOffence(final CourtApplicationType courtApplicationType, final Offence offence, final String wordingPattern, final String resentencingActivationCode) {
         final Offence.Builder offenceBuilder = Offence.offence()
@@ -525,7 +529,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
     }
 
     private void addProsecutorToThirdParties(final ProsecutionCaseIdentifier prosecutionCaseIdentifier, final List<CourtApplicationParty> thirdParties) {
-        final CourtApplicationParty courtApplicationParty = buildCourtApplicationParty(prosecutionCaseIdentifier.getProsecutionAuthorityId(), prosecutionCaseIdentifier.getProsecutionAuthorityCode());
+        final CourtApplicationParty courtApplicationParty = buildCourtApplicationParty(prosecutionCaseIdentifier);
         thirdParties.add(courtApplicationParty);
     }
 
@@ -536,19 +540,25 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
                 .forEach(existingProsecutorIds::add);
     }
 
-    private CourtApplicationParty buildCourtApplicationParty(final UUID prosecutionAuthorityId, final String prosecutionAuthorityCode) {
+    private CourtApplicationParty buildCourtApplicationParty(final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
         return CourtApplicationParty.courtApplicationParty()
                 .withId(UUID.randomUUID())
                 .withSummonsRequired(true)
                 .withNotificationRequired(true)
-                .withProsecutingAuthority(buildProsecutingAuthority(prosecutionAuthorityId, prosecutionAuthorityCode))
+                .withProsecutingAuthority(buildProsecutingAuthority(prosecutionCaseIdentifier))
                 .build();
     }
 
-    private ProsecutingAuthority buildProsecutingAuthority(final UUID prosecutionAuthorityId, final String prosecutionAuthorityCode) {
+    private ProsecutingAuthority buildProsecutingAuthority(final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
         return prosecutingAuthority()
-                .withProsecutionAuthorityId(prosecutionAuthorityId)
-                .withProsecutionAuthorityCode(prosecutionAuthorityCode)
+                .withProsecutionAuthorityId(prosecutionCaseIdentifier.getProsecutionAuthorityId())
+                .withProsecutionAuthorityCode(prosecutionCaseIdentifier.getProsecutionAuthorityCode())
+                .withName(prosecutionCaseIdentifier.getProsecutionAuthorityName())
+                .withAddress(prosecutionCaseIdentifier.getAddress())
+                .withContact(prosecutionCaseIdentifier.getContact())
+                .withProsecutorCategory(prosecutionCaseIdentifier.getProsecutorCategory())
+                .withMajorCreditorCode(prosecutionCaseIdentifier.getMajorCreditorCode())
+                .withProsecutionAuthorityOUCode(prosecutionCaseIdentifier.getProsecutionAuthorityOUCode())
                 .build();
     }
 }

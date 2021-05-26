@@ -193,7 +193,7 @@ public class SummonsDataPreparedEventProcessor {
         for (final ConfirmedProsecutionCaseId confirmedProsecutionCaseId : confirmedProsecutionCaseIds) {
             final UUID caseId = confirmedProsecutionCaseId.getId();
             final ProsecutionCase prosecutionCase = getProsecutionCase(jsonEnvelope, caseId);
-            final SummonsProsecutor summonProsecutor = summonsService.getProsecutor(jsonEnvelope, prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId());
+            final SummonsProsecutor summonProsecutor = summonsService.getProsecutor(jsonEnvelope, prosecutionCase.getProsecutionCaseIdentifier());
             final List<UUID> confirmedDefendantIds = confirmedProsecutionCaseId.getConfirmedDefendantIds();
             final List<String> combinedDefendantDetailsForEmailChannel = newArrayList();
 

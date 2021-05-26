@@ -26,6 +26,7 @@ import uk.gov.justice.core.courts.CourtApplicationCreated;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
+import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
@@ -33,7 +34,6 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 
@@ -67,7 +67,7 @@ public class ApplicationAggregateTest {
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(ApplicationReferredToCourt.class)));
     }
-    
+
     /*@Test
     public void shouldReturnBoxWorkApplicationReferred() {
         final List<Object> eventStream = aggregate.referBoxWorkApplication(HearingListingNeeds.hearingListingNeeds()
@@ -178,7 +178,7 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldReturnAddConvictionDateEventAndUpdateOffenceUnderCourtApplicationCase(){
+    public void shouldReturnAddConvictionDateEventAndUpdateOffenceUnderCourtApplicationCase() {
         final UUID courtApplicationId = randomUUID();
         final UUID offenceId = randomUUID();
         final LocalDate convictionDate = LocalDate.now();
@@ -191,7 +191,7 @@ public class ApplicationAggregateTest {
 
         final List<Object> eventStream = aggregate.addConvictionDate(courtApplicationId, offenceId, convictionDate).collect(toList());
         assertThat(eventStream.size(), is(1));
-        ConvictionDateAdded convictionDateAdded = (ConvictionDateAdded)eventStream.get(0);
+        ConvictionDateAdded convictionDateAdded = (ConvictionDateAdded) eventStream.get(0);
 
         assertThat(convictionDateAdded.getConvictionDate(), is(convictionDate));
         assertThat(convictionDateAdded.getCourtApplicationId(), is(courtApplicationId));
@@ -201,7 +201,7 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldReturnRemovedConvictionDateEventAndUpdateOffenceUnderCourtApplicationCase(){
+    public void shouldReturnRemovedConvictionDateEventAndUpdateOffenceUnderCourtApplicationCase() {
         final UUID courtApplicationId = randomUUID();
         final UUID offenceId = randomUUID();
         final LocalDate convictionDate = LocalDate.now();
@@ -214,7 +214,7 @@ public class ApplicationAggregateTest {
 
         final List<Object> eventStream = aggregate.removeConvictionDate(courtApplicationId, offenceId).collect(toList());
         assertThat(eventStream.size(), is(1));
-        ConvictionDateRemoved convictionDateRemoved = (ConvictionDateRemoved)eventStream.get(0);
+        ConvictionDateRemoved convictionDateRemoved = (ConvictionDateRemoved) eventStream.get(0);
 
         assertThat(convictionDateRemoved.getCourtApplicationId(), is(courtApplicationId));
         assertThat(convictionDateRemoved.getOffenceId(), is(offenceId));
@@ -223,7 +223,7 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldReturnAddConvictionDateEventAndUpdateOffenceUnderCourtApplicationCourtOrder(){
+    public void shouldReturnAddConvictionDateEventAndUpdateOffenceUnderCourtApplicationCourtOrder() {
         final UUID courtApplicationId = randomUUID();
         final UUID offenceId = randomUUID();
         final LocalDate convictionDate = LocalDate.now();
@@ -236,7 +236,7 @@ public class ApplicationAggregateTest {
 
         final List<Object> eventStream = aggregate.addConvictionDate(courtApplicationId, offenceId, convictionDate).collect(toList());
         assertThat(eventStream.size(), is(1));
-        ConvictionDateAdded convictionDateAdded = (ConvictionDateAdded)eventStream.get(0);
+        ConvictionDateAdded convictionDateAdded = (ConvictionDateAdded) eventStream.get(0);
 
         assertThat(convictionDateAdded.getConvictionDate(), is(convictionDate));
         assertThat(convictionDateAdded.getCourtApplicationId(), is(courtApplicationId));
@@ -246,7 +246,7 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldReturnRemovedConvictionDateEventAndUpdateOffenceUnderCourtApplicationCourtOrder(){
+    public void shouldReturnRemovedConvictionDateEventAndUpdateOffenceUnderCourtApplicationCourtOrder() {
         final UUID courtApplicationId = randomUUID();
         final UUID offenceId = randomUUID();
         final LocalDate convictionDate = LocalDate.now();
@@ -268,7 +268,7 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldReturnAddConvictionDateEventAndUpdateCourtApplication(){
+    public void shouldReturnAddConvictionDateEventAndUpdateCourtApplication() {
         final UUID courtApplicationId = randomUUID();
         final LocalDate convictionDate = LocalDate.now();
 
@@ -280,7 +280,7 @@ public class ApplicationAggregateTest {
 
         final List<Object> eventStream = aggregate.addConvictionDate(courtApplicationId, null, convictionDate).collect(toList());
         assertThat(eventStream.size(), is(1));
-        ConvictionDateAdded convictionDateAdded = (ConvictionDateAdded)eventStream.get(0);
+        ConvictionDateAdded convictionDateAdded = (ConvictionDateAdded) eventStream.get(0);
 
         assertThat(convictionDateAdded.getConvictionDate(), is(convictionDate));
         assertThat(convictionDateAdded.getCourtApplicationId(), is(courtApplicationId));
@@ -289,7 +289,7 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldReturnRemovedConvictionDateEventAndUpdateCourtApplication(){
+    public void shouldReturnRemovedConvictionDateEventAndUpdateCourtApplication() {
         final UUID courtApplicationId = randomUUID();
         final LocalDate convictionDate = LocalDate.now();
 
@@ -301,7 +301,7 @@ public class ApplicationAggregateTest {
 
         final List<Object> eventStream = aggregate.removeConvictionDate(courtApplicationId, null).collect(toList());
         assertThat(eventStream.size(), is(1));
-        ConvictionDateRemoved convictionDateRemoved = (ConvictionDateRemoved)eventStream.get(0);
+        ConvictionDateRemoved convictionDateRemoved = (ConvictionDateRemoved) eventStream.get(0);
 
         assertThat(convictionDateRemoved.getCourtApplicationId(), is(courtApplicationId));
 

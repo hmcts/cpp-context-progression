@@ -163,7 +163,7 @@ public class TransformationHelper {
                         .add("id", prosecutionCaseIdentifier.getProsecutionAuthorityId().toString())
                         .build()
         );
-        return referenceDataService.getProsecutor(jsonEnvelope, prosecutionCaseIdentifier.getProsecutionAuthorityId().toString());
+        return referenceDataService.getProsecutor(jsonEnvelope, prosecutionCaseIdentifier);
     }
 
     private List<Dates> getToAndFromDays(final List<HearingDay> hearingDaysList) {

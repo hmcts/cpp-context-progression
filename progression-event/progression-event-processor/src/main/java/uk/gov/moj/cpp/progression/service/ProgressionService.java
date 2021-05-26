@@ -965,6 +965,7 @@ public class ProgressionService {
 
         return CourtCentre.courtCentre()
                 .withId(courtCentre.getId())
+                .withCode(courtCentreJson.getString("oucode", null))
                 .withName(courtCentreJson.getString("oucodeL3Name"))
                 .withRoomName(nonNull(courtCentre.getRoomId()) ? enrichCourtRoomName(courtCentre.getId(), courtCentre.getRoomId(), jsonEnvelope) : null)
                 .withRoomId(courtCentre.getRoomId())

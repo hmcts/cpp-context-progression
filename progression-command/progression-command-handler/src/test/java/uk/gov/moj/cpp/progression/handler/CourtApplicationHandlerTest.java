@@ -1211,6 +1211,144 @@ public class CourtApplicationHandlerTest {
     }
 
     @Test
+    public void shouldNotEnrichProsecutorInformationForNonStdIndividualProsecutor() throws EventStreamException {
+
+        final UUID prosecutor1 = randomUUID();
+        final UUID prosecutor2 = randomUUID();
+        final UUID prosecutor3 = randomUUID();
+        final UUID subject = randomUUID();
+        final UUID respondent1 = randomUUID();
+        final UUID respondent2 = randomUUID();
+        final String prosecutor2AuthCode = STRING.next();
+
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings =
+                initiateCourtApplicationProceedings()
+                        .withCourtApplication(courtApplication()
+                                .withApplicationReference(STRING.next())
+                                .withId(randomUUID())
+                                .withType(courtApplicationType()
+                                        .withProsecutorThirdPartyFlag(true)
+                                        .withSummonsTemplateType(NOT_APPLICABLE)
+                                        .build())
+                                .withApplicant(buildCourtApplicationPartyIndividual(prosecutor1, "Non STD Individual Prosecutor"))
+                                .withRespondents(asList(buildCourtApplicationParty(respondent1), buildCourtApplicationParty(respondent2)))
+                                .withSubject(buildCourtApplicationParty(subject))
+                                .withThirdParties(singletonList(buildCourtApplicationParty(prosecutor3)))
+                                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                                                .withProsecutionAuthorityId(prosecutor2)
+                                                .withProsecutionAuthorityCode(prosecutor2AuthCode)
+                                                .build())
+                                        .withIsSJP(true)
+                                        .build()))
+                                .build())
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                        .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.initiate-court-proceedings-for-application")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent1, "respondent1")));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent2, "respondent2")));
+
+        courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.court-application-proceedings-initiated"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication", notNullValue()),
+                                withJsonPath("$.courtApplication.applicant.id", notNullValue()),
+                                withJsonPath("$.courtApplication.applicant.prosecutingAuthority.prosecutionAuthorityId", is(prosecutor1.toString())),
+                                withJsonPath("$.courtApplication.applicant.prosecutingAuthority.prosecutionAuthorityCode", is("Code_" + prosecutor1.toString())),
+                                withJsonPath("$.courtApplication.applicant.prosecutingAuthority.firstName", is("Non STD Individual Prosecutor"))
+                                )
+                        ))
+                )
+        );
+    }
+
+    @Test
+    public void shouldNotEnrichProsecutorInformationForNonStdOrganisationProsecutor() throws EventStreamException {
+
+        final UUID prosecutor1 = randomUUID();
+        final UUID prosecutor2 = randomUUID();
+        final UUID prosecutor3 = randomUUID();
+        final UUID subject = randomUUID();
+        final UUID respondent1 = randomUUID();
+        final UUID respondent2 = randomUUID();
+        final String prosecutor2AuthCode = STRING.next();
+
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings =
+                initiateCourtApplicationProceedings()
+                        .withCourtApplication(courtApplication()
+                                .withApplicationReference(STRING.next())
+                                .withId(randomUUID())
+                                .withType(courtApplicationType()
+                                        .withProsecutorThirdPartyFlag(true)
+                                        .withSummonsTemplateType(NOT_APPLICABLE)
+                                        .build())
+                                .withApplicant(buildCourtApplicationPartyOrganisation(prosecutor1, "Non STD Organisation Prosecutor"))
+                                .withRespondents(asList(buildCourtApplicationParty(respondent1), buildCourtApplicationParty(respondent2)))
+                                .withSubject(buildCourtApplicationParty(subject))
+                                .withThirdParties(singletonList(buildCourtApplicationParty(prosecutor3)))
+                                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                                                .withProsecutionAuthorityId(prosecutor2)
+                                                .withProsecutionAuthorityCode(prosecutor2AuthCode)
+                                                .build())
+                                        .withIsSJP(true)
+                                        .build()))
+                                .build())
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                        .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.initiate-court-proceedings-for-application")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent1, "respondent1")));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent2, "respondent2")));
+
+        courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.court-application-proceedings-initiated"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication", notNullValue()),
+                                withJsonPath("$.courtApplication.applicant.id", notNullValue()),
+                                withJsonPath("$.courtApplication.applicant.prosecutingAuthority.prosecutionAuthorityId", is(prosecutor1.toString())),
+                                withJsonPath("$.courtApplication.applicant.prosecutingAuthority.prosecutionAuthorityCode", is("Code_" + prosecutor1.toString())),
+                                withJsonPath("$.courtApplication.applicant.prosecutingAuthority.name", is("Non STD Organisation Prosecutor"))
+                                )
+                        ))
+                )
+        );
+    }
+
+    @Test
     public void shouldUpdateOffenceWordingWhenCourtOrderIsNotSuspendedSentence() throws EventStreamException {
         offenceWordingTestForCourtOrder(randomUUID());
     }
@@ -1640,6 +1778,28 @@ public class CourtApplicationHandlerTest {
                 .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
                         .withProsecutionAuthorityId(prosecutionAuthorityId)
                         .withProsecutionAuthorityCode("Code_" + prosecutionAuthorityId.toString())
+                        .build())
+                .build();
+    }
+
+    private CourtApplicationParty buildCourtApplicationPartyIndividual(final UUID prosecutionAuthorityId, final String firstName) {
+        return CourtApplicationParty.courtApplicationParty()
+                .withId(randomUUID())
+                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                        .withProsecutionAuthorityId(prosecutionAuthorityId)
+                        .withProsecutionAuthorityCode("Code_" + prosecutionAuthorityId.toString())
+                        .withFirstName(firstName)
+                        .build())
+                .build();
+    }
+
+    private CourtApplicationParty buildCourtApplicationPartyOrganisation(final UUID prosecutionAuthorityId, final String name) {
+        return CourtApplicationParty.courtApplicationParty()
+                .withId(randomUUID())
+                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                        .withProsecutionAuthorityId(prosecutionAuthorityId)
+                        .withProsecutionAuthorityCode("Code_" + prosecutionAuthorityId.toString())
+                        .withName(name)
                         .build())
                 .build();
     }

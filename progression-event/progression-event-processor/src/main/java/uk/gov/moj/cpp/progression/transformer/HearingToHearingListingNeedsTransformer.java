@@ -235,7 +235,7 @@ public class HearingToHearingListingNeedsTransformer {
 
         final HearingListingNeeds hearingListingNeeds = addCourtApplication(createHearingListingNeeds(nextHearing, judiciaries), courtApplication, prosecutionCases);
 
-        hearingListingNeedsMap.computeIfAbsent(key, v -> hearingListingNeeds);
+        hearingListingNeedsMap.put(key, hearingListingNeeds);
 
     }
 

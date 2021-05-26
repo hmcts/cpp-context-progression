@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.transformer;
 
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.defaultString;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.DVLA_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.ENDORSABLE_FLAG;
@@ -106,6 +107,11 @@ public class ReferredProsecutionCaseTransformer {
 
     private ProsecutionCaseIdentifier transform(final JsonEnvelope jsonEnvelope, final ProsecutionCaseIdentifier
             prosecutionCaseIdentifier) {
+
+        if (!isNameInformationEmpty(prosecutionCaseIdentifier)) {
+            return prosecutionCaseIdentifier;
+        }
+
         final JsonObject prosecutorJson = referenceDataService.getProsecutor(jsonEnvelope, prosecutionCaseIdentifier
                 .getProsecutionAuthorityId(), requester).orElseThrow(() ->
                 new ReferenceDataNotFoundException("ProsecutionAuthorityCode", prosecutionCaseIdentifier
@@ -115,7 +121,10 @@ public class ReferredProsecutionCaseTransformer {
                 .withValuesFrom(prosecutionCaseIdentifier)
                 .withProsecutionAuthorityCode(defaultString(fetchValueFromKey(prosecutorJson, SHORT_NAME)))
                 .build();
+    }
 
+    private boolean isNameInformationEmpty(final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
+        return isBlank(prosecutionCaseIdentifier.getProsecutionAuthorityName());
     }
 
     public Defendant transform(final ReferredDefendant referredDefendant, final JsonEnvelope jsonEnvelope, final

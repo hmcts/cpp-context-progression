@@ -8,6 +8,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.progression.courts.CaagDefendants.caagDefendants;
 import static uk.gov.justice.progression.courts.HearingListingStatus.HEARING_RESULTED;
 import static uk.gov.justice.progression.courts.LegalEntityDefendant.legalEntityDefendant;
@@ -114,12 +115,16 @@ public class CaseAtAGlanceHelper {
 
             final UUID prosecutionAuthorityId = prosecutionCaseIdentifier.getProsecutionAuthorityId();
             prosecutorDetailsBuilder.withProsecutionAuthorityId(prosecutionAuthorityId);
-            prosecutorDetailsBuilder.withAddress(getProsecutorAddress(prosecutionAuthorityId));
+            prosecutorDetailsBuilder.withAddress(isNameInformationEmpty(prosecutionCaseIdentifier) ? getProsecutorAddress(prosecutionAuthorityId) : prosecutionCaseIdentifier.getAddress());
         }
 
         prosecutorDetailsBuilder.withIsCpsOrgVerifyError(prosecutionCase.getIsCpsOrgVerifyError());
 
         return prosecutorDetailsBuilder.build();
+    }
+
+    private boolean isNameInformationEmpty(final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
+        return isBlank(prosecutionCaseIdentifier.getProsecutionAuthorityName());
     }
 
     public List<CaagDefendants> getCaagDefendantsList() {

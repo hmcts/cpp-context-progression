@@ -4,11 +4,12 @@ import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static uk.gov.justice.core.courts.summons.SummonsProsecutor.summonsProsecutor;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.populateAddress;
 
 import uk.gov.justice.core.courts.LjaDetails;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.summons.SummonsProsecutor;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
@@ -16,12 +17,12 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+@SuppressWarnings({"pmd:NullAssignment"})
 public class SummonsService {
 
     private static final JsonObject EMPTY_JSON_OBJECT = createObjectBuilder().build();
@@ -38,14 +39,24 @@ public class SummonsService {
     @Inject
     private ReferenceDataService referenceDataService;
 
-    public SummonsProsecutor getProsecutor(final JsonEnvelope jsonEnvelope, final UUID prosecutionAuthorityId) {
-        final Optional<JsonObject> optionalProsecutor = referenceDataService.getProsecutor(jsonEnvelope, prosecutionAuthorityId, requester);
-        final JsonObject prosecutor = optionalProsecutor.orElse(EMPTY_JSON_OBJECT);
-        return summonsProsecutor()
-                .withName(prosecutor.getString("fullName", EMPTY))
-                .withAddress(prosecutor.containsKey("address") ? populateAddress(prosecutor.getJsonObject("address")) : populateAddress(EMPTY_JSON_OBJECT))
-                .withEmailAddress(prosecutor.getString("contactEmailAddress", EMPTY))
-                .build();
+    public SummonsProsecutor getProsecutor(final JsonEnvelope jsonEnvelope, final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
+
+        final SummonsProsecutor.Builder builder = SummonsProsecutor.summonsProsecutor();
+
+        if (isNameInformationEmpty(prosecutionCaseIdentifier)) {
+            final Optional<JsonObject> optionalProsecutor = referenceDataService.getProsecutor(jsonEnvelope, prosecutionCaseIdentifier.getProsecutionAuthorityId(), requester);
+            final JsonObject prosecutor = optionalProsecutor.orElse(EMPTY_JSON_OBJECT);
+            builder.withName(prosecutor.getString("fullName", EMPTY))
+                    .withAddress(prosecutor.containsKey("address") ? populateAddress(prosecutor.getJsonObject("address")) : populateAddress(EMPTY_JSON_OBJECT))
+                    .withEmailAddress(prosecutor.getString("contactEmailAddress", EMPTY));
+
+        }
+
+        return builder.build();
+    }
+
+    private boolean isNameInformationEmpty(final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
+        return isBlank(prosecutionCaseIdentifier.getProsecutionAuthorityName());
     }
 
     public Optional<LjaDetails> getLjaDetails(final JsonEnvelope jsonEnvelope, final String ljaCode) {

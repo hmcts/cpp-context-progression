@@ -41,7 +41,6 @@ import static uk.gov.moj.cpp.progression.util.ReferBoxWorkApplicationHelper.getP
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
@@ -56,7 +55,6 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 
-import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;

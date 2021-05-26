@@ -34,6 +34,7 @@ import org.junit.Test;
 @SuppressWarnings("squid:S1607")
 public class CaseAtAGlanceIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS = "progression.command.initiate-court-proceedings.json";
+    private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_NON_STD_ORGANISATION_PROSECUTOR = "progression.command.initiate-court-proceedings-non-std-organisation.json";
     public static final String PROGRESSION_QUERY_GET_CASE_HEARINGS = "application/vnd.progression.query.casehearings+json";
 
     private String caseId;
@@ -71,6 +72,15 @@ public class CaseAtAGlanceIT extends AbstractIT {
         verifyCaseHearings(caseId);
     }
 
+    @Test
+    public void shouldNotCallReferenceDataForNonStdOrganisationProsecutor() throws Exception {
+        //given
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_NON_STD_ORGANISATION_PROSECUTOR, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+
+        verifyCaseAtAGlanceForNonStdProsecutor(caseId, "Organisation Name", "Organisation Address 1","Organisation Address 2", "SW11 1JU");
+        verifyCaseForCpsOrganisation(caseId);
+        verifyCaseHearings(caseId);
+    }
     private static void verifyCaseHearings(final String caseId) {
         poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_GET_CASE_HEARINGS)
                 .withHeader(USER_ID, randomUUID()))
@@ -120,6 +130,38 @@ public class CaseAtAGlanceIT extends AbstractIT {
                                 withJsonPath("$.defendants[0].address.address1", equalTo("22")),
                                 withJsonPath("$.defendants[0].address.address2", equalTo("Acacia Avenue")),
                                 withJsonPath("$.defendants[0].dateOfBirth", equalTo(defendantDOB)),
+                                withJsonPath("$.defendants[0].caagDefendantOffences[0].reportingRestrictions[0].id",notNullValue()),
+                                withJsonPath("$.defendants[0].caagDefendantOffences[0].reportingRestrictions[0].label", equalTo("Section 49 of the Children and Young Persons Act 1933 applies")),
+                                withJsonPath("$.defendants[0].caagDefendantOffences[0].reportingRestrictions[0].orderedDate", notNullValue()),
+                                withJsonPath("$.defendants[0].caagDefendantOffences[0].offenceCode", equalTo("TTH105HY")),
+                                withJsonPath("$.defendants[0].caagDefendantOffences[0].offenceTitle", equalTo("ROBBERY")),
+                                withJsonPath("$.defendants[0].caagDefendantOffences[0].wording", equalTo("No Travel Card")),
+                                withJsonPath("$.defendants[0].caagDefendantOffences[0].wordingWelsh", equalTo("No Travel Card In Welsh"))
+                        )));
+    }
+
+    private static void verifyCaseAtAGlanceForNonStdProsecutor(final String caseId, final String name, final String address1, final String address2, final String postCode) {
+        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_CAAG_JSON)
+                .withHeader(USER_ID, randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.caseId", equalTo(caseId)),
+                                withJsonPath("$.caseDetails.caseMarkers[0]", equalTo("Prohibited Weapons")),
+                                withJsonPath("$.prosecutorDetails.prosecutionAuthorityReference", notNullValue()),
+                                withJsonPath("$.prosecutorDetails.prosecutionAuthorityCode", equalTo("TFL")),
+                                withJsonPath("$.prosecutorDetails.prosecutionAuthorityId", equalTo("cf73207f-3ced-488a-82a0-3fba79c2ce85")),
+                                withJsonPath("$.prosecutorDetails.address.address1", equalTo(address1)),
+                                withJsonPath("$.prosecutorDetails.address.address2", equalTo(address2)),
+                                withJsonPath("$.prosecutorDetails.address.postcode", equalTo(postCode)),
+
+                                withJsonPath("$.defendants[0].firstName", equalTo("Harry")),
+                                withJsonPath("$.defendants[0].lastName", equalTo("Kane Junior")),
+                                withJsonPath("$.defendants[0].interpreterLanguageNeeds", equalTo("Welsh")),
+                                withJsonPath("$.defendants[0].remandStatus", equalTo("Remanded into Custody")),
+                                withJsonPath("$.defendants[0].address.address1", equalTo("22")),
+                                withJsonPath("$.defendants[0].address.address2", equalTo("Acacia Avenue")),
                                 withJsonPath("$.defendants[0].caagDefendantOffences[0].reportingRestrictions[0].id",notNullValue()),
                                 withJsonPath("$.defendants[0].caagDefendantOffences[0].reportingRestrictions[0].label", equalTo("Section 49 of the Children and Young Persons Act 1933 applies")),
                                 withJsonPath("$.defendants[0].caagDefendantOffences[0].reportingRestrictions[0].orderedDate", notNullValue()),

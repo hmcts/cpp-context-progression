@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.lang.Boolean.FALSE;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
@@ -255,7 +254,7 @@ public class HearingResultEventListener {
         }
 
         final Hearing.Builder builder = Hearing.hearing();
-        if (nonNull(hearingFromPayload.getProsecutionCases()) && !hearingFromPayload.getProsecutionCases().isEmpty()) {
+        if (isNotEmpty(hearingFromPayload.getProsecutionCases())) {
             builder.withProsecutionCases(getUpdatedProsecutionCases(hearingFromPayload, hearingFromDatabase, hearingDay));
         }
         return builder.withIsBoxHearing(hearingFromPayload.getIsBoxHearing())

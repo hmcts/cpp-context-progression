@@ -175,7 +175,7 @@ public class CourtExtractTransformerTest {
     public void init() {
         target = new CourtExtractTransformer();
         setField(this.target, "transformationHelper", transformationHelper);
-        when(referenceDataService.getProsecutor(argThat(any(JsonEnvelope.class)), argThat(any(String.class)))).thenReturn(new uk.gov.justice.progression.courts.exract.ProsecutingAuthority(null, null, null));
+        when(referenceDataService.getProsecutor(argThat(any(JsonEnvelope.class)), argThat(any(ProsecutionCaseIdentifier.class)))).thenReturn(new uk.gov.justice.progression.courts.exract.ProsecutingAuthority(null, null, null));
         when(requestedNameMapper.getRequestedJudgeName(argThat(any(JsonObject.class)))).thenReturn("Denial");
         when(referenceDataService.getJudiciary(argThat(any(UUID.class)))).thenReturn(Optional.ofNullable(createJudiciaryJsonObject()));
     }

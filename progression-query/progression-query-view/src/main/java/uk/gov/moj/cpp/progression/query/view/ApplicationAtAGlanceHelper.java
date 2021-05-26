@@ -106,6 +106,12 @@ public class ApplicationAtAGlanceHelper {
                 applicantDetailsBuilder.withName(organisationDefendantDetails.get().getOrganisation().getName());
                 applicantDetailsBuilder.withAddress(organisationDefendantDetails.get().getOrganisation().getAddress());
             }
+        } else if (nonNull(applicant.getProsecutingAuthority())) {
+            final ProsecutingAuthority prosecutingAuthority = applicant.getProsecutingAuthority();
+            applicantDetailsBuilder.withName(prosecutingAuthority.getProsecutionAuthorityCode());
+            if(nonNull(prosecutingAuthority.getAddress())) {
+                applicantDetailsBuilder.withAddress(prosecutingAuthority.getAddress());
+            }
         }
         applicantDetailsBuilder.withIsSubject(courtApplication.getSubject() != null && applicant.getId().equals(courtApplication.getSubject().getId()));
         return applicantDetailsBuilder.build();
@@ -180,9 +186,19 @@ public class ApplicationAtAGlanceHelper {
                 respondentDetailsBuilder.withName(organisationDefendantDetails.get().getOrganisation().getName());
                 respondentDetailsBuilder.withAddress(organisationDefendantDetails.get().getOrganisation().getAddress());
             }
+        } else if (nonNull(respondent.getProsecutingAuthority())) {
+            updateRespondentDetailsWithProsecutingAuthority(respondent, respondentDetailsBuilder);
         }
         respondentDetailsBuilder.withIsSubject(subject != null && respondent.getId().equals(subject.getId()));
         return respondentDetailsBuilder.build();
+    }
+
+    private void updateRespondentDetailsWithProsecutingAuthority(CourtApplicationParty respondent, RespondentDetails.Builder respondentDetailsBuilder) {
+        final ProsecutingAuthority prosecutingAuthority = respondent.getProsecutingAuthority();
+        respondentDetailsBuilder.withName(prosecutingAuthority.getProsecutionAuthorityCode());
+        if(nonNull(prosecutingAuthority.getAddress())) {
+            respondentDetailsBuilder.withAddress(prosecutingAuthority.getAddress());
+        }
     }
 
     private List<RespondentRepresentatives> getRespondentRepresentatives(final Organisation representationOrganisation) {

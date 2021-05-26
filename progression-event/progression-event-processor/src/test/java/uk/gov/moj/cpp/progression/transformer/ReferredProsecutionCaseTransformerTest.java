@@ -10,6 +10,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
@@ -91,6 +93,28 @@ public class ReferredProsecutionCaseTransformerTest {
                         .withProsecutionAuthorityCode("TFL")
                         .withCaseURN("PAR123")
                         .withProsecutionAuthorityId(randomUUID())
+                        .build())
+                .withInitiationCode(InitiationCode.C)
+                .withDefendants(singletonList(ReferredDefendant.referredDefendant()
+                        .withId(randomUUID())
+                        .withAssociatedPersons(singletonList(ReferredAssociatedPerson.referredAssociatedPerson()
+                                .withRole("Role")
+                                .withPerson(getReferredPerson()).build()))
+                        .withOffences(singletonList(getReferredOffence()))
+                        .withProsecutionCaseId(randomUUID())
+                        .build()))
+                .build();
+    }
+
+    private static ReferredProsecutionCase getReferredProsecutionCaseWithName() {
+        return ReferredProsecutionCase.referredProsecutionCase()
+                .withId(randomUUID())
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityReference("TFL")
+                        .withProsecutionAuthorityCode("TFL")
+                        .withCaseURN("PAR123")
+                        .withProsecutionAuthorityId(randomUUID())
+                        .withProsecutionAuthorityName("OrganisationName")
                         .build())
                 .withInitiationCode(InitiationCode.C)
                 .withDefendants(singletonList(ReferredDefendant.referredDefendant()
@@ -445,5 +469,21 @@ public class ReferredProsecutionCaseTransformerTest {
         verifyNoMoreInteractions(referenceDataService);
     }
 
+    @Test
+    public void shouldNotCallReferenceDataForNonStdOrganisationProsecutor() {
 
+        final ReferredProsecutionCase referredProsecutionCase = getReferredProsecutionCaseWithName();
+
+        final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
+
+        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("Indictable")));
+        when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(of(getProsecutor()));
+
+        // Run the test
+        final ProsecutionCase result = referredProsecutionCaseTransformer.transform
+                (referredProsecutionCase, jsonEnvelope);
+
+        verify(referenceDataService, times(0)).getProsecutor(any(), any(), any());
+
+    }
 }

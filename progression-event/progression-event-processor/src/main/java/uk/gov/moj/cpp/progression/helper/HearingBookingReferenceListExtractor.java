@@ -46,7 +46,7 @@ public class HearingBookingReferenceListExtractor {
                 .distinct()
                 .collect(Collectors.toList());
 
-        return Stream.concat(caseUUIDs.stream(), applicationUUIDs.stream()).collect(Collectors.toList());
+        return Stream.concat(caseUUIDs.stream(), applicationUUIDs.stream()).distinct().collect(Collectors.toList());
 
     }
 }

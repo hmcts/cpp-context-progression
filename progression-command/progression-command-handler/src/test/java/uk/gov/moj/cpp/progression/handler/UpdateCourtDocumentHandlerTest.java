@@ -59,7 +59,6 @@ import javax.json.JsonObjectBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -230,7 +229,6 @@ public class UpdateCourtDocumentHandlerTest {
         target.handleUpdateCourtDocumentPrintTime(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-        String date = courtDocumentPrintTime.getPrintedAt().toString();
         MatcherAssert.assertThat(envelopeStream, streamContaining(
                 jsonEnvelope(
                         metadata()

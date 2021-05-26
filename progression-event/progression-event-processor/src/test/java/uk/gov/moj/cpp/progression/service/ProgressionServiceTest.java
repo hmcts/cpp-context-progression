@@ -1138,9 +1138,11 @@ public class ProgressionServiceTest {
     public void shouldTransformCourtCentre() {
         final UUID courtCentreId = randomUUID();
         final String address1 = "ADDRESS1";
+        final String oucode = STRING.next();
         final JsonObject courtCentreJson = createObjectBuilder()
                 .add("oucodeL3Name", "Lavender Hill Magistrates Court")
                 .add("address1", address1)
+                .add("oucode", oucode)
                 .build();
         when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(Optional.of(courtCentreJson));
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
@@ -1152,6 +1154,7 @@ public class ProgressionServiceTest {
                 .build();
 
         final Hearing hearing = progressionService.transformConfirmedHearing(confirmedHearing, finalEnvelope);
+        assertThat(hearing.getCourtCentre().getCode(), is(oucode));
         assertThat(hearing.getCourtCentre().getAddress().getAddress1(), is(address1));
         assertThat(hearing.getCourtCentre().getAddress().getAddress2(), is(EMPTY));
         assertThat(hearing.getCourtCentre().getAddress().getAddress3(), is(EMPTY));

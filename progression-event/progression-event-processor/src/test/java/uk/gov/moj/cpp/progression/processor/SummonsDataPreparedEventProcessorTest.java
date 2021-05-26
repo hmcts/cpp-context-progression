@@ -42,7 +42,6 @@ import static uk.gov.justice.core.courts.notification.EmailChannel.emailChannel;
 import static uk.gov.justice.core.courts.summons.SummonsDocumentContent.summonsDocumentContent;
 import static uk.gov.justice.core.courts.summons.SummonsProsecutor.summonsProsecutor;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.EMAIL_ADDRESS;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.EITHER_WAY;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.MCA;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.WITNESS;
@@ -57,6 +56,7 @@ import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsData;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
@@ -240,7 +240,9 @@ public class SummonsDataPreparedEventProcessorTest {
         //Given
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase(summonsRequired);
         final JsonObject summonsDataPreparedAsJsonObject = objectToJsonObjectConverter.convert(summonsDataPrepared);
-        final Optional<JsonObject> optionalCase = of(createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(getProsecutionCase(initiationCode, summonsCode))).build());
+        final ProsecutionCase prosecutionCase = getProsecutionCase(initiationCode, summonsCode);
+        final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+        final Optional<JsonObject> optionalCase = of(createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).build());
         final Optional<JsonObject> courtCentreJson = getCourtCentreJson(isWelsh);
         final SummonsProsecutor summonsProsecutor = getSummonsProsecutor();
         final Optional<LjaDetails> ljaDetails = getLjaDetails();
@@ -253,7 +255,7 @@ public class SummonsDataPreparedEventProcessorTest {
         when(progressionService.getProsecutionCaseDetailById(envelope, CASE_ID.toString())).thenReturn(optionalCase);
         when(referenceDataService.getCourtRoomById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
         when(summonsService.getLjaDetails(envelope, LJA_CODE)).thenReturn(ljaDetails);
-        when(summonsService.getProsecutor(eq(envelope), eq(PROSECUTION_AUTHORITY_ID))).thenReturn(summonsProsecutor);
+        when(summonsService.getProsecutor(eq(envelope), eq(prosecutionCaseIdentifier))).thenReturn(summonsProsecutor);
         when(summonsTemplateNameService.getCaseSummonsTemplateName(summonsRequired, summonsCode, isWelsh)).thenReturn(defendantTemplateName);
         when(summonsTemplateNameService.getCaseSummonsParentTemplateName(isWelsh)).thenReturn(parentGuardianTemplateName);
         when(caseDefendantSummonsService.generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor))).thenReturn(defendantTemplatePayload);
@@ -266,7 +268,7 @@ public class SummonsDataPreparedEventProcessorTest {
         verify(progressionService).getProsecutionCaseDetailById(envelope, CASE_ID.toString());
         verify(referenceDataService).getCourtRoomById(COURT_CENTRE_ID, envelope, requester);
         verify(summonsService).getLjaDetails(envelope, LJA_CODE);
-        verify(summonsService).getProsecutor(eq(envelope), eq(PROSECUTION_AUTHORITY_ID));
+        verify(summonsService).getProsecutor(eq(envelope), eq(prosecutionCaseIdentifier));
         verify(summonsTemplateNameService).getCaseSummonsTemplateName(summonsRequired, summonsCode, isWelsh);
         verify(caseDefendantSummonsService).generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor));
         verify(publishSummonsDocumentService).generateCaseSummonsCourtDocument(eq(envelope), eq(DEFENDANT_ID), eq(CASE_ID), eq(defendantTemplatePayload), eq(defendantTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), notNull(UUID.class));
