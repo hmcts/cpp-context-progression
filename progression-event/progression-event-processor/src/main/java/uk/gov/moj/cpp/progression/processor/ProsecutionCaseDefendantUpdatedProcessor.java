@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Objects.nonNull;
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.DefendantUpdate;
@@ -12,8 +14,10 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.List;
+import java.util.UUID;
+
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -24,6 +28,7 @@ import org.slf4j.LoggerFactory;
 public class ProsecutionCaseDefendantUpdatedProcessor {
 
     protected static final String PUBLIC_CASE_DEFENDANT_CHANGED = "public.progression.case-defendant-changed";
+    protected static final String COMMAND_UPDATE_DEFENDANT_FOR_HEARING = "progression.command.update-defendant-for-hearing";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseDefendantUpdatedProcessor.class.getCanonicalName());
 
     @Inject
@@ -42,11 +47,25 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     public void handleProsecutionCaseDefendantUpdatedEvent(final JsonEnvelope jsonEnvelope) {
         final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), ProsecutionCaseDefendantUpdated.class);
         final DefendantUpdate defendant = prosecutionCaseDefendantUpdated.getDefendant();
+        final List<UUID> hearingIds = prosecutionCaseDefendantUpdated.getHearingIds();
         LOGGER.debug("Received prosecution case defendant updated for caseId: " + defendant.getProsecutionCaseId());
 
-        final JsonObject publicEventPayload = Json.createObjectBuilder()
+        final JsonObject publicEventPayload = createObjectBuilder()
                 .add("defendant", objectToJsonObjectConverter.convert(updateDefendant(defendant))).build();
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_CASE_DEFENDANT_CHANGED).apply(publicEventPayload));
+
+        if (nonNull(hearingIds)) {
+            hearingIds.forEach(hearingId ->
+                    sendDefendantUpdate(jsonEnvelope, defendant, hearingId));
+        }
+    }
+
+    private void sendDefendantUpdate(final JsonEnvelope envelope, final DefendantUpdate defendantUpdate, final UUID hearingId) {
+        final JsonObject updateDefendantPayload = createObjectBuilder()
+                .add("defendant", objectToJsonObjectConverter.convert(defendantUpdate))
+                .add("hearingId", hearingId.toString())
+                .build();
+        sender.send(enveloper.withMetadataFrom(envelope, COMMAND_UPDATE_DEFENDANT_FOR_HEARING).apply(updateDefendantPayload));
     }
 
     private DefendantUpdate updateDefendant(final DefendantUpdate defendant) {

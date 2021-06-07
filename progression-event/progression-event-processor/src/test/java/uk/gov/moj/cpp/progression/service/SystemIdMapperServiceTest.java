@@ -39,6 +39,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SystemIdMapperServiceTest {
+
     @Mock
     private SystemUserProvider systemUserProvider;
 
@@ -158,4 +159,5 @@ public class SystemIdMapperServiceTest {
             assertThat(expected.getMessage(), is("System user id not available for progression context"));
         }
     }
+
 }

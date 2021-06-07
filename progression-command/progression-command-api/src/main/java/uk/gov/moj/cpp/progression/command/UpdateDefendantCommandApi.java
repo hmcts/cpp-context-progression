@@ -19,8 +19,15 @@ public class UpdateDefendantCommandApi {
 
     @Handles("progression.update-defendant-for-prosecution-case")
     public void handle(final JsonEnvelope envelope) {
-        final JsonEnvelope commandEnvelope = envelopeWithUpdatedActionName(envelope,
-                "progression.command.update-defendant-for-prosecution-case");
+        JsonEnvelope commandEnvelope;
+        if (envelope.payloadAsJsonObject().containsKey("matchedDefendantHearingId")) {
+            commandEnvelope = envelopeWithUpdatedActionName(envelope,
+                    "progression.command.update-defendant-for-matched-defendant");
+        } else {
+            commandEnvelope = envelopeWithUpdatedActionName(envelope,
+                    "progression.command.update-defendant-for-prosecution-case");
+        }
+
         sender.send(commandEnvelope);
     }
 

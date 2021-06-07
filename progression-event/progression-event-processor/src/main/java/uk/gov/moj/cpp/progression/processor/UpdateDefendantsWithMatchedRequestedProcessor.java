@@ -5,9 +5,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequested;
+import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -16,13 +14,9 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.DefendantUpdateDifferenceService;
-import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -37,9 +31,6 @@ public class UpdateDefendantsWithMatchedRequestedProcessor {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Inject
-    private ProgressionService progressionService;
-
-    @Inject
     private DefendantUpdateDifferenceService defendantUpdateDifferenceService;
 
     @Inject
@@ -49,44 +40,26 @@ public class UpdateDefendantsWithMatchedRequestedProcessor {
     @Inject
     private Enveloper enveloper;
 
-    @Handles("progression.event.prosecution-case-update-defendants-with-matched-requested")
+    @Handles("progression.event.prosecution-case-update-defendants-with-matched-requested-v2")
     public void handleUpdateDefendantWithMatchedRequestedEvent(final JsonEnvelope envelope) {
-        final ProsecutionCaseUpdateDefendantsWithMatchedRequested defendantsWithMatchedRequested = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), ProsecutionCaseUpdateDefendantsWithMatchedRequested.class);
-
-        final DefendantUpdate originalDefendantNextVersion = defendantsWithMatchedRequested.getDefendant();
+        final ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2 defendantsWithMatchedRequested = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2.class);
+        final Defendant originalDefendantPreviousVersion = defendantsWithMatchedRequested.getDefendant();
+        final List<Defendant> matchedDefendants = defendantsWithMatchedRequested.getMatchedDefendants();
+        final DefendantUpdate originalDefendantNextVersion = defendantsWithMatchedRequested.getDefendantUpdate();
         final UUID prosecutionCaseId = originalDefendantNextVersion.getProsecutionCaseId();
         final UUID defendantId = originalDefendantNextVersion.getId();
-        final UUID matchedDefendantHearingId = defendantsWithMatchedRequested.getMatchedDefendantHearingId();
-
-        final Defendant originalDefendantPreviousVersion = getDefendantFromProsecutionCase(envelope, prosecutionCaseId, defendantId);
-
-        final List<Defendant> matchedDefendants = findMatchedDefendants(envelope, defendantId, matchedDefendantHearingId);
 
         sendDefendantUpdate(envelope, originalDefendantNextVersion, prosecutionCaseId, defendantId);
 
         for (final Defendant matchedDefendant : matchedDefendants) {
-            final Defendant caseDefendant = getDefendantFromProsecutionCase(envelope, matchedDefendant.getProsecutionCaseId(), matchedDefendant.getId());
-
             final DefendantUpdate calculatedDefendantUpdate = defendantUpdateDifferenceService.calculateDefendantUpdate(
                     originalDefendantPreviousVersion,
                     originalDefendantNextVersion,
-                    caseDefendant
+                    matchedDefendant
             );
-            sendDefendantUpdate(envelope, calculatedDefendantUpdate, caseDefendant.getProsecutionCaseId(), caseDefendant.getId());
+
+            sendDefendantUpdate(envelope, calculatedDefendantUpdate, matchedDefendant.getProsecutionCaseId(), matchedDefendant.getId());
         }
-    }
-
-    public Defendant getDefendantFromProsecutionCase(final JsonEnvelope envelope, final UUID prosecutionCaseId, final UUID defendantId) {
-        final ProsecutionCase prosecutionCase = getProsecutionCase(envelope, prosecutionCaseId);
-        return prosecutionCase.getDefendants().stream()
-                .filter(defendant -> Objects.equals(defendant.getId(), defendantId))
-                .findFirst().orElseThrow(() -> new RuntimeException("Defendant not found"));
-    }
-
-    public ProsecutionCase getProsecutionCase(final JsonEnvelope envelope, final UUID prosecutionCaseId) {
-        final Optional<JsonObject> prosecutionCaseDetailOptional = progressionService.getProsecutionCaseDetailById(envelope, prosecutionCaseId.toString());
-        final JsonObject prosecutionCaseJson = prosecutionCaseDetailOptional.orElseThrow(() -> new RuntimeException("Prosecution Case not found")).getJsonObject("prosecutionCase");
-        return jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
     }
 
     public void sendDefendantUpdate(final JsonEnvelope envelope, final DefendantUpdate defendantUpdate, final UUID prosecutionCaseId, final UUID defendantId) {
@@ -98,27 +71,4 @@ public class UpdateDefendantsWithMatchedRequestedProcessor {
         sender.send(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-for-prosecution-case").apply(updateDefendantPayload));
     }
 
-
-    public UUID findMasterDefendantId(final UUID defendantId, final Hearing hearing) {
-        return hearing.getProsecutionCases().stream()
-                .flatMap((ProsecutionCase prosecutionCase) -> prosecutionCase.getDefendants().stream())
-                .filter(defendant -> Objects.equals(defendantId, defendant.getId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Cannot Find Defendant in Hearing Stream " + defendantId))
-                .getMasterDefendantId();
-    }
-
-    public List<Defendant> findMatchedDefendants(final JsonEnvelope envelope, final UUID defendantId, final UUID matchedDefendantHearingId) {
-        final Optional<JsonObject> hearingPayloadOptional = progressionService.getHearing(envelope, matchedDefendantHearingId.toString());
-        final JsonObject hearingJson = hearingPayloadOptional.orElseThrow(() -> new RuntimeException("Hearing not found")).getJsonObject("hearing");
-        final Hearing hearing = jsonObjectToObjectConverter.convert(hearingJson, Hearing.class);
-        final UUID masterDefendantId = findMasterDefendantId(defendantId, hearing);
-        return hearing.getProsecutionCases().stream()
-                .flatMap((ProsecutionCase prosecutionCase) -> prosecutionCase.getDefendants().stream())
-                .filter(defendant ->
-                        Objects.equals(defendant.getMasterDefendantId(), masterDefendantId)
-                                && !Objects.equals(defendant.getId(), defendantId)
-                )
-                .collect(Collectors.toList());
-    }
 }

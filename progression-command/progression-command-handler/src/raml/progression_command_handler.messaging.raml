@@ -31,6 +31,12 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.update-defendant-for-prosecution-case+json:
             example: !include json/progression.command.update-defendant-for-prosecution-case.json
             schema: !include json/schema/progression.command.update-defendant-for-prosecution-case.json
+        application/vnd.progression.command.update-defendant-for-matched-defendant+json:
+            example: !include json/progression.command.update-defendant-for-matched-defendant.json
+            schema: !include json/schema/progression.command.update-defendant-for-matched-defendant.json
+        application/vnd.progression.command.update-defendant-for-hearing+json:
+            example: !include json/progression.command.update-defendant-for-hearing.json
+            schema: !include json/schema/progression.command.update-defendant-for-hearing.json
         application/vnd.progression.command.update-offences-for-prosecution-case+json:
             example: !include json/progression.command.update-offences-for-prosecution-case.json
             schema: !include json/schema/progression.command.update-offences-for-prosecution-case.json
@@ -112,6 +118,9 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.extend-hearing+json:
             example: !include json/progression.command.extend-hearing.json
             schema: !include json/schema/progression.command.extend-hearing.json
+        application/vnd.progression.command.process-hearing-extended+json:
+            example: !include json/progression.command.process-hearing-extended.json
+            schema: !include json/schema/progression.command.process-hearing-extended.json
         application/vnd.progression.command.update-hearing-for-partial-allocation+json:
             example: !include json/progression.command.update-hearing-for-partial-allocation.json
             schema: !include json/schema/progression.command.update-hearing-for-partial-allocation.json
@@ -194,6 +203,9 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.process-matched-defendants+json:
           example:  !include json/progression.command.process-matched-defendants.json
           schema: !include json/schema/progression.command.process-matched-defendants.json
+        application/vnd.progression.command.update-matched-defendant+json:
+          example:  !include json/progression.command.update-matched-defendant.json
+          schema: !include json/schema/progression.command.update-matched-defendant.json
         application/vnd.progression.command.list-unscheduled-hearing+json:
           example: !include json/progression.command.list-unscheduled-hearing.json
           schema: !include json/schema/progression.command.list-unscheduled-hearing.json
@@ -260,6 +272,10 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.update-case-for-cps-prosecutor+json:
             schema: !include json/schema/progression.command.update-case-for-cps-prosecutor.json
             example: !include json/progression.command.update-case-for-cps-prosecutor.json
+
+        application/vnd.progression.command.process-hearing-updated+json:
+            schema: !include json/schema/progression.command.process-hearing-updated.json
+            example: !include json/progression.command.process-hearing-updated.json
 
         application/vnd.progression.command.remove-offences-from-existing-hearing+json:
             schema: !include json/schema/progression.command.remove-offences-from-existing-hearing.json

@@ -1,10 +1,12 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.UUID.randomUUID;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 
 import uk.gov.justice.core.courts.Address;
@@ -158,6 +160,10 @@ public class CaseReferredToCourtEventProcessorTest {
         when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
 
+        when(jsonEnvelope.metadata()).thenReturn(metadataBuilder()
+                .withId(randomUUID())
+                .withName("progression.event.cases-referred-to-court")
+                .withUserId(randomUUID().toString()).build());
 
         //When
         this.eventProcessor.process(jsonEnvelope);

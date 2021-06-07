@@ -1,18 +1,21 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Objects.nonNull;
+import static javax.json.Json.createArrayBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingExtended;
+import uk.gov.justice.core.courts.HearingExtendedProcessed;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -20,13 +23,12 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -37,6 +39,7 @@ import org.slf4j.LoggerFactory;
 public class ExtendedHearingProcessor {
 
     private static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
+    private static final String PROGRESSION_COMMAND_PROCESS_HEARING_EXTENDED = "progression.command.process-hearing-extended";
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationReferredToCourtEventProcessor.class.getCanonicalName());
     @Inject
     private ProgressionService progressionService;
@@ -47,24 +50,42 @@ public class ExtendedHearingProcessor {
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
     private Sender sender;
-    @Inject
-    private Enveloper enveloper;
 
 
     @Handles("progression.event.hearing-extended")
     public void process(final JsonEnvelope jsonEnvelope) {
-
         final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
         final HearingExtended hearingExtended = jsonObjectToObjectConverter.convert(payload, HearingExtended.class);
-        final UUID hearingId = hearingExtended.getHearingRequest().getId();
-        final Optional<JsonObject> hearingIdFromQuery = progressionService.getHearing(jsonEnvelope, hearingId.toString());
+        final JsonArrayBuilder shadowListedOffencesBuilder = createArrayBuilder();
 
-        final List<CourtApplication> courtApplications = hearingExtended.getHearingRequest().getCourtApplications();
-        final List<ProsecutionCase> prosecutionCases = hearingExtended.getHearingRequest().getProsecutionCases();
+        if (nonNull(hearingExtended.getShadowListedOffences())) {
+            hearingExtended.getShadowListedOffences().forEach(shadowListedOffence -> shadowListedOffencesBuilder.add(shadowListedOffence.toString()));
+        }
+
+        final JsonObject commandPayload = Json.createObjectBuilder()
+                .add("hearingRequest", objectToJsonObjectConverter.convert(hearingExtended.getHearingRequest()))
+                .add("shadowListedOffences", shadowListedOffencesBuilder.build())
+                .build();
+
+        sender.send(envelop(commandPayload)
+                .withName(PROGRESSION_COMMAND_PROCESS_HEARING_EXTENDED)
+                .withMetadataFrom(jsonEnvelope));
+    }
+
+    @Handles("progression.event.hearing-extended-processed")
+    public void processed(final JsonEnvelope jsonEnvelope) {
+
+        final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
+        final HearingExtendedProcessed hearingExtendedProcessed = jsonObjectToObjectConverter.convert(payload, HearingExtendedProcessed.class);
+        final UUID hearingId = hearingExtendedProcessed.getHearingRequest().getId();
+        final Hearing hearing = hearingExtendedProcessed.getHearing();
+
+        final List<CourtApplication> courtApplications = hearingExtendedProcessed.getHearingRequest().getCourtApplications();
+        final List<ProsecutionCase> prosecutionCases = hearingExtendedProcessed.getHearingRequest().getProsecutionCases();
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Raising public event for hearing extended when application: {} with {}", hearingId, courtApplications);
         }
-        if (Objects.nonNull(courtApplications) && hearingIdFromQuery.isPresent()) {
+        if (nonNull(courtApplications)) {
             final CourtApplication courtApplication = courtApplications.get(0);
             final JsonObject hearingCourtApplication = Json.createObjectBuilder()
                     .add("hearingId", hearingId.toString())
@@ -72,13 +93,12 @@ public class ExtendedHearingProcessor {
                     .build();
           progressionService.updateCourtApplicationStatus(jsonEnvelope, courtApplication.getId(), ApplicationStatus.LISTED);
 
-          final Hearing hearing = jsonObjectToObjectConverter.convert(hearingIdFromQuery.get().getJsonObject("hearing"), Hearing.class);
           final Hearing updatedHearing = updateHearingWithApplication(hearing, courtApplication);
           progressionService.linkApplicationsToHearing(jsonEnvelope, updatedHearing, Arrays.asList(courtApplication.getId()), HearingListingStatus.SENT_FOR_LISTING);
-          sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).apply(hearingCourtApplication));
+          sender.send(envelop(hearingCourtApplication).withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).withMetadataFrom(jsonEnvelope));
           progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, prosecutionCases);
-        } else if (Objects.nonNull(prosecutionCases) && hearingIdFromQuery.isPresent()){
-            LOGGER.info("extending hearing {} for prosecution cases",hearingExtended.getHearingRequest().getId() );
+        } else if (nonNull(prosecutionCases)){
+            LOGGER.info("extending hearing {} for prosecution cases",hearingId);
 
             final List<UUID> caseIds = prosecutionCases.stream().map(ProsecutionCase::getId).collect(Collectors.toList());
             progressionService.linkProsecutionCasesToHearing(jsonEnvelope, hearingId, caseIds);
@@ -86,17 +106,14 @@ public class ExtendedHearingProcessor {
             // raising public event for listing and hearing
             final  uk.gov.justice.progression.courts.HearingExtended hearingExtendedEvent = uk.gov.justice.progression.courts.HearingExtended
                     .hearingExtended()
-                    .withShadowListedOffences(hearingExtended.getShadowListedOffences())
+                    .withShadowListedOffences(hearingExtendedProcessed.getShadowListedOffences())
                     .withHearingId(hearingId)
                     .withProsecutionCases(prosecutionCases)
                     .build();
 
             final JsonObject hearingProsecutionCases =  objectToJsonObjectConverter.convert(hearingExtendedEvent);
-            sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).apply(hearingProsecutionCases));
+            sender.send(envelop(hearingProsecutionCases).withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).withMetadataFrom(jsonEnvelope));
             progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, prosecutionCases);
-        }
-        else {
-            LOGGER.info("Court Application / Prosecution Case not found for hearing: {}", hearingId);
         }
     }
 

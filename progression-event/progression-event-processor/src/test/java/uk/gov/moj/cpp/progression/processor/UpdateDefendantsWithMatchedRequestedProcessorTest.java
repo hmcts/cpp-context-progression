@@ -21,6 +21,7 @@ import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequested;
+import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -90,91 +91,35 @@ public class UpdateDefendantsWithMatchedRequestedProcessorTest {
     @Test
     public void handleUpdateDefendantWithMatchedRequestedEvent() {
 
-        UUID matchedDefendantHearingId = UUID.randomUUID();
-        UUID originalDefendantId = UUID.randomUUID();
-        UUID originalProsecutionCaseId = UUID.randomUUID();
-        UUID masterDefendantId = UUID.randomUUID();
-        DefendantUpdate originalDefendantNextVersion = DefendantUpdate.defendantUpdate()
+
+        final UUID originalDefendantId = UUID.randomUUID();
+        final UUID originalProsecutionCaseId = UUID.randomUUID();
+        final UUID matchedDefendantProsecutionCaseId = UUID.randomUUID();
+        final UUID matchedDefendantId = UUID.randomUUID();
+        final Defendant defendant = Defendant.defendant()
+                .withId(originalDefendantId)
+                .build();
+        final DefendantUpdate originalDefendantNextVersion = DefendantUpdate.defendantUpdate()
                 .withId(originalDefendantId)
                 .withProsecutionCaseId(originalProsecutionCaseId)
                 .build();
-        ProsecutionCaseUpdateDefendantsWithMatchedRequested eventContent = ProsecutionCaseUpdateDefendantsWithMatchedRequested.prosecutionCaseUpdateDefendantsWithMatchedRequested()
-                .withMatchedDefendantHearingId(matchedDefendantHearingId)
-                .withDefendant(originalDefendantNextVersion)
+        final ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2 eventContent = ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2.prosecutionCaseUpdateDefendantsWithMatchedRequestedV2()
+                .withMatchedDefendants(Arrays.asList(Defendant.defendant()
+                        .withId(matchedDefendantId)
+                        .withProsecutionCaseId(matchedDefendantProsecutionCaseId)
+                        .build()))
+                .withDefendant(defendant)
+                .withDefendantUpdate(originalDefendantNextVersion)
                 .build();
 
-        JsonEnvelope jsonEnvelope = envelopeFrom(
-                metadataWithRandomUUID("progression.event.prosecution-case-update-defendants-with-matched-requested"),
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                metadataWithRandomUUID("progression.event.prosecution-case-update-defendants-with-matched-requested-v2"),
                 objectToJsonObjectConverter.convert(eventContent));
-
-        Defendant originalDefendantPreviousVersion = Defendant.defendant()
-                .withId(originalDefendantId)
-                .withMasterDefendantId(masterDefendantId)
-                .withProsecutionCaseId(originalProsecutionCaseId)
-                .build();
-        ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
-                .withId(originalProsecutionCaseId)
-                .withDefendants(Arrays.asList(originalDefendantPreviousVersion))
-                .build();
-
-        JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
-        when(progressionService.getProsecutionCaseDetailById(jsonEnvelope, originalProsecutionCaseId.toString()))
-                .thenReturn(
-                        Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
-
-
-        UUID matchedDefendantId = UUID.randomUUID();
-        UUID matchedDefendantProsecutionCaseId = UUID.randomUUID();
-        Hearing hearing = Hearing.hearing()
-                .withId(matchedDefendantHearingId)
-                .withProsecutionCases(Arrays.asList(
-                        ProsecutionCase.prosecutionCase()
-                                .withId(originalProsecutionCaseId)
-                                .withDefendants(Arrays.asList(
-                                        Defendant.defendant()
-                                                .withId(originalDefendantId)
-                                                .withMasterDefendantId(masterDefendantId)
-                                                .withProsecutionCaseId(originalProsecutionCaseId)
-                                                .build()
-                                ))
-                                .build(),
-                        ProsecutionCase.prosecutionCase()
-                                .withId(matchedDefendantProsecutionCaseId)
-                                .withDefendants(Arrays.asList(
-                                        Defendant.defendant()
-                                                .withId(matchedDefendantId)
-                                                .withMasterDefendantId(masterDefendantId)
-                                                .withProsecutionCaseId(matchedDefendantProsecutionCaseId)
-                                                .build()
-                                ))
-                                .build()
-                ))
-                .build();
-
-        JsonObject hearingJson = objectToJsonObjectConverter.convert(hearing);
-        when(progressionService.getHearing(jsonEnvelope, matchedDefendantHearingId.toString())).thenReturn(
-                Optional.of(createObjectBuilder().add("hearing", hearingJson).build()));
-
-        Defendant matchedDefendantPreviousVersion = Defendant.defendant()
-                .withId(matchedDefendantId)
-                .withMasterDefendantId(masterDefendantId)
-                .withProsecutionCaseId(matchedDefendantProsecutionCaseId)
-                .build();
-        ProsecutionCase matchedDefendantProsecutionCase = ProsecutionCase.prosecutionCase()
-                .withId(matchedDefendantProsecutionCaseId)
-                .withDefendants(Arrays.asList(
-                        matchedDefendantPreviousVersion
-                ))
-                .build();
-
-        JsonObject matchedDefendantProsecutionCaseJson = objectToJsonObjectConverter.convert(matchedDefendantProsecutionCase);
-        when(progressionService.getProsecutionCaseDetailById(jsonEnvelope, matchedDefendantProsecutionCaseId.toString())).thenReturn(
-                Optional.of(createObjectBuilder().add("prosecutionCase", matchedDefendantProsecutionCaseJson).build()));
-
-        DefendantUpdate matchedDefendantNextVersion = DefendantUpdate.defendantUpdate()
+        final DefendantUpdate matchedDefendantNextVersion = DefendantUpdate.defendantUpdate()
                 .withId(matchedDefendantId)
                 .withProsecutionCaseId(matchedDefendantProsecutionCaseId)
                 .build();
+
         when(defendantUpdateDifferenceService.calculateDefendantUpdate(
                 any(),//eq(originalDefendantPreviousVersion),
                 any(),//eq(originalDefendantNextVersion),
@@ -186,7 +131,7 @@ public class UpdateDefendantsWithMatchedRequestedProcessorTest {
         // verify
 
         verify(sender, times(2)).send(envelopeArgumentCaptor.capture());
-        List<JsonEnvelope> allValues = envelopeArgumentCaptor.getAllValues();
+        final List<JsonEnvelope> allValues = envelopeArgumentCaptor.getAllValues();
 
         assertThat(allValues.get(0), jsonEnvelope(
                 metadata().withName("progression.command.update-defendant-for-prosecution-case"),

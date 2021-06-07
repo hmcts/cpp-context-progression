@@ -135,8 +135,17 @@ subscriptions_descriptor:
         - name: progression.event.defendant-unmatched
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-unmatched.json
 
+        - name: progression.event.defendant-unmatched-v2
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.events.defendant-unmatched-v2.json
+
+        - name: progression.event.defendants-master-defendant-id-updated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendants-master-defendant-id-updated
+
         - name: progression.event.master-defendant-id-updated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated.json
+
+        - name: progression.event.master-defendant-id-updated-v2
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated-v2.json
 
         - name: progression.event.link-cases
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.link-cases.json

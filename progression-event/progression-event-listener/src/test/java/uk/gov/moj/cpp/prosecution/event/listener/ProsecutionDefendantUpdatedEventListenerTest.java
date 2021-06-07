@@ -19,6 +19,8 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Ethnicity;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDefendantUpdated;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
@@ -38,9 +40,11 @@ import uk.gov.moj.cpp.prosecutioncase.event.listener.ProsecutionCaseDefendantUpd
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
@@ -97,6 +101,10 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     private HearingResultedCaseUpdated hearingResultedCaseUpdated;
 
     @Mock
+    private HearingDefendantUpdated hearingDefendantUpdated;
+
+
+    @Mock
     private DefendantUpdate defendant;
 
 
@@ -107,10 +115,16 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     private ProsecutionCaseEntity prosecutionCaseEntity;
 
     @Mock
+    private HearingEntity hearingEntity;
+
+    @Mock
     private List<CourtApplicationCaseEntity> courtApplicationCaseEntities;
 
     @Captor
     private ArgumentCaptor<ProsecutionCaseEntity> argumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<HearingEntity> hearingArgumentCaptor;
 
     @Mock
     private JsonObject payload;
@@ -120,6 +134,9 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
     @Mock
     private ProsecutionCase prosecutionCase;
+
+    @Mock
+    private HearingRepository hearingRepository;
 
     @InjectMocks
     private ProsecutionCaseDefendantUpdatedEventListener eventListener;
@@ -514,6 +531,47 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         assertThat(prosecutionCase.getCaseStatus(), equalTo(CaseStatusEnum.INACTIVE.getDescription()));
 
 
+    }
+
+    @Test
+    public void shouldProcessHearingDefendantUpdated() {
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, HearingDefendantUpdated.class)).thenReturn(hearingDefendantUpdated);
+
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID selfDefinedEthnicityId = randomUUID();
+        final UUID observedEthnicityId = randomUUID();
+
+        final LocalDate updatedDoB = LocalDate.of(2005, 12, 27);
+        final DefendantUpdate defendantUpdate = prepareDefendantUpdate(randomUUID(), updatedDoB, defendantId);
+
+        final JsonObject jsonObject = Json.createObjectBuilder().build();
+        final Defendant defendant1 = prepareDefendantWithAssociatedPerson(defendantId, masterDefendantId, prosecutionCaseId, selfDefinedEthnicityId, observedEthnicityId);
+        final List<Defendant> defendants =new ArrayList<>();
+        defendants.add(defendant1);
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(
+                        Arrays.asList(ProsecutionCase.prosecutionCase()
+                                .withDefendants(defendants)
+                                .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
+                                .withCpsOrganisation("A01")
+                                .build()))
+                .build();
+        when(jsonObjectToObjectConverter.convert(jsonObject, Hearing.class)).thenReturn(hearing);
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(hearingEntity.getPayload()).thenReturn(jsonObject.toString());
+        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
+        when(hearingDefendantUpdated.getDefendant()).thenReturn(defendantUpdate);
+        when(hearingDefendantUpdated.getHearingId()).thenReturn(hearingId);
+
+        eventListener.processHearingDefendantUpdated(envelope);
+
+        verify(hearingRepository).save(hearingArgumentCaptor.capture());
     }
 
     private List<Defendant> getDefendants(final UUID defandantId1, final UUID defandantId2, final UUID defandantId3, final UUID prosecutionCaseId, final List<UUID> offenceIds) {

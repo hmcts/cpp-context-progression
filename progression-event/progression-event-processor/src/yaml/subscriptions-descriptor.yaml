@@ -65,6 +65,9 @@ subscriptions_descriptor:
         - name: progression.event.hearing-extended
           schema_uri: http://justice.gov.uk/core/courts/hearing-extended.json
 
+        - name: progression.event.hearing-extended-processed
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-extended-processed.json
+
         - name: progression.event.slots-booked-for-application
           schema_uri: http://justice.gov.uk/core/courts/slots-booked-for-application.json
 
@@ -175,11 +178,20 @@ subscriptions_descriptor:
         - name: progression.event.master-defendant-id-updated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated.json
 
-        - name: progression.event.defendant-unmatched
-          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-unmatched.json
+        - name: progression.event.master-defendant-id-updated-v2
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated-v2.json
 
-        - name: progression.event.prosecution-case-update-defendants-with-matched-requested
-          schema_uri: http://justice.gov.uk/core/courts/prosecution-case-update-defendants-with-matched-requested.json
+        - name: progression.event.defendants-master-defendant-id-updated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendants-master-defendant-id-updated
+
+        - name: progression.event.defendant-unmatched
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.events.defendant-unmatched.json
+
+        - name: progression.event.defendant-unmatched-v2
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.events.defendant-unmatched-v2.json
+
+        - name: progression.event.prosecution-case-update-defendants-with-matched-requested-v2
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.prosecution-case-update-defendants-with-matched-requested-v2.json
 
         - name: progression.event.cases-unlinked
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.cases-unlinked.json
@@ -322,6 +334,9 @@ subscriptions_descriptor:
 
         - name: progression.event.cases-added-for-updated-related-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.cases-added-for-updated-related-hearing.json
+
+        - name: progression.event.hearing-updated-processed
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-updated-processed.json
 
           # Deprecated API  - End
       event_source_name: progression

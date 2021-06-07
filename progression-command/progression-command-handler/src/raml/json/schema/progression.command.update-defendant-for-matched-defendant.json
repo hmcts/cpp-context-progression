@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.command.update-defendant-for-matched-defendant.json",
+  "type": "object",
+  "properties": {
+    "defendant": {
+      "$ref": "http://justice.gov.uk/core/courts/defendant-update.json#"
+    },
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "matchedDefendantHearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "defendant",
+    "matchedDefendantHearingId"
+  ],
+  "additionalProperties": false
+}

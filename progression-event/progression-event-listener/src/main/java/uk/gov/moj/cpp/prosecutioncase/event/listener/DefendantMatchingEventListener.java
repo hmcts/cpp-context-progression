@@ -6,8 +6,6 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantPartialMatchCreated;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -18,7 +16,10 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.events.DefendantMatched;
 import uk.gov.moj.cpp.progression.events.DefendantUnmatched;
+import uk.gov.moj.cpp.progression.events.DefendantUnmatchedV2;
+import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdated;
+import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdatedV2;
 import uk.gov.moj.cpp.progression.events.MatchedDefendants;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantPartialMatchEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MatchDefendantCaseHearingEntity;
@@ -27,15 +28,20 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantPartialMat
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+
 import java.io.StringReader;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_LISTENER)
 public class DefendantMatchingEventListener {
@@ -94,15 +100,29 @@ public class DefendantMatchingEventListener {
         }
         final DefendantUnmatched defendantUnmatched = jsonObjectConverter.convert(event.payloadAsJsonObject(), DefendantUnmatched.class);
 
-        final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(defendantUnmatched.getProsecutionCaseId());
-        final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(jsonFromString(prosecutionCaseEntity.getPayload()), ProsecutionCase.class);
-        if (isNull(prosecutionCase.getCaseStatus()) ||
-                !(CLOSED.equalsIgnoreCase(prosecutionCase.getCaseStatus()) || INACTIVE.equalsIgnoreCase(prosecutionCase.getCaseStatus()))) {
-            final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntities = matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(defendantUnmatched.getProsecutionCaseId(), defendantUnmatched.getDefendantId());
-            matchDefendantCaseHearingEntities.forEach(matchDefendantCaseHearingEntity ->  matchDefendantCaseHearingRepository.remove(matchDefendantCaseHearingEntity));
-            updateMasterDefendant(defendantUnmatched.getDefendantId(), defendantUnmatched.getDefendantId(), prosecutionCase);
-        }
+        setDefendantsMasterDefendantIdOnCase(defendantUnmatched.getProsecutionCaseId(), defendantUnmatched.getDefendantId(), defendantUnmatched.getDefendantId());
     }
+
+    @Handles("progression.event.defendant-unmatched-v2")
+    public void defendantUnmatchedV2(final JsonEnvelope event) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("received event progression.event.defendant-unmatched-v2 {} ", event.toObfuscatedDebugString());
+        }
+        final DefendantUnmatchedV2 defendantUnmatched = jsonObjectConverter.convert(event.payloadAsJsonObject(), DefendantUnmatchedV2.class);
+
+        setDefendantsMasterDefendantIdOnCase(defendantUnmatched.getProsecutionCaseId(), defendantUnmatched.getDefendantId(), defendantUnmatched.getDefendant().getMasterDefendantId());
+    }
+
+    @Handles("progression.event.defendants-master-defendant-id-updated")
+    public void defendantsMasterDefendantIdUpdated(final JsonEnvelope event) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("received event progression.event.defendant-unmatched-v2 {} ", event.toObfuscatedDebugString());
+        }
+        final DefendantsMasterDefendantIdUpdated updatedDefendant = jsonObjectConverter.convert(event.payloadAsJsonObject(), DefendantsMasterDefendantIdUpdated.class);
+
+        associateMasterDefendantToDefendant(updatedDefendant.getDefendant().getId(), updatedDefendant.getDefendant().getMasterDefendantId(), updatedDefendant.getProsecutionCaseId(), null);
+    }
+
 
     @Handles("progression.event.master-defendant-id-updated")
     public void updateMasterDefendantId(final JsonEnvelope event) {
@@ -116,6 +136,25 @@ public class DefendantMatchingEventListener {
 
         if (nonNull(masterDefendant)) {
             associateMasterDefendantToDefendant(masterDefendantIdUpdated.getDefendantId(), masterDefendant.getMasterDefendantId(), masterDefendantIdUpdated.getProsecutionCaseId(), masterDefendantIdUpdated.getHearingId());
+            masterDefendantIdUpdated.getMatchedDefendants()
+                    .forEach(matchedDefendant ->
+                            associateMasterDefendantToDefendant(matchedDefendant.getDefendantId(), masterDefendant.getMasterDefendantId(), matchedDefendant.getProsecutionCaseId(), null)
+                    );
+        }
+    }
+
+    @Handles("progression.event.master-defendant-id-updated-v2")
+    public void updateMasterDefendantIdV2(final JsonEnvelope event) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("received event progression.event.master-defendant-id-updated-v2 {} ", event.toObfuscatedDebugString());
+        }
+
+        final MasterDefendantIdUpdatedV2 masterDefendantIdUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), MasterDefendantIdUpdatedV2.class);
+
+        final MatchedDefendants masterDefendant = getMasterDefendant(masterDefendantIdUpdated.getMatchedDefendants());
+
+        if (nonNull(masterDefendant)) {
+            associateMasterDefendantToDefendant(masterDefendantIdUpdated.getDefendant().getId(), masterDefendant.getMasterDefendantId(), masterDefendantIdUpdated.getProsecutionCaseId(), masterDefendantIdUpdated.getHearingId());
             masterDefendantIdUpdated.getMatchedDefendants()
                     .forEach(matchedDefendant ->
                             associateMasterDefendantToDefendant(matchedDefendant.getDefendantId(), masterDefendant.getMasterDefendantId(), matchedDefendant.getProsecutionCaseId(), null)
@@ -168,14 +207,6 @@ public class DefendantMatchingEventListener {
         prosecutionCaseRepository.save(prosecutionCaseEntity);
     }
 
-    private static MatchedDefendants getMasterDefendant(final List<MatchedDefendants> matchedDefendants) {
-        final Comparator<MatchedDefendants> comparator = comparing(MatchedDefendants::getCourtProceedingsInitiated);
-        return matchedDefendants.stream()
-                .filter(def -> nonNull(def.getCourtProceedingsInitiated()))
-                .min(comparator)
-                .orElse(null);
-    }
-
     private ProsecutionCaseEntity getProsecutionCaseEntity(final ProsecutionCase prosecutionCase) {
         final ProsecutionCaseEntity pCaseEntity = new ProsecutionCaseEntity();
         pCaseEntity.setCaseId(prosecutionCase.getId());
@@ -212,10 +243,31 @@ public class DefendantMatchingEventListener {
                 .build();
     }
 
+    private void setDefendantsMasterDefendantIdOnCase(final UUID prosecutionCaseId, final UUID defendantId, final UUID masterDefendantId) {
+        final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(prosecutionCaseId);
+
+        final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(jsonFromString(prosecutionCaseEntity.getPayload()), ProsecutionCase.class);
+
+        if (isNull(prosecutionCase.getCaseStatus()) ||
+                !(CLOSED.equalsIgnoreCase(prosecutionCase.getCaseStatus()) || INACTIVE.equalsIgnoreCase(prosecutionCase.getCaseStatus()))) {
+            final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntities = matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(prosecutionCaseId, defendantId);
+            matchDefendantCaseHearingEntities.forEach(matchDefendantCaseHearingEntity -> matchDefendantCaseHearingRepository.remove(matchDefendantCaseHearingEntity));
+            updateMasterDefendant(defendantId, masterDefendantId, prosecutionCase);
+        }
+    }
+
     private static JsonObject jsonFromString(final String jsonObjectStr) {
         final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;
+    }
+
+    private static MatchedDefendants getMasterDefendant(final List<MatchedDefendants> matchedDefendants) {
+        final Comparator<MatchedDefendants> comparator = comparing(MatchedDefendants::getCourtProceedingsInitiated);
+        return matchedDefendants.stream()
+                .filter(def -> nonNull(def.getCourtProceedingsInitiated()))
+                .min(comparator)
+                .orElse(null);
     }
 }

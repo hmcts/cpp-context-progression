@@ -1,9 +1,11 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.CreateHearingDefendantRequest;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -48,6 +50,7 @@ import org.slf4j.LoggerFactory;
 public class CasesReferredToCourtProcessor {
 
     private static final String REFER_PROSECUTION_CASES_TO_COURT_REJECTED = "public.progression.refer-prosecution-cases-to-court-rejected";
+    private static final String PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST = "progression.command.create-hearing-defendant-request";
     private static final String REFER_PROSECUTION_CASES_TO_COURT_ACCEPTED = "public.progression.refer-prosecution-cases-to-court-accepted";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CasesReferredToCourtProcessor.class.getCanonicalName());
@@ -152,6 +155,17 @@ public class CasesReferredToCourtProcessor {
         final List<ListDefendantRequest> listDefendantRequests = sjpCourtReferral.getListHearingRequests().stream().map(ReferredListHearingRequest::getListDefendantRequests).flatMap(Collection::stream).collect(Collectors.toList());
         summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, listDefendantRequests, hearingId);
 
+        final JsonObject hearingDefendantRequestJson = objectToJsonObjectConverter.convert(CreateHearingDefendantRequest.createHearingDefendantRequest()
+                .withHearingId(hearingId)
+                .withDefendantRequests(listDefendantRequests)
+                .build());
+        // Look at point 8 in the documentation about the usage of this command.
+
+        sender.send(envelop(hearingDefendantRequestJson)
+                .withName(PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST)
+                .withMetadataFrom(jsonEnvelope));
+
+
         progressionService.createProsecutionCases(jsonEnvelope, prosecutionCases);
         progressionService.createCourtDocument(jsonEnvelope, courtDocuments);
 
@@ -182,6 +196,7 @@ public class CasesReferredToCourtProcessor {
             }
         }
     }
+
 
     private ListCourtHearing prepareListCourtHearing(final JsonEnvelope jsonEnvelope, final SjpCourtReferral sjpCourtReferral, final List<ProsecutionCase> prosecutionCases, final UUID hearingId) {
         return listCourtHearingTransformer

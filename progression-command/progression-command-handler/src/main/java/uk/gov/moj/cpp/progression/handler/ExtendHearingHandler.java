@@ -1,11 +1,13 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.ProcessHearingExtended;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -18,6 +20,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
 import javax.inject.Inject;
 import javax.json.JsonValue;
@@ -58,11 +61,23 @@ public class ExtendHearingHandler {
         }
     }
 
+    @Handles("progression.command.process-hearing-extended")
+    public void handleProcessHearingExtended(final Envelope<ProcessHearingExtended> processHearingExtendedEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.command.process-hearing-extended {}", processHearingExtendedEnvelope.payload());
+
+        final ProcessHearingExtended processHearingExtended = processHearingExtendedEnvelope.payload();
+
+        final EventStream eventStream = eventSource.getStreamById(processHearingExtended.getHearingRequest().getId());
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> event = hearingAggregate.processHearingExtended(processHearingExtended.getHearingRequest(), processHearingExtended.getShadowListedOffences());
+        appendEventsToStream(processHearingExtendedEnvelope, eventStream, event);
+    }
+
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
         eventStream.append(
                 events
-                        .map(enveloper.withMetadataFrom(jsonEnvelope)));
+                        .map(toEnvelopeWithMetadataFrom(jsonEnvelope)));
     }
 
 }

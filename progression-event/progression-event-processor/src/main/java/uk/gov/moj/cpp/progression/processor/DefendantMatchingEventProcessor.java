@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.Defendant;
@@ -14,12 +15,12 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.events.DefendantMatched;
 import uk.gov.moj.cpp.progression.events.DefendantUnmatched;
+import uk.gov.moj.cpp.progression.events.DefendantUnmatchedV2;
+import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdated;
+import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdatedV2;
 import uk.gov.moj.cpp.progression.events.MatchedDefendants;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
 
 import java.util.Comparator;
 import java.util.List;
@@ -27,8 +28,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
 @ServiceComponent(EVENT_PROCESSOR)
 public class DefendantMatchingEventProcessor {
+
+    private static final String DEFENDANT_ID_FIELD = "defendantId";
+    private static final String MASTER_DEFENDANT_ID_FIELD = "masterDefendantId";
+    private static final String PROSECUTION_CASE_ID_FIELD = "prosecutionCaseId";
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -51,13 +59,31 @@ public class DefendantMatchingEventProcessor {
                 .withMetadataFrom(envelope));
     }
 
+    /**
+     * @param envelope - the event envelope to be processed.
+     * @deprecated Replaced with newer version of event that contains fully updated Defendant
+     * information in event payload. See: {@link #handleDefendantUnmatchedV2Event}
+     */
+    @Deprecated
     @Handles("progression.event.defendant-unmatched")
     public void handleDefendantUnmatchedEvent(final JsonEnvelope envelope) {
         final DefendantUnmatched defendantUnmatched = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantUnmatched.class);
         sender.send(Enveloper.envelop(createUnmatchingPayload(defendantUnmatched))
                 .withName("public.progression.defendant-unmatched")
                 .withMetadataFrom(envelope));
+
         associateMasterDefendantToDefendant(envelope, defendantUnmatched.getDefendantId(), defendantUnmatched.getDefendantId(), defendantUnmatched.getProsecutionCaseId());
+    }
+
+    @Handles("progression.event.defendant-unmatched-v2")
+    public void handleDefendantUnmatchedV2Event(final JsonEnvelope envelope) {
+        final DefendantUnmatchedV2 defendantUnmatched = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantUnmatchedV2.class);
+
+        sender.send(Enveloper.envelop(createUnmatchingPayload(defendantUnmatched))
+                .withName("public.progression.defendant-unmatched")
+                .withMetadataFrom(envelope));
+
+        sendPublicCaseDefendantChangedEvent(envelope, defendantUnmatched.getDefendant().getMasterDefendantId(), defendantUnmatched.getDefendant());
     }
 
     @Handles("progression.event.master-defendant-id-updated")
@@ -67,6 +93,7 @@ public class DefendantMatchingEventProcessor {
 
         if (Objects.nonNull(masterDefendant)) {
             associateMasterDefendantToDefendant(envelope, masterDefendantIdUpdated.getDefendantId(), masterDefendant.getMasterDefendantId(), masterDefendantIdUpdated.getProsecutionCaseId());
+
             masterDefendantIdUpdated.getMatchedDefendants()
                     .forEach(matchedDefendant -> {
                         if (!masterDefendant.getMasterDefendantId().equals(matchedDefendant.getMasterDefendantId())) {
@@ -74,6 +101,42 @@ public class DefendantMatchingEventProcessor {
                         }
                     });
         }
+    }
+
+    @Handles("progression.event.master-defendant-id-updated-v2")
+    public void handleMasterDefendantIdUpdatedEventV2(final JsonEnvelope envelope) {
+        final MasterDefendantIdUpdatedV2 masterDefendantIdUpdated = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), MasterDefendantIdUpdatedV2.class);
+        final MatchedDefendants masterDefendant = getMasterDefendant(masterDefendantIdUpdated.getMatchedDefendants());
+
+        if (Objects.nonNull(masterDefendant)) {
+            sendPublicCaseDefendantChangedEvent(envelope, masterDefendant.getMasterDefendantId(), masterDefendantIdUpdated.getDefendant());
+
+            masterDefendantIdUpdated.getMatchedDefendants()
+                    .forEach(matchedDefendant -> {
+                        if (!masterDefendant.getMasterDefendantId().equals(matchedDefendant.getMasterDefendantId())) {
+                            sendUpdateMasterDefendantCommand(envelope, matchedDefendant.getProsecutionCaseId(), matchedDefendant.getDefendantId(), masterDefendant.getMasterDefendantId());
+                        }
+                    });
+        }
+    }
+
+    @Handles("progression.event.defendants-master-defendant-id-updated")
+    public void handleDefendantsMasterDefendantIdUpdatedEvent(final JsonEnvelope envelope) {
+        final DefendantsMasterDefendantIdUpdated masterDefendantIdUpdated = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantsMasterDefendantIdUpdated.class);
+        sendPublicCaseDefendantChangedEvent(envelope, masterDefendantIdUpdated.getDefendant().getMasterDefendantId(), masterDefendantIdUpdated.getDefendant());
+    }
+
+    private void sendUpdateMasterDefendantCommand(final JsonEnvelope envelope, final UUID prosecutionCaseId, final UUID defendantId, final UUID masterDefendantId) {
+
+        final JsonObject publicEventPayload = createObjectBuilder()
+                .add(PROSECUTION_CASE_ID_FIELD, prosecutionCaseId.toString())
+                .add(DEFENDANT_ID_FIELD, defendantId.toString())
+                .add(MASTER_DEFENDANT_ID_FIELD, masterDefendantId.toString())
+                .build();
+
+        sender.send(Enveloper.envelop(publicEventPayload)
+                .withName("progression.command.update-matched-defendant")
+                .withMetadataFrom(envelope));
     }
 
     private static MatchedDefendants getMasterDefendant(final List<MatchedDefendants> matchedDefendants) {
@@ -92,13 +155,24 @@ public class DefendantMatchingEventProcessor {
                 .filter(def -> def.getId().equals(defendantId))
                 .findFirst();
 
-        if (defendant.isPresent()) {
-            final JsonObject publicEventPayload = Json.createObjectBuilder()
-                    .add("defendant", objectToJsonObjectConverter.convert(updateDefendant(defendant.get(), masterDefendantId))).build();
-            sender.send(Enveloper.envelop(publicEventPayload)
-                    .withName("public.progression.case-defendant-changed")
-                    .withMetadataFrom(envelope));
-           }
+        defendant.ifPresent(d -> sendPublicCaseDefendantChangedEvent(envelope, masterDefendantId, d));
+    }
+
+    /**
+     * Sends 'public.progression.case-defendant-changed' event with the defendant in the payload,
+     * but overwrites the masterDefendantId
+     *
+     * @param envelope          - the envelope to create the outbound envelope
+     * @param masterDefendantId - the new master defendant id
+     * @param defendant         - the defendant being updated
+     */
+    private void sendPublicCaseDefendantChangedEvent(final JsonEnvelope envelope, final UUID masterDefendantId, final Defendant defendant) {
+        final JsonObject publicEventPayload = createObjectBuilder()
+                .add("defendant", objectToJsonObjectConverter.convert(updateDefendant(defendant, masterDefendantId))).build();
+
+        sender.send(Enveloper.envelop(publicEventPayload)
+                .withName("public.progression.case-defendant-changed")
+                .withMetadataFrom(envelope));
     }
 
     private DefendantUpdate updateDefendant(final Defendant defendant, final UUID masterDefendantId) {
@@ -123,15 +197,22 @@ public class DefendantMatchingEventProcessor {
     }
 
     private JsonObject createMatchingPayload(final boolean hasBeenDeleted) {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add("hasDefendantAlreadyBeenDeleted", hasBeenDeleted)
                 .build();
     }
 
     private JsonObject createUnmatchingPayload(final DefendantUnmatched defendantUnmatched) {
-        return Json.createObjectBuilder()
-                .add("defendantId", defendantUnmatched.getDefendantId().toString())
-                .add("prosecutionCaseId", defendantUnmatched.getProsecutionCaseId().toString())
+        return createObjectBuilder()
+                .add(DEFENDANT_ID_FIELD, defendantUnmatched.getDefendantId().toString())
+                .add(PROSECUTION_CASE_ID_FIELD, defendantUnmatched.getProsecutionCaseId().toString())
+                .build();
+    }
+
+    private JsonObject createUnmatchingPayload(final DefendantUnmatchedV2 defendantUnmatched) {
+        return createObjectBuilder()
+                .add(DEFENDANT_ID_FIELD, defendantUnmatched.getDefendantId().toString())
+                .add(PROSECUTION_CASE_ID_FIELD, defendantUnmatched.getProsecutionCaseId().toString())
                 .build();
     }
 }

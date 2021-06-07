@@ -48,6 +48,7 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdated;
+import uk.gov.justice.core.courts.HearingUpdatedProcessed;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JudicialRole;
@@ -236,8 +237,8 @@ public class ProgressionServiceTest {
 
     @Test
     public void testPublishHearingDetailChangedPublicEvent() throws Exception {
-        final HearingUpdated hearingUpdated = generateHearingUpdated();
-        final ConfirmedHearing updatedHearing = hearingUpdated.getUpdatedHearing();
+        final HearingUpdatedProcessed hearingUpdatedProcessed = generateHearingUpdated();
+        final ConfirmedHearing updatedHearing = hearingUpdatedProcessed.getConfirmedHearing();
         final JsonEnvelope envelope = getEnvelope(PUBLIC_EVENT_HEARING_DETAIL_CHANGED);
 
         when(referenceDataService.getOrganisationUnitById(updatedHearing.getCourtCentre().getId(), envelope, requester))
@@ -245,7 +246,7 @@ public class ProgressionServiceTest {
         when(referenceDataService.getJudiciariesByJudiciaryIdList(asList(JUDICIARY_ID_1, JUDICIARY_ID_2), envelope, requester))
                 .thenReturn(Optional.of(generateJudiciariesJson()));
 
-        progressionService.publishHearingDetailChangedPublicEvent(envelope, hearingUpdated);
+        progressionService.publishHearingDetailChangedPublicEvent(envelope, hearingUpdatedProcessed.getConfirmedHearing());
 
         verify(sender).send(envelopeArgumentCaptor.capture());
 
@@ -455,9 +456,9 @@ public class ProgressionServiceTest {
     }
 
 
-    private HearingUpdated generateHearingUpdated() {
-        return HearingUpdated.hearingUpdated()
-                .withUpdatedHearing(generateConfirmedHearingForHearingUpdated())
+    private HearingUpdatedProcessed generateHearingUpdated() {
+        return HearingUpdatedProcessed.hearingUpdatedProcessed()
+                .withConfirmedHearing(generateConfirmedHearingForHearingUpdated())
                 .build();
     }
 

@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.hearing-extended-processed.json",
+  "type": "object",
+  "properties": {
+    "hearing": {
+      "hearing": {
+        "$ref": "http://justice.gov.uk/core/courts/hearing.json#"
+      }
+    },
+    "hearingRequest": {
+      "$ref": "http://justice.gov.uk/core/courts/hearingListingNeeds.json"
+    },
+    "shadowListedOffences": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      }
+    }
+  },
+  "required": [
+    "hearing",
+    "hearingRequest"
+  ],
+  "additionalProperties": false
+}

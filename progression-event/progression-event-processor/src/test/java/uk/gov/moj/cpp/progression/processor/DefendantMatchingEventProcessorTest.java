@@ -5,19 +5,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -28,17 +20,30 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.MatchedDefendants;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import javax.json.Json;
-import javax.json.JsonObject;
+
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantMatchingEventProcessorTest {
@@ -96,13 +101,46 @@ public class DefendantMatchingEventProcessorTest {
         envelopeCaptor.getAllValues().forEach(
                 v -> {
                     if (v.metadata().name().equalsIgnoreCase("public.progression.defendant-unmatched")) {
-                        assertThat(v.payload().getString("defendantId") , is(defendantId.toString()));
+                        assertThat(v.payload().getString("defendantId"), is(defendantId.toString()));
                     } else {
-                        assertThat(v.payload().getJsonObject("defendant").getString("id") , is(defendantId.toString()));
-                        assertThat(v.payload().getJsonObject("defendant").getString("masterDefendantId") , is(defendantId.toString()));
+                        assertThat(v.payload().getJsonObject("defendant").getString("id"), is(defendantId.toString()));
+                        assertThat(v.payload().getJsonObject("defendant").getString("masterDefendantId"), is(defendantId.toString()));
                     }
                 }
         );
+    }
+
+    @Test
+    public void handleDefendantUnmatchedV2Event() {
+        final UUID prosecutionCaseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+
+        final ProsecutionCase incomingProsecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(prosecutionCaseId)
+                .withDefendants(createDefendants(defendantId))
+                .build();
+
+        final JsonObject incomingProsecutionCaseJson = Json.createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(incomingProsecutionCase))
+                .build();
+        final Optional<JsonObject> incomingProsecutionCaseJsonOptional = Optional.of(incomingProsecutionCaseJson);
+
+        defendantMatchingEventProcessor.handleDefendantUnmatchedV2Event(
+                buildDefendantUnmatchedV2EventEnvelope(prosecutionCaseId.toString(), defendantId.toString(), defendantId.toString()));
+
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+
+        envelopeCaptor.getAllValues().forEach(
+                v -> {
+                    if (v.metadata().name().equalsIgnoreCase("public.progression.defendant-unmatched")) {
+                        assertThat(v.payload().getString("defendantId"), is(defendantId.toString()));
+                    } else {
+                        assertThat(v.payload().getJsonObject("defendant").getString("id"), is(defendantId.toString()));
+                        assertThat(v.payload().getJsonObject("defendant").getString("masterDefendantId"), is(defendantId.toString()));
+                    }
+                }
+        );
+        verifyNoMoreInteractions(progressionService);
     }
 
     @Test
@@ -172,6 +210,19 @@ public class DefendantMatchingEventProcessorTest {
                 Json.createObjectBuilder()
                         .add("defendantId", defendantId)
                         .add("prosecutionCaseId", prosecutionCaseId)
+                        .build());
+    }
+
+    private JsonEnvelope buildDefendantUnmatchedV2EventEnvelope(final String prosecutionCaseId, final String defendantId, final String masterDefendantId) {
+        return JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.defendant-unmatched-v2"),
+                Json.createObjectBuilder()
+                        .add("defendantId", defendantId)
+                        .add("prosecutionCaseId", prosecutionCaseId)
+                        .add("defendant", Json.createObjectBuilder()
+                                .add("id", defendantId)
+                                .add("masterDefendantId", masterDefendantId)
+                                .build())
                         .build());
     }
 

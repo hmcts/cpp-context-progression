@@ -39,7 +39,6 @@ import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
-import uk.gov.justice.core.courts.HearingUpdated;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
@@ -108,7 +107,6 @@ public class ProgressionService {
     private static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
     private static final String PROGRESSION_QUERY_SEARCH_CASES = "progression.query.search-cases";
     private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
-    private static final String PROGRESSION_QUERY_DEFENDANT_REQUEST = "progression.query.defendant-request";
     private static final String PROGRESSION_QUERY_HEARING = "progression.query.hearing";
     private static final String PROGRESSION_QUERY_LINKED_CASES = "progression.query.case-lsm-info";
     private static final String PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND = "progression.command.update-defendant-listing-status";
@@ -615,23 +613,6 @@ public class ProgressionService {
         return Optional.of(response.payloadAsJsonObject());
     }
 
-    public Optional<JsonObject> getDefendantRequestByDefendantId(final JsonEnvelope envelope, final String defendantId) {
-        final JsonObject requestParameter = createObjectBuilder()
-                .add(DEFENDANT_ID, defendantId)
-                .build();
-
-        LOGGER.info("defendantId {}, get defendant request {}", defendantId, requestParameter);
-
-        final JsonEnvelope defendantRequest = requester.requestAsAdmin(enveloper
-                .withMetadataFrom(envelope, PROGRESSION_QUERY_DEFENDANT_REQUEST)
-                .apply(requestParameter));
-
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("defendantId {} get defendant request payload {}", defendantId, defendantRequest.toObfuscatedDebugString());
-        }
-        return ofNullable(defendantRequest.payloadAsJsonObject());
-    }
-
     public void updateHearingListingStatusToHearingInitiated(final JsonEnvelope jsonEnvelope, final Initiate hearingInitiate) {
         final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
                 .add(HEARING_LISTING_STATUS, HEARING_INITIALISED)
@@ -707,9 +688,9 @@ public class ProgressionService {
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
     }
 
-    public void publishHearingDetailChangedPublicEvent(final JsonEnvelope jsonEnvelope, final HearingUpdated hearingUpdated) {
+    public void publishHearingDetailChangedPublicEvent(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing) {
         final JsonObject hearingDetailChangedPayload = Json.createObjectBuilder()
-                .add(HEARING, objectToJsonObjectConverter.convert(transformUpdatedHearing(hearingUpdated.getUpdatedHearing(), jsonEnvelope)))
+                .add(HEARING, objectToJsonObjectConverter.convert(transformUpdatedHearing(confirmedHearing, jsonEnvelope)))
                 .build();
         LOGGER.info("publish public hearing details changed event with payload {}", hearingDetailChangedPayload);
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_EVENT_HEARING_DETAIL_CHANGED).apply(hearingDetailChangedPayload));

@@ -9,6 +9,8 @@ import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Ethnicity;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDefendantUpdated;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
@@ -21,7 +23,9 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
@@ -52,6 +56,8 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
     @Inject
     private ProsecutionCaseRepository repository;
+    @Inject
+    private HearingRepository hearingRepository;
     @Inject
     private SearchProsecutionCase searchCase;
 
@@ -134,6 +140,33 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
             repository.save(getProsecutionCaseEntity(updatedProsecutionCase));
             updateSearchable(updatedProsecutionCase);
         }
+    }
+
+    @Handles("progression.event.hearing-defendant-updated")
+    public void processHearingDefendantUpdated(final JsonEnvelope event) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("received event  progression.event.hearing-defendant-updated {} ", event.toObfuscatedDebugString());
+        }
+        final HearingDefendantUpdated hearingDefendantUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingDefendantUpdated.class);
+        final DefendantUpdate defendantUpdate = hearingDefendantUpdated.getDefendant();
+        final HearingEntity hearingEntity = hearingRepository.findBy(hearingDefendantUpdated.getHearingId());
+        final JsonObject hearingJson = jsonFromString(hearingEntity.getPayload());
+        final Hearing hearing = jsonObjectConverter.convert(hearingJson, Hearing.class);
+
+        hearing.getProsecutionCases().forEach(prosecutionCase -> {
+            final Optional<Defendant> oldDefendant = prosecutionCase.getDefendants().stream()
+                    .filter(d -> d.getId().equals(defendantUpdate.getId()))
+                    .findFirst();
+
+            if (oldDefendant.isPresent()) {
+                final Defendant updatedDefendant = updateDefendant(oldDefendant.get(), defendantUpdate);
+                prosecutionCase.getDefendants().remove(oldDefendant.get());
+                prosecutionCase.getDefendants().add(updatedDefendant);
+            }
+        });
+
+        hearingRepository.save(getHearingEntity(hearing));
+
     }
 
     private Defendant getUpdatedDefendant(final Defendant originalDefendant, final Defendant defendant) {
@@ -431,5 +464,12 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         pCaseEntity.setCaseId(prosecutionCase.getId());
         pCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
         return pCaseEntity;
+    }
+
+    private HearingEntity getHearingEntity(final Hearing hearing) {
+        final HearingEntity entity = new HearingEntity();
+        entity.setHearingId(hearing.getId());
+        entity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
+        return entity;
     }
 }

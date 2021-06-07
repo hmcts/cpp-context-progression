@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.command;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -18,9 +19,13 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.ExtendHearing;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingExtended;
+import uk.gov.justice.core.courts.HearingExtendedProcessed;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.ProcessHearingExtended;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -32,11 +37,13 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.handler.ExtendHearingHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.Before;
@@ -60,7 +67,10 @@ public class ExtendHearingHandlerTest {
     private AggregateService aggregateService;
 
     @Spy
-    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(HearingExtended.class);
+    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
+            HearingExtended.class,
+            HearingExtendedProcessed.class
+    );
 
     @InjectMocks
     private ExtendHearingHandler extendHearingHandler;
@@ -69,13 +79,17 @@ public class ExtendHearingHandlerTest {
 
     private CaseAggregate caseAggregate;
 
+    private HearingAggregate hearingAggregate;
+
     @Before
     public void setup() {
         applicationAggregate = new ApplicationAggregate();
         caseAggregate = new CaseAggregate();
+        hearingAggregate = new HearingAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
     }
 
     @Test
@@ -89,7 +103,7 @@ public class ExtendHearingHandlerTest {
     @Test
     public void shouldProcessCommand() throws Exception {
 
-        final ExtendHearing extendHearing  = createExtendHearingForApplication();
+        final ExtendHearing extendHearing = createExtendHearingForApplication();
         applicationAggregate.extendHearing(extendHearing.getHearingRequest());
 
         final Metadata metadata = Envelope
@@ -118,7 +132,7 @@ public class ExtendHearingHandlerTest {
     @Test
     public void shouldProcessCommandForProsecutionCase() throws Exception {
 
-        final ExtendHearing extendHearing  = createExtendHearingForProsecutionCase();
+        final ExtendHearing extendHearing = createExtendHearingForProsecutionCase();
         caseAggregate.extendHearing(extendHearing.getHearingRequest(), true, randomUUID(), false, Collections.emptyList());
 
         final Metadata metadata = Envelope
@@ -139,7 +153,41 @@ public class ExtendHearingHandlerTest {
                                 withJsonPath("$.hearingRequest", notNullValue()),
                                 withJsonPath("$.hearingRequest.prosecutionCases", notNullValue()))
                         ))
-               )
+                )
+        );
+    }
+
+    @Test
+    public void shouldHandleProcessHearingExtended() throws Exception {
+
+        final UUID hearingId = randomUUID();
+        final ProcessHearingExtended processHearingExtended = ProcessHearingExtended.processHearingExtended()
+                .withHearingRequest(HearingListingNeeds.hearingListingNeeds().withId(hearingId).build())
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.process-hearing-extended")
+                .withId(randomUUID())
+                .build();
+
+        hearingAggregate.apply(HearingResulted.hearingResulted().withHearing(Hearing.hearing().withId(hearingId).build()).build());
+
+        final Envelope<ProcessHearingExtended> envelope = envelopeFrom(metadata, processHearingExtended);
+
+        extendHearingHandler.handleProcessHearingExtended(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.hearing-extended-processed"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearingRequest.id", is(hearingId.toString())),
+                                withJsonPath("$.hearing.id", is(hearingId.toString())))
+                        ))
+                )
         );
     }
 
@@ -157,7 +205,7 @@ public class ExtendHearingHandlerTest {
                         .withCourtApplications(courtApplicationList)
                         .withId(randomUUID())
                         .build())
-                        .build();
+                .build();
     }
 
     private static ExtendHearing createExtendHearingForProsecutionCase() {

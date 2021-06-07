@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import uk.gov.justice.core.courts.DefendantUpdate;
+import uk.gov.justice.core.courts.UpdateDefendantForHearing;
+import uk.gov.justice.core.courts.UpdateDefendantForMatchedDefendant;
 import uk.gov.justice.core.courts.UpdateDefendantForProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
@@ -12,7 +15,9 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -39,17 +44,39 @@ public class UpdateDefendantHandler {
     public void handle(final Envelope<UpdateDefendantForProsecutionCase> updateDefendantEnvelope) throws EventStreamException {
         LOGGER.debug("progression.command.update-defendant-for-prosecution-case {}", updateDefendantEnvelope.payload());
 
-        final Stream<Object> events;
         final UpdateDefendantForProsecutionCase defendantDetailsToUpdate = updateDefendantEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(defendantDetailsToUpdate.getDefendant().getProsecutionCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-        if (defendantDetailsToUpdate.getMatchedDefendantHearingId() == null) {
-            events = caseAggregate.updateDefendantDetails(defendantDetailsToUpdate.getDefendant());
-        } else {
-            events = caseAggregate.recordUpdateDefendantDetailsWithMatched(defendantDetailsToUpdate.getDefendant(), defendantDetailsToUpdate.getMatchedDefendantHearingId());
-        }
+        final Stream<Object> events = caseAggregate.updateDefendantDetails(defendantDetailsToUpdate.getDefendant());
+
         appendEventsToStream(updateDefendantEnvelope, eventStream, events);
 
+    }
+
+    @Handles("progression.command.update-defendant-for-matched-defendant")
+    public void handleUpdateDefendantForMatchedDefendant(final Envelope<UpdateDefendantForMatchedDefendant> updateDefendantEnvelope) throws EventStreamException{
+        final UpdateDefendantForMatchedDefendant defendantDetailsToUpdate = updateDefendantEnvelope.payload();
+        final UUID hearingId = defendantDetailsToUpdate.getMatchedDefendantHearingId();
+        final DefendantUpdate defendantUpdate = defendantDetailsToUpdate.getDefendant();
+
+        final EventStream eventStream = eventSource.getStreamById(hearingId);
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events = hearingAggregate.recordUpdateMatchedDefendantDetailRequest(defendantUpdate);
+        appendEventsToStream(updateDefendantEnvelope, eventStream, events);
+
+    }
+
+
+    @Handles("progression.command.update-defendant-for-hearing")
+    public void handleUpdateDefendantForHearing(final Envelope<UpdateDefendantForHearing> updateDefendantEnvelope) throws EventStreamException {
+        final UpdateDefendantForHearing defendantDetailsToUpdate = updateDefendantEnvelope.payload();
+        final UUID hearingId = defendantDetailsToUpdate.getHearingId();
+        final DefendantUpdate defendantUpdate = defendantDetailsToUpdate.getDefendant();
+
+        final EventStream eventStream = eventSource.getStreamById(hearingId);
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events = hearingAggregate.updateDefendant(hearingId, defendantUpdate);
+        appendEventsToStream(updateDefendantEnvelope, eventStream, events);
     }
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {

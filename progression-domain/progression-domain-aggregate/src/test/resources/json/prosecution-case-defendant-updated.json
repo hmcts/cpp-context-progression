@@ -117,5 +117,6 @@
     },
     "prosecutionAuthorityReference":"TFL12345-ABC",
     "prosecutionCaseId":"2279b2c3-b0d3-4889-ae8e-1ecc20c39e27"
-  }
+  },
+  "hearingIds":[]
 }

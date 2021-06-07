@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.MatchDefendant;
 import uk.gov.justice.core.courts.MatchedDefendants;
 import uk.gov.justice.core.courts.ProcessMatchedDefendants;
+import uk.gov.justice.core.courts.UpdateMatchedDefendant;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -44,6 +45,18 @@ public class DefendantMatchingHandler {
         final EventStream eventStream = eventSource.getStreamById(processMatchedDefendants.getProsecutionCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
         final Stream<Object> events = caseAggregate.storeMatchedDefendants(processMatchedDefendants.getProsecutionCaseId());
+        appendEventsToStream(envelope, eventStream, events);
+    }
+
+    @Handles("progression.command.update-matched-defendant")
+    public void updateMatchedDefendant(final Envelope<UpdateMatchedDefendant> envelope) throws EventStreamException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("progression.command.update-matched-defendant: {}", envelope.payload());
+        }
+        final UpdateMatchedDefendant updateMatchedDefendant = envelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(updateMatchedDefendant.getProsecutionCaseId());
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+        final Stream<Object> events = caseAggregate.updateMatchedDefendant(updateMatchedDefendant.getProsecutionCaseId(), updateMatchedDefendant.getDefendantId(), updateMatchedDefendant.getMasterDefendantId());
         appendEventsToStream(envelope, eventStream, events);
     }
 
