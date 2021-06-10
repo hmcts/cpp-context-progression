@@ -8,10 +8,10 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.justice.core.courts.InitiationCode.S;
-import static uk.gov.justice.core.courts.SummonsRequired.APPLICATION;
-import static uk.gov.justice.core.courts.SummonsRequired.BREACH;
-import static uk.gov.justice.core.courts.SummonsRequired.FIRST_HEARING;
-import static uk.gov.justice.core.courts.SummonsRequired.SJP_REFERRAL;
+import static uk.gov.justice.core.courts.SummonsType.APPLICATION;
+import static uk.gov.justice.core.courts.SummonsType.BREACH;
+import static uk.gov.justice.core.courts.SummonsType.FIRST_HEARING;
+import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
 import static uk.gov.justice.core.courts.summons.SummonsDocumentContent.summonsDocumentContent;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.generateSummons;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.getSummonsCode;
@@ -28,7 +28,7 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
-import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.summons.SummonsAddressee;
 import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
@@ -68,7 +68,7 @@ public class SummonsDataPreparedEventProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SummonsDataPreparedEventProcessor.class.getName());
 
-    private static final List<SummonsRequired> PARENT_TEMPLATE_APPLICABLE_FOR = newArrayList(FIRST_HEARING, BREACH);
+    private static final List<SummonsType> PARENT_TEMPLATE_APPLICABLE_FOR = newArrayList(FIRST_HEARING, BREACH);
 
     @Inject
     private ProgressionService progressionService;
@@ -156,7 +156,7 @@ public class SummonsDataPreparedEventProcessor {
 
             final CourtApplicationPartyListingNeeds subjectNeeds = optionalSubjectNeeds.get();
             final String applicantEmailAddress = getProsecutorEmailAddress(subjectNeeds.getSummonsApprovedOutcome());
-            final SummonsRequired summonsRequired = subjectNeeds.getSummonsRequired();
+            final SummonsType summonsRequired = subjectNeeds.getSummonsRequired();
             final boolean sendForRemotePrinting = !(nonNull(subjectNeeds.getSummonsApprovedOutcome().getSummonsSuppressed()) && subjectNeeds.getSummonsApprovedOutcome().getSummonsSuppressed());
             final String subjectTemplateName = summonsTemplateNameService.getApplicationTemplateName(summonsRequired, isWelsh);
             final SummonsDocumentContent subjectSummonsDocumentContent = applicationSummonsService.generateSummonsDocumentContent(summonsDataPrepared, courtApplicationQueried, subjectNeeds, courtCentreJson, optionalLjaDetails);
@@ -205,7 +205,7 @@ public class SummonsDataPreparedEventProcessor {
                     return;
                 }
                 final ListDefendantRequest defendantRequest = optionalDefendantRequest.get();
-                final SummonsRequired summonsRequired = optionalDefendantRequest.get().getSummonsRequired();
+                final SummonsType summonsRequired = optionalDefendantRequest.get().getSummonsRequired();
                 final SummonsApprovedOutcome summonsApprovedOutcome = defendantRequest.getSummonsApprovedOutcome();
                 final boolean sendForRemotePrinting = !(FIRST_HEARING == summonsRequired
                         && nonNull(summonsApprovedOutcome.getSummonsSuppressed()) && summonsApprovedOutcome.getSummonsSuppressed());
@@ -279,7 +279,7 @@ public class SummonsDataPreparedEventProcessor {
             return false;
         }
 
-        final SummonsRequired summonsRequired = listDefendantRequest.get().getSummonsRequired();
+        final SummonsType summonsRequired = listDefendantRequest.get().getSummonsRequired();
         final boolean summonsInitiationCode = (S == prosecutionCase.getInitiationCode());
         final boolean validFirstHearingSummonsScenario = FIRST_HEARING == summonsRequired && generateSummons(prosecutionCase.getSummonsCode()) && summonsInitiationCode;
         final boolean validSjpReferralScenario = (SJP_REFERRAL == summonsRequired);
@@ -292,7 +292,7 @@ public class SummonsDataPreparedEventProcessor {
             return false;
         }
 
-        final SummonsRequired summonsRequired = optionalCourtApplicationPartyListingNeeds.get().getSummonsRequired();
+        final SummonsType summonsRequired = optionalCourtApplicationPartyListingNeeds.get().getSummonsRequired();
         return APPLICATION == summonsRequired || BREACH == summonsRequired;
     }
 

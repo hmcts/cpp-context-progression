@@ -14,10 +14,10 @@ import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.CommittingCourt;
-import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReportingRestriction;
@@ -295,11 +295,11 @@ public class HearingToHearingListingNeedsTransformerTest {
         assertThat(defendant1.getOffences().get(0).getCommittingCourt(), is(notNullValue()));
         assertThat(defendant1.getOffences().get(0).getCommittingCourt().getCourtHouseCode(), is("CCCODE"));
         assertThat(defendant1.getOffences().get(0).getCommittingCourt().getCourtHouseName(), is("Committing Court"));
-        assertThat(defendant1.getOffences().get(0).getCommittingCourt().getCourtHouseType(), is(CourtHouseType.MAGISTRATES));
+        assertThat(defendant1.getOffences().get(0).getCommittingCourt().getCourtHouseType(), is(JurisdictionType.MAGISTRATES));
         assertThat(defendant2.getOffences().get(0).getCommittingCourt(), is(notNullValue()));
         assertThat(defendant2.getOffences().get(0).getCommittingCourt().getCourtHouseCode(), is("CCCODE"));
         assertThat(defendant2.getOffences().get(0).getCommittingCourt().getCourtHouseName(), is("Committing Court"));
-        assertThat(defendant2.getOffences().get(0).getCommittingCourt().getCourtHouseType(), is(CourtHouseType.MAGISTRATES));
+        assertThat(defendant2.getOffences().get(0).getCommittingCourt().getCourtHouseType(), is(JurisdictionType.MAGISTRATES));
 
     }
 

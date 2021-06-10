@@ -10,7 +10,7 @@ import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
 
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.CourtHouseType;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.moj.cpp.progression.helper.TestHelper;
 import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
@@ -65,7 +65,7 @@ public class OffenceToCommittingCourtConverterTest {
 
         assertThat(committingCourt.getCourtHouseCode(), is("CCCODE"));
         assertThat(committingCourt.getCourtHouseName(), is("Committing Court"));
-        assertThat(committingCourt.getCourtHouseType(), is(CourtHouseType.MAGISTRATES));
+        assertThat(committingCourt.getCourtHouseType(), is(JurisdictionType.MAGISTRATES));
 
     }
 

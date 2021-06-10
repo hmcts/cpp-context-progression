@@ -57,8 +57,8 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsApproved;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected;
-import uk.gov.justice.core.courts.SummonsRequired;
 import uk.gov.justice.core.courts.SummonsTemplateType;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -749,7 +749,7 @@ public class CourtApplicationProcessor {
                 .withHearingId(courtHearingId)
                 .withApplicationRequests(singletonList(courtApplicationPartyListingNeeds()
                         .withCourtApplicationId(application.getId())
-                        .withSummonsRequired(summonsTemplateType == SummonsTemplateType.BREACH ? SummonsRequired.BREACH : SummonsRequired.APPLICATION)
+                        .withSummonsRequired(summonsTemplateType == SummonsTemplateType.BREACH ? SummonsType.BREACH : SummonsType.APPLICATION)
                         .withSummonsApprovedOutcome(initiateCourtHearingAfterSummonsApproved.getSummonsApprovedOutcome())
                         .withCourtApplicationPartyId(application.getSubject().getId())
                         .build())).build();

@@ -17,10 +17,8 @@ import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ReferralReason;
-import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsData;
-import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.summons.SummonsProsecutor;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -48,7 +46,7 @@ public class SummonDataPreparedEventProcessorTestHelper {
     private static final String LJA_NAME_WELSH = "cymruCourtCentreName";
     private static final String PROSECUTOR_NAME = "TFL";
 
-    public static SummonsData generateSummonsData(final SummonsRequired summonsRequired,
+    public static SummonsData generateSummonsData(final SummonsType summonsRequired,
                                                   final UUID caseId,
                                                   final UUID defendantId,
                                                   final UUID courtCentreId,
@@ -338,7 +336,7 @@ public class SummonDataPreparedEventProcessorTestHelper {
     }
 
     public static void assertOnSummonsData(final JsonObject summonsDataJson,
-                                           final SummonsRequired summonsRequired,
+                                           final SummonsType summonsRequired,
                                            final String summonsType) {
         assertThat(summonsDataJson, notNullValue());
         assertThat(summonsDataJson.getString("subTemplateName"), is(summonsRequired.toString()));

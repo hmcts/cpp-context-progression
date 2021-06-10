@@ -24,7 +24,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.ReferredListHearingRequest;
 import uk.gov.justice.core.courts.SjpReferral;
-import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
@@ -339,7 +339,7 @@ public class ListCourtHearingTransformer {
                         .withProsecutionCaseId(listDefendantRequest.getProsecutionCaseId())
                         .withReferralReason(listDefendantRequest.getReferralReason())
                         .withDefendantOffences(listDefendantRequest.getDefendantOffences())
-                        .withSummonsRequired(isDefendantYouth(expectedListingStartDateTime, listDefendantRequest.getDefendantId(), listOfProsecutionCase) ? SummonsRequired.YOUTH : listDefendantRequest.getSummonsRequired())
+                        .withSummonsRequired(isDefendantYouth(expectedListingStartDateTime, listDefendantRequest.getDefendantId(), listOfProsecutionCase) ? SummonsType.YOUTH : listDefendantRequest.getSummonsRequired())
                         .build()
         ).collect(Collectors.toList());
     }
@@ -435,7 +435,7 @@ public class ListCourtHearingTransformer {
                         .withHearingLanguageNeeds(listDefendantRequest.getHearingLanguageNeeds())
                         .withProsecutionCaseId(listDefendantRequest.getProsecutionCaseId())
                         .withListingReason(getReferralReasonDescription(jsonEnvelope, listDefendantRequest.getReferralReason()))
-                        .withIsYouth(listDefendantRequest.getSummonsRequired() != null && SummonsRequired.YOUTH.equals(listDefendantRequest.getSummonsRequired()))
+                        .withIsYouth(listDefendantRequest.getSummonsRequired() != null && SummonsType.YOUTH.equals(listDefendantRequest.getSummonsRequired()))
                         .build()
         ).collect(Collectors.toList());
     }

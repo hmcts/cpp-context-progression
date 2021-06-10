@@ -6,7 +6,6 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
 import uk.gov.justice.core.courts.HearingLanguage;
-import uk.gov.justice.core.courts.HearingLanguageNeeds;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
@@ -112,7 +111,7 @@ public class AdjournHearingEventProcessor {
                 final CourtApplicationPartyListingNeeds courtApplicationPartyListingNeeds = CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
                         .withCourtApplicationId(courtApplication.getId())
                         .withCourtApplicationPartyId(courtApplication.getApplicant().getProsecutingAuthority().getProsecutionAuthorityId())
-                        .withHearingLanguageNeeds(HearingLanguageNeeds.valueOf(hearingLanguage.name()))
+                        .withHearingLanguageNeeds(HearingLanguage.valueOf(hearingLanguage.name()))
                         .build();
                 courtApplicationPartyListingNeedsList.add(courtApplicationPartyListingNeeds);
             }
@@ -124,7 +123,7 @@ public class AdjournHearingEventProcessor {
                         final CourtApplicationPartyListingNeeds courtApplicationPartyListingNeeds = CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
                                 .withCourtApplicationId(courtApplication.getId())
                                 .withCourtApplicationPartyId(courtApplicationRespondent.getId())
-                                .withHearingLanguageNeeds(HearingLanguageNeeds.valueOf(hearingLanguage.name()))
+                                .withHearingLanguageNeeds(HearingLanguage.valueOf(hearingLanguage.name()))
                                 .build();
                         courtApplicationPartyListingNeedsList.add(courtApplicationPartyListingNeeds);
                     }

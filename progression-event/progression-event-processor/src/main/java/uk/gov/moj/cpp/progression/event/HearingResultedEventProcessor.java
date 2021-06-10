@@ -90,6 +90,10 @@ public class HearingResultedEventProcessor {
         final JsonObject eventPayload = event.payloadAsJsonObject();
         final JsonObject hearingJson = eventPayload.getJsonObject("hearing");
 
+        if (hearingJson.getBoolean("isSJPHearing", false)) {
+            return;
+        }
+
         final JsonObjectBuilder commandPayloadBuilder = createObjectBuilder()
                 .add("hearing", hearingJson)
                 .add("sharedTime", eventPayload.getJsonString("sharedTime"))

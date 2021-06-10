@@ -9,7 +9,6 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
@@ -246,7 +245,7 @@ public class TestHelper {
                                         .withCourtHouseShortName(COMMITTING_COURT_CODE)
                                         .withCourtHouseName(COMMITTING_COURT_NAME)
                                         .withCourtHouseCode(COMMITTING_COURT_CODE)
-                                        .withCourtHouseType(CourtHouseType.MAGISTRATES)
+                                        .withCourtHouseType(JurisdictionType.MAGISTRATES)
                                         .build())
                                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
                                         .withNextHearing(nextHearing)
@@ -353,7 +352,7 @@ public class TestHelper {
                 .withCourtHouseName(COMMITTING_COURT_NAME)
                 .withCourtHouseCode(COMMITTING_COURT_CODE)
                 .withCourtHouseShortName(COMMITTING_COURT_CODE)
-                .withCourtHouseType(CourtHouseType.MAGISTRATES)
+                .withCourtHouseType(JurisdictionType.MAGISTRATES)
                 .withCourtCentreId(UUID.randomUUID())
                 .build();
     }

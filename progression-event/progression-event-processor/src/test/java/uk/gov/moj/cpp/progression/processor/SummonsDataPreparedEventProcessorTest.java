@@ -34,10 +34,10 @@ import static uk.gov.justice.core.courts.ProsecutionCaseIdentifier.prosecutionCa
 import static uk.gov.justice.core.courts.SummonsApprovedOutcome.summonsApprovedOutcome;
 import static uk.gov.justice.core.courts.SummonsData.summonsData;
 import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
-import static uk.gov.justice.core.courts.SummonsRequired.APPLICATION;
-import static uk.gov.justice.core.courts.SummonsRequired.BREACH;
-import static uk.gov.justice.core.courts.SummonsRequired.FIRST_HEARING;
-import static uk.gov.justice.core.courts.SummonsRequired.SJP_REFERRAL;
+import static uk.gov.justice.core.courts.SummonsType.APPLICATION;
+import static uk.gov.justice.core.courts.SummonsType.BREACH;
+import static uk.gov.justice.core.courts.SummonsType.FIRST_HEARING;
+import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
 import static uk.gov.justice.core.courts.notification.EmailChannel.emailChannel;
 import static uk.gov.justice.core.courts.summons.SummonsDocumentContent.summonsDocumentContent;
 import static uk.gov.justice.core.courts.summons.SummonsProsecutor.summonsProsecutor;
@@ -60,7 +60,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsData;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
-import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.summons.SummonsDefendant;
 import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
@@ -231,11 +231,11 @@ public class SummonsDataPreparedEventProcessorTest {
 
     @UseDataProvider("applicationSummonsSpecifications")
     @Test
-    public void shouldGenerateEnglishSummonsForApplications(final SummonsRequired summonsRequired, final boolean isYouth, final int numberOfDocuments) {
+    public void shouldGenerateEnglishSummonsForApplications(final SummonsType summonsRequired, final boolean isYouth, final int numberOfDocuments) {
         verifySummonsPayloadGeneratedForApplications(summonsRequired, true, isYouth, numberOfDocuments, !summonsSuppressed);
     }
 
-    public void verifySummonsPayloadGeneratedForCaseSummons(final InitiationCode initiationCode, final SummonsRequired summonsRequired, final SummonsCode summonsCode, final boolean isWelsh, final boolean isYouth, final int numberOfDocuments, final boolean sendForRemotePrinting) {
+    public void verifySummonsPayloadGeneratedForCaseSummons(final InitiationCode initiationCode, final SummonsType summonsRequired, final SummonsCode summonsCode, final boolean isWelsh, final boolean isYouth, final int numberOfDocuments, final boolean sendForRemotePrinting) {
 
         //Given
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase(summonsRequired);
@@ -288,7 +288,7 @@ public class SummonsDataPreparedEventProcessorTest {
         verifyNoMoreInteractions(progressionService, referenceDataService, summonsService, summonsTemplateNameService, caseDefendantSummonsService, publishSummonsDocumentService, summonsNotificationEmailPayloadService);
     }
 
-    private void verifySummonsPayloadGeneratedForApplications(final SummonsRequired summonsRequired, final boolean isWelsh, final boolean isYouth, final int numberOfDocuments, final boolean sendForRemotePrinting) {
+    private void verifySummonsPayloadGeneratedForApplications(final SummonsType summonsRequired, final boolean isWelsh, final boolean isYouth, final int numberOfDocuments, final boolean sendForRemotePrinting) {
 
         //Given
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication(summonsRequired);
@@ -388,7 +388,7 @@ public class SummonsDataPreparedEventProcessorTest {
                         .build()).build();
     }
 
-    private SummonsDataPrepared getSummonsDataPreparedForCase(final SummonsRequired summonsRequired) {
+    private SummonsDataPrepared getSummonsDataPreparedForCase(final SummonsType summonsRequired) {
 
         final SummonsData summonsData = summonsData()
                 .withConfirmedProsecutionCaseIds(newArrayList(confirmedProsecutionCaseId()
@@ -411,7 +411,7 @@ public class SummonsDataPreparedEventProcessorTest {
         return summonsDataPrepared().withSummonsData(summonsData).build();
     }
 
-    private SummonsDataPrepared getSummonsDataPreparedForApplication(final SummonsRequired summonsRequired) {
+    private SummonsDataPrepared getSummonsDataPreparedForApplication(final SummonsType summonsRequired) {
 
         final SummonsData summonsData = summonsData()
                 .withConfirmedApplicationIds(newArrayList(APPLICATION_ID))

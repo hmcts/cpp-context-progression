@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.progression.processor.summons;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.justice.core.courts.SummonsRequired.APPLICATION;
-import static uk.gov.justice.core.courts.SummonsRequired.BREACH;
-import static uk.gov.justice.core.courts.SummonsRequired.FIRST_HEARING;
-import static uk.gov.justice.core.courts.SummonsRequired.SJP_REFERRAL;
+import static uk.gov.justice.core.courts.SummonsType.APPLICATION;
+import static uk.gov.justice.core.courts.SummonsType.BREACH;
+import static uk.gov.justice.core.courts.SummonsType.FIRST_HEARING;
+import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
 
-import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.SummonsType;
 
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
@@ -46,7 +46,7 @@ public class SummonsTemplateNameServiceTest {
 
     @UseDataProvider("defendantCaseSummonsSpecifications")
     @Test
-    public void getCaseSummonsDefendantTemplateName(final SummonsRequired summonsRequired, final SummonsCode summonsCode, final String templateName, final String language, final boolean isWelsh) {
+    public void getCaseSummonsDefendantTemplateName(final SummonsType summonsRequired, final SummonsCode summonsCode, final String templateName, final String language, final boolean isWelsh) {
         assertThat(service.getCaseSummonsTemplateName(summonsRequired, summonsCode, isWelsh), is("SP" + language + "_" + templateName));
     }
 
@@ -62,7 +62,7 @@ public class SummonsTemplateNameServiceTest {
 
     @UseDataProvider("applicationSummonsSpecifications")
     @Test
-    public void getApplicationTemplateName(final SummonsRequired summonsRequired, final String templateName, final String language, final boolean isWelsh) {
+    public void getApplicationTemplateName(final SummonsType summonsRequired, final String templateName, final String language, final boolean isWelsh) {
         assertThat(service.getApplicationTemplateName(summonsRequired, isWelsh), is("SP" + language + "_" + templateName));
     }
 

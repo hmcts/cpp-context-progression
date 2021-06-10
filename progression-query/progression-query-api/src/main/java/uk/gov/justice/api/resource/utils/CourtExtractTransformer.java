@@ -20,6 +20,7 @@ import uk.gov.justice.core.courts.DefendantAttendance;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
@@ -674,7 +675,7 @@ public class CourtExtractTransformer {
                 uk.gov.justice.progression.courts.exract.Hearings.hearings()
                         .withHearingDays(transformationHelper.transformHearingDays(h.getHearingDays()))
                         .withId(h.getId())
-                        .withJurisdictionType(h.getJurisdictionType() != null ? uk.gov.justice.progression.courts.exract.JurisdictionType.valueOf(h.getJurisdictionType().toString()) : null)
+                        .withJurisdictionType(h.getJurisdictionType() != null ? JurisdictionType.valueOf(h.getJurisdictionType().toString()) : null)
                         .withCourtCentre(transformCourtCenter(h, defendantId))
                         .withReportingRestrictionReason(h.getReportingRestrictionReason())
                         .withType(h.getType().getDescription()).build()

@@ -11,9 +11,9 @@ import static uk.gov.justice.core.courts.BailStatus.bailStatus;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;
-import uk.gov.justice.core.courts.DocumentationLanguageNeeds;
 import uk.gov.justice.core.courts.Ethnicity;
 import uk.gov.justice.core.courts.Gender;
+import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
@@ -77,7 +77,7 @@ public class DefendantHelperTest {
                 .withEthnicity(Ethnicity.ethnicity().withSelfDefinedEthnicityId(selfDefEthnicityId).build())
                 .withGender(Gender.MALE)
                 .withInterpreterLanguageNeeds("John")
-                .withDocumentationLanguageNeeds(DocumentationLanguageNeeds.WELSH).withNationalInsuranceNumber("SK384524").withOccupation("Student").withSpecificRequirements("Screen").withAddress(contactAddress).withContact(contactDetails).build();
+                .withDocumentationLanguageNeeds(HearingLanguage.WELSH).withNationalInsuranceNumber("SK384524").withOccupation("Student").withSpecificRequirements("Screen").withAddress(contactAddress).withContact(contactDetails).build();
 
         personDefendant = PersonDefendant.personDefendant()
                 .withBailStatus(bailStatus().withId(randomUUID()).withDescription("Remanded into Custody").withCode("C").build())

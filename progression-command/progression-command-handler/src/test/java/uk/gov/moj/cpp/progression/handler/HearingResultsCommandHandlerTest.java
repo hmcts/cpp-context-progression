@@ -8,11 +8,11 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
 
-import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
@@ -397,7 +397,7 @@ public class HearingResultsCommandHandlerTest {
                                         .withOffences(Arrays.asList(Offence.offence()
                                                 .withId(randomUUID())
                                                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                                                        .withCategory(Category.INTERMEDIARY)
+                                                        .withCategory(JudicialResultCategory.INTERMEDIARY)
                                                         .withIsUnscheduled(true)
                                                         .withNextHearing(nextHearing)
                                                         .build()))
@@ -422,7 +422,7 @@ public class HearingResultsCommandHandlerTest {
                                         .withOffences(Arrays.asList(Offence.offence()
                                                         .withId(randomUUID())
                                                         .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                                                                .withCategory(Category.INTERMEDIARY)
+                                                                .withCategory(JudicialResultCategory.INTERMEDIARY)
                                                                 .withIsUnscheduled(true)
                                                                 .withNextHearing(NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).build())
                                                                 .build()))
@@ -430,7 +430,7 @@ public class HearingResultsCommandHandlerTest {
                                                 Offence.offence()
                                                         .withId(randomUUID())
                                                         .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                                                                .withCategory(Category.INTERMEDIARY)
+                                                                .withCategory(JudicialResultCategory.INTERMEDIARY)
                                                                 .withIsUnscheduled(true)
                                                                 .withNextHearing(NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now().plusDays(1)).build())
                                                                 .build()))

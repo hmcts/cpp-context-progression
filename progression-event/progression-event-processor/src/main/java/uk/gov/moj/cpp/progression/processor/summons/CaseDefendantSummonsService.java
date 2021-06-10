@@ -7,8 +7,8 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static uk.gov.justice.core.courts.SummonsRequired.FIRST_HEARING;
-import static uk.gov.justice.core.courts.SummonsRequired.SJP_REFERRAL;
+import static uk.gov.justice.core.courts.SummonsType.FIRST_HEARING;
+import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
 import static uk.gov.justice.core.courts.summons.ReferralSummonsDocumentContent.referralSummonsDocumentContent;
 import static uk.gov.justice.core.courts.summons.SummonsAddressee.summonsAddressee;
 import static uk.gov.justice.core.courts.summons.SummonsDefendant.summonsDefendant;
@@ -35,7 +35,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
-import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.summons.ReferralSummonsDocumentContent;
 import uk.gov.justice.core.courts.summons.SummonsAddressee;
 import uk.gov.justice.core.courts.summons.SummonsDefendant;
@@ -83,7 +83,7 @@ public class CaseDefendantSummonsService {
 
         final SummonsDocumentContent.Builder summonsDocumentContent = summonsDocumentContent();
 
-        final SummonsRequired summonsRequired = defendantRequest.getSummonsRequired();
+        final SummonsType summonsRequired = defendantRequest.getSummonsRequired();
         summonsDocumentContent.withSubTemplateName(summonsRequired.name());
         if (FIRST_HEARING == summonsRequired) {
             summonsDocumentContent.withType(getSummonsCode(prosecutionCaseQueried.getSummonsCode()).getSubType());

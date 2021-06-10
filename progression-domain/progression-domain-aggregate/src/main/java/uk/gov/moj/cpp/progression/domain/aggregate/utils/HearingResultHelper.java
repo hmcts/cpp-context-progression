@@ -11,7 +11,6 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
@@ -199,7 +198,7 @@ public class HearingResultHelper {
                             .withCourtHouseName(courtCentre.getName())
                             .withCourtHouseCode(courtCentre.getCode())
                             .withCourtHouseShortName(courtCentre.getCode())
-                            .withCourtHouseType(CourtHouseType.MAGISTRATES)
+                            .withCourtHouseType(JurisdictionType.MAGISTRATES)
                             .withCourtCentreId(courtCentre.getId())
                             .build());
                 }

@@ -25,8 +25,8 @@ import static uk.gov.justice.core.courts.ProsecutingAuthority.prosecutingAuthori
 import static uk.gov.justice.core.courts.SummonsApprovedOutcome.summonsApprovedOutcome;
 import static uk.gov.justice.core.courts.SummonsData.summonsData;
 import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
-import static uk.gov.justice.core.courts.SummonsRequired.APPLICATION;
-import static uk.gov.justice.core.courts.SummonsRequired.BREACH;
+import static uk.gov.justice.core.courts.SummonsType.APPLICATION;
+import static uk.gov.justice.core.courts.SummonsType.BREACH;
 import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateCourtCentreJson;
 
 import uk.gov.justice.core.courts.Address;
@@ -39,10 +39,9 @@ import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
-import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsData;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
-import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.summons.SummonsAddress;
 import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
 import uk.gov.justice.core.courts.summons.SummonsHearingCourtDetails;
@@ -106,7 +105,7 @@ public class ApplicationSummonsServiceTest {
 
     @UseDataProvider("applicationSummonsSpecifications")
     @Test
-    public void generateSummonsDocumentContent(final SummonsRequired summonsRequired, final boolean welshValuesPresent, final PartyType partyType) {
+    public void generateSummonsDocumentContent(final SummonsType summonsRequired, final boolean welshValuesPresent, final PartyType partyType) {
 
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication(summonsRequired);
         final CourtApplication courtApplication = getCourtApplication(welshValuesPresent, partyType);
@@ -198,7 +197,7 @@ public class ApplicationSummonsServiceTest {
         assertThat(applicationSummonsPayload.getBreachContent().getOrderingCourt(), is(COURT_NAME));
     }
 
-    private SummonsDataPrepared getSummonsDataPreparedForApplication(final SummonsRequired summonsRequired) {
+    private SummonsDataPrepared getSummonsDataPreparedForApplication(final SummonsType summonsRequired) {
 
         final SummonsData summonsData = summonsData()
                 .withConfirmedApplicationIds(newArrayList(APPLICATION_ID))

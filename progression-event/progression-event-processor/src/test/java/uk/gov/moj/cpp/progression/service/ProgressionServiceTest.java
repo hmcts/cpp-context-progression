@@ -31,7 +31,6 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.BoxworkApplicationReferred;
-import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
@@ -50,6 +49,7 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdated;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -92,7 +92,6 @@ import java.util.function.Function;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.json.JsonValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
@@ -333,7 +332,7 @@ public class ProgressionServiceTest {
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withCourtApplicationCases(
                         singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(caseId).build()))
-                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(Category.FINAL).build()))
+                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).build()))
                 .build();
         final List<CourtApplication> courtApplications = singletonList(courtApplication);
 

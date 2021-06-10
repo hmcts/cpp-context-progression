@@ -22,10 +22,10 @@ import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
-import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReportingRestriction;
@@ -35,12 +35,10 @@ import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -424,7 +422,7 @@ public class NextHearingServiceTest {
         assertThat(defendant.getOffences().get(0).getCommittingCourt(), is(notNullValue()));
         assertThat(defendant.getOffences().get(0).getCommittingCourt().getCourtHouseCode(), is("CCCODE"));
         assertThat(defendant.getOffences().get(0).getCommittingCourt().getCourtHouseName(), is("Committing Court"));
-        assertThat(defendant.getOffences().get(0).getCommittingCourt().getCourtHouseType(), is(CourtHouseType.MAGISTRATES));
+        assertThat(defendant.getOffences().get(0).getCommittingCourt().getCourtHouseType(), is(JurisdictionType.MAGISTRATES));
     }
 
     private void assertHearing(final HearingListingNeeds hearingListingNeeds, final UUID hearingId, final int size) {

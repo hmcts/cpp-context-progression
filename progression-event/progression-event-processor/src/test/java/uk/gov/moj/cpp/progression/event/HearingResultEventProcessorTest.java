@@ -15,6 +15,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.AttendanceDay.attendanceDay;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
@@ -35,7 +36,6 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCED
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AttendanceDay;
 import uk.gov.justice.core.courts.AttendanceType;
-import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -48,6 +48,7 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.NextHearing;
@@ -236,6 +237,25 @@ public class HearingResultEventProcessorTest {
     }
 
     @Test
+    public void shouldNotConsumePublicHearingResultedEventFromSJP() {
+        final UUID courtApplicationId = randomUUID();
+        final HearingResulted hearingResulted = HearingResulted.hearingResulted()
+                .withHearing(hearing()
+                        .withId(randomUUID())
+                        .withIsSJPHearing(true)
+                        .build())
+                .build();
+
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("public.hearing.resulted"),
+                objectToJsonObjectConverter.convert(hearingResulted));
+
+        verifyNoMoreInteractions(hearingResultUnscheduledListingHelper);
+        verifyNoMoreInteractions(progressionService);
+        verifyNoMoreInteractions(sender);
+    }
+
+    @Test
     public void handleHearingResultWithNoApplications() {
 
         final HearingResulted hearingResulted = HearingResulted.hearingResulted()
@@ -307,8 +327,8 @@ public class HearingResultEventProcessorTest {
 
         final List<CourtApplication> courtApplications = singletonList(courtApplication()
                 .withJudicialResults(asList(judicialResult()
-                        .withCategory(Category.FINAL).build(), judicialResult()
-                        .withCategory(Category.ANCILLARY).build()))
+                        .withCategory(JudicialResultCategory.FINAL).build(), judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .withId(courtApplicationId)
                 .withType(courtApplicationType().withLinkType(LinkType.LINKED).build())
                 .build());
@@ -348,8 +368,8 @@ public class HearingResultEventProcessorTest {
 
         final List<CourtApplication> courtApplications = singletonList(courtApplication()
                 .withJudicialResults(asList(judicialResult()
-                        .withCategory(Category.FINAL).build(), judicialResult()
-                        .withCategory(Category.ANCILLARY).build()))
+                        .withCategory(JudicialResultCategory.FINAL).build(), judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .withId(courtApplicationId)
                 .withType(courtApplicationType().withLinkType(LinkType.LINKED).build())
                 .build());
@@ -486,8 +506,8 @@ public class HearingResultEventProcessorTest {
 
         final List<CourtApplication> courtApplications = singletonList(courtApplication()
                 .withJudicialResults(asList(JudicialResult.judicialResult()
-                        .withCategory(Category.FINAL).build(), JudicialResult.judicialResult()
-                        .withCategory(Category.ANCILLARY)
+                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY)
                         .withNextHearing(NextHearing.nextHearing()
                                 .withExistingHearingId(randomUUID())
                                 .build()).build()))
@@ -507,8 +527,8 @@ public class HearingResultEventProcessorTest {
                         .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
                                 .withOffence(Offence.offence()
                                         .withJudicialResults(asList(JudicialResult.judicialResult()
-                                                .withCategory(Category.FINAL).build(), JudicialResult.judicialResult()
-                                                .withCategory(Category.ANCILLARY)
+                                                .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                                                .withCategory(JudicialResultCategory.ANCILLARY)
                                                 .withNextHearing(NextHearing.nextHearing()
                                                         .withExistingHearingId(randomUUID())
                                                         .build()).build()))
@@ -530,8 +550,8 @@ public class HearingResultEventProcessorTest {
                 .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
                         .withOffences(singletonList(Offence.offence()
                                 .withJudicialResults(asList(JudicialResult.judicialResult()
-                                        .withCategory(Category.FINAL).build(), JudicialResult.judicialResult()
-                                        .withCategory(Category.ANCILLARY)
+                                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                                        .withCategory(JudicialResultCategory.ANCILLARY)
                                         .withNextHearing(NextHearing.nextHearing()
                                                 .withExistingHearingId(randomUUID())
                                                 .build()).build()))
@@ -550,8 +570,8 @@ public class HearingResultEventProcessorTest {
 
         final List<CourtApplication> courtApplications = singletonList(courtApplication()
                 .withJudicialResults(asList(JudicialResult.judicialResult()
-                        .withCategory(Category.FINAL).build(), JudicialResult.judicialResult()
-                        .withCategory(Category.ANCILLARY)
+                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY)
                         .withNextHearing(NextHearing.nextHearing()
                                 .build()).build()))
                 .withId(courtApplicationId)
@@ -570,8 +590,8 @@ public class HearingResultEventProcessorTest {
                         .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
                                 .withOffence(Offence.offence()
                                         .withJudicialResults(asList(JudicialResult.judicialResult()
-                                                .withCategory(Category.FINAL).build(), JudicialResult.judicialResult()
-                                                .withCategory(Category.ANCILLARY)
+                                                .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                                                .withCategory(JudicialResultCategory.ANCILLARY)
                                                 .withNextHearing(NextHearing.nextHearing()
                                                         .build()).build()))
                                         .build())
@@ -592,8 +612,8 @@ public class HearingResultEventProcessorTest {
                 .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
                         .withOffences(singletonList(Offence.offence()
                                 .withJudicialResults(asList(JudicialResult.judicialResult()
-                                        .withCategory(Category.FINAL).build(), JudicialResult.judicialResult()
-                                        .withCategory(Category.ANCILLARY)
+                                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                                        .withCategory(JudicialResultCategory.ANCILLARY)
                                         .withNextHearing(NextHearing.nextHearing()
                                                 .build()).build()))
                                 .build()))

@@ -229,7 +229,7 @@ public class ApplicationExtractTransformerTest {
     private void assertHearings(List<Hearings> hearings) {
         hearings.stream().forEach(hearing -> {
             assertThat(hearing.getType(), is(HEARING_TYPE_APPLICATION));
-            assertThat(hearing.getJurisdictionType(), is(uk.gov.justice.progression.courts.exract.JurisdictionType.CROWN));
+            assertThat(hearing.getJurisdictionType(), is(JurisdictionType.CROWN));
             assertThat(hearing.getReportingRestrictionReason(), is(REPORTING_RESTRICTION_REASON));
             assertThat(hearing.getCourtCentre().getName(), is(COURT_NAME));
             assertThat(hearing.getHearingDays().get(0).getDay(), is(ZonedDateTimes.fromString(HEARING_DATE_1).toLocalDate()));

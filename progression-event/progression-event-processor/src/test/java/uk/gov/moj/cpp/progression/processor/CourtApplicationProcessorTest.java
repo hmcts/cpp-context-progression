@@ -29,7 +29,6 @@ import static uk.gov.justice.core.courts.CourtApplicationCreated.courtApplicatio
 import static uk.gov.justice.core.courts.CourtApplicationParty.courtApplicationParty;
 import static uk.gov.justice.core.courts.CourtApplicationProceedingsEdited.courtApplicationProceedingsEdited;
 import static uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated.courtApplicationProceedingsInitiated;
-import static uk.gov.justice.core.courts.CourtApplicationRejected.courtApplicationRejected;
 import static uk.gov.justice.core.courts.CourtApplicationSummonsRejected.courtApplicationSummonsRejected;
 import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationType;
 import static uk.gov.justice.core.courts.CourtHearingRequest.courtHearingRequest;
@@ -57,7 +56,6 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
-import uk.gov.justice.core.courts.CourtApplicationRejected;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CreateHearingApplicationRequest;
@@ -69,12 +67,10 @@ import uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.ListCourtHearing;
-import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
-import uk.gov.justice.core.courts.SummonsRequired;
 import uk.gov.justice.core.courts.SummonsTemplateType;
-import uk.gov.justice.progression.courts.exract.Applicant;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -177,8 +173,8 @@ public class CourtApplicationProcessorTest {
     public static Object[][] applicationSummonsSpecification() {
         return new Object[][]{
                 // summons code, type, template name, youth defendant, number of documents
-                {SummonsTemplateType.BREACH, SummonsRequired.BREACH},
-                {SummonsTemplateType.GENERIC_APPLICATION, SummonsRequired.APPLICATION},
+                {SummonsTemplateType.BREACH, SummonsType.BREACH},
+                {SummonsTemplateType.GENERIC_APPLICATION, SummonsType.APPLICATION},
         };
     }
 
@@ -836,7 +832,7 @@ public class CourtApplicationProcessorTest {
 
     @UseDataProvider("applicationSummonsSpecification")
     @Test
-    public void shouldTestInitiateCourtHearingAfterSummonsApproved(final SummonsTemplateType summonsTemplateType, final SummonsRequired summonsRequired) {
+    public void shouldTestInitiateCourtHearingAfterSummonsApproved(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired) {
         final UUID masterDefendantId = randomUUID();
         final InitiateCourtHearingAfterSummonsApproved eventPayload = initiateCourtHearingAfterSummonsApproved()
                 .withCourtHearing(courtHearingRequest().withId(randomUUID()).build())

@@ -1,14 +1,14 @@
 package uk.gov.moj.cpp.progression.processor.summons;
 
 import static java.lang.String.format;
-import static uk.gov.justice.core.courts.SummonsRequired.APPLICATION;
-import static uk.gov.justice.core.courts.SummonsRequired.BREACH;
-import static uk.gov.justice.core.courts.SummonsRequired.SJP_REFERRAL;
+import static uk.gov.justice.core.courts.SummonsType.APPLICATION;
+import static uk.gov.justice.core.courts.SummonsType.BREACH;
+import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.EITHER_WAY;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.MCA;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.WITNESS;
 
-import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.SummonsType;
 
 import java.util.Map;
 
@@ -27,7 +27,7 @@ public class SummonsTemplateNameService {
     private static final String TEMPLATE_BREACH = TEMPLATE_NAME_PREFIX_WITH_LANGUAGE_PLACEHOLDER + "Breach";
     private static final String TEMPLATE_BREACH_PARENT_GUARDIAN = TEMPLATE_NAME_PREFIX_WITH_LANGUAGE_PLACEHOLDER + "BreachParent";
 
-    private static final Map<SummonsRequired, String> APPLICATION_TEMPLATE_NAME_MAP = ImmutableMap.of(
+    private static final Map<SummonsType, String> APPLICATION_TEMPLATE_NAME_MAP = ImmutableMap.of(
             APPLICATION, TEMPLATE_GENERIC_APPLICATION,
             BREACH, TEMPLATE_BREACH
     );
@@ -46,11 +46,11 @@ public class SummonsTemplateNameService {
         return getFormattedTemplateName(TEMPLATE_BREACH_PARENT_GUARDIAN, isWelsh);
     }
 
-    public String getCaseSummonsTemplateName(final SummonsRequired summonsRequired, final SummonsCode summonsCode, final boolean isWelsh) {
+    public String getCaseSummonsTemplateName(final SummonsType summonsRequired, final SummonsCode summonsCode, final boolean isWelsh) {
         return getFormattedTemplateName(SJP_REFERRAL == summonsRequired ? TEMPLATE_SJP_REFERRAL : getFirstHearingTemplateName(summonsCode), isWelsh);
     }
 
-    public String getApplicationTemplateName(final SummonsRequired summonsRequired, final boolean isWelsh) {
+    public String getApplicationTemplateName(final SummonsType summonsRequired, final boolean isWelsh) {
         return getFormattedTemplateName(APPLICATION_TEMPLATE_NAME_MAP.get(summonsRequired), isWelsh);
     }
 

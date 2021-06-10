@@ -13,7 +13,6 @@ import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUti
 
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
-import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
@@ -28,6 +27,7 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.MasterDefendant;
@@ -43,7 +43,6 @@ import uk.gov.justice.core.courts.RespondentCounsel;
 import uk.gov.justice.progression.courts.CourtApplications;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
-import uk.gov.justice.progression.courts.LatestHearingJurisdictionType;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -194,8 +193,8 @@ public class HearingAtAGlanceServiceTest {
         final Hearings hearingResponse = response.getHearings().get(0);
         assertThat(hearingResponse.getId(), is(caseHearing.getId()));
         assertThat(hearingResponse.getType().getDescription(), is(caseHearing.getType().getDescription()));
-        assertThat(hearingResponse.getJurisdictionType(), is(uk.gov.justice.progression.courts.JurisdictionType.CROWN));
-        assertThat(hearingResponse.getHearingListingStatus(), is(uk.gov.justice.progression.courts.HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse.getJurisdictionType(), is(JurisdictionType.CROWN));
+        assertThat(hearingResponse.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
 
         // Hearing level defendant details
         assertThat(hearingResponse.getDefendants().size(), is(2));
@@ -285,8 +284,8 @@ public class HearingAtAGlanceServiceTest {
         final Hearings hearingResponse = response.getHearings().get(0);
         assertThat(hearingResponse.getId(), is(caseHearing1.getId()));
         assertThat(hearingResponse.getType().getDescription(), is(caseHearing1.getType().getDescription()));
-        assertThat(hearingResponse.getJurisdictionType(), is(uk.gov.justice.progression.courts.JurisdictionType.CROWN));
-        assertThat(hearingResponse.getHearingListingStatus(), is(uk.gov.justice.progression.courts.HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse.getJurisdictionType(), is(JurisdictionType.CROWN));
+        assertThat(hearingResponse.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
 
         // Hearing level defendant details
         assertThat(hearingResponse.getDefendants().size(), is(2));
@@ -379,8 +378,8 @@ public class HearingAtAGlanceServiceTest {
         final Hearings hearingResponse = response.getHearings().get(0);
         assertThat(hearingResponse.getId(), is(caseHearing.getId()));
         assertThat(hearingResponse.getType().getDescription(), is(caseHearing.getType().getDescription()));
-        assertThat(hearingResponse.getJurisdictionType(), is(uk.gov.justice.progression.courts.JurisdictionType.CROWN));
-        assertThat(hearingResponse.getHearingListingStatus(), is(uk.gov.justice.progression.courts.HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse.getJurisdictionType(), is(JurisdictionType.CROWN));
+        assertThat(hearingResponse.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
 
         // Hearing level defendant details
         assertThat(hearingResponse.getDefendants().size(), is(2));
@@ -478,8 +477,8 @@ public class HearingAtAGlanceServiceTest {
         final Hearings hearingResponse = response.getHearings().get(0);
         assertThat(hearingResponse.getId(), is(caseHearing.getId()));
         assertThat(hearingResponse.getType().getDescription(), is(caseHearing.getType().getDescription()));
-        assertThat(hearingResponse.getJurisdictionType(), is(uk.gov.justice.progression.courts.JurisdictionType.CROWN));
-        assertThat(hearingResponse.getHearingListingStatus(), is(uk.gov.justice.progression.courts.HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse.getJurisdictionType(), is(JurisdictionType.CROWN));
+        assertThat(hearingResponse.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
 
         // Hearing level defendant details
         assertThat(hearingResponse.getDefendants().size(), is(1));
@@ -580,8 +579,8 @@ public class HearingAtAGlanceServiceTest {
         final Hearings hearingResponse1 = response.getHearings().get(0);
         assertThat(hearingResponse1.getId(), is(caseHearing.getId()));
         assertThat(hearingResponse1.getType().getDescription(), is(caseHearing.getType().getDescription()));
-        assertThat(hearingResponse1.getJurisdictionType(), is(uk.gov.justice.progression.courts.JurisdictionType.CROWN));
-        assertThat(hearingResponse1.getHearingListingStatus(), is(uk.gov.justice.progression.courts.HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse1.getJurisdictionType(), is(JurisdictionType.CROWN));
+        assertThat(hearingResponse1.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
 
         assertThat(hearingResponse1.getDefendants().size(), is(2));
 
@@ -612,8 +611,8 @@ public class HearingAtAGlanceServiceTest {
         final Hearings hearingResponse2 = response.getHearings().get(1);
         assertThat(hearingResponse2.getId(), is(applicationHearing.getId()));
         assertThat(hearingResponse2.getType().getDescription(), is(applicationHearing.getType().getDescription()));
-        assertThat(hearingResponse2.getJurisdictionType(), is(uk.gov.justice.progression.courts.JurisdictionType.CROWN));
-        assertThat(hearingResponse2.getHearingListingStatus(), is(uk.gov.justice.progression.courts.HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse2.getJurisdictionType(), is(JurisdictionType.CROWN));
+        assertThat(hearingResponse2.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
 
         // Hearing level defendant details
         assertThat(hearingResponse2.getDefendants().size(), is(2));
@@ -708,8 +707,8 @@ public class HearingAtAGlanceServiceTest {
         final Hearings hearingResponse = response.getHearings().get(0);
         assertThat(hearingResponse.getId(), is(caseHearing.getId()));
         assertThat(hearingResponse.getType().getDescription(), is(caseHearing.getType().getDescription()));
-        assertThat(hearingResponse.getJurisdictionType(), is(uk.gov.justice.progression.courts.JurisdictionType.CROWN));
-        assertThat(hearingResponse.getHearingListingStatus(), is(uk.gov.justice.progression.courts.HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse.getJurisdictionType(), is(JurisdictionType.CROWN));
+        assertThat(hearingResponse.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
 
         // Hearing level defendant details
         assertThat(hearingResponse.getDefendants().size(), is(3));
@@ -803,8 +802,8 @@ public class HearingAtAGlanceServiceTest {
         final Hearings hearingResponse = response.getHearings().get(0);
         assertThat(hearingResponse.getId(), is(caseHearing.getId()));
         assertThat(hearingResponse.getType().getDescription(), is(caseHearing.getType().getDescription()));
-        assertThat(hearingResponse.getJurisdictionType(), is(uk.gov.justice.progression.courts.JurisdictionType.CROWN));
-        assertThat(hearingResponse.getHearingListingStatus(), is(uk.gov.justice.progression.courts.HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse.getJurisdictionType(), is(JurisdictionType.CROWN));
+        assertThat(hearingResponse.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
 
         // Hearing level defendant details
         assertThat(hearingResponse.getDefendants().size(), is(3));
@@ -898,8 +897,8 @@ public class HearingAtAGlanceServiceTest {
         final Hearings hearingResponse = response.getHearings().get(0);
         assertThat(hearingResponse.getId(), is(caseHearing.getId()));
         assertThat(hearingResponse.getType().getDescription(), is(caseHearing.getType().getDescription()));
-        assertThat(hearingResponse.getJurisdictionType(), is(uk.gov.justice.progression.courts.JurisdictionType.CROWN));
-        assertThat(hearingResponse.getHearingListingStatus(), is(uk.gov.justice.progression.courts.HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse.getJurisdictionType(), is(JurisdictionType.CROWN));
+        assertThat(hearingResponse.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
 
         // Hearing level defendant details
         assertThat(hearingResponse.getDefendants().size(), is(3));
@@ -995,7 +994,7 @@ public class HearingAtAGlanceServiceTest {
 
         // Defendant Hearing details
         assertThat(response.getHearings().size(), is(2));
-        assertThat(response.getLatestHearingJurisdictionType(), is(LatestHearingJurisdictionType.CROWN));
+        assertThat(response.getLatestHearingJurisdictionType(), is(JurisdictionType.CROWN));
     }
 
     @Test
@@ -1027,7 +1026,7 @@ public class HearingAtAGlanceServiceTest {
         final DefendantJudicialResult judicialResult = hearings.getDefendantJudicialResults().get(0);
         assertThat(judicialResult.getJudicialResult().getAmendmentReason(), is(AMENDMENT_REASON));
         assertThat(judicialResult.getJudicialResult().getAmendmentDate(), is(AMENDMENT_DATE));
-        assertThat(judicialResult.getJudicialResult().getCategory(), is(Category.INTERMEDIARY));
+        assertThat(judicialResult.getJudicialResult().getCategory(), is(JudicialResultCategory.INTERMEDIARY));
     }
 
     private CourtApplication createCourtApplicationWithDefendants(UUID courtApplicationId, UUID defendantId) {
@@ -1139,7 +1138,7 @@ public class HearingAtAGlanceServiceTest {
 
     private Hearing createCaseHearing(ProsecutionCase prosecutionCase, CourtApplication courtApplication, UUID hearingId) {
         final JudicialResult judicialResult = JudicialResult.judicialResult()
-                .withCategory(Category.INTERMEDIARY)
+                .withCategory(JudicialResultCategory.INTERMEDIARY)
                 .withAmendmentReason(AMENDMENT_REASON)
                 .withIsAdjournmentResult(true)
                 .withAmendmentDate(AMENDMENT_DATE)

@@ -10,8 +10,8 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 
-import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReportingRestriction;
@@ -73,7 +73,7 @@ public class DefendantHelper {
 
     private static boolean isConcluded(Offence offence) {
         return isNotEmpty(offence.getJudicialResults()) && offence.getJudicialResults().stream()
-                .anyMatch(judicialResult -> judicialResult.getCategory().equals(Category.FINAL));
+                .anyMatch(judicialResult -> judicialResult.getCategory().equals(JudicialResultCategory.FINAL));
     }
 
     private static Defendant getDefendant(Defendant defendant, final List<Offence> updatedOffences, boolean proceedingConcluded) {

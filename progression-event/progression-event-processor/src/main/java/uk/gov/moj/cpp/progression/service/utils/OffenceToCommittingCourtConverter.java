@@ -6,7 +6,6 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Offence;
@@ -37,7 +36,7 @@ public class OffenceToCommittingCourtConverter {
                             .withCourtHouseName(courtCentre.getName())
                             .withCourtHouseCode(courtCentre.getCode())
                             .withCourtHouseShortName(courtCentre.getCode())
-                            .withCourtHouseType(CourtHouseType.MAGISTRATES)
+                            .withCourtHouseType(JurisdictionType.MAGISTRATES)
                             .withCourtCentreId(courtCentre.getId())
                             .build());
                 }

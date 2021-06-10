@@ -7,7 +7,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.core.courts.Category.FINAL;
+import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
@@ -109,6 +109,10 @@ public class HearingResultEventProcessor {
         }
 
         final Hearing hearing = hearingResulted.getHearing();
+        if (Boolean.TRUE.equals(hearing.getIsSJPHearing())) {
+            LOGGER.info("Hearing resulted event originating from SJP.  Hence ignoring");
+            return;
+        }
 
         LOGGER.info("Hearing resulted for hearing id :: {}", hearing.getId());
 

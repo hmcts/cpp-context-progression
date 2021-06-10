@@ -20,13 +20,13 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import static uk.gov.moj.cpp.progression.command.helper.HandlerTestHelper.metadataFor;
 
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
-import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.FundingType;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingResultedUpdateCase;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -125,14 +125,14 @@ public class UpdateCaseHandlerTest {
         Offence offence1 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                        .withCategory(Category.INTERMEDIARY).build(), JudicialResult.judicialResult()
-                        .withCategory(Category.ANCILLARY).build()))
+                        .withCategory(JudicialResultCategory.INTERMEDIARY).build(), JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
         Offence offence2 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                        .withCategory(Category.INTERMEDIARY).build(), JudicialResult.judicialResult()
-                        .withCategory(Category.ANCILLARY).build()))
+                        .withCategory(JudicialResultCategory.INTERMEDIARY).build(), JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
 
         Defendant defendant = Defendant.defendant()
@@ -191,8 +191,8 @@ public class UpdateCaseHandlerTest {
         Offence offence1 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                        .withCategory(Category.FINAL).build(), JudicialResult.judicialResult()
-                        .withCategory(Category.ANCILLARY).build()))
+                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
         Offence offence2 = Offence.offence()
                 .withId(randomUUID())

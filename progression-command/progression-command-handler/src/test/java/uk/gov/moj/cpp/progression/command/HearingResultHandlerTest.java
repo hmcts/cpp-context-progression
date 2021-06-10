@@ -23,17 +23,16 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
-import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.CourtHouseType;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -161,14 +160,14 @@ public class HearingResultHandlerTest {
         Offence offence1 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                        .withCategory(Category.FINAL).build(), JudicialResult.judicialResult()
-                        .withCategory(Category.ANCILLARY).build()))
+                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
         Offence offence2 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                        .withCategory(Category.FINAL).build(), JudicialResult.judicialResult()
-                        .withCategory(Category.ANCILLARY).build()))
+                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
 
         Defendant defendant = Defendant.defendant()
@@ -237,14 +236,14 @@ public class HearingResultHandlerTest {
         Offence offence1 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                        .withCategory(Category.INTERMEDIARY).build(), JudicialResult.judicialResult()
-                        .withCategory(Category.ANCILLARY).build()))
+                        .withCategory(JudicialResultCategory.INTERMEDIARY).build(), JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
         Offence offence2 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                        .withCategory(Category.INTERMEDIARY).build(), JudicialResult.judicialResult()
-                        .withCategory(Category.ANCILLARY).build()))
+                        .withCategory(JudicialResultCategory.INTERMEDIARY).build(), JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
 
         Defendant defendant = Defendant.defendant()
@@ -399,7 +398,7 @@ public class HearingResultHandlerTest {
                 .withCourtHouseShortName(COMMITTING_MAGS_COURT_CODE)
                 .withCourtHouseName(COMMITTING_MAGS_COURT_NAME)
                 .withCourtHouseCode(COMMITTING_MAGS_COURT_CODE)
-                .withCourtHouseType(CourtHouseType.MAGISTRATES)
+                .withCourtHouseType(JurisdictionType.MAGISTRATES)
                 .build();
 
         final Hearing initHearing = Hearing.hearing()
@@ -417,7 +416,7 @@ public class HearingResultHandlerTest {
                 .withCourtHouseShortName(COMMITTING_CROWN_COURT_CODE)
                 .withCourtHouseName(COMMITTING_CROWN_COURT_NAME)
                 .withCourtHouseCode(COMMITTING_CROWN_COURT_CODE)
-                .withCourtHouseType(CourtHouseType.CROWN)
+                .withCourtHouseType(JurisdictionType.CROWN)
                 .build();
         final Hearing resultHearing = Hearing.hearing()
                 .withProsecutionCases(getProsecutionCasesWithCommittingCourt(resultCommittingCourt))

@@ -10,7 +10,6 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingLanguage;
-import uk.gov.justice.core.courts.HearingLanguageNeeds;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialRole;
@@ -172,7 +171,7 @@ public class HearingListingNeedsTransformer {
             final CourtApplicationPartyListingNeeds courtApplicationPartyListingNeeds = CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
                     .withCourtApplicationId(courtApplication.getId())
                     .withCourtApplicationPartyId(courtApplication.getApplicant().getProsecutingAuthority().getProsecutionAuthorityId())
-                    .withHearingLanguageNeeds(nonNull(hearingLanguage) ? HearingLanguageNeeds.valueOf(hearingLanguage.name()) : HearingLanguageNeeds.ENGLISH)
+                    .withHearingLanguageNeeds(nonNull(hearingLanguage) ? HearingLanguage.valueOf(hearingLanguage.name()) : HearingLanguage.ENGLISH)
                     .build();
             courtApplicationPartyListingNeedsList.add(courtApplicationPartyListingNeeds);
         }
@@ -182,7 +181,7 @@ public class HearingListingNeedsTransformer {
                     final CourtApplicationPartyListingNeeds courtApplicationPartyListingNeeds = CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
                             .withCourtApplicationId(courtApplication.getId())
                             .withCourtApplicationPartyId(courtApplicationRespondent.getId())
-                            .withHearingLanguageNeeds(HearingLanguageNeeds.valueOf(hearingLanguage.name()))
+                            .withHearingLanguageNeeds(HearingLanguage.valueOf(hearingLanguage.name()))
                             .build();
                     courtApplicationPartyListingNeedsList.add(courtApplicationPartyListingNeeds);
                 }

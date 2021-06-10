@@ -49,8 +49,8 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.SummonsRequired;
 import uk.gov.justice.core.courts.SummonsTemplateType;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -97,8 +97,8 @@ public class RequestApplicationSummonsIT extends AbstractIT {
     public static Object[][] applicationSummonsSuppressed() {
         return new Object[][]{
                 // summons template type, summons required, youth defendant, number of documents, isWelsh
-                {SummonsTemplateType.GENERIC_APPLICATION, SummonsRequired.APPLICATION, "Application", true, 1, true},
-                {SummonsTemplateType.BREACH, SummonsRequired.BREACH, "Breach", false, 1, true},
+                {SummonsTemplateType.GENERIC_APPLICATION, SummonsType.APPLICATION, "Application", true, 1, true},
+                {SummonsTemplateType.BREACH, SummonsType.BREACH, "Breach", false, 1, true},
         };
     }
 
@@ -106,8 +106,8 @@ public class RequestApplicationSummonsIT extends AbstractIT {
     public static Object[][] applicationSummonsNotSuppressed() {
         return new Object[][]{
                 // summons template type, summons required, youth defendant, number of documents, isWelsh
-                {SummonsTemplateType.GENERIC_APPLICATION, SummonsRequired.APPLICATION, "Application", false, 1, false},
-                {SummonsTemplateType.BREACH, SummonsRequired.BREACH, "Breach", true, 2, false}
+                {SummonsTemplateType.GENERIC_APPLICATION, SummonsType.APPLICATION, "Application", false, 1, false},
+                {SummonsTemplateType.BREACH, SummonsType.BREACH, "Breach", true, 2, false}
         };
     }
 
@@ -190,7 +190,7 @@ public class RequestApplicationSummonsIT extends AbstractIT {
 
     @UseDataProvider("applicationSummonsNotSuppressed")
     @Test
-    public void shouldGenerateSummonsAfterApplicationApproved_SummonsNotSuppressed(final SummonsTemplateType summonsTemplateType, final SummonsRequired summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
+    public void shouldGenerateSummonsAfterApplicationApproved_SummonsNotSuppressed(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
         enableAmendReshareFeature(false);
 
         final boolean summonsSuppressed = false;
@@ -220,7 +220,7 @@ public class RequestApplicationSummonsIT extends AbstractIT {
 
     @UseDataProvider("applicationSummonsNotSuppressed")
     @Test
-    public void shouldGenerateSummonsAfterApplicationApproved_SummonsNotSuppressedV2(final SummonsTemplateType summonsTemplateType, final SummonsRequired summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
+    public void shouldGenerateSummonsAfterApplicationApproved_SummonsNotSuppressedV2(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
         enableAmendReshareFeature(true);
 
         final boolean summonsSuppressed = false;
@@ -250,7 +250,7 @@ public class RequestApplicationSummonsIT extends AbstractIT {
 
     @UseDataProvider("applicationSummonsSuppressed")
     @Test
-    public void shouldInitiateCourtHearingAfterSummonsApproved_SummonsSuppressed(final SummonsTemplateType summonsTemplateType, final SummonsRequired summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
+    public void shouldInitiateCourtHearingAfterSummonsApproved_SummonsSuppressed(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
         enableAmendReshareFeature(false);
 
         final boolean summonsSuppressed = true;
@@ -278,7 +278,7 @@ public class RequestApplicationSummonsIT extends AbstractIT {
         }
     }
 
-    private void verifyParentBreachSummonWhenSuppressed(final SummonsRequired summonsRequired, final boolean isWelsh) {
+    private void verifyParentBreachSummonWhenSuppressed(final SummonsType summonsRequired, final boolean isWelsh) {
         final String parentTemplateName = "SP" + getLanguagePrefix(isWelsh) + "_" + "BreachParent";
         verifyTemplatePayloadValues(true, parentTemplateName, summonsRequired.toString(), PROSECUTOR_COST, personalService, parentFirstName, parentMiddleName, parentLastName);
         final UUID parentMaterialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
@@ -291,7 +291,7 @@ public class RequestApplicationSummonsIT extends AbstractIT {
         verifyNoLetterRequested(of(parentMaterialId.toString()));
     }
 
-    private void verifyParentBreachSummonWhenNotSuppressed(final SummonsRequired summonsRequired, final boolean isWelsh) {
+    private void verifyParentBreachSummonWhenNotSuppressed(final SummonsType summonsRequired, final boolean isWelsh) {
         final String parentTemplateName = "SP" + getLanguagePrefix(isWelsh) + "_" + "BreachParent";
         verifyTemplatePayloadValues(true, parentTemplateName, summonsRequired.toString(), PROSECUTOR_COST, personalService, parentFirstName, parentMiddleName, parentLastName);
         final UUID parentMaterialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
@@ -352,7 +352,6 @@ public class RequestApplicationSummonsIT extends AbstractIT {
         return OBJECT_TO_JSON_OBJECT_CONVERTER.convert(hearingResulted().withHearing(hearingWithApplicationResults)
                 .withSharedTime(ZonedDateTime.now()).build());
     }
-
 
     private JsonObject createPublicHearingResultedV2(final JsonObject hearing, final JsonObject summonResultJsonObject) {
         final JsonArray courtApplicationsArray = hearing.getJsonArray("courtApplications");

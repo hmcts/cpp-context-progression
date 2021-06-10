@@ -27,7 +27,6 @@ import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.core.courts.Person.person;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 import static uk.gov.justice.core.courts.SummonsApprovedOutcome.summonsApprovedOutcome;
-import static uk.gov.justice.core.courts.SummonsRequired.FIRST_HEARING;
 import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
@@ -67,6 +66,7 @@ import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.AbstractIT;
@@ -394,7 +394,7 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
                 .withProsecutionCaseId(fromString(caseId))
                 .withDefendantOffences(singletonList(fromString(offenceId)))
                 .withDefendantId(fromString(defendantId))
-                .withSummonsRequired(FIRST_HEARING)
+                .withSummonsRequired(SummonsType.FIRST_HEARING)
                 .withSummonsApprovedOutcome(summonsApprovedOutcome()
                         .withProsecutorEmailAddress("test@test.com")
                         .withSummonsSuppressed(summonsSuppressed)

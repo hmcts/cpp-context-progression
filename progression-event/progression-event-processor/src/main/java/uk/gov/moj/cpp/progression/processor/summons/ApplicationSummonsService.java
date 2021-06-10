@@ -26,7 +26,7 @@ import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsData;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
-import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.summons.ApplicationSummonsDocumentContent;
 import uk.gov.justice.core.courts.summons.BreachSummonsDocumentContent;
 import uk.gov.justice.core.courts.summons.SummonsAddressee;
@@ -46,7 +46,7 @@ public class ApplicationSummonsService {
                                                                  final JsonObject courtCentreJson,
                                                                  final Optional<LjaDetails> optionalLjaDetails) {
 
-        final SummonsRequired summonsRequired = courtApplicationPartyListingNeeds.getSummonsRequired();
+        final SummonsType summonsRequired = courtApplicationPartyListingNeeds.getSummonsRequired();
         final SummonsData summonsData = summonsDataPrepared.getSummonsData();
 
         final SummonsDocumentContent.Builder summonsDocumentContent = summonsDocumentContent();

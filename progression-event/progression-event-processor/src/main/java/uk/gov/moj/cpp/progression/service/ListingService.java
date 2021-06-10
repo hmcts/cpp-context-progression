@@ -8,7 +8,7 @@ import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
 
 import uk.gov.justice.core.courts.CommittingCourt;
-import uk.gov.justice.core.courts.CourtHouseType;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListUnscheduledCourtHearing;
 import uk.gov.justice.core.courts.ListUnscheduledNextHearings;
@@ -184,7 +184,7 @@ public class ListingService {
                         if (nonNull(offence) && offence.getCommittingCourt().isPresent()) {
                             final uk.gov.moj.cpp.listing.domain.CommittingCourt committingCourt = offence.getCommittingCourt().get();
                             builder.withCourtCentreId(committingCourt.getCourtCentreId())
-                                    .withCourtHouseType(CourtHouseType.MAGISTRATES)
+                                    .withCourtHouseType(JurisdictionType.MAGISTRATES)
                                     .withCourtHouseShortName(committingCourt.getCourtHouseShortName().get())
                                     .withCourtHouseCode(committingCourt.getCourtHouseCode().get())
                                     .withCourtHouseName(committingCourt.getCourtHouseName());

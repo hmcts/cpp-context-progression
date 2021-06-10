@@ -31,7 +31,6 @@ import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CaseNoteAdded;
 import uk.gov.justice.core.courts.CaseNoteEdited;
-import uk.gov.justice.core.courts.Category;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -44,6 +43,7 @@ import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.ListDefendantRequest;
@@ -1063,7 +1063,7 @@ public class CaseAggregateTest {
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withCourtApplicationCases(
                         singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(caseId).build()))
-                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(Category.FINAL).build()))
+                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).build()))
                 .build();
         final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
                 .withId(randomUUID())
@@ -1073,7 +1073,7 @@ public class CaseAggregateTest {
                                 .withProceedingsConcluded(true)
                                 .withJudicialResults(
                                         singletonList(JudicialResult.judicialResult()
-                                                .withCategory(Category.FINAL)
+                                                .withCategory(JudicialResultCategory.FINAL)
                                                 .build())).build()))
                 .build();
         final ProsecutionCase prosecutionCase = prosecutionCase()
@@ -1099,7 +1099,7 @@ public class CaseAggregateTest {
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withCourtApplicationCases(
                         singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(caseId).build()))
-                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(Category.FINAL).build()))
+                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).build()))
                 .build();
         final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
                 .withId(randomUUID())
@@ -1109,7 +1109,7 @@ public class CaseAggregateTest {
                                 .withProceedingsConcluded(true)
                                 .withJudicialResults(
                                         singletonList(JudicialResult.judicialResult()
-                                                .withCategory(Category.INTERMEDIARY)
+                                                .withCategory(JudicialResultCategory.INTERMEDIARY)
                                                 .build())).build()))
                 .build();
         final ProsecutionCase prosecutionCase = prosecutionCase()
@@ -1139,7 +1139,7 @@ public class CaseAggregateTest {
                                 .withProceedingsConcluded(true)
                                 .withJudicialResults(
                                         singletonList(JudicialResult.judicialResult()
-                                                .withCategory(Category.FINAL)
+                                                .withCategory(JudicialResultCategory.FINAL)
                                                 .build())).build()))
                 .build();
         final ProsecutionCase prosecutionCase = prosecutionCase()
@@ -1157,7 +1157,7 @@ public class CaseAggregateTest {
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(caseId)
-                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(Category.FINAL).build()))
+                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).build()))
                 .build();
 
 
@@ -1184,7 +1184,7 @@ public class CaseAggregateTest {
                                 .withProceedingsConcluded(true)
                                 .withJudicialResults(
                                         singletonList(JudicialResult.judicialResult()
-                                                .withCategory(Category.FINAL)
+                                                .withCategory(JudicialResultCategory.FINAL)
                                                 .build())).build()))
                 .build();
 
@@ -1196,7 +1196,7 @@ public class CaseAggregateTest {
                                 .withProceedingsConcluded(true)
                                 .withJudicialResults(
                                         singletonList(JudicialResult.judicialResult()
-                                                .withCategory(Category.FINAL)
+                                                .withCategory(JudicialResultCategory.FINAL)
                                                 .build())).build()))
                 .build();
 
@@ -1215,7 +1215,7 @@ public class CaseAggregateTest {
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(caseId)
-                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(Category.FINAL).build()))
+                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).build()))
                 .build();
 
         // Resulted and Shared only one defendant

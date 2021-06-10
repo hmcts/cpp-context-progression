@@ -10,9 +10,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
@@ -21,7 +18,9 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
@@ -35,10 +34,7 @@ import uk.gov.justice.progression.courts.DefenceOrganisation;
 import uk.gov.justice.progression.courts.DefendantHearings;
 import uk.gov.justice.progression.courts.Defendants;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
-import uk.gov.justice.progression.courts.HearingListingStatus;
 import uk.gov.justice.progression.courts.Hearings;
-import uk.gov.justice.progression.courts.JurisdictionType;
-import uk.gov.justice.progression.courts.LatestHearingJurisdictionType;
 import uk.gov.justice.progression.courts.Offences;
 import uk.gov.justice.progression.courts.Respondents;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -54,8 +50,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCas
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZonedDateTime;
@@ -64,6 +58,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3655", "squid:S1188", "squid:S1135", "squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S134", "squid:S4165", "pmd:NullAssignment", "squid:CommentedOutCodeLine"})
 public class HearingAtAGlanceService {
@@ -104,7 +105,7 @@ public class HearingAtAGlanceService {
         final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseId);
         final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
         final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-        LatestHearingJurisdictionType latestHearingJurisdictionType = null;
+        JurisdictionType latestHearingJurisdictionType = null;
         final List<HearingEntity> hearingEntities = getHearingEntities(caseDefendantHearingEntities);
         addApplicationHearingEntities(caseId, hearingEntities);
 
@@ -121,7 +122,7 @@ public class HearingAtAGlanceService {
         return caseDefendantHearingEntities.stream().map(CaseDefendantHearingEntity::getHearing).distinct().collect(toList());
     }
 
-    private LatestHearingJurisdictionType getLatestHearingJurisdictionType(final UUID caseId, final List<HearingEntity> hearingEntities) {
+    private JurisdictionType getLatestHearingJurisdictionType(final UUID caseId, final List<HearingEntity> hearingEntities) {
         final List<Hearings> hearingsList = createHearings(hearingEntities, caseId);
         final List<Hearings> hearingsWithHearingDays = hearingsList
                 .stream()
@@ -147,7 +148,7 @@ public class HearingAtAGlanceService {
             jurisdictionType = hearingsList.get(0).getJurisdictionType();
         }
 
-        return LatestHearingJurisdictionType.valueOf(jurisdictionType.toString());
+        return JurisdictionType.valueOf(jurisdictionType.toString());
     }
 
     private void addApplicationHearingEntities(final UUID caseId, final List<HearingEntity> hearingEntities) {
@@ -171,7 +172,7 @@ public class HearingAtAGlanceService {
     private GetHearingsAtAGlance getQueryResponse(final List<HearingEntity> hearingEntities, final UUID caseId,
                                                   final ProsecutionCase prosecutionCase,
                                                   final List<CaseDefendantHearingEntity> caseDefendantHearingEntities,
-                                                  final LatestHearingJurisdictionType latestHearingJurisdictionType) {
+                                                  final JurisdictionType latestHearingJurisdictionType) {
 
         final List<DefendantHearings> defendantHearingsList = new ArrayList<>();
         prosecutionCase.getDefendants().forEach(defendant ->
@@ -281,9 +282,9 @@ public class HearingAtAGlanceService {
         return FALSE;
     }
 
-    private uk.gov.justice.progression.courts.JurisdictionType getJurisdictionType(final Hearing hearing) {
+    private JurisdictionType getJurisdictionType(final Hearing hearing) {
         if (null != hearing.getJurisdictionType()) {
-            return uk.gov.justice.progression.courts.JurisdictionType.valueOf(hearing.getJurisdictionType().toString());
+            return JurisdictionType.valueOf(hearing.getJurisdictionType().toString());
         }
         return null;
     }

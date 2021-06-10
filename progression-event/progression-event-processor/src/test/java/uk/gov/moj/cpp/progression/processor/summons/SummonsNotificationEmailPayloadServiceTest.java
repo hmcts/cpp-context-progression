@@ -28,11 +28,11 @@ import static uk.gov.justice.core.courts.ListDefendantRequest.listDefendantReque
 import static uk.gov.justice.core.courts.SummonsApprovedOutcome.summonsApprovedOutcome;
 import static uk.gov.justice.core.courts.SummonsData.summonsData;
 import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
-import static uk.gov.justice.core.courts.SummonsRequired.APPLICATION;
-import static uk.gov.justice.core.courts.SummonsRequired.BREACH;
-import static uk.gov.justice.core.courts.SummonsRequired.FIRST_HEARING;
-import static uk.gov.justice.core.courts.SummonsRequired.SJP_REFERRAL;
-import static uk.gov.justice.core.courts.SummonsRequired.YOUTH;
+import static uk.gov.justice.core.courts.SummonsType.APPLICATION;
+import static uk.gov.justice.core.courts.SummonsType.BREACH;
+import static uk.gov.justice.core.courts.SummonsType.FIRST_HEARING;
+import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
+import static uk.gov.justice.core.courts.SummonsType.YOUTH;
 import static uk.gov.justice.core.courts.summons.SummonsAddressee.summonsAddressee;
 import static uk.gov.justice.core.courts.summons.SummonsDefendant.summonsDefendant;
 import static uk.gov.justice.core.courts.summons.SummonsDocumentContent.summonsDocumentContent;
@@ -46,7 +46,7 @@ import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.SummonsData;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
-import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
 import uk.gov.justice.core.courts.summons.SummonsProsecutor;
@@ -107,7 +107,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
     private static final String DEFENDANT_3_FIRST_NAME = STRING.next();
     private static final String DEFENDANT_3_MIDDLE_NAME = STRING.next();
     private static final String DEFENDANT_3_LAST_NAME = STRING.next();
-    private static final SummonsRequired SUMMONS_REQUIRED = values(FIRST_HEARING, BREACH, APPLICATION, YOUTH).next();
+    private static final SummonsType SUMMONS_REQUIRED = values(FIRST_HEARING, BREACH, APPLICATION, YOUTH).next();
     private static final String PROSECUTOR_NAME = STRING.next();
 
     private static final String SUMMONS_APPROVED_AND_NOT_SUPPRESSED_TEMPLATE_ID = randomUUID().toString();

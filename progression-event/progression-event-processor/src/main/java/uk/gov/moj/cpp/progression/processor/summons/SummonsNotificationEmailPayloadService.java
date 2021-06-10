@@ -9,13 +9,13 @@ import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.core.courts.Personalisation.personalisation;
-import static uk.gov.justice.core.courts.SummonsRequired.SJP_REFERRAL;
+import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
 import static uk.gov.justice.core.courts.notification.EmailChannel.emailChannel;
 import static uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats.SPACE_SEPARATED_3_CHAR_MONTH;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
-import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
@@ -57,7 +57,7 @@ public class SummonsNotificationEmailPayloadService {
                                                                   final String emailAddress, final List<UUID> confirmedDefendantIds,
                                                                   final Defendant defendant, final List<String> defendantDetails,
                                                                   final boolean sendForRemotePrinting, final boolean addresseeIsYouth, final UUID materialId,
-                                                                  final SummonsRequired summonsRequired) {
+                                                                  final SummonsType summonsRequired) {
         return getEmailChannelForCaseDefendant(summonsDataPrepared, summonsDocumentContent, emailAddress, confirmedDefendantIds,
                 defendant, defendantDetails, sendForRemotePrinting, addresseeIsYouth, materialId, summonsRequired, false);
     }
@@ -65,7 +65,7 @@ public class SummonsNotificationEmailPayloadService {
     public Optional<EmailChannel> getEmailChannelForCaseDefendantParent(final SummonsDataPrepared summonsDataPrepared, final SummonsDocumentContent summonsDocumentContent,
                                                                         final String emailAddress, final List<UUID> confirmedDefendantIds, final Defendant defendant,
                                                                         final List<String> defendantDetails, final boolean sendForRemotePrinting, final UUID materialId,
-                                                                        final SummonsRequired summonsRequired) {
+                                                                        final SummonsType summonsRequired) {
         return getEmailChannelForCaseDefendant(summonsDataPrepared, summonsDocumentContent, emailAddress, confirmedDefendantIds,
                 defendant, defendantDetails, sendForRemotePrinting, false, materialId, summonsRequired, true);
     }
@@ -73,7 +73,7 @@ public class SummonsNotificationEmailPayloadService {
     private Optional<EmailChannel> getEmailChannelForCaseDefendant(final SummonsDataPrepared summonsDataPrepared, final SummonsDocumentContent summonsDocumentContent,
                                                                    final String emailAddress, final List<UUID> confirmedDefendantIds, final Defendant defendant,
                                                                    final List<String> defendantDetails, final boolean sendForRemotePrinting, final boolean addresseeIsYouth,
-                                                                   final UUID materialId, final SummonsRequired summonsRequired, final boolean notificationForParentOrGuardian) {
+                                                                   final UUID materialId, final SummonsType summonsRequired, final boolean notificationForParentOrGuardian) {
         if (conditionNotMetToRaiseEmailNotification(summonsRequired, emailAddress, sendForRemotePrinting, notificationForParentOrGuardian)) {
             return empty();
         }
@@ -92,21 +92,21 @@ public class SummonsNotificationEmailPayloadService {
 
     public Optional<EmailChannel> getEmailChannelForApplicationAddressee(final SummonsDataPrepared summonsDataPrepared, final SummonsDocumentContent summonsDocumentContent,
                                                                          final String applicantEmailAddress, final boolean sendForRemotePrinting, final boolean addresseeIsYouth,
-                                                                         final UUID materialId, final SummonsRequired summonsRequired) {
+                                                                         final UUID materialId, final SummonsType summonsRequired) {
         return getEmailChannelForApplicationAddressee(summonsDataPrepared, summonsDocumentContent, applicantEmailAddress, sendForRemotePrinting,
                 addresseeIsYouth, materialId, summonsRequired, false);
     }
 
     public Optional<EmailChannel> getEmailChannelForApplicationAddresseeParent(final SummonsDataPrepared summonsDataPrepared, final SummonsDocumentContent summonsDocumentContent,
                                                                                final String applicantEmailAddress, final boolean sendForRemotePrinting, final UUID materialId,
-                                                                               final SummonsRequired summonsRequired) {
+                                                                               final SummonsType summonsRequired) {
         return getEmailChannelForApplicationAddressee(summonsDataPrepared, summonsDocumentContent, applicantEmailAddress, sendForRemotePrinting,
                 false, materialId, summonsRequired, true);
     }
 
     private Optional<EmailChannel> getEmailChannelForApplicationAddressee(final SummonsDataPrepared summonsDataPrepared, final SummonsDocumentContent summonsDocumentContent,
                                                                           final String applicantEmailAddress, final boolean sendForRemotePrinting, final boolean addresseeIsYouth,
-                                                                          final UUID materialId, final SummonsRequired summonsRequired, final boolean notificationForParentOrGuardian) {
+                                                                          final UUID materialId, final SummonsType summonsRequired, final boolean notificationForParentOrGuardian) {
         if (conditionNotMetToRaiseEmailNotification(summonsRequired, applicantEmailAddress, sendForRemotePrinting, notificationForParentOrGuardian)) {
             return empty();
         }
@@ -199,7 +199,7 @@ public class SummonsNotificationEmailPayloadService {
         existingDefendantDetails.add(getCaseDefendantDetails(summonsDocumentContent, defendant, notificationForParentOrGuardian));
     }
 
-    private boolean conditionNotMetToRaiseEmailNotification(final SummonsRequired summonsRequired, final String emailAddress, final boolean sendForRemotePrinting, final boolean notificationForParentOrGuardian) {
+    private boolean conditionNotMetToRaiseEmailNotification(final SummonsType summonsRequired, final String emailAddress, final boolean sendForRemotePrinting, final boolean notificationForParentOrGuardian) {
         return summonsRequired == SJP_REFERRAL ||
                 isBlank(emailAddress) ||
                 (sendForRemotePrinting && notificationForParentOrGuardian);

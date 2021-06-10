@@ -10,8 +10,8 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
-import static uk.gov.justice.core.courts.SummonsRequired.FIRST_HEARING;
-import static uk.gov.justice.core.courts.SummonsRequired.SJP_REFERRAL;
+import static uk.gov.justice.core.courts.SummonsType.FIRST_HEARING;
+import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
 import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.assertOnAssociatedPersonAddress;
@@ -39,7 +39,7 @@ import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
-import uk.gov.justice.core.courts.SummonsRequired;
+import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.core.courts.summons.SummonsDocumentContent;
 import uk.gov.justice.core.courts.summons.SummonsProsecutor;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -123,11 +123,11 @@ public class CaseDefendantSummonsServiceTest {
 
     @UseDataProvider("caseSummonsSpecification")
     @Test
-    public void shouldGenerateEnglishSummonsPayloadForFirstHearing(final SummonsRequired summonsRequired, final SummonsCode summonsCode, final String summonsType) {
+    public void shouldGenerateEnglishSummonsPayloadForFirstHearing(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {
         verifySummonsPayloadGeneratedFor(summonsRequired, summonsCode, summonsType);
     }
 
-    public void verifySummonsPayloadGeneratedFor(final SummonsRequired summonsRequired, final SummonsCode summonsCode, final String summonsType) {
+    public void verifySummonsPayloadGeneratedFor(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {
 
         if (SJP_REFERRAL == summonsRequired) {
             when(referenceDataService.getReferralReasons(envelope, requester)).thenReturn(Optional.of(generateReferralReasonsJson(REFERRAL_ID.toString())));
@@ -150,7 +150,7 @@ public class CaseDefendantSummonsServiceTest {
         assertTemplatePayloadValues(summonsRequired, summonsType, OBJECT_TO_JSON_OBJECT_CONVERTER.convert(summonsDocumentContent), true);
     }
 
-    private void assertTemplatePayloadValues(final SummonsRequired summonsRequired, final String summonsType, final JsonObject summonsDataJson, final boolean defendantVersion) {
+    private void assertTemplatePayloadValues(final SummonsType summonsRequired, final String summonsType, final JsonObject summonsDataJson, final boolean defendantVersion) {
         assertOnSummonsData(summonsDataJson, summonsRequired, summonsType);
 
         final JsonObject defendantJson = assertOnDefendant(summonsDataJson, true);
