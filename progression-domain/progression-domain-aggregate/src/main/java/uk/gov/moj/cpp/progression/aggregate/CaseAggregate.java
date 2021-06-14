@@ -33,8 +33,8 @@ import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CaseMarkersUpdated;
-import uk.gov.justice.core.courts.CaseNoteAdded;
-import uk.gov.justice.core.courts.CaseNoteEdited;
+import uk.gov.justice.core.courts.CaseNoteAddedV2;
+import uk.gov.justice.core.courts.CaseNoteEditedV2;
 import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.CpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CustodyTimeLimit;
@@ -1174,8 +1174,9 @@ public class CaseAggregate implements Aggregate {
         return apply(streamBuilder.build());
     }
 
-    public Stream<Object> addNote(final UUID caseId, final String note, final boolean isPinned, final String firstName, final String lastName) {
-        return apply(Stream.of(CaseNoteAdded.caseNoteAdded()
+    public Stream<Object> addNote(final UUID caseNoteId, final UUID caseId, final String note, final boolean isPinned, final String firstName, final String lastName) {
+        return apply(Stream.of(CaseNoteAddedV2.caseNoteAddedV2()
+                .withCaseNoteId(caseNoteId)
                 .withCaseId(caseId)
                 .withNote(note)
                 .withIsPinned(isPinned)
@@ -1186,7 +1187,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> editNote(final UUID caseId, final UUID caseNoteId, final Boolean isPinned) {
-        return apply(Stream.of(CaseNoteEdited.caseNoteEdited()
+        return apply(Stream.of(CaseNoteEditedV2.caseNoteEditedV2()
                 .withCaseId(caseId)
                 .withCaseNoteId(caseNoteId)
                 .withIsPinned(isPinned)
@@ -1507,7 +1508,7 @@ public class CaseAggregate implements Aggregate {
         return apply(Stream.of(HearingDeletedForProsecutionCase.hearingDeletedForProsecutionCase()
                 .withProsecutionCaseId(prosecutionCaseId)
                 .withHearingId(hearingId)
-                .withDefendantIds(prosecutionCase.getDefendants().stream().map(defendant -> defendant.getId()).collect(toList()))
+                .withDefendantIds(prosecutionCase.getDefendants().stream().map(uk.gov.justice.core.courts.Defendant::getId).collect(toList()))
                 .build()));
     }
 

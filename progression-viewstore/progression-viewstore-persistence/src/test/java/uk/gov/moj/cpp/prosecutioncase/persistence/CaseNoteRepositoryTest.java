@@ -28,8 +28,8 @@ public class CaseNoteRepositoryTest {
     @Test
     public void shouldSaveAndReadACaseNoteAndOrderByCreatedDateDesc() {
 
-        CaseNoteEntity firstNote = new CaseNoteEntity(CASE_ID, "A Note", "Bob", "Marley", now(), false);
-        CaseNoteEntity secondNote = new CaseNoteEntity(CASE_ID, "A Second Note", "Bob", "Marley", now().plusMinutes(1), false);
+        CaseNoteEntity firstNote = new CaseNoteEntity(randomUUID(), CASE_ID, "A Note", "Bob", "Marley", now(), false);
+        CaseNoteEntity secondNote = new CaseNoteEntity(randomUUID(), CASE_ID, "A Second Note", "Bob", "Marley", now().plusMinutes(1), false);
 
         caseNoteRepository.save(firstNote);
         caseNoteRepository.save(secondNote);

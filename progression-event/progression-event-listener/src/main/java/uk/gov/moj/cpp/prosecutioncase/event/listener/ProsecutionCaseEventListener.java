@@ -1,13 +1,16 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.util.Objects.nonNull;
+import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseNoteAdded;
+import uk.gov.justice.core.courts.CaseNoteAddedV2;
 import uk.gov.justice.core.courts.CaseNoteEdited;
+import uk.gov.justice.core.courts.CaseNoteEditedV2;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -184,8 +187,16 @@ public class ProsecutionCaseEventListener {
     @Handles("progression.event.case-note-added")
     public void caseNoteAdded(final JsonEnvelope event) {
         final CaseNoteAdded caseNoteAdded = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseNoteAdded.class);
-        final CaseNoteEntity caseNoteEntity = new CaseNoteEntity(caseNoteAdded.getCaseId(),
+        final CaseNoteEntity caseNoteEntity = new CaseNoteEntity(randomUUID(), caseNoteAdded.getCaseId(),
                 caseNoteAdded.getNote(), caseNoteAdded.getFirstName(), caseNoteAdded.getLastName(), caseNoteAdded.getCreatedDateTime(), toBoolean(caseNoteAdded.getIsPinned()));
+        caseNoteRepository.save(caseNoteEntity);
+    }
+
+    @Handles("progression.event.case-note-added-v2")
+    public void caseNoteAddedV2(final JsonEnvelope event) {
+        final CaseNoteAddedV2 caseNoteAddedV2 = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseNoteAddedV2.class);
+        final CaseNoteEntity caseNoteEntity = new CaseNoteEntity(caseNoteAddedV2.getCaseNoteId(), caseNoteAddedV2.getCaseId(),
+                caseNoteAddedV2.getNote(), caseNoteAddedV2.getFirstName(), caseNoteAddedV2.getLastName(), caseNoteAddedV2.getCreatedDateTime(), toBoolean(caseNoteAddedV2.getIsPinned()));
         caseNoteRepository.save(caseNoteEntity);
     }
 
@@ -198,5 +209,13 @@ public class ProsecutionCaseEventListener {
             caseNoteEntity.setPinned(caseNotePinned.getIsPinned());
             caseNoteRepository.save(caseNoteEntity);
         }
+    }
+
+    @Handles("progression.event.case-note-edited-v2")
+    public void caseNoteEditedV2(final JsonEnvelope event) {
+        final CaseNoteEditedV2 caseNotePinned = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseNoteEditedV2.class);
+        final CaseNoteEntity caseNoteEntity = caseNoteRepository.findBy(caseNotePinned.getCaseNoteId());
+        caseNoteEntity.setPinned(caseNotePinned.getIsPinned());
+        caseNoteRepository.save(caseNoteEntity);
     }
 }

@@ -8,7 +8,9 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.CaseNoteAdded;
+import uk.gov.justice.core.courts.CaseNoteAddedV2;
 import uk.gov.justice.core.courts.CaseNoteEdited;
+import uk.gov.justice.core.courts.CaseNoteEditedV2;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.sender.Sender;
@@ -81,9 +83,40 @@ public class CaseNoteProcessorTest {
         assertThat(actualPayload.getString("firstName"), equalTo(caseNoteAdded.getFirstName()));
         assertThat(actualPayload.getString("lastName"), equalTo(caseNoteAdded.getLastName()));
         assertThat(actualPayload.getString("createdDateTime"), equalTo(caseNoteAddedPayload.getString("createdDateTime")));
-
     }
 
+    @Test
+    public void processCaseNotesAddedV2() {
+        final CaseNoteAddedV2 caseNoteAdded = CaseNoteAddedV2.caseNoteAddedV2()
+                .withCaseNoteId(UUID.randomUUID())
+                .withCaseId(UUID.randomUUID())
+                .withNote("Note")
+                .withFirstName("FirstName")
+                .withLastName("LastName")
+                .withCreatedDateTime(ZonedDateTime.now())
+                .build();
+
+        final JsonObject caseNoteAddedPayload = objectToJsonObjectConverter.convert(caseNoteAdded);
+
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.case-note-added-v2"),
+                caseNoteAddedPayload);
+
+        processor.processCaseNoteAddedV2(requestMessage);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final Envelope<JsonObject> publicEvent = envelopeCaptor.getValue();
+        assertThat(publicEvent.metadata(),
+                withMetadataEnvelopedFrom(requestMessage).withName("public.progression.case-note-added"));
+        JsonObject actualPayload = publicEvent.payload();
+        assertThat(actualPayload.getString("note"), equalTo(caseNoteAdded.getNote()));
+        assertThat(actualPayload.getString("caseNoteId"), equalTo(caseNoteAdded.getCaseNoteId().toString()));
+        assertThat(actualPayload.getString("caseId"), equalTo(caseNoteAdded.getCaseId().toString()));
+        assertThat(actualPayload.getString("firstName"), equalTo(caseNoteAdded.getFirstName()));
+        assertThat(actualPayload.getString("lastName"), equalTo(caseNoteAdded.getLastName()));
+        assertThat(actualPayload.getString("createdDateTime"), equalTo(caseNoteAddedPayload.getString("createdDateTime")));
+    }
 
     @Test
     public void processCaseNotesEdited() {
@@ -110,7 +143,32 @@ public class CaseNoteProcessorTest {
         assertThat(actualPayload.getString("caseId"), equalTo(caseNoteEdited.getCaseId().toString()));
         assertThat(actualPayload.getString("caseNoteId"), equalTo(caseNoteEdited.getCaseNoteId().toString()));
         assertThat(actualPayload.getBoolean("isPinned"), equalTo(caseNoteEdited.getIsPinned()));
-
     }
 
+    @Test
+    public void processCaseNotesEditedV2() {
+        final CaseNoteEditedV2 caseNoteEdited = CaseNoteEditedV2.caseNoteEditedV2()
+                .withCaseId(UUID.randomUUID())
+                .withCaseNoteId(UUID.randomUUID())
+                .withIsPinned(true)
+                .build();
+
+        final JsonObject caseNoteEditedPayload = objectToJsonObjectConverter.convert(caseNoteEdited);
+
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.case-note-edited-v2"),
+                caseNoteEditedPayload);
+
+        processor.processCaseNoteEditedV2(requestMessage);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final Envelope<JsonObject> publicEvent = envelopeCaptor.getValue();
+        assertThat(publicEvent.metadata(),
+                withMetadataEnvelopedFrom(requestMessage).withName("public.progression.case-note-edited"));
+        JsonObject actualPayload = publicEvent.payload();
+        assertThat(actualPayload.getString("caseId"), equalTo(caseNoteEdited.getCaseId().toString()));
+        assertThat(actualPayload.getString("caseNoteId"), equalTo(caseNoteEdited.getCaseNoteId().toString()));
+        assertThat(actualPayload.getBoolean("isPinned"), equalTo(caseNoteEdited.getIsPinned()));
+    }
 }

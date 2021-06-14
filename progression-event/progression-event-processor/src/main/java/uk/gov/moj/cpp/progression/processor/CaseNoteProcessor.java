@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(EVENT_PROCESSOR)
 public class CaseNoteProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseNoteProcessor.class);
+    private static final String LOG_OUTPUT_FORMAT = "Received '{}' event with payload {}";
 
     @Inject
     private Sender sender;
@@ -23,24 +24,44 @@ public class CaseNoteProcessor {
     @Handles("progression.event.case-note-added")
     public void processCaseNoteAdded(final JsonEnvelope event) {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Received '{}' event with payload {}", "progression.event.case-note-added", event.toObfuscatedDebugString());
+            LOGGER.info(LOG_OUTPUT_FORMAT, "progression.event.case-note-added", event.toObfuscatedDebugString());
         }
         sender.send(
                 envelop(event.payloadAsJsonObject())
                         .withName("public.progression.case-note-added")
                         .withMetadataFrom(event));
+    }
 
+    @Handles("progression.event.case-note-added-v2")
+    public void processCaseNoteAddedV2(final JsonEnvelope event) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(LOG_OUTPUT_FORMAT, "progression.event.case-note-added-v2", event.toObfuscatedDebugString());
+        }
+        sender.send(
+                envelop(event.payloadAsJsonObject())
+                        .withName("public.progression.case-note-added")
+                        .withMetadataFrom(event));
     }
 
     @Handles("progression.event.case-note-edited")
     public void processCaseNoteEdited(final JsonEnvelope event) {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Received '{}' event with payload {}", "progression.event.case-note-edited", event.toObfuscatedDebugString());
+            LOGGER.info(LOG_OUTPUT_FORMAT, "progression.event.case-note-edited", event.toObfuscatedDebugString());
         }
         sender.send(
                 envelop(event.payloadAsJsonObject())
                         .withName("public.progression.case-note-edited")
                         .withMetadataFrom(event));
+    }
 
+    @Handles("progression.event.case-note-edited-v2")
+    public void processCaseNoteEditedV2(final JsonEnvelope event) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(LOG_OUTPUT_FORMAT, "progression.event.case-note-edited-v2", event.toObfuscatedDebugString());
+        }
+        sender.send(
+                envelop(event.payloadAsJsonObject())
+                        .withName("public.progression.case-note-edited")
+                        .withMetadataFrom(event));
     }
 }

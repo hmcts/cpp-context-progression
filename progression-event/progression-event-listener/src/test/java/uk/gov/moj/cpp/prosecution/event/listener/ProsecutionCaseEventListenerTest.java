@@ -15,7 +15,9 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseNoteAdded;
+import uk.gov.justice.core.courts.CaseNoteAddedV2;
 import uk.gov.justice.core.courts.CaseNoteEdited;
+import uk.gov.justice.core.courts.CaseNoteEditedV2;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.Defendant;
@@ -278,11 +280,24 @@ public class ProsecutionCaseEventListenerTest {
     }
 
     @Test
+    public void shouldHandleCaseNoteAddedV2Event() {
+
+        //Given
+        final CaseNoteAddedV2 caseNoteAddedV2 = createCaseNoteAddedEventV2();
+
+        //When
+        eventListener.caseNoteAddedV2(envelope);
+
+        //Then
+        verifyCaseNoteAddedV2EventResults(caseNoteAddedV2);
+    }
+
+    @Test
     public void shouldHandleCaseNoteEditedEvent() {
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         //Given
-        final CaseNoteEntity caseNoteEntity = new CaseNoteEntity(prosecutionCase.getId(), "note", "firstName", "lastName", ZonedDateTime.now(), false);
+        final CaseNoteEntity caseNoteEntity = new CaseNoteEntity(UUID.randomUUID(), prosecutionCase.getId(), "note", "firstName", "lastName", ZonedDateTime.now(), false);
         final CaseNoteEdited caseNoteEdited = buildCaseNoteEdited(caseNoteEntity.getId());
         when(jsonObjectToObjectConverter.convert(payload, CaseNoteEdited.class)).thenReturn(caseNoteEdited);
         when(caseNoteRepository.findBy(caseNoteEntity.getId())).thenReturn(caseNoteEntity);
@@ -292,10 +307,37 @@ public class ProsecutionCaseEventListenerTest {
         verifyCaseNoteEditedEventResults(caseNoteEdited);
     }
 
+    @Test
+    public void shouldHandleCaseNoteEditedEventV2() {
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        //Given
+        final CaseNoteEntity caseNoteEntity = new CaseNoteEntity(UUID.randomUUID(), prosecutionCase.getId(), "note", "firstName", "lastName", ZonedDateTime.now(), false);
+        final CaseNoteEditedV2 caseNoteEdited = buildCaseNoteEditedV2(caseNoteEntity.getId());
+        when(jsonObjectToObjectConverter.convert(payload, CaseNoteEditedV2.class)).thenReturn(caseNoteEdited);
+        when(caseNoteRepository.findBy(caseNoteEntity.getId())).thenReturn(caseNoteEntity);
+        //When
+        eventListener.caseNoteEditedV2(envelope);
+        //Then
+        verifyCaseNoteEditedEventResultsV2(caseNoteEdited);
+    }
+
     private void verifyCaseNoteAddedEventResults(final CaseNoteAdded caseNoteAdded) {
         verify(caseNoteRepository).save(caseNoteArgumentCaptor.capture());
 
         final CaseNoteEntity caseNoteEntity = caseNoteArgumentCaptor.getValue();
+        assertThat(caseNoteEntity.getCaseId(), equalTo(caseNoteAdded.getCaseId()));
+        assertThat(caseNoteEntity.getNote(), equalTo(caseNoteAdded.getNote()));
+        assertThat(caseNoteEntity.getCreatedDateTime(), equalTo(caseNoteAdded.getCreatedDateTime()));
+        assertThat(caseNoteEntity.getFirstName(), equalTo(caseNoteAdded.getFirstName()));
+        assertThat(caseNoteEntity.getLastName(), equalTo(caseNoteAdded.getLastName()));
+    }
+
+    private void verifyCaseNoteAddedV2EventResults(final CaseNoteAddedV2 caseNoteAdded) {
+        verify(caseNoteRepository).save(caseNoteArgumentCaptor.capture());
+
+        final CaseNoteEntity caseNoteEntity = caseNoteArgumentCaptor.getValue();
+        assertThat(caseNoteEntity.getId(), equalTo(caseNoteAdded.getCaseNoteId()));
         assertThat(caseNoteEntity.getCaseId(), equalTo(caseNoteAdded.getCaseId()));
         assertThat(caseNoteEntity.getNote(), equalTo(caseNoteAdded.getNote()));
         assertThat(caseNoteEntity.getCreatedDateTime(), equalTo(caseNoteAdded.getCreatedDateTime()));
@@ -312,6 +354,15 @@ public class ProsecutionCaseEventListenerTest {
         assertThat(caseNoteEntity.getPinned(), equalTo(caseNoteEdited.getIsPinned()));
     }
 
+    private void verifyCaseNoteEditedEventResultsV2(final CaseNoteEditedV2 caseNoteEditedV2) {
+        verify(caseNoteRepository).save(caseNoteArgumentCaptor.capture());
+
+        final CaseNoteEntity caseNoteEntity = caseNoteArgumentCaptor.getValue();
+        assertThat(caseNoteEntity.getCaseId(), equalTo(caseNoteEditedV2.getCaseId()));
+        assertThat(caseNoteEntity.getId(), equalTo(caseNoteEditedV2.getCaseNoteId()));
+        assertThat(caseNoteEntity.getPinned(), equalTo(caseNoteEditedV2.getIsPinned()));
+    }
+
     private CaseNoteAdded createCaseNoteAddedEvent() {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         final CaseNoteAdded caseNoteAdded = CaseNoteAdded.caseNoteAdded()
@@ -326,14 +377,35 @@ public class ProsecutionCaseEventListenerTest {
         return caseNoteAdded;
     }
 
-    private CaseNoteEdited buildCaseNoteEdited(final UUID caseNoteId) {
+    private CaseNoteAddedV2 createCaseNoteAddedEventV2() {
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        final CaseNoteAddedV2 caseNoteAdded = CaseNoteAddedV2.caseNoteAddedV2()
+                .withCaseNoteId(UUID.randomUUID())
+                .withCaseId(prosecutionCase.getId())
+                .withNote("Note")
+                .withFirstName("firstName")
+                .withLastName("lastName")
+                .withCreatedDateTime(ZonedDateTime.now())
+                .build();
+        when(jsonObjectToObjectConverter.convert(payload, CaseNoteAddedV2.class))
+                .thenReturn(caseNoteAdded);
+        return caseNoteAdded;
+    }
 
+    private CaseNoteEdited buildCaseNoteEdited(final UUID caseNoteId) {
         return CaseNoteEdited.caseNoteEdited()
                 .withCaseId(prosecutionCase.getId())
                 .withCaseNoteId(caseNoteId)
                 .withIsPinned(true)
                 .build();
+    }
 
+    private CaseNoteEditedV2 buildCaseNoteEditedV2(final UUID caseNoteId) {
+        return CaseNoteEditedV2.caseNoteEditedV2()
+                .withCaseId(prosecutionCase.getId())
+                .withCaseNoteId(caseNoteId)
+                .withIsPinned(true)
+                .build();
     }
 
     private String createPayload(final String payloadPath) throws IOException {

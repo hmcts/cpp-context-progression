@@ -38,8 +38,8 @@ public class CaseNoteEntity implements Serializable {
     @Column(name = "is_pinned", nullable = false)
     private Boolean isPinned;
 
-    public CaseNoteEntity(final UUID caseId, final String note, final String firstName, final String lastName, final ZonedDateTime createdDateTime, final Boolean isPinned) {
-        this.id = UUID.randomUUID();
+    public CaseNoteEntity(final UUID id, final UUID caseId, final String note, final String firstName, final String lastName, final ZonedDateTime createdDateTime, final Boolean isPinned) {
+        this.id = id;
         this.caseId = caseId;
         this.note = note;
         this.firstName = firstName;

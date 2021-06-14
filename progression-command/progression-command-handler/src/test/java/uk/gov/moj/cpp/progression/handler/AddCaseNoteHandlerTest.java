@@ -18,6 +18,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 
 import uk.gov.justice.core.courts.AddCaseNote;
 import uk.gov.justice.core.courts.CaseNoteAdded;
+import uk.gov.justice.core.courts.CaseNoteAddedV2;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -69,7 +70,7 @@ public class AddCaseNoteHandlerTest {
 
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            CaseNoteAdded.class);
+            CaseNoteAddedV2.class);
 
     @Before
     public void setup() {
@@ -112,7 +113,7 @@ public class AddCaseNoteHandlerTest {
         assertThat(envelopeStream, streamContaining(
                 jsonEnvelope(
                         metadata()
-                                .withName("progression.event.case-note-added"),
+                                .withName("progression.event.case-note-added-v2"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.caseId", is(CASE_ID.toString())),
                                 withJsonPath("$.note", is("Test Note Added")),
@@ -130,7 +131,7 @@ public class AddCaseNoteHandlerTest {
         assertThat(envelopeStream, streamContaining(
                 jsonEnvelope(
                         metadata()
-                                .withName("progression.event.case-note-added"),
+                                .withName("progression.event.case-note-added-v2"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.caseId", is(CASE_ID.toString())),
                                 withJsonPath("$.note", is("Test Note Added")),
