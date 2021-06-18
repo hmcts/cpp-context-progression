@@ -499,6 +499,8 @@ public class HearingResultHelperTest {
         assertThat(prosecutionCase.getId(), is(prosecutionCaseId));
         assertThat(prosecutionCase.getDefendants().size(), is(size));
         assertThat(prosecutionCase.getCpsOrganisation(), is("A01"));
+        assertThat(prosecutionCase.getTrialReceiptType(), is("Transfer"));
+
     }
 
     private void assertDefendant(final Defendant defendant, final UUID defendantId, final int size) {
@@ -535,6 +537,7 @@ public class HearingResultHelperTest {
                 .withId(prosecutionCaseId)
                 .withCpsOrganisation("A01")
                 .withDefendants(defendants)
+                .withTrialReceiptType("Transfer")
                 .build();
     }
 

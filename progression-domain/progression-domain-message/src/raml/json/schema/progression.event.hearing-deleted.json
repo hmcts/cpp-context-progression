@@ -21,7 +21,14 @@
       }
     }
   },
-  "oneOf": [
+  "anyOf": [
+    {
+      "required": [
+        "hearingId",
+        "prosecutionCaseIds",
+        "courtApplicationIds"
+      ]
+    },
     {
       "required": [
         "hearingId",
@@ -31,13 +38,6 @@
     {
       "required": [
         "hearingId",
-        "courtApplicationIds"
-      ]
-    },
-    {
-      "required": [
-        "hearingId",
-        "prosecutionCaseIds",
         "courtApplicationIds"
       ]
     }

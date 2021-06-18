@@ -210,6 +210,7 @@ public class ListCourtHearingTransformer {
                     .withStatementOfFacts(matchedProsecutionCase.getStatementOfFacts())
                     .withStatementOfFactsWelsh(matchedProsecutionCase.getStatementOfFactsWelsh())
                     .withCaseMarkers(matchedProsecutionCase.getCaseMarkers())
+                    .withTrialReceiptType(matchedProsecutionCase.getTrialReceiptType())
                     .build());
 
         });

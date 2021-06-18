@@ -84,6 +84,7 @@ public class HearingConfirmedCaseUpdatedEventListener {
         return ProsecutionCase.prosecutionCase()
                 .withValuesFrom(prosecutionCase)
                 .withCaseStatus(caseStatus)
+                .withTrialReceiptType(prosecutionCase.getTrialReceiptType())
                 .build();
     }
 
@@ -143,6 +144,7 @@ public class HearingConfirmedCaseUpdatedEventListener {
                 .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
                 .withRemovalReason(prosecutionCase.getRemovalReason())
                 .withCaseStatus(prosecutionCase.getCaseStatus())
+                .withTrialReceiptType(originalHearingProsecutionCase.getTrialReceiptType())
                 .build()
                 : originalHearingProsecutionCase;
     }

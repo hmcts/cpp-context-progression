@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.Address.address;
+import static uk.gov.justice.core.courts.CustodyTimeLimit.custodyTimeLimit;
 import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.JudicialResult.judicialResult;
 import static uk.gov.justice.core.courts.LegalEntityDefendant.legalEntityDefendant;
@@ -404,6 +405,93 @@ public class CaseAtAGlanceHelperTest {
         assertThat(thirdDefendant.getDefendantCaseJudicialResults(), nullValue());
     }
 
+    @Test
+    public void shouldNotReturnCtlExpiryDateWhenCustodyTimeLimitNotExistsInAllOffences() {
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withDefendants(asList(defendant()
+                        .withId(randomUUID())
+                        .withMasterDefendantId(randomUUID())
+                        .withOffences(asList(offence()
+                                .withId(randomUUID())
+                                .build()))
+                        .build()))
+                .build();
+
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, getCaseHearings(), referenceDataService);
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+
+        assertThat(defendants.get(0).getCtlExpiryDate(), nullValue());
+        assertThat(defendants.get(0).getCtlExpiryCountDown(), nullValue());
+    }
+
+    @Test
+    public void shouldReturnEarliestCtlExpiryDateWhenCustodyTimeLimitExistsInOffences() {
+        final LocalDate timeLimit1 = LocalDate.now().plusDays(10);
+        final LocalDate timeLimit2 = LocalDate.now().plusDays(11);
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withDefendants(asList(defendant()
+                        .withId(randomUUID())
+                        .withMasterDefendantId(randomUUID())
+                        .withOffences(asList(
+                                offence()
+                                        .withId(randomUUID())
+                                        .build(),
+                                offence()
+                                        .withId(randomUUID())
+                                        .withCustodyTimeLimit(custodyTimeLimit()
+                                                .withTimeLimit(timeLimit1)
+                                                .build())
+                                        .build(),
+                                offence()
+                                        .withId(randomUUID())
+                                        .withCustodyTimeLimit(custodyTimeLimit()
+                                                .withTimeLimit(timeLimit2)
+                                                .build())
+                                        .build()))
+                        .build()))
+                .build();
+
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, getCaseHearings(), referenceDataService);
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+
+        assertThat(defendants.get(0).getCtlExpiryDate(), is(timeLimit1));
+        assertThat(defendants.get(0).getCtlExpiryCountDown(), is((10)));
+    }
+
+    @Test
+    public void shouldReturnEarliestCtlExpiryDateWhenCustodyTimeLimitExistsInOffencesAndBeforeTheCurrentDate() {
+        final LocalDate timeLimit1 = LocalDate.now().minusDays(10);
+        final LocalDate timeLimit2 = LocalDate.now().minusDays(9);
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withDefendants(asList(defendant()
+                        .withId(randomUUID())
+                        .withMasterDefendantId(randomUUID())
+                        .withOffences(asList(
+                                offence()
+                                        .withId(randomUUID())
+                                        .build(),
+                                offence()
+                                        .withId(randomUUID())
+                                        .withCustodyTimeLimit(custodyTimeLimit()
+                                                .withTimeLimit(timeLimit1)
+                                                .build())
+                                        .build(),
+                                offence()
+                                        .withId(randomUUID())
+                                        .withCustodyTimeLimit(custodyTimeLimit()
+                                                .withTimeLimit(timeLimit2)
+                                                .build())
+                                        .build()))
+                        .build()))
+                .build();
+
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, getCaseHearings(), referenceDataService);
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+
+        assertThat(defendants.get(0).getCtlExpiryDate(), is(timeLimit1));
+        assertThat(defendants.get(0).getCtlExpiryCountDown(), is((-10)));
+    }
+
     private ProsecutionCase getProsecutionCaseWithProsecutor(){
         return prosecutionCase()
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(CASE_URN)
@@ -467,6 +555,7 @@ public class CaseAtAGlanceHelperTest {
                                 .build()))
                 .build();
     }
+
     private ProsecutionCase getProsecutionCaseWithCaseDetails() {
         return prosecutionCase()
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(CASE_URN)

@@ -85,6 +85,7 @@ public class ProsecutionCaseEventListenerTest {
     private static final String CASE_STATUS_EJECTED = "EJECTED";
     private static final String CPS_ORGANISATION = "cpsOrganisation";
     private static final String CPS_ORGANISATION_VALUE = "A01";
+    private static final String TRIAL_RECEIPT_TYPE = "trialReceiptType";
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -241,6 +242,7 @@ public class ProsecutionCaseEventListenerTest {
                         .add(Json.createObjectBuilder()
                                 .add("id", randomUUID().toString())
                                 .add(CPS_ORGANISATION, CPS_ORGANISATION_VALUE)
+                                .add(TRIAL_RECEIPT_TYPE, "Transfer")
                                 .add("caseStatus", CASE_STATUS_EJECTED)))
                 .add("linkedCaseId", caseId.toString())
                 .add(APPLICATION_STATUS, ApplicationStatus.EJECTED.name()).build());
@@ -259,6 +261,7 @@ public class ProsecutionCaseEventListenerTest {
         final JsonNode hearingNode = mapper.valueToTree(JSONValue.parse(updatedHearingEntity.getPayload()));
         assertThat(hearingNode.path(PROSECUTION_CASES).get(0).path(CASE_STATUS).asText(), is(CASE_STATUS_EJECTED));
         assertThat(hearingNode.path(PROSECUTION_CASES).get(0).path(CPS_ORGANISATION).asText(), is(CPS_ORGANISATION_VALUE));
+        assertThat(hearingNode.path(PROSECUTION_CASES).get(0).path(TRIAL_RECEIPT_TYPE).asText(), is("Transfer"));
     }
 
     @Test

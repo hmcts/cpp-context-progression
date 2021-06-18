@@ -335,6 +335,15 @@ subscriptions_descriptor:
         - name: progression.event.cases-added-for-updated-related-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.cases-added-for-updated-related-hearing.json
 
+        - name: progression.events.extend-custody-time-limit-resulted
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.extend-custody-time-limit-resulted.json
+
+        - name: progression.events.custody-time-limit-extended
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.custody-time-limit-extended.json
+
+        - name: progression.event.defendants-and-listing-hearing-requests-added
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.defendants-and-listing-hearing-requests-added.json
+
         - name: progression.event.hearing-updated-processed
           schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-updated-processed.json
 
@@ -439,6 +448,10 @@ subscriptions_descriptor:
         - name: public.events.listing.cases-added-for-updated-related-hearing
           schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.cases-added-for-updated-related-hearing.json
 
+        - name: public.events.hearing.custody-time-limit-clock-stopped
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/public.events.hearing.custody-time-limit-clock-stopped.json
 
+        - name: public.events.hearing.prosecution-case-created-in-hearing
+          schema_uri: http://justice.gov.uk/hearing/courts/public.events.hearing.prosecution-case-created-in-hearing.json
 
       event_source_name: public.event.source

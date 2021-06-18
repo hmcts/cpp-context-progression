@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.query.view;
 import static java.lang.String.format;
 import static java.time.LocalDate.now;
 import static java.time.Period.between;
+import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Comparator.comparing;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -148,9 +149,24 @@ public class CaseAtAGlanceHelper {
                 caagDefendantBuilder.withDefendantJudicialResults(defendantJudicialResultList);
             }
             caagDefendantBuilder.withLegalAidStatus(defendant.getLegalAidStatus());
+            setCtlExpiryDate(defendant, caagDefendantBuilder);
+
             caagDefendantsList.add(caagDefendantBuilder.build());
         }
         return caagDefendantsList;
+    }
+
+    private void setCtlExpiryDate(final Defendant defendant, final Builder caagDefendantBuilder) {
+        final LocalDate ctlExpiryDate = ofNullable(defendant.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
+                .filter(offence -> nonNull(offence.getCustodyTimeLimit()) && nonNull(offence.getCustodyTimeLimit().getTimeLimit()))
+                .map(offence -> offence.getCustodyTimeLimit().getTimeLimit())
+                .min(LocalDate::compareTo)
+                .orElse(null);
+
+        if (nonNull(ctlExpiryDate)) {
+            caagDefendantBuilder.withCtlExpiryDate(ctlExpiryDate);
+            caagDefendantBuilder.withCtlExpiryCountDown((int) DAYS.between(LocalDate.now(), ctlExpiryDate));
+        }
     }
 
     private List<CaagDefendantOffences> getCaagDefendantOffencesList(final Defendant defendant) {

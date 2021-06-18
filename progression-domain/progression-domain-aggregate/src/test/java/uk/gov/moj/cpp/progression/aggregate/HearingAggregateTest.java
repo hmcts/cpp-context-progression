@@ -15,11 +15,13 @@ import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.progression.courts.ExtendCustodyTimeLimitResulted;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.moj.cpp.progression.test.CoreTestTemplates;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -80,6 +82,33 @@ public class HearingAggregateTest {
         final List<Object> response = hearingAggregate.addBreachApplication(addBreachApplication).collect(Collectors.toList());
         assertThat(response.size(), is(2));
         assertThat(response.get(0).getClass(), is(CoreMatchers.equalTo(BreachApplicationCreationRequested.class)));
+    }
+
+    @Test
+    public void shouldApplyExtendCustodyTimeLimitResultedEvent() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(caseId, toMap(defendantId, singletonList(offenceId))))
+                .setConvicted(false)).build();
+
+        hearingAggregate.apply(createHearingResulted(hearing));
+        final UUID hearingId = hearing.getId();
+
+        final ExtendCustodyTimeLimitResulted extendCustodyTimeLimitResulted = new ExtendCustodyTimeLimitResulted.Builder()
+                .withHearingId(hearingId)
+                .withCaseId(caseId)
+                .withOffenceId(offenceId)
+                .withExtendedTimeLimit(LocalDate.now())
+                .build();
+
+        hearingAggregate.apply(extendCustodyTimeLimitResulted);
+
+        assertThat(hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0)
+                .getCustodyTimeLimit().getIsCtlExtended(), is(true));
     }
 
     private HearingResulted createHearingResulted(final Hearing hearing) {

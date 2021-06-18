@@ -100,6 +100,7 @@ public class ListCourtHearingTransformerTest {
     private static final String MARKER_TYPE_CODE = "MarkerTypeCode";
     private static final String MARKER_TYPE_DESCRIPTION = "MarkerTypeDescription";
     private static final String cpsOrganisation = "A01";
+    private static final String TRANSFER = "Transfer";
 
     @Spy
     private final Enveloper enveloper = createEnveloper();
@@ -461,6 +462,7 @@ public class ListCourtHearingTransformerTest {
                 .get(0).getMarkerTypeDescription(), is(MARKER_TYPE_DESCRIPTION));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getCaseMarkers()
                 .get(0).getMarkerTypeid(), is(MARKER_TYPE_ID));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getTrialReceiptType(), is(TRANSFER));
         assertFalse(listCourtHearing.getHearings().get(0).getDefendantListingNeeds().get(0).getIsYouth());
 
     }
@@ -605,6 +607,7 @@ public class ListCourtHearingTransformerTest {
                         .withMarkerTypeCode(MARKER_TYPE_CODE)
                         .withMarkerTypeDescription(MARKER_TYPE_DESCRIPTION)
                         .build()))
+                .withTrialReceiptType(TRANSFER)
                 .build();
     }
 

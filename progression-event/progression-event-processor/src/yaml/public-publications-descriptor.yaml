@@ -56,6 +56,9 @@ subscriptions_descriptor:
         - name: public.progression.defendants-added-to-court-proceedings
           schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json
 
+        - name: public.progression.defendants-added-to-hearing
+          schema_uri: http://justice.gov.uk/core/courts/public.progression.defendants-added-to-hearing.json
+
         - name: public.progression.defendants-added-to-case
           schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-case.json
 
@@ -196,5 +199,8 @@ subscriptions_descriptor:
 
         - name : public.progression.defendant-laa-contract-associated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-laa-associated.json
+
+        - name : public.events.progression.custody-time-limit-extended
+          schema_uri: http://justice.gov.uk/core/courts/public.events.progression.custody-time-limit-extended.json
 
       event_source_name: public.event.source

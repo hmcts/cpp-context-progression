@@ -217,4 +217,3 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         };
     }
 }
-

@@ -40,6 +40,7 @@ import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CustodyTimeLimit;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
 import uk.gov.justice.core.courts.DefendantRequestToExtendHearingCreated;
@@ -72,7 +73,9 @@ import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.progression.courts.BookingReferencesAndCourtScheduleIdsStored;
+import uk.gov.justice.progression.courts.CustodyTimeLimitClockStopped;
 import uk.gov.justice.progression.courts.DeleteNextHearingsRequested;
+import uk.gov.justice.progression.courts.ExtendCustodyTimeLimitResulted;
 import uk.gov.justice.progression.courts.HearingDeleted;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
 import uk.gov.justice.progression.courts.HearingResulted;
@@ -191,6 +194,8 @@ public class HearingAggregate implements Aggregate {
                 when(BookingReferencesAndCourtScheduleIdsStored.class).apply(e ->
                         this.bookingReferencesAndCourtScheduleIdsForHearingDay.put(e.getHearingDay(), e.getBookingReferenceCourtScheduleIds())
                 ),
+                when(CustodyTimeLimitClockStopped.class).apply(this::onCustodyTimeLimitClockStopped),
+                when(ExtendCustodyTimeLimitResulted.class).apply(this::onExtendCustodyTimeLimitResulted),
                 otherwiseDoNothing());
     }
 
@@ -527,6 +532,7 @@ public class HearingAggregate implements Aggregate {
                 .withBreachProceedingsPending(prosecutionCase.getBreachProceedingsPending())
                 .withRemovalReason(prosecutionCase.getRemovalReason())
                 .withCaseStatus(allDefendantProceedingConcluded ? CaseStatusEnum.INACTIVE.getDescription() : prosecutionCase.getCaseStatus())
+                .withTrialReceiptType(prosecutionCase.getTrialReceiptType())
                 .build();
     }
 
@@ -639,6 +645,57 @@ public class HearingAggregate implements Aggregate {
         }
     }
 
+    private void onCustodyTimeLimitClockStopped(final CustodyTimeLimitClockStopped custodyTimeLimitClockStopped) {
+        final List<UUID> offenceIds = custodyTimeLimitClockStopped.getOffenceIds();
+        this.hearing.getProsecutionCases().stream()
+                .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                .forEach(defendant -> {
+                    final List<Offence> updatedOffences = defendant.getOffences().stream()
+                            .filter(o -> offenceIds.contains(o.getId()))
+                            .collect(toList());
+                    for (final Offence offence : updatedOffences) {
+                        final int index = defendant.getOffences().indexOf(offence);
+                        defendant.getOffences().remove(offence);
+                        defendant.getOffences().add(index, Offence.offence()
+                                .withValuesFrom(offence)
+                                .withCustodyTimeLimit(null)
+                                .withCtlClockStopped(true)
+                                .build());
+                    }
+
+
+                });
+
+    }
+
+    private void onExtendCustodyTimeLimitResulted(final ExtendCustodyTimeLimitResulted event) {
+        final UUID offenceId = event.getOffenceId();
+        this.hearing.getProsecutionCases().stream()
+                .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                .filter(defendant -> defendant.getOffences().stream()
+                        .anyMatch(offence -> offence.getId().equals(offenceId)))
+                .forEach(defendant -> {
+
+                    final Optional<Offence> offence = defendant.getOffences().stream()
+                            .filter(o -> o.getId().equals(offenceId))
+                            .findFirst();
+
+                    if (offence.isPresent()) {
+                        final int index = defendant.getOffences().indexOf(offence.get());
+                        defendant.getOffences().remove(offence.get());
+                        defendant.getOffences().add(index, Offence.offence()
+                                .withValuesFrom(offence.get())
+                                .withCustodyTimeLimit(CustodyTimeLimit.custodyTimeLimit()
+                                        .withValuesFrom(nonNull(offence.get().getCustodyTimeLimit()) ?
+                                                offence.get().getCustodyTimeLimit() : CustodyTimeLimit.custodyTimeLimit().build())
+                                        .withTimeLimit(event.getExtendedTimeLimit())
+                                        .withIsCtlExtended(true)
+                                        .build())
+                                .build());
+                    }
+                });
+    }
+
     private void onHearingDefendantUpdated(final HearingDefendantUpdated event) {
         hearing.getProsecutionCases().forEach(prosecutionCase -> {
             final Optional<Defendant> defendant = prosecutionCase.getDefendants().stream()
@@ -744,8 +801,6 @@ public class HearingAggregate implements Aggregate {
             nextHearingEvents.forEach(streamBuilder::add);
         }
 
-        // DD-8648: Application Events - See uk.gov.moj.cpp.progression.event.HearingResultEventProcessor.resultApplications
-
         if (isNotEmpty(hearing.getCourtApplications())) {
             streamBuilder.add(applicationsResulted()
                     .withHearing(hearing)
@@ -753,6 +808,9 @@ public class HearingAggregate implements Aggregate {
                     .withCommittingCourt(this.committingCourt)
                     .build());
         }
+
+        addExtendCustodyTimeLimitResulted(hearing, streamBuilder);
+
 
         return apply(streamBuilder.build());
     }
@@ -797,6 +855,22 @@ public class HearingAggregate implements Aggregate {
                         .withBookingReferenceCourtScheduleIds(bookingReferenceCourtScheduleIds)
                         .build()));
 
+    }
+
+    public Stream<Object> stopCustodyTimeLimitClock(final UUID hearingId, final List<UUID> offenceIds) {
+
+        final List<UUID> caseIds = hearing.getProsecutionCases().stream()
+                .filter(prosecutionCase -> prosecutionCase.getDefendants().stream()
+                        .flatMap(defendant -> defendant.getOffences().stream())
+                        .anyMatch(offence -> offenceIds.contains(offence.getId())))
+                .map(ProsecutionCase::getId)
+                .collect(toList());
+
+        return apply(Stream.of(CustodyTimeLimitClockStopped.custodyTimeLimitClockStopped()
+                .withCaseIds(caseIds)
+                .withHearingId(hearingId)
+                .withOffenceIds(offenceIds)
+                .build()));
     }
 
     private ProsecutionCasesResultedV2 createProsecutionCasesResultedV2Event(final Hearing hearing, final List<UUID> shadowListedOffences, final LocalDate hearingDay) {
@@ -906,6 +980,38 @@ public class HearingAggregate implements Aggregate {
         }
 
         return events;
+    }
+
+    /**
+     * This method is to raise ExtendCustodyTimeLimitResulted event per offence which has extended
+     * flag in the custody time limit. It finds caseId associated with offence id. 
+     *
+     * @param hearing
+     * @param streamBuilder
+     */
+    private void addExtendCustodyTimeLimitResulted(final Hearing hearing, final Stream.Builder<Object> streamBuilder) {
+        final List<Offence> extendedCTLOffences = ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                .flatMap(defendant -> defendant.getOffences().stream())
+                .filter(offence -> nonNull(offence.getCustodyTimeLimit()) && Boolean.TRUE.equals(offence.getCustodyTimeLimit().getIsCtlExtended()))
+                .collect(toList());
+
+        for (final Offence extendedCTLOffence : extendedCTLOffences) {
+            final UUID caseId = hearing.getProsecutionCases().stream()
+                    .filter(prosecutionCase -> prosecutionCase.getDefendants().stream()
+                            .flatMap(defendant -> defendant.getOffences().stream())
+                            .anyMatch(offence -> extendedCTLOffence.getId().equals(offence.getId())))
+                    .map(ProsecutionCase::getId)
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Offence not found"));
+
+            streamBuilder.add(ExtendCustodyTimeLimitResulted.extendCustodyTimeLimitResulted()
+                    .withExtendedTimeLimit(extendedCTLOffence.getCustodyTimeLimit().getTimeLimit())
+                    .withCaseId(caseId)
+                    .withHearingId(hearing.getId())
+                    .withOffenceId(extendedCTLOffence.getId())
+                    .build());
+        }
     }
 
     private List<UUID> getProsecutionCaseIds(final Hearing hearing) {

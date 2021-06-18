@@ -114,6 +114,12 @@
         "remandStatus": {
           "type": "string"
         },
+        "ctlExpiryDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "ctlExpiryCountDown": {
+          "type": "integer"
+        },
         "defendantMarkers": {
           "type": "array",
           "items": {

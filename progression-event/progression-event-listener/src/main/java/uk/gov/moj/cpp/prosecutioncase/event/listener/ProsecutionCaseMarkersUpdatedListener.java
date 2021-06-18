@@ -54,9 +54,9 @@ public class ProsecutionCaseMarkersUpdatedListener {
 
     }
 
-    private ProsecutionCase updateCaseMarkers(final ProsecutionCase origProsecutionCase, final List<Marker> caseMarkers) {
+    private ProsecutionCase updateCaseMarkers(final ProsecutionCase prosecutionCase, final List<Marker> caseMarkers) {
         return ProsecutionCase.prosecutionCase()
-                .withValuesFrom(origProsecutionCase)
+                .withValuesFrom(prosecutionCase)
                 .withCaseMarkers(caseMarkers)
                 .build();
     }

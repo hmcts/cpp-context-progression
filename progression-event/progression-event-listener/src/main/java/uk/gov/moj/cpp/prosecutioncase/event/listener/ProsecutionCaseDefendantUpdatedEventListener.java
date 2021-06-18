@@ -136,6 +136,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                     .withBreachProceedingsPending(prosecutionCaseInRepository.getBreachProceedingsPending())
                     .withRemovalReason(prosecutionCaseInRepository.getRemovalReason())
                     .withCaseStatus(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus())
+                    .withTrialReceiptType(prosecutionCaseInRepository.getTrialReceiptType())
                     .build();
             repository.save(getProsecutionCaseEntity(updatedProsecutionCase));
             updateSearchable(updatedProsecutionCase);

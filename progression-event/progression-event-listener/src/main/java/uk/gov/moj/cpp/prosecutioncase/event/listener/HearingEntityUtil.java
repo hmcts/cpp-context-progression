@@ -48,9 +48,9 @@ public class HearingEntityUtil {
                 .build();
     }
 
-    private static ProsecutionCase updateProsecutionCaseWithEjectStatus(final ProsecutionCase origProsecutionCase) {
+    private static ProsecutionCase updateProsecutionCaseWithEjectStatus(final ProsecutionCase prosecutionCase) {
         return ProsecutionCase.prosecutionCase()
-                .withValuesFrom(origProsecutionCase)
+                .withValuesFrom(prosecutionCase)
                 .withCaseStatus(CASE_STATUS_EJECTED)
                 .build();
     }

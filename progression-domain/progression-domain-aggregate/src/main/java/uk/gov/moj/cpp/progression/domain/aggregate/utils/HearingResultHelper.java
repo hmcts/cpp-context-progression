@@ -332,6 +332,7 @@ public class HearingResultHelper {
                 .withRemovalReason(prosecutionCase.getRemovalReason())
                 .withStatementOfFacts(prosecutionCase.getStatementOfFacts())
                 .withStatementOfFactsWelsh(prosecutionCase.getStatementOfFactsWelsh())
+                .withTrialReceiptType(prosecutionCase.getTrialReceiptType())
                 .build();
     }
 

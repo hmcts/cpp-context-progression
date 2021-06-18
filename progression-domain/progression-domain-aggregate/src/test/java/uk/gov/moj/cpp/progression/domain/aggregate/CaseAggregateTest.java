@@ -8,6 +8,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
@@ -37,6 +38,7 @@ import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
+import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
 import uk.gov.justice.core.courts.HearingConfirmedCaseStatusUpdated;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
@@ -51,10 +53,12 @@ import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
+import uk.gov.justice.core.courts.ProsecutionCaseCreatedInHearing;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdated;
+import uk.gov.justice.progression.courts.DefendantsAndListingHearingRequestsStored;
 import uk.gov.justice.progression.courts.HearingDeletedForProsecutionCase;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicateForCase;
 import uk.gov.justice.progression.courts.HearingRemovedForProsecutionCase;
@@ -1326,6 +1330,127 @@ public class CaseAggregateTest {
         final HearingRemovedForProsecutionCase hearingDeletedForProsecutionCase = (HearingRemovedForProsecutionCase) eventStream.get(0);
         assertThat(hearingDeletedForProsecutionCase.getHearingId(), is(hearingId));
         assertThat(hearingDeletedForProsecutionCase.getProsecutionCaseId(), is(prosecutionCaseId));
+    }
+
+    @Test
+    public void shouldRaiseDefendantsAndListingHearingRequestsStoredEvent() {
+
+        final UUID defendantId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .build();
+
+        final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
+                .withListDefendantRequests(asList(ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .build()))
+                .build();
+
+        final List<Object> eventStream = caseAggregate.addOrStoreDefendantsAndListingHearingRequests(Arrays.asList(defendant), Arrays.asList(listHearingRequest)).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+
+        final DefendantsAndListingHearingRequestsStored defendantsAndListingHearingRequestsStored = (DefendantsAndListingHearingRequestsStored) eventStream.get(0);
+
+        assertThat(defendantsAndListingHearingRequestsStored.getDefendants(), notNullValue());
+        assertThat(defendantsAndListingHearingRequestsStored.getDefendants().get(0).getId(), is(defendantId));
+        assertThat(defendantsAndListingHearingRequestsStored.getDefendants().get(0).getProsecutionCaseId(), is(prosecutionCaseId));
+        assertThat(defendantsAndListingHearingRequestsStored.getListHearingRequests(), notNullValue());
+        assertThat(defendantsAndListingHearingRequestsStored.getListHearingRequests().get(0).getListDefendantRequests().get(0).getDefendantId(), is(defendantId));
+        assertThat(defendantsAndListingHearingRequestsStored.getListHearingRequests().get(0).getListDefendantRequests().get(0).getProsecutionCaseId(), is(prosecutionCaseId));
+
+    }
+
+    @Test
+    public void shouldRaiseDefendantsAndListingHearingRequestsAddedEvent() {
+
+        final UUID defendantId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        caseAggregate.apply(new ProsecutionCaseCreatedInHearing(prosecutionCaseId));
+
+        final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .build();
+
+        final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
+                .withListDefendantRequests(asList(ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .build()))
+                .build();
+
+        final List<Object> eventStream = caseAggregate.addOrStoreDefendantsAndListingHearingRequests(Arrays.asList(defendant), Arrays.asList(listHearingRequest)).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+
+        final DefendantsAndListingHearingRequestsAdded defendantsAndListingHearingRequestsAdded = (DefendantsAndListingHearingRequestsAdded) eventStream.get(0);
+
+        assertThat(defendantsAndListingHearingRequestsAdded.getDefendants(), notNullValue());
+        assertThat(defendantsAndListingHearingRequestsAdded.getDefendants().get(0).getId(), is(defendantId));
+        assertThat(defendantsAndListingHearingRequestsAdded.getDefendants().get(0).getProsecutionCaseId(), is(prosecutionCaseId));
+        assertThat(defendantsAndListingHearingRequestsAdded.getListHearingRequests(), notNullValue());
+        assertThat(defendantsAndListingHearingRequestsAdded.getListHearingRequests().get(0).getListDefendantRequests().get(0).getDefendantId(), is(defendantId));
+        assertThat(defendantsAndListingHearingRequestsAdded.getListHearingRequests().get(0).getListDefendantRequests().get(0).getProsecutionCaseId(), is(prosecutionCaseId));
+
+    }
+
+    @Test
+    public void shouldRaiseOnlyProsecutionCaseCreatedInHearingEventWhenDefendantsAreNotStored() {
+
+        final UUID prosecutionCaseId = randomUUID();
+
+        final List<Object> eventStream = caseAggregate.createProsecutionCaseInHearing(prosecutionCaseId).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+
+        final ProsecutionCaseCreatedInHearing prosecutionCaseCreatedInHearing = (ProsecutionCaseCreatedInHearing) eventStream.get(0);
+
+        assertThat(prosecutionCaseCreatedInHearing.getProsecutionCaseId(), is(prosecutionCaseId));
+
+    }
+
+    @Test
+    public void shouldRaiseProsecutionCaseCreatedInHearingEventAndDefendantsAndListingHearingRequestsAddedWhenDefendantsAreStored() {
+
+        final UUID defendantId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .build();
+
+        final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
+                .withListDefendantRequests(asList(ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .build()))
+                .build();
+
+        caseAggregate.apply(new DefendantsAndListingHearingRequestsStored(Arrays.asList(defendant), Arrays.asList(listHearingRequest)));
+
+        final List<Object> eventStream = caseAggregate.createProsecutionCaseInHearing(prosecutionCaseId).collect(toList());
+
+        assertThat(eventStream.size(), is(2));
+
+        final ProsecutionCaseCreatedInHearing prosecutionCaseCreatedInHearing = (ProsecutionCaseCreatedInHearing) eventStream.get(0);
+        assertThat(prosecutionCaseCreatedInHearing.getProsecutionCaseId(), is(prosecutionCaseId));
+
+        final DefendantsAndListingHearingRequestsAdded defendantsAndListingHearingRequestsAdded = (DefendantsAndListingHearingRequestsAdded) eventStream.get(1);
+
+        assertThat(defendantsAndListingHearingRequestsAdded.getDefendants(), notNullValue());
+        assertThat(defendantsAndListingHearingRequestsAdded.getDefendants().get(0).getId(), is(defendantId));
+        assertThat(defendantsAndListingHearingRequestsAdded.getDefendants().get(0).getProsecutionCaseId(), is(prosecutionCaseId));
+        assertThat(defendantsAndListingHearingRequestsAdded.getListHearingRequests(), notNullValue());
+        assertThat(defendantsAndListingHearingRequestsAdded.getListHearingRequests().get(0).getListDefendantRequests().get(0).getDefendantId(), is(defendantId));
+        assertThat(defendantsAndListingHearingRequestsAdded.getListHearingRequests().get(0).getListDefendantRequests().get(0).getProsecutionCaseId(), is(prosecutionCaseId));
+
     }
 
 }

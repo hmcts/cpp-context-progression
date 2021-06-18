@@ -77,6 +77,7 @@ public class ProsecutionCaseMarkersUpdatedListenerTest {
                 .add("hearingId", randomUUID().toString()).build();
         final JsonObject prosecutionCase = Json.createObjectBuilder()
                 .add("cpsOrganisation", "A01")
+                .add("trialReceiptType", "Transfer")
                 .build();
         prosecutionCaseEntity.setPayload(prosecutionCase.toString());
         when(repository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
@@ -86,5 +87,6 @@ public class ProsecutionCaseMarkersUpdatedListenerTest {
         verify(repository).save(argumentCaptor.capture());
         ProsecutionCaseEntity prosecutionCaseEntitySaved = argumentCaptor.getValue();
         Assert.assertTrue(prosecutionCaseEntitySaved.getPayload().contains("\"cpsOrganisation\":\"A01\""));
+        Assert.assertTrue(prosecutionCaseEntitySaved.getPayload().contains("\"trialReceiptType\":\"Transfer\""));
     }
 }

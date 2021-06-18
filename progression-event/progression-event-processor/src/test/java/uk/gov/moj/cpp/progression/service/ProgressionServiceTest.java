@@ -961,6 +961,7 @@ public class ProgressionServiceTest {
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
         assertThat(prosecutionCases.get(0).getCpsOrganisation(), is("A01"));
+        assertThat(prosecutionCases.get(0).getTrialReceiptType(), is("Voluntary bill"));
         assertThat(1, is(prosecutionCases.get(0).getDefendants().size()));
         assertThat(1, is(prosecutionCases.get(0).getDefendants().get(0).getOffences().size()));
         assertThat(prosecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getPlea(), is(nullValue()));
@@ -1194,6 +1195,7 @@ public class ProgressionServiceTest {
         return ProsecutionCase.prosecutionCase()
                 .withId(caseId)
                 .withCpsOrganisation("A01")
+                .withTrialReceiptType("Voluntary bill")
                 .withDefendants(asList(Defendant.defendant()
                                 .withId(defendant)
                                 .withIsYouth(Boolean.FALSE)

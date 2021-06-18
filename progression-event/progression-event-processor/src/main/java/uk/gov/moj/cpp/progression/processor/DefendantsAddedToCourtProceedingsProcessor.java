@@ -106,9 +106,14 @@ public class DefendantsAddedToCourtProceedingsProcessor {
 
             final List<ListHearingRequest> listHearingRequestsForExistingHearing = listHearingRequestByFutureAndNewHearings.getNewDefendantsAddedToExistingHearings().getListHearingRequests();
             if (isNotEmpty(listHearingRequestsForExistingHearing)) {
-                // find hearing ID
+
                 sender.send(envelopeFrom(
                         metadataFrom(jsonEnvelope.metadata()).withName("public.progression.defendants-added-to-court-proceedings"),
+                        jsonEnvelope.payloadAsJsonObject()
+                ));
+
+                sender.send(envelopeFrom(
+                        metadataFrom(jsonEnvelope.metadata()).withName("progression.command.add-or-store-defendants-and-listing-hearing-requests"),
                         payload
                 ));
 
@@ -132,6 +137,16 @@ public class DefendantsAddedToCourtProceedingsProcessor {
             }
 
         }
+    }
+
+    @Handles("progression.event.defendants-and-listing-hearing-requests-added")
+    public void processDefendantsAndListHearingRequestsAdded(final JsonEnvelope jsonEnvelope) {
+
+        sender.send(envelopeFrom(
+                metadataFrom(jsonEnvelope.metadata()).withName("public.progression.defendants-added-to-hearing"),
+                jsonEnvelope.payloadAsJsonObject()
+        ));
+
     }
 
     private List<ListDefendantRequest> getListDefendantRequests(final List<ListHearingRequest> listHearingRequestsForNewHearing) {

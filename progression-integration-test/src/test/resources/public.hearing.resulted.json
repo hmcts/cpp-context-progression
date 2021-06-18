@@ -214,7 +214,10 @@
                     "label": "Reporting Restriction Label",
                     "orderedDate": "2020-10-20"
                   }
-                ]
+                ],
+                "previousDaysHeldInCustody": 5,
+                "dateHeldInCustodySince": "2018-08-10"
+
               }
             ],
             "associatedPersons": [

@@ -504,6 +504,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
                 .withCpsOrganisationId(randomUUID())
                 .withCpsOrganisation("A01")
+                .withTrialReceiptType("Transfer")
                 .build();
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosCase);
 
@@ -529,6 +530,7 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         assertThat(defendant.get().getOffences().size(), is(2));
         assertThat(defendant.get().getOffences().get(0).getProceedingsConcluded(), equalTo(true));
         assertThat(prosecutionCase.getCaseStatus(), equalTo(CaseStatusEnum.INACTIVE.getDescription()));
+        assertThat(prosecutionCase.getTrialReceiptType(), equalTo("Transfer"));
 
 
     }

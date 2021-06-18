@@ -137,6 +137,7 @@ public class HearingConfirmedCaseUpdatedEventListenerTest {
         final JsonObject jsonObject = stringToJsonObjectConverter.convert(savedHearingEntity.getPayload());
         final Hearing hearing1 = jsonObjectToObjectConverter.convert(jsonObject, Hearing.class);
         assertThat(hearing1.getProsecutionCases().get(0).getCaseStatus(), is(SJP_REFERRAL.getDescription()));
+        assertThat(hearing1.getProsecutionCases().get(0).getTrialReceiptType(), is("Voluntary bill"));
     }
 
     @Test
@@ -203,6 +204,7 @@ public class HearingConfirmedCaseUpdatedEventListenerTest {
                 .withRemovalReason(removalReason)
                 .withStatementOfFacts(statementOfFacts)
                 .withStatementOfFactsWelsh(statementOfFactsWelsh)
+                .withTrialReceiptType("Voluntary bill")
                 .build();
     }
 

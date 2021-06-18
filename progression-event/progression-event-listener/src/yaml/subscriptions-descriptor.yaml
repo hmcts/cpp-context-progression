@@ -204,6 +204,15 @@ subscriptions_descriptor:
         - name: progression.event.court-document-print-time-updated
           schema_uri: http://justice.gov.uk/core/courts/court-document-print-time-updated.json
 
+        - name: progression.events.custody-time-limit-clock-stopped
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.custody-time-limit-clock-stopped.json
+
+        - name: progression.events.extend-custody-time-limit-resulted
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.extend-custody-time-limit-resulted.json
+
+        - name: progression.events.custody-time-limit-extended
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.custody-time-limit-extended.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 
