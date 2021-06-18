@@ -43,6 +43,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class CaseApplicationEjectedEventProcessorTest {
 
     private static final String REMOVAL_REASON = "REASON";
+    private static final String SURREY_POLICE_ORIG_ORGANISATION = "045AA00";
     @InjectMocks
     private CaseApplicationEjectedEventProcessor caseApplicationEjectedEventProcessor;
 
@@ -116,6 +117,7 @@ public class CaseApplicationEjectedEventProcessorTest {
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCase.class)).thenReturn(prosecutionCase);
         when(hearingsAtAGlance.getHearings()).thenReturn(singletonList(Hearings.hearings().withId(hearingId).build()));
         when(prosecutionCase.getProsecutionCaseIdentifier()).thenReturn(prosecutionCaseIdentifier);
+        when(prosecutionCase.getOriginatingOrganisation()).thenReturn(SURREY_POLICE_ORIG_ORGANISATION);
         when(prosecutionCaseIdentifier.getProsecutionAuthorityReference()).thenReturn(prosecutionCaseURN);
         when(prosecutionCaseIdentifier.getProsecutionAuthorityCode()).thenReturn(prosecutionCaseAuthorityCode);
         when(prosecutionCase.getInitiationCode()).thenReturn(initiationCode);

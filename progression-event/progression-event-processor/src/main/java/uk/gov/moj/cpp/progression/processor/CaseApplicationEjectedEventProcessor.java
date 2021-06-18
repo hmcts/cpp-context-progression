@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -24,6 +25,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +39,10 @@ public class CaseApplicationEjectedEventProcessor {
     private static final String APPLICATION_ID = "applicationId";
     private static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
     private static final String REMOVAL_REASON = "removalReason";
+    private static final String SURREY_POLICE_ORIG_ORGANISATION = "045AA00";
+    private static final String SUSSEX_POLICE_ORIG_ORGANISATION = "047AA00";
+    private static final String A_4 = "A4";
+    private static final String ZERO_FOUR = "04";
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -110,7 +116,7 @@ public class CaseApplicationEjectedEventProcessor {
                 final ProsecutionCaseIdentifier caseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
 
                 payloadBuilder.add("CaseId", prosecutionCaseId);
-                payloadBuilder.add("ProsecutorCode", caseIdentifier.getProsecutionAuthorityCode());
+                payloadBuilder.add("ProsecutorCode", nonNull(prosecutionCase.getOriginatingOrganisation()) ? getOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation()) : null);
                 payloadBuilder.add("InitiationCode", prosecutionCase.getInitiationCode().toString());
                 payloadBuilder.add("CaseReference", caseIdentifier.getProsecutionAuthorityReference() != null ? caseIdentifier.getProsecutionAuthorityReference() : caseIdentifier.getCaseURN());
 
@@ -122,6 +128,15 @@ public class CaseApplicationEjectedEventProcessor {
                 }
             }
         });
+    }
+
+    private String getOriginatingOrganisation(final String originatingOrganisation) {
+        final String trimmedValue = StringUtils.trim(originatingOrganisation);
+        // re-transform done from staging.prosecutors.spi to match next message for ejected case
+        if (SURREY_POLICE_ORIG_ORGANISATION.equalsIgnoreCase(trimmedValue) || SUSSEX_POLICE_ORIG_ORGANISATION.equalsIgnoreCase(trimmedValue)) {
+            return trimmedValue.replace(ZERO_FOUR, A_4);
+        }
+        return originatingOrganisation;
     }
 
     private JsonArray getHearingIdsForAllApplications(final JsonEnvelope event, final String applicationId) {
