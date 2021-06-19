@@ -52,6 +52,7 @@ public class NowsRequestedEventProcessor {
     public static final String READ_USER_GROUPS = "readUserGroups";
     public static final String COURT_DOCUMENT_TYPE_RBAC = "courtDocumentTypeRBAC";
     protected static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
+    private static final String PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED = "public.progression.now-document-requested";
     private static final Logger LOGGER = LoggerFactory.getLogger(NowsRequestedEventProcessor.class);
     private final Sender sender;
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -98,6 +99,10 @@ public class NowsRequestedEventProcessor {
         }
 
         documentGeneratorService.generateNow(sender, event, userId, nowDocumentRequest);
+
+        sender.send(envelop(event.payloadAsJsonObject())
+                .withName(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED)
+                .withMetadataFrom(event));
 
     }
 

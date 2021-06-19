@@ -47,12 +47,12 @@ import uk.gov.moj.cpp.progression.service.UploadMaterialService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.service.exception.DocumentGenerationException;
 import uk.gov.moj.cpp.progression.service.exception.FileUploadException;
+import uk.gov.moj.cpp.progression.test.FileUtil;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -62,17 +62,13 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.Resources;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -82,6 +78,16 @@ public class NowsRequestedEventProcessorTest {
     public static final String USER_ID = UUID.randomUUID().toString();
 
     public static final UUID fileId = UUID.randomUUID();
+    private static final String PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED = "public.progression.now-document-requested";
+    private static final String DEFENCE_USERS = "Defence Users";
+    private static final String APPLICATION_PDF = "application/pdf";
+    private static final String COURT_FINAL_ORDERS = "Court Final orders";
+    private static final String HTTP_MATERIAL_URL = "http://materialUrl";
+    private static final String FILE_NAME = "fileName";
+    private static final String COURT_DOCUMENT = "courtDocument";
+    private static final String MAGISTRATES = "Magistrates";
+
+
     @Spy
     private final Enveloper enveloper = createEnveloper();
     @Spy
@@ -92,8 +98,8 @@ public class NowsRequestedEventProcessorTest {
     @Spy
     @InjectMocks
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+
+
     private NowsRequestedEventProcessor nowsRequestedEventProcessor;
     @Mock
     private Sender sender;
@@ -173,11 +179,11 @@ public class NowsRequestedEventProcessorTest {
         final byte[] bytesIn = new byte[2];
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
-        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn("http://materialUrl");
+        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn(HTTP_MATERIAL_URL);
         when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
-        when(fileStorer.store(Mockito.any(JsonObject.class), Mockito.any(InputStream.class)))
+        when(fileStorer.store(any(JsonObject.class), any(InputStream.class)))
                 .thenReturn(fileId);
         final JsonEnvelope eventEnvelope = envelope(nowDocumentRequested);
 
@@ -186,22 +192,27 @@ public class NowsRequestedEventProcessorTest {
         verify(this.documentGeneratorClient).generatePdfDocument(any(), any(), eq(systemUserid));
         verify(this.uploadMaterialService).uploadFile(uploadMaterialContextArgumentCaptor.capture());
         verify(this.fileStorer).store(jsonObjectArgumentCaptor.capture(), inputStreamArgumentCaptor.capture());
-        assertThat(jsonObjectArgumentCaptor.getValue().getString("fileName"), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
+        assertThat(jsonObjectArgumentCaptor.getValue().getString(FILE_NAME), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
         assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
 
-        verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
-        final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getValue();
+        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
         final JsonObject jsonObject = (JsonObject) jsonEnvelope.payload();
-        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("courtDocument"), CourtDocument.class);
+        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
         assertThat(courtDocument.getMaterials().get(0).getUserGroups().size(), is(8));
-        assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Defence Users"));
+        assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains(DEFENCE_USERS));
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Defence Lawyers"));
-        assertThat(courtDocument.getMimeType(), is("application/pdf"));
-        assertThat(courtDocument.getDocumentTypeDescription(), is("Court Final orders"));
+        assertThat(courtDocument.getMimeType(), is(APPLICATION_PDF));
+        assertThat(courtDocument.getDocumentTypeDescription(), is(COURT_FINAL_ORDERS));
         assertThat(courtDocument.getSeqNum(), is(3));
         assertThat(courtDocument.getDocumentTypeRBAC().getReadUserGroups().size(), is(8));
-        assertTrue(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains("Defence Users"));
+        assertTrue(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains(DEFENCE_USERS));
         assertTrue(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains("Defence Lawyers"));
+
+        final DefaultEnvelope<?> publicNowDocumentRequestedEnvelope = this.envelopeArgumentCaptor.getAllValues().get(1);
+        assertThat(publicNowDocumentRequestedEnvelope.metadata().name(), is(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED));
+        assertThat(((JsonObject) publicNowDocumentRequestedEnvelope.payload()).getString("materialId"), is(nowDocumentRequested.getMaterialId().toString()));
+
     }
 
     @Test
@@ -216,34 +227,34 @@ public class NowsRequestedEventProcessorTest {
         final byte[] bytesIn = new byte[2];
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
-        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn("http://materialUrl");
+        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn(HTTP_MATERIAL_URL);
         when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
-        when(fileStorer.store(Mockito.any(JsonObject.class), Mockito.any(InputStream.class))).thenReturn(fileId);
+        when(fileStorer.store(any(JsonObject.class), any(InputStream.class))).thenReturn(fileId);
         final JsonEnvelope eventEnvelope = envelope(nowDocumentRequested);
         this.nowsRequestedEventProcessor.processNowDocumentRequested(eventEnvelope);
 
         verify(this.documentGeneratorClient).generatePdfDocument(any(), any(), eq(systemUserid));
         verify(this.uploadMaterialService).uploadFile(uploadMaterialContextArgumentCaptor.capture());
         verify(this.fileStorer).store(jsonObjectArgumentCaptor.capture(), inputStreamArgumentCaptor.capture());
-        assertThat(jsonObjectArgumentCaptor.getValue().getString("fileName"), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
+        assertThat(jsonObjectArgumentCaptor.getValue().getString(FILE_NAME), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
         assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
 
-        verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
-        final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getValue();
+        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
         final JsonObject jsonObject = (JsonObject) jsonEnvelope.payload();
-        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("courtDocument"), CourtDocument.class);
+        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
         assertThat(courtDocument.getMaterials().get(0).getUserGroups().size(), is(9));
         assertFalse(courtDocument.getMaterials().get(0).getUserGroups().contains("Probation Admin"));
-        assertFalse(courtDocument.getMaterials().get(0).getUserGroups().contains("Defence Users"));
+        assertFalse(courtDocument.getMaterials().get(0).getUserGroups().contains(DEFENCE_USERS));
         assertFalse(courtDocument.getMaterials().get(0).getUserGroups().contains("Chambers Clerk"));
-        assertThat(courtDocument.getMimeType(), is("application/pdf"));
-        assertThat(courtDocument.getDocumentTypeDescription(), is("Court Final orders"));
+        assertThat(courtDocument.getMimeType(), is(APPLICATION_PDF));
+        assertThat(courtDocument.getDocumentTypeDescription(), is(COURT_FINAL_ORDERS));
         assertThat(courtDocument.getSeqNum(), is(3));
         assertThat(courtDocument.getDocumentTypeRBAC().getReadUserGroups().size(), is(9));
         assertFalse(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains("Probation Admin"));
-        assertFalse(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains("Defence Users"));
+        assertFalse(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains(DEFENCE_USERS));
         assertFalse(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains("Chambers Clerk"));
 
     }
@@ -261,35 +272,35 @@ public class NowsRequestedEventProcessorTest {
         final byte[] bytesIn = new byte[2];
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
-        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn("http://materialUrl");
+        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn(HTTP_MATERIAL_URL);
         when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
-        when(fileStorer.store(Mockito.any(JsonObject.class), Mockito.any(InputStream.class))).thenReturn(fileId);
+        when(fileStorer.store(any(JsonObject.class), any(InputStream.class))).thenReturn(fileId);
         final JsonEnvelope eventEnvelope = envelope(nowDocumentRequested);
         this.nowsRequestedEventProcessor.processNowDocumentRequested(eventEnvelope);
 
         verify(this.documentGeneratorClient).generatePdfDocument(any(), any(), eq(systemUserid));
         verify(this.uploadMaterialService).uploadFile(uploadMaterialContextArgumentCaptor.capture());
         verify(this.fileStorer).store(jsonObjectArgumentCaptor.capture(), inputStreamArgumentCaptor.capture());
-        assertThat(jsonObjectArgumentCaptor.getValue().getString("fileName"), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
+        assertThat(jsonObjectArgumentCaptor.getValue().getString(FILE_NAME), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
         assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
 
-        verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
-        final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getValue();
+        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
         final JsonObject jsonObject = (JsonObject) jsonEnvelope.payload();
-        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("courtDocument"), CourtDocument.class);
+        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
 
         assertThat(courtDocument.getMaterials().get(0).getUserGroups().size(), is(13));
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Crown Court Admin"));
-        assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Magistrates"));
+        assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains(MAGISTRATES));
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Court Associate"));
-        assertThat(courtDocument.getMimeType(), is("application/pdf"));
-        assertThat(courtDocument.getDocumentTypeDescription(), is("Court Final orders"));
+        assertThat(courtDocument.getMimeType(), is(APPLICATION_PDF));
+        assertThat(courtDocument.getDocumentTypeDescription(), is(COURT_FINAL_ORDERS));
         assertThat(courtDocument.getSeqNum(), is(3));
         assertThat(courtDocument.getDocumentTypeRBAC().getReadUserGroups().size(), is(13));
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Crown Court Admin"));
-        assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Magistrates"));
+        assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains(MAGISTRATES));
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Court Associate"));
     }
 
@@ -313,16 +324,16 @@ public class NowsRequestedEventProcessorTest {
 
         this.nowsRequestedEventProcessor.processNowDocumentRequested(eventEnvelope);
 
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
 
         final List<DefaultEnvelope<?>> allMessagesSent = envelopeArgumentCaptor.getAllValues();
 
-        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(((JsonObject) allMessagesSent.get(0).payload()).getJsonObject("courtDocument"), CourtDocument.class);
+        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(((JsonObject) allMessagesSent.get(0).payload()).getJsonObject(COURT_DOCUMENT), CourtDocument.class);
 
         assertThat((allMessagesSent.get(0).metadata().name()), is(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT));
         assertThat(courtDocument.getMaterials().get(0).getId().toString(), is(nowDocumentRequest.getMaterialId().toString()));
-        assertThat(courtDocument.getMimeType(), is("application/pdf"));
-        assertThat(courtDocument.getDocumentTypeDescription(), is("Court Final orders"));
+        assertThat(courtDocument.getMimeType(), is(APPLICATION_PDF));
+        assertThat(courtDocument.getDocumentTypeDescription(), is(COURT_FINAL_ORDERS));
         assertThat((allMessagesSent.get(1).metadata().name()), is(PROGRESSION_COMMAND_UPDATE_NOWS_MATERIAL_STATUS));
         assertThat(((JsonObject) allMessagesSent.get(1).payload()).getString("status"), is("failed"));
         assertThat(((JsonObject) allMessagesSent.get(1).payload()).getString("materialId"), is(nowDocumentRequest.getMaterialId().toString()));
@@ -364,45 +375,41 @@ public class NowsRequestedEventProcessorTest {
         assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
 
 
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
 
         final List<DefaultEnvelope<?>> allMessagesSent = envelopeArgumentCaptor.getAllValues();
 
         final JsonObject jsonObject = (JsonObject) allMessagesSent.get(0).payload();
 
-        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("courtDocument"), CourtDocument.class);
+        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
 
         assertThat(courtDocument.getMaterials().get(0).getId().toString(), is(nowDocumentRequest.getMaterialId().toString()));
-        assertThat(courtDocument.getMimeType(), is("application/pdf"));
-        assertThat(courtDocument.getDocumentTypeDescription(), is("Court Final orders"));
+        assertThat(courtDocument.getMimeType(), is(APPLICATION_PDF));
+        assertThat(courtDocument.getDocumentTypeDescription(), is(COURT_FINAL_ORDERS));
 
         verifyNoMoreInteractions(this.uploadMaterialService);
     }
 
     private void initReferenceData() {
         final JsonObject docTypeData = Json.createObjectBuilder()
-                .add("section", "Court Final orders")
+                .add("section", COURT_FINAL_ORDERS)
                 .add("seqNum", 3)
                 .add("courtDocumentTypeRBAC",
                         Json.createObjectBuilder()
                                 .add("uploadUserGroups", createArrayBuilder().build())
                                 .add("readUserGroups", createArrayBuilder()
-                                        .add(buildUserGroup("Magistrates"))
+                                        .add(buildUserGroup(MAGISTRATES))
                                         .add(buildUserGroup("Court Clerk")).build())
                                 .add("downloadUserGroups", createArrayBuilder()
-                                        .add(buildUserGroup("Magistrates")).build()).build())
+                                        .add(buildUserGroup(MAGISTRATES)).build()).build())
                 .build();
 
         when(refDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(docTypeData));
     }
 
     private void initUserGroupsData() {
-        try {
-            String response = Resources.toString(Resources.getResource("usersgroups.get-groups-with-organisation.json"), Charset.defaultCharset());
-            final JsonObject userGroups = new StringToJsonObjectConverter().convert(response);
-            when(usersGroupService.getGroupsWithOrganisation(any())).thenReturn(userGroups);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String response = FileUtil.getPayload("usersgroups.get-groups-with-organisation.json");
+        final JsonObject userGroups = new StringToJsonObjectConverter().convert(response);
+        when(usersGroupService.getGroupsWithOrganisation(any())).thenReturn(userGroups);
     }
 }

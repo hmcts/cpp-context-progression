@@ -200,6 +200,9 @@ subscriptions_descriptor:
         - name : public.progression.defendant-laa-contract-associated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-laa-associated.json
 
+        - name : public.progression.now-document-requested
+          schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.now-document-requested.json
+
         - name : public.events.progression.custody-time-limit-extended
           schema_uri: http://justice.gov.uk/core/courts/public.events.progression.custody-time-limit-extended.json
 

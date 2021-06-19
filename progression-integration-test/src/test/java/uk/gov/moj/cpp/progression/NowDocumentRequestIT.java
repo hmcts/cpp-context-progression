@@ -14,6 +14,7 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
@@ -43,6 +44,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.messaging.JsonMetadata;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
@@ -51,11 +53,12 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -72,6 +75,10 @@ import org.junit.Test;
 
 public class NowDocumentRequestIT extends AbstractIT {
 
+    private static final String NOW_DOCUMENT_REQUESTS = "nowDocumentRequests";
+    private static final String MATERIAL_ID = "materialId";
+    private static final String MATERIAL_MATERIAL_ADDED = "material.material-added";
+    private static final String HEARING_ID = "%HEARING_ID%";
     private String materialId;
     private String hearingId;
     private String defendantId;
@@ -86,6 +93,9 @@ public class NowDocumentRequestIT extends AbstractIT {
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
     private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+    private static final String PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED = "public.progression.now-document-requested";
+    private static final MessageConsumer messageConsumerClientPublicForNowDocumentRequested = publicEvents
+            .createConsumer(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED);
 
     @Before
     public void setup() {
@@ -157,8 +167,8 @@ public class NowDocumentRequestIT extends AbstractIT {
         verifyCreateLetterRequested(Arrays.asList("letterUrl"));
 
         final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
-        final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray("nowDocumentRequests").getJsonObject(0);
-        assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString("materialId")));
+        final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray(NOW_DOCUMENT_REQUESTS).getJsonObject(0);
+        assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
     }
 
     @Test
@@ -183,8 +193,10 @@ public class NowDocumentRequestIT extends AbstractIT {
         sendMaterialFileUploadedPublicEvent(fromString(materialId), userId);
 
         final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
-        final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray("nowDocumentRequests").getJsonObject(0);
-        assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString("materialId")));
+        final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray(NOW_DOCUMENT_REQUESTS).getJsonObject(0);
+        assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
+
+        verifyInMessagingQueue(messageConsumerClientPublicForNowDocumentRequested);
     }
 
     @Test
@@ -209,14 +221,14 @@ public class NowDocumentRequestIT extends AbstractIT {
         sendMaterialFileUploadedPublicEvent(fromString(materialId), userId);
 
         final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
-        final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray("nowDocumentRequests").getJsonObject(0);
-        assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString("materialId")));
+        final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray(NOW_DOCUMENT_REQUESTS).getJsonObject(0);
+        assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
     }
 
     private void sendMaterialFileUploadedPublicEvent(final UUID materialId, final UUID userId) {
-        final String commandName = "material.material-added";
+        final String commandName = MATERIAL_MATERIAL_ADDED;
         final Metadata metadata = getMetadataFrom(userId.toString());
-        final JsonObject payload = createObjectBuilder().add("materialId", materialId.toString()).add(
+        final JsonObject payload = createObjectBuilder().add(MATERIAL_ID, materialId.toString()).add(
                 "fileDetails",
                 createObjectBuilder().add("alfrescoAssetId", "aGVsbG8=")
                         .add("mimeType", "text/plain").add("fileName", "file.txt"))
@@ -226,20 +238,20 @@ public class NowDocumentRequestIT extends AbstractIT {
 
     private void sendPublicEventForMaterialAdded() {
         final JsonObject materialAddPublicEventPayload = Json.createObjectBuilder()
-                .add("materialId", materialId.toString())
+                .add(MATERIAL_ID, materialId.toString())
                 .add("fileServiceId", randomUUID().toString())
                 .build();
 
         final Metadata metadata = metadataFrom(createObjectBuilder()
                 .add(ID, randomUUID().toString())
-                .add(NAME, "material.material-added")
+                .add(NAME, MATERIAL_MATERIAL_ADDED)
                 .add(ORIGINATOR, ORIGINATOR_VALUE)
                 .add("context", createObjectBuilder()
                         .add(JsonMetadata.USER_ID, userId.toString()))
                 .build()).build();
 
         sendMessage(publicEvents.createProducer(),
-                "material.material-added",
+                MATERIAL_MATERIAL_ADDED,
                 materialAddPublicEventPayload,
                 metadata);
     }
@@ -262,40 +274,40 @@ public class NowDocumentRequestIT extends AbstractIT {
                 .add(ORIGINATOR, ORIGINATOR_VALUE)
                 .add(ID, randomUUID().toString())
                 .add(JsonMetadata.USER_ID, userId)
-                .add(NAME, "material.material-added")
+                .add(NAME, MATERIAL_MATERIAL_ADDED)
                 .build()).build();
     }
 
     private String prepareAddNowFinancialDocumentRequestPayload() {
         String body = getPayload("progression.add-financial-now-document-request.json");
-        body = body.replaceAll("%HEARING_ID%", hearingId)
-                .replaceAll("%MATERIAL_ID%", materialId)
-                .replaceAll("%REQUEST_ID%", requestId)
-                .replaceAll("%DEFENDANT_ID%", defendantId);
+        body = body.replace(HEARING_ID, hearingId)
+                .replace("%MATERIAL_ID%", materialId)
+                .replace("%REQUEST_ID%", requestId)
+                .replace("%DEFENDANT_ID%", defendantId);
         return body;
     }
 
     private String prepareAddNowNonFinancialDocumentRequestPayload() {
         String body = getPayload("progression.add-non-financial-now-document-request.json");
-        body = body.replaceAll("%HEARING_ID%", hearingId)
-                .replaceAll("%MATERIAL_ID%", materialId)
-                .replaceAll("%DEFENDANT_ID%", defendantId);
+        body = body.replace(HEARING_ID, hearingId)
+                .replace("%MATERIAL_ID%", materialId)
+                .replace("%DEFENDANT_ID%", defendantId);
         return body;
     }
 
     private String prepareEmailDocumentRequestPayload() {
         String body = getPayload("progression.add-email-now-document-request.json");
-        body = body.replaceAll("%HEARING_ID%", hearingId)
-                .replaceAll("%MATERIAL_ID%", materialId)
-                .replaceAll("%DEFENDANT_ID%", defendantId);
+        body = body.replace(HEARING_ID, hearingId)
+                .replace("%MATERIAL_ID%", materialId)
+                .replace("%DEFENDANT_ID%", defendantId);
         return body;
     }
 
     private String prepareNoOrderAddresseeDocumentRequestPayload() {
         String body = getPayload("progression.no-order-addressee-now-document-request.json");
-        body = body.replaceAll("%HEARING_ID%", hearingId)
-                .replaceAll("%MATERIAL_ID%", materialId)
-                .replaceAll("%DEFENDANT_ID%", defendantId);
+        body = body.replace(HEARING_ID, hearingId)
+                .replace("%MATERIAL_ID%", materialId)
+                .replace("%DEFENDANT_ID%", defendantId);
         return body;
     }
 
@@ -342,5 +354,10 @@ public class NowDocumentRequestIT extends AbstractIT {
                 .timeout(40, TimeUnit.SECONDS)
                 .until(status().is(javax.ws.rs.core.Response.Status.OK),
                         payload().isJson(allOf(matchers))).getPayload();
+    }
+
+    private static void verifyInMessagingQueue(final MessageConsumer consumer) {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumer);
+        assertTrue(message.isPresent());
     }
 }
