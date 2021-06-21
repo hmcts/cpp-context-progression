@@ -56,7 +56,7 @@ public class ReferenceDataOffenceServiceTest {
 
         final List<String> offenceCodes = Arrays.asList(offenceCode1, offenceCode2);
 
-        final JsonEnvelope responseEnvelope = prepareResponseEnvelopeForOffencesList(offenceCode1, offenceCode2);
+        final JsonEnvelope responseEnvelope = prepareResponseEnvelopeForOffencesList(offenceCode1, offenceCode2,"/referencedataoffences.offences-list.json");
 
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder()
                 .withId(randomUUID())
@@ -85,6 +85,45 @@ public class ReferenceDataOffenceServiceTest {
 
         assertThat(offencesJsonObject1.getString("legislation"), is("Contrary to section 32 of the Sexual Offences Act 2003."));
         assertThat(offencesJsonObject2.getString("legislation"), is("Contrary to section 13 of and Schedule 2 to the Sexual Offences Act 1956."));
+    }
+
+    @Test
+    public void shouldGetMultipleOffencesByOffenceCodeListWhenLanguageIsWelsh() throws IOException {
+        final String offenceCode1 = randomAlphanumeric(8);
+        final String offenceCode2 = randomAlphanumeric(8);
+
+        final List<String> offenceCodes = Arrays.asList(offenceCode1, offenceCode2);
+
+        final JsonEnvelope responseEnvelope = prepareResponseEnvelopeForOffencesList(offenceCode1, offenceCode2,"/referencedataoffences.offences-list-welsh.json");
+
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder()
+                .withId(randomUUID())
+                .withName("referencedataoffences.query.offences-list"), JsonValue.NULL);
+
+        when(requester.request(any())).thenReturn(responseEnvelope);
+
+        final Optional<List<JsonObject>> offencesJsonObject = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelope, requester);
+
+        verify(requester).request(envelopeArgumentCaptor.capture());
+
+        final DefaultEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();
+        MatcherAssert.assertThat(capturedEnvelope.metadata().name(), is("referencedataoffences.query.offences-list"));
+
+        assertThat(offencesJsonObject.isPresent(), is(true));
+        assertThat(offencesJsonObject.get().size(), is(2));
+
+        final JsonObject offencesJsonObject1 = offencesJsonObject.get().get(0);
+        final JsonObject offencesJsonObject2 = offencesJsonObject.get().get(1);
+
+        assertThat(offencesJsonObject1.getString("cjsOffenceCode"), is(offenceCode1));
+        assertThat(offencesJsonObject2.getString("cjsOffenceCode"), is(offenceCode2));
+
+        assertThat(offencesJsonObject1.getString("reportRestrictResultCode"), is("YES"));
+        assertThat(offencesJsonObject2.getString("reportRestrictResultCode"), is("YES"));
+
+        assertThat(offencesJsonObject1.getString("welshlegislation"), is(""));
+        assertThat(offencesJsonObject1.getString("welshoffencetitle"), is("offenceTitle"));
+        assertThat(offencesJsonObject2.getString("welshlegislation"), is("welshlegislation"));
     }
 
     @Test
@@ -182,8 +221,8 @@ public class ReferenceDataOffenceServiceTest {
         assertThat(offencesJsonObject.isPresent(), is(false));
     }
 
-    private static JsonEnvelope prepareResponseEnvelopeForOffencesList(final String offenceCode1, final String offenceCode2) throws IOException {
-        final String jsonString = givenPayload("/referencedataoffences.offences-list.json").toString()
+    private static JsonEnvelope prepareResponseEnvelopeForOffencesList(final String offenceCode1, final String offenceCode2,final String fileName) throws IOException {
+        final String jsonString = givenPayload(fileName).toString()
                 .replace("OFFENCE_CODE_1", offenceCode1)
                 .replace("OFFENCE_CODE_2", offenceCode2);
         try {
