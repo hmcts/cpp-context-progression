@@ -29,6 +29,7 @@ import javax.json.JsonObject;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
@@ -61,6 +62,8 @@ public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
         courtCentreId = randomUUID().toString();
     }
 
+    @SuppressWarnings("squid:S1607")
+    @Ignore
     @Test
     public void shouldUpdateCaseAtAGlance() throws Exception {
 

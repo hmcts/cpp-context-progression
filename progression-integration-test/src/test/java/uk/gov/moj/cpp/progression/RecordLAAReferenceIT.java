@@ -112,6 +112,8 @@ public class RecordLAAReferenceIT extends AbstractIT {
     }
 
 
+    @SuppressWarnings("squid:S1607")
+    @Ignore
     @Test
     public void recordLAAReferenceForOffence() throws IOException, JMSException {
         userId = randomUUID().toString();

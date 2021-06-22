@@ -4,6 +4,7 @@ import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
@@ -160,6 +161,8 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
         eventListenerForNotificationEvent.close();
     }
 
+    @SuppressWarnings("squid:S1607")
+    @Ignore
     @Test
     public void shouldListUnscheduledHearingsV2() throws Exception {
         enableAmendReshareFeature(true);

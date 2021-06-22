@@ -41,6 +41,7 @@ import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings({"squid:S1607", "squid:S2925"})
@@ -83,6 +84,8 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         assertTrue(retrieveMessageAsJsonObject(messageConsumer).isPresent());
     }
 
+    @SuppressWarnings("squid:S1607")
+    @Ignore
     @Test
     public void shouldCreateMultipleEmbeddedCourtApplicationAndGetConfirmation() throws Exception {
 

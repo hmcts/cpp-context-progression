@@ -43,6 +43,7 @@ import com.google.common.collect.Lists;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class EjectCaseApplicationIT extends AbstractIT {
@@ -83,6 +84,8 @@ public class EjectCaseApplicationIT extends AbstractIT {
         messageProducerClientPublic.close();
     }
 
+    @SuppressWarnings("squid:S1607")
+    @Ignore
     @Test
     public void shouldEjectStandaloneCourtApplicationAndGetConfirmation() throws Exception {
 
