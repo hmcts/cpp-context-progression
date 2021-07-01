@@ -1,6 +1,11 @@
 {
   "globalAttributes": [
-    "judicialResults[*].category",
+    "courtApplications[*].type.breachType",
+    "courtApplications[*].type.jurisdiction",
+    "courtApplications[*].type.offenceActiveOrder",
+    "courtApplications[*].type.summonsTemplateType",
+    "courtHouseType",
+    "category",
     "judicialResults[*].label",
     "judicialResults[*].judicialResultPrompts[*].label",
     "jurisdictionType",
@@ -13,6 +18,8 @@
     "indicatedPlea.source",
     "offenceFacts.vehicleCode",
     "plea.pleaValue",
+    "verdictType.category",
+    "verdictType.categoryType",
     "personDefendant.driverLicenceCode",
     "initiationCode",
     "type.applicationJurisdictionType",
@@ -36,7 +43,9 @@
     "prosecutionAuthorityReference",
     "attendanceType",
     "defendantJudicialResults[*].category",
-    "defendantCaseJudicialResults[*].category"
+    "defendantCaseJudicialResults[*].category",
+    "judicialRoleType.judiciaryType",
+    "prosecutionCases[*].caseStatus"
   ],
   "events": [
     {
