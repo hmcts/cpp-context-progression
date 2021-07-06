@@ -20,6 +20,8 @@ import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 
+
+import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.BoxworkApplicationReferred;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
@@ -44,6 +46,7 @@ import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.PrepareSummonsData;
 import uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing;
@@ -301,42 +304,8 @@ public class ProgressionService {
 
         if (pleaToBeRemoved) {
             return Offence.offence()
-                    .withProceedingsConcluded(offence.getProceedingsConcluded())
-                    .withAllocationDecision(offence.getAllocationDecision())
-                    .withAquittalDate(offence.getAquittalDate())
-                    .withArrestDate(offence.getArrestDate())
-                    .withChargeDate(offence.getChargeDate())
-                    .withConvictionDate(offence.getConvictionDate())
-                    .withCount(offence.getCount())
-                    .withCustodyTimeLimit(offence.getCustodyTimeLimit())
-                    .withDateOfInformation(offence.getDateOfInformation())
-                    .withEndDate(offence.getEndDate())
-                    .withId(offence.getId())
-                    .withIndicatedPlea(offence.getIndicatedPlea())
-                    .withIntroducedAfterInitialProceedings(offence.getIntroducedAfterInitialProceedings())
-                    .withIsDiscontinued(offence.getIsDiscontinued())
-                    .withIsDisposed(offence.getIsDisposed())
-                    .withJudicialResults(offence.getJudicialResults())
-                    .withLaaApplnReference(offence.getLaaApplnReference())
-                    .withLaidDate(offence.getLaidDate())
-                    .withModeOfTrial(offence.getModeOfTrial())
-                    .withNotifiedPlea(offence.getNotifiedPlea())
-                    .withOffenceCode(offence.getOffenceCode())
-                    .withOffenceDefinitionId(offence.getOffenceDefinitionId())
-                    .withOffenceFacts(offence.getOffenceFacts())
-                    .withOffenceLegislation(offence.getOffenceLegislation())
-                    .withOffenceLegislationWelsh(offence.getOffenceLegislationWelsh())
-                    .withOffenceTitle(offence.getOffenceTitle())
-                    .withOffenceTitleWelsh(offence.getOffenceTitleWelsh())
-                    .withOrderIndex(offence.getOrderIndex())
-                    .withStartDate(offence.getStartDate())
-                    .withVerdict(offence.getVerdict())
-                    .withVictims(offence.getVictims())
-                    .withWording(offence.getWording())
-                    .withWordingWelsh(offence.getWordingWelsh())
-                    .withCommittingCourt(offence.getCommittingCourt())
-                    .withOffenceDateCode(offence.getOffenceDateCode())
-                    .withEndorsableFlag(offence.getEndorsableFlag())
+                    .withValuesFrom(offence)
+                    .withPlea(null)
                     .build();
         } else {
             return offence;
@@ -944,13 +913,16 @@ public class ProgressionService {
         final JsonObject courtCentreJson = referenceDataService.getOrganisationUnitById(courtCentre.getId(), jsonEnvelope, requester)
                 .orElseThrow(() -> new ReferenceDataNotFoundException("Court center ", courtCentre.getId().toString()));
 
+        final LjaDetails ljaDetails = referenceDataService.getLjaDetails(jsonEnvelope, courtCentreJson.getString("lja"), requester);
+
         return CourtCentre.courtCentre()
                 .withId(courtCentre.getId())
+                .withLja(ljaDetails)
                 .withCode(courtCentreJson.getString("oucode", null))
                 .withName(courtCentreJson.getString("oucodeL3Name"))
                 .withRoomName(nonNull(courtCentre.getRoomId()) ? enrichCourtRoomName(courtCentre.getId(), courtCentre.getRoomId(), jsonEnvelope) : null)
                 .withRoomId(courtCentre.getRoomId())
-                .withAddress(uk.gov.justice.core.courts.Address.address()
+                .withAddress(Address.address()
                         .withAddress1(courtCentreJson.getString(ADDRESS_1))
                         .withAddress2(courtCentreJson.getString(ADDRESS_2, EMPTY_STRING))
                         .withAddress3(courtCentreJson.getString(ADDRESS_3, EMPTY_STRING))

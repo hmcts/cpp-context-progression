@@ -48,7 +48,7 @@ public class GenericLinkedApplicationIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
         final String applicationId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
+        initiateCourtProceedingsForCourtApplication(applicationId, caseId, randomUUID().toString(), "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
 
         verifyCourtApplicationCreatedPrivateEvent();
 

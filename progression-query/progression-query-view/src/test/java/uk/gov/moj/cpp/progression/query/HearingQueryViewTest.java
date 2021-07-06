@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.query;
 
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -17,13 +18,13 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -38,7 +39,7 @@ public class HearingQueryViewTest {
     private HearingRepository hearingRepository;
 
     @Mock
-    private StringToJsonObjectConverter stringToJsonObjectConverter ;
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -53,12 +54,12 @@ public class HearingQueryViewTest {
     }
 
     @Test
-    public void shouldFindHearingById() throws Exception {
+    public void shouldFindHearingById() {
         final UUID hearingId = randomUUID();
 
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("hearingId", hearingId.toString())
-                .add("jurisdictionType",JurisdictionType.CROWN.toString())
+                .add("jurisdictionType", JurisdictionType.CROWN.toString())
                 .build();
 
         Hearing hearing = Hearing.hearing()
@@ -81,6 +82,49 @@ public class HearingQueryViewTest {
 
         assertThat(response.payloadAsJsonObject().getJsonObject("hearing").getString("hearingId"), is(hearing.getId().toString()));
         assertThat(response.payloadAsJsonObject().getJsonObject("hearing").getString("jurisdictionType"), is(hearing.getJurisdictionType().toString()));
+    }
+
+    @Test
+    public void shouldFindHearingsByIds() {
+        final UUID hearingId1 = randomUUID();
+        final UUID hearingId2 = randomUUID();
+        final List<UUID> hearingIds = asList(hearingId1, hearingId2);
+
+        final JsonObject jsonObject1 = Json.createObjectBuilder()
+                .add("hearingId", hearingId1.toString())
+                .build();
+
+        final JsonObject jsonObject2 = Json.createObjectBuilder()
+                .add("hearingId", hearingId2.toString())
+                .build();
+
+        final HearingEntity hearingEntity1 = new HearingEntity();
+        hearingEntity1.setHearingId(hearingId1);
+        hearingEntity1.setPayload("{1}");
+        final HearingEntity hearingEntity2 = new HearingEntity();
+        hearingEntity2.setHearingId(hearingId2);
+        hearingEntity2.setPayload("{2}");
+
+        final Hearing hearing1 = Hearing.hearing()
+                .withId(hearingId1)
+                .build();
+        final Hearing hearing2 = Hearing.hearing()
+                .withId(hearingId2)
+                .build();
+
+        final List<HearingEntity> hearingEntities = asList(hearingEntity1, hearingEntity2);
+
+        when(hearingRepository.findByHearingIds(hearingIds)).thenReturn(hearingEntities);
+        when(stringToJsonObjectConverter.convert(hearingEntity1.getPayload())).thenReturn(jsonObject1);
+        when(stringToJsonObjectConverter.convert(hearingEntity2.getPayload())).thenReturn(jsonObject2);
+        when(jsonObjectToObjectConverter.convert(jsonObject1, Hearing.class)).thenReturn(hearing1);
+        when(jsonObjectToObjectConverter.convert(jsonObject2, Hearing.class)).thenReturn(hearing2);
+
+
+        final List<Hearing> hearings = hearingQueryView.getHearings(hearingIds);
+
+        assertThat(hearings.get(0).getId(), is(hearingId1));
+        assertThat(hearings.get(1).getId(), is(hearingId2));
     }
 
 }

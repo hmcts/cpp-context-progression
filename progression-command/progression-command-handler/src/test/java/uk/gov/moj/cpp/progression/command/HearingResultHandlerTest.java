@@ -2,7 +2,11 @@ package uk.gov.moj.cpp.progression.command;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasSize;
@@ -29,21 +33,26 @@ import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
-import uk.gov.justice.hearing.courts.HearingResult;
-import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.core.courts.ProsecutionCasesResulted;
+import uk.gov.justice.hearing.courts.HearingResult;
+import uk.gov.justice.progression.courts.ApplicationsResulted;
+import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -53,10 +62,14 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.handler.HearingResultHandler;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -85,7 +98,8 @@ public class HearingResultHandlerTest {
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             HearingResulted.class,
             ProsecutionCaseDefendantListingStatusChanged.class,
-            ProsecutionCasesResulted.class);
+            ProsecutionCasesResulted.class,
+            ApplicationsResulted.class);
 
     @InjectMocks
     private HearingResultHandler hearingResultHandler;
@@ -160,13 +174,17 @@ public class HearingResultHandlerTest {
         Offence offence1 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
                         .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
                         .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
         Offence offence2 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
                         .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
                         .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
 
@@ -236,13 +254,17 @@ public class HearingResultHandlerTest {
         Offence offence1 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
                         .withCategory(JudicialResultCategory.INTERMEDIARY).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
                         .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
         Offence offence2 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
                         .withCategory(JudicialResultCategory.INTERMEDIARY).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
                         .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
 
@@ -454,6 +476,417 @@ public class HearingResultHandlerTest {
                 ));
     }
 
+    @Test
+    public void shouldUpdateOffenceUnderCasesWhenHearingAdjourned() throws EventStreamException {
+
+        final Hearing resultHearing = Hearing.hearing()
+                .withProsecutionCases(getProsecutionCasesWithAdjourn(LocalDate.now()))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+        final Envelope<HearingResult> envelope = envelopeFrom(getMetadata(),
+                hearingResult()
+                        .withHearing(resultHearing)
+                        .build());
+        hearingResultHandler.handle(envelope);
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+
+        verifyProsecutionCaseWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+
+        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.prosecution-cases-resulted")).findFirst().get();
+        verifyProsecutionCaseWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.prosecution-cases-resulted");
+
+    }
+
+    @Test
+    public void shouldUpdateOffenceUnderCasesWhenHearingAdjournedWithBiggerDate() throws EventStreamException {
+
+        final List<ProsecutionCase> prosecutionCases = getProsecutionCasesWithAdjourn(LocalDate.now());
+
+        final Hearing firstHearing = Hearing.hearing()
+                        .withProsecutionCases(getProsecutionCasesWithAdjournedOffences(prosecutionCases, LocalDate.now().minusDays(1)))
+                        .withJurisdictionType(JurisdictionType.CROWN)
+                        .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                        .build();
+
+        aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
+
+        final Hearing resultHearing = Hearing.hearing()
+                .withProsecutionCases(prosecutionCases)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+
+        hearingResultHandler.handle(envelopeFrom(getMetadata(), hearingResult().withHearing(resultHearing).build()));
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+
+        verifyProsecutionCaseWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+
+        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.prosecution-cases-resulted")).findFirst().get();
+        verifyProsecutionCaseWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.prosecution-cases-resulted");
+    }
+
+    @Test
+    public void shouldNotUpdateOffenceUnderCasesWhenHearingAdjournedWithBeforeDate() throws EventStreamException {
+        final List<ProsecutionCase> prosecutionCases = getProsecutionCasesWithAdjourn(LocalDate.now().minusDays(1));
+
+        final Hearing firstHearing = Hearing.hearing()
+                .withProsecutionCases(getProsecutionCasesWithAdjournedOffences(prosecutionCases, LocalDate.now()))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+
+        aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
+
+        final Hearing resultHearing = Hearing.hearing()
+                .withProsecutionCases(prosecutionCases)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+
+        hearingResultHandler.handle(envelopeFrom(getMetadata(), hearingResult().withHearing(resultHearing).build()));
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+
+        verifyProsecutionCaseWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+
+        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.prosecution-cases-resulted")).findFirst().get();
+        verifyProsecutionCaseWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.prosecution-cases-resulted");
+    }
+
+    @Test
+    public void shouldUpdateOffenceUnderApplicationCasesWhenHearingAdjourned() throws EventStreamException {
+
+        final Hearing resultHearing = Hearing.hearing()
+                .withCourtApplications(getApplicationsCasesWithAdjourn(LocalDate.now()))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+        final Envelope<HearingResult> envelope = envelopeFrom(getMetadata(),
+                hearingResult()
+                        .withHearing(resultHearing)
+                        .build());
+        hearingResultHandler.handle(envelope);
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+
+        verifyApplicationCasesWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+
+        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        verifyApplicationCasesWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
+
+    }
+
+    @Test
+    public void shouldUpdateOffenceUnderApplicationCasesWhenHearingAdjournedWithBiggerDate() throws EventStreamException {
+        final List<CourtApplication> applications = getApplicationsCasesWithAdjourn(LocalDate.now());
+
+        final Hearing firstHearing = Hearing.hearing()
+                .withCourtApplications(getApplicationsWithAdjournedOffences(applications, LocalDate.now().minusDays(1)))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+
+        aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
+
+        final Hearing resultHearing = Hearing.hearing()
+                .withCourtApplications(applications)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+        final Envelope<HearingResult> envelope = envelopeFrom(getMetadata(),
+                hearingResult()
+                        .withHearing(resultHearing)
+                        .build());
+        hearingResultHandler.handle(envelope);
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+
+        verifyApplicationCasesWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+
+        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        verifyApplicationCasesWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
+
+    }
+
+    @Test
+    public void shouldUpdateOffenceUnderApplicationCasesWhenHearingAdjournedWithBeforeDate() throws EventStreamException {
+        final List<CourtApplication> applications = getApplicationsCasesWithAdjourn(LocalDate.now().minusDays(1));
+
+        final Hearing firstHearing = Hearing.hearing()
+                .withCourtApplications(getApplicationsWithAdjournedOffences(applications, LocalDate.now()))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+
+        aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
+
+        final Hearing resultHearing = Hearing.hearing()
+                .withCourtApplications(applications)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+        final Envelope<HearingResult> envelope = envelopeFrom(getMetadata(),
+                hearingResult()
+                        .withHearing(resultHearing)
+                        .build());
+        hearingResultHandler.handle(envelope);
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+
+        verifyApplicationCasesWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+
+        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        verifyApplicationCasesWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
+
+    }
+
+    @Test
+    public void shouldUpdateOffenceUnderApplicationCourtOrderWhenHearingAdjourned() throws EventStreamException {
+
+        final Hearing resultHearing = Hearing.hearing()
+                .withCourtApplications(getApplicationsCourtOrderWithAdjourn(LocalDate.now()))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+        final Envelope<HearingResult> envelope = envelopeFrom(getMetadata(),
+                hearingResult()
+                        .withHearing(resultHearing)
+                        .build());
+        hearingResultHandler.handle(envelope);
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+
+        verifyApplicationCourtOrderWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+
+        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        verifyApplicationCourtOrderWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
+
+    }
+
+    @Test
+    public void shouldUpdateOffenceUnderApplicationCourtOrderWhenHearingAdjournedWithBiggerDate() throws EventStreamException {
+        final List<CourtApplication> applications = getApplicationsCourtOrderWithAdjourn(LocalDate.now());
+
+        final Hearing firstHearing = Hearing.hearing()
+                .withCourtApplications(getApplicationsWithAdjournedOffences(applications, LocalDate.now().minusDays(1)))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+
+        aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
+
+        final Hearing resultHearing = Hearing.hearing()
+                .withCourtApplications(applications)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+        final Envelope<HearingResult> envelope = envelopeFrom(getMetadata(),
+                hearingResult()
+                        .withHearing(resultHearing)
+                        .build());
+        hearingResultHandler.handle(envelope);
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+
+        verifyApplicationCourtOrderWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+
+        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        verifyApplicationCourtOrderWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
+
+    }
+
+    @Test
+    public void shouldUpdateOffenceUnderApplicationCourtOrderWhenHearingAdjournedWithBeforeDate() throws EventStreamException {
+        final List<CourtApplication> applications = getApplicationsCourtOrderWithAdjourn(LocalDate.now().minusDays(1));
+
+        final Hearing firstHearing = Hearing.hearing()
+                .withCourtApplications(getApplicationsWithAdjournedOffences(applications, LocalDate.now()))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+
+        aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
+
+        final Hearing resultHearing = Hearing.hearing()
+                .withCourtApplications(applications)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+        final Envelope<HearingResult> envelope = envelopeFrom(getMetadata(),
+                hearingResult()
+                        .withHearing(resultHearing)
+                        .build());
+        hearingResultHandler.handle(envelope);
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+
+        verifyApplicationCourtOrderWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+
+        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        verifyApplicationCourtOrderWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
+
+    }
+
+    //////////////////////////////////
+    @Test
+    public void shouldUpdateAllOffencesUnderApplicationWhenHearingAdjourned() throws EventStreamException {
+
+        final Hearing resultHearing = Hearing.hearing()
+                .withCourtApplications(getApplicationWithAdjourn(LocalDate.now()))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+        final Envelope<HearingResult> envelope = envelopeFrom(getMetadata(),
+                hearingResult()
+                        .withHearing(resultHearing)
+                        .build());
+        hearingResultHandler.handle(envelope);
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+
+        verifyApplicationCourtOrderWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+        verifyApplicationCasesWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+
+        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        verifyApplicationCourtOrderWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
+        verifyApplicationCasesWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
+
+    }
+
+    @Test
+    public void shouldUpdateAllOffencesUnderApplicationWhenHearingAdjournedWithBiggerDate() throws EventStreamException {
+        final List<CourtApplication> applications = getApplicationWithAdjourn(LocalDate.now());
+
+        final Hearing firstHearing = Hearing.hearing()
+                .withCourtApplications(getApplicationsWithAdjournedOffences(applications, LocalDate.now().minusDays(1)))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+
+        aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
+
+        final Hearing resultHearing = Hearing.hearing()
+                .withCourtApplications(applications)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+        final Envelope<HearingResult> envelope = envelopeFrom(getMetadata(),
+                hearingResult()
+                        .withHearing(resultHearing)
+                        .build());
+        hearingResultHandler.handle(envelope);
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+
+        verifyApplicationCourtOrderWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+        verifyApplicationCasesWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+
+        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        verifyApplicationCourtOrderWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
+        verifyApplicationCasesWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
+    }
+
+    @Test
+    public void shouldUpdateAllOffencesUnderApplicationWhenHearingAdjournedWithBeforeDate() throws EventStreamException {
+        final List<CourtApplication> applications = getApplicationWithAdjourn(LocalDate.now().minusDays(1));
+
+        final Hearing firstHearing = Hearing.hearing()
+                .withCourtApplications(getApplicationsWithAdjournedOffences(applications, LocalDate.now()))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+
+        aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
+
+        final Hearing resultHearing = Hearing.hearing()
+                .withCourtApplications(applications)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
+        final Envelope<HearingResult> envelope = envelopeFrom(getMetadata(),
+                hearingResult()
+                        .withHearing(resultHearing)
+                        .build());
+        hearingResultHandler.handle(envelope);
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+
+        verifyApplicationCourtOrderWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+        verifyApplicationCasesWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
+
+        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        verifyApplicationCourtOrderWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
+        verifyApplicationCasesWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
+    }
+    private void verifyProsecutionCaseWithAdjournUpdate(final JsonEnvelope prosecutionCasesResultedEnvelope, final String eventName) {
+        assertThat(prosecutionCasesResultedEnvelope,
+                jsonEnvelope(
+                        metadata()
+                                .withName(eventName),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearing", notNullValue()),
+                                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].lastAdjournDate", is(LocalDate.now().format(DateTimeFormatter.ISO_DATE))),
+                                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].lastAdjournedHearingType", is("AdjournmentReason"))
+                                )
+                        )
+                ));
+    }
+
+    private void verifyApplicationCasesWithAdjournUpdate(final JsonEnvelope prosecutionCasesResultedEnvelope, final String eventName) {
+        assertThat(prosecutionCasesResultedEnvelope,
+                jsonEnvelope(
+                        metadata()
+                                .withName(eventName),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearing", notNullValue()),
+                                withJsonPath("$.hearing.courtApplications[0].courtApplicationCases[0].offences[0].lastAdjournDate", is(LocalDate.now().format(DateTimeFormatter.ISO_DATE))),
+                                withJsonPath("$.hearing.courtApplications[0].courtApplicationCases[0].offences[0].lastAdjournedHearingType", is("AdjournmentReason"))
+                                )
+                        )
+                ));
+    }
+
+    private void verifyApplicationCourtOrderWithAdjournUpdate(final JsonEnvelope prosecutionCasesResultedEnvelope, final String eventName) {
+        assertThat(prosecutionCasesResultedEnvelope,
+                jsonEnvelope(
+                        metadata()
+                                .withName(eventName),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearing", notNullValue()),
+                                withJsonPath("$.hearing.courtApplications[0].courtOrder.courtOrderOffences[0].offence.lastAdjournDate", is(LocalDate.now().format(DateTimeFormatter.ISO_DATE))),
+                                withJsonPath("$.hearing.courtApplications[0].courtOrder.courtOrderOffences[0].offence.lastAdjournedHearingType", is("AdjournmentReason"))
+                                )
+                        )
+                ));
+    }
+
     private Metadata getMetadata() {
         return Envelope
                 .metadataBuilder()
@@ -470,7 +903,9 @@ public class HearingResultHandlerTest {
                 .withCourtApplicationCases(
                         singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(randomUUID()).build()))
                 .withCourtOrder(CourtOrder.courtOrder().withId(randomUUID())
-                            .withOrderingCourt(CourtCentre.courtCentre().withId(randomUUID()).build()).build())
+                            .withOrderingCourt(CourtCentre.courtCentre().withId(randomUUID()).build())
+                        .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
+                                .withOffence(Offence.offence().build()).build())).build())
                 .withRespondents(singletonList(CourtApplicationParty.courtApplicationParty().build()))
                 .build());
     }
@@ -498,6 +933,117 @@ public class HearingResultHandlerTest {
         return singletonList(prosecutionCase().withId(randomUUID()).withDefendants(defendants).withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription()).build());
     }
 
+    private List<ProsecutionCase> getProsecutionCasesWithAdjourn(final LocalDate orderedDate) {
+        final List<Defendant> defendants = singletonList(Defendant.defendant()
+                .withId(randomUUID())
+                .withOffences(getOffenceWithAdjourn(orderedDate))
+                .build());
 
+        return singletonList(prosecutionCase().withId(randomUUID()).withDefendants(defendants).withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription()).build());
+    }
 
+    private List<ProsecutionCase> getProsecutionCasesWithAdjournedOffences(final List<ProsecutionCase> prosecutionCases, final LocalDate plusDays) {
+        return prosecutionCases.stream().map(prosecutionCase -> ProsecutionCase.prosecutionCase()
+                .withValuesFrom(prosecutionCase)
+                .withDefendants(prosecutionCase.getDefendants().stream()
+                        .map(defendant -> Defendant.defendant()
+                                .withValuesFrom(defendant)
+                                .withOffences(defendant.getOffences().stream().map(offence -> Offence.offence()
+                                        .withValuesFrom(offence)
+                                        .withLastAdjournedHearingType("AdjournmentReason")
+                                        .withLastAdjournDate(plusDays)
+                                        .build())
+                                        .collect(Collectors.toList()))
+                                .build())
+                        .collect(Collectors.toList()))
+                .build())
+                .collect(Collectors.toList());
+    }
+
+    private List<CourtApplication> getApplicationsCasesWithAdjourn(final LocalDate orderedDate) {
+        return singletonList(CourtApplication.courtApplication()
+                .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                        .withOffences(getOffenceWithAdjourn(orderedDate))
+                        .build()))
+                .build());
+    }
+
+    private List<CourtApplication> getApplicationsCourtOrderWithAdjourn(final LocalDate orderedDate) {
+        return singletonList(CourtApplication.courtApplication()
+                .withCourtOrder(CourtOrder.courtOrder()
+                        .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
+                                .withOffence(getOffenceWithAdjourn(orderedDate).get(0))
+                                .build()))
+                        .build())
+                .build());
+    }
+
+    private List<CourtApplication> getApplicationWithAdjourn(final LocalDate orderedDate) {
+        return singletonList(CourtApplication.courtApplication()
+                .withCourtOrder(CourtOrder.courtOrder()
+                        .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
+                                .withOffence(Offence.offence().withId(randomUUID()).build())
+                                .build()))
+                        .build())
+                .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                        .withOffences(singletonList(Offence.offence().withId(randomUUID()).build())).build()))
+                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withOrderedDate(orderedDate)
+                        .withNextHearing(NextHearing.nextHearing().withAdjournmentReason("AdjournmentReason").build())
+                        .withCategory(JudicialResultCategory.INTERMEDIARY)
+                        .build()))
+                .build());
+    }
+
+    private List<CourtApplication> getApplicationsWithAdjournedOffences(final List<CourtApplication> applications, final LocalDate plusDays) {
+        return applications.stream()
+                .map(courtApplication ->  CourtApplication.courtApplication()
+                        .withValuesFrom(courtApplication)
+                        .withCourtApplicationCases(ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
+                                .map(courtApplicationCase->CourtApplicationCase.courtApplicationCase()
+                                        .withValuesFrom(courtApplicationCase)
+                                        .withOffences(courtApplicationCase.getOffences().stream()
+                                                .map(offence -> Offence.offence()
+                                                        .withValuesFrom(offence)
+                                                        .withLastAdjournedHearingType("AdjournmentReason")
+                                                        .withLastAdjournDate(plusDays)
+                                                        .build())
+                                                .collect(Collectors.toList()))
+                                        .build())
+                                .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
+                        .withCourtOrder(ofNullable(courtApplication.getCourtOrder())
+                                .map(courtOrder -> CourtOrder.courtOrder()
+                                        .withValuesFrom(courtOrder)
+                                        .withCourtOrderOffences(courtOrder.getCourtOrderOffences().stream()
+                                                .map(courtOrderOffence -> CourtOrderOffence.courtOrderOffence()
+                                                        .withValuesFrom(courtOrderOffence)
+                                                        .withOffence(of(courtOrderOffence.getOffence())
+                                                                .map(offence -> Offence.offence()
+                                                                        .withValuesFrom(offence)
+                                                                        .withLastAdjournedHearingType("AdjournmentReason")
+                                                                        .withLastAdjournDate(plusDays)
+                                                                        .build())
+                                                                .get())
+                                                        .build())
+                                                .collect(toList()))
+                                        .build())
+                                .orElse(null))
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    private List<Offence> getOffenceWithAdjourn(final LocalDate orderedDate) {
+        return singletonList(Offence.offence().withId(randomUUID())
+                .withOffenceTitle("offence title")
+                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withOrderedDate(orderedDate)
+                        .withNextHearing(NextHearing.nextHearing().withAdjournmentReason("AdjournmentReason").build())
+                        .withCategory(JudicialResultCategory.INTERMEDIARY)
+                        .build()))
+                .build());
+    }
+
+    private <T> UnaryOperator<List<T>> getListOrNull() {
+        return list -> list.isEmpty() ? null : list;
+    }
 }

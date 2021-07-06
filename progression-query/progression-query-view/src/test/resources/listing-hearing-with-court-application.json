@@ -1,0 +1,93 @@
+{
+  "listType": "bench",
+  "courtCentreName": "Port Talbot",
+  "courtCentreAddress1": "The Court House Cramic Way",
+  "courtCentreAddress2": "Port Talbot West Glam. address line 5 SA13 1RU",
+  "welshCourtCentreName": "Welsh Name",
+  "welshCourtCentreAddress1": "Llys Ynadon Adeilad y Llys",
+  "welshCourtCentreAddress2": "Adeilad y Llys Gorllewin Morgannwgc Caerdydd SA13 1RU",
+  "hearingDates": [
+    {
+      "hearingDate": "2021-06-03",
+      "hearingDateWelsh": "3 Mehefin 2021",
+      "courtRooms": [
+        {
+          "courtRoomName": "Courtroom 04",
+          "welshCourtRoomName": "Courtroom 04",
+          "judiciaryNames": "Recorder Ainsworth judge",
+          "welshJudiciaryNames": "Mr Recorder Ainsworth",
+          "timeslots": [
+            {
+              "hearings": [
+                {
+                  "id": "93c243f8-c4d3-4790-92ef-6192db00539c",
+                  "sequence": 0,
+                  "reportingRestrictionReason": "dW46EEpTJr",
+                  "welshReportingRestrictionReason": "",
+                  "startTime": "11:30",
+                  "hearingType": "Sentence",
+                  "welshHearingType": "Diffynnydd i fynychu i",
+                  "caseNumber": "zR9y6594006",
+                  "prosecutorType": "wNw0TDFwj7",
+                  "defendants": [
+                    {
+                      "id": "df73207f-3ced-488a-82a0-3fba79c2ce86",
+                      "organisationName": "",
+                      "firstName": "MfiV8rY5Js",
+                      "surname": "EbWZMlhYQV",
+                      "dateOfBirth": "3 Jun 2000",
+                      "age": "21",
+                      "nationality": "British",
+                      "address": {
+                        "address1": "ptAKYtj6Ti",
+                        "address2": "1bORFaR3yv",
+                        "address3": "UayP5Pbtub",
+                        "address4": "emGJ1kzYhc",
+                        "address5": "SHCRTjkAtr",
+                        "postcode": "CR1 4BX"
+                      }
+                    }
+                  ],
+                  "adjournedHearingDate": "2021-06-03",
+                  "panel": "ADULT",
+                  "courtApplicationId": "528fe634-20f3-474b-a110-4c6141c58c99",
+                  "applicationOffences": [
+                    {
+                      "id": "072319bf-73c2-41b5-b309-c8c86c9b077b",
+                      "listingNumber": 1
+                    },
+                    {
+                      "id": "651fc68b-8b9f-4cf2-912a-0b55d536323c",
+                      "listingNumber": 2
+                    }
+                  ]
+                },
+                {
+                  "id": "50a243f8-c4d3-4790-92ef-6192db00539c",
+                  "sequence": 0,
+                  "reportingRestrictionReason": "dW46EEpTJr",
+                  "welshReportingRestrictionReason": "",
+                  "startTime": "11:30",
+                  "hearingType": "Sentence",
+                  "welshHearingType": "Diffynnydd i fynychu i",
+                  "caseNumber": "zR9y6594006",
+                  "prosecutorType": "wNw0TDFwj7",
+                  "adjournedHearingDate": "2021-06-03",
+                  "panel": "ADULT",
+                  "courtApplicationId": "417fe634-20f3-474b-a110-4c6141c58c99",
+                  "applicationOffences": [
+                    {
+                      "id": "10e888c9-6af3-42bd-8165-8687aceab6e1",
+                      "listingNumber": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "templateName": "PublicStandardList"
+}

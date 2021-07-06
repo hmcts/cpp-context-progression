@@ -10,6 +10,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
@@ -39,7 +40,6 @@ public class ReferenceDataService {
     private static final String FIELD_PLEA_STATUS_TYPES = "pleaStatusTypes";
     private static final String PLEA_TYPE_VALUE = "pleaValue";
     public static final String REFERENCEDATA_GET_JUDGE = "referencedata.get.judge";
-    public static final String REFERENCEDATA_GET_COURT_CENTRE = "referencedata.get.court-centre";
     public static final String REFERENCEDATA_GET_ORGANISATION = "referencedata.query.organisation-unit.v2";
     public static final String GET_ENFORCEMENT_AREA_BY_COURT_CODE = "referencedata.query.enforcement-area";
     public static final String REFERENCEDATA_GET_DOCUMENT_ACCESS = "referencedata.query.document-type-access";
@@ -74,6 +74,7 @@ public class ReferenceDataService {
     public static final String ORGANISATIONUNITS = "organisationunits";
     public static final String COURT_CODE_QUERY_PARAMETER = "localJusticeAreaNationalCourtCode";
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
+    public static final String LOCAL_JUSTICE_AREA = "localJusticeArea";
 
 
     public Optional<JsonObject> getOffenceByCjsCode(final JsonEnvelope envelope, final String cjsOffenceCode, final Requester requester) {
@@ -430,5 +431,17 @@ public class ReferenceDataService {
                 .map(jsonValue -> (JsonObject) jsonValue)
                 .filter(jsonObject -> jsonObject.getString(PLEA_TYPE_VALUE).equals(pleaTypeValue))
                 .findFirst();
+    }
+
+    public LjaDetails getLjaDetails(final JsonEnvelope jsonEnvelope, final String ljaCode, final Requester requester) {
+        final JsonObject courtEnforcementArea = getEnforcementAreaByLjaCode(jsonEnvelope, ljaCode, requester);
+        if(courtEnforcementArea == null || courtEnforcementArea.isNull(LOCAL_JUSTICE_AREA)){
+            return null;
+        }
+        return LjaDetails.ljaDetails()
+                .withLjaCode(courtEnforcementArea.getJsonObject(LOCAL_JUSTICE_AREA).getString("nationalCourtCode", null))
+                .withLjaName(courtEnforcementArea.getJsonObject(LOCAL_JUSTICE_AREA).getString("name", null))
+                .withWelshLjaName(courtEnforcementArea.getJsonObject(LOCAL_JUSTICE_AREA).getString("welshName", null))
+                .build();
     }
 }

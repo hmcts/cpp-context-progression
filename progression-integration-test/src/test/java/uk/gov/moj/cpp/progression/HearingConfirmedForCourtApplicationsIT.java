@@ -154,7 +154,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(INACTIVE.getDescription()));
 
         //addCourtApplication(caseId, applicationId, "progression.command.create-court-application.json");
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
+        initiateCourtProceedingsForCourtApplication(applicationId, caseId, randomUUID().toString(), "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
 
         pollForApplicationStatus(applicationId, "DRAFT");
 

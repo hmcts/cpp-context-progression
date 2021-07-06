@@ -20,15 +20,12 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SharedCourtDocumentEnti
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SharedCourtDocumentRepository;
 
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
 
 import org.apache.commons.collections.CollectionUtils;
 

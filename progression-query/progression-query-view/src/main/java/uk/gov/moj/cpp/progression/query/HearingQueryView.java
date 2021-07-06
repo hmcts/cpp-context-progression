@@ -1,5 +1,11 @@
 package uk.gov.moj.cpp.progression.query;
 
+import static java.util.Collections.emptyList;
+import static java.util.Objects.isNull;
+import static java.util.stream.Collectors.toList;
+
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -9,7 +15,7 @@ import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
-import java.util.Objects;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,6 +39,9 @@ public class HearingQueryView {
     @Inject
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
 
     @Handles("progression.query.hearing")
     public JsonEnvelope getHearing(final JsonEnvelope envelope) {
@@ -41,7 +50,7 @@ public class HearingQueryView {
 
 
         final HearingEntity hearingRequestEntity = hearingRepository.findBy(hearingId.get());
-        if (Objects.isNull(hearingRequestEntity)) {
+        if (isNull(hearingRequestEntity)) {
             LOGGER.info("### No hearing found with hearingId='{}'", hearingId);
             return JsonEnvelope.envelopeFrom(
                     envelope.metadata(),
@@ -56,4 +65,16 @@ public class HearingQueryView {
                 jsonObjectBuilder.build());
     }
 
+    public List<Hearing> getHearings(final List<UUID> hearingIds) {
+
+        final List<HearingEntity> hearingEntities = hearingRepository.findByHearingIds(hearingIds);
+        if (isNull(hearingEntities)) {
+            LOGGER.info("### No hearing found with hearingIds='{}'", hearingIds);
+            return emptyList();
+        }
+        return hearingEntities.stream()
+                .map(hearingEntity -> stringToJsonObjectConverter.convert(hearingEntity.getPayload()))
+                .map(jsonObject -> jsonObjectToObjectConverter.convert(jsonObject, Hearing.class))
+                .collect(toList());
+    }
 }

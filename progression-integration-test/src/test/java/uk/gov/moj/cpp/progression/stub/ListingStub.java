@@ -239,6 +239,20 @@ public class ListingStub {
         }
     }
 
+    public static void verifyPostListCourtHearingV2() {
+        try {
+            waitAtMost(Duration.TEN_SECONDS).until(() ->
+                    getListCourtHearingRequestsAsStreamV2()
+                            .anyMatch(
+                                    payload -> payload.has("hearings")
+                            )
+            );
+        } catch (
+                Exception e) {
+            throw new AssertionError("ListingStub.verifyPostListCourtHearing failed with: " + e);
+        }
+    }
+
     public static String getPostListCourtHearing(final String applicationId) {
         try {
             return waitAtMost(Duration.TEN_SECONDS).until(() ->
@@ -262,11 +276,6 @@ public class ListingStub {
                 Exception e) {
             throw new AssertionError("ListingStub.getPostListCourtHearing failed with: " + e);
         }
-    }
-
-    public static String getHearingIdFromListCourtHearingRequest() {
-        JSONObject requestBody = getListCourtHearingRequestsAsStream().findFirst().get();
-        return requestBody.getJSONArray("hearings").getJSONObject(0).getString("id");
     }
 
     private static Stream<JSONObject> getListCourtHearingRequestsAsStream() {

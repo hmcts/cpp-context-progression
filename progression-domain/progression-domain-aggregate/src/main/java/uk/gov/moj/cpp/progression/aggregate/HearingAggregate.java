@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
@@ -38,8 +39,11 @@ import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.CustodyTimeLimit;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
@@ -56,6 +60,7 @@ import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingUpdatedProcessed;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
@@ -357,7 +362,17 @@ public class HearingAggregate implements Aggregate {
         LOGGER.debug("Hearing Resulted.");
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
-        final List<ProsecutionCase> updatedProsecutionCases = ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty).map(this::getUpdatedProsecutionCase).collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+        final List<ProsecutionCase> updatedProsecutionCasesForOriginalHearing = ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(prosecutionCase -> updateCaseForAdjourn(prosecutionCase))
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+
+        final List<ProsecutionCase> updatedProsecutionCases = ofNullable(updatedProsecutionCasesForOriginalHearing).map(Collection::stream).orElseGet(Stream::empty)
+                .map(this::getUpdatedProsecutionCase)
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+
+        final List<CourtApplication> updatedCourtApplications =  ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(courtApplication -> updateApplicationWithAdjourn(courtApplication))
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
 
         final Hearing updatedHearing = hearing()
                 .withProsecutionCases(updatedProsecutionCases)
@@ -369,7 +384,7 @@ public class HearingAggregate implements Aggregate {
                 .withJurisdictionType(hearing.getJurisdictionType())
                 .withType(hearing.getType())
                 .withHearingLanguage(hearing.getHearingLanguage())
-                .withCourtApplications(hearing.getCourtApplications())
+                .withCourtApplications(updatedCourtApplications)
                 .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
                 .withJudiciary(hearing.getJudiciary())
                 .withDefendantAttendance(hearing.getDefendantAttendance())
@@ -395,14 +410,17 @@ public class HearingAggregate implements Aggregate {
                 .withSharedTime(sharedTime)
                 .build());
 
+        final Hearing originalHearing = hearing().withValuesFrom(hearing).withProsecutionCases(updatedProsecutionCasesForOriginalHearing)
+                .withCourtApplications(updatedCourtApplications).build();
+
         streamBuilder.add(prosecutionCaseDefendantListingStatusChanged()
-                .withHearing(hearing)
+                .withHearing(originalHearing)
                 .withHearingListingStatus(HearingListingStatus.HEARING_RESULTED)
                 .build());
 
         if (isNotEmpty(hearing.getProsecutionCases())) {
             streamBuilder.add(prosecutionCasesResulted()
-                    .withHearing(hearing)
+                    .withHearing(originalHearing)
                     .withShadowListedOffences(shadowListedOffences)
                     .withCommittingCourt(this.committingCourt)
                     .build());
@@ -410,7 +428,7 @@ public class HearingAggregate implements Aggregate {
 
         if (isNotEmpty(hearing.getCourtApplications())) {
             streamBuilder.add(applicationsResulted()
-                    .withHearing(hearing)
+                    .withHearing(originalHearing)
                     .withShadowListedOffences(shadowListedOffences)
                     .withCommittingCourt(this.committingCourt)
                     .build());
@@ -788,22 +806,32 @@ public class HearingAggregate implements Aggregate {
     public Stream<Object> processHearingResults(final Hearing hearing, final ZonedDateTime sharedTime, final List<UUID> shadowListedOffences, final LocalDate hearingDay) {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
+        final List<ProsecutionCase> updatedProsecutionCasesForOriginalHearing = ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(prosecutionCase -> updateCaseForAdjourn(prosecutionCase))
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
 
-        streamBuilder.add(createHearingResultedEvent(hearing, sharedTime, hearingDay));
-        streamBuilder.add(createListingStatusResultedEvent(hearing));
+        final List<CourtApplication> updatedCourtApplications =  ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(courtApplication -> updateApplicationWithAdjourn(courtApplication))
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+        final Hearing updatedHearing = Hearing.hearing().withValuesFrom(hearing)
+                .withCourtApplications(updatedCourtApplications)
+                .withProsecutionCases(updatedProsecutionCasesForOriginalHearing).build();
+
+        streamBuilder.add(createHearingResultedEvent(updatedHearing, sharedTime, hearingDay));
+        streamBuilder.add(createListingStatusResultedEvent(updatedHearing));
 
         if (isNotEmpty(hearing.getProsecutionCases())) {
-            streamBuilder.add(createProsecutionCasesResultedV2Event(hearing, shadowListedOffences, hearingDay));
+            streamBuilder.add(createProsecutionCasesResultedV2Event(updatedHearing, shadowListedOffences, hearingDay));
         }
 
         if (isEligibleForNextHearings(hearing)) {
-            final List<Object> nextHearingEvents = createNextHearingEvents(hearing, shadowListedOffences, hearingDay);
+            final List<Object> nextHearingEvents = createNextHearingEvents(updatedHearing, shadowListedOffences, hearingDay);
             nextHearingEvents.forEach(streamBuilder::add);
         }
 
         if (isNotEmpty(hearing.getCourtApplications())) {
             streamBuilder.add(applicationsResulted()
-                    .withHearing(hearing)
+                    .withHearing(updatedHearing)
                     .withShadowListedOffences(shadowListedOffences)
                     .withCommittingCourt(this.committingCourt)
                     .build());
@@ -1029,4 +1057,124 @@ public class HearingAggregate implements Aggregate {
                 .map(CourtApplication::getId)
                 .collect(toList());
     }
+
+
+    private ProsecutionCase updateCaseForAdjourn(final ProsecutionCase prosecutionCase) {
+        return ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
+                .withDefendants(prosecutionCase.getDefendants().stream()
+                        .map(defendant -> Defendant.defendant().withValuesFrom(defendant)
+                                .withOffences(defendant.getOffences().stream()
+                                        .map(offence -> ofNullable(offence.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty)
+                                                .filter(judicialResult -> nonNull(judicialResult.getNextHearing()))
+                                                .findAny()
+                                                .map(judicialResult -> updateOffenceWithAdjournFromCase(offence, judicialResult.getOrderedDate(), judicialResult.getNextHearing().getAdjournmentReason()))
+                                                .orElse(offence))
+                                        .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
+                                .build())
+                        .collect(toList()))
+                .build();
+
+    }
+
+    private Optional<Offence> getMatchedOffenceWithGreaterOrderedDateFromCaseInState(final UUID offenceId, final LocalDate orderedDate){
+        return ofNullable(this.hearing).map(hearingFromAggregate -> ofNullable(hearingFromAggregate.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)).orElseGet(Stream::empty)
+                        .map(ProsecutionCase::getDefendants)
+                        .flatMap(Collection::stream)
+                        .map(Defendant::getOffences)
+                        .flatMap(Collection::stream)
+                .filter(offenceFromAggregate -> offenceFromAggregate.getId().equals(offenceId))
+                .filter(offenceFromAggregate -> ofNullable(offenceFromAggregate.getLastAdjournDate()).orElse(LocalDate.MIN).isAfter(orderedDate))
+                .findAny();
+    }
+
+    private Offence updateOffenceWithAdjournFromCase(final Offence offence, final LocalDate orderedDate, final String adjournmentReason) {
+        final Optional<Offence> matchedOffence = getMatchedOffenceWithGreaterOrderedDateFromCaseInState(offence.getId(), orderedDate);
+        return updateLastAdjournmentDateAndHearingType(matchedOffence, offence, orderedDate, adjournmentReason);
+    }
+
+    private Offence updateLastAdjournmentDateAndHearingType(final Optional<Offence> optOffenceFromAggregate,final Offence offence, final LocalDate orderedDate, final String adjournmentReason){
+        return optOffenceFromAggregate.map(offenceFromAggregate -> Offence.offence().withValuesFrom(offence)
+                    .withLastAdjournDate(offenceFromAggregate.getLastAdjournDate())
+                    .withLastAdjournedHearingType(offenceFromAggregate.getLastAdjournedHearingType())
+                    .build())
+                .orElseGet(() -> Offence.offence().withValuesFrom(offence)
+                        .withLastAdjournDate(orderedDate)
+                        .withLastAdjournedHearingType(adjournmentReason)
+                        .build());
+    }
+    private Optional<Offence> getMatchedOffenceWithGreaterOrderedDateFromApplicationInState(final UUID offenceId, final LocalDate orderedDate){
+        return Stream.of(ofNullable(this.hearing).map(hearingFromAggregate -> ofNullable(hearingFromAggregate.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)).orElseGet(Stream::empty)
+                        .map(CourtApplication::getCourtApplicationCases)
+                        .filter(Objects::nonNull)
+                        .flatMap(Collection::stream)
+                        .map(CourtApplicationCase::getOffences)
+                        .filter(Objects::nonNull)
+                        .flatMap(Collection::stream),
+                ofNullable(this.hearing).map(hearingFromAggregate -> ofNullable(hearingFromAggregate.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)).orElseGet(Stream::empty)
+                        .map(CourtApplication::getCourtOrder)
+                        .filter(Objects::nonNull)
+                        .map(CourtOrder::getCourtOrderOffences)
+                        .flatMap(Collection::stream)
+                        .map(CourtOrderOffence::getOffence))
+                .flatMap(i -> i)
+                .filter(offenceFromAggregate -> offenceFromAggregate.getId().equals(offenceId))
+                .filter(offenceFromAggregate -> ofNullable(offenceFromAggregate.getLastAdjournDate()).orElse(LocalDate.MIN).isAfter(orderedDate))
+                .findAny();
+    }
+
+    private Offence updateOffenceWithAdjournFromApplication(final Offence offence, final JudicialResult judicialResult) {
+        final Optional<Offence> matchedOffence = getMatchedOffenceWithGreaterOrderedDateFromApplicationInState(offence.getId(), judicialResult.getOrderedDate());
+        return updateLastAdjournmentDateAndHearingType( matchedOffence, offence, judicialResult.getOrderedDate(), judicialResult.getNextHearing().getAdjournmentReason());
+    }
+
+
+    private CourtApplication updateApplicationWithAdjourn(final CourtApplication courtApplication) {
+        final Optional<JudicialResult> applicationJudicialResult = ofNullable(courtApplication.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty)
+                .filter(judicialResult -> nonNull(judicialResult.getNextHearing()))
+                .findAny();
+
+        return CourtApplication.courtApplication()
+                        .withValuesFrom(courtApplication)
+                        .withCourtApplicationCases(getCourtApplicationCasesWithUpdatedOffences(courtApplication, applicationJudicialResult))
+                        .withCourtOrder(getCourtOrderWithUpdatedOffences(courtApplication, applicationJudicialResult))
+                        .build();
+    }
+
+    private CourtOrder getCourtOrderWithUpdatedOffences(final CourtApplication courtApplication, final Optional<JudicialResult> applicationJudicialResult) {
+        return ofNullable(courtApplication.getCourtOrder())
+                .map(courtOrder -> CourtOrder.courtOrder()
+                        .withValuesFrom(courtOrder)
+                        .withCourtOrderOffences(courtOrder.getCourtOrderOffences().stream()
+                                .map(courtOrderOffence -> CourtOrderOffence.courtOrderOffence()
+                                        .withValuesFrom(courtOrderOffence)
+                                        .withOffence(of(courtOrderOffence.getOffence())
+                                                .map(offence -> getOffenceWithAdjourned(offence))
+                                                .map(offence -> applicationJudicialResult.map(judicialResult -> updateOffenceWithAdjournFromApplication(offence, judicialResult)).orElse(offence))
+                                                .get())
+                                        .build())
+                                .collect(toList()))
+                        .build())
+                .orElse(null);
+    }
+
+    private List<CourtApplicationCase> getCourtApplicationCasesWithUpdatedOffences(final CourtApplication courtApplication, final Optional<JudicialResult> applicationJudicialResult) {
+        return ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase()
+                        .withValuesFrom(courtApplicationCase)
+                        .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
+                                .map(offence -> getOffenceWithAdjourned(offence))
+                                .map(offence -> applicationJudicialResult.map(judicialResult -> updateOffenceWithAdjournFromApplication(offence, judicialResult)).orElse(offence))
+                                .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
+                        .build())
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+    }
+
+    private Offence getOffenceWithAdjourned(final Offence offence) {
+        return ofNullable(offence.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty)
+                .filter(judicialResult -> nonNull(judicialResult.getNextHearing()))
+                .findAny()
+                .map(judicialResult -> updateOffenceWithAdjournFromApplication(offence, judicialResult))
+                .orElse(offence);
+    }
+
 }

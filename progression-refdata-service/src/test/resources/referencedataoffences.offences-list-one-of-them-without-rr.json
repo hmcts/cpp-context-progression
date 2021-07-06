@@ -44,6 +44,7 @@
               "code": "N",
               "description": "No"
             },
+            "maxPenalty": "Max Penalty",
             "fptissuedbypolice": 0.0,
             "pndissuedbyothers": 0.0,
             "pndissuedbypolice": 0.0,
@@ -218,6 +219,7 @@
               "code": "N",
               "description": "No"
             },
+            "maxPenalty": "Max Penalty",
             "fptissuedbypolice": 0.0,
             "pndissuedbyothers": 0.0,
             "pndissuedbypolice": 0.0,

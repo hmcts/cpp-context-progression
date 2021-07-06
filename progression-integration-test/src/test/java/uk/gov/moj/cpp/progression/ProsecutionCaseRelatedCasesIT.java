@@ -126,7 +126,8 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
                                 withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
                                 withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_2)),
                                 withJsonPath("$.relatedCases[0].cases[0].caseStatus", equalTo("ACTIVE")),
-                                withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY"))
+                                withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY")),
+                                withJsonPath("$.relatedCases[0].cases[0].offences[0].maxPenalty", equalTo("Max Penalty"))
                         ))
                 );
 

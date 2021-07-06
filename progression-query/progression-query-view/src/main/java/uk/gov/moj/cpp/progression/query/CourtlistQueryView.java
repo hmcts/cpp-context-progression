@@ -1,0 +1,506 @@
+package uk.gov.moj.cpp.progression.query;
+
+import static java.time.LocalDate.now;
+import static java.time.Period.between;
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.fromString;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.containsAny;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats.STANDARD;
+import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
+
+
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
+import uk.gov.justice.core.courts.CourtApplicationType;
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtOrderOffence;
+import uk.gov.justice.core.courts.DefenceCounsel;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.LjaDetails;
+import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.OffenceFacts;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.Plea;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCounsel;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.core.annotation.Handles;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.view.service.ListingService;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
+
+@SuppressWarnings({"squid:S1170", "squid:S00116"})
+@ServiceComponent(Component.QUERY_VIEW)
+public class CourtlistQueryView {
+
+    private final String ID = "id";
+    private final String CASE_ID = "caseId";
+    private final String DEFENDANTS = "defendants";
+    private final String OFFENCES = "offences";
+    private final String HEARING_DATES = "hearingDates";
+    private final String COURT_ROOMS = "courtRooms";
+    private final String TIME_SLOTS = "timeslots";
+    private final String HEARINGS = "hearings";
+    private final String LISTING_NUMBER = "listingNumber";
+    private final String COURT_APPLICATION_ID = "courtApplicationId";
+    private final String PROSECUTOR_TYPE = "prosecutorType";
+    private final String DEFENCE_COUNSELS = "defenceCounsels";
+    private final String PROSECUTION_COUNSELS = "prosecutionCounsels";
+
+
+    private static final DateTimeFormatter DATE_FORMATTER = ofPattern(STANDARD.getValue());
+    private static final DateTimeFormatter DOB_FORMATTER = DateTimeFormatter.ofPattern("d MMM yyyy");
+    @Inject
+    private ListingService listingService;
+
+    @Inject
+    private HearingQueryView hearingQueryView;
+
+    @Inject
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Inject
+    private ProsecutionCaseRepository prosecutionCaseRepository;
+
+    @Inject
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
+
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourtlistQueryView.class);
+
+    @Handles("progression.search.court.list")
+    public JsonEnvelope searchCourtlist(final JsonEnvelope query) {
+        LOGGER.info("Calling listing.search.court.list.payload with query parameters: {}", query);
+        final Optional<JsonObject> optionalJsonObject = listingService.searchCourtlist(query);
+        if (optionalJsonObject.isPresent()) {
+            JsonObject documentPayload = optionalJsonObject.get();
+            LOGGER.info("Response from listing.search.court.list.payload: {}", documentPayload);
+            final List<UUID> hearingIds = getHearingIds(documentPayload);
+            if (isNotEmpty(hearingIds)) {
+                final Map<UUID, Hearing> hearingsMap = getHearingsMap(hearingIds);
+                if (!hearingsMap.isEmpty()) {
+                    documentPayload = addLjaInformation(documentPayload, hearingsMap.get(hearingIds.get(0)).getCourtCentre());
+                    documentPayload = addHearingInformation(documentPayload, hearingsMap);
+                }
+            }
+            return envelopeFrom(query.metadata(), documentPayload);
+        }
+        return envelopeFrom(query.metadata(), Json.createObjectBuilder().build());
+    }
+
+    private Map<UUID, Hearing> getHearingsMap(final List<UUID> hearingIds) {
+
+        return hearingQueryView.getHearings(hearingIds).stream()
+                .collect(toMap(Hearing::getId, hearing -> hearing));
+
+    }
+
+    private List<UUID> getHearingIds(final JsonObject listingResponse) {
+        final JsonArray hearings = listingResponse.getJsonArray(HEARING_DATES);
+        if (isNotEmpty(hearings)) {
+            return hearings.stream()
+                    .flatMap(jsonValue -> ((JsonObject) jsonValue).getJsonArray(COURT_ROOMS).stream())
+                    .flatMap(jsonValue -> ((JsonObject) jsonValue).getJsonArray(TIME_SLOTS).stream())
+                    .flatMap(jsonValue -> ((JsonObject) jsonValue).getJsonArray(HEARINGS).stream())
+                    .map(jsonValue -> fromString(((JsonObject) jsonValue).getString(ID)))
+                    .collect(toList());
+        }
+        return emptyList();
+    }
+
+    private List<UUID> getApplicationOffenceListingNumbers(final JsonObject hearingJson) {
+        if (hearingJson.containsKey("applicationOffences")) {
+            return hearingJson.getJsonArray("applicationOffences").stream()
+                    .map(jsonValue -> ((JsonObject) jsonValue))
+                    .map(jsonObject -> fromString(jsonObject.getString(ID)))
+                    .collect(toList());
+        }
+        return emptyList();
+    }
+
+    private JsonObject addHearingInformation(JsonObject documentPayload, final Map<UUID, Hearing> hearingsMap) {
+
+        final JsonArrayBuilder hearingDatesArray = createArrayBuilder();
+
+        documentPayload.getJsonArray(HEARING_DATES).stream()
+                .map(hearingDate -> (JsonObject) hearingDate)
+                .forEach(hearingDateJson -> hearingDatesArray.add(enrichHearingDate(hearingDateJson, hearingsMap)));
+
+        documentPayload = addProperty(documentPayload, HEARING_DATES, hearingDatesArray.build());
+        return documentPayload;
+    }
+
+    private JsonObject enrichHearingDate(JsonObject hearingDateJson, final Map<UUID, Hearing> hearingsMap) {
+
+        final JsonArrayBuilder courtRoomsArray = createArrayBuilder();
+
+        hearingDateJson.getJsonArray(COURT_ROOMS).stream()
+                .map(courtRoom -> (JsonObject) courtRoom)
+                .forEach(courtRoomJson -> courtRoomsArray.add(enrichCourtRoom(courtRoomJson, hearingsMap)));
+
+        hearingDateJson = addProperty(hearingDateJson, COURT_ROOMS, courtRoomsArray.build());
+        return hearingDateJson;
+    }
+
+    private JsonObject enrichCourtRoom(JsonObject courtRoomJson, final Map<UUID, Hearing> hearingsMap) {
+
+        final JsonArrayBuilder timeSlotsArray = createArrayBuilder();
+
+        courtRoomJson.getJsonArray(TIME_SLOTS).stream()
+                .map(timeSlot -> (JsonObject) timeSlot)
+                .forEach(timeSlotJson -> timeSlotsArray.add(enrichTimeslot(timeSlotJson, hearingsMap)));
+
+        courtRoomJson = addProperty(courtRoomJson, TIME_SLOTS, timeSlotsArray.build());
+        return courtRoomJson;
+    }
+
+
+    private JsonObject enrichTimeslot(JsonObject timeSlotJson, final Map<UUID, Hearing> hearingsMap) {
+
+        final JsonArrayBuilder hearingsArray = createArrayBuilder();
+
+        timeSlotJson.getJsonArray(HEARINGS).stream()
+                .map(hearing -> (JsonObject) hearing)
+                .forEach(hearingJson -> {
+                    final UUID hearingId = fromString(hearingJson.getString(ID));
+                    final Hearing hearing = hearingsMap.get(hearingId);
+                    if (hearingJson.containsKey(CASE_ID)) {
+                        final UUID caseId = fromString(hearingJson.getString(CASE_ID));
+                        hearingsArray.add(enrichHearingFromCase(hearingJson, hearing, caseId));
+                    } else if (hearingJson.containsKey(COURT_APPLICATION_ID)) {
+                        final UUID courtApplicationId = fromString(hearingJson.getString(COURT_APPLICATION_ID));
+                        hearingsArray.add(enrichHearingFromCourtApplication(hearingJson, hearing, courtApplicationId));
+                    }
+                });
+
+        timeSlotJson = addProperty(timeSlotJson, HEARINGS, hearingsArray.build());
+        return timeSlotJson;
+    }
+
+    private JsonObject enrichHearingFromCase(JsonObject hearingJson, final Hearing hearing, final UUID caseId) {
+
+        final List<ProsecutionCase> prosecutionCases =  ofNullable(hearing.getProsecutionCases()).orElseGet(() -> getProsecutionCaseFromDb(caseId));
+        if (isNotEmpty(prosecutionCases)) {
+            final Optional<ProsecutionCase> prosecutionCase = prosecutionCases.stream()
+                    .filter(pc -> pc.getId().equals(caseId))
+                    .findFirst();
+
+            if (prosecutionCase.isPresent()) {
+                final ProsecutionCase pc = prosecutionCase.get();
+                if (nonNull(pc.getProsecutor())) {
+                    hearingJson = addProperty(hearingJson, PROSECUTOR_TYPE, pc.getProsecutor().getProsecutorCode());
+                } else {
+                    hearingJson = addProperty(hearingJson, PROSECUTOR_TYPE, pc.getProsecutionCaseIdentifier().getProsecutionAuthorityCode());
+                }
+            }
+        }
+
+        final JsonArrayBuilder defendantsArray = createArrayBuilder();
+
+        hearingJson.getJsonArray(DEFENDANTS)
+                .stream()
+                .map(defendant -> (JsonObject) defendant)
+                .forEach(defendantJson -> {
+                    final UUID defendantId = fromString((defendantJson).getString(ID));
+                    prosecutionCases.stream()
+                            .filter(prosecutionCase -> prosecutionCase.getId().equals(caseId))
+                            .forEach(prosecutionCase -> prosecutionCase.getDefendants()
+                                    .forEach(defendant -> {
+                                        if (defendantId.equals(defendant.getId())) {
+                                            defendantsArray.add(enrichDefendant(defendantJson, defendant, hearing, prosecutionCase));
+                                        }
+                                    }));
+                });
+
+        hearingJson = addProperty(hearingJson, DEFENDANTS, defendantsArray.build());
+        return hearingJson;
+    }
+
+    private List<ProsecutionCase> getProsecutionCaseFromDb(final UUID caseId) {
+        final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseId);
+        final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
+        final ProsecutionCase prosecutionCaseFromDb = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
+        return singletonList(prosecutionCaseFromDb);
+    }
+
+    private JsonObject enrichHearingFromCourtApplication(JsonObject hearingJson, final Hearing hearing, final UUID courtApplicationId) {
+
+        final List<UUID> offencesForApplications = getApplicationOffenceListingNumbers(hearingJson);
+
+        final JsonArrayBuilder defendantsArray = createArrayBuilder();
+
+        if (isNotEmpty(hearing.getCourtApplications())) {
+            hearing.getCourtApplications()
+                    .forEach(courtApplication -> {
+                        if (courtApplication.getId().equals(courtApplicationId)) {
+                            defendantsArray.add(buildDefendantFromCourtApplication(courtApplication, hearing, offencesForApplications));
+                        }
+                    });
+        }
+
+        hearingJson = addProperty(hearingJson, DEFENDANTS, defendantsArray.build());
+        return hearingJson;
+    }
+
+    private JsonObject buildDefendantFromCourtApplication(final CourtApplication courtApplication, final Hearing hearing, final List<UUID> offencesForApplications) {
+
+        final JsonObjectBuilder defendantBuilder = Json.createObjectBuilder();
+        final JsonArrayBuilder offencesArray = createArrayBuilder();
+        final List<UUID> caseIdList = new ArrayList<>();
+
+        if (isNotEmpty(courtApplication.getCourtApplicationCases())) {
+
+            caseIdList.addAll(courtApplication.getCourtApplicationCases().stream()
+                    .filter(courtApplicationCase -> isNotEmpty(courtApplicationCase.getOffences()))
+                    .map(CourtApplicationCase::getProsecutionCaseId)
+                    .collect(toSet()));
+
+            courtApplication.getCourtApplicationCases().stream()
+                    .filter(courtApplicationCase -> isNotEmpty(courtApplicationCase.getOffences()))
+                    .flatMap(courtApplicationCase -> courtApplicationCase.getOffences().stream())
+                    .filter(offence -> offencesForApplications.contains(offence.getId()))
+                    .forEach(offence -> {
+                        final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
+                        buildOffence(offenceBuilder, offence, null);
+                        addApplicationInformation(offenceBuilder, courtApplication);
+                        offencesArray.add(offenceBuilder.build());
+                    });
+
+        } else if (nonNull(courtApplication.getCourtOrder()) && isNotEmpty(courtApplication.getCourtOrder().getCourtOrderOffences())) {
+            caseIdList.addAll(courtApplication.getCourtOrder().getCourtOrderOffences().stream()
+                    .map(CourtOrderOffence::getProsecutionCaseId)
+                    .collect(toSet()));
+
+            courtApplication.getCourtOrder().getCourtOrderOffences().stream()
+                    .map(CourtOrderOffence::getOffence)
+                    .filter(offence -> offencesForApplications.contains(offence.getId()))
+                    .forEach(offence -> {
+                        final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
+                        buildOffence(offenceBuilder, offence, null);
+                        addApplicationInformation(offenceBuilder, courtApplication);
+                        offencesArray.add(offenceBuilder.build());
+                    });
+        }
+
+        final MasterDefendant masterDefendant = courtApplication.getSubject().getMasterDefendant();
+        if (nonNull(masterDefendant) && nonNull(masterDefendant.getPersonDefendant())) {
+            final Person person = masterDefendant.getPersonDefendant().getPersonDetails();
+            defendantBuilder.add(ID, masterDefendant.getMasterDefendantId().toString());
+            ofNullable(person.getFirstName()).ifPresent(firstName -> defendantBuilder.add("firstName", firstName));
+            defendantBuilder.add("surname", person.getLastName());
+            defendantBuilder.add("gender", person.getGender().toString());
+
+            final Integer defendantAge = getAge(person.getDateOfBirth());
+            if (nonNull(defendantAge)) {
+                defendantBuilder.add("age", defendantAge);
+            }
+            ofNullable(person.getAddress()).ifPresent( address -> defendantBuilder.add("address", objectToJsonObjectConverter.convert(address)));
+            ofNullable(person.getDateOfBirth()).ifPresent(dateOfBirth -> defendantBuilder.add("dateOfBirth",dateOfBirth.format(DOB_FORMATTER)));
+            ofNullable(person.getNationalityDescription()).ifPresent(nationalityDescription->defendantBuilder.add("nationality", nationalityDescription));
+            if (isNotEmpty(hearing.getDefenceCounsels())) {
+                defendantBuilder.add(DEFENCE_COUNSELS, buildDefenceCounsels(hearing.getDefenceCounsels(), masterDefendant.getMasterDefendantId()));
+            }
+        }
+        ofNullable(courtApplication.getDefendantASN()).ifPresent(asn -> defendantBuilder.add("asn", asn));
+        //TODO not sure about defenceOrganization
+        defendantBuilder.add("defenceOrganization", "-");
+        if (isNotEmpty(hearing.getProsecutionCounsels())) {
+            defendantBuilder.add(PROSECUTION_COUNSELS, buildProsecutionCounsels(hearing.getProsecutionCounsels(), caseIdList));
+        }
+
+        defendantBuilder.add(OFFENCES, offencesArray.build());
+
+        return defendantBuilder.build();
+    }
+
+
+    private JsonObject enrichDefendant(JsonObject defendantJson, final Defendant defendant, final Hearing hearing, final ProsecutionCase prosecutionCase) {
+
+        final JsonObjectBuilder defendantJsonBuilder = createObjectBuilder();
+        defendantJson.forEach((name, value) -> defendantJsonBuilder.add(name, value));
+
+        final PersonDefendant personDefendant = defendant.getPersonDefendant();
+        if (nonNull(personDefendant)) {
+            defendantJsonBuilder.add("gender", personDefendant.getPersonDetails().getGender().toString());
+            ofNullable(personDefendant.getArrestSummonsNumber()).ifPresent(arrestSummonsNumber -> defendantJsonBuilder.add("asn", arrestSummonsNumber));
+        }else{
+            if(nonNull(defendant.getLegalEntityDefendant())) {
+                ofNullable(defendant.getLegalEntityDefendant().getOrganisation().getName()).ifPresent(name -> defendantJsonBuilder.add("name", name));
+                ofNullable(defendant.getLegalEntityDefendant().getOrganisation().getAddress()).ifPresent(address -> defendantJsonBuilder.add("address", objectToJsonObjectConverter.convert(address)));
+            }
+        }
+
+        final Optional<String> defenceOrganisation = findDefenceOrg(defendant);
+
+        defenceOrganisation.ifPresent(org -> defendantJsonBuilder.add("defenceOrganization", org));
+
+        final JsonArrayBuilder offencesArray = createArrayBuilder();
+        defendantJson = defendantJsonBuilder.build();
+        ofNullable(defendantJson.get(OFFENCES)).map(jsonValue -> (JsonArray)jsonValue).orElseGet(()-> createArrayBuilder().build()).stream()
+                .map(offence -> ((JsonObject) offence))
+                .forEach(offenceJson -> {
+                    final UUID offenceId = fromString(offenceJson.getString(ID));
+                    defendant.getOffences()
+                            .forEach(offence -> {
+                                if (offence.getId().equals(offenceId)) {
+                                    Integer listingNumber = null;
+                                    if (offenceJson.containsKey(LISTING_NUMBER)) {
+                                        listingNumber = offenceJson.getInt(LISTING_NUMBER);
+                                    }
+                                    final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
+                                    buildOffence(offenceBuilder, offence, listingNumber);
+                                    addOffenceInformation(offenceBuilder, offence);
+                                    offencesArray.add(offenceBuilder.build());
+                                }
+                            });
+                });
+        if (isNotEmpty(hearing.getProsecutionCounsels())) {
+            defendantJson = addProperty(defendantJson, PROSECUTION_COUNSELS, buildProsecutionCounsels(hearing.getProsecutionCounsels(), singletonList(prosecutionCase.getId())));
+        }
+        if (isNotEmpty(hearing.getDefenceCounsels())) {
+            defendantJson = addProperty(defendantJson, DEFENCE_COUNSELS, buildDefenceCounsels(hearing.getDefenceCounsels(), defendant.getId()));
+        }
+        defendantJson = addProperty(defendantJson, OFFENCES, offencesArray.build());
+        return defendantJson;
+    }
+
+    private Optional<String> findDefenceOrg(final Defendant defendant) {
+
+        return nonNull(defendant.getAssociatedDefenceOrganisation()) ?
+                of(defendant.getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getName())
+                : getDefenceOrganisation(defendant);
+    }
+
+    private Optional<String> getDefenceOrganisation(final Defendant defendant) {
+
+        return nonNull(defendant.getDefenceOrganisation()) ? of(defendant.getDefenceOrganisation().getName()) : Optional.empty();
+    }
+
+    private void addOffenceInformation(final JsonObjectBuilder offenceBuilder, final Offence offence) {
+        offenceBuilder.add("offenceCode", offence.getOffenceCode());
+        offenceBuilder.add("offenceTitle", offence.getOffenceTitle());
+        offenceBuilder.add("offenceWording", offence.getWording());
+
+        ofNullable(offence.getOffenceTitleWelsh()).ifPresent(welshOffenceTitle -> offenceBuilder.add("welshOffenceTitle", welshOffenceTitle));
+        ofNullable(offence.getOffenceLegislation()).ifPresent(offenceLegislation -> offenceBuilder.add("offenceLegislation", offenceLegislation));
+    }
+
+    private void addApplicationInformation(final JsonObjectBuilder offenceBuilder, final CourtApplication courtApplication) {
+        final CourtApplicationType type = courtApplication.getType();
+
+        offenceBuilder.add("offenceTitle", type.getType());
+
+        ofNullable(type.getCode()).ifPresent(offenceCode -> offenceBuilder.add("offenceCode", offenceCode));
+        ofNullable(type.getTypeWelsh()).ifPresent(welshOffenceTitle -> offenceBuilder.add("welshOffenceTitle", welshOffenceTitle));
+        ofNullable(type.getLegislation()).ifPresent(offenceLegislation -> offenceBuilder.add("offenceLegislation", offenceLegislation));
+        ofNullable(courtApplication.getApplicationParticulars()).ifPresent(offenceWording -> offenceBuilder.add("offenceWording", offenceWording));
+    }
+
+    private void buildOffence(final JsonObjectBuilder offenceBuilder, final Offence offence, final Integer listingNumber) {
+        offenceBuilder.add(ID, offence.getId().toString());
+
+        if (nonNull(offence.getOffenceFacts())) {
+            final OffenceFacts offenceFacts = offence.getOffenceFacts();
+            ofNullable(offenceFacts.getAlcoholReadingAmount())
+                    .ifPresent(alcoholReadingAmount -> offenceBuilder.add("alcoholReadingAmount", alcoholReadingAmount));
+
+            ofNullable(offenceFacts.getAlcoholReadingMethodDescription())
+                    .ifPresent(alcoholReadingMethodDescription -> offenceBuilder.add("alcoholReadingMethodDescription", alcoholReadingMethodDescription));
+        }
+
+        if (nonNull(offence.getPlea())) {
+            final Plea pLea = offence.getPlea();
+            offenceBuilder.add("plea", pLea.getPleaValue());
+            offenceBuilder.add("pleaDate", pLea.getPleaDate().format(DATE_FORMATTER));
+        }
+
+        ofNullable(offence.getMaxPenalty()).ifPresent(maxPenalty -> offenceBuilder.add("maxPenalty", maxPenalty));
+        ofNullable(offence.getConvictionDate()).ifPresent(convictedOn -> offenceBuilder.add("convictedOn", convictedOn.format(DATE_FORMATTER)));
+        ofNullable(offence.getLastAdjournDate()).ifPresent(adjournedDate -> offenceBuilder.add("adjournedDate", adjournedDate.format(DATE_FORMATTER)));
+        ofNullable(offence.getLastAdjournedHearingType()).ifPresent(adjournedHearingType -> offenceBuilder.add("adjournedHearingType", adjournedHearingType.replaceAll("\n", ",")));
+        ofNullable(listingNumber).ifPresent(number -> offenceBuilder.add("listingNumber", number));
+    }
+
+
+    private JsonArray buildProsecutionCounsels(final List<ProsecutionCounsel> prosecutionCounsels, final List<UUID> prosecutionCaseIds) {
+        final JsonArrayBuilder prosecutionCounselsArray = createArrayBuilder();
+        prosecutionCounsels.stream()
+                .filter(prosecutionCounsel -> containsAny(prosecutionCounsel.getProsecutionCases(), prosecutionCaseIds))
+                .forEach(prosecutionCounsel -> prosecutionCounselsArray.add(buildCounsel(prosecutionCounsel.getFirstName(), prosecutionCounsel.getMiddleName(), prosecutionCounsel.getLastName())));
+        return prosecutionCounselsArray.build();
+    }
+
+    private JsonArray buildDefenceCounsels(final List<DefenceCounsel> defenceCounsels, final UUID defendantId) {
+        final JsonArrayBuilder defenceCounselArray = createArrayBuilder();
+        defenceCounsels.stream()
+                .filter(defenceCounsel -> defenceCounsel.getDefendants().contains(defendantId))
+                .forEach(defenceCounsel -> defenceCounselArray.add(buildCounsel(defenceCounsel.getFirstName(), defenceCounsel.getMiddleName(), defenceCounsel.getLastName())));
+        return defenceCounselArray.build();
+    }
+
+    private JsonObject buildCounsel(final String firstName, final String middleName, final String lastName) {
+        final JsonObjectBuilder counsel = Json.createObjectBuilder();
+        ofNullable(firstName).ifPresent(fn -> counsel.add("firstName", fn));
+        ofNullable(middleName).ifPresent(mn -> counsel.add("middleName", mn));
+        ofNullable(lastName).ifPresent(ln -> counsel.add("lastName", ln));
+        return counsel.build();
+    }
+
+
+    private Integer getAge(final LocalDate dateOfBirth) {
+        return nonNull(dateOfBirth) ? between(dateOfBirth, now()).getYears() : null;
+    }
+
+    private JsonObject addLjaInformation(JsonObject documentPayload, final CourtCentre courtCentre) {
+
+        final LjaDetails ljaDetails = courtCentre.getLja();
+        if (nonNull(ljaDetails)) {
+            documentPayload = addProperty(documentPayload, "ljaCode", ljaDetails.getLjaCode());
+            documentPayload = addProperty(documentPayload, "ljaName", ljaDetails.getLjaName());
+            if (nonNull(ljaDetails.getWelshLjaName())) {
+                documentPayload = addProperty(documentPayload, "welshLjaName", ljaDetails.getWelshLjaName());
+            }
+        }
+        return documentPayload;
+    }
+}

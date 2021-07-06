@@ -64,6 +64,7 @@
                   "alcoholReadingAmount": 111,
                   "alcoholReadingMethodCode": "2222"
                 },
+                "maxPenalty": "Max Penalty",
                 "reportingRestrictions": [
                   {
                     "id": "3789ab16-e588-4b7f-806a-44dc0eb0e75e",

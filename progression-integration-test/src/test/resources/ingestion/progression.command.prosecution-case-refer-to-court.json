@@ -68,6 +68,7 @@
                   "notifiedPleaDate": "2018-04-01",
                   "notifiedPleaValue": "NOTIFIED_GUILTY"
                 },
+                "maxPenalty": "Max Penalty",
                 "offenceFacts": {
                   "vehicleRegistration": "AA12345",
                   "alcoholReadingAmount": 111,

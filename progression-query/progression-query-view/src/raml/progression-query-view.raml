@@ -680,3 +680,43 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.partial-match-defendant+json:
             schema: !include json/progression.query.partial-match-defendant.json
             example: !include json/schema/progression.query.partial-match-defendant.json
+
+/courtlist:
+  description: get court list document
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.search.court.list+json
+          name: progression.search.court.list
+      ...
+    queryParameters:
+        courtCentreId:
+          description: reference data id for the court centre
+          type: string
+          required: true
+        courtRoomId:
+          description: reference data id for the court room
+          type: string
+          required: false
+        listId:
+          description: court list name to generate ( e.g. PUBLIC, STANDAND, ALPHABETICAL)
+          type: string
+          required: true
+        startDate:
+          description: hearing start date in format 'YYYY-MM-DD'.
+          type: date
+          required: true
+        endDate:
+          description: hearing end date in format 'YYYY-MM-DD'
+          type: date
+          required: true
+        restricted:
+          description: only applicable for standard courtlist. Set true to get restricted standard court list
+          type: boolean
+          required: false
+          default: false
+    responses:
+      200:
+        body:
+          application/vnd.progression.search.court.list+json:

@@ -230,6 +230,7 @@ public class ReferredProsecutionCaseTransformer {
                 .withDvlaOffenceCode(fetchValueFromKey(offenceJson, DVLA_CODE))
                 .withReportingRestrictions(referredOffence.getReportingRestrictions())
                 .withEndorsableFlag(fetchBooleanValueFromKey(offenceJson, ENDORSABLE_FLAG))
+                .withMaxPenalty(referredOffence.getMaxPenalty())
                 .build();
         if ((initiationCode == InitiationCode.J || initiationCode == InitiationCode.Z)
                 && nonNull(offence.getModeOfTrial())

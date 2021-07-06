@@ -65,7 +65,7 @@
           "caseURN": "TFL4359536"
         },
         "isSJP": false,
-        "caseStatus": "ACTIVE",
+        "caseStatus": "INACTIVE",
         "offences": [
           {
             "allocationDecision": {
@@ -80,7 +80,7 @@
             "aquittalDate": "2020-04-14",
             "chargeDate": "2020-03-14",
             "count": 1,
-            "id": "28b3d444-ae80-4920-a70f-ef01e128188e",
+            "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
             "isDisposed": true,
             "modeOfTrial": "Summary",
             "notifiedPlea": {
@@ -190,7 +190,7 @@
     }]
   },
   "courtHearing": {
-    "id": "APPLICATION_ID",
+    "id": "HEARING_ID",
     "hearingType": {
       "id": "8cdfd3da-8900-42ca-9835-9f29d1e03cd6",
       "description": "Sentence"

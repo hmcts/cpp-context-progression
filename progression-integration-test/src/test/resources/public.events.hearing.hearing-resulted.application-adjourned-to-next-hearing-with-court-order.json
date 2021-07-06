@@ -572,7 +572,7 @@
                     "lastSharedDateTime": "2020-06-27",
                     "lifeDuration": false,
                     "nextHearing": {
-                      "adjournmentReason": "",
+                      "adjournmentReason": "adjournmentReason",
                       "courtCentre": {
                         "address": {
                           "address1": "QEII Law Courts",
@@ -710,7 +710,7 @@
             "mitigationWelsh": "a",
             "offences": [
               {
-                "id": "333bdd2a-6b7a-4002-bc8c-5c6f93844f41",
+                "id": "OFFENCE_ID",
                 "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
                 "offenceCode": "a",
                 "offenceTitle": "a",
@@ -849,7 +849,32 @@
                         "promptReference": "a",
                         "courtExtract": "Y"
                       }
-                    ]
+                    ],
+                    "nextHearing": {
+                      "adjournmentReason": "adjournmentReason",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "QEII Law Courts",
+                          "address2": "Derby Square",
+                          "address3": "Liverpool",
+                          "postcode": "L2 1XA"
+                        },
+                        "courtHearingLocation": "C05LV00",
+                        "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                        "name": "Liverpool Crown Court",
+                        "psaCode": 1810,
+                        "roomId": "fbe3ca1a-6be6-3bd5-86e8-fc879aa5e3e7",
+                        "roomName": "Crown Court 5-3",
+                        "welshName": "Llys Y Goron Lerpwl"
+                      },
+                      "estimatedMinutes": 20,
+                      "jurisdictionType": "CROWN",
+                      "listedStartDateTime": "2020-07-02T14:07:00.000Z",
+                      "type": {
+                        "description": "Sentence",
+                        "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
+                      }
+                    }
                   }
                 ]
               }

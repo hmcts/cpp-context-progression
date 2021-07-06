@@ -299,7 +299,7 @@ public class CaseAtAGlanceIT extends AbstractIT {
 
     public void createApplicationLinkedToCase() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        initiateCourtProceedingsForCourtApplication(linkedApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
+        initiateCourtProceedingsForCourtApplication(linkedApplicationId, caseId, randomUUID().toString(), "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
 
         Matcher[] linkedApplicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(linkedApplicationId)),

@@ -40,6 +40,11 @@ public class ApplicationHelper {
         return initiateCourtProceedingsForCourtApplication(payload);
     }
 
+    public static Response initiateCourtProceedingsForCourtApplicationWithCourtHearing(final String applicationId, final String caseId, final String hearingId, final String fileName) throws IOException {
+        final String payload = getCourtApplicationJson(applicationId, caseId, hearingId, null, fileName);
+        return initiateCourtProceedingsForCourtApplication(payload);
+    }
+
     public static Response initiateCourtProceedingsForCourtApplication(final String payload) throws IOException {
         return postCommand(getWriteUrl("/initiate-application"),
                 "application/vnd.progression.initiate-court-proceedings-for-application+json",

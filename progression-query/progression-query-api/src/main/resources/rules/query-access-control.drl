@@ -444,3 +444,12 @@ rule "progression - Query - API - progression.query.court-proceedings-for-applic
   then
     $outcome.setSuccess(true);
 end
+
+rule "Query - API - progression.search.court.list"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.search.court.list");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Listing Officers", "Court Clerks", "Legal Advisers", "Crown Court Admin", "Court Administrators", "Youth Offending Service Admin", "CPS", "Probation Admin", "Victims & Witness Care Admin", "Police Admin", "Court Associate"));
+  then
+    $outcome.setSuccess(true);
+end

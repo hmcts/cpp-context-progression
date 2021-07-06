@@ -3,7 +3,14 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 import static java.util.Objects.isNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
+
+import java.io.StringReader;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.json.Json;
+import javax.json.JsonReader;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -12,7 +19,11 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
@@ -43,6 +54,12 @@ public class UpdateProsecutionCaseCpsProsecutorEventListener {
     @Inject
     private SearchProsecutionCase searchCase;
 
+    @Inject
+    private HearingRepository hearingRepository;
+
+    @Inject
+    private CaseDefendantHearingRepository caseDefendantHearingRepository;
+
 
     @Handles("progression.event.case-cps-prosecutor-updated")
     public void handleUpdateCaseCpsProsecutor(final JsonEnvelope event) {
@@ -55,7 +72,26 @@ public class UpdateProsecutionCaseCpsProsecutorEventListener {
         final ProsecutionCase persistentProsecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
         final ProsecutionCase updatedProsecutionCase = updateProsecutionCase(persistentProsecutionCase, caseCpsProsecutorUpdated);
         repository.save(getProsecutionCaseEntity(updatedProsecutionCase));
+        final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByCaseId(updatedProsecutionCase.getId());
+        caseDefendantHearingEntities.forEach(caseDefendantHearingEntity -> {
+            final HearingEntity hearingEntity = caseDefendantHearingEntity.getHearing();
+            final JsonObject hearingJson = jsonFromString(hearingEntity.getPayload());
+            final Hearing hearing = jsonObjectConverter.convert(hearingJson, Hearing.class);
+            final Hearing updatedHearing = Hearing.hearing().withValuesFrom(hearing)
+                    .withProsecutionCases(hearing.getProsecutionCases().stream()
+                            .map(prosecutionCase -> prosecutionCase.getId().equals(updatedProsecutionCase.getId()) ? updatedProsecutionCase : prosecutionCase)
+                            .collect(Collectors.toList())).build();
+            hearingEntity.setPayload(objectToJsonObjectConverter.convert(updatedHearing).toString());
+            hearingRepository.save(hearingEntity);
+        });
         searchCase.updateSearchable(updatedProsecutionCase);
+    }
+
+    private static JsonObject jsonFromString(String jsonObjectStr) {
+        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonObject object = jsonReader.readObject();
+        jsonReader.close();
+        return object;
     }
 
     private ProsecutionCase updateProsecutionCase(final ProsecutionCase prosecutionCase, final CaseCpsProsecutorUpdated caseCpsProsecutorUpdated) {

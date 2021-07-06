@@ -253,37 +253,11 @@ public class HearingResultEventListener {
 
         }
 
-        final Hearing.Builder builder = Hearing.hearing();
+        final Hearing.Builder builder = Hearing.hearing().withValuesFrom(hearingFromPayload);
         if (isNotEmpty(hearingFromPayload.getProsecutionCases())) {
             builder.withProsecutionCases(getUpdatedProsecutionCases(hearingFromPayload, hearingFromDatabase, hearingDay));
         }
-        return builder.withIsBoxHearing(hearingFromPayload.getIsBoxHearing())
-                .withId(hearingFromPayload.getId())
-                .withHearingDays(hearingFromPayload.getHearingDays())
-                .withCourtCentre(hearingFromPayload.getCourtCentre())
-                .withJurisdictionType(hearingFromPayload.getJurisdictionType())
-                .withType(hearingFromPayload.getType())
-                .withHearingLanguage(hearingFromPayload.getHearingLanguage())
-                .withCourtApplications(hearingFromPayload.getCourtApplications())
-                .withReportingRestrictionReason(hearingFromPayload.getReportingRestrictionReason())
-                .withJudiciary(hearingFromPayload.getJudiciary())
-                .withDefendantJudicialResults(resultsToBeAdded)
-                .withDefendantAttendance(hearingFromPayload.getDefendantAttendance())
-                .withDefendantReferralReasons(hearingFromPayload.getDefendantReferralReasons())
-                .withHasSharedResults(hearingFromPayload.getHasSharedResults())
-                .withDefenceCounsels(hearingFromPayload.getDefenceCounsels())
-                .withProsecutionCounsels(hearingFromPayload.getProsecutionCounsels())
-                .withRespondentCounsels(hearingFromPayload.getRespondentCounsels())
-                .withApplicationPartyCounsels(hearingFromPayload.getApplicationPartyCounsels())
-                .withCrackedIneffectiveTrial(hearingFromPayload.getCrackedIneffectiveTrial())
-                .withReportingRestrictionReason(hearingFromPayload.getReportingRestrictionReason())
-                .withHearingCaseNotes(hearingFromPayload.getHearingCaseNotes())
-                .withCourtApplicationPartyAttendance(hearingFromPayload.getCourtApplicationPartyAttendance())
-                .withCompanyRepresentatives(hearingFromPayload.getCompanyRepresentatives())
-                .withIntermediaries(hearingFromPayload.getIntermediaries())
-                .withIsEffectiveTrial(hearingFromPayload.getIsEffectiveTrial())
-                .withYouthCourt(hearingFromPayload.getYouthCourt())
-                .withYouthCourtDefendantIds(hearingFromPayload.getYouthCourtDefendantIds())
+        return builder.withDefendantJudicialResults(resultsToBeAdded)
                 .build();
     }
 
@@ -303,22 +277,10 @@ public class HearingResultEventListener {
                 .findFirst();
         if (optionalResultedCase.isPresent()) {
             final ProsecutionCase originalProsecutionCase = optionalResultedCase.get();
-            return ProsecutionCase.prosecutionCase()
-                    .withPoliceOfficerInCase(prosecutionCaseFromPayload.getPoliceOfficerInCase())
-                    .withProsecutionCaseIdentifier(prosecutionCaseFromPayload.getProsecutionCaseIdentifier())
-                    .withId(prosecutionCaseFromPayload.getId())
+            return ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCaseFromPayload)
                     .withDefendants(getUpdatedDefendants(prosecutionCaseFromPayload, originalProsecutionCase, hearingDay))
-                    .withInitiationCode(prosecutionCaseFromPayload.getInitiationCode())
-                    .withOriginatingOrganisation(prosecutionCaseFromPayload.getOriginatingOrganisation())
                     .withCpsOrganisation(originalProsecutionCase.getCpsOrganisation())
                     .withCpsOrganisationId(originalProsecutionCase.getCpsOrganisationId())
-                    .withIsCpsOrgVerifyError(prosecutionCaseFromPayload.getIsCpsOrgVerifyError())
-                    .withStatementOfFacts(prosecutionCaseFromPayload.getStatementOfFacts())
-                    .withStatementOfFactsWelsh(prosecutionCaseFromPayload.getStatementOfFactsWelsh())
-                    .withCaseMarkers(prosecutionCaseFromPayload.getCaseMarkers())
-                    .withAppealProceedingsPending(prosecutionCaseFromPayload.getAppealProceedingsPending())
-                    .withBreachProceedingsPending(prosecutionCaseFromPayload.getBreachProceedingsPending())
-                    .withRemovalReason(prosecutionCaseFromPayload.getRemovalReason())
                     .withCaseStatus(originalProsecutionCase.getCaseStatus())
                     .build();
         } else {

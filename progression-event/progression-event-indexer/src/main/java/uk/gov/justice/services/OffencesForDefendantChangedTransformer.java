@@ -58,8 +58,7 @@ public class OffencesForDefendantChangedTransformer implements Transform {
     private Defendant addOffenceToDefendant(final Defendant defendant, final List<Offence> offences) {
         final List<Offence> newOffenceList = defendant.getOffences();
         newOffenceList.addAll(offences);
-        return new Defendant(defendant.getAliases(), defendant.getAssociatedDefenceOrganisation(), defendant.getAssociatedPersons(), defendant.getAssociationLockedByRepOrder(), defendant.getCourtProceedingsInitiated(), defendant.getCroNumber(), defendant.getDefenceOrganisation(), defendant.getDefendantCaseJudicialResults(), defendant.getId(), defendant.getIsYouth(), defendant.getLegalAidStatus(), defendant.getLegalEntityDefendant(), defendant.getMasterDefendantId(), defendant.getMitigation(), defendant.getMitigationWelsh(), defendant.getNumberOfPreviousConvictionsCited(), newOffenceList, defendant.getPersonDefendant(), defendant.getPncId(),
-                defendant.getProceedingsConcluded(), defendant.getProsecutionAuthorityReference(), defendant.getProsecutionCaseId(), defendant.getWitnessStatement(), defendant.getWitnessStatementWelsh());
+        return Defendant.defendant().withValuesFrom(defendant).withOffences(newOffenceList).build();
     }
 
 

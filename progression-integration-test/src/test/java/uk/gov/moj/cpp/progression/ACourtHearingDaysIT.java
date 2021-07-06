@@ -101,6 +101,7 @@ public class ACourtHearingDaysIT extends AbstractIT {
         final Integer listedDurationMinutes = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("hearingDays").getJsonObject(0).getInt("listedDurationMinutes");
         final String sittingDay = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("hearingDays").getJsonObject(0).getString("sittingDay");
         final String dvlaCode = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("dvlaOffenceCode");
+        final String maxPenalty = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("maxPenalty");
 
 
         final JsonObject payload = createObjectBuilder()
@@ -120,7 +121,8 @@ public class ACourtHearingDaysIT extends AbstractIT {
                 withJsonPath("$.hearing.hearingDays[0].courtRoomId", is(courtRoomId)),
                 withJsonPath("$.hearing.hearingDays[0].listedDurationMinutes", is(listedDurationMinutes)),
                 withJsonPath("$.hearing.hearingDays[0].sittingDay", is(sittingDay)),
-                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].dvlaOffenceCode", is(dvlaCode))
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].dvlaOffenceCode", is(dvlaCode)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].maxPenalty", is(maxPenalty))
         );
     }
 

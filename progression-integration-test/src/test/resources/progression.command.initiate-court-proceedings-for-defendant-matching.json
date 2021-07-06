@@ -67,7 +67,8 @@
                   "alcoholReadingAmount": 111,
                   "alcoholReadingMethodCode": "2222"
                 },
-                "offenceDateCode": 4
+                "offenceDateCode": 4,
+                "maxPenalty": "Max Penalty"
               }
             ],
             "associatedPersons": [

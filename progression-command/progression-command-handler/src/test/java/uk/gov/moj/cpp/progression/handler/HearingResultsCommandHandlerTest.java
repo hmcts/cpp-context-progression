@@ -11,6 +11,7 @@ import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelp
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.NextHearing;
@@ -87,7 +88,7 @@ public class HearingResultsCommandHandlerTest {
     public void shouldProcessHearingResults() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
-        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).build();
+        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).withAdjournmentReason("AdjournmentReason").build();
         final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build());
 
         final HearingResult hearingResult = createCommandPayload(hearingId, caseId, utcClock.now().plusDays(1), nextHearing, hearingDays);
@@ -122,7 +123,7 @@ public class HearingResultsCommandHandlerTest {
     public void shouldProcessHearingResultsWithNextHearingsEventsWhenEarliestNextHearingDateIsNotInFutureAndSingleDayHearing() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
-        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).build();
+        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).withAdjournmentReason("AdjournmentReason").build();
         final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build());
 
         final HearingResult hearingResult = createCommandPayload(hearingId, caseId, utcClock.now(), nextHearing, hearingDays);
@@ -147,7 +148,7 @@ public class HearingResultsCommandHandlerTest {
     public void shouldProcessHearingResultsWithoutNextHearingsEventsWhenEarliestNextHearingDateIsNotInFutureAndMultiDayHearing() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
-        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).build();
+        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).withAdjournmentReason("AdjournmentReason").build();
         final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build(),
                 HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(2)).build());
 
@@ -174,7 +175,7 @@ public class HearingResultsCommandHandlerTest {
     public void shouldProcessHearingResultsAndGetNextHearingsRequestedEventsWhenPayloadHasNextHearingPresentWithoutListedStartDateTimeAndHearingDaysPresent() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
-        final NextHearing nextHearing = NextHearing.nextHearing().build();
+        final NextHearing nextHearing = NextHearing.nextHearing().withAdjournmentReason("AdjournmentReason").build();
         final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build());
 
         final HearingResult hearingResult = createCommandPayload(hearingId, caseId, ZonedDateTime.now().plusDays(1), nextHearing, hearingDays);
@@ -207,7 +208,7 @@ public class HearingResultsCommandHandlerTest {
     public void shouldProcessHearingResultsAndGetNextHearingsRequestedEventsWhenPayloadHasNextHearingPresentWithoutListedStartDateTimeAndHearingDaysAbsent() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
-        final NextHearing nextHearing = NextHearing.nextHearing().build();
+        final NextHearing nextHearing = NextHearing.nextHearing().withAdjournmentReason("AdjournmentReason").build();
 
         final HearingResult hearingResult = createCommandPayload(hearingId, caseId, ZonedDateTime.now().plusDays(1), nextHearing, ImmutableList.of());
 
@@ -239,7 +240,7 @@ public class HearingResultsCommandHandlerTest {
     public void shouldProcessHearingResultsWithNextHearingsEventsWhenEarliestNextHearingDateIsInFuture() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
-        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).build();
+        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).withAdjournmentReason("AdjournmentReason").build();
         final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build());
 
         final HearingResult hearingResult = createCommandPayload(hearingId, caseId, ZonedDateTime.now().plusDays(1), nextHearing, hearingDays);
@@ -272,7 +273,7 @@ public class HearingResultsCommandHandlerTest {
     public void shouldProcessHearingResultsAndShouldNotGenerateNextHearingRequestedEventWhenNextHearingIsWithInMultiDaysHearing() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
-        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now().plusDays(1)).build();
+        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now().plusDays(1)).withAdjournmentReason("AdjournmentReason").build();
         final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build(),
                 HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(2)).build());
 
@@ -375,15 +376,24 @@ public class HearingResultsCommandHandlerTest {
         assertThat(hearingResultedEvent.metadata().name(), is("progression.event.hearing-resulted"));
         assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getString("id"), is(hearingId.toString()));
         assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getString("id"), is(caseId.toString()));
+        assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournDate"), is("-999999999-01-01"));
+        assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournedHearingType"), is("AdjournmentReason"));
+
 
         final JsonEnvelope listingStatusChangedEvent = events.get(1);
         assertThat(listingStatusChangedEvent.metadata().name(), is("progression.event.prosecutionCase-defendant-listing-status-changed"));
         assertThat(listingStatusChangedEvent.payloadAsJsonObject().getJsonObject("hearing").getString("id"), is(hearingId.toString()));
+        assertThat(listingStatusChangedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournDate"), is("-999999999-01-01"));
+        assertThat(listingStatusChangedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournedHearingType"), is("AdjournmentReason"));
+
 
         final JsonEnvelope prosecutionCaseResultedEvent = events.get(2);
         assertThat(prosecutionCaseResultedEvent.metadata().name(), is("progression.event.prosecution-cases-resulted-v2"));
         assertThat(prosecutionCaseResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getString("id"), is(hearingId.toString()));
         assertThat(prosecutionCaseResultedEvent.payloadAsJsonObject().getString("hearingDay"), is(LocalDate.now().toString()));
+        assertThat(prosecutionCaseResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournDate"), is("-999999999-01-01"));
+        assertThat(prosecutionCaseResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournedHearingType"), is("AdjournmentReason"));
+
     }
 
     private HearingResult createCommandPayload(final UUID hearingId, final UUID caseId, final ZonedDateTime earliestNextHearingDate, final NextHearing nextHearing, List<HearingDay> hearingDays) {
@@ -400,12 +410,15 @@ public class HearingResultsCommandHandlerTest {
                                                         .withCategory(JudicialResultCategory.INTERMEDIARY)
                                                         .withIsUnscheduled(true)
                                                         .withNextHearing(nextHearing)
+                                                        .withIsAdjournmentResult(true)
+                                                        .withOrderedDate(LocalDate.MIN)
                                                         .build()))
                                                 .build()))
                                         .build()))
                                 .build()))
                         .withEarliestNextHearingDate(earliestNextHearingDate)
                         .withHearingDays(hearingDays)
+                        .withType(HearingType.hearingType().withDescription("description").build())
                         .build())
                 .withHearingDay(LocalDate.now())
                 .build();
@@ -424,7 +437,11 @@ public class HearingResultsCommandHandlerTest {
                                                         .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
                                                                 .withCategory(JudicialResultCategory.INTERMEDIARY)
                                                                 .withIsUnscheduled(true)
-                                                                .withNextHearing(NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).build())
+                                                                .withNextHearing(NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now())
+                                                                        .withAdjournmentReason("AdjournmentReason")
+                                                                        .build())
+                                                                .withIsAdjournmentResult(true)
+                                                                .withOrderedDate(LocalDate.MIN)
                                                                 .build()))
                                                         .build(),
                                                 Offence.offence()
@@ -432,7 +449,10 @@ public class HearingResultsCommandHandlerTest {
                                                         .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
                                                                 .withCategory(JudicialResultCategory.INTERMEDIARY)
                                                                 .withIsUnscheduled(true)
-                                                                .withNextHearing(NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now().plusDays(1)).build())
+                                                                .withNextHearing(NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now().plusDays(1))
+                                                                        .withAdjournmentReason("AdjournmentReason")
+                                                                        .build())
+                                                                .withIsAdjournmentResult(false)
                                                                 .build()))
                                                         .build()))
                                         .build()))
@@ -440,6 +460,7 @@ public class HearingResultsCommandHandlerTest {
                         .withEarliestNextHearingDate(ZonedDateTime.now().plusDays(1))
                         .withHearingDays(Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build(),
                                 HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(2)).build()))
+                        .withType(HearingType.hearingType().withDescription("description").build())
                         .build())
                 .withHearingDay(LocalDate.now())
                 .build();

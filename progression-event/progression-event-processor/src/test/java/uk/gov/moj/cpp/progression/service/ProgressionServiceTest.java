@@ -54,6 +54,7 @@ import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffencesToRemove;
@@ -1144,8 +1145,11 @@ public class ProgressionServiceTest {
                 .add("oucodeL3Name", "Lavender Hill Magistrates Court")
                 .add("address1", address1)
                 .add("oucode", oucode)
+                .add("lja", "ljaCode")
                 .build();
         when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(LjaDetails.ljaDetails().withLjaCode("nationalCourtCode")
+                .withLjaName("name").withWelshLjaName("welshName").build());
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(randomUUID())
                 .withHearingDays(asList(HearingDay.hearingDay()
@@ -1162,6 +1166,9 @@ public class ProgressionServiceTest {
         assertThat(hearing.getCourtCentre().getAddress().getAddress4(), is(EMPTY));
         assertThat(hearing.getCourtCentre().getAddress().getAddress5(), is(EMPTY));
         assertThat(hearing.getCourtCentre().getAddress().getPostcode(), nullValue());
+        assertThat(hearing.getCourtCentre().getLja().getLjaCode(), is("nationalCourtCode"));
+        assertThat(hearing.getCourtCentre().getLja().getLjaName(), is("name"));
+        assertThat(hearing.getCourtCentre().getLja().getWelshLjaName(), is("welshName"));
     }
 
     private ProsecutionCase buildProsecutionCasesWithTwoDefendantsOffences(UUID caseId, UUID defendant1, UUID defendant2, UUID defendant1sOffence1, UUID defendant1sOffence2, UUID defendant2sOffence1, UUID defendant2sOffence2, boolean youth) {

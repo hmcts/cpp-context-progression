@@ -115,6 +115,7 @@
         },
         "maxpenaltypoints": 891,
         "minpenaltypoints": -17,
+        "maxPenalty": "Max Penalty",
         "seatbeltoffence": {
           "code": "ABCDEFGHIJKLMNOPQ",
           "description": "ABCDE"
