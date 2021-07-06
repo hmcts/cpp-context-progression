@@ -570,7 +570,8 @@ public class CourtExtractTransformer {
 
         if (isNotEmpty(defendantOffences)) {
             LOGGER.info("Defendant {} aggregated offences: {}", defendantId, defendantOffences.size());
-            offences.addAll(transformOffence(defendantOffences));
+            final List<UUID> hearingIds = hearingsList.stream().map(Hearings::getId).collect(toList());
+            offences.addAll(transformOffence(defendantOffences, hearingIds));
         }
         return offences;
     }
@@ -604,7 +605,7 @@ public class CourtExtractTransformer {
         return PRESENT_BY_VIDEO_DEFAULT;
     }
 
-    private List<uk.gov.justice.progression.courts.exract.Offences> transformOffence(final List<Offences> offences) {
+    private List<uk.gov.justice.progression.courts.exract.Offences> transformOffence(final List<Offences> offences, final List<UUID> hearingIds) {
 
         return offences.stream().map(o -> uk.gov.justice.progression.courts.exract.Offences.offences()
                 .withId(o.getId())
@@ -620,7 +621,7 @@ public class CourtExtractTransformer {
                 .withOffenceCode(o.getOffenceCode())
                 .withOffenceTitle(o.getOffenceTitle())
                 .withOffenceTitleWelsh(o.getOffenceTitleWelsh())
-                .withResults(transformResults(filterOutResultDefinitionsNotToBeShownInCourtExtract(o)))
+                .withResults(transformResults(filterOutResultDefinitionsNotToBeShownInCourtExtract(o, hearingIds)))
                 .withNotifiedPlea(o.getNotifiedPlea())
                 .withWording(o.getWording())
                 .withPleas(o.getPleas())
@@ -630,9 +631,12 @@ public class CourtExtractTransformer {
         ).collect(toList());
     }
 
-    private List<JudicialResult> filterOutResultDefinitionsNotToBeShownInCourtExtract(final Offences o) {
+    private List<JudicialResult> filterOutResultDefinitionsNotToBeShownInCourtExtract(final Offences o, final List<UUID> hearingIds) {
         return isNotEmpty(o.getJudicialResults()) ?
-                o.getJudicialResults().stream().filter(jr -> nonNull(jr.getIsAvailableForCourtExtract()) && jr.getIsAvailableForCourtExtract()).collect(toList())
+                o.getJudicialResults().stream()
+                        .filter(jr -> nonNull(jr.getIsAvailableForCourtExtract()) && jr.getIsAvailableForCourtExtract() &&
+                                hearingIds.contains(jr.getOrderedHearingId()))
+                        .collect(toList())
                 : o.getJudicialResults();
     }
 

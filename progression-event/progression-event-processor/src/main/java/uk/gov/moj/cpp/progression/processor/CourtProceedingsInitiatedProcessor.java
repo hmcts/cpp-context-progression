@@ -152,7 +152,7 @@ public class CourtProceedingsInitiatedProcessor {
             if (referenceDataOffencesJsonObjectOptional.isPresent()) {
                 final Map<String, JsonObject> offenceCodeMap = referenceDataOffencesJsonObjectOptional.get().stream().collect(Collectors.toMap(offenceKey, Function.identity()));
                 final JsonObject referenceDataOffenceInfo = offenceCodeMap.get(offence.getOffenceCode());
-                if(nonNull(referenceDataOffenceInfo)){
+                if (nonNull(referenceDataOffenceInfo)) {
                     builder.withEndorsableFlag(referenceDataOffenceInfo.getBoolean(ENDORSABLE_FLAG, false));
                 }
                 if (nonNull(referenceDataOffenceInfo) && equalsIgnoreCase(referenceDataOffenceInfo.getString("reportRestrictResultCode", StringUtils.EMPTY), SEXUAL_OFFENCE_RR_CODE)) {

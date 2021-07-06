@@ -655,7 +655,7 @@ public class CourtExtractTransformerTest {
                                 .withId(randomUUID())
                                 .withDescription(HEARING_TYPE)
                                 .build())
-                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING1))
+                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING1, HEARING_ID))
                         .withDefendantAttendance(createDefendantAttendance(DEFENDANT_ID))
                         .withDefendantReferralReasons(createDefendantReferralReasons())
                         .withApplicantCounsels(createApplicationCounsels(HEARING1))
@@ -673,7 +673,7 @@ public class CourtExtractTransformerTest {
                                 .withId(randomUUID())
                                 .withDescription(HEARING_TYPE)
                                 .build())
-                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING2))
+                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING2, HEARING_ID_2))
                         .withDefendantReferralReasons(createDefendantReferralReasons())
                         .withApplicantCounsels(createApplicationCounsels(HEARING2))
                         .withRespondentCounsels(createRespondentCounsels(HEARING2))
@@ -694,7 +694,7 @@ public class CourtExtractTransformerTest {
                                 .withId(randomUUID())
                                 .withDescription(HEARING_TYPE)
                                 .build())
-                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING1))
+                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING1, HEARING_ID))
                         .withDefendantAttendance(createDefendantAttendance(DEFENDANT_ID))
                         .withDefendantReferralReasons(createDefendantReferralReasons())
                         .withApplicantCounsels(createApplicationCounsels(HEARING1))
@@ -718,7 +718,7 @@ public class CourtExtractTransformerTest {
                                 .withId(randomUUID())
                                 .withDescription(HEARING_TYPE)
                                 .build())
-                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING2))
+                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING2, HEARING_ID_2))
                         .withDefendantReferralReasons(createDefendantReferralReasons())
                         .withApplicantCounsels(createApplicationCounsels(HEARING2))
                         .withRespondentCounsels(createRespondentCounsels(HEARING2))
@@ -738,14 +738,14 @@ public class CourtExtractTransformerTest {
                                 .withId(randomUUID())
                                 .withDescription(HEARING_TYPE)
                                 .build())
-                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING1))
+                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING1, HEARING_ID))
                         .withDefendantAttendance(createDefendantAttendance(DEFENDANT_ID))
                         .withDefendantReferralReasons(createDefendantReferralReasons())
                         .withApplicantCounsels(createApplicationCounsels(HEARING1))
                         .withRespondentCounsels(createRespondentCounsels(HEARING1))
                         .withCompanyRepresentatives(createCompanyRepresentatives(HEARING1))
                         .withProsecutionCounsels(createProsecutionCounsels(HEARING1))
-                        .withDefendantJudicialResults(createDefendantJudicialResults(masterDefendantId))
+                        .withDefendantJudicialResults(createDefendantJudicialResults(masterDefendantId, HEARING_ID))
                         .build(),
                 Hearings.hearings()
                         .withId(HEARING_ID_2)
@@ -756,13 +756,13 @@ public class CourtExtractTransformerTest {
                                 .withId(randomUUID())
                                 .withDescription(HEARING_TYPE)
                                 .build())
-                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING2))
+                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING2, HEARING_ID_2))
                         .withDefendantReferralReasons(createDefendantReferralReasons())
                         .withApplicantCounsels(createApplicationCounsels(HEARING2))
                         .withRespondentCounsels(createRespondentCounsels(HEARING2))
                         .withCompanyRepresentatives(createCompanyRepresentatives(HEARING2))
                         .withProsecutionCounsels(createProsecutionCounsels(HEARING2))
-                        .withDefendantJudicialResults(createDefendantJudicialResults(masterDefendantId))
+                        .withDefendantJudicialResults(createDefendantJudicialResults(masterDefendantId, HEARING_ID_2))
                         .build()
         );
     }
@@ -1006,6 +1006,7 @@ public class CourtExtractTransformerTest {
     private JudicialResult createJudicialResultWithCourtExtractFlag(final boolean isAvailableForCourtExtract, final List<JudicialResultPrompt> prompts, final String resultLabel) {
         return JudicialResult.judicialResult()
                 .withIsAvailableForCourtExtract(isAvailableForCourtExtract)
+                .withOrderedHearingId(HEARING_ID)
                 .withLabel(resultLabel)
                 .withJudicialResultPrompts(prompts)
                 .withDelegatedPowers(createDelegatedPower())
@@ -1040,18 +1041,18 @@ public class CourtExtractTransformerTest {
     }
 
 
-    private List<Defendants> createDefendants(final List<UUID> defendantIdList, final String hearing) {
-        return defendantIdList.stream().map(id -> createDefendant(id, hearing)).collect(toList());
+    private List<Defendants> createDefendants(final List<UUID> defendantIdList, final String hearing, final UUID hearingId) {
+        return defendantIdList.stream().map(id -> createDefendant(id, hearing, hearingId)).collect(toList());
     }
 
-    private Defendants createDefendant(final UUID defendantId, final String hearing) {
+    private Defendants createDefendant(final UUID defendantId, final String hearing, final UUID hearingId) {
         return Defendants.defendants()
                 .withId(defendantId)
                 .withAddress(createAddress())
                 .withDateOfBirth(DOB)
                 .withAge(DEFENDANT_AGE)
-                .withJudicialResults(createResults())
-                .withOffences(createOffence(OFFENCE_ID))
+                .withJudicialResults(createResults(hearingId))
+                .withOffences(createOffence(OFFENCE_ID, hearingId))
                 .withDefenceOrganisation(createDefenceOrganisation(hearing))
                 .withCourtApplications(asList(createCourtApplications()))
                 .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
@@ -1075,12 +1076,12 @@ public class CourtExtractTransformerTest {
 
     }
 
-    private List<Offences> createOffence(final UUID offenceId) {
+    private List<Offences> createOffence(final UUID offenceId, final UUID hearingId) {
         return asList(
                 Offences.offences()
                         .withId(offenceId)
                         .withConvictionDate(CONVICTION_DATE)
-                        .withJudicialResults(createResults())
+                        .withJudicialResults(createResults(hearingId))
                         .withPleas(createPlea())
                         .withIndicatedPlea(createIndicatedPlea())
                         .withAllocationDecision(createAllocationDecision())
@@ -1107,20 +1108,21 @@ public class CourtExtractTransformerTest {
                 .build();
     }
 
-    private List<DefendantJudicialResult> createDefendantJudicialResults(final UUID masterDefendantId) {
+    private List<DefendantJudicialResult> createDefendantJudicialResults(final UUID masterDefendantId, final UUID hearingId) {
         return asList(
                 DefendantJudicialResult.defendantJudicialResult()
-                        .withJudicialResult(createJudicialResult())
+                        .withJudicialResult(createJudicialResult(hearingId))
                         .withMasterDefendantId(masterDefendantId)
                         .build()
         );
     }
 
-    private List<JudicialResult> createResults() {
+    private List<JudicialResult> createResults(final UUID hearingId) {
         return asList(
                 JudicialResult.judicialResult()
                         .withIsAvailableForCourtExtract(true)
                         .withLabel(LABEL)
+                        .withOrderedHearingId(hearingId)
                         .withJudicialResultPrompts(createPrompts())
                         .withDelegatedPowers(createDelegatedPower())
                         .withResultText("resultText")
@@ -1129,11 +1131,12 @@ public class CourtExtractTransformerTest {
         );
     }
 
-    private JudicialResult createJudicialResult() {
+    private JudicialResult createJudicialResult(final UUID hearingId) {
         return JudicialResult.judicialResult()
                 .withIsAvailableForCourtExtract(true)
                 .withLabel(LABEL)
                 .withJudicialResultPrompts(createPrompts())
+                .withOrderedHearingId(hearingId)
                 .withDelegatedPowers(createDelegatedPower())
                 .withResultText("resultText")
                 .build();
@@ -1333,7 +1336,7 @@ public class CourtExtractTransformerTest {
                 .withOutcome("Granted")
                 .withOutcomeDate(OUTCOME_DATE)
                 .withRespondents(createRespondents())
-                .withJudicialResults(createResults())
+                .withJudicialResults(createResults(HEARING_ID))
                 .build();
     }
 
