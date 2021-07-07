@@ -74,6 +74,14 @@ public class ProsecutionCaseDefendantUpdatedEventListenerTest {
     @Mock
     private SearchProsecutionCase searchCase;
 
+    private final UUID prosecutionCaseId = randomUUID();
+    private final UUID defendantId = randomUUID();
+    private final UUID masterDefendantId = randomUUID();
+    private final UUID policeBailStatusId = randomUUID();
+    private final String policeBailStatusDesc = "Remanded into Custody";
+    private final String policeBailConditions = "Police bail condition explanation";
+    private final String hearingLanguage = "WELSH";
+
     @Before
     public void setUp() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -82,18 +90,11 @@ public class ProsecutionCaseDefendantUpdatedEventListenerTest {
 
     @Test
     public void shouldProcessProsecutionCaseDefendantUpdated() {
-        final UUID prosecutionCaseId = randomUUID();
-        final UUID defendantId = randomUUID();
-        final UUID masterDefendantId = randomUUID();
-        final UUID policeBailStatusId = randomUUID();
-        final String policeBailStatusDesc = "Remanded into Custody";
-        final String policeBailConditions = "Police bail condition explanation";
-
         final ProsecutionCase prosecutionCase = getProsecutionCase(prosecutionCaseId, defendantId, masterDefendantId);
-
         final String eventPayload = FileUtil.getPayload("json/prosecution-case-defendant-updated.json")
                 .replace("PROSECUTION_CASE_ID", prosecutionCaseId.toString())
                 .replace("DEFENDANT_ID", defendantId.toString())
+                .replace("HEARING_LANGUAGE_NEEDS", hearingLanguage)
                 .replace("POLICE_BAIL_STATUS_ID", policeBailStatusId.toString())
                 .replace("POLICE_BAIL_STATUS_DESC", policeBailStatusDesc)
                 .replace("POLICE_BAIL_CONDITIONS", policeBailConditions);
@@ -121,9 +122,11 @@ public class ProsecutionCaseDefendantUpdatedEventListenerTest {
         assertThat(defendantProperties.getJsonObject(0).getJsonObject("personDefendant").getString("policeBailConditions"), is(policeBailConditions));
 
         final JsonObject policeBailStatusJsonObject = defendantProperties.getJsonObject(0).getJsonObject("personDefendant").getJsonObject("policeBailStatus");
+        final JsonObject personDetailsJsonObject = defendantProperties.getJsonObject(0).getJsonObject("personDefendant").getJsonObject("personDetails");
 
         assertThat(policeBailStatusJsonObject.getString("id"), is(policeBailStatusId.toString()));
         assertThat(policeBailStatusJsonObject.getString("description"), is(policeBailStatusDesc));
+        assertThat(personDetailsJsonObject.getString("hearingLanguageNeeds"), is(hearingLanguage));
 
         assertThat(defendantProperties.getJsonObject(0).getString("id"), is(defendantId.toString()));
         assertThat(defendantProperties.getJsonObject(0).getString("masterDefendantId"), is(masterDefendantId.toString()));
@@ -132,14 +135,7 @@ public class ProsecutionCaseDefendantUpdatedEventListenerTest {
 
     @Test
     public void shouldProcessProsecutionCaseUpdated() {
-        final UUID prosecutionCaseId = randomUUID();
-        final UUID defendantId = randomUUID();
-        final UUID policeBailStatusId = randomUUID();
-        final String policeBailStatusDesc = "Remanded into Custody";
-        final String policeBailConditions = "Police bail condition explanation";
-
         final ProsecutionCase prosecutionCase = getProsecutionCase(prosecutionCaseId, defendantId, defendantId);
-
         final String eventPayload = FileUtil.getPayload("json/hearing-resulted-case-updated.json")
                 .replaceAll("PROSECUTION_CASE_ID", prosecutionCaseId.toString())
                 .replaceAll("DEFENDANT_ID", defendantId.toString())

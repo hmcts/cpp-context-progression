@@ -216,6 +216,7 @@ public class CoreTestTemplates {
                 .withDateOfBirth((PAST_LOCAL_DATE.next()))
                 .withDisabilityStatus((STRING.next()))
                 .withDocumentationLanguageNeeds((args.hearingLanguage == WELSH ? HearingLanguage.WELSH : HearingLanguage.ENGLISH))
+                .withHearingLanguageNeeds((args.hearingLanguage == WELSH ? HearingLanguage.WELSH : HearingLanguage.ENGLISH))
                 .withEthnicity(Ethnicity.ethnicity()
                         .withSelfDefinedEthnicityId(randomUUID())
                         .withSelfDefinedEthnicityDescription(STRING.next())

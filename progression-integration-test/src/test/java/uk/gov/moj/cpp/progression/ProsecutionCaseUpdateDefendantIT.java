@@ -163,6 +163,17 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
 
     }
 
+    @Test
+    public void shouldUpdateDefendantDetailsWithHearingLanguageNeeds() throws Exception {
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.defendants[0].id", is(defendantId)))));
 
+        helper.updateDefendantWithHearingLanguageNeeds("ENGLISH");
+        helper.verifyInActiveMQ();
+
+        final Matcher[] matchers = {withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.hearingLanguageNeeds", is("ENGLISH"))};
+        pollProsecutionCasesProgressionFor(caseId, matchers);
+        helper.verifyInMessagingQueueForDefendentChanged();
+    }
 }
-

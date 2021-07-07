@@ -241,6 +241,7 @@ public class DefendantUpdateDifferenceCalculator {
                 .withAdditionalNationalityDescription(newValue(personFunction.andThen(Person::getAdditionalNationalityDescription)))
                 .withDisabilityStatus(personDetails.getDisabilityStatus())
                 .withDocumentationLanguageNeeds(personDetails.getDocumentationLanguageNeeds())
+                .withHearingLanguageNeeds(personDetails.getHearingLanguageNeeds())
                 .withEthnicity(personDetails.getEthnicity())
                 .withOccupation(personDetails.getOccupation())
                 .withOccupationCode(personDetails.getOccupationCode())

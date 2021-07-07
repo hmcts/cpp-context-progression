@@ -102,6 +102,7 @@
         "dateOfBirth":"2010-01-01",
         "disabilityStatus":"a",
         "documentationLanguageNeeds":"WELSH",
+        "hearingLanguageNeeds":"HEARING_LANGUAGE_NEEDS",
         "firstName":"Harry",
         "gender":"MALE",
         "interpreterLanguageNeeds":"Welsh",

@@ -63,6 +63,17 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         updateDefendantWithCustody(jsonString);
     }
 
+    public void updateDefendantWithHearingLanguageNeeds(final String hearingLanguage) {
+        final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
+        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
+        jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("personDetails").put("hearingLanguageNeeds", hearingLanguage);
+
+        request = jsonObjectPayload.toString();
+        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+    }
+
     public void updateDefendantWithPoliceBailInfo(final String policeBailStatusId, final String policeBailStatusDesc, final String policeBailConditions) {
         final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
@@ -111,12 +122,6 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         jsonObjectPayload.getJSONObject("defendant").put("id",defendantId);
             request = jsonObjectPayload.toString();
             makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
-    }
-
-
-    public void updateSameDefendant() {
-        final String jsonString = getPayload(TEMPLATE_UNCHANGED_DEFENDANT_PAYLOAD);
-        updateDefendant(jsonString);
     }
 
     /**
