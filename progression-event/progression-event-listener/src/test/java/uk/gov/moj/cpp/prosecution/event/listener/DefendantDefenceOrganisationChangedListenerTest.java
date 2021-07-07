@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
@@ -30,9 +30,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearin
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -40,11 +37,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantDefenceOrganisationChangedListenerTest {
@@ -189,6 +193,88 @@ public class DefendantDefenceOrganisationChangedListenerTest {
         assertThat(defendantFromHearingArgumentCaptor.getAssociatedDefenceOrganisation().getFundingType(), equalTo(FundingType.REPRESENTATION_ORDER));
         assertThat(defendantFromHearingArgumentCaptor.getMasterDefendantId(), equalTo(masterDefendantId));
 
+    }
+
+    @Test
+    public void shouldHandleDefendantDefenceOrganisationChangedForApplication() {
+
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, DefendantDefenceOrganisationChanged.class)).thenReturn(defendantDefenceOrganisationChanged);
+        when(defendantDefenceOrganisationChanged.getProsecutionCaseId()).thenReturn(prosecutionCaseId);
+        when(defendantDefenceOrganisationChanged.getDefendantId()).thenReturn(defendantId);
+        final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
+                        .withLaaContractNumber("LAA123")
+                        .withOrganisation(Organisation.organisation()
+                                .withName("Org1")
+                                .build())
+                        .build())
+                .withApplicationReference("ABC1234")
+                .withAssociationStartDate(LocalDate.now())
+                .withAssociationEndDate(LocalDate.now().plusYears(1))
+                .withFundingType(FundingType.REPRESENTATION_ORDER)
+                .withIsAssociatedByLAA(true)
+                .build();
+        when(defendantDefenceOrganisationChanged.getAssociatedDefenceOrganisation()).thenReturn(associatedDefenceOrganisation);
+
+        when(envelope.metadata()).thenReturn(metadata);
+
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("payload", Json.createObjectBuilder()
+                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+                                .add("id", defendantId.toString()).build())
+                                .build())
+                        .build()).build();
+
+        final ProsecutionCase prosCase = ProsecutionCase.prosecutionCase()
+                .withDefendants(getDefendants(prosecutionCaseId, defendantId, masterDefendantId, associatedDefenceOrganisation))
+                .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
+                .build();
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .build();
+
+        final List<CaseDefendantHearingEntity> caseDefendantHearingEntityList = new ArrayList<>();
+        final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId, hearingId));
+        caseDefendantHearingEntity.setHearing(hearingEntity);
+        caseDefendantHearingEntityList.add(caseDefendantHearingEntity);
+
+        when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosCase);
+        when(hearingEntity.getPayload()).thenReturn(jsonObject.toString());
+        when(jsonObjectToObjectConverter.convert(jsonObject, Hearing.class)).thenReturn(hearing);
+        when(repository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
+
+        when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
+        when(prosecutionCaseEntity.getCaseId()).thenReturn(prosecutionCaseId);
+        when(objectToJsonObjectConverter.convert(prosCase)).thenReturn(jsonObject);
+        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
+        when(repository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
+        when(caseDefendantHearingRepository.findByDefendantId(defendantId)).thenReturn(caseDefendantHearingEntityList);
+
+        eventListener.processDefendantDefenceOrganisationChanged(envelope);
+        verify(repository).save(argumentCaptor.capture());
+        verify(hearingRepository).save(hearingEntityArgumentCaptor.capture());
+
+
+        final ProsecutionCase prosecutionCase = this.jsonObjectToObjectConverter.convert(jsonFromString(argumentCaptor.getValue().getPayload()), ProsecutionCase.class);
+        assertThat(prosecutionCase.getCaseStatus(), equalTo(CaseStatusEnum.INACTIVE.getDescription()));
+
+        final Defendant defendantFromProsecutionCaseArgumentCaptor = prosecutionCase.getDefendants().get(0);
+
+        assertThat(defendantFromProsecutionCaseArgumentCaptor.getAssociatedDefenceOrganisation().getDefenceOrganisation().getLaaContractNumber(), equalTo("LAA123"));
+        assertThat(defendantFromProsecutionCaseArgumentCaptor.getAssociatedDefenceOrganisation().getApplicationReference(), equalTo("ABC1234"));
+        assertThat(defendantFromProsecutionCaseArgumentCaptor.getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getName(), equalTo("Org1"));
+        assertThat(defendantFromProsecutionCaseArgumentCaptor.getAssociatedDefenceOrganisation().getFundingType(), equalTo(FundingType.REPRESENTATION_ORDER));
+
+        final Hearing resultedHearing = this.jsonObjectToObjectConverter.convert(jsonFromString(hearingEntityArgumentCaptor.getValue().getPayload()), Hearing.class);
+
+        assertThat(resultedHearing.getProsecutionCases(), is(nullValue()));
     }
 
     private List<Defendant> getDefendants(final UUID prosecutionCaseId, final UUID defendantId, final UUID masterDefendantId, final AssociatedDefenceOrganisation associatedDefenceOrganisation) {
