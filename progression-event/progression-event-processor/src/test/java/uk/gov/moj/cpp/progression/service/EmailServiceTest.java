@@ -3,12 +3,12 @@ package uk.gov.moj.cpp.progression.service;
 import static java.lang.String.format;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyListOf;
 import static org.mockito.Mockito.never;
@@ -75,12 +75,21 @@ public class EmailServiceTest {
     private static final UUID DEFENDANT2 = UUID.randomUUID();
     private static final UUID DEFENDANT3 = UUID.randomUUID();
     private static final UUID DEFENDANT4 = UUID.randomUUID();
+    public static final String DEFENDANT_LIST = "defendant_list";
+    public static final String DOCUMENT_TITLE = "DOCUMENT_TITLE";
+    public static final String DOCUMENT_SECTION = "DOCUMENT_SECTION";
 
     @Mock
     private ApplicationParameters applicationParameters;
 
     @Mock
     private NotificationService notificationService;
+
+    @Mock
+    private ReferenceDataService referenceDataService;
+
+    @Mock
+    private DefenceService defenceService;
 
     @InjectMocks
     private EmailService emailService;
@@ -112,17 +121,19 @@ public class EmailServiceTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
                 courtDocumentPayload);
 
-        final Map<UUID, String> defendantAndRelatedOrganisationEmail = new HashMap<>();
+        final Map<Defendants, String> defendantAndRelatedOrganisationEmail = new HashMap<>();
         final String emailAddress1 = "email@abc.com";
-        defendantAndRelatedOrganisationEmail.put(DEFENDANT1, emailAddress1);
+        final String documentSection = "Case Summary";
+        final String documentName = "Smith John 53NP7934321.pdf";
+        defendantAndRelatedOrganisationEmail.put(new Defendants(null, DEFENDANT1, "defendantFirstName1", "defendantLastName1", "organisationName"), emailAddress1);
         when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(TEMPLATE_ID.toString());
         when(applicationParameters.getEndClientHost()).thenReturn("EndClientHost");
 
         final List<EmailChannel> emailChannels = new ArrayList<>();
-        emailChannels.add(emailChannel(emailAddress1,personalisation(DEFENDANT1.toString())));
+        emailChannels.add(emailChannel(emailAddress1, personalisation(DEFENDANT1.toString())));
 
         emailService.sendEmailNotifications(requestMessage, MATERIAL_ID,
-                URN_VALUE, CASE_ID, defendantAndRelatedOrganisationEmail );
+                URN_VALUE, CASE_ID, defendantAndRelatedOrganisationEmail, documentSection, documentName);
 
         verify(notificationService, times(1)).sendEmail(
                 sourceEnvelopeCaptor.capture(),
@@ -138,8 +149,62 @@ public class EmailServiceTest {
         assertThat(emailNotificationsCaptor.getValue().get(0).getSendToAddress(), is("email@abc.com"));
         assertThat(emailNotificationsCaptor.getValue().get(0).getMaterialUrl(), nullValue());
         assertThat(emailNotificationsCaptor.getValue().get(0).getPersonalisation().getAdditionalProperties().get(URN), is(URN_VALUE));
-        final String expectedURL = "EndClientHost".concat(format(URI_TO_MATERIAL,CASE_ID,MATERIAL_ID).concat(DEFENDANT_PATH_PARAM).concat(DEFENDANT1.toString()));
+        final String expectedURL = "EndClientHost".concat(format(URI_TO_MATERIAL, CASE_ID, MATERIAL_ID).concat(DEFENDANT_PATH_PARAM).concat(DEFENDANT1.toString()));
         assertThat(emailNotificationsCaptor.getValue().get(0).getPersonalisation().getAdditionalProperties().get(MATERIAL_SECTIONS_URL), is(expectedURL));
+    }
+
+    @Test
+    public void shouldSendEmailByOrganisationName() {
+        final ObjectMapper mapper = new ObjectMapperProducer().objectMapper();
+        final JsonObject courtDocumentPayload = buildDocumentCategoryWithCaseDocument("0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
+        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
+                courtDocumentPayload);
+        final String documentSection = "Case Summary";
+        final String documentName = "Smith John 53NP7934321.pdf";
+
+        final List<Defendants> defendants = Arrays.asList(
+                new Defendants(ORG1, DEFENDANT1, null, null, "Organisation Name Test"),
+                new Defendants(ORG1, DEFENDANT2, "defendantFirstName2", "defendantLastName2", "organisationName Test")
+        );
+
+
+        final CaseDefendantsWithOrganisation caseDefendantsWithOrg = CaseDefendantsWithOrganisation.caseDefendantsWithOrganisation()
+                .withCaseId(CASE_ID)
+                .withUrn("urn-123456")
+                .withDefendants(defendants)
+                .build();
+        final CaseDefendantsOrganisations caseDefendantsOrganisations = CaseDefendantsOrganisations.caseDefendantsOrganisations().withCaseDefendantOrganisation(caseDefendantsWithOrg).build();
+
+        final List<String> emails = Arrays.asList("email1@abc.com", "email2@abc.com");
+
+        final Map<Defendants, String> defendantAndRelatedOrganisationEmail = new HashMap<>();
+        defendantAndRelatedOrganisationEmail.put(defendants.get(0), emails.get(0));
+        defendantAndRelatedOrganisationEmail.put(defendants.get(1), emails.get(0));
+        when(applicationParameters.getEndClientHost()).thenReturn("EndClientHost");
+        when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(TEMPLATE_ID.toString());
+        when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(any(), eq(CASE_ID.toString()))).thenReturn(caseDefendantsOrganisations);
+
+        emailService.sendEmailNotifications(requestMessage, MATERIAL_ID, URN_VALUE, CASE_ID, defendantAndRelatedOrganisationEmail, documentSection, documentName);
+        verify(notificationService, times(1)).sendEmail(
+                sourceEnvelopeCaptor.capture(),
+                caseIdCaptor.capture(), applicationIdCaptor.capture(),
+                materialIdCaptor.capture(), emailNotificationsCaptor.capture());
+
+        final List<EmailChannel> emailChannels = new ArrayList<>();
+        final String expectedDefendantList1 = "Organisation Name Test, defendantFirstName2 defendantLastName2";
+        final String expectedDefendantList2 = "defendantFirstName2 defendantLastName2";
+
+        emailChannels.add(emailChannel(emails.get(0), personalisation(DEFENDANT1.toString(),expectedDefendantList1,documentName,documentSection)));
+        emailChannels.add(emailChannel(emails.get(1), personalisation(DEFENDANT2.toString(),expectedDefendantList2,documentName,documentSection)));
+
+        assertThat(caseIdCaptor.getValue(), is(CASE_ID));
+        assertThat(applicationIdCaptor.getValue(), Matchers.nullValue());
+        assertThat(materialIdCaptor.getValue(), is(MATERIAL_ID));
+        assertThat(emailNotificationsCaptor.getValue(), notNullValue());
+        assertThat(emailNotificationsCaptor.getValue().size(), is(2));
+
+        containsInAnyOrder(emailChannels, emailNotificationsCaptor.getValue());
     }
 
     @Test
@@ -149,47 +214,57 @@ public class EmailServiceTest {
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
                 courtDocumentPayload);
+        final String documentSection = "Case Summary";
+        final String documentName = "Smith John 53NP7934321.pdf";
 
         final List<Defendants> defendants = Arrays.asList(
-                new Defendants(ORG1, DEFENDANT1), new Defendants(ORG1, DEFENDANT2),
-                new Defendants(ORG2, DEFENDANT3), new Defendants(null, DEFENDANT4)
+                new Defendants(ORG1, DEFENDANT1, "defendantFirstName1", "defendantLastName1", "organisationName"), new Defendants(ORG1, DEFENDANT2, "defendantFirstName2", "defendantLastName2", "organisationName"),
+                new Defendants(ORG2, DEFENDANT3, "defendantFirstName3", "defendantLastName3", "organisationName"), new Defendants(null, DEFENDANT4, "defendantFirstName4", "defendantLastName4", "organisationName")
         );
+
+
         final CaseDefendantsWithOrganisation caseDefendantsWithOrg = CaseDefendantsWithOrganisation.caseDefendantsWithOrganisation()
                 .withCaseId(CASE_ID)
                 .withUrn("urn-123456")
                 .withDefendants(defendants)
                 .build();
+        final CaseDefendantsOrganisations caseDefendantsOrganisations = CaseDefendantsOrganisations.caseDefendantsOrganisations().withCaseDefendantOrganisation(caseDefendantsWithOrg).build();
 
         final List<String> emails = Arrays.asList("email1@abc.com", "email2@abc.com");
 
-        final Map<UUID, String> defendantAndRelatedOrganisationEmail = new HashMap<>();
-        defendantAndRelatedOrganisationEmail.put(DEFENDANT1, emails.get(0));
-        defendantAndRelatedOrganisationEmail.put(DEFENDANT2, emails.get(1));
+        final Map<Defendants, String> defendantAndRelatedOrganisationEmail = new HashMap<>();
+        defendantAndRelatedOrganisationEmail.put(defendants.get(0), emails.get(0));
+        defendantAndRelatedOrganisationEmail.put(defendants.get(1), emails.get(0));
+        defendantAndRelatedOrganisationEmail.put(defendants.get(2), emails.get(1));
+        defendantAndRelatedOrganisationEmail.put(defendants.get(2), emails.get(1));
         when(applicationParameters.getEndClientHost()).thenReturn("EndClientHost");
         when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(TEMPLATE_ID.toString());
+        when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(any(), eq(CASE_ID.toString()))).thenReturn(caseDefendantsOrganisations);
 
-        emailService.sendEmailNotifications(requestMessage,MATERIAL_ID, URN_VALUE, CASE_ID,defendantAndRelatedOrganisationEmail );
+        emailService.sendEmailNotifications(requestMessage, MATERIAL_ID, URN_VALUE, CASE_ID, defendantAndRelatedOrganisationEmail, documentSection, documentName);
         verify(notificationService, times(1)).sendEmail(
                 sourceEnvelopeCaptor.capture(),
                 caseIdCaptor.capture(), applicationIdCaptor.capture(),
                 materialIdCaptor.capture(), emailNotificationsCaptor.capture());
 
         final List<EmailChannel> emailChannels = new ArrayList<>();
-        emailChannels.add(emailChannel(emails.get(0),personalisation(DEFENDANT1.toString())));
-        emailChannels.add(emailChannel(emails.get(1),personalisation(DEFENDANT2.toString())));
+        emailChannels.add(emailChannel(emails.get(0), personalisation(DEFENDANT1.toString())));
+        emailChannels.add(emailChannel(emails.get(1), personalisation(DEFENDANT2.toString())));
 
         assertThat(caseIdCaptor.getValue(), is(CASE_ID));
         assertThat(applicationIdCaptor.getValue(), Matchers.nullValue());
         assertThat(materialIdCaptor.getValue(), is(MATERIAL_ID));
         assertThat(emailNotificationsCaptor.getValue(), notNullValue());
-        assertThat(emailNotificationsCaptor.getValue().size(), is(2));
+        assertThat(emailNotificationsCaptor.getValue().size(), is(3));
 
-        containsInAnyOrder(emailChannels,emailNotificationsCaptor.getValue());
+        containsInAnyOrder(emailChannels, emailNotificationsCaptor.getValue());
 
     }
 
     @Test
     public void shouldSkipNotificationsWhenNoDefendants() {
+        final String documentSection = "Case Summary";
+        final String documentName = "Smith John 53NP7934321.pdf";
         final ObjectMapper mapper = new ObjectMapperProducer().objectMapper();
         final JsonObject courtDocumentPayload = buildDocumentCategoryWith2Documents("0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
@@ -198,11 +273,11 @@ public class EmailServiceTest {
         final List<String> emails = Arrays.asList("email1@abc.com");
 
         final List<EmailChannel> emailChannels = new ArrayList<>();
-        emailChannels.add(emailChannel(emails.get(0),personalisation(DEFENDANT1.toString())));
-        final Map<UUID, String> defendantAndRelatedOrganisationEmail = new HashMap<>();
+        emailChannels.add(emailChannel(emails.get(0), personalisation(DEFENDANT1.toString())));
+        final Map<Defendants, String> defendantAndRelatedOrganisationEmail = new HashMap<>();
 
 
-        emailService.sendEmailNotifications(requestMessage,MATERIAL_ID, URN_VALUE, CASE_ID, defendantAndRelatedOrganisationEmail );
+        emailService.sendEmailNotifications(requestMessage, MATERIAL_ID, URN_VALUE, CASE_ID, defendantAndRelatedOrganisationEmail, documentSection, documentName);
         verify(notificationService, never()).sendEmail(any(), any(), any(), any(), anyListOf(EmailChannel.class));
     }
 
@@ -222,6 +297,18 @@ public class EmailServiceTest {
         return Personalisation.personalisation()
                 .withAdditionalProperty(URN, URN_VALUE)
                 .withAdditionalProperty(MATERIAL_SECTIONS_URL, url)
+                .build();
+    }
+
+    private Personalisation personalisation(final String defendantId,final String defendantList,final String  documentName, final String documentSection) {
+        final String materialLink = format(URI_TO_MATERIAL, CASE_ID, MATERIAL_ID);
+        final String url = materialLink.concat(DEFENDANT_PATH_PARAM).concat(defendantId);
+        return Personalisation.personalisation()
+                .withAdditionalProperty(URN, URN_VALUE)
+                .withAdditionalProperty(MATERIAL_SECTIONS_URL, url)
+                .withAdditionalProperty(DEFENDANT_LIST, defendantList)
+                .withAdditionalProperty(DOCUMENT_TITLE, documentName)
+                .withAdditionalProperty(DOCUMENT_SECTION, documentSection)
                 .build();
     }
 

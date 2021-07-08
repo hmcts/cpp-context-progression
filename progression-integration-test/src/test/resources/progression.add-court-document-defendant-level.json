@@ -5,7 +5,8 @@
       "defendantDocument": {
         "prosecutionCaseId": "%RANDOM_CASE_ID%",
         "defendants": [
-          "%RANDOM_DEFENDANT_ID1%"
+          "%RANDOM_DEFENDANT_ID1%",
+          "%RANDOM_DEFENDANT_ID2%"
         ]
       }
     },
@@ -21,5 +22,6 @@
     ],
     "containsFinancialMeans": true,
     "sendToCps": true
-  }
+  },
+  "isUnbundledDocument": false
 }

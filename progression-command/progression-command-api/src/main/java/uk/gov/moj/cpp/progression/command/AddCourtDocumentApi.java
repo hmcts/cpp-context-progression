@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.command;
 
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -26,6 +27,7 @@ import javax.inject.Inject;
 public class AddCourtDocumentApi {
 
     private static final String IS_CPS_CASE = "isCpsCase";
+    private static final String IS_UNBUNDLED_DOCUMENT = "isUnbundledDocument";
 
     @Inject
     private Enveloper enveloper;
@@ -47,12 +49,17 @@ public class AddCourtDocumentApi {
     public void handle(final JsonEnvelope envelope) {
         JsonObject payload =  envelope.payloadAsJsonObject();
         JsonObject courtDocument = (JsonObject)payload.get("courtDocument");
-        if(courtDocument.get(IS_CPS_CASE) != null ){
+        if(nonNull(courtDocument.get(IS_CPS_CASE))){
             final boolean isCpsCase = courtDocument.getBoolean(IS_CPS_CASE);
-            courtDocument =removeProperty(courtDocument, IS_CPS_CASE);
-            payload = addProperty(payload, "courtDocument", courtDocument);
+            courtDocument = removeProperty(courtDocument, IS_CPS_CASE);
             payload = addProperty(payload, IS_CPS_CASE, isCpsCase);
         }
+        if(nonNull(courtDocument.get(IS_UNBUNDLED_DOCUMENT))){
+            final boolean isUnbundledDocument = courtDocument.getBoolean(IS_UNBUNDLED_DOCUMENT);
+            courtDocument = removeProperty(courtDocument, IS_UNBUNDLED_DOCUMENT);
+            payload = addProperty(payload, IS_UNBUNDLED_DOCUMENT, isUnbundledDocument);
+        }
+        payload = addProperty(payload, "courtDocument", courtDocument);
         final Metadata metadata = metadataFrom(envelope.metadata())
                 .withName("progression.command.add-court-document")
                 .build();

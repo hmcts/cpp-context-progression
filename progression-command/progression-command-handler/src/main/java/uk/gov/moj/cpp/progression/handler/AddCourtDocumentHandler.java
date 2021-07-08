@@ -93,7 +93,8 @@ public class AddCourtDocumentHandler {
 
         final List<String> retrievedUserGroupDetails = usersGroupService.getUserGroupsForUser(addCourtDocumentEnvelope).stream().map(UserGroupDetails::getGroupName).collect(Collectors.toList());
 
-        final Stream<Object> events = courtDocumentAggregate.addCourtDocument(enrichedCourtDocument, retrievedUserGroupDetails, documentTypeAccess.getActionRequired(), addCourtDocumentEnvelope.payload().getMaterialId(), documentTypeAccess.getSection(), addCourtDocumentEnvelope.payload().getIsCpsCase());
+        final Stream<Object> events = courtDocumentAggregate.addCourtDocument(enrichedCourtDocument, retrievedUserGroupDetails, documentTypeAccess.getActionRequired(), addCourtDocumentEnvelope.payload().getMaterialId(), documentTypeAccess.getSection(),
+                addCourtDocumentEnvelope.payload().getIsCpsCase(), addCourtDocumentEnvelope.payload().getIsUnbundledDocument());
 
         eventStream.append(events.map(toEnvelopeWithMetadataFrom(addCourtDocumentEnvelope)));
     }

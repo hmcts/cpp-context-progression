@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -26,6 +27,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.json.JsonValue;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import uk.gov.justice.core.courts.AddCourtDocument;
@@ -218,6 +221,21 @@ public class AddCourtDocumentHandlerTest {
         isCpsCaseHandleWith(null);
     }
 
+    @Test
+    public void shouldPassIsUnbundledDocumentFlagToProcessorWhenFlagIsTrue() throws Exception {
+        isUnbundledDocumentHandleWith(true);
+    }
+
+    @Test
+    public void shouldPassIsUnbundledDocumentFlagToProcessorWhenFlagIsFalse() throws Exception {
+        isUnbundledDocumentHandleWith(false);
+    }
+
+    @Test
+    public void shouldNotPassIsUnbundledDocumentFlagToProcessorWhenFlagNotExist() throws Exception {
+        isUnbundledDocumentHandleWith(null);
+    }
+
     private void isCpsCaseHandleWith(Boolean isCpsCase) throws Exception{
         final AddCourtDocument addCourtDocument = addCourtDocument()
                 .withCourtDocument(buildCourtDocument())
@@ -247,6 +265,43 @@ public class AddCourtDocumentHandlerTest {
         }
 
     }
+
+    private void isUnbundledDocumentHandleWith(final Boolean isUnbundledDocument) throws Exception{
+        final AddCourtDocument addCourtDocument = addCourtDocument()
+                .withCourtDocument(buildCourtDocument())
+                .withIsUnbundledDocument(isUnbundledDocument)
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.add-court-document")
+                .withId(randomUUID())
+                .build();
+        final CourtDocument enrichedCourtDocument = CourtDocument.courtDocument().build();
+        final DocumentTypeAccess documentTypeData = DocumentTypeAccess.documentTypeAccess().withActionRequired(false).build();
+        when(courtDocumentEnricher.enrichWithMaterialUserGroups(any(), any())).thenReturn(enrichedCourtDocument);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(new CourtDocumentAggregate());
+        when(documentTypeAccessProvider.getDocumentTypeAccess(any(), any())).thenReturn(documentTypeData);
+
+        final Envelope<AddCourtDocument> envelope = envelopeFrom(metadata, addCourtDocument);
+        addCourtDocumentHandler.handle(envelope);
+
+        verify(eventStream).append(eventCaptor.capture());
+        List<JsonValue> expectedIsUnbundledDocument = eventCaptor.getValue().collect(Collectors.toList())
+                .stream()
+                .map(t -> (JsonObject)t.payload()).map(t-> t.get("isUnbundledDocument"))
+                .filter(t-> nonNull(t))
+                .collect(Collectors.toList());
+
+        assertThat(expectedIsUnbundledDocument.isEmpty(), is(isUnbundledDocument == null));
+
+        if(CollectionUtils.isNotEmpty(expectedIsUnbundledDocument)){
+            assertThat(expectedIsUnbundledDocument.get(0), is(isUnbundledDocument ? JsonValue.TRUE : JsonValue.FALSE ));
+        }
+
+    }
+
     private JsonObject buildCourtDocumentWithoutDocumentType() {
 
         final JsonObject documentCategory =

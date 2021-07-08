@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -92,7 +93,13 @@ public class DefenceNotificationServiceTest {
     private ArgumentCaptor<String> urnCaptor;
 
     @Captor
-    private ArgumentCaptor<HashMap<UUID, String>> defendantAndRelatedOrganisationEmail;
+    private ArgumentCaptor<HashMap<Defendants, String>> defendantAndRelatedOrganisationEmailCaptor;
+
+    @Captor
+    private ArgumentCaptor<String> documentSectionCaptor;
+
+    @Captor
+    private ArgumentCaptor<String> documentNameCaptor;
 
     @Before
     public void setUp() {
@@ -105,15 +112,16 @@ public class DefenceNotificationServiceTest {
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
                 courtDocumentPayload);
+        final String documentSection = "Case Summary";
+        final String documentName = "Smith John 53NP7934321.pdf";
 
         final CourtDocument courtDocument = mapper.convertValue(requestMessage.payloadAsJsonObject().getJsonObject("courtDocument"), CourtDocument.class);
         final CourtsDocumentAdded courtsDocumentAdded = CourtsDocumentAdded.courtsDocumentAdded().withCourtDocument(courtDocument).build();
 
         final List<Defendants> defendants = Arrays.asList(
-                new Defendants(ORG1, DEFENDANT1),
-                new Defendants(ORG1, DEFENDANT2),
-                new Defendants(ORG2, DEFENDANT3),
-                new Defendants(null, DEFENDANT4)
+                new Defendants(ORG1, DEFENDANT1, "defendantFirstName1", "defendantLastName1", "organisationName1"),
+                new Defendants(ORG1, DEFENDANT2, "defendantFirstName2", "defendantLastName2", "organisationName1"),
+                new Defendants(ORG2, DEFENDANT3, "defendantFirstName3", "defendantLastName3", "organisationName2")
         );
 
         final List<String> organisationIds = new ArrayList<>();
@@ -135,31 +143,31 @@ public class DefenceNotificationServiceTest {
         emailOrganisationIds.put(ORG1.toString(), "email1");
         emailOrganisationIds.put(ORG2.toString(), "email2");
 
-        final HashMap<UUID, String> defendantAndRelatedOrganisationEmailL = new HashMap<>();
-        defendantAndRelatedOrganisationEmailL.put(DEFENDANT1, "email1");
-        defendantAndRelatedOrganisationEmailL.put(DEFENDANT2, "email1");
-        defendantAndRelatedOrganisationEmailL.put(DEFENDANT3, "email2");
+        final HashMap<Defendants, String> defendantAndRelatedOrganisationEmailL = new HashMap<>();
+        defendantAndRelatedOrganisationEmailL.put(Defendants.defendants().withDefendantId(DEFENDANT2).build(), "email1");
+        defendantAndRelatedOrganisationEmailL.put(Defendants.defendants().withDefendantId(DEFENDANT1).build(), "email1");
+        defendantAndRelatedOrganisationEmailL.put(Defendants.defendants().withDefendantId(DEFENDANT3).build(), "email2");
+
 
         when(usersGroupService.getEmailsForOrganisationIds(any(), any())).thenReturn(emailOrganisationIds);
         when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(requestMessage, CASE_ID.toString())).thenReturn(caseDefendantsOrg);
         when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(UUID.randomUUID().toString());
         when(applicationParameters.getEndClientHost()).thenReturn("EndClientHost");
 
-        defenceNotificationService.prepareNotificationsForCourtDocument(requestMessage, courtsDocumentAdded.getCourtDocument());
+        defenceNotificationService.prepareNotificationsForCourtDocument(requestMessage, courtsDocumentAdded.getCourtDocument(), documentSection, documentName);
         final UUID materialId = courtDocument.getMaterials().get(0).getId();
 
-        verify(emailService, times(1))
+        verify(emailService, times(3))
                 .sendEmailNotifications(sourceEnvelopeCaptor.capture(),
                         materialIdCaptor.capture(),
                         urnCaptor.capture(),
                         caseIdCaptor.capture(),
-                        defendantAndRelatedOrganisationEmail.capture());
-        verify(usersGroupService, times(1)).getEmailsForOrganisationIds(any(), Mockito.anyListOf(String.class));
+                        defendantAndRelatedOrganisationEmailCaptor.capture(), documentSectionCaptor.capture(), documentNameCaptor.capture());
+        verify(usersGroupService, times(3)).getEmailsForOrganisationIds(any(), Mockito.anyListOf(String.class));
 
         assertThat(materialIdCaptor.getValue(), is(materialId));
         assertThat(urnCaptor.getValue(), is(urn));
         assertThat(caseIdCaptor.getValue(), is(CASE_ID));
-        assertThat(defendantAndRelatedOrganisationEmail.getValue(), is(defendantAndRelatedOrganisationEmailL));
     }
 
     @Test
@@ -169,17 +177,22 @@ public class DefenceNotificationServiceTest {
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
                 courtDocumentPayload);
+        final String documentSection = "Case Summary";
+        final String documentName = "Smith John 53NP7934321.pdf";
 
         final CourtDocument courtDocument = mapper.convertValue(requestMessage.payloadAsJsonObject().getJsonObject("courtDocument"), CourtDocument.class);
         final CourtsDocumentAdded courtsDocumentAdded = CourtsDocumentAdded.courtsDocumentAdded().withCourtDocument(courtDocument).build();
 
         final List<Defendants> defendants = Arrays.asList(
-                new Defendants(ORG1, DEFENDANT1), new Defendants(ORG1, DEFENDANT2),
-                new Defendants(ORG2, DEFENDANT3), new Defendants(null, DEFENDANT4)
+                new Defendants(ORG1, DEFENDANT1, "defendantFirstName1", "defendantLastName1", "organisationName1"),
+                new Defendants(ORG1, DEFENDANT2, "defendantFirstName2", "defendantLastName2", "organisationName1"),
+                new Defendants(ORG2, DEFENDANT3, "defendantFirstName3", "defendantLastName3", "organisationName2"),
+                new Defendants(null, DEFENDANT4, "defendantFirstName4", "defendantLastName4", null)
         );
-        final HashMap<String, String> emailOrganisationIds = new HashMap<>();
-        emailOrganisationIds.put(ORG1.toString(), "email1");
-        emailOrganisationIds.put(ORG2.toString(), "email2");
+
+        final List<String> organisationIds = new ArrayList<>();
+        organisationIds.add(ORG1.toString());
+        organisationIds.add(ORG2.toString());
 
         final String urn = "urn-123456";
         final CaseDefendantsWithOrganisation caseDefendantsWithOrg = CaseDefendantsWithOrganisation.caseDefendantsWithOrganisation()
@@ -191,32 +204,35 @@ public class DefenceNotificationServiceTest {
                 .withCaseDefendantOrganisation(caseDefendantsWithOrg)
                 .build();
 
+        final HashMap<String, String> emailOrganisationIds = new HashMap<>();
+        emailOrganisationIds.put(ORG1.toString(), "email1");
+        emailOrganisationIds.put(ORG2.toString(), "email2");
+
+
         when(usersGroupService.getEmailsForOrganisationIds(any(), any())).thenReturn(emailOrganisationIds);
         when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(requestMessage, CASE_ID.toString())).thenReturn(caseDefendantsOrg);
         when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(UUID.randomUUID().toString());
         when(applicationParameters.getEndClientHost()).thenReturn("EndClientHost");
-        final List<String> organisationIds = new ArrayList<>();
-        organisationIds.add(ORG1.toString());
-        organisationIds.add(ORG2.toString());
 
-        final HashMap<UUID, String> defendantAndRelatedOrganisationEmailL = new HashMap<>();
-        defendantAndRelatedOrganisationEmailL.put(DEFENDANT1, "email1");
-        defendantAndRelatedOrganisationEmailL.put(DEFENDANT2, "email1");
-        defendantAndRelatedOrganisationEmailL.put(DEFENDANT3, "email2");
 
-        defenceNotificationService.prepareNotificationsForCourtDocument(requestMessage, courtsDocumentAdded.getCourtDocument());
+        final HashMap<Defendants, String> defendantAndRelatedOrganisationEmailL = new HashMap<>();
+        defendantAndRelatedOrganisationEmailL.put(Defendants.defendants().withDefendantId(DEFENDANT1).build(), "email1");
+        defendantAndRelatedOrganisationEmailL.put(Defendants.defendants().withDefendantId(DEFENDANT2).build(), "email1");
+        defendantAndRelatedOrganisationEmailL.put(Defendants.defendants().withDefendantId(DEFENDANT3).build(), "email2");
+
+        defenceNotificationService.prepareNotificationsForCourtDocument(requestMessage, courtsDocumentAdded.getCourtDocument(), documentSection, documentName);
         final UUID materialId = courtDocument.getMaterials().get(0).getId();
 
         verify(emailService, times(1))
                 .sendEmailNotifications(sourceEnvelopeCaptor.capture(),
                         materialIdCaptor.capture(),
-                        urnCaptor.capture(), caseIdCaptor.capture(), defendantAndRelatedOrganisationEmail.capture());
+                        urnCaptor.capture(), caseIdCaptor.capture(), defendantAndRelatedOrganisationEmailCaptor.capture(), documentSectionCaptor.capture(), documentNameCaptor.capture());
         verify(usersGroupService, times(1)).getEmailsForOrganisationIds(any(), Mockito.anyListOf(String.class));
 
         assertThat(materialIdCaptor.getValue(), is(materialId));
         assertThat(urnCaptor.getValue(), is(urn));
         assertThat(caseIdCaptor.getValue(), is(CASE_ID));
-        assertThat(defendantAndRelatedOrganisationEmail.getValue(), is(defendantAndRelatedOrganisationEmailL));
+        assertThat(defendantAndRelatedOrganisationEmailCaptor.getValue(), is(defendantAndRelatedOrganisationEmailL));
 
     }
 
@@ -227,6 +243,8 @@ public class DefenceNotificationServiceTest {
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
                 courtDocumentPayload);
+        final String documentSection = "Case Summary";
+        final String documentName = "Smith John 53NP7934321.pdf";
 
         final CourtDocument courtDocument = mapper.convertValue(requestMessage.payloadAsJsonObject().getJsonObject("courtDocument"), CourtDocument.class);
         final CourtsDocumentAdded courtsDocumentAdded = CourtsDocumentAdded.courtsDocumentAdded().withCourtDocument(courtDocument).build();
@@ -245,8 +263,8 @@ public class DefenceNotificationServiceTest {
         when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(requestMessage, CASE_ID.toString())).thenReturn(caseDefendantsOrg);
         when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(UUID.randomUUID().toString());
 
-        defenceNotificationService.prepareNotificationsForCourtDocument(requestMessage, courtsDocumentAdded.getCourtDocument());
-        verify(emailService, never()).sendEmailNotifications(any(), any(), any(), any(), Mockito.anyMap());
+        defenceNotificationService.prepareNotificationsForCourtDocument(requestMessage, courtsDocumentAdded.getCourtDocument(), documentSection, documentName);
+        verify(emailService, never()).sendEmailNotifications(any(), any(), any(), any(), Mockito.anyMap(), any(), any());
         verify(usersGroupService, never()).getEmailsForOrganisationIds(any(), Mockito.anyListOf(String.class));
     }
 

@@ -97,7 +97,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
         String body = Resources.toString(Resources.getResource("progression.add-court-document.json"), Charset.defaultCharset());
         body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
                 .replaceAll("%RANDOM_CASE_ID%", caseId.toString())
-                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId.toString());
+                .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId.toString());
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId.toString()),
                 "application/vnd.progression.add-court-document+json",
                 body);

@@ -442,7 +442,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         }
         body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
                 .replaceAll("%RANDOM_CASE_ID%", caseId.toString())
-                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId.toString());
+                .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId.toString());
         if (isCpsCase != null && isCpsCase == true) {
             body = body.replaceAll("\"isCpsCase\": false", "\"isCpsCase\": true");
         }

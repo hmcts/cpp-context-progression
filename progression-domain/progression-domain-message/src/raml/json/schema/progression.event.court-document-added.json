@@ -6,6 +6,10 @@
     "courtDocument": {
       "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
     },
+    "isUnbundledDocument": {
+      "type": "boolean",
+      "default": false
+    },
     "isCpsCase" : {
       "type" : "boolean"
     }

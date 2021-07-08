@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.command;
 
+import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -94,7 +95,7 @@ public class AddCourtDocumentApiTest {
     @Test
     public void shouldAddDocument() {
 
-        final JsonEnvelope commandEnvelope = buildEnvelope(null);
+        final JsonEnvelope commandEnvelope = buildEnvelope(null, true);
 
 
         addCourtDocumentApi.handle(commandEnvelope);
@@ -134,10 +135,10 @@ public class AddCourtDocumentApiTest {
     }
 
     @Test
-    public void shouldAddDocumentWithCpsCase() {
+    public void shouldAddDocumentWithCpsCaseAndUnbundledDocument() {
 
-        final JsonEnvelope commandEnvelope = buildEnvelope(true);
-        final JsonEnvelope expectedCommandEnvelope = buildEnvelopeForHandler(true);
+        final JsonEnvelope commandEnvelope = buildEnvelope(true, null);
+        final JsonEnvelope expectedCommandEnvelope = buildEnvelopeForHandler(true, null);
 
 
         addCourtDocumentApi.handle(commandEnvelope);
@@ -149,14 +150,17 @@ public class AddCourtDocumentApiTest {
         assertThat(newCommand.payload(), equalTo(expectedCommandEnvelope.payload()));
     }
 
-    private JsonEnvelope buildEnvelope(Boolean isCpsCase) {
-        final JsonObjectBuilder builder = Json.createObjectBuilder().add("documentTypeId", docTypeId.toString());
-        if(isCpsCase != null){
+    private JsonEnvelope buildEnvelope(final Boolean isCpsCase, final Boolean isUnbundledDocument) {
+        JsonObjectBuilder builder = Json.createObjectBuilder().add("documentTypeId", docTypeId.toString());
+        builder = Json.createObjectBuilder().add("courtDocument", builder.build());
+
+        if(nonNull(isCpsCase)){
             builder.add("isCpsCase", isCpsCase);
         }
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("courtDocument", builder.build())
-                .build();
+        if(nonNull(isUnbundledDocument)){
+            builder.add("isUnbundledDocument", isUnbundledDocument);
+        }
+        final JsonObject payload = builder.build();
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -168,11 +172,14 @@ public class AddCourtDocumentApiTest {
         return new DefaultJsonEnvelopeProvider().envelopeFrom(metadata, payload);
     }
 
-    private JsonEnvelope buildEnvelopeForHandler(Boolean isCpsCase) {
+    private JsonEnvelope buildEnvelopeForHandler(final Boolean isCpsCase, final Boolean isUnbundledDocument) {
         final JsonObjectBuilder builder = Json.createObjectBuilder()
                 .add("courtDocument", Json.createObjectBuilder().add("documentTypeId", docTypeId.toString()));
-        if(isCpsCase != null){
+        if(nonNull(isCpsCase)){
             builder.add("isCpsCase", isCpsCase);
+        }
+        if(nonNull(isUnbundledDocument)){
+            builder.add("isUnbundledDocument", isUnbundledDocument);
         }
         final JsonObject payload = builder.build();
 

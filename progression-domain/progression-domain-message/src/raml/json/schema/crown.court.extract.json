@@ -290,7 +290,7 @@
           "type": "string"
         },
         "jurisdictionType": {
-          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/jurisdictionType"
+          "$ref": "http://justice.gov.uk/core/courts/jurisdictionType.json"
         },
         "reportingRestrictionReason": {
           "type": "string"

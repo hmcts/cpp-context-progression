@@ -199,7 +199,7 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
     }
 
     private String prepareAddCourtDocumentPayload() {
-        String body = getPayload("progression.add-court-document.json");
+        String body = getPayload("progression.add-court-document-defendant-level.json");
         body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId)
                 .replaceAll("%RANDOM_CASE_ID%", caseId)
                 .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId);

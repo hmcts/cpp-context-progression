@@ -1,0 +1,100 @@
+{
+  "courtDocument": {
+    "containsFinancialMeans": true,
+    "courtDocumentId": "%RANDOM_DOCUMENT_ID%",
+    "documentCategory": {
+      "caseDocument": {
+        "prosecutionCaseId": "%RANDOM_CASE_ID%"
+      }
+    },
+    "documentTypeDescription": "Witness Statements",
+    "documentTypeId": "460f8974-c002-11e8-a355-529269fb1459",
+    "documentTypeRBAC": {
+      "deleteUserGroups": [
+        "Second Line Support"
+      ],
+      "downloadUserGroups": [
+        "District Judge",
+        "DJMC",
+        "Deputies",
+        "Defence Users",
+        "Advocates",
+        "Defence Lawyers",
+        "CPS",
+        "Court Administrators",
+        "Crown Court Admin",
+        "Legal Advisers",
+        "Listing Officers",
+        "Court Clerks",
+        "Court Associate",
+        "Second Line Support",
+        "Judge",
+        "Recorders"
+      ],
+      "readUserGroups": [
+        "District Judge",
+        "DJMC",
+        "Deputies",
+        "Magistrates",
+        "Defence Users",
+        "Advocates",
+        "Defence Lawyers",
+        "CPS",
+        "Court Administrators",
+        "Crown Court Admin",
+        "Legal Advisers",
+        "Listing Officers",
+        "Court Clerks",
+        "Court Associate",
+        "Second Line Support",
+        "Recorders",
+        "Judge"
+      ],
+      "uploadUserGroups": [
+        "Defence Users",
+        "Advocates",
+        "Defence Lawyers",
+        "CPS",
+        "Court Administrators",
+        "Crown Court Admin",
+        "Legal Advisers",
+        "Listing Officers",
+        "Court Clerks",
+        "Court Associate",
+        "Second Line Support",
+        "System Users"
+      ]
+    },
+    "materials": [
+      {
+        "id": "001522e8-4785-4745-bdb9-6a653bca67de",
+        "receivedDateTime": "2021-06-21T13:25:41.677Z",
+        "uploadDateTime": "%UPLOADDATETIME%",
+        "userGroups": [
+          "District Judge",
+          "DJMC",
+          "Deputies",
+          "Magistrates",
+          "Defence Users",
+          "Advocates",
+          "Defence Lawyers",
+          "CPS",
+          "Court Administrators",
+          "Crown Court Admin",
+          "Legal Advisers",
+          "Listing Officers",
+          "Court Clerks",
+          "Court Associate",
+          "Second Line Support",
+          "Recorders",
+          "Judge"
+        ]
+      }
+    ],
+    "mimeType": "application/pdf",
+    "name": "SJP Notice.pdf",
+    "sendToCps": true,
+    "seqNum": 60
+  },
+  "isCpsCase": true
+}

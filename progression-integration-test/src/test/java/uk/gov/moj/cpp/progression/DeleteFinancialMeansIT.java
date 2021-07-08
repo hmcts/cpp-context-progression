@@ -81,7 +81,7 @@ public class DeleteFinancialMeansIT extends AbstractIT {
         String body = getPayload("progression.add-court-document.json");
         body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
                 .replaceAll("%RANDOM_CASE_ID%", caseId.toString())
-                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId.toString());
+                .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId.toString());
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
                 "application/vnd.progression.add-court-document+json",
                 body);

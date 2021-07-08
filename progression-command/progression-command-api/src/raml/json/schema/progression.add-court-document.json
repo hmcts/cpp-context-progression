@@ -137,6 +137,10 @@
         },
         "isCpsCase": {
           "type": "boolean"
+        },
+        "isUnbundledDocument": {
+          "type": "boolean",
+          "default": false
         }
       },
       "required": [

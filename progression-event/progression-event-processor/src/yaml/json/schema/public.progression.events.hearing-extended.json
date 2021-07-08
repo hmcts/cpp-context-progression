@@ -17,7 +17,7 @@
       "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
     },
     "jurisdictionType": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/jurisdictionType"
+      "$ref": "http://justice.gov.uk/core/courts/jurisdictionType.json"
     },
     "courtApplication": {
       "description": "The court application that is be added to the existing listing",

@@ -212,11 +212,21 @@ public class CourtDocumentAggregate implements Aggregate {
         return apply(Stream.of(CourtsDocumentAdded.courtsDocumentAdded().withCourtDocument(courtDocument).build()));
     }
 
-    public Stream<Object> addCourtDocument(final CourtDocument courtDocument, final List<String> groups, final boolean actionRequired, final UUID materialId, final String section, final Boolean isCpsCase) {
+    public Stream<Object> addCourtDocument(final CourtDocument courtDocument,
+                                           final List<String> groups,
+                                           final boolean actionRequired,
+                                           final UUID materialId,
+                                           final String section,
+                                           final Boolean isCpsCase,
+                                           final Boolean isUnbundledDocument) {
         LOGGER.debug("Court document being added");
 
         final Stream.Builder<Object> streamBuilder = builder();
-        streamBuilder.add(CourtsDocumentAdded.courtsDocumentAdded().withCourtDocument(courtDocument).withIsCpsCase(isCpsCase).build());
+        streamBuilder.add(CourtsDocumentAdded.courtsDocumentAdded()
+                .withCourtDocument(courtDocument)
+                .withIsCpsCase(isCpsCase)
+                .withIsUnbundledDocument(isUnbundledDocument)
+                .build());
 
         if (actionRequired &&
                 (groups.contains(YOUTH_OFFENDING_SERVICE_ADMIN)

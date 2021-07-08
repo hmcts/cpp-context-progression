@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +18,7 @@ import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedPr
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PUBLIC_COURT_DOCUMENT_ADDED;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PUBLIC_IDPC_COURT_DOCUMENT_RECEIVED;
 
+import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.sender.Sender;
@@ -25,6 +27,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.service.DefenceNotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.service.payloads.UserGroupDetails;
 
@@ -32,6 +35,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -44,11 +48,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CourtDocumentAddedProcessorTest {
+
+    private static final UUID DOCUMENT_TYPE_ID = UUID.fromString("41be14e8-9df5-4b08-80b0-1e670bc80a5b");
 
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
@@ -69,6 +76,8 @@ public class CourtDocumentAddedProcessorTest {
     @Mock
     private ProgressionService progressionService;
 
+    @Mock
+    private ReferenceDataService referenceDataService;
 
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
@@ -98,7 +107,8 @@ public class CourtDocumentAddedProcessorTest {
                                 .add("mimeType", "pdf")
                                 .add("materials", createArrayBuilder().add(buildMaterial()))
                                 .add("containsFinancialMeans", false)
-                                .add("documentTypeRBAC", buildDocumentTypeDataWithRBAC()));
+                                .add("documentTypeRBAC", buildDocumentTypeDataWithRBAC()))
+                        .add("isUnbundledDocument", false);
         if (isCpsCase != null) {
             courtDocument.add("isCpsCase", isCpsCase);
         }
@@ -114,9 +124,44 @@ public class CourtDocumentAddedProcessorTest {
         return Json.createObjectBuilder()
                 .add("documentAccess", Json.createArrayBuilder().add("Listing Officer"))
                 .add("canCreateUserGroups", Json.createArrayBuilder().add("Listing Officer"))
-                .add("canReadUserGroups", Json.createArrayBuilder().add("Listing Officer").add("Magistrates"))
+                .add("readUserGroups", Json.createArrayBuilder().add("Listing Officer").add("Magistrates").add("Defence Lawyers"))
                 .add("canDownloadUserGroups", Json.createArrayBuilder().add("Listing Officer").add("Magistrates"))
                 .build();
+    }
+
+    private static JsonObject generateDocumentTypeAccessForApplication(UUID id) {
+        return createObjectBuilder()
+                .add("id", id.toString())
+                .add("section", "Applications")
+                .add("notifyDefence", true)
+                .build();
+    }
+
+    @Test
+    public void shouldProcessUploadCourtDocumentMessageForDefenceBasedOnNotification() {
+        final JsonObject defendantDocumentPayload = buildDocumentCategoryJsonObject(buildDefendantDocument(), DOCUMENT_TYPE_ID.toString(), true);
+        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
+                defendantDocumentPayload);
+        final String documentSection = "Case Summary";
+        final String documentName = "Smith John 53NP7934321.pdf";
+
+        List<UserGroupDetails> userGroupDetails = new ArrayList<>();
+        userGroupDetails.add(new UserGroupDetails(randomUUID(), "Magistrates"));
+        when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
+        when(usersGroupService.getGroupIdForDefenceLawyers()).thenReturn(randomUUID().toString());
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq("2279b2c3-b0d3-4889-ae8e-1ecc20c39e27")))
+                .thenReturn(Optional.of(getProsecutionCase(false)));
+        when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(DOCUMENT_TYPE_ID)));
+        defenceNotificationService.prepareNotificationsForCourtDocument(any(), any(CourtDocument.class), anyString(), anyString());
+        eventProcessor.handleCourtDocumentAddEvent(requestMessage);
+
+        verify(sender, times(4)).send(envelopeCaptor.capture());
+        final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
+        verifyUpdateCpsCommand(commands.get(0), requestMessage);
+        verifyCreateCommand(commands.get(1), requestMessage);
+        verifyPublicCourtDocumentAdded(commands.get(2), requestMessage);
+        verifyIDPCommand(commands.get(3));
     }
 
     @Test

@@ -109,7 +109,7 @@ public class ProsecutorUpdatedIT extends AbstractIT {
         String body = getPayload("progression.add-court-document-with-cpscase.json")
                 .replaceAll("%RANDOM_DOCUMENT_ID%", documentId)
                 .replaceAll("%RANDOM_CASE_ID%", caseId)
-                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId)
+                .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId)
                 .replaceAll("\"isCpsCase\": false", "\"isCpsCase\": true");
         return body;
     }
