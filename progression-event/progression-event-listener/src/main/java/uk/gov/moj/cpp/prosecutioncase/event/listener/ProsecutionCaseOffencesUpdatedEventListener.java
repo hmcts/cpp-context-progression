@@ -218,6 +218,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                 .withOffenceDateCode(updatedOffence.getOffenceDateCode())
                 .withCommittingCourt(updatedOffence.getCommittingCourt())
                 .withReportingRestrictions(updatedOffence.getReportingRestrictions())
+                .withDvlaOffenceCode(updatedOffence.getDvlaOffenceCode())
                 .build();
     }
 
