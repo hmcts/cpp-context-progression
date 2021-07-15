@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.collect.ImmutableList.of;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.join;
-import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -34,11 +34,10 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
+import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoLetterRequested;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -46,13 +45,11 @@ import uk.gov.justice.services.messaging.JsonMetadata;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -60,42 +57,56 @@ import java.util.concurrent.TimeUnit;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.restassured.response.Response;
+import com.tngtech.java.junit.dataprovider.DataProvider;
+import com.tngtech.java.junit.dataprovider.DataProviderRunner;
+import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(DataProviderRunner.class)
 public class NowDocumentRequestIT extends AbstractIT {
 
     private static final String NOW_DOCUMENT_REQUESTS = "nowDocumentRequests";
     private static final String MATERIAL_ID = "materialId";
     private static final String MATERIAL_MATERIAL_ADDED = "material.material-added";
     private static final String HEARING_ID = "%HEARING_ID%";
+    private static final String DOCUMENT_TEXT = STRING.next();
+    private static final String ORIGINATOR = "originator";
+    private static final String ORIGINATOR_VALUE = "court";
+    private static final String PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED = "public.progression.now-document-requested";
+    private static final MessageConsumer messageConsumerClientPublicForNowDocumentRequested = publicEvents
+            .createConsumer(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED);
+
     private String materialId;
     private String hearingId;
     private String defendantId;
     private String requestId;
     private UUID userId;
-
-    private static final String DOCUMENT_TEXT = STRING.next();
-    private static final String ORIGINATOR = "originator";
-    private static final String ORIGINATOR_VALUE = "court";
     private MessageProducer messageProducerClientPublic;
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
-    private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
-    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private static final String PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED = "public.progression.now-document-requested";
-    private static final MessageConsumer messageConsumerClientPublicForNowDocumentRequested = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED);
+
+    @DataProvider
+    public static Object[][] incompleteOrderAddresseePayloads() {
+        return new Object[][]{
+                {"progression.add-now-document-request-no-fixed-abode.json"},
+                {"progression.add-now-document-request-addressee-postcode-missing.json"}
+        };
+    }
+
+    @BeforeClass
+    public static void setupBefore(){
+        DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
+        NotificationServiceStub.setUp();
+    }
 
     @Before
     public void setup() {
@@ -105,8 +116,8 @@ public class NowDocumentRequestIT extends AbstractIT {
         materialId = randomUUID().toString();
         requestId = randomUUID().toString();
         userId = randomUUID();
-        setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
-        setField(this.jsonToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
+        setField(objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
+        setField(jsonToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
     }
 
     @After
@@ -116,9 +127,6 @@ public class NowDocumentRequestIT extends AbstractIT {
 
     @Test
     public void shouldAddFinancialNowDocumentRequest() throws IOException {
-        DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
-        NotificationServiceStub.setUp();
-
         final String body = prepareAddNowFinancialDocumentRequestPayload();
 
         final Response writeResponse = postCommand(getWriteUrl("/nows"),
@@ -138,16 +146,12 @@ public class NowDocumentRequestIT extends AbstractIT {
 
         sendPublicEventForMaterialAdded();
 
-        verifyCreateLetterRequested(singletonList("letterUrl"));
+        verifyCreateLetterRequested(of("letterUrl", materialId));
     }
 
     @Test
     public void shouldAddNonFinancialNowDocumentRequest() throws IOException {
-        DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
-        NotificationServiceStub.setUp();
-        IdMapperStub.setUp();
-
-        final String payload = prepareAddNowNonFinancialDocumentRequestPayload();
+        final String payload = prepareAddNowNonFinancialDocumentRequestPayload("progression.add-non-financial-now-document-request.json");
         final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);
         final NowDocumentRequest nowDocumentRequest = jsonToObjectConverter.convert(jsonObject, NowDocumentRequest.class);
 
@@ -164,7 +168,34 @@ public class NowDocumentRequestIT extends AbstractIT {
 
         sendPublicEventForMaterialAdded();
 
-        verifyCreateLetterRequested(Arrays.asList("letterUrl"));
+        verifyCreateLetterRequested(of("letterUrl", materialId));
+
+        final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
+        final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray(NOW_DOCUMENT_REQUESTS).getJsonObject(0);
+        assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
+    }
+
+    @UseDataProvider("incompleteOrderAddresseePayloads")
+    @Test
+    public void shouldSuppressPostalNotificationWhenOrderAddresseeAddressIsInvalid(final String fileName) throws IOException {
+        final String payload = prepareAddNowNonFinancialDocumentRequestPayload(fileName);
+        final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);
+        final NowDocumentRequest nowDocumentRequest = jsonToObjectConverter.convert(jsonObject, NowDocumentRequest.class);
+
+        final Response writeResponse = postCommand(getWriteUrl("/nows"),
+                "application/vnd.progression.add-now-document-request+json",
+                payload);
+
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final String nowDocumentRequestPayload = getNowDocumentRequest(hearingId,
+                anyOf(withJsonPath("$.nowDocumentRequests[0].hearingId", equalTo(hearingId))));
+
+        verifyMaterialCreated();
+
+        sendPublicEventForMaterialAdded();
+
+        verifyNoLetterRequested(of("letterUrl", materialId));
 
         final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
         final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray(NOW_DOCUMENT_REQUESTS).getJsonObject(0);
@@ -173,10 +204,6 @@ public class NowDocumentRequestIT extends AbstractIT {
 
     @Test
     public void shouldEmailNowDocumentRequest() throws IOException {
-        DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
-        NotificationServiceStub.setUp();
-        IdMapperStub.setUp();
-
         final String payload = prepareEmailDocumentRequestPayload();
         final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);
         final NowDocumentRequest nowDocumentRequest = jsonToObjectConverter.convert(jsonObject, NowDocumentRequest.class);
@@ -201,10 +228,6 @@ public class NowDocumentRequestIT extends AbstractIT {
 
     @Test
     public void shouldNotSendEmailWithNoOrderAddresseeInNowDocumentRequest() throws IOException {
-        DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
-        NotificationServiceStub.setUp();
-        IdMapperStub.setUp();
-
         final String payload = prepareNoOrderAddresseeDocumentRequestPayload();
         final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);
         final NowDocumentRequest nowDocumentRequest = jsonToObjectConverter.convert(jsonObject, NowDocumentRequest.class);
@@ -237,8 +260,8 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     private void sendPublicEventForMaterialAdded() {
-        final JsonObject materialAddPublicEventPayload = Json.createObjectBuilder()
-                .add(MATERIAL_ID, materialId.toString())
+        final JsonObject materialAddPublicEventPayload = createObjectBuilder()
+                .add(MATERIAL_ID, materialId)
                 .add("fileServiceId", randomUUID().toString())
                 .build();
 
@@ -287,8 +310,8 @@ public class NowDocumentRequestIT extends AbstractIT {
         return body;
     }
 
-    private String prepareAddNowNonFinancialDocumentRequestPayload() {
-        String body = getPayload("progression.add-non-financial-now-document-request.json");
+    private String prepareAddNowNonFinancialDocumentRequestPayload(final String filename) {
+        String body = getPayload(filename);
         body = body.replace(HEARING_ID, hearingId)
                 .replace("%MATERIAL_ID%", materialId)
                 .replace("%DEFENDANT_ID%", defendantId);

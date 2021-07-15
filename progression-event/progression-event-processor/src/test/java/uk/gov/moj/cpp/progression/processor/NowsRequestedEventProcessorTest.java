@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.lang.Boolean.TRUE;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.is;
@@ -27,6 +28,7 @@ import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentR
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.NowDocumentRequested;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
+import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -47,6 +49,7 @@ import uk.gov.moj.cpp.progression.service.UploadMaterialService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.service.exception.DocumentGenerationException;
 import uk.gov.moj.cpp.progression.service.exception.FileUploadException;
+import uk.gov.moj.cpp.progression.service.utils.NowDocumentValidator;
 import uk.gov.moj.cpp.progression.test.FileUtil;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
@@ -121,6 +124,9 @@ public class NowsRequestedEventProcessorTest {
     private UsersGroupService usersGroupService;
     @Mock
     private SystemUserProvider systemUserProvider;
+    @Mock
+    private NowDocumentValidator nowDocumentValidator;
+
     @Captor
     private ArgumentCaptor<DefaultEnvelope<?>> envelopeArgumentCaptor;
     @Captor
@@ -158,12 +164,14 @@ public class NowsRequestedEventProcessorTest {
                         this.fileStorer,
                         this.uploadMaterialService,
                         materialUrlGenerator,
-                        applicationParameters),
+                        applicationParameters,
+                        nowDocumentValidator),
                 this.jsonObjectToObjectConverter,
                 this.objectToJsonObjectConverter,
                 this.refDataService,
                 this.usersGroupService);
 
+        when(nowDocumentValidator.isPostable(any(OrderAddressee.class))).thenReturn(TRUE);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.test;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -93,6 +94,8 @@ public class TestTemplates {
         return NowDistribution.nowDistribution()
                 .withEmail(true)
                 .withBilingualEmailTemplateName("Email Template")
+                .withFirstClassLetter(TRUE)
+                .withSecondClassLetter(TRUE)
                 .build();
     }
 

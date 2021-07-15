@@ -1,13 +1,5 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import com.jayway.restassured.path.json.JsonPath;
-import org.hamcrest.Matcher;
-import org.hamcrest.core.Is;
-import uk.gov.justice.services.common.http.HeaderConstants;
-
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.join;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -25,6 +17,14 @@ import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_NOW_REQUEST_
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_NOW_REQUEST_WITH_ACCOUNT_NUMBER;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+
+import uk.gov.justice.services.common.http.HeaderConstants;
+
+import java.util.concurrent.TimeUnit;
+
+import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.Matcher;
+import org.hamcrest.core.Is;
 
 public class NowsRequestHelper extends AbstractTestHelper {
 

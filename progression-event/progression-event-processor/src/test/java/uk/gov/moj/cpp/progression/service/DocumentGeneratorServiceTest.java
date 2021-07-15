@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -10,10 +12,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.NCES_DOCUMENT_TEMPLATE_NAME;
+import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentRequestTemplate;
 
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.nces.NcesNotificationRequested;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
+import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
@@ -21,6 +25,7 @@ import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.event.nows.order.NowsDocumentOrder;
+import uk.gov.moj.cpp.progression.service.utils.NowDocumentValidator;
 import uk.gov.moj.cpp.progression.test.TestTemplates;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
@@ -75,6 +80,9 @@ public class DocumentGeneratorServiceTest {
     @Mock
     private DocumentGeneratorClient documentGeneratorClient;
 
+    @Mock
+    private NowDocumentValidator nowDocumentValidator;
+
     @Captor
     ArgumentCaptor<JsonObject> fileStorerMetaDataCaptor;
 
@@ -85,9 +93,20 @@ public class DocumentGeneratorServiceTest {
     ArgumentCaptor<UploadMaterialContext> uploadMaterialContextArgumentCaptor;
 
     @Test
-    public void shouldGenerateNow() throws Exception {
+    public void shouldGenerateNowDocumentWithLetterFlagsAsTrueWhenDocumentPostable() throws Exception {
+        when(nowDocumentValidator.isPostable(any(OrderAddressee.class))).thenReturn(TRUE);
+        shouldGenerateNow(TRUE);
+    }
 
-        final NowDocumentRequest nowDocumentRequest = TestTemplates.generateNowDocumentRequestTemplate(randomUUID(), JurisdictionType.CROWN, false);
+    @Test
+    public void shouldGenerateNowDocumentWithLetterFlagsAsFalseWhenDocumentNotPostable() throws Exception {
+        when(nowDocumentValidator.isPostable(any(OrderAddressee.class))).thenReturn(FALSE);
+        shouldGenerateNow(FALSE);
+    }
+
+    public void shouldGenerateNow(final boolean expectedLetterFlag) throws Exception {
+
+        final NowDocumentRequest nowDocumentRequest = generateNowDocumentRequestTemplate(randomUUID(), JurisdictionType.CROWN, false);
 
         final UUID systemUserId = randomUUID();
         final byte[] documentData = {34, 56, 78, 90};
@@ -123,6 +142,8 @@ public class DocumentGeneratorServiceTest {
         assertThat(uploadMaterialContext.getEmailNotifications().size(), is(2));
         assertThat(uploadMaterialContext.getEmailNotifications().get(0).getSendToAddress(), is("emailAddress1@test.com"));
         assertThat(uploadMaterialContext.getEmailNotifications().get(1).getSendToAddress(), is("emailAddress2@test.com"));
+        assertThat(uploadMaterialContext.isFirstClassLetter(), is(expectedLetterFlag));
+        assertThat(uploadMaterialContext.isSecondClassLetter(), is(expectedLetterFlag));
     }
 
     @Test

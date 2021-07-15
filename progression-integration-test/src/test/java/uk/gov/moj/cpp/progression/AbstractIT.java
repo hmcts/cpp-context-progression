@@ -34,6 +34,10 @@ import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorise
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsSystemUser;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupHearingQueryStub;
 
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
@@ -42,6 +46,7 @@ import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUt
 import java.io.IOException;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.restassured.response.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +66,10 @@ public class AbstractIT {
     protected static ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = null;
     protected static ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
     public static final String PROGRESSION_CONTEXT = "progression";
+    protected static final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    protected static final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    protected static final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    protected static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
 
     /**

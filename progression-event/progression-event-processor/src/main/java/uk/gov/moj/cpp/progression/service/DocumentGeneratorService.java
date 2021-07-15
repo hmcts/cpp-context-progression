@@ -28,6 +28,7 @@ import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.processor.exceptions.InvalidHearingTimeException;
 import uk.gov.moj.cpp.progression.processor.exceptions.NowsTemplateNameNotFoundException;
 import uk.gov.moj.cpp.progression.service.exception.FileUploadException;
+import uk.gov.moj.cpp.progression.service.utils.NowDocumentValidator;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
 
@@ -75,6 +76,8 @@ public class DocumentGeneratorService {
 
     private final ApplicationParameters applicationParameters;
 
+    private final NowDocumentValidator nowDocumentValidator;
+
     @Inject
     public DocumentGeneratorService(final SystemUserProvider systemUserProvider,
                                     final DocumentGeneratorClientProducer documentGeneratorClientProducer,
@@ -82,7 +85,8 @@ public class DocumentGeneratorService {
                                     final FileStorer fileStorer,
                                     final UploadMaterialService uploadMaterialService,
                                     final MaterialUrlGenerator materialUrlGenerator,
-                                    final ApplicationParameters applicationParameters
+                                    final ApplicationParameters applicationParameters,
+                                    final NowDocumentValidator nowDocumentValidator
     ) {
         this.systemUserProvider = systemUserProvider;
         this.documentGeneratorClientProducer = documentGeneratorClientProducer;
@@ -91,6 +95,7 @@ public class DocumentGeneratorService {
         this.uploadMaterialService = uploadMaterialService;
         this.materialUrlGenerator = materialUrlGenerator;
         this.applicationParameters = applicationParameters;
+        this.nowDocumentValidator = nowDocumentValidator;
     }
 
     @Transactional(REQUIRES_NEW)
@@ -241,9 +246,9 @@ public class DocumentGeneratorService {
 
             LOGGER.info("Stored material {} in file store {}", materialId, fileId);
 
-            final boolean firstClassLetter = isFirstClassLetter(nowDistribution);
-
-            final boolean secondClassLetter = isSecondClassLetter(nowDistribution);
+            final boolean isPostable = nowDocumentValidator.isPostable(orderAddressee);
+            final boolean firstClassLetter = isFirstClassLetter(nowDistribution) && isPostable;
+            final boolean secondClassLetter = isSecondClassLetter(nowDistribution) && isPostable;
 
             final List<EmailChannel> emailNotifications = buildEmailChannel(materialId, nowDistribution, orderAddressee);
 
