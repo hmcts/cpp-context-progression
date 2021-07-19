@@ -61,6 +61,7 @@ public class DefenceNotificationServiceTest {
     private static final UUID DEFENDANT2 = UUID.randomUUID();
     private static final UUID DEFENDANT3 = UUID.randomUUID();
     private static final UUID DEFENDANT4 = UUID.randomUUID();
+    private static final UUID DEFENDANT5 = UUID.randomUUID();
 
     @Mock
     private ApplicationParameters applicationParameters;
@@ -121,7 +122,9 @@ public class DefenceNotificationServiceTest {
         final List<Defendants> defendants = Arrays.asList(
                 new Defendants(ORG1, DEFENDANT1, "defendantFirstName1", "defendantLastName1", "organisationName1"),
                 new Defendants(ORG1, DEFENDANT2, "defendantFirstName2", "defendantLastName2", "organisationName1"),
-                new Defendants(ORG2, DEFENDANT3, "defendantFirstName3", "defendantLastName3", "organisationName2")
+                new Defendants(ORG2, DEFENDANT3, "defendantFirstName3", "defendantLastName3", "organisationName2"),
+                new Defendants(ORG1, DEFENDANT4, "defendantFirstName4", "defendantLastName4", "organisationName1"),
+                new Defendants(ORG2, DEFENDANT5, "defendantFirstName5", "defendantLastName5", "organisationName2")
         );
 
         final List<String> organisationIds = new ArrayList<>();
@@ -143,12 +146,6 @@ public class DefenceNotificationServiceTest {
         emailOrganisationIds.put(ORG1.toString(), "email1");
         emailOrganisationIds.put(ORG2.toString(), "email2");
 
-        final HashMap<Defendants, String> defendantAndRelatedOrganisationEmailL = new HashMap<>();
-        defendantAndRelatedOrganisationEmailL.put(Defendants.defendants().withDefendantId(DEFENDANT2).build(), "email1");
-        defendantAndRelatedOrganisationEmailL.put(Defendants.defendants().withDefendantId(DEFENDANT1).build(), "email1");
-        defendantAndRelatedOrganisationEmailL.put(Defendants.defendants().withDefendantId(DEFENDANT3).build(), "email2");
-
-
         when(usersGroupService.getEmailsForOrganisationIds(any(), any())).thenReturn(emailOrganisationIds);
         when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(requestMessage, CASE_ID.toString())).thenReturn(caseDefendantsOrg);
         when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(UUID.randomUUID().toString());
@@ -157,13 +154,13 @@ public class DefenceNotificationServiceTest {
         defenceNotificationService.prepareNotificationsForCourtDocument(requestMessage, courtsDocumentAdded.getCourtDocument(), documentSection, documentName);
         final UUID materialId = courtDocument.getMaterials().get(0).getId();
 
-        verify(emailService, times(3))
+        verify(emailService, times(2))
                 .sendEmailNotifications(sourceEnvelopeCaptor.capture(),
                         materialIdCaptor.capture(),
                         urnCaptor.capture(),
                         caseIdCaptor.capture(),
                         defendantAndRelatedOrganisationEmailCaptor.capture(), documentSectionCaptor.capture(), documentNameCaptor.capture());
-        verify(usersGroupService, times(3)).getEmailsForOrganisationIds(any(), Mockito.anyListOf(String.class));
+        verify(usersGroupService, times(2)).getEmailsForOrganisationIds(any(), Mockito.anyListOf(String.class));
 
         assertThat(materialIdCaptor.getValue(), is(materialId));
         assertThat(urnCaptor.getValue(), is(urn));
@@ -275,7 +272,7 @@ public class DefenceNotificationServiceTest {
                         .add("defendants", createArrayBuilder()
                                 .add(DEFENDANT1.toString())
                                 .add(DEFENDANT2.toString())
-                                .add(DEFENDANT4.toString())))
+                        ))
                 .build();
     }
 

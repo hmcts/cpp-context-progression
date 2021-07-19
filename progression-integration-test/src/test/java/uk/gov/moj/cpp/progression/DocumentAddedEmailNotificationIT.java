@@ -40,6 +40,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
+import com.google.common.base.Strings;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -131,11 +132,11 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence-lawyers.json");
         stubForCaseDefendantsOrganisation("stub-data/defence.query.case-defendants-organisation.json", caseId, defendantId1, defendantId2, defendant1FirstName, defendant1LastName, defendant2FirstName, defendant2LastName);
         stubGetOrganisationDetailForIds("stub-data/usersgroups.get-organisations-details.json", organizationIds, userId);
-        addCourtDocumentDefendantLevel("expected/expected.progression.add-court-document-for-email.json", docId, defendantId1, defendantId2, caseId);
+        addCourtDocumentDefendantLevel("expected/expected.progression.add-court-document-for-email.json", docId, defendantId1, null, caseId);
 
 
         verifyInMessagingQueueForPublicCourtDocumentAdded();
-        verifyInMessagingQueueForEmailSendForDocumentAdded(caseId, defendant1FirstName, defendant1LastName, defendant2FirstName, defendant2LastName, true);
+        verifyInMessagingQueueForEmailSendForDocumentAdded(caseId, defendant1FirstName, defendant1LastName, null, null, true);
 
     }
 
@@ -163,11 +164,13 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
     private static void checkMultipleNotificationsSeperately(final String caseId, final String defendant1FirstName, final String defendant1LastName, final String defendant2FirstName, final String defendant2LastName, final JsonObject message) {
         checkCommonFields(caseId, message);
         checkSingleDefendantInSingleNotification(message, getDefendantFullName(defendant1FirstName, defendant1LastName), getDefendantFullName(defendant2FirstName, defendant2LastName));
-        final Optional<JsonObject> messageOptional2 = QueueUtil.retrieveMessageAsJsonObject(consumerForProgressionCommandEmail);
-        messageOptional2.ifPresent(message2 -> {
-            checkCommonFields(caseId, message2);
-            checkSingleDefendantInSingleNotification(message2, getDefendantFullName(defendant1FirstName, defendant1LastName), getDefendantFullName(defendant2FirstName, defendant2LastName));
-        });
+        if(!Strings.isNullOrEmpty(defendant2FirstName)) {
+            final Optional<JsonObject> messageOptional2 = QueueUtil.retrieveMessageAsJsonObject(consumerForProgressionCommandEmail);
+            messageOptional2.ifPresent(message2 -> {
+                checkCommonFields(caseId, message2);
+                checkSingleDefendantInSingleNotification(message2, getDefendantFullName(defendant1FirstName, defendant1LastName), getDefendantFullName(defendant2FirstName, defendant2LastName));
+            });
+        }
     }
 
 

@@ -6,8 +6,7 @@
     "documentCategory": {
       "defendantDocument": {
         "defendants": [
-          "%RANDOM_DEFENDANT_ID1%",
-          "%RANDOM_DEFENDANT_ID2%"
+          "%RANDOM_DEFENDANT_ID1%"
         ],
         "prosecutionCaseId": "%RANDOM_CASE_ID%"
       }

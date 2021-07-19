@@ -49,14 +49,16 @@ public class DefenceNotificationService {
             final String urn = caseDefendantsWithOrganisation.getUrn();
             final UUID caseId = caseDefendantsWithOrganisation.getCaseId();
             final List<Defendants> defendants = caseDefendantsWithOrganisation.getDefendants();
-            final List<String> organisationIds = defendants.stream()
+
+            final List<Defendants> filteredDefendants = defendants.stream()
                     .filter(x -> defendantDocument.getDefendants().contains(x.getDefendantId()))
-                    .filter(x -> x.getAssociatedOrganisation() != null)
-                    .map(x -> x.getAssociatedOrganisation().toString())
-                    .distinct()
-                    .collect(Collectors.toList());
-            defendants.stream().forEach(defendant ->
-                    sendEmail(jsonEnvelope, materialId, urn, caseId, singletonList(defendant), organisationIds, documentSection, documentName));
+                    .filter(x -> x.getAssociatedOrganisation() != null).collect(Collectors.toList());
+
+            filteredDefendants.stream().forEach(defendant -> {
+                final List<String> organisationIds = singletonList(defendant.getAssociatedOrganisation().toString());
+                sendEmail(jsonEnvelope, materialId, urn, caseId, singletonList(defendant), organisationIds, documentSection, documentName);
+
+            });
 
         }
     }
