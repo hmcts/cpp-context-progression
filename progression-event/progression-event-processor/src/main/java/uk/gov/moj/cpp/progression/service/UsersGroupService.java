@@ -105,7 +105,7 @@ public class UsersGroupService {
         final JsonObject getUserGroupsForUserRequest = createObjectBuilder().add(USER_ID, userId).build();
         final Envelope<JsonObject> requestEnvelope = envelop(getUserGroupsForUserRequest)
                 .withName("usersgroups.get-logged-in-user-groups").withMetadataFrom(envelope);
-        final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
+        final Envelope<JsonObject> response = requester.request(requestEnvelope, JsonObject.class);
         return response.payload();
     }
 
