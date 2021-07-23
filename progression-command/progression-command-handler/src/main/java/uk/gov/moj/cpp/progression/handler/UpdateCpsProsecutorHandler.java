@@ -106,8 +106,6 @@ public class UpdateCpsProsecutorHandler {
 
     private ProsecutionCaseIdentifier buildProsecutionCaseIdentifier(JsonObject cpsProsecutor) {
 
-        final Address address = jsonObjectToObjectConverter.convert((JsonObject) cpsProsecutor.get("address"), Address.class);
-
         final ProsecutionCaseIdentifier.Builder builder = ProsecutionCaseIdentifier.prosecutionCaseIdentifier();
         if (cpsProsecutor.get("informantEmailAddress") != null) {
             builder.withContact(ContactNumber.contactNumber().withPrimaryEmail(cpsProsecutor.getString("informantEmailAddress")).build());
@@ -124,8 +122,11 @@ public class UpdateCpsProsecutorHandler {
         if (cpsProsecutor.get("oucode") != null) {
             builder.withProsecutionAuthorityOUCode(cpsProsecutor.getString("oucode"));
         }
-        return builder.withAddress(address)
-                .withProsecutionAuthorityId(UUID.fromString(cpsProsecutor.getString("id")))
+        if (cpsProsecutor.get("address") != null) {
+            final Address address = jsonObjectToObjectConverter.convert((JsonObject) cpsProsecutor.get("address"), Address.class);
+            builder.withAddress(address);
+        }
+        return builder.withProsecutionAuthorityId(UUID.fromString(cpsProsecutor.getString("id")))
                 .build();
     }
 }
