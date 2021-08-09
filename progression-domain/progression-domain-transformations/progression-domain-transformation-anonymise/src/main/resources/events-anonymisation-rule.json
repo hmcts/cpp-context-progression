@@ -1,9 +1,9 @@
 {
   "globalAttributes": [
-    "courtApplications[*].type.breachType",
-    "courtApplications[*].type.jurisdiction",
-    "courtApplications[*].type.offenceActiveOrder",
-    "courtApplications[*].type.summonsTemplateType",
+    "courtApplication[*].type.breachType",
+    "courtApplication[*].type.jurisdiction",
+    "courtApplication[*].type.offenceActiveOrder",
+    "courtApplication[*].type.summonsTemplateType",
     "courtHouseType",
     "category",
     "judicialResults[*].label",
@@ -132,6 +132,12 @@
       "fieldsToBeIgnored": [
         "$.hearing.defendantAttendance[*].attendanceDays[*].attendanceType",
         "$.hearing.defendantJudicialResults[*].judicialResult.category"
+      ]
+    },
+    {
+      "eventName": "progression.event.defendants-added-to-court-proceedings",
+      "fieldsToBeIgnored": [
+        "$.listHearingRequests[*].listDefendantRequests[*].summonsRequired"
       ]
     }
   ]
