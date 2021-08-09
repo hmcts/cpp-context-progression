@@ -18,6 +18,7 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
+import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -177,6 +178,9 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
             final List<Offence> updatedOffences = getUpdatedOffencesWithNonNowsJudicialResults(defendant.getOffences());
 
             updatedOffences.forEach(updatedOffence -> {
+                if(isNotEmpty(updatedOffence.getReportingRestrictions())) {
+                    updateReportingRestriction(offences, updatedOffence);
+                }
                 if (offences.removeIf(offence -> offence.getId().equals(updatedOffence.getId()))) {
                     offences.add(updatedOffence);
                 }
@@ -211,6 +215,20 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 .withCroNumber(originalDefendant.getCroNumber())
                 .withAssociationLockedByRepOrder(originalDefendant.getAssociationLockedByRepOrder())
                 .build();
+    }
+
+    private void updateReportingRestriction(final List<Offence> offences, final Offence updatedOffence) {
+        final  List<ReportingRestriction> reportingRestrictions = updatedOffence.getReportingRestrictions();
+        final Optional<Offence>  originalOffence = offences.stream().filter(offence -> offence.getId().equals(updatedOffence.getId())).findFirst();
+        if(originalOffence.isPresent() && isNotEmpty(originalOffence.get().getReportingRestrictions())){
+            originalOffence.get().getReportingRestrictions().forEach( reportingRestriction -> {
+                //if  reportingRestriction not exist then add it
+                final Optional<ReportingRestriction> originalReportingRestriction = reportingRestrictions.stream().filter(rr -> rr.getLabel().equals(reportingRestriction.getLabel())).findFirst();
+                if(!originalReportingRestriction.isPresent()){
+                    reportingRestrictions.add(reportingRestriction);
+                }
+            });
+        }
     }
 
     private PersonDefendant getUpdatedPersonDefendant(final Defendant originalDefendant, final Defendant defendant) {

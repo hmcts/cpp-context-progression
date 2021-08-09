@@ -116,7 +116,7 @@ public class CaseApplicationEjectedEventProcessor {
                 final ProsecutionCaseIdentifier caseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
 
                 payloadBuilder.add("CaseId", prosecutionCaseId);
-                payloadBuilder.add("ProsecutorCode", nonNull(prosecutionCase.getOriginatingOrganisation()) ? getOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation()) : null);
+                payloadBuilder.add("ProsecutorCode", nonNull(prosecutionCase.getOriginatingOrganisation()) ? getOriginatingOrganisation(prosecutionCase.getOriginatingOrganisation()) : "");
                 payloadBuilder.add("InitiationCode", prosecutionCase.getInitiationCode().toString());
                 payloadBuilder.add("CaseReference", caseIdentifier.getProsecutionAuthorityReference() != null ? caseIdentifier.getProsecutionAuthorityReference() : caseIdentifier.getCaseURN());
 

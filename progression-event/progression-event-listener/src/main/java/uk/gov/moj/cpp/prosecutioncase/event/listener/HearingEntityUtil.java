@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
@@ -22,11 +24,14 @@ public class HearingEntityUtil {
 
     public static Hearing updateHearingWithCase(final Hearing hearing, final UUID caseId) {
         final List<ProsecutionCase> prosecutionCases = hearing.getProsecutionCases();
-        final ProsecutionCase origProsecutionCase = Iterables.find(prosecutionCases, pc -> pc.getId()
-                .equals(caseId));
-        final ProsecutionCase updatedProsecutionCase = updateProsecutionCaseWithEjectStatus(origProsecutionCase);
-        prosecutionCases.replaceAll(prosecutionCase -> prosecutionCase.getId()
-                .equals(updatedProsecutionCase.getId()) ? updatedProsecutionCase : prosecutionCase);
+
+        if(isNotEmpty(prosecutionCases)) {
+            final ProsecutionCase origProsecutionCase = Iterables.find(prosecutionCases, pc -> pc.getId()
+                    .equals(caseId));
+            final ProsecutionCase updatedProsecutionCase = updateProsecutionCaseWithEjectStatus(origProsecutionCase);
+            prosecutionCases.replaceAll(prosecutionCase -> prosecutionCase.getId()
+                    .equals(updatedProsecutionCase.getId()) ? updatedProsecutionCase : prosecutionCase);
+        }
 
         return hearing;
     }

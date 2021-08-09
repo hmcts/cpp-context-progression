@@ -217,7 +217,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                         ? updatedOffence.getLaaApplnReference() : persistedOffence.getLaaApplnReference())
                 .withOffenceDateCode(updatedOffence.getOffenceDateCode())
                 .withCommittingCourt(updatedOffence.getCommittingCourt())
-                .withReportingRestrictions(updatedOffence.getReportingRestrictions())
+                .withReportingRestrictions(nonNull(updatedOffence.getReportingRestrictions()) ? updatedOffence.getReportingRestrictions() : persistedOffence.getReportingRestrictions())
                 .withDvlaOffenceCode(updatedOffence.getDvlaOffenceCode())
                 .build();
     }

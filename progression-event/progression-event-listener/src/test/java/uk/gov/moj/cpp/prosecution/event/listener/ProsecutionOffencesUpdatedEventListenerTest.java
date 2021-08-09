@@ -1,20 +1,26 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
+import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.Hearing.hearing;
+import static uk.gov.justice.core.courts.JudicialResult.judicialResult;
+import static uk.gov.justice.core.courts.LaaReference.laaReference;
+import static uk.gov.justice.core.courts.Offence.offence;
+import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.LaaReference;
-import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ReportingRestriction;
@@ -34,15 +40,12 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearin
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -139,43 +142,43 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
                 .withDefendantId(randomUUID())
                 .withProsecutionCaseId(randomUUID())
                 .withLegalAidStatus("Withdrawn")
-                .withOffences(Stream.of(Offence.offence()
+                .withOffences(Stream.of(offence()
                         .withId(offenceId)
-                        .withLaaApplnReference(LaaReference.laaReference()
+                        .withLaaApplnReference(laaReference()
                                 .withStatusCode("WD")
                                 .withLaaContractNumber("LAA1234")
-                                .withStatusDate(LocalDate.now())
+                                .withStatusDate(now())
                                 .build())
                         .withReportingRestrictions(Stream.of(prepareReportingRestriction(reportingRestrictionId1, reportingRestrictionLabel))
-                                .collect(Collectors.toList()))
-                        .build()).collect(Collectors.toList()))
+                                .collect(toList()))
+                        .build()).collect(toList()))
                 .build();
-        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+        final ProsecutionCase prosecutionCase = prosecutionCase()
                 .withId(defendantCaseOffences.getProsecutionCaseId())
                 .withDefendants(Stream.of(Defendant.defendant()
                         .withLegalAidStatus("Withdrawn")
                         .withProceedingsConcluded(true)
                         .withId(defendantCaseOffences.getDefendantId())
-                        .withOffences(Stream.of(Offence.offence()
+                        .withOffences(Stream.of(offence()
                                 .withId(offenceId)
-                                .withLaaApplnReference(LaaReference.laaReference()
+                                .withLaaApplnReference(laaReference()
                                         .withStatusCode("wd")
                                         .withLaaContractNumber("LAA1234")
-                                        .withStatusDate(LocalDate.now())
+                                        .withStatusDate(now())
                                         .build())
                                 .withReportingRestrictions(Stream.of(prepareReportingRestriction(reportingRestrictionId1, reportingRestrictionLabel),
                                         prepareReportingRestriction(reportingRestrictionId2, reportingRestrictionLabel))
-                                        .collect(Collectors.toList()))
-                                .withJudicialResults(Stream.of(JudicialResult.judicialResult()
+                                        .collect(toList()))
+                                .withJudicialResults(Stream.of(judicialResult()
                                         .withJudicialResultId(randomUUID())
                                         .withResultText("Some Text")
-                                        .build()).collect(Collectors.toList()))
+                                        .build()).collect(toList()))
 
-                                .build()).collect(Collectors.toList()))
-                        .build()).collect(Collectors.toList()))
+                                .build()).collect(toList()))
+                        .build()).collect(toList()))
                 .build();
-        final Hearing hearing = Hearing.hearing()
-                .withProsecutionCases(Stream.of(prosecutionCase).collect(Collectors.toList()))
+        final Hearing hearing = hearing()
+                .withProsecutionCases(Stream.of(prosecutionCase).collect(toList()))
                 .withId(randomUUID())
                 .build();
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
@@ -185,20 +188,20 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
 
 
         when(prosecutionCaseOffencesUpdated.getDefendantCaseOffences()).thenReturn(defendantCaseOffences);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendantCaseOffences.getDefendantId().toString())
                                 .add("defendantLevelLegalAidStatus", "Withdrawn")
                                 .add("proceedingConcluded", true)
                                 .build())
                                 .build())
                         .build()).build();
-        final JsonObject hearingJsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("prosecutionCases", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject hearingJsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("prosecutionCases", createArrayBuilder().add(createObjectBuilder()
                                 .add("id", defendantCaseOffences.getProsecutionCaseId().toString())
-                                .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+                                .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                         .add("id", defendantCaseOffences.getDefendantId().toString()).build()))
                                 .build())
                                 .build()).build()).build();
@@ -231,9 +234,113 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         final JsonNode reportingRestrictionJsonNode = reportingRestrictionListJsonNode.get(0);
         assertThat(reportingRestrictionJsonNode.path("id").asText(), is(reportingRestrictionId1.toString()));
         assertThat(reportingRestrictionJsonNode.path("label").asText(), is(reportingRestrictionLabel));
-        assertThat(reportingRestrictionJsonNode.path("orderedDate").asText(), is(LocalDate.now().toString()));
+        assertThat(reportingRestrictionJsonNode.path("orderedDate").asText(), is(now().toString()));
     }
 
+    @Test
+    public void shoulOffencesUpdatedWhenRportRestictionNotUpdated() throws Exception {
+        final ObjectMapper mapper = new ObjectMapperProducer().objectMapper();
+        final UUID offenceId = randomUUID();
+        final UUID reportingRestrictionId1 = randomUUID();
+        final UUID reportingRestrictionId2 = randomUUID();
+        final String reportingRestrictionLabel = "RRLabel";
+
+        final DefendantCaseOffences defendantCaseOffences = DefendantCaseOffences.defendantCaseOffences()
+                .withDefendantId(randomUUID())
+                .withProsecutionCaseId(randomUUID())
+                .withLegalAidStatus("Withdrawn")
+                .withOffences(Stream.of(offence()
+                        .withId(offenceId)
+                        .withLaaApplnReference(laaReference()
+                                .withStatusCode("WD")
+                                .withLaaContractNumber("LAA1234")
+                                .withStatusDate(now())
+                                .build())
+                        .build()).collect(toList()))
+                .build();
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(defendantCaseOffences.getProsecutionCaseId())
+                .withDefendants(Stream.of(Defendant.defendant()
+                        .withLegalAidStatus("Withdrawn")
+                        .withProceedingsConcluded(true)
+                        .withId(defendantCaseOffences.getDefendantId())
+                        .withOffences(Stream.of(offence()
+                                .withId(offenceId)
+                                .withLaaApplnReference(laaReference()
+                                        .withStatusCode("wd")
+                                        .withLaaContractNumber("LAA1234")
+                                        .withStatusDate(now())
+                                        .build())
+                                .withReportingRestrictions(Stream.of(prepareReportingRestriction(reportingRestrictionId1, reportingRestrictionLabel),
+                                        prepareReportingRestriction(reportingRestrictionId2, reportingRestrictionLabel))
+                                        .collect(toList()))
+                                .withJudicialResults(Stream.of(judicialResult()
+                                        .withJudicialResultId(randomUUID())
+                                        .withResultText("Some Text")
+                                        .build()).collect(toList()))
+
+                                .build()).collect(toList()))
+                        .build()).collect(toList()))
+                .build();
+        final Hearing hearing = hearing()
+                .withProsecutionCases(Stream.of(prosecutionCase).collect(toList()))
+                .withId(randomUUID())
+                .build();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseOffencesUpdated.class))
+                .thenReturn(prosecutionCaseOffencesUpdated);
+        when(envelope.metadata()).thenReturn(metadata);
+
+
+        when(prosecutionCaseOffencesUpdated.getDefendantCaseOffences()).thenReturn(defendantCaseOffences);
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
+                                .add("id", defendantCaseOffences.getDefendantId().toString())
+                                .add("defendantLevelLegalAidStatus", "Withdrawn")
+                                .add("proceedingConcluded", true)
+                                .build())
+                                .build())
+                        .build()).build();
+        final JsonObject hearingJsonObject = createObjectBuilder()
+                .add("payload", createObjectBuilder()
+                        .add("prosecutionCases", createArrayBuilder().add(createObjectBuilder()
+                                .add("id", defendantCaseOffences.getProsecutionCaseId().toString())
+                                .add("defendants", createArrayBuilder().add(createObjectBuilder()
+                                        .add("id", defendantCaseOffences.getDefendantId().toString()).build()))
+                                .build())
+                                .build()).build()).build();
+
+        when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class))
+                .thenReturn(prosecutionCase);
+
+        when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
+        when(repository.findByCaseId(defendantCaseOffences.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
+        when(caseDefendantHearingRepository.findByDefendantId(defendantCaseOffences.getDefendantId()))
+                .thenReturn(Arrays.asList(caseDefendantHearingEntity));
+        when(caseDefendantHearingEntity.getHearing()).thenReturn(hearingEntity);
+
+        when(hearingEntity.getPayload()).thenReturn(hearingJsonObject.toString());
+        when(jsonObjectToObjectConverter.convert(hearingJsonObject, Hearing.class)).thenReturn(hearing);
+
+        eventListener.processProsecutionCaseOffencesUpdated(envelope);
+        verify(repository).save(argumentCaptor.capture());
+        verify(hearingRepository).save(hearingEntityArgumentCaptor.capture());
+        assertThat(argumentCaptor.getAllValues(), is(notNullValue()));
+        final ProsecutionCaseEntity prosecutionCaseEntity = argumentCaptor.getAllValues().get(0);
+        final JsonNode prosecutionCaseNode = mapper.valueToTree(JSONValue.parse(prosecutionCaseEntity.getPayload()));
+        assertThat(prosecutionCaseNode.path("defendants").get(0).path("legalAidStatus").asText(), is(""));
+        assertThat(prosecutionCaseNode.path("defendants").get(0).path("proceedingsConcluded").asBoolean(), is(true));
+        assertThat(prosecutionCaseNode.path("defendants").get(0).path("offences").get(0).path("judicialResults").get(0).path("resultText").asText(), is("Some Text"));
+
+        final JsonNode reportingRestrictionListJsonNode = prosecutionCaseNode.path("defendants").get(0).path("offences").get(0).path("reportingRestrictions");
+        assertThat(reportingRestrictionListJsonNode.size(), is(2));
+
+        final JsonNode reportingRestrictionJsonNode = reportingRestrictionListJsonNode.get(0);
+        assertThat(reportingRestrictionJsonNode.path("id").asText(), is(reportingRestrictionId1.toString()));
+        assertThat(reportingRestrictionJsonNode.path("label").asText(), is(reportingRestrictionLabel));
+        assertThat(reportingRestrictionJsonNode.path("orderedDate").asText(), is(now().toString()));
+    }
 
     @Test
     public void shouldNotUpdateWithdrawnOffenceInAdjournedHearing() {
@@ -246,17 +353,17 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         final UUID offence3Id = randomUUID();
 
 
-        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+        final ProsecutionCase prosecutionCase = prosecutionCase()
                 .withId(prosecutionCaseId)
                 .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
                         .withId(defendantId)
-                        .withOffences(new ArrayList<>(Arrays.asList(Offence.offence()
+                        .withOffences(new ArrayList<>(Arrays.asList(offence()
                                         .withId(offence1Id)
                                         .build(),
-                                Offence.offence()
+                                offence()
                                         .withId(offence2Id)
                                         .build(),
-                                Offence.offence()
+                                offence()
                                         .withId(offence3Id)
                                         .build())))
                         .build())))
@@ -269,9 +376,9 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
                         .withProsecutionCaseId(prosecutionCaseId)
                         .withDefendantId(defendantId)
                         .withOffences(new ArrayList<>(Arrays.asList(
-                                Offence.offence().withId(offence1Id).withWording("retest").build(),
-                                Offence.offence().withId(offence2Id).withWording("retest").build(),
-                                Offence.offence().withId(offence3Id).withWording("retest").build())))
+                                offence().withId(offence1Id).withWording("retest").build(),
+                                offence().withId(offence2Id).withWording("retest").build(),
+                                offence().withId(offence3Id).withWording("retest").build())))
                         .build())
                 .build();
         final JsonObject eventPayload = objectToJsonObjectConverter.convert(prosecutionCaseOffencesUpdated);
@@ -286,14 +393,14 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         caseDefendantHearing1Entity.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId, hearing1Id));
         final HearingEntity hearing1Entity = new HearingEntity();
         hearing1Entity.setHearingId(hearing1Id);
-        final Hearing hearing1 = Hearing.hearing()
-                .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+        final Hearing hearing1 = hearing()
+                .withProsecutionCases(Arrays.asList(prosecutionCase()
                         .withId(prosecutionCaseId)
                         .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
                                 .withId(defendantId)
-                                .withOffences(new ArrayList<>(Arrays.asList(Offence.offence().withId(offence1Id).build(),
-                                        Offence.offence().withId(offence2Id).build(),
-                                        Offence.offence().withId(offence3Id).build())))
+                                .withOffences(new ArrayList<>(Arrays.asList(offence().withId(offence1Id).build(),
+                                        offence().withId(offence2Id).build(),
+                                        offence().withId(offence3Id).build())))
                                 .build())))
                         .build()))
                 .build();
@@ -305,13 +412,13 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         caseDefendantHearing2Entity.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId, hearing2Id));
         final HearingEntity hearing2Entity = new HearingEntity();
         hearing1Entity.setHearingId(hearing2Id);
-        final Hearing hearing2 = Hearing.hearing()
-                .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+        final Hearing hearing2 = hearing()
+                .withProsecutionCases(Arrays.asList(prosecutionCase()
                         .withId(prosecutionCaseId)
                         .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
                                 .withId(defendantId)
-                                .withOffences(new ArrayList<>(Arrays.asList(Offence.offence().withId(offence1Id).build(),
-                                        Offence.offence().withId(offence2Id).build())))
+                                .withOffences(new ArrayList<>(Arrays.asList(offence().withId(offence1Id).build(),
+                                        offence().withId(offence2Id).build())))
                                 .build())))
                         .build()))
                 .build();
@@ -362,14 +469,14 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         final UUID offence3Id = randomUUID();
 
 
-        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+        final ProsecutionCase prosecutionCase = prosecutionCase()
                 .withId(prosecutionCaseId)
                 .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
                         .withId(defendantId)
-                        .withOffences(new ArrayList<>(Arrays.asList(Offence.offence()
+                        .withOffences(new ArrayList<>(Arrays.asList(offence()
                                         .withId(offence1Id)
                                         .build(),
-                                Offence.offence()
+                                offence()
                                         .withId(offence2Id)
                                         .build())))
                         .build())))
@@ -382,9 +489,9 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
                         .withProsecutionCaseId(prosecutionCaseId)
                         .withDefendantId(defendantId)
                         .withOffences(new ArrayList<>(Arrays.asList(
-                                Offence.offence().withId(offence1Id).withWording("retest").build(),
-                                Offence.offence().withId(offence2Id).withWording("retest").build(),
-                                Offence.offence().withId(offence3Id).withWording("add").build())))
+                                offence().withId(offence1Id).withWording("retest").build(),
+                                offence().withId(offence2Id).withWording("retest").build(),
+                                offence().withId(offence3Id).withWording("add").build())))
                         .build())
                 .build();
         final JsonObject eventPayload = objectToJsonObjectConverter.convert(prosecutionCaseOffencesUpdated);
@@ -399,13 +506,13 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         caseDefendantHearing1Entity.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId, hearing1Id));
         final HearingEntity hearing1Entity = new HearingEntity();
         hearing1Entity.setHearingId(hearing1Id);
-        final Hearing hearing1 = Hearing.hearing()
-                .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+        final Hearing hearing1 = hearing()
+                .withProsecutionCases(Arrays.asList(prosecutionCase()
                         .withId(prosecutionCaseId)
                         .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
                                 .withId(defendantId)
-                                .withOffences(new ArrayList<>(Arrays.asList(Offence.offence().withId(offence1Id).build(),
-                                        Offence.offence().withId(offence2Id).build())))
+                                .withOffences(new ArrayList<>(Arrays.asList(offence().withId(offence1Id).build(),
+                                        offence().withId(offence2Id).build())))
                                 .build())))
                         .build()))
                 .build();
@@ -417,13 +524,13 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         caseDefendantHearing2Entity.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId, hearing2Id));
         final HearingEntity hearing2Entity = new HearingEntity();
         hearing1Entity.setHearingId(hearing2Id);
-        final Hearing hearing2 = Hearing.hearing()
-                .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+        final Hearing hearing2 = hearing()
+                .withProsecutionCases(Arrays.asList(prosecutionCase()
                         .withId(prosecutionCaseId)
                         .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
                                 .withId(defendantId)
-                                .withOffences(new ArrayList<>(Arrays.asList(Offence.offence().withId(offence1Id).build(),
-                                        Offence.offence().withId(offence2Id).build())))
+                                .withOffences(new ArrayList<>(Arrays.asList(offence().withId(offence1Id).build(),
+                                        offence().withId(offence2Id).build())))
                                 .build())))
                         .build()))
                 .build();
@@ -469,7 +576,7 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         return ReportingRestriction.reportingRestriction()
                 .withId(reportingRestrictionId)
                 .withLabel(label)
-                .withOrderedDate(LocalDate.now())
+                .withOrderedDate(now())
                 .build();
     }
 }

@@ -181,7 +181,7 @@ public class CourtDocumentNotifiedProcessor {
     }
 
     private String  concatenateDefendantFirstAndLastName(final Defendant defendant) {
-        if(defendant.getPersonDefendant().getPersonDetails()!= null) {
+        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails())) {
             return defendant.getPersonDefendant().getPersonDetails().getFirstName() + " " + defendant.getPersonDefendant().getPersonDetails().getLastName();
         }
         return "";
