@@ -29,6 +29,7 @@ import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyTemplatePay
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 
 import java.util.List;
 import java.util.Map;
@@ -113,6 +114,7 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
         stubDocumentCreate(DOCUMENT_TEXT);
         IdMapperStub.setUp();
         NotificationServiceStub.setUp();
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
         caseId = randomUUID().toString();
         courtDocumentId = randomUUID().toString();

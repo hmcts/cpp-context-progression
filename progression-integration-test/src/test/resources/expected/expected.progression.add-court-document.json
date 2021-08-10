@@ -12,7 +12,7 @@
       }
     },
     "documentTypeDescription": "SJP Notice",
-    "documentTypeId": "0bb7b276-9dc0-4af2-83b9-f4acef0c7898",
+    "documentTypeId": "DOCUMENT-TYPE-ID",
     "documentTypeRBAC": {
       "deleteUserGroups": [
         "Crown Court"

@@ -1,18 +1,24 @@
 package uk.gov.moj.cpp.progression.query;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -22,13 +28,16 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
-import uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider;
+import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NotificationStatusEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusRepository;
 
+import java.io.IOException;
 import java.io.StringReader;
+import java.io.UncheckedIOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,17 +48,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -77,10 +90,14 @@ public class CourtDocumentQuery {
     private static final String NOTIFICATION_STATUS = "notificationStatus";
     public static final String APPLICATION_ID = "applicationId";
     public static final String PROSECUTION_NOTIFICATION_STATUS = "progression.query.prosecution.notification-status";
+    private static final String REFERENCEDATA_GET_ALL_DOCUMENT_TYPE_ACCESS_QUERY = "referencedata.get-all-document-type-access";
+    private static final String DOCUMENT_TYPE_ACCESS = "documentsTypeAccess";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperProducer().objectMapper();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentQuery.class);
     public static final String DOCUMENT_USER_GROUP_LOGGER = "search for case %s for documents userGroupsInDocument=%s permittedGroups=%s";
-
+    public static final String READ_USER_ACTION = "readUserGroups";
+    private static final String COURT_DOCUMENT_TYPE_RBAC = "courtDocumentTypeRBAC";
     @Inject
     private CourtDocumentRepository courtDocumentRepository;
 
@@ -95,9 +112,6 @@ public class CourtDocumentQuery {
 
     @Inject
     private NotificationStatusRepository notificationStatusRepository;
-
-    @Inject
-    private RbacProvider rbacProvider;
 
     @Inject
     private Requester requester;
@@ -136,7 +150,10 @@ public class CourtDocumentQuery {
         boolean foundSearchParameter = false;
         if (isNotEmpty(strCaseIds)) {
             foundSearchParameter = true;
+
+
             final List<CourtDocumentEntity> byProsecutionCaseIds = courtDocumentRepository.findByProsecutionCaseIds(commaSeparatedUuidParam2UUIDs(strCaseIds));
+
             if (!byProsecutionCaseIds.isEmpty()) {
                 courtDocumentEntities.addAll(byProsecutionCaseIds);
             }
@@ -144,13 +161,16 @@ public class CourtDocumentQuery {
         if (isNotEmpty(strApplicationIds)) {
             foundSearchParameter = true;
             final List<CourtDocumentEntity> byApplicationIds = courtDocumentRepository.findByApplicationIds(commaSeparatedUuidParam2UUIDs(strApplicationIds));
+
             if (!byApplicationIds.isEmpty()) {
                 courtDocumentEntities.addAll(byApplicationIds);
             }
         }
         if (isNotEmpty(defendantId)) {
             foundSearchParameter = true;
+
             courtDocumentEntities.addAll(courtDocumentRepository.findByDefendantId(UUID.fromString(defendantId)));
+
         }
         if (!foundSearchParameter) {
             throw new RuntimeException(String.format("%s no search parameter specified ", COURT_DOCUMENTS_SEARCH_NAME));
@@ -158,16 +178,25 @@ public class CourtDocumentQuery {
 
         final CourtDocumentsSearchResult result = new CourtDocumentsSearchResult();
         final Map<UUID, CourtDocument> id2CourtDocument = new HashMap<>();
+
+        final List<DocumentTypeAccessReferenceData> documentTypeAccessReferenceDataList = getAllDocumentTypeAccess();
+        final List<String> userGroupsByUserId = getUserGroupsByUserId(new Action(envelope)).getJsonArray(GROUPS).stream()
+                .map(groupJson -> (JsonObject) groupJson)
+                .map(gr -> gr.getString(GROUP_NAME))
+                .collect(Collectors.toList());
+
+
         courtDocumentEntities.stream()
                 .filter(entity -> !entity.isRemoved())
                 .map(entity -> courtDocument(entity))
-                .filter(cd -> canCourtDocumentBeAccessed(cd, envelope))
+                .filter(courtDocument -> isAllowedToAccessDocumentForGivenAction(documentTypeAccessReferenceDataList, courtDocument, userGroupsByUserId))
                 .forEach(courtDocument -> id2CourtDocument.put(courtDocument.getCourtDocumentId(), courtDocument));
 
         final Set<String> usergroupsInDocuments = id2CourtDocument.values().stream()
                 .flatMap(cd -> cd.getMaterials() == null ? Stream.empty() : cd.getMaterials().stream())
                 .flatMap(m -> m.getUserGroups() == null ? Stream.empty() : m.getUserGroups().stream())
                 .collect(Collectors.toSet());
+
         final Set<String> permittedGroups = getPermittedGroups(usergroupsInDocuments, envelope);
 
         if (LOGGER.isInfoEnabled()) {
@@ -192,13 +221,54 @@ public class CourtDocumentQuery {
         return envelopeFrom(envelope.metadata(), resultJson);
     }
 
-    private boolean canCourtDocumentBeAccessed(final CourtDocument courtDocument,
-                                               final JsonEnvelope envelope) {
-        final Action action = new Action(envelopeFrom(envelope.metadata(), createObjectBuilder().add(COURT_DOCUMENT_RESULT_FIELD,
-                objectToJsonObjectConverter.convert(courtDocument)).build()));
-        return rbacProvider.isLoggedInUserAllowedToReadDocument(action);
+    private boolean isAllowedToAccessDocumentForGivenAction(final List<DocumentTypeAccessReferenceData> documentTypeAccessReferenceDataList,
+                                                            final CourtDocument courtDocument, final List<String> userGroupsByUserId) {
+
+
+        final Optional<DocumentTypeAccessReferenceData> documentTypeAccess = documentTypeAccessReferenceDataList.stream().filter(documentTypeAccessReferenceData -> documentTypeAccessReferenceData.getId().equals(courtDocument
+                .getDocumentTypeId())).findFirst();
+
+        if (!documentTypeAccess.isPresent()) {
+            return false;
+        }
+
+        final JsonObject documentTypeAccessObject = objectToJsonObjectConverter.convert(documentTypeAccess);
+
+        if (isNull(courtDocument.getDocumentTypeId())) {
+            return false;
+        }
+
+        final Optional<List<String>> listOfValidUserGroup = getListOfValidUserGroup(documentTypeAccessObject, READ_USER_ACTION);
+
+        return listOfValidUserGroup.filter(documentTypeAccessGroup -> isUserGroupsMatchesWithRBAC(documentTypeAccessGroup, userGroupsByUserId)).isPresent();
+
     }
 
+
+    private boolean isUserGroupsMatchesWithRBAC(final List<String> groupsWithCreateAccess, final List<String> userGroupsByUserId) {
+        return groupsWithCreateAccess.stream().anyMatch(userGroupsByUserId::contains);
+    }
+
+    private Optional<List<String>> getListOfValidUserGroup(final JsonObject documentTypeData, final String userAction) {
+        if (documentTypeData == null
+                || !documentTypeData.containsKey(COURT_DOCUMENT_TYPE_RBAC)
+                || !documentTypeData.getJsonObject(COURT_DOCUMENT_TYPE_RBAC).containsKey(userAction)
+                || documentTypeData.getJsonObject(COURT_DOCUMENT_TYPE_RBAC).getJsonArray(userAction).isEmpty()) {
+            return Optional.empty();
+        }
+        final JsonArray courtDocumentTypeRBAC = documentTypeData.getJsonObject(COURT_DOCUMENT_TYPE_RBAC).getJsonArray(userAction);
+
+
+        final List<String> result = IntStream.range(0, courtDocumentTypeRBAC.size())
+                .mapToObj(courtDocumentTypeRBAC::getJsonObject)
+                .filter(group -> group.getJsonObject("cppGroup") != null)
+                .map(group -> group.getJsonObject("cppGroup"))
+                .filter(group -> isNoneBlank(group.getString(GROUP_NAME)))
+                .map(group -> group.getString(GROUP_NAME)).collect(toList());
+
+        return Optional.of(result);
+
+    }
 
     @Handles(COURT_DOCUMENTS_NOW_SEARCH_NAME)
     public JsonEnvelope searchCourtDocumentsByHearingId(final JsonEnvelope envelope) {
@@ -373,6 +443,36 @@ public class CourtDocumentQuery {
         }
 
         return userGroups;
+    }
+
+
+    public List<DocumentTypeAccessReferenceData> getAllDocumentTypeAccess() {
+
+        return getRefDataStream(REFERENCEDATA_GET_ALL_DOCUMENT_TYPE_ACCESS_QUERY, DOCUMENT_TYPE_ACCESS, createObjectBuilder().add("date", LocalDate.now().toString())).map(asDocumentsMetadataRefData()).collect(Collectors.toList());
+
+    }
+
+
+    private Stream<JsonValue> getRefDataStream(final String queryName, final String fieldName, final JsonObjectBuilder jsonObjectBuilder) {
+        final JsonEnvelope envelope = envelopeFrom(metadataBuilder()
+                .withId(randomUUID())
+                .withName(queryName), jsonObjectBuilder);
+        return requester.requestAsAdmin(envelope, JsonObject.class)
+                .payload()
+                .getJsonArray(fieldName)
+                .stream();
+    }
+
+    @SuppressWarnings({"squid:S2139"})
+    public static Function<JsonValue, DocumentTypeAccessReferenceData> asDocumentsMetadataRefData() {
+        return jsonValue -> {
+            try {
+                return OBJECT_MAPPER.readValue(jsonValue.toString(), DocumentTypeAccessReferenceData.class);
+            } catch (IOException e) {
+                LOGGER.error("Unable to unmarshal DocumentTypeAccessReferenceData. Payload :{}", jsonValue.toString(), e);
+                throw new UncheckedIOException(e);
+            }
+        };
     }
 
 }

@@ -14,6 +14,8 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumen
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
+
 import java.io.IOException;
 import java.util.UUID;
 
@@ -38,6 +40,8 @@ public class DeleteFinancialMeansIT extends AbstractIT {
         docId = randomUUID().toString();
         defendantId = randomUUID().toString();
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
+
     }
 
     @Test

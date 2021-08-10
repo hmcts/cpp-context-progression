@@ -15,6 +15,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getUpl
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -92,6 +93,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
 
         String body = Resources.toString(Resources.getResource("progression.add-court-document.json"), Charset.defaultCharset());
@@ -145,7 +147,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
         final UUID applicationId = randomUUID();
         final UUID materialId = randomUUID();
         final UUID docId = randomUUID();
-        final UUID documentTypeId = randomUUID();
+        final UUID documentTypeId = UUID.fromString("460f7ec0-c002-11e8-a355-529269fb1459");
         final ZonedDateTime uploadTime = ZonedDateTime.now();
 
         final CourtDocument courtDocument = CourtDocument.courtDocument()
@@ -177,7 +179,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
 
         //search for the document by application id
         ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", documentTypeId.toString());
-
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
         assertCourtDocumentByApplication(docId.toString(), documentTypeId.toString(), materialId.toString(), applicationId.toString());
     }

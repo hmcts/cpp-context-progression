@@ -61,7 +61,7 @@ public class ProsecutorUpdatedIT extends AbstractIT {
     public void shouldIndexProsecutorUpdatedEvent() throws Exception {
         initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        addCourtDocumentAndVerify();
+        addCourtDocumentAndVerify("0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
         // when document is added, then the prosecutor is updated to CPS
         final Matcher[] initialMatchers = {withJsonPath("$.prosecutingAuthority", equalTo("CPS_NE"))};
 
@@ -75,7 +75,7 @@ public class ProsecutorUpdatedIT extends AbstractIT {
                 .assertThat("$._case_type", equalTo("PROSECUTION"));
     }
 
-    private void addCourtDocumentAndVerify() throws IOException {
+    private void addCourtDocumentAndVerify(final String documentTypeId) throws IOException {
         //Given
         final String body = prepareAddCourtDocumentPayload();
         //When
@@ -94,6 +94,7 @@ public class ProsecutorUpdatedIT extends AbstractIT {
         final String expectedPayload = getPayload("expected/expected.progression.add-court-document.json")
                 .replace("COURT-DOCUMENT-ID", documentId)
                 .replace("DEFENDENT-ID", defendantId)
+                .replace("DOCUMENT-TYPE-ID", documentTypeId)
                 .replace("CASE-ID", caseId);
 
         assertEquals(expectedPayload, actualDocument, getCustomComparator());

@@ -20,7 +20,7 @@
           }
         },
         "documentTypeDescription": "Magistrate's Sending sheet",
-        "documentTypeId": "1b7e6a7a-a571-4ab9-8895-4b1a58424d78",
+        "documentTypeId": "460f7ec0-c002-11e8-a355-529269fb1459",
         "documentTypeRBAC": {
           "deleteUserGroups": [
             "Crown Court"

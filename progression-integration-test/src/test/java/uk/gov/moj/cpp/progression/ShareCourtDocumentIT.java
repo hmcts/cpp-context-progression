@@ -33,6 +33,7 @@ import uk.gov.justice.courts.progression.query.Courtdocuments;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.test.utils.core.http.RequestParams;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import uk.gov.moj.cpp.progression.test.matchers.BeanMatcher;
 import uk.gov.moj.cpp.progression.util.FileUtil;
 import uk.gov.moj.cpp.progression.util.QueryUtil;
@@ -89,6 +90,8 @@ public class ShareCourtDocumentIT extends AbstractIT {
         caseLevelDocumentId = randomUUID().toString();
         defendantId1 = randomUUID().toString();
         defendantId2 = randomUUID().toString();
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
+
     }
 
     @Test

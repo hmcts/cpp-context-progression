@@ -100,14 +100,14 @@ public class AddCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldAddCourtDocument() throws IOException {
-        verifyAddCourtDocument(null);
+        verifyAddCourtDocument(null, "460f7ec0-c002-11e8-a355-529269fb1459");
         verifyForCourtDocumentNotified();
     }
 
     @Test
     public void shouldAddCourtDocumentAndThenUpdateIt() throws IOException {
         //Given
-        verifyAddCourtDocument(null);
+        verifyAddCourtDocument(null,"460f7ec0-c002-11e8-a355-529269fb1459");
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
 
@@ -141,7 +141,7 @@ public class AddCourtDocumentIT extends AbstractIT {
     @Test
     public void shouldAddCourtDocumentAndVerifyUpdateFailedEvent() throws IOException {
         //Given
-        verifyAddCourtDocument(null);
+        verifyAddCourtDocument(null, "460f7ec0-c002-11e8-a355-529269fb1459");
 
         stubQueryDocumentTypeData("/restResource/ref-invalid-data-document-type.json");
 
@@ -166,7 +166,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         final String userId = "dd8dcdcf-58d1-4e45-8450-40b0f569a7e7";
         final String materialId = "5e1cc18c-76dc-47dd-99c1-d6f87385edf1";
         //Given
-        verifyAddCourtDocument(null);
+        verifyAddCourtDocument(null, "460f7ec0-c002-11e8-a355-529269fb1459");
 
         setupAsAuthorisedUser(UUID.fromString(userId), "stub-data/usersgroups.get-support-groups-by-user.json");
 
@@ -327,7 +327,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         JsonObject orgProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
-        verifyAddCourtDocument(true);
+        verifyAddCourtDocument(true,"0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
         verifyForCourtDocumentNotified();
 
         response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -355,7 +355,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         JsonObject orgProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
-        verifyAddCourtDocument(false);
+        verifyAddCourtDocument(false,"0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
         verifyForCourtDocumentNotified();
 
         response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -371,7 +371,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         JsonObject orgProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
-        verifyAddCourtDocument(true);
+        verifyAddCourtDocument(true,"0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
         verifyForCourtDocumentNotified();
 
         response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -388,7 +388,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         JsonObject orgProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
-        verifyAddCourtDocument(true);
+        verifyAddCourtDocument(true,"0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
         verifyForCourtDocumentNotified();
 
         response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -403,7 +403,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         expectedProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
 
-        verifyAddCourtDocument(true);
+        verifyAddCourtDocument(true,"0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
         verifyForCourtDocumentNotified();
 
         response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -423,7 +423,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         JsonObject orgProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
-        verifyAddCourtDocument(true);
+        verifyAddCourtDocument(true,"0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
         verifyForCourtDocumentNotified();
 
         response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -466,7 +466,7 @@ public class AddCourtDocumentIT extends AbstractIT {
     }
 
 
-    private void verifyAddCourtDocument(Boolean isCpsCase) throws IOException {
+    private void verifyAddCourtDocument(Boolean isCpsCase, final String documentTypeId) throws IOException {
         //Given
         final String body = prepareAddCourtDocumentPayload(isCpsCase);
         //When
@@ -485,6 +485,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         final String expectedPayload = getPayload("expected/expected.progression.add-court-document.json")
                 .replace("COURT-DOCUMENT-ID", docId.toString())
                 .replace("DEFENDENT-ID", defendantId.toString())
+                .replace("DOCUMENT-TYPE-ID", documentTypeId)
                 .replace("CASE-ID", caseId.toString());
 
         assertEquals(expectedPayload, actualDocument, getCustomComparator());

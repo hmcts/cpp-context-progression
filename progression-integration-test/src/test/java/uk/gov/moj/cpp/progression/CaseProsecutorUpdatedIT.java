@@ -76,8 +76,8 @@ public class CaseProsecutorUpdatedIT extends AbstractIT {
                 .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
                 .withUserId(randomUUID().toString())
                 .build();
-
-        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, randomUUID().toString());
+        final String updatedCourtCentreId = randomUUID().toString();
+        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, updatedCourtCentreId );
         sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
 
         verifyInMessagingQueueForCasesReferredToCourts();

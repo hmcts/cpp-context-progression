@@ -7,10 +7,16 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static java.lang.ClassLoader.getSystemResourceAsStream;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.fail;
+import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 import static javax.ws.rs.core.Response.Status.fromStatusCode;
@@ -18,6 +24,10 @@ import static javax.ws.rs.core.Response.Status.fromStatusCode;
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.moj.cpp.progression.util.Pair;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,12 +38,15 @@ import javax.json.JsonObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.io.IOUtils;
 
 
 public class ReferenceDataStub {
 
     public static final String WELSH_COURT_ID = "f8254db1-1683-483e-afb3-b87fde5a0a26";
     public static final String ENGLISH_COURT_ID = "e3114db1-1683-483e-afb3-b87fde5a7777";
+    private static final String REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_QUERY_URL = "/referencedata-service/query/api/rest/referencedata/documents-type-access/" + LocalDate.now().toString();
+    private static final String REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_MEDIA_TYPE = "application/vnd.referencedata.get-all-document-type-access+json";
 
     private static final List<Pair<String, String>> COURT_ID_LIST = Lists.newArrayList(Pair.p(".*", "/restResource/referencedata.ou-courtroom.json"), Pair.p(ENGLISH_COURT_ID, "/restResource/referencedata.ou-courtroom-english.json"));
 
@@ -195,6 +208,24 @@ public class ReferenceDataStub {
                         .withBody(documentType.toString())));
 
         waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.document+json");
+    }
+
+
+    public static void stubGetDocumentsTypeAccess(final String filePath) {
+        stubPingFor("referencedata-service");
+
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+                .getResourceAsStream(filePath))
+                .readObject();
+
+        stubFor(get(urlPathMatching(REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_QUERY_URL))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", UUID.randomUUID().toString())
+                        .withHeader("Content-Type", REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_MEDIA_TYPE)
+                        .withBody(documentType.toString())));
+
+        waitForStubToBeReady(REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_QUERY_URL, REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_MEDIA_TYPE);
     }
 
     public static void stubQueryAllDocumentsTypeData(final String resourceName) {

@@ -192,6 +192,7 @@ public class RequestApplicationSummonsIT extends AbstractIT {
     @Test
     public void shouldGenerateSummonsAfterApplicationApproved_SummonsNotSuppressed(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
         enableAmendReshareFeature(false);
+        ReferenceDataStub.stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
         final boolean summonsSuppressed = false;
 
@@ -222,6 +223,7 @@ public class RequestApplicationSummonsIT extends AbstractIT {
     @Test
     public void shouldGenerateSummonsAfterApplicationApproved_SummonsNotSuppressedV2(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
         enableAmendReshareFeature(true);
+        ReferenceDataStub.stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
         final boolean summonsSuppressed = false;
 

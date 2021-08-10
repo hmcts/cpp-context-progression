@@ -3,7 +3,9 @@ package uk.gov.moj.cpp.progression.util;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -61,12 +63,11 @@ public class CaseProsecutorUpdateHelper extends AbstractTestHelper {
     }
 
     public void verifyInMessagingQueueForProsecutorUpdated(int hearingsCount) {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(publicEventsCaseProsecutorUpdated);
-        assertThat(message.isPresent(), is(true));
-        assertThat(message.get().size(), is(8));
-        assertThat(message.get(), isJson(withJsonPath("$.prosecutionCaseId", hasToString(Matchers.containsString(prosecutionCaseId)))));
-        assertThat(message.get(), isJson(withoutJsonPath("$.oldCpsProsecutor")));
-        assertThat(message.get(), isJson(withJsonPath("$.prosecutionAuthorityCode", hasToString(Matchers.containsString(NEW_PROSECUTION_AUTH_CODE)))));
-        assertThat(message.get(), isJson(withJsonPath("$.hearingIds", hasSize(hearingsCount))));
+        retrieveMessage(publicEventsCaseProsecutorUpdated, isJson(allOf(
+                withJsonPath("$.prosecutionCaseId", is(prosecutionCaseId)),
+                withoutJsonPath("$.oldCpsProsecutor"),
+                withJsonPath("$.prosecutionAuthorityCode", is(NEW_PROSECUTION_AUTH_CODE)),
+                withJsonPath("$.hearingIds", hasSize(hearingsCount)
+        ))));
     }
 }

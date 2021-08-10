@@ -23,6 +23,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCou
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByDefendantForDefenceWithNoDefendantId;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
@@ -67,10 +68,11 @@ public class CourtDocumentQueryIT extends AbstractIT {
         final String caseId = UUID.randomUUID().toString();
         final String docId = UUID.randomUUID().toString();
         final String defendantId = UUID.randomUUID().toString();
-        final String docTypeId = UUID.randomUUID().toString();
+        final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
 
         //Doc Type Ref Data
-        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", docTypeId);
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", docTypeId);
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
         //Defendant Level Document 1
         final String courtDocumentDefendantLevel = addCourtDocument(caseId, docId, defendantId,
                 prepareAddCourtDocumentWithDocTypePayload(docTypeId, docId, caseId, defendantId, "progression.add-court-document-def-level.json"));
@@ -96,7 +98,7 @@ public class CourtDocumentQueryIT extends AbstractIT {
         final String caseId = UUID.randomUUID().toString();
         final String docId = UUID.randomUUID().toString();
         final String defendantId = UUID.randomUUID().toString();
-        final String docTypeId = UUID.randomUUID().toString();
+        final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-seqnum.json");
         //Defendant Level Document 1
@@ -108,7 +110,7 @@ public class CourtDocumentQueryIT extends AbstractIT {
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
         //Case Level Document 2
         final String docId1 = UUID.randomUUID().toString();
-        final String docTypeId2 = UUID.randomUUID().toString();
+        final String docTypeId2 = "460f8154-c002-11e8-a355-529269fb1459";
         final String courtDocumentCaseLevel2 = addCourtDocument(caseId, docId1, defendantId,
                 prepareAddCourtDocumentWithDocTypePayload(docTypeId2, docId1, caseId, defendantId, "progression.add-court-document-doctype-level.json"));
         final JsonObject courtDocumentCaseLevelJson2 = new StringToJsonObjectConverter().convert(courtDocumentCaseLevel2);
@@ -117,7 +119,7 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
         //Doc Type Ref Data
         ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", docTypeId);
-        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", docTypeId2);
+        ReferenceDataStub.stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
 
         final String actualDocument = getCourtDocumentsByCaseAndDefendant(USER_ID, caseId, defendantId);
@@ -139,7 +141,7 @@ public class CourtDocumentQueryIT extends AbstractIT {
         final String caseId = UUID.randomUUID().toString();
         final String docId = UUID.randomUUID().toString();
         final String defendantId = UUID.randomUUID().toString();
-        final String docTypeId = UUID.randomUUID().toString();
+        final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
         //Defendant Level Document 1
@@ -152,7 +154,7 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
         //Case Level Document 2
         final String docId1 = UUID.randomUUID().toString();
-        final String docTypeId2 = UUID.randomUUID().toString();
+        final String docTypeId2 = "460fb0ca-c002-11e8-a355-529269fb1459";
         final String courtDocumentCaseLevel2 = addCourtDocument(caseId, docId1, defendantId,
                 prepareAddCourtDocumentWithDocTypePayload(docTypeId2, docId1, caseId, defendantId, "progression.add-court-document-def-level.json"));
         final JsonObject courtDocumentCaseLevelJson2 = new StringToJsonObjectConverter().convert(courtDocumentCaseLevel2);
@@ -160,8 +162,9 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
 
         //Doc Type Ref Data
-        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", docTypeId);
-        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type-legal-advisor.json", docTypeId2);
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", docTypeId);
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type-legal-advisor.json", docTypeId2);
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
 
         final String actualDocument = getCourtDocumentsByCaseAndDefendant(USER_ID, caseId, defendantId);
@@ -191,17 +194,19 @@ public class CourtDocumentQueryIT extends AbstractIT {
                 prepareAddCourtDocumentWithDocTypePayload(docTypeId, docId, caseId, defendantId, "progression.add-court-document-doctype-level.json"));
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
+
         //Case Level Document 2
-        final String docId1 = UUID.randomUUID().toString();
-        final String docTypeId2 = UUID.randomUUID().toString();
+        final String docId1 = randomUUID().toString();
+        final String docTypeId2 = "460f8154-c002-11e8-a355-529269fb1459";
         final String courtDocumentCaseLevel2 = addCourtDocument(caseId, docId1, defendantId,
                 prepareAddCourtDocumentWithDocTypePayload(docTypeId2, docId1, caseId, defendantId, "progression.add-court-document-doctype-level.json"));
         final JsonObject courtDocumentCaseLevelJson2 = new StringToJsonObjectConverter().convert(courtDocumentCaseLevel2);
         final String caseLevelCourtDocumentId2 = courtDocumentCaseLevelJson2.getJsonObject("courtDocument").getString("courtDocumentId");
 
         //Doc Type Ref Data
-        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type-legal-advisor.json", docTypeId);
-        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", docTypeId2);
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type-legal-advisor.json", docTypeId);
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", docTypeId2);
 
 
         final String actualDocument = getCourtDocumentsByCase(USER_ID, caseId.toString());
@@ -235,8 +240,8 @@ public class CourtDocumentQueryIT extends AbstractIT {
                 prepareAddCourtDocumentWithDocTypePayload(docTypeId2, docId1, caseId, defendantId, "progression.add-court-document-doctype-level.json"));
 
         //Doc Type Ref Data
-        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type-legal-advisor.json", docTypeId);
-        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type-legal-advisor.json", docTypeId2);
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type-legal-advisor.json", docTypeId);
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type-legal-advisor.json", docTypeId2);
 
         final String actualDocument = getCourtDocumentsByCase(USER_ID, caseId.toString());
 
@@ -251,7 +256,7 @@ public class CourtDocumentQueryIT extends AbstractIT {
         final String caseId = UUID.randomUUID().toString();
         final String docId = UUID.randomUUID().toString();
         final String defendantId = UUID.randomUUID().toString();
-        final String docTypeId = UUID.randomUUID().toString();
+        final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-seqnum.json");
         //Case Level Document 1
         final String courtDocumentCaseLevel = addCourtDocument(caseId, docId, defendantId,
@@ -260,22 +265,23 @@ public class CourtDocumentQueryIT extends AbstractIT {
         final String caseLevelCourtDocumentId1 = courtDocumentCaseLevelJson.getJsonObject("courtDocument").getString("courtDocumentId");
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
         //Case Level Document 2
         final String docId1 = UUID.randomUUID().toString();
-        final String docTypeId2 = UUID.randomUUID().toString();
+        final String docTypeId2 = "460f8154-c002-11e8-a355-529269fb1459";
         final String courtDocumentCaseLevel2 = addCourtDocument(caseId, docId1, defendantId,
                 prepareAddCourtDocumentWithDocTypePayload(docTypeId2, docId1, caseId, defendantId, "progression.add-court-document-doctype-level.json"));
         final JsonObject courtDocumentCaseLevelJson2 = new StringToJsonObjectConverter().convert(courtDocumentCaseLevel2);
         final String caseLevelCourtDocumentId2 = courtDocumentCaseLevelJson2.getJsonObject("courtDocument").getString("courtDocumentId");
 
-        final String actualDocument = getCourtDocumentsByCase(USER_ID, caseId.toString());
+        final String actualDocument = getCourtDocumentsByCase(USER_ID, caseId);
 
         final String expectedPayload = FileUtil.getPayload("expected/expected.progression.court-documents.json")
                 .replace("CASE-LEVEL-COURT-DOCUMENT-ID", caseLevelCourtDocumentId2)
                 .replace("COURT-DOCUMENT-ID2", caseLevelCourtDocumentId1)
                 .replace("DOCUMENT-TYPE-ID1", docTypeId2)
                 .replace("DOCUMENT-TYPE-ID2", docTypeId)
-                .replace("CASE-ID", caseId.toString());
+                .replace("CASE-ID", caseId);
         JSONAssert.assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
@@ -293,12 +299,13 @@ public class CourtDocumentQueryIT extends AbstractIT {
         final String caseId = UUID.randomUUID().toString();
         final String docId = UUID.randomUUID().toString();
         final String defendantId = UUID.randomUUID().toString();
-        final String docTypeId = UUID.randomUUID().toString();
+        final String docTypeId = "460fbc00-c002-11e8-a355-529269fb1459";
         final String organisationId = UUID.randomUUID().toString();
 
         final String organisation = getPayload("stub-data/usersgroups.get-organisation-details.json")
                 .replace("%ORGANISATION_ID%", organisationId);
 
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
         final String permission = getPayload("stub-data/usersgroups.get-permission-for-user-by-defendant.json")
                 .replace("%USER_ID%", CHAMBER_USER_ID)
@@ -310,8 +317,8 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence.json");
-        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence.json", docTypeId);
-
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence.json", docTypeId);
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
         //Defendant Level Document 1
         final String courtDocumentDefendantLevel = addCourtDocumentForDefence(caseId, docId, defendantId,
                 prepareAddCourtDocumentWithDocTypePayload(docTypeId, docId, caseId, defendantId, "progression.add-court-document-def-level.json"));

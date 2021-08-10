@@ -28,6 +28,7 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 
 import java.util.List;
 import java.util.Optional;
@@ -94,6 +95,8 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(matchedProsecutionCaseId_2, matchers);
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
+
         stubUnifiedSearchQueryExactMatchWithResults(matchedProsecutionCaseId_1, matchedProsecutionCaseId_1, matchedDefendantId_1, matchedDefendantId_2, pncId, croNumber);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId);

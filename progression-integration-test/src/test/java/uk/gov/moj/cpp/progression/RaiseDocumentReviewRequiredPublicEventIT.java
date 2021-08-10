@@ -16,10 +16,12 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
+import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -50,6 +52,7 @@ public class RaiseDocumentReviewRequiredPublicEventIT extends AbstractIT {
         final String urn = generateUrn();
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
         addProsecutionCaseWithUrn(caseId.toString(), defendantId.toString(), urn);
         verifyCasesForSearchCriteria(urn, new Matcher[]{withJsonPath("$.searchResults[0].caseId", equalTo(caseId.toString()))});

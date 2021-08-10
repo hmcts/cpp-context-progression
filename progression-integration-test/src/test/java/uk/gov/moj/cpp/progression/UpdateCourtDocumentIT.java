@@ -24,6 +24,7 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.Metadata;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -78,6 +79,8 @@ public class UpdateCourtDocumentIT extends AbstractIT {
         sentTime = utcClock.now().minusMinutes(5);
         stubForMaterialId(notificationId, materialId);
         stubForDocumentId(materialId, documentId);
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
+
     }
 
     @Test
