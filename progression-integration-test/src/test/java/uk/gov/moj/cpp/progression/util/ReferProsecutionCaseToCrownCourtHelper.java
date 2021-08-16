@@ -85,6 +85,26 @@ public class ReferProsecutionCaseToCrownCourtHelper {
 
     }
 
+    public static Matcher<? super ReadContext>[] getProsecutionCaseMatchersForLegalEntity(final String caseId, final String defendantId, List<Matcher<? super ReadContext>> additionalMatchers) {
+        List<Matcher<? super ReadContext>> matchers = newArrayList(
+                withJsonPath("$.prosecutionCase.id", is(caseId)),
+                withJsonPath("$.prosecutionCase.originatingOrganisation", is("G01FT01AB")),
+                withJsonPath("$.prosecutionCase.initiationCode", is("J")),
+                withJsonPath("$.prosecutionCase.statementOfFacts", is("You did it")),
+                withJsonPath("$.prosecutionCase.statementOfFactsWelsh", is("You did it in Welsh"))
+        );
+
+        matchers.addAll(getDefendantMatchers(caseId, defendantId));
+        matchers.addAll(getDefendantOffenceMatchers());
+        matchers.addAll(getOffenceFactMatchers());
+        matchers.addAll(getLegalEntityMatchers());
+        matchers.addAll(getNotifyPleatMatchers());
+        matchers.addAll(additionalMatchers);
+
+        return matchers.toArray(new Matcher[0]);
+
+    }
+
     public static List<Matcher<? super ReadContext>> getCourtDocumentMatchers(final String caseId, final String courtDocumentId, final String materialIdActive, final int position) {
         return newArrayList(
                 withJsonPath("$.courtDocuments[" + position + "].courtDocumentId", is(courtDocumentId)),
@@ -132,6 +152,12 @@ public class ReferProsecutionCaseToCrownCourtHelper {
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceFacts.vehicleRegistration", is("AA12345")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceFacts.alcoholReadingAmount", is(111)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceFacts.alcoholReadingMethodCode", is("2222"))
+        );
+    }
+
+    public static ArrayList<Matcher<? super ReadContext>> getLegalEntityMatchers() {
+        return newArrayList(
+                withJsonPath("$.prosecutionCase.defendants[0].legalEntityDefendant.organisation.name", is("Organisation Name"))
         );
     }
 

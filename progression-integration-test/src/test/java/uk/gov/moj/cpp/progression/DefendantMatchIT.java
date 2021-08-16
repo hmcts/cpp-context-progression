@@ -6,13 +6,16 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForDefendantMatching;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForExactMatchDefendants;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForLegalEntityDefendantMatching;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForPartialMatchDefendants;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.matchDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.unmatchDefendant;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.pollMessageAsJsonObjectNotSent;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
@@ -24,6 +27,7 @@ import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearc
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatchForSPISpec;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchersForLegalEntity;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -60,6 +64,8 @@ public class DefendantMatchIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private final MessageConsumer publicEventConsumerForDefendantUnmatched = publicEvents
             .createConsumer("public.progression.defendant-unmatched");
+    private final MessageConsumer privateEventConsumerForDefendantPartialMatchCreated = privateEvents
+            .createConsumer("progression.event.defendant-partial-match-created");
 
     private String prosecutionCaseId_1;
     private String defendantId_1;
@@ -120,6 +126,30 @@ public class DefendantMatchIT extends AbstractIT {
                 singletonList(withJsonPath("$.prosecutionCase.defendants[0].masterDefendantId", is(masterDefendantId_1))));
         verifyInMessagingQueueForDefendantMatched();
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
+
+    }
+
+    @Test
+    public void shouldNotMatchLegalEntityDefendant() throws IOException {
+        // initiation of first case
+        initiateCourtProceedingsForLegalEntityDefendantMatching(prosecutionCaseId_1, defendantId_1, masterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime);
+        verifyInMessagingQueueForProsecutionCaseCreated();
+        List<Matcher<? super ReadContext>> customMatchers = newArrayList(
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceDateCode", is(4))
+        );
+
+        Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchersForLegalEntity(prosecutionCaseId_1, defendantId_1, customMatchers);
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
+
+        // initiation of second case
+        initiateCourtProceedingsForLegalEntityDefendantMatching(prosecutionCaseId_2, defendantId_2, defendantId_2, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime);
+        verifyInMessagingQueueForProsecutionCaseCreated();
+        prosecutionCaseMatchers = getProsecutionCaseMatchersForLegalEntity(prosecutionCaseId_2, defendantId_2, emptyList());
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
+
+        // match defendant2 associated to case 2
+        matchDefendant(prosecutionCaseId_2, defendantId_2, prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
+        verifyNoEventInMessagingQueueForCaseDefendantChanged();
 
     }
 
@@ -224,6 +254,11 @@ public class DefendantMatchIT extends AbstractIT {
     private void verifyInMessagingQueueForCaseDefendantChanged() {
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(publicEventConsumerForCaseDefendantChanged);
         assertTrue(message.isPresent());
+    }
+
+    private void verifyNoEventInMessagingQueueForCaseDefendantChanged() {
+        final Optional<JsonObject> message = pollMessageAsJsonObjectNotSent(privateEventConsumerForDefendantPartialMatchCreated);
+        assertFalse(message.isPresent());
     }
 
     private void verifyInMessagingQueueForCaseDefendantUpdated() {

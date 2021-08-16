@@ -458,8 +458,8 @@ public class CaseAggregate implements Aggregate {
 
     private void updateDefendantProceedingConcludedAndCaseStatus(final HearingResultedCaseUpdated hearingResultedCaseUpdated) {
         hearingResultedCaseUpdated.getProsecutionCase().getDefendants().stream().forEach(defendant -> {
-                    this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
-                    defendantProceedingConcluded.put(defendant.getId(), defendant.getProceedingsConcluded());
+            this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
+            defendantProceedingConcluded.put(defendant.getId(), defendant.getProceedingsConcluded());
         });
     }
 
@@ -1278,17 +1278,22 @@ public class CaseAggregate implements Aggregate {
 
         for (final Map.Entry<UUID, List<Cases>> defendantEntry : partiallyMatchedDefendants.entrySet()) {
             // Partial matched defendant events
-            final uk.gov.justice.core.courts.Defendant defendant = prosecutionCase.getDefendants().stream()
-                    .filter(d -> d.getId().equals(defendantEntry.getKey()))
-                    .findFirst().orElseThrow(() -> new RuntimeException("Defendant not found"));
-            streamBuilder.add(DefendantPartialMatchCreated.defendantPartialMatchCreated()
-                    .withDefendantId(defendant.getId())
-                    .withProsecutionCaseId(prosecutionCaseId)
-                    .withDefendantName(getDefendantName(defendant))
-                    .withCaseReference(reference)
-                    .withPayload(transformToPartialMatchDefendantPayload(defendant, prosecutionCaseId, defendantEntry.getValue()))
-                    .withCaseReceivedDatetime(defendant.getCourtProceedingsInitiated())
-                    .build());
+            final Optional<uk.gov.justice.core.courts.Defendant> defendant = prosecutionCase.getDefendants().stream()
+                    .filter(d -> d.getId().equals(defendantEntry.getKey()) && nonNull(d.getPersonDefendant()))
+                    .findFirst();
+            if (defendant.isPresent()){
+
+                final uk.gov.justice.core.courts.Defendant matchedDefendant = defendant.get();
+
+                streamBuilder.add(DefendantPartialMatchCreated.defendantPartialMatchCreated()
+                        .withDefendantId(matchedDefendant.getId())
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .withDefendantName(getDefendantName(matchedDefendant))
+                        .withCaseReference(reference)
+                        .withPayload(transformToPartialMatchDefendantPayload(matchedDefendant, prosecutionCaseId, defendantEntry.getValue()))
+                        .withCaseReceivedDatetime(matchedDefendant.getCourtProceedingsInitiated())
+                        .build());
+            }
         }
 
         for (final Map.Entry<UUID, List<Cases>> defendantEntry : fullyMatchedDefendants.entrySet()) {

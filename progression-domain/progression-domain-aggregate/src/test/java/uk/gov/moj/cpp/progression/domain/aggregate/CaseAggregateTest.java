@@ -35,11 +35,14 @@ import uk.gov.justice.core.courts.CaseMarkersUpdated;
 import uk.gov.justice.core.courts.CaseNoteAdded;
 import uk.gov.justice.core.courts.CaseNoteAddedV2;
 import uk.gov.justice.core.courts.CaseNoteEditedV2;
+import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
+import uk.gov.justice.core.courts.DefendantPartialMatchCreated;
+import uk.gov.justice.core.courts.Defendants;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
@@ -51,8 +54,11 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LaaReference;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.Organisation;
+import uk.gov.justice.core.courts.PartialMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -72,6 +78,7 @@ import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum;
@@ -162,24 +169,38 @@ public class CaseAggregateTest {
     private static final String INDICATED_PLEA_ID = randomUUID().toString();
     private static final String INDICATED_PLEA_VALUE = "NO_INDICATION";
     private static final String ALLOCATION_DECISION = "COURT_DECLINED";
-    private static final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant().withId(randomUUID())
-            .withPersonDefendant(PersonDefendant.personDefendant().build()).build();
-    static final List<uk.gov.justice.core.courts.Defendant> defendants = new ArrayList<uk.gov.justice.core.courts.Defendant>() {{
+    private static final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
+            .withId(randomUUID())
+            .withMasterDefendantId(randomUUID())
+            .withPersonDefendant(PersonDefendant.personDefendant()
+                    .withPersonDetails(uk.gov.justice.core.courts.Person.person()
+                            .withFirstName("firstName")
+                            .withLastName("lastName")
+                            .withDateOfBirth(LocalDate.now().minusYears(20))
+                            .build())
+                    .build())
+            .withCourtProceedingsInitiated(ZonedDateTime.now())
+            .build();
+
+    private static final uk.gov.justice.core.courts.Defendant legalEntityDefendant = uk.gov.justice.core.courts.Defendant.defendant()
+            .withId(randomUUID())
+            .withMasterDefendantId(randomUUID())
+            .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
+                    .withOrganisation(Organisation.organisation().build()).build())
+            .withCourtProceedingsInitiated(ZonedDateTime.now())
+            .build();
+
+    private static final List<uk.gov.justice.core.courts.Defendant> defendants = new ArrayList<uk.gov.justice.core.courts.Defendant>() {{
         add(defendant);
     }};
-    private static final ProsecutionCase prosecutionCase = prosecutionCase()
-            .withCaseStatus("caseStatus")
-            .withId(randomUUID())
-            .withOriginatingOrganisation("originatingOrganisation")
-            .withDefendants(defendants)
-            .withInitiationCode(InitiationCode.C)
-            .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
-                    .withProsecutionAuthorityReference("reference")
-                    .withProsecutionAuthorityCode("code")
-                    .withProsecutionAuthorityId(randomUUID())
-                    .withCaseURN("caseUrn")
-                    .build())
-            .build();
+
+    private static final List<uk.gov.justice.core.courts.Defendant> legalEntityDefendants = new ArrayList<uk.gov.justice.core.courts.Defendant>() {{
+        add(legalEntityDefendant);
+    }};
+
+    private static final ProsecutionCase prosecutionCase = createProsecutionCase(defendants);
+
+    private static final ProsecutionCase prosecutionCaseWithLegalEntity = createProsecutionCase(legalEntityDefendants);
 
     @Mock
     JsonEnvelope envelope;
@@ -1675,6 +1696,91 @@ public class CaseAggregateTest {
 
     }
 
+
+    @Test
+    public void shouldHandleDefendantPartialMatchCreatedForPersonDefendant() {
+
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final UUID defendantId = prosecutionCase.getDefendants().get(0).getId();
+
+        final String defendantName = RandomGenerator.STRING.next();
+        final PartialMatchedDefendantSearchResultStored partialMatchedDefendantSearchResultStored = PartialMatchedDefendantSearchResultStored.partialMatchedDefendantSearchResultStored()
+                .withDefendantId(defendantId)
+                .withCases(asList(Cases.cases()
+                        .withProsecutionCaseId(prosecutionCase.getId().toString())
+                        .withDefendants(asList(Defendants.defendants()
+                                .withDefendantId(defendantId.toString())
+                                .withMasterDefendantId(defendantId.toString())
+                                .withFirstName(defendantName)
+                                .withLastName(defendantName)
+                                .withCourtProceedingsInitiated(ZonedDateTime.now())
+                                .build()))
+                        .withCaseReference("REF")
+                        .withProsecutionCaseId("caseId")
+                        .build()))
+                .build();
+
+        this.caseAggregate.apply(partialMatchedDefendantSearchResultStored); //populate partialMatchedDefendants map so we can compare in the nextstep
+
+        final List<Object> eventStream = this.caseAggregate.storeMatchedDefendants(prosecutionCase.getId()).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+
+        final DefendantPartialMatchCreated defendantPartialMatchCreated = (DefendantPartialMatchCreated) eventStream.get(0);
+
+        assertThat(defendantPartialMatchCreated.getProsecutionCaseId(), is(prosecutionCase.getId()));
+        assertThat(defendantPartialMatchCreated.getDefendantId(), is(defendantId));
+
+    }
+
+    @Test
+    public void shouldNotRaiseDefendantPartialMatchCreatedForLegalEntityDefendant() {
+
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final UUID defendantId = prosecutionCaseWithLegalEntity.getDefendants().get(0).getId();
+
+        final String defendantName = RandomGenerator.STRING.next();
+        final PartialMatchedDefendantSearchResultStored partialMatchedDefendantSearchResultStored = PartialMatchedDefendantSearchResultStored.partialMatchedDefendantSearchResultStored()
+                .withDefendantId(defendantId)
+                .withCases(asList(Cases.cases()
+                        .withProsecutionCaseId(prosecutionCase.getId().toString())
+                        .withDefendants(asList(Defendants.defendants()
+                                .withDefendantId(defendantId.toString())
+                                .withMasterDefendantId(defendantId.toString())
+                                .withFirstName(defendantName)
+                                .withLastName(defendantName)
+                                .withCourtProceedingsInitiated(ZonedDateTime.now())
+                                .build()))
+                        .withCaseReference("REF")
+                        .withProsecutionCaseId("caseId")
+                        .build()))
+                .build();
+
+        this.caseAggregate.apply(partialMatchedDefendantSearchResultStored); //populate partialMatchedDefendants map so we can compare in the nextstep
+
+        final List<Object> eventStream = this.caseAggregate.storeMatchedDefendants(prosecutionCase.getId()).collect(toList());
+
+        assertThat(eventStream.size(), is(0));
+
+    }
+
+    private static ProsecutionCase createProsecutionCase(final List<uk.gov.justice.core.courts.Defendant> defendants) {
+        return prosecutionCase()
+                .withCaseStatus("caseStatus")
+                .withId(randomUUID())
+                .withOriginatingOrganisation("originatingOrganisation")
+                .withDefendants(defendants)
+                .withInitiationCode(InitiationCode.C)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityReference("reference")
+                        .withProsecutionAuthorityCode("code")
+                        .withProsecutionAuthorityId(randomUUID())
+                        .withCaseURN("caseUrn")
+                        .build())
+                .build();
+    }
 
 }
 

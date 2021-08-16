@@ -42,10 +42,10 @@
         <material.version>7.0.14</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>7.0.63</referencedata.version>
+        <referencedata.version>7.0.65</referencedata.version>
         <listing.version>7.0.76</listing.version>
         <hearing.version>7.0.127</hearing.version>
-        <usersgroups.version>7.0.29</usersgroups.version>
+        <usersgroups.version>7.0.33</usersgroups.version>
         <defence.version>7.0.27</defence.version>
         <referencedata.offence.version>7.0.7</referencedata.offence.version>
         <coredomain.version>1.0.166</coredomain.version>
@@ -57,7 +57,7 @@
         <unifiedsearch.version>7.0.16</unifiedsearch.version>
         <systemdocgenerator.version>7.0.1</systemdocgenerator.version>
         <applicationscourtorders.version>7.0.1</applicationscourtorders.version>
-        <sjp.version>7.0.44</sjp.version>
+        <sjp.version>7.0.46</sjp.version>
         <jackson-data-format.version>2.8.8</jackson-data-format.version>
     </properties>
     <build>

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingExtended;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -22,10 +23,11 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.persistence.NoResultException;
+
 import java.io.StringReader;
 import java.util.List;
 
-import static java.util.Objects.nonNull;
+import static java.lang.Boolean.FALSE;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
@@ -89,14 +91,14 @@ public class HearingExtendedEventListener {
     }
 
     private void removeUnallocatedHearing(HearingExtended hearingExtended, List<ProsecutionCase> prosecutionCasesToAdd) {
-        if (nonNull(hearingExtended.getIsAdjourned()) && !hearingExtended.getIsAdjourned() && !hearingExtended.getIsPartiallyAllocated()) {
+        if (FALSE.equals(hearingExtended.getIsAdjourned()) && FALSE.equals(hearingExtended.getIsPartiallyAllocated())) {
             prosecutionCasesToAdd.forEach(prosecutionCase -> prosecutionCase.getDefendants().forEach(defendant -> {
                 LOGGER.info("Remove entries from link table 'case_defendant_hearing' table for hearing id :{}, case id :{}, defendant id :{}",
                         hearingExtended.getIsPartiallyAllocated(), prosecutionCase.getId(), defendant.getId());
                 try {
                     final CaseDefendantHearingEntity entity = caseDefendantHearingRepository.findByHearingIdAndCaseIdAndDefendantId(hearingExtended.getExtendedHearingFrom(), prosecutionCase.getId(), defendant.getId());
                     caseDefendantHearingRepository.remove(entity);
-                }catch (NoResultException ex){
+                } catch (NoResultException ex) {
                     //Handling NoResultException to prevent errors during EventReplay (dublicate call)
                     LOGGER.error(String.format("CaseDefendantHearingEntity not found CaseId: %s DefendantId: %s HearingId: %s",
                             hearingExtended.getExtendedHearingFrom(), prosecutionCase.getId(), defendant.getId()), ex);

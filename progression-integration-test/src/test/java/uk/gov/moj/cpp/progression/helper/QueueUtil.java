@@ -129,6 +129,12 @@ public class QueueUtil {
         ).orElse(Optional::empty);
     }
 
+    public static Optional<JsonObject> pollMessageAsJsonObjectNotSent(final MessageConsumer consumer) {
+        return ifPresent(retrieveMessageAsString(consumer, MESSAGE_RETRIEVE_TRIAL_TIMEOUT),
+                (x) -> Optional.of(Json.createReader(new StringReader(x)).readObject())
+        ).orElse(Optional::empty);
+    }
+
     public static JsonEnvelope retrieveMessageAsEnvelope(final MessageConsumer consumer) {
         return retrieveMessageAsString(consumer).map(new DefaultJsonObjectEnvelopeConverter()::asEnvelope).orElse(null);
     }

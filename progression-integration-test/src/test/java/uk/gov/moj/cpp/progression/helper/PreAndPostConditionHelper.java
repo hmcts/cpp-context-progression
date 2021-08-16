@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -208,6 +209,19 @@ public class PreAndPostConditionHelper {
         return postCommand(getWriteUrl("/initiatecourtproceedings"),
                 "application/vnd.progression.initiate-court-proceedings+json",
                 getInitiateCourtProceedingsJsonBodyForDefendantMatching(caseId, defendantId, masterDefendantId, materialIdOne, materialIdTwo, referralId, generateUrn(), listedStartDateTime, earliestStartDateTime, dob));
+
+    }
+
+    public static Response initiateCourtProceedingsForLegalEntityDefendantMatching(final String caseId,
+                                                                                   final String defendantId,
+                                                                                   final String masterDefendantId,
+                                                                                   final String materialIdOne,
+                                                                                   final String materialIdTwo,
+                                                                                   final String referralId,
+                                                                                   final String listedStartDateTime, final String earliestStartDateTime) throws IOException {
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings+json",
+                getInitiateCourtProceedingsJsonBodyForLegalEntityDefendantMatching(caseId, defendantId, masterDefendantId, materialIdOne, materialIdTwo, referralId, generateUrn(), listedStartDateTime, earliestStartDateTime));
 
     }
 
@@ -606,7 +620,7 @@ public class PreAndPostConditionHelper {
                                                                                           final String referralId, final String caseUrn,
                                                                                           final String listedStartDateTime, final String earliestStartDateTime,
                                                                                           final String dob) {
-        return getPayload(resourceLocation)
+        String payload = getPayload(resourceLocation)
                 .replace("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_REFERENCE", caseUrn)
                 .replace("RANDOM_DEFENDANT_ID", defendantId)
@@ -616,8 +630,13 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
                 .replace("RANDOM_REFERRAL_ID", referralId)
                 .replace("LISTED_START_DATE_TIME", listedStartDateTime)
-                .replace("EARLIEST_START_DATE_TIME", earliestStartDateTime)
-                .replace("DOB", dob);
+                .replace("EARLIEST_START_DATE_TIME", earliestStartDateTime);
+
+        if (Objects.nonNull(dob)){
+            payload = payload.replace("DOB", dob);
+        }
+
+        return payload;
 
     }
 
@@ -710,6 +729,15 @@ public class PreAndPostConditionHelper {
                                                                                   final String dob) {
         return getInitiateCourtProceedingsJsonFromResourceForDefendantMatching("progression.command.initiate-court-proceedings-for-defendant-matching.json", caseId,
                 defendantId, masterDefendantId, materialIdOne, materialIdTwo, referralId, caseUrn, listedStartDateTime, earliestStartDateTime, dob);
+
+    }
+
+    private static String getInitiateCourtProceedingsJsonBodyForLegalEntityDefendantMatching(final String caseId, final String defendantId, final String masterDefendantId, final String materialIdOne,
+                                                                                  final String materialIdTwo,
+                                                                                  final String referralId, final String caseUrn,
+                                                                                  final String listedStartDateTime, final String earliestStartDateTime) {
+        return getInitiateCourtProceedingsJsonFromResourceForDefendantMatching("progression.command.initiate-court-proceedings-for-defendant-matching-legal-entity.json", caseId,
+                defendantId, masterDefendantId, materialIdOne, materialIdTwo, referralId, caseUrn, listedStartDateTime, earliestStartDateTime, null);
 
     }
 
