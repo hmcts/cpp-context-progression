@@ -1042,6 +1042,17 @@ public class ProgressionService {
                 .build();
     }
 
+    public Hearing transformToHearingFrom(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope) {
+        final LocalDate earliestHearingDate = getEarliestDate(confirmedHearing.getHearingDays()).toLocalDate();
+
+        return Hearing.hearing()
+                .withCourtCentre(transformCourtCentre(confirmedHearing.getCourtCentre(), jsonEnvelope))
+                .withJurisdictionType(confirmedHearing.getJurisdictionType())
+                .withType(confirmedHearing.getType())
+                .withProsecutionCases(transformProsecutionCase(confirmedHearing.getProsecutionCases(), earliestHearingDate, jsonEnvelope, null))
+                .build();
+    }
+
     public void linkProsecutionCasesToHearing(final JsonEnvelope jsonEnvelope, final UUID hearingId, final List<UUID> caseIds) {
         caseIds.forEach(caseId ->
                 sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_HEARING_PROSECUTION_CASE_LINK)

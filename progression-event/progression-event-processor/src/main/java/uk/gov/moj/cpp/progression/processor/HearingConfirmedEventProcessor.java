@@ -273,12 +273,11 @@ public class HearingConfirmedEventProcessor {
     }
 
     private void processExtendHearing(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing, final Hearing hearingInProgression) {
-
         LOGGER.info(" processing extend hearing for hearing id {}", confirmedHearing.getExistingHearingId());
 
         prepareSummonsDataForExtendHearing(jsonEnvelope, confirmedHearing);
 
-        final Hearing incomingHearing = progressionService.transformConfirmedHearing(confirmedHearing, jsonEnvelope);
+        final Hearing incomingHearing = progressionService.transformToHearingFrom(confirmedHearing, jsonEnvelope);
 
         final HearingListingNeeds hearingListingNeeds =
                 progressionService.transformHearingToHearingListingNeeds(incomingHearing, confirmedHearing.getExistingHearingId());

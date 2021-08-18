@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.service;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Arrays.asList;
+import static java.util.Collections.EMPTY_LIST;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -13,6 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -85,6 +87,7 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -171,6 +174,7 @@ public class ProgressionServiceTest {
     private ReferenceDataService referenceDataService;
     @Mock
     private ListingService listingService;
+    @Spy
     @InjectMocks
     private ProgressionService progressionService;
     @Mock
@@ -1169,6 +1173,44 @@ public class ProgressionServiceTest {
         assertThat(hearing.getCourtCentre().getLja().getLjaCode(), is("nationalCourtCode"));
         assertThat(hearing.getCourtCentre().getLja().getLjaName(), is("name"));
         assertThat(hearing.getCourtCentre().getLja().getWelshLjaName(), is("welshName"));
+    }
+
+    @Test
+    public void shouldTransformToHearingFromConfirmedHearing() {
+        final UUID courtCentreId = randomUUID();
+        final JurisdictionType jurisdictionType = JurisdictionType.CROWN;
+        final HearingType hearingType = HearingType.hearingType().withId(randomUUID()).build();
+        final String address1 = "ADDRESS1";
+        final String oucode = STRING.next();
+        final JsonObject courtCentreJson = createObjectBuilder()
+                .add("oucodeL3Name", "Lavender Hill Magistrates Court")
+                .add("address1", address1)
+                .add("oucode", oucode)
+                .add("lja", "ljaCode")
+                .build();
+        when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(LjaDetails.ljaDetails().withLjaCode("nationalCourtCode")
+                .withLjaName("name").withWelshLjaName("welshName").build());
+
+        doReturn(EMPTY_LIST).when(progressionService).transformProsecutionCase(any(), any(), any(), any());
+
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(randomUUID())
+                .withType(hearingType)
+                .withHearingDays(asList(HearingDay.hearingDay()
+                        .withSittingDay(ZonedDateTime.now()).build()))
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(courtCentreId).build())
+                .withJurisdictionType(jurisdictionType)
+                .withProsecutionCases(generateProsecutionCases())
+                .build();
+
+        Hearing hearing = progressionService.transformToHearingFrom(confirmedHearing, finalEnvelope);
+
+        assertThat(hearing.getType(), is(hearingType));
+        assertThat(hearing.getJurisdictionType(), is(jurisdictionType));
+        assertThat(hearing.getProsecutionCases(), is(EMPTY_LIST));
+        assertThat(hearing.getCourtCentre().getId(), is(courtCentreId));
     }
 
     private ProsecutionCase buildProsecutionCasesWithTwoDefendantsOffences(UUID caseId, UUID defendant1, UUID defendant2, UUID defendant1sOffence1, UUID defendant1sOffence2, UUID defendant2sOffence1, UUID defendant2sOffence2, boolean youth) {
