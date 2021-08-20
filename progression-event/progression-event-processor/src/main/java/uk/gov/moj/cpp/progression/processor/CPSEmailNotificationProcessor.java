@@ -84,7 +84,7 @@ public class CPSEmailNotificationProcessor {
         final JsonObject requestJson = jsonEnvelope.payloadAsJsonObject();
         final boolean isLAA = parseBoolean(requestJson.containsKey(IS_LAA) ? requestJson.get(IS_LAA).toString() : "false");
 
-        if(!isLAA){
+        if (!isLAA) {
             final Metadata metadata = metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_COMMAND_FOR_DEFENCE_ORGANISATION_DISASSOCIATED).build();
             sender.send(envelopeFrom(metadata, removeProperty(requestJson, IS_LAA)));
         }
@@ -96,8 +96,8 @@ public class CPSEmailNotificationProcessor {
     public void processInstructedEmailNotification(final JsonEnvelope jsonEnvelope) {
         final JsonObject requestJson = jsonEnvelope.payloadAsJsonObject();
         final boolean isFirstInstruction = parseBoolean(requestJson.get("firstInstruction").toString());
-        if(isFirstInstruction) {
-            populateCPSNotification(jsonEnvelope,requestJson,EmailTemplateType.INSTRUCTION);
+        if (isFirstInstruction) {
+            populateCPSNotification(jsonEnvelope, requestJson, EmailTemplateType.INSTRUCTION);
         }
     }
 
@@ -110,22 +110,22 @@ public class CPSEmailNotificationProcessor {
         final Optional<HearingVO> hearingVO = getHearingDetails(prosecutionCaseOptional);
         final boolean isHearingPresent = hearingVO.isPresent() && hearingVO.get().getHearingDate() != null;
 
-        if(isHearingPresent) {
+        if (isHearingPresent) {
             populateCPSNotificationAndSendEmail(jsonEnvelope, defendantId, organisationId, prosecutionCaseOptional,
                     hearingVO.get(), templateType);
-        }else{
+        } else {
             log.info("Future hearing is not found for the case : {}", caseId);
         }
     }
 
     private void populateCPSNotificationAndSendEmail(final JsonEnvelope jsonEnvelope, final String defendantId,
-                                          final UUID organisationId, final Optional<JsonObject> prosecutionCaseOptional,
-                                          final HearingVO hearingVO,
-                                          final EmailTemplateType templateType) {
+                                                     final UUID organisationId, final Optional<JsonObject> prosecutionCaseOptional,
+                                                     final HearingVO hearingVO,
+                                                     final EmailTemplateType templateType) {
 
-        final Optional<String> cpsEmailAddress = getCPSEmail(jsonEnvelope,hearingVO.getCourtCenterId());
+        final Optional<String> cpsEmailAddress = getCPSEmail(jsonEnvelope, hearingVO.getCourtCenterId());
 
-        if(cpsEmailAddress.isPresent()) {
+        if (cpsEmailAddress.isPresent()) {
 
             final CPSNotificationVO cpsNotificationVO = CPSNotificationVO.builder()
                     .defendantVO(getDefendantDetails(defendantId, prosecutionCaseOptional))
@@ -136,7 +136,7 @@ public class CPSEmailNotificationProcessor {
                     .templateType(templateType)
                     .build();
             notificationService.sendCPSNotification(jsonEnvelope, cpsNotificationVO);
-        }else{
+        } else {
             log.error("CPS notification email not found");
         }
     }
@@ -152,22 +152,22 @@ public class CPSEmailNotificationProcessor {
 
         final Defendant defendant = jsonObjectToObjectConverter.convert(defendantJson, Defendant.class);
 
-            final Optional<PersonDefendant> personDefendantOptional = Optional.ofNullable(defendant.getPersonDefendant());
-            final Optional<LegalEntityDefendant> legalEntityDefendantOptional = Optional.ofNullable(defendant.getLegalEntityDefendant());
+        final Optional<PersonDefendant> personDefendantOptional = Optional.ofNullable(defendant.getPersonDefendant());
+        final Optional<LegalEntityDefendant> legalEntityDefendantOptional = Optional.ofNullable(defendant.getLegalEntityDefendant());
 
-            if (personDefendantOptional.isPresent()) {
-                final Person person = personDefendantOptional.get().getPersonDetails();
-                return Optional.of(DefendantVO.builder()
-                        .firstName(person.getFirstName())
-                        .lastName(person.getLastName())
-                        .middleName(person.getMiddleName())
-                        .build());
-            }else if (legalEntityDefendantOptional.isPresent()) {
-                return Optional.of(DefendantVO.builder()
-                        .legalEntityName(legalEntityDefendantOptional.get()
-                        .getOrganisation().getName())
-                        .build());
-            }
+        if (personDefendantOptional.isPresent()) {
+            final Person person = personDefendantOptional.get().getPersonDetails();
+            return Optional.of(DefendantVO.builder()
+                    .firstName(person.getFirstName())
+                    .lastName(person.getLastName())
+                    .middleName(person.getMiddleName())
+                    .build());
+        } else if (legalEntityDefendantOptional.isPresent()) {
+            return Optional.of(DefendantVO.builder()
+                    .legalEntityName(legalEntityDefendantOptional.get()
+                            .getOrganisation().getName())
+                    .build());
+        }
         return defendantVO;
     }
 
@@ -180,13 +180,13 @@ public class CPSEmailNotificationProcessor {
         final String caseURN = prosecutionCase.getProsecutionCaseIdentifier().getCaseURN();
         final String prosecutionAuthorityReference = prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference();
 
-            return Optional.ofNullable(CaseVO.builder()
-                    .caseId(prosecutionCase.getId())
-                    .caseURN( Objects.nonNull(caseURN) ? caseURN : prosecutionAuthorityReference)
-                    .build());
+        return Optional.ofNullable(CaseVO.builder()
+                .caseId(prosecutionCase.getId())
+                .caseURN(Objects.nonNull(caseURN) ? caseURN : prosecutionAuthorityReference)
+                .build());
     }
 
-    private Optional<HearingVO> getHearingDetails ( final Optional<JsonObject> prosecutionCaseOptional){
+    private Optional<HearingVO> getHearingDetails(final Optional<JsonObject> prosecutionCaseOptional) {
 
         final Optional<HearingVO> hearingVO = Optional.empty();
 
@@ -199,20 +199,20 @@ public class CPSEmailNotificationProcessor {
 
             final Optional<Entry<UUID, ZonedDateTime>> resultMap = getEarliestHearing(futureHearings);
 
-                if (resultMap.isPresent()) {
-                    log.info("Found result hearing {} with earliest date : {}", resultMap.get().getKey(), resultMap.get().getValue());
-                    final LocalDate localHearingDate = resultMap.get().getValue().toLocalDate();
-                    return getHearingVO(localHearingDate.format(DateTimeFormatter.ofPattern(DateTimeFormats.DATE_SLASHED_DD_MM_YYYY.getValue())), futureHearings, resultMap);
-                }
-
+            if (resultMap.isPresent()) {
+                log.info("Found result hearing {} with earliest date : {}", resultMap.get().getKey(), resultMap.get().getValue());
+                final LocalDate localHearingDate = resultMap.get().getValue().toLocalDate();
+                return getHearingVO(localHearingDate.format(DateTimeFormatter.ofPattern(DateTimeFormats.DATE_SLASHED_DD_MM_YYYY.getValue())), futureHearings, resultMap);
             }
-            return hearingVO;
+
         }
+        return hearingVO;
+    }
 
     private List<Hearings> getFutureHearings(GetHearingsAtAGlance hearingsAtAGlance) {
         return hearingsAtAGlance.getHearings().stream().filter(h -> h.getHearingDays().stream()
-                            .anyMatch(hearingDay -> hearingDay.getSittingDay().toLocalDate().compareTo(LocalDate.now()) >= 0
-                            )).collect(Collectors.toList());
+                .anyMatch(hearingDay -> hearingDay.getSittingDay().toLocalDate().compareTo(LocalDate.now()) >= 0
+                )).collect(Collectors.toList());
     }
 
     private Optional<HearingVO> getHearingVO(final String hearingDate, List<Hearings> futureHearings, final Optional<Entry<UUID, ZonedDateTime>> resultMap) {
@@ -231,15 +231,15 @@ public class CPSEmailNotificationProcessor {
     }
 
     private Optional<Entry<UUID, ZonedDateTime>> getEarliestHearing(List<Hearings> futureHearings) {
-       final Map<UUID, ZonedDateTime> hearingDaysMap =  new HashMap<>();
+        final Map<UUID, ZonedDateTime> hearingDaysMap = new HashMap<>();
 
-        for (final Hearings hearings: futureHearings) {
+        for (final Hearings hearings : futureHearings) {
 
             final List<HearingDay> futureHearingDays = hearings.getHearingDays().stream()
                     .filter(hd -> hd.getSittingDay().toLocalDate().isAfter(LocalDate.now()))
                     .collect(Collectors.toList());
 
-            if(!futureHearingDays.isEmpty()) {
+            if (!futureHearingDays.isEmpty()) {
                 hearingDaysMap.put(hearings.getId(), getEarliestHearingDay(futureHearingDays));
             }
         }
@@ -248,28 +248,30 @@ public class CPSEmailNotificationProcessor {
     }
 
 
-    private Optional<String> getCPSEmail ( final JsonEnvelope jsonEnvelope, final UUID courtCenterId){
+    private Optional<String> getCPSEmail(final JsonEnvelope jsonEnvelope, final UUID courtCenterId) {
 
         Optional<String> cpsEmail = Optional.empty();
 
         final Optional<JsonObject> organisationUnitJsonOptional = referenceDataService
-                    .getOrganisationUnitById(courtCenterId, jsonEnvelope, requester);
+                .getOrganisationUnitById(courtCenterId, jsonEnvelope, requester);
 
-            if (organisationUnitJsonOptional.isPresent()) {
-                cpsEmail = Optional.ofNullable(organisationUnitJsonOptional.get().getString("cpsEmailAddress"));
-                log.info("Found CPS email : {}", cpsEmail);
-                return cpsEmail;
+        if (organisationUnitJsonOptional.isPresent()) {
+            cpsEmail = Optional.ofNullable(organisationUnitJsonOptional.get().getString("cpsEmailAddress", null));
+            if (cpsEmail.isPresent()) {
+                log.info("Found CPS email: {}", cpsEmail);
             }
             return cpsEmail;
         }
+        return cpsEmail;
+    }
 
-        private static ZonedDateTime getEarliestHearingDay ( final List<HearingDay> hearingDays){
-            return hearingDays.stream()
-                    .map(HearingDay::getSittingDay)
-                    .sorted()
-                    .findFirst()
-                    .orElseThrow(IllegalArgumentException::new);
-        }
+    private static ZonedDateTime getEarliestHearingDay(final List<HearingDay> hearingDays) {
+        return hearingDays.stream()
+                .map(HearingDay::getSittingDay)
+                .sorted()
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+    }
 
     private JsonObject getDefendantJson(final JsonObject prosecutionCaseJson, final UUID defendantId) {
         return prosecutionCaseJson.getJsonArray("defendants").getValuesAs(JsonObject.class).stream()
@@ -278,10 +280,10 @@ public class CPSEmailNotificationProcessor {
                 .orElseThrow(IllegalArgumentException::new);
     }
 
-    private JsonObject removeProperty(final JsonObject origin, final String key){
+    private JsonObject removeProperty(final JsonObject origin, final String key) {
         final JsonObjectBuilder builder = Json.createObjectBuilder();
-        for (final Map.Entry<String, JsonValue> entry : origin.entrySet()){
-            if (!entry.getKey().equals(key)){
+        for (final Map.Entry<String, JsonValue> entry : origin.entrySet()) {
+            if (!entry.getKey().equals(key)) {
                 builder.add(entry.getKey(), entry.getValue());
             }
         }
