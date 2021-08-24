@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.domain.aggregate;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -18,6 +20,7 @@ import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtapplicationWi
 import uk.gov.justice.core.courts.ApplicationEjected;
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
 import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.core.courts.BoxHearingRequest;
 import uk.gov.justice.core.courts.ConvictionDateAdded;
 import uk.gov.justice.core.courts.ConvictionDateRemoved;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -35,6 +38,7 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
+import uk.gov.justice.progression.courts.SendStatdecAppointmentLetter;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 
 import java.time.LocalDate;
@@ -92,7 +96,10 @@ public class ApplicationAggregateTest {
 
     @Test
     public void shouldReturnCourtApplicationCreated() {
-        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication().withId(randomUUID()).build())
+        final LocalDate convictionDate = LocalDate.now();
+        final CourtApplication courtApplication = buildCourtapplication(randomUUID(), convictionDate);
+
+        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication)
                 .collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
@@ -306,6 +313,29 @@ public class ApplicationAggregateTest {
         assertThat(convictionDateRemoved.getCourtApplicationId(), is(courtApplicationId));
 
         assertThat(aggregate.getCourtApplication().getConvictionDate(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldReturnCourtApplicationCreatedAndSendStatDecAppointmentLetter() {
+        final UUID courtApplicationId = randomUUID();
+        final LocalDate convictionDate = LocalDate.now();
+        final CourtApplication courtApplication = buildCourtapplication(courtApplicationId, convictionDate);
+
+        InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings().withCourtApplication(courtApplication)
+                .withBoxHearing(BoxHearingRequest.boxHearingRequest()
+                        .withSendAppointmentLetter(TRUE)
+                        .build())
+                .withSummonsApprovalRequired(FALSE)
+                .build();
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
+
+        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication)
+                .collect(toList());
+        assertThat(eventStream.size(), is(2));
+        final Object object1 = eventStream.get(0);
+        assertThat(object1.getClass(), is(equalTo(CourtApplicationCreated.class)));
+        final Object object2 = eventStream.get(1);
+        assertThat(object2.getClass(), is(equalTo(SendStatdecAppointmentLetter.class)));
     }
 
     @Test

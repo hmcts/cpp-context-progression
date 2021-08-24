@@ -71,6 +71,7 @@ import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsReject
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
 import uk.gov.justice.core.courts.SummonsTemplateType;
 import uk.gov.justice.core.courts.SummonsType;
+import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -462,6 +463,7 @@ public class CourtApplicationProcessorTest {
         final Hearing hearingArgumentCaptorValue = hearingArgumentCaptor.getValue();
         assertThat(hearingArgumentCaptorValue.getProsecutionCases().get(0).getId().toString(), is(caseId_1));
 
+        verify(progressionService).updateHearingListingStatusToHearingInitiated(any(JsonEnvelope.class), any(Initiate.class));
     }
 
     @Test

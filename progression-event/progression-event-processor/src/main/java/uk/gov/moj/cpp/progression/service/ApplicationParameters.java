@@ -107,6 +107,10 @@ public class ApplicationParameters {
     @Value(key = "summons_rejected_template_id")
     private String summonsRejectedTemplateId;
 
+    @Inject
+    @Value(key = "statdec_send_appointment_letter_template_id")
+    private String statDecSendAppointmentLetterTemplateId;
+
     public String getNcesEmailTemplateId() {
 
         return ncesEmailTemplateId;
@@ -179,6 +183,9 @@ public class ApplicationParameters {
         return caseAtaGlanceURI;
     }
 
+    public String getStatDecSendAppointmentLetterTemplateId() {
+        return statDecSendAppointmentLetterTemplateId;
+    }
 
     public String getEmailTemplateId(final String templateName) {
         final Map<String, String> emailTemplatesMap = new HashMap<>();

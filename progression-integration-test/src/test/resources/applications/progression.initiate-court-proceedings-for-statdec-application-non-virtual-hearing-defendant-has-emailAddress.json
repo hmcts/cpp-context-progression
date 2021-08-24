@@ -1,0 +1,273 @@
+{
+  "courtApplication": {
+    "id": "APPLICATION_ID",
+    "applicationStatus": "DRAFT",
+    "commissionerOfOath": false,
+    "applicationReceivedDate": "2021-04-29",
+    "type": {
+      "id": "f3a6e917-7cc8-3c66-83dd-d958abd6a6e4",
+      "type": "Appearance to make statutory declaration",
+      "categoryCode": "CO",
+      "jurisdiction": "MAGISTRATES",
+      "linkType": "LINKED",
+      "code": "MC80527",
+      "legislation": "In accordance with section 14 of the Magistrates' Courts Act 1980.",
+      "appealFlag": false,
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "hearingCode": "APN",
+      "applicantAppellantFlag": false,
+      "pleaApplicableFlag": false,
+      "offenceActiveOrder": "OFFENCE",
+      "commrOfOathFlag": true,
+      "breachType": "NOT_APPLICABLE",
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": true,
+      "listingNotifTemplate": "POSTAL_NOTIFICATION",
+      "boxworkNotifTemplate": "NOT_APPLICABLE",
+      "prosecutorThirdPartyFlag": true,
+      "spiOutApplicableFlag": true
+    },
+    "applicant": {
+      "id": "fd3fe74e-ae8b-4c00-92fa-92d2be760f3c",
+      "masterDefendant": {
+        "masterDefendantId": "8b9bda84-b75c-4bd2-ae7e-60a7a84d434e",
+        "isYouth": false,
+        "personDefendant": {
+          "arrestSummonsNumber": "007",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "custodyTimeLimit": "2021-02-02",
+          "driverLicenceCode": "FULL",
+          "driverLicenseIssue": "DVLA",
+          "driverNumber": "007",
+          "employerOrganisation": {
+            "address": {
+              "address1": "81 Horns Road",
+              "address2": "70082 Padberg Cove",
+              "address3": "Port Macie",
+              "address4": "VU",
+              "address5": "Central African Republic",
+              "postcode": "WA9 1AB"
+            },
+            "contact": {
+              "fax": "1-816-253-7642",
+              "home": "1-624-449-6966",
+              "mobile": "505.427.0292",
+              "primaryEmail": "hallie.pollich@yahoo.com",
+              "secondaryEmail": "gino.hyatt@gmail.com",
+              "work": "(704) 566-2103"
+            },
+            "incorporationNumber": "01051975",
+            "name": "EY",
+            "registeredCharityNumber": "AA"
+          },
+          "employerPayrollReference": "xP1pVvSKPV",
+          "perceivedBirthYear": 1975,
+          "personDetails": {
+            "additionalNationalityCode": "GBP",
+            "additionalNationalityDescription": "GBP",
+            "additionalNationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "address": {
+              "address1": "F5l4fizkwC",
+              "address2": "70082 Padberg Cove",
+              "address3": "Port Macie",
+              "address4": "VU",
+              "address5": "Central African Republic",
+              "postcode": "WA9 1AB"
+            },
+            "contact": {
+              "fax": "1-816-253-7642",
+              "home": "1-624-449-6966",
+              "mobile": "505.427.0292",
+              "primaryEmail": "hallie.pollich@yahoo.com",
+              "secondaryEmail": "gino.hyatt@gmail.com",
+              "work": "(704) 566-2103"
+            },
+            "dateOfBirth": "1978-12-20",
+            "disabilityStatus": "Fe7IlagYhW",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "GBP",
+              "observedEthnicityDescription": "GBP",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "GBP",
+              "selfDefinedEthnicityDescription": "GBP",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Jayden",
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "NA",
+            "lastName": "GNYRwd",
+            "middleName": "Madaline",
+            "nationalInsuranceNumber": "AA604950B",
+            "nationalityCode": "GBP",
+            "nationalityDescription": "GBP",
+            "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "occupation": "Service",
+            "occupationCode": "SS",
+            "personMarkers": [
+              {
+                "id": "1215f1d5-423d-4104-98fe-d3f7a9b6bb7c",
+                "markerTypeCode": "GBP",
+                "markerTypeDescription": "GBP",
+                "markerTypeid": "ef277e21-e78f-49e2-9d66-da73b910f22f"
+              }
+            ],
+            "specificRequirements": "NA",
+            "title": "MR"
+          },
+          "vehicleOperatorLicenceNumber": "BS007"
+        },
+        "defendantCase": [
+          {
+            "defendantId": "8b9bda84-b75c-4bd2-ae7e-60a7a84d434e",
+            "caseId": "c25573fc-8578-4a76-902e-530eb80931ac",
+            "caseReference": "68GD7174721"
+          }
+        ]
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "respondents": [
+      {
+        "id": "3ffa1725-993b-4566-afb6-e8dc8b9bb9e7",
+        "notificationRequired": true,
+        "summonsRequired": false,
+        "prosecutingAuthority": {
+          "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+          "prosecutionAuthorityCode": "SURRPF"
+        }
+      }
+    ],
+    "subject": {
+      "id": "fd3fe74e-ae8b-4c00-92fa-92d2be760f3c",
+      "masterDefendant": {
+        "masterDefendantId": "8b9bda84-b75c-4bd2-ae7e-60a7a84d434e",
+        "isYouth": false,
+        "personDefendant": {
+          "arrestSummonsNumber": "007",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "custodyTimeLimit": "2021-02-02",
+          "driverLicenceCode": "FULL",
+          "driverLicenseIssue": "DVLA",
+          "driverNumber": "007",
+          "employerOrganisation": {
+            "address": {
+              "address1": "81 Horns Road",
+              "address2": "70082 Padberg Cove",
+              "address3": "Port Macie",
+              "address4": "VU",
+              "address5": "Central African Republic",
+              "postcode": "WA9 1AB"
+            },
+            "contact": {
+              "fax": "1-816-253-7642",
+              "home": "1-624-449-6966",
+              "mobile": "505.427.0292",
+              "primaryEmail": "hallie.pollich@yahoo.com",
+              "secondaryEmail": "gino.hyatt@gmail.com",
+              "work": "(704) 566-2103"
+            },
+            "incorporationNumber": "01051975",
+            "name": "EY",
+            "registeredCharityNumber": "AA"
+          },
+          "employerPayrollReference": "xP1pVvSKPV",
+          "perceivedBirthYear": 1975,
+          "personDetails": {
+            "additionalNationalityCode": "GBP",
+            "additionalNationalityDescription": "GBP",
+            "additionalNationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "address": {
+              "address1": "F5l4fizkwC",
+              "address2": "70082 Padberg Cove",
+              "address3": "Port Macie",
+              "address4": "VU",
+              "address5": "Central African Republic",
+              "postcode": "WA9 1AB"
+            },
+            "contact": {
+              "fax": "1-816-253-7642",
+              "home": "1-624-449-6966",
+              "mobile": "505.427.0292",
+              "primaryEmail": "hallie.pollich@yahoo.com",
+              "secondaryEmail": "gino.hyatt@gmail.com",
+              "work": "(704) 566-2103"
+            },
+            "dateOfBirth": "1978-12-20",
+            "disabilityStatus": "Fe7IlagYhW",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "GBP",
+              "observedEthnicityDescription": "GBP",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "GBP",
+              "selfDefinedEthnicityDescription": "GBP",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Jayden",
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "NA",
+            "lastName": "GNYRwd",
+            "middleName": "Madaline",
+            "nationalInsuranceNumber": "AA604950B",
+            "nationalityCode": "GBP",
+            "nationalityDescription": "GBP",
+            "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "occupation": "Service",
+            "occupationCode": "SS",
+            "personMarkers": [
+              {
+                "id": "1215f1d5-423d-4104-98fe-d3f7a9b6bb7c",
+                "markerTypeCode": "GBP",
+                "markerTypeDescription": "GBP",
+                "markerTypeid": "ef277e21-e78f-49e2-9d66-da73b910f22f"
+              }
+            ],
+            "specificRequirements": "NA",
+            "title": "MR"
+          },
+          "vehicleOperatorLicenceNumber": "BS007"
+        },
+        "defendantCase": [
+          {
+            "defendantId": "8b9bda84-b75c-4bd2-ae7e-60a7a84d434e",
+            "caseId": "c25573fc-8578-4a76-902e-530eb80931ac",
+            "caseReference": "68GD7174721"
+          }
+        ]
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "courtApplicationCases": [
+      {
+        "prosecutionCaseId": "CASE_ID",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "SURRPF",
+          "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+          "caseURN": "68GD7174721"
+        },
+        "isSJP": false,
+        "caseStatus": "ACTIVE"
+      }
+    ]
+  },
+  "boxHearing": {
+    "jurisdictionType": "MAGISTRATES",
+    "applicationDueDate": "2021-04-30",
+    "sendAppointmentLetter": true,
+    "courtCentre": {
+      "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+      "name": "Bexley Magistrates' Court"
+    }
+  }
+}
