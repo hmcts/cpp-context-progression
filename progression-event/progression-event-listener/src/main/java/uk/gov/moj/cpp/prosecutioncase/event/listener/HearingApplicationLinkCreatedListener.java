@@ -28,6 +28,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -70,36 +71,38 @@ public class HearingApplicationLinkCreatedListener {
 
     }
 
-    private HearingApplicationEntity transformHearingApplicationEntity(final Hearing hearing, final UUID applicationId,
+    private HearingApplicationEntity transformHearingApplicationEntity(final Hearing hearingFromEvent, final UUID applicationId,
                                                                        HearingListingStatus hearingListingStatus) {
-        removeNowsJudicialResults(hearing);
-        HearingEntity hearingEntity = hearingRepository.findBy(hearing.getId());
+        removeNowsJudicialResults(hearingFromEvent);
+        HearingEntity hearingEntity = hearingRepository.findBy(hearingFromEvent.getId());
         if (hearingEntity == null) {
             hearingEntity = new HearingEntity();
-            hearingEntity.setHearingId(hearing.getId());
+            hearingEntity.setHearingId(hearingFromEvent.getId());
             hearingEntity.setListingStatus(hearingListingStatus);
         }
         if (nonNull(hearingEntity.getPayload())) {
-            final Hearing originalHearing = jsonObjectConverter.convert(stringToJsonObjectConverter.convert(hearingEntity.getPayload()), Hearing.class);
-            final Hearing.Builder hearingBuilder = Hearing.hearing().withValuesFrom(originalHearing);
-            if (isNotEmpty(hearing.getCourtApplications())) {
-                hearingBuilder.withCourtApplications(hearing.getCourtApplications());
+            final Hearing originalHearingDomain = jsonObjectConverter.convert(stringToJsonObjectConverter.convert(hearingEntity.getPayload()), Hearing.class);
+            final Hearing.Builder hearingBuilder = Hearing.hearing().withValuesFrom(originalHearingDomain);
+            if (isNotEmpty(hearingFromEvent.getCourtApplications())) {
+                hearingBuilder.withCourtApplications(hearingFromEvent.getCourtApplications());
             }
-            if (isNotEmpty(hearing.getProsecutionCases())) {
-                final List<ProsecutionCase> prosecutionCases = ofNullable(originalHearing.getProsecutionCases()).orElseGet(ArrayList::new);
-                prosecutionCases.addAll(hearing.getProsecutionCases());
+            if (isNotEmpty(hearingFromEvent.getProsecutionCases())) {
+                final List<ProsecutionCase> prosecutionCases = ofNullable(originalHearingDomain.getProsecutionCases()).orElseGet(ArrayList::new);
+                final Set<UUID>  casesAlreadyLinked = prosecutionCases.stream().map(pc -> pc.getId()).collect(Collectors.toSet());
+                final List<ProsecutionCase> prosecutionCasesListToAdd = hearingFromEvent.getProsecutionCases().stream().filter(pc -> !(casesAlreadyLinked.contains(pc.getId()))).collect(Collectors.toList());
+                prosecutionCases.addAll(prosecutionCasesListToAdd);
                 hearingBuilder.withProsecutionCases(prosecutionCases);
             }
             final Hearing hearingUpdated = hearingBuilder.build();
             hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearingUpdated).toString());
         } else {
-            hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
+            hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearingFromEvent).toString());
         }
         final HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
         HearingApplicationKey hearingApplicationKey = new HearingApplicationKey();
         hearingApplicationEntity.setId(hearingApplicationKey);
         hearingApplicationEntity.getId().setApplicationId(applicationId);
-        hearingApplicationEntity.getId().setHearingId(hearing.getId());
+        hearingApplicationEntity.getId().setHearingId(hearingFromEvent.getId());
         hearingApplicationEntity.setHearing(hearingEntity);
         return hearingApplicationEntity;
     }

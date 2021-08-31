@@ -33,6 +33,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -131,6 +132,52 @@ public class HearingApplicationLinkCreatedListenerTest {
         assertThat(payloadJson.getJsonArray(COURT_APPLICATIONS).getJsonObject(0).getJsonArray(COURT_APPLICATION_CASES).getJsonObject(0).getString(PROSECUTION_CASE_ID), is(CASE_ID.toString()));
     }
 
+
+
+    @Test
+    public void shouldHandleHearingApplicationLinkCreatedEventWithExistingHearingAndExistingCase() {
+        final Hearing hearingFromDb = Hearing.hearing()
+                .withId(HEARING_ID)
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(CASE_ID2)
+                        .build()))
+                .build();
+
+        final Hearing hearing = Hearing.hearing().withId(HEARING_ID)
+                .withCourtApplications(singletonList(courtApplication()
+                        .withId(APPLICATION_ID)
+                        .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                .withProsecutionCaseId(CASE_ID2).build())).build()))
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(CASE_ID2)
+                        .build()))
+                .build();
+
+        HearingApplicationLinkCreated hearingApplicationLinkCreated
+                = hearingApplicationLinkCreated()
+                .withApplicationId(APPLICATION_ID)
+                .withHearing(hearing)
+                .build();
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(HEARING_ID);
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearingFromDb).toString());
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(hearingApplicationLinkCreated);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
+
+        eventListener.process(envelope);
+
+        verify(repository).save(argumentCaptor.capture());
+        final HearingApplicationEntity hearingApplicationEntity = argumentCaptor.getValue();
+        assertThat(hearingApplicationEntity.getHearing().getHearingId(), is(HEARING_ID));
+        final JsonObject payloadJson = stringToJsonObjectConverter.convert(hearingApplicationEntity.getHearing().getPayload());
+        assertThat(payloadJson.getJsonArray(PROSECUTION_CASES).getJsonObject(0).getString(ID), is(CASE_ID2.toString()));
+        assertThat((Integer)(payloadJson.getJsonArray(PROSECUTION_CASES).size()), is(1));
+        assertThat(payloadJson.getJsonArray(COURT_APPLICATIONS).getJsonObject(0).getString(ID), is(APPLICATION_ID.toString()));
+        assertThat(payloadJson.getJsonArray(COURT_APPLICATIONS).getJsonObject(0).getJsonArray(COURT_APPLICATION_CASES).getJsonObject(0).getString(PROSECUTION_CASE_ID), is(CASE_ID2.toString()));
+    }
     @Test
     public void shouldHandleHearingApplicationLinkCreatedEventWithExistingHearingAndNewCase() {
         final Hearing hearingFromDb = Hearing.hearing()
