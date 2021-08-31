@@ -102,7 +102,7 @@ public class NotificationHandler {
 
         if (nonNull(emailNotification.getApplicationId())) {
             appendAggregateEvents(command, emailNotification.getApplicationId(), ApplicationAggregate.class,
-                    aggregate -> aggregate.recordEmailRequest(emailNotification.getApplicationId(), emailNotification.getMaterialId(), emailNotification.getNotifications()));
+                    aggregate -> aggregate.recordEmailRequest(emailNotification.getApplicationId(), emailNotification.getNotifications()));
         }
 
         if (!payload.containsKey(CASE_ID) && !payload.containsKey(APPLICATION_ID) && payload.containsKey(MATERIAL_ID)) {

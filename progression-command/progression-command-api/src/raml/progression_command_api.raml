@@ -122,14 +122,11 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 /courtdocument :
   post:
     description: |
-      Update a court document for a case or create court documents
+      Update a court document for a case
       ...
       (mapping):
           requestType: application/vnd.progression.update-court-document+json
           name: progression.update-court-document
-      (mapping):
-          requestType: application/vnd.progression.create-court-documents+json
-           name: progression.create-court-documents
       ...
     body:
       application/vnd.progression.update-court-document+json:
@@ -137,10 +134,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
           !include json/progression.command.update-court-document.json
         schema:
           !include json/schema/progression.command.update-court-document.json
-      application/vnd.progression.create-court-documents+json:
-              schema:
-                !include json/schema/progression.create-court-documents.json
-
     responses:
       202:
         description: Accepted

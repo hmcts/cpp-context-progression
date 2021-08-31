@@ -1,15 +1,12 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
-import static java.lang.Boolean.TRUE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
-import static uk.gov.justice.core.courts.CourtApplicationCreated.courtApplicationCreated;
 import static uk.gov.justice.core.courts.CourtApplicationSummonsApproved.courtApplicationSummonsApproved;
 import static uk.gov.justice.core.courts.CourtApplicationSummonsRejected.courtApplicationSummonsRejected;
 import static uk.gov.justice.core.courts.HearingResultedApplicationUpdated.hearingResultedApplicationUpdated;
@@ -17,7 +14,6 @@ import static uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApprove
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
-import static uk.gov.justice.progression.courts.SendStatdecAppointmentLetter.sendStatdecAppointmentLetter;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.getCourtApplicationWithConvictionDate;
 
 import uk.gov.justice.core.courts.ApplicationEjected;
@@ -81,8 +77,6 @@ public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
     private static final long serialVersionUID = 1331113876243908494L;
-    private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80527";
-    private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
     private ApplicationStatus applicationStatus = ApplicationStatus.DRAFT;
     private InitiateCourtApplicationProceedings initiateCourtApplicationProceedings;
     private CourtApplication courtApplication;
@@ -153,27 +147,14 @@ public class ApplicationAggregate implements Aggregate {
                         .withApplicationStatus(applicationStatus)
                         .build()));
     }
-    @SuppressWarnings({"squid:S1067"})
+
     public Stream<Object> createCourtApplication(final CourtApplication courtApplication) {
         LOGGER.debug("Court application has been created");
-        final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(
-                courtApplicationCreated()
-                        .withCourtApplication(courtApplication)
-                        .build());
-        final BoxHearingRequest boxHearingRequest = nonNull(initiateCourtApplicationProceedings) ? initiateCourtApplicationProceedings.getBoxHearing(): null;
-
-        if(nonNull(courtApplication.getType()) && isNotBlank(courtApplication.getType().getCode())
-                && (APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE.equalsIgnoreCase(courtApplication.getType().getCode())
-                || APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP.equalsIgnoreCase(courtApplication.getType().getCode()))
-                && nonNull(boxHearingRequest) && TRUE.equals(boxHearingRequest.getSendAppointmentLetter())) {
-                streamBuilder.add(sendStatdecAppointmentLetter()
-                        .withCourtApplication(courtApplication)
-                        .withBoxHearing(boxHearingRequest)
-                        .build());
-
-        }
-        return apply(streamBuilder.build());
+        return apply(
+                Stream.of(
+                        CourtApplicationCreated.courtApplicationCreated()
+                                .withCourtApplication(courtApplication)
+                                .build()));
     }
 
     public Stream<Object> addApplicationToCase(final CourtApplication application) {
@@ -201,8 +182,8 @@ public class ApplicationAggregate implements Aggregate {
                         .build()));
     }
 
-    public Stream<Object> recordEmailRequest(final UUID applicationId, final UUID materialId, final List<Notification> notifications) {
-        return apply(Stream.of(new EmailRequested(null, materialId, applicationId, notifications)));
+    public Stream<Object> recordEmailRequest(final UUID applicationId, final List<Notification> notifications) {
+        return apply(Stream.of(new EmailRequested(null, null, applicationId, notifications)));
     }
 
     public Stream<Object> recordNotificationRequestAccepted(final UUID applicationId, final UUID materialId, final UUID notificationId, final ZonedDateTime acceptedTime) {

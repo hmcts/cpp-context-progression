@@ -7,7 +7,6 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STR
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Offence;
@@ -26,10 +25,6 @@ public class TestHelper {
     public static CourtApplication buildCourtapplication(final UUID courtApplicationId, final LocalDate convictionDate){
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
-                .withType(CourtApplicationType.courtApplicationType()
-                        .withType("Appearance to make statutory declaration")
-                        .withCode("MC80527")
-                        .build())
                 .withConvictionDate(convictionDate)
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()

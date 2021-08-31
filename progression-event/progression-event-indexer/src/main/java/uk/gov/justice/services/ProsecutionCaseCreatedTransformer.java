@@ -42,7 +42,7 @@ public class ProsecutionCaseCreatedTransformer implements Transform {
             caseDetails.setCaseId(prosecutionCaseId.toString());
             caseDetails.set_case_type("PROSECUTION");
             caseDetails.setCaseStatus("ACTIVE");
-
+            caseDetails.set_is_crown(false);
             if (prosecutionCase.getProsecutionCaseIdentifier() != null) {
                 if (!Objects.isNull(prosecutionCase.getProsecutionCaseIdentifier().getCaseURN())) {
                     caseDetails.setCaseReference(prosecutionCase.getProsecutionCaseIdentifier().getCaseURN());

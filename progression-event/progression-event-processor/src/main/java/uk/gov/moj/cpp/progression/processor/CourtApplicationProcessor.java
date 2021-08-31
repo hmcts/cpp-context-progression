@@ -292,9 +292,6 @@ public class CourtApplicationProcessor {
 
         progressionService.linkApplicationToHearing(event, hearingInitiate.getHearing(), HearingListingStatus.HEARING_INITIALISED);
 
-        // then update application hearing listing status to hearing initiated
-        progressionService.updateHearingListingStatusToHearingInitiated(event, hearingInitiate);
-
         // then update application status and list hearing
         progressionService.updateCourtApplicationStatus(event, application.getId(), ApplicationStatus.UN_ALLOCATED);
 
