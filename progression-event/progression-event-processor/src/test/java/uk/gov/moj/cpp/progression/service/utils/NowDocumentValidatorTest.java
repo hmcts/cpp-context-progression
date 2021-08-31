@@ -36,6 +36,12 @@ public class NowDocumentValidatorTest {
         assertThat(postable, is(FALSE));
     }
 
+    @Test
+    public void shouldSendIsPostableAsFalseWhenOrderAddresseeIsNull() {
+        final boolean postable = nowDocumentValidator.isPostable(null);
+        assertThat(postable, is(FALSE));
+    }
+
     private OrderAddressee getOrderAddressee(final String address, final String postCode) {
         return orderAddressee().withAddress(nowaddress().withLine1(address).withPostCode(postCode).build()).build();
     }
