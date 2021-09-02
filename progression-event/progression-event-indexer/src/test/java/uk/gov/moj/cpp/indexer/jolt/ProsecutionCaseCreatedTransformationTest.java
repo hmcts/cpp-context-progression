@@ -56,8 +56,10 @@ public class ProsecutionCaseCreatedTransformationTest {
                 .assertThat("$.caseReference", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityReference")).getString()))
                 .assertThat("$.prosecutingAuthority", equalTo(((JsonString) inputProsecutionCase.read("$.prosecutionCase.prosecutor.prosecutorCode")).getString()))
                 .assertThat("$.caseStatus", equalTo("ACTIVE"))
-                .assertThat("$._case_type", equalTo("PROSECUTION"))
-                .assertThat("$._is_crown", equalTo(false));
+                .assertThat("$._case_type", equalTo("PROSECUTION"));
+
+        with(outputCase.toString()).assertNotDefined("$._is_crown");
+        with(outputCase.toString()).assertNotDefined("$._is_magistrate");
     }
 
 

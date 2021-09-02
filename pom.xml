@@ -43,7 +43,7 @@
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>7.0.58</referencedata.version>
-        <listing.version>7.0.75</listing.version>
+        <listing.version>7.0.76</listing.version>
         <hearing.version>7.0.111</hearing.version>
         <usersgroups.version>7.0.29</usersgroups.version>
         <defence.version>7.0.27</defence.version>

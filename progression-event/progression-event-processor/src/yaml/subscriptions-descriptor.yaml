@@ -259,6 +259,9 @@ subscriptions_descriptor:
         - name: progression.event.unscheduled-hearing-allocation-notified
           schema_uri: http://justice.gov.uk/progression/courts/unscheduled-hearing-allocation-notified.json
 
+        - name: progression.event.send-statdec-appointment-letter
+          schema_uri: http://justice.gov.uk/progression/courts/send-statdec-appointment-letter.json
+
 
         - name: progression.event.prosecution-cases-resulted-v2
           schema_uri: http://justice.gov.uk/core/courts/progression.event.prosecution-cases-resulted-v2.json
@@ -352,7 +355,6 @@ subscriptions_descriptor:
 
         - name: progression.event.hearing-updated-processed
           schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-updated-processed.json
-
           # Deprecated API  - End
       event_source_name: progression
 
