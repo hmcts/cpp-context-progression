@@ -86,7 +86,6 @@ public class CourtApplicationCreatedIngesterIT extends AbstractIT {
     }
 
     @Test
-    @Ignore("will be restored after the new sjp version is released for statdecs as there is a mutual dependency")
     public void initiateCourtProceedingsForApplicationShouldInitialiseHearingListingStatusAndIngestJurisdictionToUnifiedSearch() throws IOException {
         caseId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(applicationId, caseId, APPLICATIONS_PROGRESSION_INITIATE_COURT_PROCEEDINGS_FOR_APPLICATION_JSON);
