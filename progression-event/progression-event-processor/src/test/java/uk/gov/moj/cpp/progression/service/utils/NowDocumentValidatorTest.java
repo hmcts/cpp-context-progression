@@ -24,9 +24,14 @@ public class NowDocumentValidatorTest {
     }
 
     @Test
-    public void shouldSendIsPostableAsFalse() {
+    public void shouldSendIsPostableAsFalseAsItsNoFixedAbode() {
         final boolean postable = nowDocumentValidator.isPostable(getOrderAddressee(NO_FIXED_ABODE, null));
+        assertThat(postable, is(FALSE));
+    }
 
+    @Test
+    public void shouldSendIsPostableAsFalseAsAddressLine1IsBlank() {
+        final boolean postable = nowDocumentValidator.isPostable(getOrderAddressee("    ", null));
         assertThat(postable, is(FALSE));
     }
 
@@ -37,12 +42,28 @@ public class NowDocumentValidatorTest {
     }
 
     @Test
+    public void shouldSendIsPostableAsFalseWhenPostcodeIsBlankString() {
+        final boolean postable = nowDocumentValidator.isPostable(getOrderAddressee("High Street Croydon", "   "));
+        assertThat(postable, is(FALSE));
+    }
+
+    @Test
     public void shouldSendIsPostableAsFalseWhenOrderAddresseeIsNull() {
         final boolean postable = nowDocumentValidator.isPostable(null);
         assertThat(postable, is(FALSE));
     }
 
-    private OrderAddressee getOrderAddressee(final String address, final String postCode) {
-        return orderAddressee().withAddress(nowaddress().withLine1(address).withPostCode(postCode).build()).build();
+    @Test
+    public void shouldSendIsPostableAsFalseWhenOrderAddresseeHasNoAddress() {
+        final boolean postable = nowDocumentValidator.isPostable(getOrderAddresseeWithNoAddress());
+        assertThat(postable, is(FALSE));
+    }
+
+    private OrderAddressee getOrderAddressee(final String addressLine1, final String postCode) {
+        return orderAddressee().withAddress(nowaddress().withLine1(addressLine1).withPostCode(postCode).build()).build();
+    }
+
+    private OrderAddressee getOrderAddresseeWithNoAddress() {
+        return orderAddressee().withAddress(null).build();
     }
 }
