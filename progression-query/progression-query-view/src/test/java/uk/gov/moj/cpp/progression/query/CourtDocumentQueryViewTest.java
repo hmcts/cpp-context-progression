@@ -5,9 +5,7 @@ import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
@@ -15,12 +13,9 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
-import static org.apache.commons.io.FileUtils.readFileToString;
 
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -40,7 +35,6 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
@@ -57,7 +51,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusR
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.time.LocalDate;
@@ -68,7 +61,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -153,14 +145,14 @@ public class CourtDocumentQueryViewTest {
         return sr.toString();
     }
 
-    private CourtDocument courtDocument(final UUID id, final UUID documentTypeId) {
+    private CourtDocument courtDocument(final UUID id, final UUID documentTypeId,String userGroup) {
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(id)
                 .withDocumentTypeId(documentTypeId)
                 .withMaterials(asList(
                         Material.material()
                                 .withId(UUID.randomUUID())
-                                .withUserGroups(asList("Court Clerks"))
+                                .withUserGroups(asList(userGroup==null?"Court Clerks":"Legal Advisers"))
                                 .build()
                 ))
                 .withSeqNum(10)
@@ -369,7 +361,7 @@ public class CourtDocumentQueryViewTest {
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
                         .withName(CourtDocumentQuery.COURT_DOCUMENT_SEARCH_NAME).build(),
                 jsonObject);
-        final CourtDocument courtDocument = courtDocument(courtDocumentId, DOCUMENT_TYPE_ID_1);
+        final CourtDocument courtDocument = courtDocument(courtDocumentId, DOCUMENT_TYPE_ID_1,"Court Clerks");
         final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
 
         when(courtDocumentRepository.findBy(courtDocumentId)).thenReturn(courtDocumentEntity);
@@ -431,7 +423,7 @@ public class CourtDocumentQueryViewTest {
         final Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex = new HashMap<>();
         final Map<UUID, UUID> courtDocumentId2Id = new HashMap<>();
         final UUID documentTypeId  = DOCUMENT_TYPE_ID_1;
-        addId(null, randomUUID(), null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, documentTypeId);
+        addId(null, randomUUID(), null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, documentTypeId,null);
         jsonBuilder.add(CourtDocumentQuery.DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
 
         JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
@@ -474,9 +466,9 @@ public class CourtDocumentQueryViewTest {
     }
 
     private void addId(List<UUID> caseId, UUID defendantId, List<UUID> applicationId, Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex,
-                       Map<UUID, UUID> courtDocumentId2Id, final UUID documentTypeId) {
+                       Map<UUID, UUID> courtDocumentId2Id, final UUID documentTypeId, final String userGroup) {
         final UUID courtDocumentId = UUID.randomUUID();
-        final CourtDocument courtDocument = courtDocument(courtDocumentId, documentTypeId);
+        final CourtDocument courtDocument = courtDocument(courtDocumentId, documentTypeId, userGroup);
         final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
 
         final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
@@ -485,27 +477,35 @@ public class CourtDocumentQueryViewTest {
                 .withType("Defendant profile notes");
 
         UUID id = null;
-        if (isNotEmpty(caseId)) {
-            id = caseId.get(0);
-            courtDocumentIndexBuilder.withCaseIds(caseId)
-                    .withCategory("Defendant level");
-            when(courtDocumentRepository.findByProsecutionCaseIds(caseId)).thenReturn(asList(courtDocumentEntity));
-        } else if (isNotEmpty(applicationId)) {
-            id = applicationId.get(0);
-            courtDocumentIndexBuilder.withDocument(CourtDocument.courtDocument()
-                    .withMaterials(asList(Material.material().build()))
-                    .withDocumentCategory(DocumentCategory.documentCategory().withApplicationDocument(ApplicationDocument.
-                            applicationDocument().withApplicationId(applicationId.get(0)).build()).build())
-                    .build())
-                    .withCategory("Applicatiom level");
-            ;
-            when(courtDocumentRepository.findByApplicationIds(applicationId)).thenReturn(asList(courtDocumentEntity));
-        } else if (defendantId != null) {
-            id = defendantId;
-            courtDocumentIndexBuilder.withDefendantIds(asList(defendantId))
-                    .withCategory("Defendant level");
-            ;
-            when(courtDocumentRepository.findByDefendantId(defendantId)).thenReturn(asList(courtDocumentEntity));
+        if(isNotEmpty(caseId) || defendantId != null || isNotEmpty(applicationId)) {
+        	if(isNotEmpty(caseId) && defendantId != null) {
+        		id = defendantId;
+        		courtDocumentIndexBuilder.withCaseIds(caseId).withDefendantIds(asList(defendantId))
+        		.withCategory("Defendant level");
+        		when(courtDocumentRepository.
+        				findByProsecutionCaseIdAndDefendantId(caseId,asList(defendantId))).thenReturn(asList(courtDocumentEntity));
+        	}else if(isNotEmpty(caseId)) {
+                id = caseId.get(0);
+                courtDocumentIndexBuilder.withCaseIds(caseId)
+                        .withCategory("Defendant level");
+                when(courtDocumentRepository.findByProsecutionCaseIds(caseId)).thenReturn(asList(courtDocumentEntity));
+        	}else if (isNotEmpty(applicationId)) {
+                id = applicationId.get(0);
+                courtDocumentIndexBuilder.withDocument(CourtDocument.courtDocument()
+                        .withMaterials(asList(Material.material().build()))
+                        .withDocumentCategory(DocumentCategory.documentCategory().withApplicationDocument(ApplicationDocument.
+                                applicationDocument().withApplicationId(applicationId.get(0)).build()).build())
+                        .build())
+                        .withCategory("Applicatiom level");
+                ;
+                when(courtDocumentRepository.findByApplicationIds(applicationId)).thenReturn(asList(courtDocumentEntity));
+            } else if (defendantId != null) {
+                id = defendantId;
+                courtDocumentIndexBuilder.withDefendantIds(asList(defendantId))
+                        .withCategory("Defendant level");
+                ;
+                when(courtDocumentRepository.findByDefendantId(defendantId)).thenReturn(asList(courtDocumentEntity));
+            }
         }
 
         id2ExpectedCourtDocumentIndex.put(id, courtDocumentIndexBuilder);
@@ -521,18 +521,22 @@ public class CourtDocumentQueryViewTest {
         final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         final Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex = new HashMap<>();
         final Map<UUID, UUID> courtDocumentId2Id = new HashMap<>();
-        if (caseIds != null) {
-            addId(caseIds, null, null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_1);
-            jsonBuilder.add(CourtDocumentQuery.CASE_ID_SEARCH_PARAM, caseIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
-        }
-        if (applicationIds != null) {
-            addId(null, null, applicationIds, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_2);
-            jsonBuilder.add(CourtDocumentQuery.APPLICATION_ID_SEARCH_PARAM, applicationIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
+        if(isNotEmpty(caseIds) || defendantId != null || isNotEmpty(applicationIds)) {
+        	if(isNotEmpty(caseIds) && defendantId != null) {
+        		addId(caseIds, defendantId, null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_1,userGroup);
+                jsonBuilder.add(CourtDocumentQuery.CASE_ID_SEARCH_PARAM, caseIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
+                jsonBuilder.add(CourtDocumentQuery.DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
+        	} else if (caseIds != null) {
+                addId(caseIds, null, null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_1,null);
+                jsonBuilder.add(CourtDocumentQuery.CASE_ID_SEARCH_PARAM, caseIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
+            } else if (applicationIds != null) {
+                addId(null, null, applicationIds, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_2,null);
+                jsonBuilder.add(CourtDocumentQuery.APPLICATION_ID_SEARCH_PARAM, applicationIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
 
-        }
-        if (defendantId != null) {
-            addId(null, defendantId, null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_4);
-            jsonBuilder.add(CourtDocumentQuery.DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
+            }else if (defendantId != null) {
+                addId(null, defendantId, null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_4,null);
+                jsonBuilder.add(CourtDocumentQuery.DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
+            }
         }
 
         final JsonObject jsonObject = jsonBuilder.build();
@@ -933,7 +937,7 @@ public class CourtDocumentQueryViewTest {
         final ProsecutionCase prosecutionCase = createProsecutionCase(randomUUID());
         final ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase, caseId);
 
-        final CourtDocument courtDocument = courtDocument(courtDocumentId, documentTypeId);
+        final CourtDocument courtDocument = courtDocument(courtDocumentId, documentTypeId,"Court Clerks");
         final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
         final NotificationStatusEntity notificationStatusEntity = notificationStatusEntity(caseId);
 
@@ -944,6 +948,11 @@ public class CourtDocumentQueryViewTest {
 
         final JsonEnvelope jsonEnvelopeOut = target.getCaseNotifications(jsonEnvelopeIn);
         assertThat(jsonEnvelopeOut.payloadAsJsonObject().getJsonArray("notificationStatus").size(), is(1));
+    }
+    
+    @Test
+    public void shouldGetCourtDocumentByCaseIdAndDefedantId() throws IOException {
+        shouldFindDocuments(true, true, asList(UUID.randomUUID(), UUID.randomUUID()), UUID.randomUUID(), null , "Legal Advisers");
     }
 }
 

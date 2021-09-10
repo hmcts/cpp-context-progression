@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -76,7 +77,7 @@ public class FinancialMeansListenerTest {
         //ensure that there are documents without financial means so that we can assert they do not get deleted
         assertThat(courtDocumentEntities.size(), greaterThan(documentsWithFinancialMeans.size()));
 
-        when(courtDocumentRepository.findByProsecutionCaseIdAndDefendantId(UUID.fromString(caseId), UUID.fromString(defendantId))).thenReturn(courtDocumentEntities);
+        when(courtDocumentRepository.findByProsecutionCaseIdAndDefendantId(newArrayList(UUID.fromString(caseId)), newArrayList(UUID.fromString(defendantId)))).thenReturn(courtDocumentEntities);
         when(courtDocumentMaterialRepository.findOptionalByCourtDocumentId(courtDocumentId1)).thenReturn(getCourtDocumentMaterialEntity(courtDocumentId1));
         when(courtDocumentMaterialRepository.findOptionalByCourtDocumentId(courtDocumentId3)).thenReturn(getCourtDocumentMaterialEntity(courtDocumentId3));
 

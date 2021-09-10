@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
 import static java.util.Collections.singletonList;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -135,11 +136,11 @@ public class CourtDocumentRepositoryTest {
         repository.save(getProsecutioncaseForDefendantDocument(CASE_ID_1, DEFENDANT_ID_1));
         repository.save(getProsecutioncaseForDefendantDocument(CASE_ID_2, DEFENDANT_ID_2));
 
-        List<CourtDocumentEntity> actual = repository.findByProsecutionCaseIdAndDefendantId(CASE_ID_1, DEFENDANT_ID_1);
+        List<CourtDocumentEntity> actual = repository.findByProsecutionCaseIdAndDefendantId(newArrayList(CASE_ID_1), newArrayList(DEFENDANT_ID_1));
         assertEquals(CASE_ID_1, actual.get(0).getIndices().iterator().next().getProsecutionCaseId());
         assertEquals(DEFENDANT_ID_1, actual.get(0).getIndices().iterator().next().getDefendantId());
 
-        actual = repository.findByProsecutionCaseIdAndDefendantId(CASE_ID_1, DEFENDANT_ID_2);
+        actual = repository.findByProsecutionCaseIdAndDefendantId(newArrayList(CASE_ID_1), newArrayList(DEFENDANT_ID_2));
         assertEquals(0, actual.size());
     }
 
@@ -152,7 +153,7 @@ public class CourtDocumentRepositoryTest {
         //ensure that this saves both the court document and the index and that these are
         //both retrievable
         //court document
-        final List<CourtDocumentEntity> courtDocumentsByCaseAndDefendant = repository.findByProsecutionCaseIdAndDefendantId(CASE_ID, DEFENDANT_ID_1);
+        final List<CourtDocumentEntity> courtDocumentsByCaseAndDefendant = repository.findByProsecutionCaseIdAndDefendantId(newArrayList(CASE_ID), newArrayList(DEFENDANT_ID_1));
         assertThat(courtDocumentsByCaseAndDefendant, hasSize(1));
         assertThat(courtDocumentsByCaseAndDefendant.get(0).getCourtDocumentId(), is(COURT_DOCUMENT_ID));
         final List<CourtDocumentEntity> courtDocumentsByCase = repository.findByProsecutionCaseId(CASE_ID);
@@ -170,7 +171,7 @@ public class CourtDocumentRepositoryTest {
         repository.remove(courtDocumentsByCaseAndDefendant.get(0));
 
         //Then
-        assertThat(repository.findByProsecutionCaseIdAndDefendantId(CASE_ID, DEFENDANT_ID_1), hasSize(0));
+        assertThat(repository.findByProsecutionCaseIdAndDefendantId(newArrayList(CASE_ID), newArrayList(DEFENDANT_ID_1)), hasSize(0));
         assertThat(repository.findByProsecutionCaseId(CASE_ID), hasSize(0));
         assertThat(courtDocumentIndexRepository.findBy(COURT_DOCUMENT_INDEX_ID), nullValue());
         assertThat(courtDocumentIndexRepository

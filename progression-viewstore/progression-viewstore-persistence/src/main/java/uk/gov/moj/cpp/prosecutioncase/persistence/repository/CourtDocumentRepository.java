@@ -25,9 +25,10 @@ public interface CourtDocumentRepository extends EntityRepository<CourtDocumentE
     @Query("select courtDocument FROM CourtDocumentIndexEntity cdi where cdi.hearingId=:hearingId and cdi.documentCategory=:documentCategory and cdi.defendantId=:defendantId ORDER BY cdi.courtDocument.seqNum ASC")
     List<CourtDocumentEntity> findCourtDocumentForNow(@QueryParam("hearingId") final UUID hearingId, @QueryParam("documentCategory") final String documentCategory, @QueryParam("defendantId") final UUID defendantId);
 
-    @Query("select courtDocument FROM CourtDocumentIndexEntity cdi where prosecution_case_id=:caseId and defendant_id=:defendantId ORDER BY cdi.courtDocument.seqNum ASC")
-    List<CourtDocumentEntity> findByProsecutionCaseIdAndDefendantId(@QueryParam("caseId") final UUID caseId,
-                                                                    @QueryParam("defendantId") final UUID defendantId);
+    @Query("select courtDocument FROM CourtDocumentIndexEntity cdi where prosecution_case_id in (:caseIds) and defendant_id in (:defendantIds) ORDER BY cdi.courtDocument.seqNum ASC")
+    List<CourtDocumentEntity> findByProsecutionCaseIdAndDefendantId(@QueryParam("caseIds") final List<UUID> caseIds,
+                                                                    @QueryParam("defendantIds") final List<UUID> defendantIds);
+
     @Query("FROM CourtDocumentEntity cde join fetch cde.indices cdi where cdi.prosecutionCaseId in (:caseIds) ORDER BY cde.seqNum ASC")
     List<CourtDocumentEntity> findByProsecutionCaseIds(@QueryParam("caseIds") final List<UUID> caseIds);
 

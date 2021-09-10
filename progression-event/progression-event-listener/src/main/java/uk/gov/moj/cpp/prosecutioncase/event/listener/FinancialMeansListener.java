@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.util.stream.Collectors.toList;
+import static com.google.common.collect.Lists.newArrayList;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.FinancialMeansDeleted;
@@ -34,12 +35,11 @@ public class FinancialMeansListener {
 
         final FinancialMeansDeleted financialMeansDeleted = convertPayload(event);
 
-        final List<CourtDocumentEntity> financialMeansCourtDocuments =
-                courtDocumentRepository
-                        .findByProsecutionCaseIdAndDefendantId(financialMeansDeleted.getCaseId(),
-                                financialMeansDeleted.getDefendantId())
-                        .stream()
-                        .filter(CourtDocumentEntity::getContainsFinancialMeans)
+        final List<CourtDocumentEntity> financialMeansCourtDocuments = courtDocumentRepository
+                        .findByProsecutionCaseIdAndDefendantId(
+                                        newArrayList(financialMeansDeleted.getCaseId()),
+                                        newArrayList(financialMeansDeleted.getDefendantId()))
+                        .stream().filter(CourtDocumentEntity::getContainsFinancialMeans)
                         .collect(toList());
 
         deleteFinancialMeansData(financialMeansCourtDocuments);
@@ -47,26 +47,25 @@ public class FinancialMeansListener {
 
     private FinancialMeansDeleted convertPayload(final JsonEnvelope event) {
         return jsonObjectConverter.convert(event.payloadAsJsonObject(),
-                FinancialMeansDeleted.class);
+                        FinancialMeansDeleted.class);
     }
 
-    private void deleteFinancialMeansData(final List<CourtDocumentEntity> financialMeansCourtDocuments) {
+    private void deleteFinancialMeansData(
+                    final List<CourtDocumentEntity> financialMeansCourtDocuments) {
         deleteMaterialReferences(financialMeansCourtDocuments);
         deleteCourtDocuments(financialMeansCourtDocuments);
     }
 
-    private void deleteMaterialReferences(final List<CourtDocumentEntity> financialMeansCourtDocuments) {
-        financialMeansCourtDocuments
-                .stream()
-                .map(CourtDocumentEntity::getCourtDocumentId)
-                .map(courtDocumentMaterialRepository::findOptionalByCourtDocumentId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .forEach(courtDocumentMaterialRepository::remove);
+    private void deleteMaterialReferences(
+                    final List<CourtDocumentEntity> financialMeansCourtDocuments) {
+        financialMeansCourtDocuments.stream().map(CourtDocumentEntity::getCourtDocumentId)
+                        .map(courtDocumentMaterialRepository::findOptionalByCourtDocumentId)
+                        .filter(Objects::nonNull).distinct()
+                        .forEach(courtDocumentMaterialRepository::remove);
     }
 
-    private void deleteCourtDocuments(final List<CourtDocumentEntity> financialMeansCourtDocuments) {
-        financialMeansCourtDocuments.stream()
-                .forEach(courtDocumentRepository::remove);
+    private void deleteCourtDocuments(
+                    final List<CourtDocumentEntity> financialMeansCourtDocuments) {
+        financialMeansCourtDocuments.stream().forEach(courtDocumentRepository::remove);
     }
 }
