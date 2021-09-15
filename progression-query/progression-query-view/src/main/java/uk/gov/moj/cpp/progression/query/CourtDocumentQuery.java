@@ -169,6 +169,19 @@ public class CourtDocumentQuery {
                             courtDocumentRepository.findByProsecutionCaseIdAndDefendantId(
                                             commaSeparatedUuidParam2UUIDs(strCaseIds),
                                             commaSeparatedUuidParam2UUIDs(defendantId));
+
+            // find by case ids only
+            final List<CourtDocumentEntity> byProsecutionCaseIds = courtDocumentRepository
+                            .findByProsecutionCaseIds(commaSeparatedUuidParam2UUIDs(strCaseIds));
+
+            byProsecutionCaseIdsAndDefedantIds.addAll(byProsecutionCaseIds.stream()
+                            .filter(e -> byProsecutionCaseIdsAndDefedantIds.stream()
+                                            .filter(p -> p.getCourtDocumentId()
+                                                            .equals(e.getCourtDocumentId()))
+                                            .count() == 0) // pick all the ones that we did not find
+                                                           // in the above
+                            .collect(Collectors.toList()));
+
             if (!byProsecutionCaseIdsAndDefedantIds.isEmpty()) {
                 courtDocumentEntities.addAll(byProsecutionCaseIdsAndDefedantIds);
             }

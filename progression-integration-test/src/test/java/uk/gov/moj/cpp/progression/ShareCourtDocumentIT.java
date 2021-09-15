@@ -208,7 +208,7 @@ public class ShareCourtDocumentIT extends AbstractIT {
 
         final JsonObject actualDocumentJson = new StringToJsonObjectConverter().convert(getCourtDocuments(USER_ID, caseId, defendantId1, HEARING_ID_TYPE_NON_TRIAL));
 
-        assertThat(actualDocumentJson.getJsonArray("documentIndices").size(), is(1));
+        assertThat(actualDocumentJson.getJsonArray("documentIndices").size(), is(2));
     }
 
 
