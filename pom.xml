@@ -42,9 +42,9 @@
         <material.version>7.0.8</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>7.0.58</referencedata.version>
+        <referencedata.version>7.0.61</referencedata.version>
         <listing.version>7.0.76</listing.version>
-        <hearing.version>7.0.111</hearing.version>
+        <hearing.version>7.0.124</hearing.version>
         <usersgroups.version>7.0.29</usersgroups.version>
         <defence.version>7.0.27</defence.version>
         <referencedata.offence.version>7.0.6</referencedata.offence.version>

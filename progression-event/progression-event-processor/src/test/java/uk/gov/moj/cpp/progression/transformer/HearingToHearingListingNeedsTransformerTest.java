@@ -543,7 +543,7 @@ public class HearingToHearingListingNeedsTransformerTest {
         List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing);
         assertThat(hearingListingNeedsList.size(), is(1));
         HearingListingNeeds hearingListingNeeds = hearingListingNeedsList.get(0);
-        assertThat(hearingListingNeeds.getCourtApplications().size(), is(1));
+        assertThat(hearingListingNeeds.getCourtApplications().size(), is(2));
         assertThat(hearingListingNeeds.getProsecutionCases().size(), is(1));
     }
 

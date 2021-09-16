@@ -71,12 +71,12 @@ public class HearingToHearingListingNeedsTransformer {
 
         ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .forEach(prosecutionCase -> prosecutionCase.getDefendants().stream().forEach(
-                        defendant -> defendant.getOffences().stream().filter(o -> nonNull(o.getJudicialResults())).forEach(
-                                offence -> offence.getJudicialResults().stream().forEach(
-                                        judicialResult -> transform(prosecutionCase, defendant, offence, judicialResult, hearingListingNeedsMap,
-                                                bookingReferenceCourtScheduleIdMap, hearing, shouldPopulateCommittingCourt, committingCourt)
+                                defendant -> defendant.getOffences().stream().filter(o -> nonNull(o.getJudicialResults())).forEach(
+                                        offence -> offence.getJudicialResults().stream().forEach(
+                                                judicialResult -> transform(prosecutionCase, defendant, offence, judicialResult, hearingListingNeedsMap,
+                                                        bookingReferenceCourtScheduleIdMap, hearing, shouldPopulateCommittingCourt, committingCourt)
+                                        )
                                 )
-                        )
                         )
                 );
 
@@ -235,7 +235,11 @@ public class HearingToHearingListingNeedsTransformer {
 
         final HearingListingNeeds hearingListingNeeds = addCourtApplication(createHearingListingNeeds(nextHearing, judiciaries), courtApplication, prosecutionCases);
 
-        hearingListingNeedsMap.put(key, hearingListingNeeds);
+        if (hearingListingNeedsMap.containsKey(key) && nonNull(hearingListingNeedsMap.get(key).getCourtApplications())) {
+            hearingListingNeedsMap.get(key).getCourtApplications().add(courtApplication);
+        } else {
+            hearingListingNeedsMap.put(key, hearingListingNeeds);
+        }
 
     }
 
