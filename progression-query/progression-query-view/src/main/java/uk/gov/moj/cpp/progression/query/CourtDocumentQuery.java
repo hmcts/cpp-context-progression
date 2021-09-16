@@ -13,27 +13,6 @@ import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
-import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.CourtDocumentIndex;
-import uk.gov.justice.core.courts.Material;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.annotation.Component;
-import uk.gov.justice.services.core.annotation.Handles;
-import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjects;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.accesscontrol.drools.Action;
-import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NotificationStatusEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusRepository;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
@@ -62,14 +41,42 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.CourtDocumentIndex;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.core.annotation.Handles;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjects;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NotificationStatusEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
+
 @ServiceComponent(Component.QUERY_VIEW)
-@SuppressWarnings({"squid:S1612", "squid:S2259", "squid:S00112", "squid:S3776"})
+@SuppressWarnings({"squid:S1612", "squid:S2259", "squid:S00112", "squid:S3776", "squid:S1155",
+                "squid:S1166", "squid:S2221", "squid:MethodCyclomaticComplexity"})
 public class CourtDocumentQuery {
 
     private static final String GROUPS = "groups";
@@ -118,6 +125,12 @@ public class CourtDocumentQuery {
     private NotificationStatusRepository notificationStatusRepository;
 
     @Inject
+    private ProsecutionCaseRepository prosecutionCaseRepository;
+
+    @Inject
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
+
+    @Inject
     private Requester requester;
 
     @Handles(COURT_DOCUMENT_SEARCH_NAME)
@@ -163,28 +176,44 @@ public class CourtDocumentQuery {
         final List<CourtDocumentEntity> courtDocumentEntities = new ArrayList<>();
         boolean foundSearchParameter = false;
 
+        LOGGER.info("CourtDocumentQueryCourtDocumentQueryCourtDocumentQuery1 {}", strCaseIds);
+
+        final List<UUID> masterDefendantIds = new ArrayList<>();
         if (isFilterByCaseIdAndDefedantId(strCaseIds, defendantId)) {
+            final List<UUID> caseIdList = commaSeparatedUuidParam2UUIDs(strCaseIds);
+            LOGGER.info("CourtDocumentQueryCourtDocumentQueryCourtDocumentQuery2 {}", caseIdList);
+
+            final List<UUID> allDefendantIDs = commaSeparatedUuidParam2UUIDs(defendantId);
+            if (caseIdList.size() == 1) {
+                final List<UUID> masterDefendantList = retrieveMasterDefendantIdList(
+                                caseIdList.get(0),
+                                allDefendantIDs.size() > 0 ? allDefendantIDs.get(0) : null);
+                if (masterDefendantList.size() == 1) {
+                    LOGGER.info("CourtDocumentQueryCourtDocumentQueryCourtDocumentQuery3 {}",
+                                    masterDefendantList.get(0));
+                    masterDefendantIds.addAll(masterDefendantList);
+                }
+            }
+
+            allDefendantIDs.addAll(masterDefendantIds);
+
             foundSearchParameter = true;
-            final List<CourtDocumentEntity> byProsecutionCaseIdsAndDefedantIds =
+            final List<CourtDocumentEntity> byProsecutionCaseIdsAndDefendantIds =
                             courtDocumentRepository.findByProsecutionCaseIdAndDefendantId(
                                             commaSeparatedUuidParam2UUIDs(strCaseIds),
-                                            commaSeparatedUuidParam2UUIDs(defendantId));
+                                            allDefendantIDs);
 
             // find by case ids only
-            final List<CourtDocumentEntity> byProsecutionCaseIds = courtDocumentRepository
-                            .findByProsecutionCaseIds(commaSeparatedUuidParam2UUIDs(strCaseIds));
+            final List<CourtDocumentEntity> byProsecutionCaseIds =
+                            courtDocumentRepository.findByProsecutionCaseIdsAndDefendantIsNull(
+                                            commaSeparatedUuidParam2UUIDs(strCaseIds));
 
-            byProsecutionCaseIdsAndDefedantIds.addAll(byProsecutionCaseIds.stream()
-                            .filter(e -> byProsecutionCaseIdsAndDefedantIds.stream()
-                                            .filter(p -> p.getCourtDocumentId()
-                                                            .equals(e.getCourtDocumentId()))
-                                            .count() == 0) // pick all the ones that we did not find
-                                                           // in the above
-                            .collect(Collectors.toList()));
+            byProsecutionCaseIdsAndDefendantIds.addAll(byProsecutionCaseIds);
 
-            if (!byProsecutionCaseIdsAndDefedantIds.isEmpty()) {
-                courtDocumentEntities.addAll(byProsecutionCaseIdsAndDefedantIds);
+            if (!byProsecutionCaseIdsAndDefendantIds.isEmpty()) {
+                courtDocumentEntities.addAll(byProsecutionCaseIdsAndDefendantIds);
             }
+
         } else if (isNotEmpty(strCaseIds)) {
             foundSearchParameter = true;
             final List<CourtDocumentEntity> byProsecutionCaseIds = courtDocumentRepository
@@ -259,7 +288,11 @@ public class CourtDocumentQuery {
                         .filter(courtDocumentIndex -> isEmpty(defendantId)
                                         || courtDocumentIndex.getDefendantIds().isEmpty()
                                         || courtDocumentIndex.getDefendantIds()
-                                                        .contains(UUID.fromString(defendantId)))
+                                                        .contains(UUID.fromString(defendantId))
+                                        || (masterDefendantIds.size() == 1
+                                                        && courtDocumentIndex.getDefendantIds()
+                                                                        .contains(masterDefendantIds
+                                                                                        .get(0))))
                         .collect(Collectors.toList());
 
         result.setDocumentIndices(courtDocumentIndices);
@@ -573,4 +606,20 @@ public class CourtDocumentQuery {
         };
     }
 
+    private List<UUID> retrieveMasterDefendantIdList(final UUID caseId, final UUID defendantId) {
+        try {
+            final ProsecutionCaseEntity prosecutionCaseEntity =
+                            prosecutionCaseRepository.findByCaseId(caseId);
+
+            final JsonObject prosecutionCasePayload =
+                            stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
+            final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter
+                            .convert(prosecutionCasePayload, ProsecutionCase.class);
+            return prosecutionCase.getDefendants().stream()
+                            .filter(d -> d.getId().equals(defendantId))
+                            .map(Defendant::getMasterDefendantId).collect(Collectors.toList());
+        } catch (Exception ex) {
+            return new ArrayList<>();
+        }
+    }
 }
