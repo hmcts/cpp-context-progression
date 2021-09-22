@@ -148,7 +148,6 @@ public class DefendantsAddedToCourtProceedingsProcessor {
         ));
 
     }
-
     private List<ListDefendantRequest> getListDefendantRequests(final List<ListHearingRequest> listHearingRequestsForNewHearing) {
         return listHearingRequestsForNewHearing.stream().map(ListHearingRequest::getListDefendantRequests).flatMap(Collection::stream).collect(toList());
     }

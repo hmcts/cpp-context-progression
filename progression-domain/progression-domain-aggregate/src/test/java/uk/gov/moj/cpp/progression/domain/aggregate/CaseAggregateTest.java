@@ -1454,6 +1454,51 @@ public class CaseAggregateTest {
 
     }
 
+    @Test
+    public void shouldNotRaiseDefendantsAndListingHearingRequestsAddedAfterStoredDefendantsAndListHearingRequestsAreCleared() {
+
+        final UUID defendantId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .build();
+
+        final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
+                .withListDefendantRequests(asList(ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .build()))
+                .build();
+
+        // Store defendants and list hearing requests
+        caseAggregate.apply(new DefendantsAndListingHearingRequestsStored(Arrays.asList(defendant), Arrays.asList(listHearingRequest)));
+
+        final List<Object> eventStream = caseAggregate.createProsecutionCaseInHearing(prosecutionCaseId).collect(toList());
+
+        // Should have two events (ProsecutionCaseCreatedInHearing, DefendantsAndListingHearingRequestsAdded)
+        assertThat(eventStream.size(), is(2));
+
+        final ProsecutionCaseCreatedInHearing prosecutionCaseCreatedInHearing = (ProsecutionCaseCreatedInHearing) eventStream.get(0);
+        assertThat(prosecutionCaseCreatedInHearing.getProsecutionCaseId(), is(prosecutionCaseId));
+
+        final DefendantsAndListingHearingRequestsAdded defendantsAndListingHearingRequestsAdded = (DefendantsAndListingHearingRequestsAdded) eventStream.get(1);
+        assertThat(defendantsAndListingHearingRequestsAdded.getDefendants(), notNullValue());
+        assertThat(defendantsAndListingHearingRequestsAdded.getListHearingRequests(), notNullValue());
+
+        // Calling same command should after clearing stored defendants and list hearing requests
+        final List<Object> events = caseAggregate.createProsecutionCaseInHearing(prosecutionCaseId).collect(toList());
+
+        // Should have only one event ProsecutionCaseCreatedInHearing and should not raise event DefendantsAndListingHearingRequestsAdded.
+        assertThat(events.size(), is(1));
+
+        final ProsecutionCaseCreatedInHearing prosecutionCaseCreatedInHearingEvent = (ProsecutionCaseCreatedInHearing) events.get(0);
+        assertThat(prosecutionCaseCreatedInHearingEvent.getProsecutionCaseId(), is(prosecutionCaseId));
+
+    }
+
+
 }
 
 

@@ -10,7 +10,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static java.util.stream.Stream.of;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
@@ -174,7 +173,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 6644269354919757995L;
+    private static final long serialVersionUID = 6644269354919757996L;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     private static final String HEARING_PAYLOAD_PROPERTY = "hearing";
@@ -376,6 +375,12 @@ public class CaseAggregate implements Aggregate {
                 ),
                 when(ProsecutionCaseCreatedInHearing.class).apply(
                         e -> this.hasProsecutionCaseBeenCreated = true
+                ),
+                when(DefendantsAndListingHearingRequestsAdded.class).apply(
+                        e -> {
+                            this.defendantsToBeAdded.clear();
+                            this.listHearingRequestsToBeAdded.clear();
+                        }
                 ),
                 otherwiseDoNothing());
 
@@ -755,9 +760,13 @@ public class CaseAggregate implements Aggregate {
                 .build());
 
         if (isNotEmpty(this.defendantsToBeAdded) && isNotEmpty(this.listHearingRequestsToBeAdded)) {
+
+            final List<uk.gov.justice.core.courts.Defendant> copyOfDefendantsToBeAdded = new ArrayList<>(this.defendantsToBeAdded);
+            final List<ListHearingRequest> copyOfListHearingRequestsToBeAdded = new ArrayList<>(this.listHearingRequestsToBeAdded);
+
             streamBuilder.add(DefendantsAndListingHearingRequestsAdded.defendantsAndListingHearingRequestsAdded()
-                    .withDefendants(this.defendantsToBeAdded)
-                    .withListHearingRequests(this.listHearingRequestsToBeAdded)
+                    .withDefendants(copyOfDefendantsToBeAdded)
+                    .withListHearingRequests(copyOfListHearingRequestsToBeAdded)
                     .build());
         }
 
