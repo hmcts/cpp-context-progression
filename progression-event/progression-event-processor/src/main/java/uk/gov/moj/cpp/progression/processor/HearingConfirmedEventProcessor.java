@@ -5,6 +5,7 @@ import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -59,7 +60,6 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,17 +169,18 @@ public class HearingConfirmedEventProcessor {
 
 
     /**
-     * If partial allocation is happened in confirm process, a new list hearing request generated for the left over prosecutionCases.
-     * Regarding the hearing seeded or not, it calls listNextCourtHearings or listCourtHearing.
-     * And also if the hearing has related seededHearing , related seededHearingsProsecutionCases is removed from deltaProsecutionCases
-     *  and the related seed process raises for each related seedingHearing
+     * If partial allocation is happened in confirm process, a new list hearing request generated
+     * for the left over prosecutionCases. Regarding the hearing seeded or not, it calls
+     * listNextCourtHearings or listCourtHearing. And also if the hearing has related seededHearing
+     * , related seededHearingsProsecutionCases is removed from deltaProsecutionCases and the
+     * related seed process raises for each related seedingHearing
      *
      * @param jsonEnvelope
      * @param confirmedHearing
      * @param hearingInProgression
      * @param seedingHearing
      * @param hearingInitiate
-     * */
+     */
     private List<ProsecutionCase> processDeltaProsecutionCases(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing, final Hearing hearingInProgression, final SeedingHearing seedingHearing, final Initiate hearingInitiate) {
         final List<ProsecutionCase> deltaProsecutionCases = partialHearingConfirmService.getDifferences(confirmedHearing, hearingInProgression);
 
@@ -210,13 +211,13 @@ public class HearingConfirmedEventProcessor {
 
 
     /**
-     *
-     *  if partial allocation happened in  seededHearing exists , the method  calls "command.update-related-hearing" for each related seedingHearing.
+     * if partial allocation happened in  seededHearing exists , the method  calls
+     * "command.update-related-hearing" for each related seedingHearing.
      *
      * @param jsonEnvelope
      * @param hearingListingNeed
      * @param relatedSeedingHearingsProsecutionCasesMap
-     * */
+     */
     private void processCommandUpdateRelatedHearing(final JsonEnvelope jsonEnvelope, final HearingListingNeeds hearingListingNeed, final Map<SeedingHearing, List<ProsecutionCase>> relatedSeedingHearingsProsecutionCasesMap) {
         for (final Map.Entry<SeedingHearing, List<ProsecutionCase>> relatedSeedingHearing : relatedSeedingHearingsProsecutionCasesMap.entrySet()) {
             final UpdateRelatedHearingCommand updateRelatedHearingCommand = UpdateRelatedHearingCommand.updateRelatedHearingCommand()
@@ -315,7 +316,7 @@ public class HearingConfirmedEventProcessor {
     }
 
     @Handles("progression.event.defendant-request-from-current-hearing-to-extend-hearing-created")
-    public void processDefendantRequestFromCurrentHearingToExtendHearingCreated(final JsonEnvelope jsonEnvelope){
+    public void processDefendantRequestFromCurrentHearingToExtendHearingCreated(final JsonEnvelope jsonEnvelope) {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.info("processing 'progression.event.defendant-request-from-current-hearing-to-extend-hearing-created' {}", jsonEnvelope.toObfuscatedDebugString());
@@ -339,7 +340,7 @@ public class HearingConfirmedEventProcessor {
     }
 
     @Handles("progression.event.extend-hearing-defendant-request-created")
-    public void processExtendHearingDefendantRequestCreated(final JsonEnvelope jsonEnvelope){
+    public void processExtendHearingDefendantRequestCreated(final JsonEnvelope jsonEnvelope) {
 
         LOGGER.info(" processing 'progression.event.extend-hearing-defendant-request-created' {}", jsonEnvelope.toObfuscatedDebugString());
 
@@ -362,7 +363,7 @@ public class HearingConfirmedEventProcessor {
     }
 
     @Handles("progression.event.extend-hearing-defendant-request-updated")
-    public void processExtendHearingDefendantRequestUpdated(final JsonEnvelope jsonEnvelope){
+    public void processExtendHearingDefendantRequestUpdated(final JsonEnvelope jsonEnvelope) {
 
         LOGGER.info(" processing 'progression.event.extend-hearing-defendant-request-updated' {}", jsonEnvelope.toObfuscatedDebugString());
 
@@ -418,11 +419,7 @@ public class HearingConfirmedEventProcessor {
     }
 
     private void triggerRetryOnMissingCaseAndApplication(final UUID hearingId, final Hearing hearingInProgression) {
-        if (CollectionUtils.isEmpty(hearingInProgression.getCourtApplications())
-                && (CollectionUtils.isEmpty(hearingInProgression.getProsecutionCases()) ||
-                hearingInProgression.getProsecutionCases()
-                        .stream()
-                        .anyMatch(prosecutionCase -> isNull(prosecutionCase.getId())))) {
+        if (isEmpty(hearingInProgression.getCourtApplications()) && isEmpty(hearingInProgression.getProsecutionCases())) {
 
             throw new CourtApplicationAndCaseNotFoundException(format("Prosecution case and court application not found for hearing id : %s", hearingId));
         }
