@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.lang.Boolean.FALSE;
+import static java.lang.String.format;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -39,6 +41,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.PartialHearingConfirmService;
@@ -56,6 +59,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,6 +109,8 @@ public class HearingConfirmedEventProcessor {
         final HearingConfirmed hearingConfirmed = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingConfirmed.class);
         final ConfirmedHearing confirmedHearing = hearingConfirmed.getConfirmedHearing();
         final Hearing hearingInProgression = retrieveHearing(jsonEnvelope, confirmedHearing.getId());
+
+        triggerRetryOnMissingCaseAndApplication(confirmedHearing.getId(), hearingInProgression);
 
         if (nonNull(confirmedHearing.getExistingHearingId())) {
             final Optional<JsonObject> hearingIdFromQuery = progressionService.getHearing(jsonEnvelope, confirmedHearing.getExistingHearingId().toString());
@@ -411,4 +417,14 @@ public class HearingConfirmedEventProcessor {
         throw new IllegalStateException("Hearing not found for hearingId:" + hearingId.toString());
     }
 
+    private void triggerRetryOnMissingCaseAndApplication(final UUID hearingId, final Hearing hearingInProgression) {
+        if (CollectionUtils.isEmpty(hearingInProgression.getCourtApplications())
+                && (CollectionUtils.isEmpty(hearingInProgression.getProsecutionCases()) ||
+                hearingInProgression.getProsecutionCases()
+                        .stream()
+                        .anyMatch(prosecutionCase -> isNull(prosecutionCase.getId())))) {
+
+            throw new CourtApplicationAndCaseNotFoundException(format("Prosecution case and court application not found for hearing id : %s", hearingId));
+        }
+    }
 }
