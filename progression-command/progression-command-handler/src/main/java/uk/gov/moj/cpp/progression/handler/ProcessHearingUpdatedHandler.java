@@ -33,7 +33,7 @@ public class ProcessHearingUpdatedHandler {
     private Enveloper enveloper;
 
     @Handles("progression.command.process-hearing-updated")
-    public void handle(final Envelope<ProcessHearingUpdated> processHearingUpdatedEnvelope) throws EventStreamException{
+    public void handle(final Envelope<ProcessHearingUpdated> processHearingUpdatedEnvelope) throws EventStreamException {
 
         final ProcessHearingUpdated processHearingUpdated = processHearingUpdatedEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(processHearingUpdated.getConfirmedHearing().getId());

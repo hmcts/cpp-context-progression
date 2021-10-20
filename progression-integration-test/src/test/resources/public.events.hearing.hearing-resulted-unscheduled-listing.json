@@ -159,6 +159,7 @@
                     "isConvictedResult": true,
                     "isAvailableForCourtExtract": true,
                     "isUnscheduled": true,
+                    "isNewAmendment": true,
                     "amendmentDate": "0000-01-01",
                     "amendmentReason": "a",
                     "cjsCode": "a",

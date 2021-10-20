@@ -158,6 +158,7 @@
                     "isFinancialResult": true,
                     "isConvictedResult": true,
                     "isAvailableForCourtExtract": true,
+                    "isNewAmendment": true,
                     "amendmentDate": "2021-03-29",
                     "amendmentReason": "a",
                     "cjsCode": "a",

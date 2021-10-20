@@ -50,13 +50,20 @@ public class HearingResultHelper {
     private HearingResultHelper() {
     }
 
-    public static boolean doHearingContainNextHearingResults(final Hearing hearing) {
+    /**
+     * Checks the latest results to identify if the hearing contains any new or amended next hearing
+     * results.
+     *
+     * @param hearing
+     * @return
+     */
+    public static boolean doHearingContainNewOrAmendedNextHearingResults(final Hearing hearing) {
         final boolean prosecutionCasesContainNextHearingResults = doProsecutionCasesContainNextHearingResults(hearing.getProsecutionCases());
         final boolean courtApplicationsContainNextHearingResults = doCourtApplicationsContainNextHearingResults(hearing.getCourtApplications());
         return prosecutionCasesContainNextHearingResults || courtApplicationsContainNextHearingResults;
     }
 
-    public static boolean doProsecutionCasesContainNextHearingResults(final List<ProsecutionCase> prosecutionCases) {
+    private static boolean doProsecutionCasesContainNextHearingResults(final List<ProsecutionCase> prosecutionCases) {
         return isNotEmpty(prosecutionCases) && prosecutionCases.stream()
                 .map(ProsecutionCase::getDefendants)
                 .flatMap(Collection::stream)
@@ -65,7 +72,10 @@ public class HearingResultHelper {
                 .map(Offence::getJudicialResults)
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
-                .anyMatch(judicialResult -> nonNull(judicialResult.getNextHearing()));
+                .anyMatch(judicialResult ->
+                        nonNull(judicialResult.getNextHearing()) && TRUE.equals(judicialResult.getIsNewAmendment()
+                        )
+                );
     }
 
     /**
@@ -226,13 +236,13 @@ public class HearingResultHelper {
     private static boolean checksIfUnscheduledHearingNeedsToBeCreated(final CourtApplication courtApplication) {
         return !isNull(courtApplication.getJudicialResults())
                 && courtApplication.getJudicialResults().stream()
-                .anyMatch(jr -> TRUE.equals(jr.getIsUnscheduled()) || hasNextHearingWithDateToBeFixed(jr));
+                .anyMatch(jr -> TRUE.equals(jr.getIsNewAmendment()) && (TRUE.equals(jr.getIsUnscheduled()) || hasNextHearingWithDateToBeFixed(jr)));
     }
 
     private static boolean checksIfUnscheduledHearingNeedsToBeCreated(final Offence offence) {
         return !isNull(offence.getJudicialResults())
                 && offence.getJudicialResults().stream()
-                .anyMatch(jr -> TRUE.equals(jr.getIsUnscheduled()) || hasNextHearingWithDateToBeFixed(jr));
+                .anyMatch(jr -> TRUE.equals(jr.getIsNewAmendment()) && (TRUE.equals(jr.getIsUnscheduled()) || hasNextHearingWithDateToBeFixed(jr)));
     }
 
     private static void addDefendants(final Hearing hearing, final Boolean shouldPopulateCommittingCourt, final Optional<CommittingCourt> committingCourt, final SeedingHearing seedingHearing, final ProsecutionCase prosecutionCase, final List<Defendant> defendantsToBeAdded, final UUID defendantId, final Set<UUID> offenceIds) {
@@ -442,8 +452,7 @@ public class HearingResultHelper {
     private static boolean doCourtApplicationsContainNextHearingResults(final List<CourtApplication> courtApplications) {
         return isNotEmpty(courtApplications) && courtApplications.stream()
                 .flatMap(courtApplication -> getAllJudicialResultsFromApplication(courtApplication).stream())
-                .map(JudicialResult::getNextHearing)
-                .anyMatch(Objects::nonNull);
+                .anyMatch(judicialResult -> TRUE.equals(judicialResult.getIsNewAmendment()) && nonNull(judicialResult.getNextHearing()));
     }
 
     private static List<JudicialResult> getAllJudicialResultsFromApplication(final CourtApplication courtApplication) {
@@ -478,7 +487,7 @@ public class HearingResultHelper {
                 .flatMap(courtApplication -> courtApplication.getJudicialResults().stream())
                 .anyMatch(judicialResult -> {
                     final NextHearing nextHearing = judicialResult.getNextHearing();
-                    return isExistingHearingIdPresent(nextHearing);
+                    return TRUE.equals(judicialResult.getIsNewAmendment()) && isExistingHearingIdPresent(nextHearing);
                 });
     }
 
@@ -491,7 +500,7 @@ public class HearingResultHelper {
                 .flatMap(offence -> offence.getJudicialResults().stream())
                 .anyMatch(judicialResult -> {
                     final NextHearing nextHearing = judicialResult.getNextHearing();
-                    return isExistingHearingIdPresent(nextHearing);
+                    return TRUE.equals(judicialResult.getIsNewAmendment()) && isExistingHearingIdPresent(nextHearing);
                 });
     }
 

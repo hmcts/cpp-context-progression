@@ -388,11 +388,28 @@ public class HearingResultHelperTest {
                                         singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
                                         .collect(Collectors.toList())
                         )).collect(Collectors.toList()))),
-                asList(buildCourtApplicationsAndUnscheduledJudicialResults(PROSECUTION_CASE_ID_1)));
+                asList(buildCourtApplicationsAndUnscheduledJudicialResults(PROSECUTION_CASE_ID_1, true)));
 
         final boolean unscheduledNextHearingsRequiredForCourtApplication = HearingResultHelper.unscheduledNextHearingsRequiredFor(hearing);
 
         assertThat(unscheduledNextHearingsRequiredForCourtApplication, is(true));
+    }
+
+    @Test
+    public void shouldReturnFalseForCourtApplicationsWithUnscheduledResultsThatHasNotBeenAmended() {
+        final Hearing hearing = buildHearingWithCourtApplications(
+                asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
+                        of(buildDefendant(DEFENDANT_ID_1,
+                                of(buildOffence(OFFENCE_ID_1,
+                                        asList(buildJudicialResult(buildNextHearing(HEARING_ID_1))),
+                                        singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
+                                        .collect(Collectors.toList())
+                        )).collect(Collectors.toList()))),
+                asList(buildCourtApplicationsAndUnscheduledJudicialResults(PROSECUTION_CASE_ID_1, false)));
+
+        final boolean unscheduledNextHearingsRequiredForCourtApplication = HearingResultHelper.unscheduledNextHearingsRequiredFor(hearing);
+
+        assertThat(unscheduledNextHearingsRequiredForCourtApplication, is(false));
     }
 
     @Test
@@ -415,9 +432,18 @@ public class HearingResultHelperTest {
     public void shouldReturnTrueWhenCourtApplicationsContainRelatedNextHearing() {
         final Hearing hearing = buildHearingWithCourtApplications(
                 emptyList(),
-                asList(buildCourtApplicationsWithRelatedNextHearingJudicialResults(PROSECUTION_CASE_ID_1)));
+                asList(buildCourtApplicationsWithRelatedNextHearingJudicialResults(PROSECUTION_CASE_ID_1, true)));
 
         assertThat(HearingResultHelper.hasHearingContainsRelatedNextHearings(hearing), is(true));
+    }
+
+    @Test
+    public void shouldReturnFalseWhenCourtApplicationsContainRelatedNextHearingThatHasNotBeenAmended() {
+        final Hearing hearing = buildHearingWithCourtApplications(
+                emptyList(),
+                asList(buildCourtApplicationsWithRelatedNextHearingJudicialResults(PROSECUTION_CASE_ID_1, false)));
+
+        assertThat(HearingResultHelper.hasHearingContainsRelatedNextHearings(hearing), is(false));
     }
 
     @Test
@@ -460,7 +486,7 @@ public class HearingResultHelperTest {
     }
 
     @Test
-    public void shouldReturnTrueForProsecutionCasesContainNewNextHearing() {
+    public void shouldReturnTrueForProsecutionCasesOutsideMultiDayHearingContainNewNextHearing() {
         final Hearing hearing = buildHearingWithCourtApplications(
                 asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
                         of(buildDefendant(DEFENDANT_ID_1,
@@ -474,8 +500,9 @@ public class HearingResultHelperTest {
         assertThat(HearingResultHelper.hasNewNextHearingsAndNextHearingOutsideOfMultiDaysHearing(hearing), is(true));
     }
 
+
     @Test
-    public void shouldReturnFalseWhenProsecutionCasesOrCourtApplicationsDoNotContainNewNextHearing() {
+    public void shouldReturnFalseWhenProsecutionCasesOrCourtApplicationsOutsideMultiDayHearingDoNotContainNewNextHearing() {
         final Hearing hearing = buildHearingWithCourtApplications(
                 asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
                         of(buildDefendant(DEFENDANT_ID_1,
@@ -489,6 +516,53 @@ public class HearingResultHelperTest {
         assertThat(HearingResultHelper.hasNewNextHearingsAndNextHearingOutsideOfMultiDaysHearing(hearing), is(false));
     }
 
+    @Test
+    public void shouldReturnTrueForProsecutionCasesContainNewNextHearing() {
+        final Hearing hearing = buildHearingWithCourtApplications(
+                asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
+                        of(buildDefendant(DEFENDANT_ID_1,
+                                of(buildOffence(OFFENCE_ID_1,
+                                        asList(buildJudicialResult(buildNextHearing())),
+                                        singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
+                                        .collect(Collectors.toList())
+                        )).collect(Collectors.toList()))),
+                emptyList());
+
+        assertThat(HearingResultHelper.doHearingContainNewOrAmendedNextHearingResults(hearing), is(true));
+    }
+
+    @Test
+    public void shouldReturnFalseForProsecutionCasesContainNewNextHearingWhenNextHearingResultsNotAmended() {
+        final Hearing hearing = buildHearingWithCourtApplications(
+                asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
+                        of(buildDefendant(DEFENDANT_ID_1,
+                                of(buildOffence(OFFENCE_ID_1,
+                                        asList(buildJudicialResultWithAmendmentAs(buildNextHearing(), false)),
+                                        singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
+                                        .collect(Collectors.toList())
+                        )).collect(Collectors.toList()))),
+                emptyList());
+
+        assertThat(HearingResultHelper.doHearingContainNewOrAmendedNextHearingResults(hearing), is(false));
+    }
+
+    @Test
+    public void shouldReturnTrueForApplicationContainsNewNextHearing() {
+        final Hearing hearing = buildHearingWithCourtApplications(
+                emptyList(),
+                asList(buildCourtApplicationsWithRelatedNextHearingJudicialResults(PROSECUTION_CASE_ID_1, true)));
+
+        assertThat(HearingResultHelper.doHearingContainNewOrAmendedNextHearingResults(hearing), is(true));
+    }
+
+    @Test
+    public void shouldReturnFalseForApplicationContainsNewNextHearingWhenNextHearingResultsNotAmended() {
+        final Hearing hearing = buildHearingWithCourtApplications(
+                emptyList(),
+                asList(buildCourtApplicationsWithRelatedNextHearingJudicialResults(PROSECUTION_CASE_ID_1, false)));
+
+        assertThat(HearingResultHelper.doHearingContainNewOrAmendedNextHearingResults(hearing), is(false));
+    }
 
     private void assertHearing(final HearingListingNeeds hearingListingNeeds, final UUID hearingId, final int size) {
         assertThat(hearingListingNeeds.getId(), is(hearingId));
@@ -541,9 +615,17 @@ public class HearingResultHelperTest {
                 .build();
     }
 
+    private JudicialResult buildJudicialResultWithAmendmentAs(final NextHearing nextHearing, final boolean isNewAmendment) {
+        return JudicialResult.judicialResult()
+                .withNextHearing(nextHearing)
+                .withIsNewAmendment(isNewAmendment)
+                .build();
+    }
+
     private JudicialResult buildJudicialResult(final NextHearing nextHearing) {
         return JudicialResult.judicialResult()
                 .withNextHearing(nextHearing)
+                .withIsNewAmendment(true)
                 .build();
     }
 
@@ -613,17 +695,17 @@ public class HearingResultHelperTest {
                 .build();
     }
 
-    private CourtApplication buildCourtApplicationsAndUnscheduledJudicialResults(final UUID caseId) {
+    private CourtApplication buildCourtApplicationsAndUnscheduledJudicialResults(final UUID caseId, final boolean isNewAmendment) {
         return CourtApplication.courtApplication()
                 .withId(caseId)
-                .withJudicialResults(asList(buildUnscheduledJudicialResult(buildNextHearing(HEARING_ID_1))))
+                .withJudicialResults(asList(buildUnscheduledJudicialResultWithAmendmentAs(buildNextHearing(HEARING_ID_1), isNewAmendment)))
                 .build();
     }
 
-    private CourtApplication buildCourtApplicationsWithRelatedNextHearingJudicialResults(final UUID caseId) {
+    private CourtApplication buildCourtApplicationsWithRelatedNextHearingJudicialResults(final UUID caseId, final boolean isNewAmendment) {
         return CourtApplication.courtApplication()
                 .withId(caseId)
-                .withJudicialResults(asList(buildRelatedNextHearingJudicialResult(buildNextHearing(HEARING_ID_1))))
+                .withJudicialResults(asList(buildRelatedNextHearingJudicialResultWithAmendmentAs(buildNextHearing(HEARING_ID_1), isNewAmendment)))
                 .build();
     }
 
@@ -659,6 +741,15 @@ public class HearingResultHelperTest {
         return JudicialResult.judicialResult()
                 .withIsUnscheduled(true)
                 .withNextHearing(nextHearing)
+                .withIsNewAmendment(true)
+                .build();
+    }
+
+    private JudicialResult buildUnscheduledJudicialResultWithAmendmentAs(final NextHearing nextHearing, final boolean isNewAmendment) {
+        return JudicialResult.judicialResult()
+                .withIsUnscheduled(true)
+                .withNextHearing(nextHearing)
+                .withIsNewAmendment(isNewAmendment)
                 .build();
     }
 
@@ -666,6 +757,15 @@ public class HearingResultHelperTest {
         return JudicialResult.judicialResult()
                 .withIsUnscheduled(true)
                 .withNextHearing(nextHearing)
+                .withIsNewAmendment(true)
+                .build();
+    }
+
+    private JudicialResult buildRelatedNextHearingJudicialResultWithAmendmentAs(final NextHearing nextHearing, final boolean isNewAmendment) {
+        return JudicialResult.judicialResult()
+                .withIsUnscheduled(true)
+                .withNextHearing(nextHearing)
+                .withIsNewAmendment(isNewAmendment)
                 .build();
     }
 }

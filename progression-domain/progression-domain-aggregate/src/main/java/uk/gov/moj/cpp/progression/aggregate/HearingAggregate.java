@@ -28,14 +28,11 @@ import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingHelper.isEligibleForNextHearings;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.checkResultLinesForCommittingCourt;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.createRelatedHearings;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.doHearingContainNextHearingResults;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.doHearingContainNewOrAmendedNextHearingResults;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.hasHearingContainsRelatedNextHearings;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.hasNewNextHearingsAndNextHearingOutsideOfMultiDaysHearing;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.unscheduledNextHearingsRequiredFor;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
 import uk.gov.justice.core.courts.CaseMarkersUpdatedInHearing;
@@ -64,8 +61,8 @@ import uk.gov.justice.core.courts.HearingExtendedProcessed;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
-import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
 import uk.gov.justice.core.courts.HearingOffencesUpdated;
+import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
 import uk.gov.justice.core.courts.HearingUpdatedProcessed;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
 import uk.gov.justice.core.courts.JudicialResult;
@@ -122,6 +119,10 @@ import java.util.UUID;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188"})
 public class HearingAggregate implements Aggregate {
@@ -559,7 +560,7 @@ public class HearingAggregate implements Aggregate {
         }
     }
 
-    private ProsecutionCase getProsecutionCaseWithOriginalListingNumbers(final ProsecutionCase prosecutionCase){
+    private ProsecutionCase getProsecutionCaseWithOriginalListingNumbers(final ProsecutionCase prosecutionCase) {
         final Map<UUID, Integer> listingMap = this.hearing.getProsecutionCases().stream()
                 .map(ProsecutionCase::getDefendants)
                 .flatMap(Collection::stream)
@@ -613,12 +614,12 @@ public class HearingAggregate implements Aggregate {
     private void updateHearingExtended(final HearingExtendedProcessed hearingExtendedProcessed) {
         final List<ProsecutionCase> newlyAddedProsecutionCase = new ArrayList<>();
         this.hearing = Hearing.hearing().withValuesFrom(this.hearing).withCourtCentre(hearingExtendedProcessed.getHearingRequest().getCourtCentre()).build();
-        if(this.hearing.getProsecutionCases() != null && hearingExtendedProcessed.getHearingRequest().getProsecutionCases() != null){
+        if (this.hearing.getProsecutionCases() != null && hearingExtendedProcessed.getHearingRequest().getProsecutionCases() != null) {
             this.hearing.getProsecutionCases().forEach(prosecutionCase -> {
                 final Optional<ProsecutionCase> extendedProsecutionCase = hearingExtendedProcessed.getHearingRequest().getProsecutionCases().stream().filter(prosecutionCase1 -> prosecutionCase1.getId().equals(prosecutionCase.getId())).findAny();
                 if (extendedProsecutionCase.isPresent()) {
                     final Optional<Defendant> optionalDefendant = extendedProsecutionCase.get().getDefendants().stream().filter(defendant -> prosecutionCase.getDefendants().stream().anyMatch(defendant1 -> !defendant1.getId().equals(defendant.getId()))).findAny();
-                    optionalDefendant.ifPresent(newDefendant ->  prosecutionCase.getDefendants().add(newDefendant));
+                    optionalDefendant.ifPresent(newDefendant -> prosecutionCase.getDefendants().add(newDefendant));
                 } else {
                     newlyAddedProsecutionCase.addAll(hearingExtendedProcessed.getHearingRequest().getProsecutionCases().stream().filter(prosecutionCase1 -> !prosecutionCase1.getId().equals(prosecutionCase.getId())).collect(toList()));
                 }
@@ -744,7 +745,7 @@ public class HearingAggregate implements Aggregate {
         final List<UUID> prosecutionCaseIds = isNotEmpty(hearing.getProsecutionCases()) ? getProsecutionCaseIds(hearing) : null;
         final List<UUID> courtApplicationIds = isNotEmpty(hearing.getCourtApplications()) ? getCourtApplicationIds(hearing) : null;
 
-        final Stream<Object> deleteEvent =  apply(Stream.of(HearingDeleted.hearingDeleted()
+        final Stream<Object> deleteEvent = apply(Stream.of(HearingDeleted.hearingDeleted()
                 .withHearingId(hearingId)
                 .withCourtApplicationIds(courtApplicationIds)
                 .withProsecutionCaseIds(prosecutionCaseIds)
@@ -781,13 +782,13 @@ public class HearingAggregate implements Aggregate {
 
 
     public Stream<Object> updateApplication(final CourtApplication courtApplication) {
-        final Stream<Object> event1 =  apply(Stream.of(HearingUpdatedWithCourtApplication.hearingUpdatedWithCourtApplication()
+        final Stream<Object> event1 = apply(Stream.of(HearingUpdatedWithCourtApplication.hearingUpdatedWithCourtApplication()
                 .withCourtApplication(courtApplication)
                 .build()));
 
         final Stream<Object> event2 = populateHearingToProbationCaseWorker();
 
-        return  Stream.concat(event1, event2);
+        return Stream.concat(event1, event2);
 
     }
 
@@ -865,7 +866,7 @@ public class HearingAggregate implements Aggregate {
 
     }
 
-    private void updateHearing(final HearingUpdatedProcessed hearingUpdatedProcessed){
+    private void updateHearing(final HearingUpdatedProcessed hearingUpdatedProcessed) {
         this.hearing = hearingUpdatedProcessed.getHearing();
     }
 
@@ -1086,7 +1087,7 @@ public class HearingAggregate implements Aggregate {
 
 
     public Stream<Object> updateAllocationFields(final UpdateHearingForAllocationFields updateHearingForAllocationFields) {
-        final Stream<Object> event1 =  apply(Stream.of(HearingUpdatedForAllocationFields.hearingUpdatedForAllocationFields()
+        final Stream<Object> event1 = apply(Stream.of(HearingUpdatedForAllocationFields.hearingUpdatedForAllocationFields()
                 .withHearingDays(updateHearingForAllocationFields.getHearingDays())
                 .withCourtCentre(updateHearingForAllocationFields.getCourtCentre())
                 .withHearingLanguage(updateHearingForAllocationFields.getHearingLanguage())
@@ -1096,16 +1097,16 @@ public class HearingAggregate implements Aggregate {
 
         final Stream<Object> event2 = populateHearingToProbationCaseWorker();
 
-        return  Stream.concat(event1, event2);
+        return Stream.concat(event1, event2);
 
     }
 
     public Stream<Object> populateHearingToProbationCaseWorker() {
         Hearing filteredOutHearing;
 
-        if(HearingListingStatus.SENT_FOR_LISTING.equals(this.hearingListingStatus)
+        if (HearingListingStatus.SENT_FOR_LISTING.equals(this.hearingListingStatus)
                 || Boolean.TRUE.equals(hearing.getIsBoxHearing())
-                || HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus)){
+                || HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus)) {
             return apply(empty());
         }
 
@@ -1115,7 +1116,7 @@ public class HearingAggregate implements Aggregate {
                                 .withDefendants(prosecutionCase.getDefendants() != null ? new ArrayList<>(prosecutionCase.getDefendants()) : null)
                                 .build())
                         .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
-                .withCourtApplications(hearing.getCourtApplications() != null ? new ArrayList<>(hearing.getCourtApplications()) : null )
+                .withCourtApplications(hearing.getCourtApplications() != null ? new ArrayList<>(hearing.getCourtApplications()) : null)
                 .build();
 
         filteredOutHearing = filterOutYouth(filteredOutHearing);
@@ -1149,7 +1150,7 @@ public class HearingAggregate implements Aggregate {
     public Stream<Object> updateOffence(UUID defendantId, final List<Offence> updatedOffences) {
         return apply(Stream.of(HearingOffencesUpdated.hearingOffencesUpdated()
                 .withDefendantId(defendantId)
-                        .withHearingId(this.hearing.getId())
+                .withHearingId(this.hearing.getId())
                 .withUpdatedOffences(updatedOffences).build()));
     }
 
@@ -1162,7 +1163,7 @@ public class HearingAggregate implements Aggregate {
 
     public Stream<Object> updateOffencesWithListingNumber(final List<OffenceListingNumbers> offenceListingNumbers) {
         final Map<UUID, Integer> listingMap = offenceListingNumbers.stream().collect(Collectors.toMap(OffenceListingNumbers::getOffenceId, OffenceListingNumbers::getListingNumber, Math::max));
-        return  apply(Stream.of(ListingNumberUpdated.listingNumberUpdated()
+        return apply(Stream.of(ListingNumberUpdated.listingNumberUpdated()
                 .withOffenceListingNumbers(offenceListingNumbers)
                 .withHearingId(this.hearing.getId())
                 .withProsecutionCaseIds(ofNullable(this.hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
@@ -1202,10 +1203,11 @@ public class HearingAggregate implements Aggregate {
                     .withProsecutionCases(isEmpty(filteredOutHearing.getProsecutionCases()) ? null : filteredOutHearing.getProsecutionCases())
                     .withCourtApplications(isEmpty(filteredOutHearing.getCourtApplications()) ? null : filteredOutHearing.getCourtApplications())
                     .build();
-        }else{
+        } else {
             return filteredOutHearing;
         }
     }
+
     private boolean isMasterDefendantYouth(final MasterDefendant defendant) {
         return nonNull(defendant) && nonNull(defendant.getIsYouth()) && defendant.getIsYouth();
     }
@@ -1277,16 +1279,18 @@ public class HearingAggregate implements Aggregate {
                 .withSittingDay(sittingDay)
                 .build();
 
-        if (hasNextHearingForHearingDay.getOrDefault(sittingDay, false)) {
+        final boolean hasNewOrAmendedNextHearingsOrRelatedNextHearings = doHearingContainNewOrAmendedNextHearingResults(hearing);
+        final boolean hasNewOrAmendedUnscheduledNextHearings = unscheduledNextHearingsRequiredFor(hearing);
+
+        if ((hasNewOrAmendedNextHearingsOrRelatedNextHearings || hasNewOrAmendedUnscheduledNextHearings)
+                && hasNextHearingForHearingDay.getOrDefault(sittingDay, false)) {
             events.add(DeleteNextHearingsRequested.deleteNextHearingsRequested()
                     .withHearingId(hearing.getId())
                     .withSeedingHearing(seedingHearing)
                     .build());
         }
 
-        final boolean hasNewNextHearingsOrRelatedNextHearings = doHearingContainNextHearingResults(hearing);
-
-        if (hasNewNextHearingsOrRelatedNextHearings) {
+        if (hasNewOrAmendedNextHearingsOrRelatedNextHearings) {
             final boolean shouldPopulateCommittingCourt = checkResultLinesForCommittingCourt(hearing);
             final CommittingCourt court = committingCourt == null ? findCommittingCourt(hearing) : committingCourt;
 
@@ -1313,7 +1317,7 @@ public class HearingAggregate implements Aggregate {
             }
         }
 
-        if (unscheduledNextHearingsRequiredFor(hearing)) {
+        if (hasNewOrAmendedUnscheduledNextHearings) {
             events.add(UnscheduledNextHearingsRequested.unscheduledNextHearingsRequested()
                     .withSeedingHearing(seedingHearing)
                     .withHearing(hearing)

@@ -120,6 +120,31 @@ public class HearingResultsCommandHandlerTest {
     }
 
     @Test
+    public void shouldProcessHearingResultsWithoutNextHearingsOnReshareWhenNextHearingResultsNotAmended() throws EventStreamException {
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).withAdjournmentReason("AdjournmentReason").build();
+        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build());
+
+        final HearingResult hearingResult = createCommandPayload(hearingId, caseId, utcClock.now().plusDays(1), nextHearing, hearingDays, false);
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.hearing-result")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+
+        handler.processHearingResults(envelope);
+
+        final List<JsonEnvelope> events = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        assertThat(events.size(), is(3));
+
+        checkEventsContentOfHearingResultedAndListingStatusChangedAndProsecutionCasesResulted(hearingId, caseId, events);
+    }
+
+    @Test
     public void shouldProcessHearingResultsWithNextHearingsEventsWhenEarliestNextHearingDateIsNotInFutureAndSingleDayHearing() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
@@ -397,6 +422,10 @@ public class HearingResultsCommandHandlerTest {
     }
 
     private HearingResult createCommandPayload(final UUID hearingId, final UUID caseId, final ZonedDateTime earliestNextHearingDate, final NextHearing nextHearing, List<HearingDay> hearingDays) {
+        return createCommandPayload(hearingId, caseId, earliestNextHearingDate, nextHearing, hearingDays, true);
+    }
+
+    private HearingResult createCommandPayload(final UUID hearingId, final UUID caseId, final ZonedDateTime earliestNextHearingDate, final NextHearing nextHearing, List<HearingDay> hearingDays, final boolean hasAmendedResults) {
         return HearingResult.hearingResult()
                 .withHearing(Hearing.hearing()
                         .withId(hearingId)
@@ -412,6 +441,7 @@ public class HearingResultsCommandHandlerTest {
                                                         .withNextHearing(nextHearing)
                                                         .withIsAdjournmentResult(true)
                                                         .withOrderedDate(LocalDate.MIN)
+                                                        .withIsNewAmendment(hasAmendedResults)
                                                         .build()))
                                                 .build()))
                                         .build()))
@@ -441,6 +471,7 @@ public class HearingResultsCommandHandlerTest {
                                                                         .withAdjournmentReason("AdjournmentReason")
                                                                         .build())
                                                                 .withIsAdjournmentResult(true)
+                                                                .withIsNewAmendment(true)
                                                                 .withOrderedDate(LocalDate.MIN)
                                                                 .build()))
                                                         .build(),
@@ -453,6 +484,7 @@ public class HearingResultsCommandHandlerTest {
                                                                         .withAdjournmentReason("AdjournmentReason")
                                                                         .build())
                                                                 .withIsAdjournmentResult(false)
+                                                                .withIsNewAmendment(true)
                                                                 .build()))
                                                         .build()))
                                         .build()))
