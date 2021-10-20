@@ -219,7 +219,9 @@ public class CourtlistQueryView {
 
     private JsonObject enrichHearingFromCase(JsonObject hearingJson, final Hearing hearing, final UUID caseId) {
 
-        final List<ProsecutionCase> prosecutionCases =  ofNullable(hearing.getProsecutionCases()).orElseGet(() -> getProsecutionCaseFromDb(caseId));
+        //DD-15717: deliberately loading case details from database as the copy of case on hearing object within progression is out of date
+        final List<ProsecutionCase> prosecutionCases =  getProsecutionCaseFromDb(caseId);
+
         if (isNotEmpty(prosecutionCases)) {
             final Optional<ProsecutionCase> prosecutionCase = prosecutionCases.stream()
                     .filter(pc -> pc.getId().equals(caseId))

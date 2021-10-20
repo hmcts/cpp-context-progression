@@ -71,25 +71,7 @@ public class CourtlistQueryViewTest {
     }
 
     @Test
-    public void shouldEnrichCourtlistDocumentPayloadForProsecutionCases() throws IOException {
-        final Optional<JsonObject> listingResponse = Optional.of(getJsonPayload("listing-hearing-with-prosecution-case.json"));
-        final List<Hearing> hearingList = getHearings();
-        when(listingService.searchCourtlist(any(JsonEnvelope.class))).thenReturn(listingResponse);
-        when(hearingQueryView.getHearings(any(List.class))).thenReturn(hearingList);
-
-        final JsonEnvelope query = JsonEnvelope.envelopeFrom(
-                JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
-
-        final JsonObject expected = getJsonPayload("courtlist-expected-with-prosecution-cases.json");
-        final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
-        assertThat(actual, is(expected));
-    }
-
-    @Test
-    public void shouldEnrichCourtlistDocumentPayloadForProsecutionCasesWhenCaseNotInHearing() throws IOException {
+    public void shouldEnrichCourtlistDocumentPayloadForProsecutionCases_ReadCaseFromProgressionViewstore() throws IOException {
         final Optional<JsonObject> listingResponse = Optional.of(getJsonPayload("listing-hearing-with-prosecution-case.json"));
         final List<Hearing> hearingList = getHearingsWithoutCase();
         when(listingService.searchCourtlist(any(JsonEnvelope.class))).thenReturn(listingResponse);
