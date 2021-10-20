@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -330,9 +331,13 @@ public class NowsRequestedEventProcessorTest {
                         .withUserId(USER_ID),
                 objectToJsonObjectConverter.convert(nowDocumentRequested));
 
-        this.nowsRequestedEventProcessor.processNowDocumentRequested(eventEnvelope);
-
-        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
+        try {
+            this.nowsRequestedEventProcessor.processNowDocumentRequested(eventEnvelope);
+            fail();
+        } catch (final RuntimeException expected) {
+            assertThat(expected.getMessage(), is("Progression : exception while generating NOWs document "));
+        }
+        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
 
         final List<DefaultEnvelope<?>> allMessagesSent = envelopeArgumentCaptor.getAllValues();
 
@@ -376,14 +381,19 @@ public class NowsRequestedEventProcessorTest {
 
         final JsonEnvelope eventEnvelope = envelope(nowDocumentRequested);
 
-        this.nowsRequestedEventProcessor.processNowDocumentRequested(eventEnvelope);
+        try {
+            this.nowsRequestedEventProcessor.processNowDocumentRequested(eventEnvelope);
+            fail();
+        } catch (final RuntimeException expected) {
+            assertThat(expected.getMessage(), is("Progression : exception while generating NOWs document "));
+        }
 
         verify(this.documentGeneratorClient).generatePdfDocument(any(), any(), eq(systemUserId));
         verify(this.fileStorer).store(jsonObjectArgumentCaptor.capture(), inputStreamArgumentCaptor.capture());
         assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
 
 
-        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
 
         final List<DefaultEnvelope<?>> allMessagesSent = envelopeArgumentCaptor.getAllValues();
 
