@@ -51,7 +51,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S00107"})
+@SuppressWarnings({"squid:S00107", "squid:S2139", "squid:S00112"})
 public class DocumentGeneratorService {
 
     public static final String PROGRESSION_COMMAND_UPDATE_NOWS_MATERIAL_STATUS = "progression.command.update-nows-material-status";
@@ -112,6 +112,7 @@ public class DocumentGeneratorService {
         } catch (IOException | RuntimeException e) {
             LOGGER.error(ERROR_MESSAGE, e);
             updateMaterialStatusAsFailed(sender, originatingEnvelope, nowDocumentRequest.getMaterialId());
+            throw new RuntimeException("Progression : exception while generating NOWs document " , e);
         }
     }
 

@@ -2,7 +2,7 @@
   "masterDefendantId": "%MATERIAL_ID%",
   "nowDistribution": {
     "email": true,
-    "emailTemplateName": "TestTemplate"
+    "emailTemplateName": "now_standard_template"
   },
   "nowContent": {
     "defendant": {
