@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -108,6 +109,9 @@ public class RelatedHearingEventProcessor {
         sender.send(envelop(jsonEnvelope.payloadAsJsonObject())
                 .withName(PROGRESSION_COMMAND_ADD_CASES_FOR_UPDATED_RELATED_HEARING)
                 .withMetadataFrom(jsonEnvelope));
+
+        final String hearingId = jsonEnvelope.payloadAsJsonObject().getString("hearingId");
+        progressionService.populateHearingToProbationCaseworker(jsonEnvelope, fromString(hearingId));
     }
 
     @Handles("progression.event.cases-added-for-updated-related-hearing")

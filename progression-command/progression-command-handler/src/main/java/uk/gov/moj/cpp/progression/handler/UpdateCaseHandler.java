@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import uk.gov.justice.core.courts.HearingResultedUpdateCase;
+import uk.gov.justice.core.courts.UpdateListingNumberToProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -48,6 +49,21 @@ public class UpdateCaseHandler {
 
         appendEventsToStream(hearingResultedUpdateCaseEnvelope, eventStream, events);
     }
+
+    @Handles("progression.command.update-listing-number-to-prosecution-case")
+    public void handleUpdateListingNumber(final Envelope<UpdateListingNumberToProsecutionCase> updateListingNumberToProsecutionCaseEnvelope) throws EventStreamException {
+
+        LOGGER.debug("progression.command.update-listing-number-to-prosecution-case {}", updateListingNumberToProsecutionCaseEnvelope.payload());
+
+        final UpdateListingNumberToProsecutionCase updateListingNumberToProsecutionCase = updateListingNumberToProsecutionCaseEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(updateListingNumberToProsecutionCase.getProsecutionCaseId());
+
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+        final Stream<Object> events = caseAggregate.updateListingNumber(updateListingNumberToProsecutionCase.getOffenceListingNumbers());
+
+        appendEventsToStream(updateListingNumberToProsecutionCaseEnvelope, eventStream, events);
+    }
+
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);

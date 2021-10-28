@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -24,7 +25,6 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.AzureScheduleServiceStub.stubGetProvisionalBookedSlotsForNonExistingBookingId;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearingV2;
 import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -272,8 +272,8 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
 
         final Matcher[] adjournOffenceUpdatedMatchers = {
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].lastAdjournDate", is("0000-01-01")),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].lastAdjournedHearingType", is("adjournmentReason"))
+                withoutJsonPath("$.prosecutionCase.defendants[0].offences[0].lastAdjournDate"),
+                withoutJsonPath("$.prosecutionCase.defendants[0].offences[0].lastAdjournedHearingType")
         };
 
         pollProsecutionCasesProgressionFor(caseId, adjournOffenceUpdatedMatchers);

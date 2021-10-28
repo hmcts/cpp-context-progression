@@ -7,6 +7,8 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
+import java.util.UUID;
+
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -23,7 +25,10 @@ public class ListingDefendantAddedToCourtProceedingsProcessor {
     @Handles("public.listing.new-defendant-added-for-court-proceedings")
     public void process(final Envelope<PublicListingNewDefendantAddedForCourtProceedings> envelope) {
         final PublicListingNewDefendantAddedForCourtProceedings eventPayload = envelope.payload();
-        LOGGER.info("Defendant '{}' on case '{}' added for court proceedings for hearing '{}'", eventPayload.getDefendantId(), eventPayload.getCaseId(), eventPayload.getHearingId());
+        final UUID hearingId = eventPayload.getHearingId();
+        LOGGER.info("Defendant '{}' on case '{}' added for court proceedings for hearing '{}'", eventPayload.getDefendantId(), eventPayload.getCaseId(), hearingId);
         progressionService.prepareSummonsDataForAddedDefendant(envelope);
+
+        progressionService.populateHearingToProbationCaseworker(envelope.metadata(), hearingId);
     }
 }

@@ -307,7 +307,7 @@ public class ListingStub {
         waitForStubToBeReady(urlPath, LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE);
     }
 
-    public static void stubListingSearchHearingsQuery(final String resource) {
+    public static void stubListingSearchHearingsQuery(final String resource, final String hearingId) {
 
         stubPingFor("listing-service");
 
@@ -316,7 +316,7 @@ public class ListingStub {
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
-                        .withBody(getPayload(resource))));
+                        .withBody(getPayload(resource).replaceAll("HEARING_ID", hearingId))));
 
         waitForStubToBeReady(urlPath, LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE);
     }

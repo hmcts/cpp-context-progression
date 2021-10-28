@@ -205,8 +205,39 @@ public class ProgressionService {
                 .withType(hearingListingNeeds.getType())
                 .withProsecutionCases(hearingListingNeeds.getProsecutionCases())
                 .withSeedingHearing(seedingHearing)
-                .withCourtApplications(hearingListingNeeds.getCourtApplications())
+                .withCourtApplications(removeJudicialResults(hearingListingNeeds.getCourtApplications()))
                 .build();
+    }
+
+    private List<CourtApplication> removeJudicialResults(final List<CourtApplication> courtApplications) {
+        if(courtApplications == null){
+            return null;
+        }
+        return courtApplications.stream()
+                .map(courtApplication -> CourtApplication.courtApplication().withValuesFrom(courtApplication)
+                        .withJudicialResults(null)
+                        .withCourtOrder(ofNullable(courtApplication.getCourtOrder())
+                                .map(courtOrder -> CourtOrder.courtOrder()
+                                        .withValuesFrom(courtOrder)
+                                        .withCourtOrderOffences(courtOrder.getCourtOrderOffences().stream()
+                                                .map(courtOrderOffence -> CourtOrderOffence.courtOrderOffence().withValuesFrom(courtOrderOffence)
+                                                        .withOffence(Offence.offence().withValuesFrom(courtOrderOffence.getOffence())
+                                                                .withJudicialResults(null)
+                                                                .build())
+                                                        .build())
+                                                .collect(toList()))
+                                        .build())
+                                .orElse(null))
+                        .withCourtApplicationCases(courtApplication.getCourtApplicationCases().stream()
+                                .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase()
+                                        .withValuesFrom(courtApplicationCase)
+                                        .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
+                                                .map(courtApplicationOffence -> Offence.offence().withValuesFrom(courtApplicationOffence).withJudicialResults(null).build())
+                                                .collect(collectingAndThen(toList(), getListOrNull())))
+                                        .build())
+                                .collect(collectingAndThen(toList(), getListOrNull())))
+                        .build())
+                .collect(toList());
     }
 
     private static List<HearingDay> populateHearingDays(final ZonedDateTime earliestStartDateTime, final Integer
@@ -247,6 +278,7 @@ public class ProgressionService {
             final List<Offence> matchedDefendantOffence = matchedDefendant.getOffences().stream()
                     .filter(offence -> confirmedDefendantConsumer.getOffences().stream()
                             .anyMatch(o -> o.getId().equals(offence.getId())))
+                    .map(offence -> Offence.offence().withValuesFrom(offence).withListingNumber(ofNullable(offence.getListingNumber()).orElse(0)+1).build())
                     .collect(Collectors.toList());
 
             final List<Offence> matchedDefendantAndPleaRemovedOffences = new ArrayList<>();
@@ -312,13 +344,29 @@ public class ProgressionService {
         }
     }
 
+    public void updateListingNumber(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase) {
+        final JsonArrayBuilder offenceListingNumbersBuilder = Json.createArrayBuilder();
+        prosecutionCase.getDefendants().stream()
+                .flatMap(defendant -> defendant.getOffences().stream())
+                .forEach(offence -> offenceListingNumbersBuilder.add(createObjectBuilder()
+                        .add("offenceId", offence.getId().toString())
+                        .add("listingNumber", offence.getListingNumber())));
+
+        final JsonObjectBuilder updateCommandBuilder = createObjectBuilder()
+                .add("prosecutionCaseId", prosecutionCase.getId().toString())
+                .add("offenceListingNumbers", offenceListingNumbersBuilder.build());
+
+        sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName("progression.command.update-listing-number-to-prosecution-case"),
+                updateCommandBuilder.build()));
+    }
+
     private static Defendant populateDefendant(final Defendant matchedDefendant, final List<Offence>
             matchedDefendantOffence, final LocalDate earliestHearingDate) {
         final Defendant.Builder builder = Defendant.defendant()
                 .withId(matchedDefendant.getId())
                 .withMasterDefendantId(matchedDefendant.getMasterDefendantId())
                 .withCourtProceedingsInitiated(matchedDefendant.getCourtProceedingsInitiated())
-                .withOffences(matchedDefendantOffence)
+                .withOffences( matchedDefendantOffence.stream().map(offence -> Offence.offence().withValuesFrom(offence).withJudicialResults(null).build()).collect(toList()))
                 .withAssociatedPersons(matchedDefendant.getAssociatedPersons())
                 .withDefenceOrganisation(matchedDefendant.getDefenceOrganisation())
                 .withAssociatedDefenceOrganisation(matchedDefendant.getAssociatedDefenceOrganisation())
@@ -501,7 +549,7 @@ public class ProgressionService {
 
     private boolean isYouthUpdated(final Defendant confirmedDefendantConsumer, final Defendant defEnt) {
         if (nonNull(confirmedDefendantConsumer.getIsYouth())) {
-            return !confirmedDefendantConsumer.getIsYouth().equals(defEnt.getIsYouth());
+           return !confirmedDefendantConsumer.getIsYouth().equals(Optional.ofNullable(defEnt.getIsYouth()).orElse(Boolean.FALSE));
         }
         return false;
     }
@@ -814,6 +862,7 @@ public class ProgressionService {
     public Hearing updateHearingForHearingUpdated(final ConfirmedHearing confirmedHearing, final JsonEnvelope jsonEnvelope, final Hearing hearing) {
 
         return Hearing.hearing()
+                .withValuesFrom(hearing)
                 .withHearingDays(confirmedHearing.getHearingDays())
                 .withCourtCentre(transformCourtCentre(confirmedHearing.getCourtCentre(), jsonEnvelope))
                 .withJurisdictionType(confirmedHearing.getJurisdictionType())
@@ -823,8 +872,6 @@ public class ProgressionService {
                 .withReportingRestrictionReason(confirmedHearing.getReportingRestrictionReason())
                 .withType(confirmedHearing.getType())
                 .withHasSharedResults(false)
-                .withProsecutionCases(hearing.getProsecutionCases())
-                .withCourtApplications(hearing.getCourtApplications())
                 .build();
     }
 
@@ -859,7 +906,7 @@ public class ProgressionService {
                                     .withFutureSummonsHearing(null);
                             updateCourtApplicationCases(courtApplication, builder);
                             updateCourtOrder(courtApplication, builder);
-                            applicationDetails.add(courtApplication);
+                            applicationDetails.add(builder.build());
                         }
                 );
             }
@@ -892,7 +939,7 @@ public class ProgressionService {
                                     .map(courtApplicationOffence -> Offence.offence().withValuesFrom(courtApplicationOffence).withJudicialResults(null).build())
                                     .collect(collectingAndThen(toList(), getListOrNull())))
                             .build())
-                    .collect(toList());
+                    .collect(collectingAndThen(toList(), getListOrNull()));
             builder.withCourtApplicationCases(courtApplicationCases);
         }
     }
@@ -1158,6 +1205,26 @@ public class ProgressionService {
                 .withName("progression.command.store-booking-reference-court-schedule-ids")
                 .withMetadataFrom(jsonEnvelope));
 
+    }
+
+    public void populateHearingToProbationCaseworker(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("hearingId", hearingId.toString())
+                .build();
+
+        this.sender.send(Enveloper.envelop(payload)
+                .withName("progression.command.populate-hearing-to-probation-caseworker")
+                .withMetadataFrom(jsonEnvelope));
+    }
+
+    public void populateHearingToProbationCaseworker(final Metadata metadata, final UUID hearingId) {
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("hearingId", hearingId.toString())
+                .build();
+
+        final Metadata commandMetadata = metadataFrom(metadata).withName("progression.command.populate-hearing-to-probation-caseworker").build();
+
+        sender.send(envelopeFrom(commandMetadata, payload));
     }
 
     private Optional<CourtApplication> getCourtApplication(final Hearing hearing, final UUID applicationId) {

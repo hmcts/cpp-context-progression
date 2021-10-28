@@ -3,12 +3,14 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,6 +21,7 @@ import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -43,6 +46,9 @@ public class HearingMarkedAsDuplicateEventProcessorTest {
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectConverter;
+
+    @Mock
+    private ProgressionService progressionService;
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> senderJsonEnvelopeCaptor;
@@ -89,6 +95,8 @@ public class HearingMarkedAsDuplicateEventProcessorTest {
                 withJsonPath("$.hearingId", equalTo(hearingId)),
                 withJsonPath("$.prosecutionCaseIds[0]", equalTo(case1Id)),
                 withJsonPath("$.prosecutionCaseIds[1]", equalTo(case2Id)))));
+
+        verify(progressionService).populateHearingToProbationCaseworker(eq(event), eq(fromString(hearingId)));
     }
 
     @Test

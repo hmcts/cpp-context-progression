@@ -8,6 +8,9 @@ import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
+
+import java.util.Collection;
+import java.util.stream.Stream;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AssignDefendantRequestFromCurrentHearingToExtendHearing;
 import uk.gov.justice.core.courts.AssignDefendantRequestToExtendHearing;
@@ -154,6 +157,10 @@ public class HearingConfirmedEventProcessor {
 
             }
 
+            ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                    .forEach(prosecutionCase -> progressionService.updateListingNumber(jsonEnvelope, prosecutionCase));
+
+
             progressionService.prepareSummonsData(jsonEnvelope, confirmedHearing);
 
             final JsonObject hearingInitiateCommand = objectToJsonObjectConverter.convert(hearingInitiate);
@@ -269,6 +276,8 @@ public class HearingConfirmedEventProcessor {
             });
             progressionService.updateHearingListingStatusToHearingInitiated(jsonEnvelope, hearingInitiate);
         }
+        LOGGER.info("hearing-confirmed event populate hearing to probation caseworker for hearingId '{}' ", hearingInitiate.getHearing().getId());
+        progressionService.populateHearingToProbationCaseworker(jsonEnvelope, hearingInitiate.getHearing().getId());
     }
 
     private static ZonedDateTime getEarliestDate(final List<HearingDay> hearingDays) {
@@ -296,6 +305,9 @@ public class HearingConfirmedEventProcessor {
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, "progression.command.update-hearing-for-partial-allocation").apply(objectToJsonObjectConverter.convert(updateHearingForPartialAllocation)));
         }
 
+        ofNullable(incomingHearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .forEach(prosecutionCase -> progressionService.updateListingNumber(jsonEnvelope, prosecutionCase));
+
         final ExtendHearing extendHearing = ExtendHearing.extendHearing()
                 .withExtendedHearingFrom(confirmedHearing.getId())
                 .withHearingRequest(hearingListingNeeds)
@@ -313,6 +325,9 @@ public class HearingConfirmedEventProcessor {
         }
 
         sender.send(hearingExtendTransformedPayload);
+
+        LOGGER.info("hearing-confirmed event populate hearing to probation caseworker for hearingId '{}' ", confirmedHearing.getId());
+        progressionService.populateHearingToProbationCaseworker(jsonEnvelope, confirmedHearing.getId());
     }
 
     @Handles("progression.event.defendant-request-from-current-hearing-to-extend-hearing-created")

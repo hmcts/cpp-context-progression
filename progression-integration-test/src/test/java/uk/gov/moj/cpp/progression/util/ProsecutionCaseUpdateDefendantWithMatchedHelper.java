@@ -65,95 +65,90 @@ public class ProsecutionCaseUpdateDefendantWithMatchedHelper extends AbstractTes
 
     }
 
-    public static Matcher[] getUpdatedDefendantMatchers(final String caseId, final String defendantId, List<Matcher> additionalMatchers) {
+    public static Matcher[] getUpdatedDefendantMatchers(final String rootPath, final String caseId, final String defendantId, List<Matcher> additionalMatchers) {
         List<Matcher> matchers = newArrayList(
-                withJsonPath("$.prosecutionCase.id", is(caseId)),
+                withJsonPath(rootPath+".id", is(caseId)),
 
                 // defendant assertion
-                withJsonPath("$.prosecutionCase.defendants[0].id", is(defendantId)),
-                withJsonPath("$.prosecutionCase.defendants[0].prosecutionCaseId", is(caseId)),
-                withJsonPath("$.prosecutionCase.defendants[0].prosecutionAuthorityReference", is("TFL12345-ABC")),
-                withJsonPath("$.prosecutionCase.defendants[0].pncId", is("1234567")),
+                withJsonPath(rootPath+".defendants[0].id", is(defendantId)),
+                withJsonPath(rootPath+".defendants[0].prosecutionCaseId", is(caseId)),
+                withJsonPath(rootPath+".defendants[0].prosecutionAuthorityReference", is("TFL12345-ABC")),
+                withJsonPath(rootPath+".defendants[0].pncId", is("1234567")),
 
                 // defendant offence assertion
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
+                withJsonPath(rootPath+".defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
 
                 // assert person
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.title", is("DR")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.firstName", is("Harry")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.middleName", is("Jack")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.lastName", is("Kane")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.dateOfBirth", is("1995-01-01")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.nationalityId", is("2daefec3-2f76-8109-82d9-2e60544a6c02")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.additionalNationalityId", is("2daefec3-2f76-8109-82d9-2e60544a6c02")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.disabilityStatus", is("a")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.gender", is("MALE")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.interpreterLanguageNeeds", is("Hindi")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.documentationLanguageNeeds", is("WELSH")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.nationalInsuranceNumber", is("NH222222B")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.occupation", is("Footballer")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.occupationCode", is("F")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.title", is("DR")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.firstName", is("Harry")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.middleName", is("Jack")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.lastName", is("Kane")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.dateOfBirth", is("1995-01-01")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.nationalityId", is("2daefec3-2f76-8109-82d9-2e60544a6c02")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.additionalNationalityId", is("2daefec3-2f76-8109-82d9-2e60544a6c02")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.disabilityStatus", is("a")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.gender", is("MALE")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.interpreterLanguageNeeds", is("Hindi")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.documentationLanguageNeeds", is("WELSH")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.nationalInsuranceNumber", is("NH222222B")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.occupation", is("Footballer")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.occupationCode", is("F")),
 
                 // person address
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.address.address1", is("22")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.address.address2", is("associated-address2")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.address.address3", is("Acacia Town")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.address.address4", is("Acacia City")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.address.address5", is("Acacia Country")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.address.postcode", is("CR7 0AA")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.address.address1", is("22")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.address.address2", is("associated-address2")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.address.address3", is("Acacia Town")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.address.address4", is("Acacia City")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.address.address5", is("Acacia Country")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.address.postcode", is("CR7 0AA")),
 
                 // person contact details
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.contact.home", is("123456")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.contact.work", is("7891011")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.contact.mobile", is("+45678910")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.contact.primaryEmail", is("contact-email@two.com")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.contact.secondaryEmail", is("harry.kane@hotmail.com")),
-                withJsonPath("$.prosecutionCase.defendants[0].associatedPersons[0].person.contact.fax", is("3425678")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.contact.home", is("123456")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.contact.work", is("7891011")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.contact.mobile", is("+45678910")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.contact.primaryEmail", is("contact-email@two.com")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.contact.secondaryEmail", is("harry.kane@hotmail.com")),
+                withJsonPath(rootPath+".defendants[0].associatedPersons[0].person.contact.fax", is("3425678")),
 
                 // person defendant details
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.title", is("DR")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.middleName", is("Jack")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.lastName", is("Kane Junior 2")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.gender", is("FEMALE")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.ethnicity.observedEthnicityId", is("2daefec3-2f76-8109-82d9-2e60544a6c02")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.ethnicity.selfDefinedEthnicityId", is("2daefec3-2f76-8109-82d9-2e60544a6c02")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.title", is("DR")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.middleName", is("Jack")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.lastName", is("Kane Junior 2")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.gender", is("FEMALE")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.ethnicity.observedEthnicityId", is("2daefec3-2f76-8109-82d9-2e60544a6c02")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.ethnicity.selfDefinedEthnicityId", is("2daefec3-2f76-8109-82d9-2e60544a6c02")),
 
 
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.address.address1", is("address2-1")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.address.address2", is("address2-2")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.address.address3", is("address2-3")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.address.address4", is("address2-4")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.address.postcode", is("W1W 1AA")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.address.address1", is("address2-1")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.address.address2", is("address2-2")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.address.address3", is("address2-3")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.address.address4", is("address2-4")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.address.postcode", is("W1W 1AA")),
 
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.contact.home", is("123456")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.contact.primaryEmail", is("harry.kanejunior@spurs.co.uk-2")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.contact.secondaryEmail", is("harry.kanejunior@hotmail.com")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.contact.fax", is("3425678")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.contact.home", is("123456")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.contact.primaryEmail", is("harry.kanejunior@spurs.co.uk-2")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.contact.secondaryEmail", is("harry.kanejunior@hotmail.com")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.personDetails.contact.fax", is("3425678")),
 
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.name", is("Disneyland Paris-2")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.incorporationNumber", is("Mickeymouse1")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.address.address1", is("Disney Road-2")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.address.address2", is("Disney Town")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.address.address3", is("Disney District")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.address.address4", is("Paris")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.address.address5", is("France")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.address.postcode", is("CR7 0AA")),
-
-//                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.contact.work", is("0207 654 3246 extn 1234")),
-//                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.contact.primaryEmail", is("person@hotmail.com")),
-//                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.contact.secondaryEmail", is("associate@hotmail.com")),
-//                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.contact.fax", is("a")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.employerOrganisation.name", is("Disneyland Paris-2")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.employerOrganisation.incorporationNumber", is("Mickeymouse1")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.employerOrganisation.address.address1", is("Disney Road-2")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.employerOrganisation.address.address2", is("Disney Town")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.employerOrganisation.address.address3", is("Disney District")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.employerOrganisation.address.address4", is("Paris")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.employerOrganisation.address.address5", is("France")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.employerOrganisation.address.postcode", is("CR7 0AA")),
 
 
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.bailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
 
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodyTimeLimit", is("2018-01-01")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.custodyTimeLimit", is("2018-01-01")),
 
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodialEstablishment.custody", is("Prison-2")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodialEstablishment.id", is("a7f54d22-20a1-4154-8955-8e215818bcb5")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodialEstablishment.name", is("custody-name-2")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.custodialEstablishment.custody", is("Prison-2")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.custodialEstablishment.id", is("a7f54d22-20a1-4154-8955-8e215818bcb5")),
+                withJsonPath(rootPath+".defendants[0].personDefendant.custodialEstablishment.name", is("custody-name-2")),
 
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.driverNumber", is("AACC12345"))
+                withJsonPath(rootPath+".defendants[0].personDefendant.driverNumber", is("AACC12345"))
         );
 
         matchers.addAll(additionalMatchers);

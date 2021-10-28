@@ -229,7 +229,7 @@ public class HearingResultedEventProcessorTest {
         assertThat(storeBookingReferenceCourtScheduleIdsArgumentCaptor.getValue().getHearingId(), is(hearingId));
         assertThat(storeBookingReferenceCourtScheduleIdsArgumentCaptor.getValue().getHearingDay(), is(hearingDay));
         assertThat(storeBookingReferenceCourtScheduleIdsArgumentCaptor.getValue().getBookingReferenceCourtScheduleIds().size(), is(1));
-
+        verify(progressionService).populateHearingToProbationCaseworker(Mockito.eq(event), Mockito.eq(hearingId));
     }
 
     @Test

@@ -107,6 +107,7 @@ public class CourtApplicationProcessor {
     private static final String PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED = "public.progression.boxwork-application-referred";
     private static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION = "progression.command.create-court-application";
+    private static final String PROGRESSION_COMMAND_UPDATE_COURT_APPLICATION_TO_HEARING = "progression.command.update-court-application-to-hearing";
     private static final String PUBLIC_PROGRESSION_EVENTS_SJP_PROSECUTION_CASE_CREATED = "public.progression.sjp-prosecution-case-created";
     private static final String LIST_OR_REFER_COURT_APPLICATION = "progression.command.list-or-refer-court-application";
     private static final String HEARING_INITIATE_COMMAND = "hearing.initiate";
@@ -192,6 +193,13 @@ public class CourtApplicationProcessor {
     @Handles("progression.event.court-application-proceedings-edited")
     public void processCourtApplicationEdited(final JsonEnvelope event) {
         final CourtApplicationProceedingsEdited courtApplicationProceedingsEdited = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class);
+        if(nonNull(courtApplicationProceedingsEdited.getCourtHearing())) {
+            final JsonObjectBuilder updateHearingPayload = createObjectBuilder();
+            updateHearingPayload.add("courtApplication", objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited.getCourtApplication()));
+            updateHearingPayload.add("hearingId", courtApplicationProceedingsEdited.getCourtHearing().getId().toString());
+            sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PROGRESSION_COMMAND_UPDATE_COURT_APPLICATION_TO_HEARING), updateHearingPayload.build()));
+        }
+
         final BoxHearingRequest boxHearingRequest = courtApplicationProceedingsEdited.getBoxHearing();
         final JsonObjectBuilder publicPayload = createObjectBuilder();
         if (boxHearingRequest != null) {
@@ -432,6 +440,8 @@ public class CourtApplicationProcessor {
                 LOGGER.info("Court Application not found for hearing: {}", hearingId);
             }
         }
+
+        progressionService.populateHearingToProbationCaseworker(event, hearingId);
     }
 
     @Handles("progression.event.hearing-resulted-application-updated")

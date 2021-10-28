@@ -38,6 +38,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
 import uk.gov.justice.core.courts.SummonsTemplateType;
+import uk.gov.justice.core.courts.UpdateCourtApplicationToHearing;
 import uk.gov.justice.progression.courts.ApproveApplicationSummons;
 import uk.gov.justice.progression.courts.RejectApplicationSummons;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -224,6 +225,18 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
         final Stream<Object> events = applicationAggregate.hearingResulted(courtApplication);
         appendEventsToStream(hearingResultedUpdateApplicationEnvelope, eventStream, events);
+    }
+
+    @Handles("progression.command.update-court-application-to-hearing")
+    public void hearingUpdatedWithApplication(final Envelope<UpdateCourtApplicationToHearing> updateCourtApplicationToHearingEnvelope) throws EventStreamException {
+        LOGGER.info("progression.command.update-court-application-to-hearing {} {} ", updateCourtApplicationToHearingEnvelope.payload().getCourtApplication().getId(),
+                updateCourtApplicationToHearingEnvelope.payload().getHearingId());
+        final CourtApplication courtApplication = updateCourtApplicationToHearingEnvelope.payload().getCourtApplication();
+        final UUID hearingId = updateCourtApplicationToHearingEnvelope.payload().getHearingId();
+        final EventStream eventStream = eventSource.getStreamById(hearingId);
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events = hearingAggregate.updateApplication(courtApplication);
+        appendEventsToStream(updateCourtApplicationToHearingEnvelope, eventStream, events);
     }
 
     private InitiateCourtApplicationProceedings rebuildInitiateCourtApplicationProceedings(final InitiateCourtApplicationProceedings initiateCourtProceedingsForApplication,

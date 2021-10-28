@@ -22,6 +22,7 @@ import javax.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 @SuppressWarnings({"squid:S3457", "squid:S3655",})
 @ServiceComponent(EVENT_PROCESSOR)
@@ -30,6 +31,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     protected static final String PUBLIC_CASE_DEFENDANT_CHANGED = "public.progression.case-defendant-changed";
     protected static final String COMMAND_UPDATE_DEFENDANT_FOR_HEARING = "progression.command.update-defendant-for-hearing";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseDefendantUpdatedProcessor.class.getCanonicalName());
+    private static final String HEARING_ID = "hearingId";
 
     @Inject
     private Sender sender;
@@ -42,6 +44,9 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
 
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Inject
+    private ProgressionService progressionService;
 
     @Handles("progression.event.prosecution-case-defendant-updated")
     public void handleProsecutionCaseDefendantUpdatedEvent(final JsonEnvelope jsonEnvelope) {
@@ -60,10 +65,15 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
         }
     }
 
+    @Handles("progression.event.hearing-defendant-updated")
+    public void handleHearingDefendantUpdatedEvent(final JsonEnvelope jsonEnvelope){
+        progressionService.populateHearingToProbationCaseworker(jsonEnvelope, UUID.fromString(jsonEnvelope.payloadAsJsonObject().getString(HEARING_ID)));
+    }
+
     private void sendDefendantUpdate(final JsonEnvelope envelope, final DefendantUpdate defendantUpdate, final UUID hearingId) {
         final JsonObject updateDefendantPayload = createObjectBuilder()
                 .add("defendant", objectToJsonObjectConverter.convert(defendantUpdate))
-                .add("hearingId", hearingId.toString())
+                .add(HEARING_ID, hearingId.toString())
                 .build();
         sender.send(enveloper.withMetadataFrom(envelope, COMMAND_UPDATE_DEFENDANT_FOR_HEARING).apply(updateDefendantPayload));
     }

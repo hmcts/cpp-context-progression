@@ -2,11 +2,13 @@ package uk.gov.moj.cpp.progression.event;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -188,6 +190,8 @@ public class RelatedHearingEventProcessorTest {
         assertThat(command.payload().toString(), isJson(allOf(
                 withJsonPath("$.hearingId", is(hearingId)),
                 withJsonPath("$.seedingHearingId", is(seedingHearingId)))));
+
+        verify(progressionService).populateHearingToProbationCaseworker(eq(event), eq(fromString(hearingId)));
     }
 
     @Test

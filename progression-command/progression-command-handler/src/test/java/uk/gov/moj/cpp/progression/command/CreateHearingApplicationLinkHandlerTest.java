@@ -63,4 +63,12 @@ public class CreateHearingApplicationLinkHandlerTest {
                         .thatHandles(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)
                 ));
     }
+
+    @Test
+    public void shouldhandleForAllocationFieldsCommand() {
+        assertThat(new CreateHearingApplicationLinkHandler(), isHandler(COMMAND_HANDLER)
+                .with(method("handleForAllocationFields")
+                        .thatHandles("progression.command.update-hearing-for-allocation-fields")
+                ));
+    }
 }

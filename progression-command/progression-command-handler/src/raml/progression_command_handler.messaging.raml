@@ -40,6 +40,9 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.update-offences-for-prosecution-case+json:
             example: !include json/progression.command.update-offences-for-prosecution-case.json
             schema: !include json/schema/progression.command.update-offences-for-prosecution-case.json
+        application/vnd.progression.command.update-offences-for-hearing+json:
+            example: !include json/progression.command.update-offences-for-hearing.json
+            schema: !include json/schema/progression.command.update-offences-for-hearing.json
         application/vnd.progression.command.upload-court-document+json:
             example: !include json/progression.command.upload-court-document.json
             schema: !include json/schema/progression.command.upload-court-document.json
@@ -124,6 +127,9 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.update-hearing-for-partial-allocation+json:
             example: !include json/progression.command.update-hearing-for-partial-allocation.json
             schema: !include json/schema/progression.command.update-hearing-for-partial-allocation.json
+        application/vnd.progression.command.update-hearing-for-allocation-fields+json:
+            example: !include json/progression.command.update-hearing-for-allocation-fields.json
+            schema: !include json/schema/progression.command.update-hearing-for-allocation-fields.json
         application/vnd.progression.command.update-court-application-status+json:
             example: !include json/progression.command.update-court-application-status.json
             schema: !include json/schema/progression.command.update-court-application-status.json
@@ -163,6 +169,12 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.update-case-markers+json:
             example: !include json/progression.command.update-case-markers.json
             schema: !include json/schema/progression.command.update-case-markers.json
+        application/vnd.progression.command.update-case-markers-to-hearing+json:
+            example: !include json/progression.command.update-case-markers-to-hearing.json
+            schema: !include json/schema/progression.command.update-case-markers-to-hearing.json
+        application/vnd.progression.command.update-court-application-to-hearing+json:
+            example: !include json/progression.command.update-court-application-to-hearing.json
+            schema: !include json/schema/progression.command.update-court-application-to-hearing.json
         application/vnd.progression.command.handler.record-laareference-for-offence+json:
             example: !include json/progression.command.handler.record-laareference-for-offence.json
             schema: !include json/schema/progression.command.handler.record-laareference-for-offence.json
@@ -224,6 +236,9 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.add-now-document-request+json:
           example:  !include json/progression.command.add-now-document-request.json
           schema: !include json/schema/progression.command.add-now-document-request.json
+        application/vnd.progression.command.hearing-trial-vacated+json:
+          example:  !include json/progression.command.hearing-trial-vacated.json
+          schema: !include json/schema/progression.command.hearing-trial-vacated.json
 
         application/vnd.progression.command.apply-enforcement-acknowledgement+json:
           example:  !include json/progression.command.apply-enforcement-acknowledgement.json
@@ -308,6 +323,23 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.hearing-resulted-update-application+json:
             example: !include json/progression.command.hearing-resulted-update-application.json
             schema:  !include json/schema/progression.command.hearing-resulted-update-application.json
+
+        application/vnd.progression.command.populate-hearing-to-probation-caseworker+json:
+            example: !include json/progression.command.populate-hearing-to-probation-caseworker.json
+            schema:  !include json/schema/progression.command.populate-hearing-to-probation-caseworker.json
+
+        application/vnd.progression.command.update-hearing-with-new-defendant+json:
+            example: !include json/progression.command.update-hearing-with-new-defendant.json
+            schema:  !include json/schema/progression.command.update-hearing-with-new-defendant.json
+
+        application/vnd.progression.command.update-listing-number+json:
+            example: !include json/progression.command.update-listing-number.json
+            schema:  !include json/schema/progression.command.update-listing-number.json
+
+        application/vnd.progression.command.update-listing-number-to-prosecution-case+json:
+            example: !include json/progression.command.update-listing-number-to-prosecution-case.json
+            schema:  !include json/schema/progression.command.update-listing-number-to-prosecution-case.json
+
 
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****

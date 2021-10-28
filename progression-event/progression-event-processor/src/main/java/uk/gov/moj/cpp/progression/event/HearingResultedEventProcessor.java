@@ -152,6 +152,7 @@ public class HearingResultedEventProcessor {
             sendStoreBookingReferencesCommand(event, hearing, seedingHearing, combinedBookingReferencesWithCourtScheduleIds);
 
         }
+        progressionService.populateHearingToProbationCaseworker(event, hearing.getId());
 
     }
 

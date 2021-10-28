@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.UUID.randomUUID;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.listing.events.PublicListingNewDefendantAddedForCourtProceedings.publicListingNewDefendantAddedForCourtProceedings;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -10,6 +11,8 @@ import uk.gov.justice.listing.events.PublicListingNewDefendantAddedForCourtProce
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+
+import java.util.UUID;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,8 +31,9 @@ public class ListingDefendantAddedToCourtProceedingsProcessorTest {
 
     @Test
     public void shouldPrepareSummonsDataForNewlyAddedDefendant() {
+        final UUID hearingId = randomUUID();
         PublicListingNewDefendantAddedForCourtProceedings eventPayload = publicListingNewDefendantAddedForCourtProceedings()
-                .withHearingId(randomUUID())
+                .withHearingId(hearingId)
                 .withCaseId(randomUUID())
                 .withDefendantId(randomUUID())
                 .build();
@@ -43,6 +47,7 @@ public class ListingDefendantAddedToCourtProceedingsProcessorTest {
         processor.process(eventEnvelope);
 
         verify(progressionService).prepareSummonsDataForAddedDefendant(eventEnvelope);
+        verify(progressionService).populateHearingToProbationCaseworker(eq(eventEnvelopeMetadata), eq(hearingId));
     }
 
 }

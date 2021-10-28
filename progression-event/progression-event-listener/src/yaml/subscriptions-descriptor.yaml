@@ -83,6 +83,9 @@ subscriptions_descriptor:
         - name: progression.event.hearing-resulted-application-updated
           schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-application-updated.json
 
+        - name: progression.event.hearing-trial-vacated
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-trial-vacated.json
+
         - name: progression.event.case-ejected
           schema_uri: http://justice.gov.uk/core/courts/case-ejected.json
 
@@ -106,6 +109,12 @@ subscriptions_descriptor:
 
         - name: progression.event.case-note-edited-v2
           schema_uri: http://justice.gov.uk/core/courts/progression.event.case-note-edited-v2.json
+
+        - name: progression.event.listing-number-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.listing-number-updated.json
+
+        - name: progression.event.prosecution-case-listing-number-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.prosecution-case-listing-number-updated.json
 
         - name: progression.event.defendant-defence-organisation-changed
           schema_uri: http://justice.gov.uk/core/courts/defendant-defence-organisation-changed.json
@@ -218,6 +227,9 @@ subscriptions_descriptor:
 
         - name: progression.events.custody-time-limit-extended
           schema_uri: http://justice.gov.uk/progression/courts/progression.events.custody-time-limit-extended.json
+
+        - name: progression.event.hearing-defendant-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-defendant-updated.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****

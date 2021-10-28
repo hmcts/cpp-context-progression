@@ -1,0 +1,562 @@
+{
+  "id": "1828f356-f746-4f2d-932b-79ef2df95c80",
+  "hearingLanguage": "ENGLISH",
+  "jurisdictionType": "MAGISTRATES",
+  "type": {
+    "description": "Sentence",
+    "id": "c6d76309-c912-436b-a21b-a4c4450bc052",
+    "welshDescription": "Welsh sentence"
+  },
+  "judiciary": [],
+  "prosecutionCases": [
+    {
+      "id": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+      "prosecutionCaseIdentifier": {
+        "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+        "prosecutionAuthorityCode": "TFL",
+        "prosecutionAuthorityReference": "TFL4359536",
+        "prosecutionAuthorityName": "Prosecution Authority Name1",
+        "prosecutionAuthorityOUCode": "OUCode1"
+      },
+      "initiationCode": "J",
+      "caseStatus": "SJP_REFERRAL",
+      "statementOfFacts": "Prosecution Facts",
+      "defendants": [
+        {
+          "id": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+          "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+          "prosecutionCaseId": "c10e3b71-6a6d-45ef-9b62-34df4d54971a",
+          "numberOfPreviousConvictionsCited": 99,
+          "offences": [
+            {
+              "id": "a154d828-1234-47f0-b8d5-e81227831d94",
+              "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+              "offenceCode": "PS90010",
+              "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+              "offenceTitleWelsh": "",
+              "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+              "offenceLegislationWelsh": "",
+              "modeOfTrial": "Summary",
+              "listingNumber": 1,
+              "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced.",
+              "startDate": "2018-07-02",
+              "chargeDate": "2018-08-01",
+              "convictionDate": "2019-11-14",
+              "count": 1,
+              "judicialResults": [
+                {
+                  "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17001",
+                  "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+                  "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+                  "label": "Pay by date",
+                  "isAdjournmentResult": false,
+                  "isFinancialResult": true,
+                  "isConvictedResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "orderedDate": "2020-01-20",
+                  "category": "FINAL",
+                  "resultText": "Pay by date",
+                  "terminatesOffenceProceedings": "",
+                  "isLifeDuration": false,
+                  "isPublishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "isExcludedFromResults": false,
+                  "isAlwaysPublished": true,
+                  "isUrgent": false,
+                  "isD20": false,
+                  "amendmentDate": "2019-06-24",
+                  "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0",
+                  "nextHearing": {
+                    "hearingLanguage": "ENGLISH",
+                    "adjournmentReason": "reason",
+                    "courtCentre": {
+                      "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                      "name": "Liverpool Crown Court",
+                      "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+                      "roomName": "Crown Court 3-1"
+                    },
+                    "type" : {
+                      "id" : "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0",
+                      "description" : "PTP",
+                      "welshDescription" : "welsh PTP"
+                    }
+                  }
+                },
+                {
+                  "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17002",
+                  "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+                  "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+                  "label": "Pay by date",
+                  "isAdjournmentResult": false,
+                  "isFinancialResult": true,
+                  "isConvictedResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "orderedDate": "2020-01-20",
+                  "category": "FINAL",
+                  "resultText": "Pay by date",
+                  "terminatesOffenceProceedings": "",
+                  "isLifeDuration": false,
+                  "isPublishedAsAPrompt": false,
+                  "isExcludedFromResults": false,
+                  "isAlwaysPublished": true,
+                  "publishedForNows": false,
+                  "isUrgent": false,
+                  "isD20": false,
+                  "amendmentDate": "2019-06-24",
+                  "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0"
+                },
+                {
+                  "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17003",
+                  "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+                  "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+                  "label": "Pay by date",
+                  "isAdjournmentResult": false,
+                  "isFinancialResult": true,
+                  "isConvictedResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "orderedDate": "2020-01-20",
+                  "category": "FINAL",
+                  "resultText": "Pay by date",
+                  "terminatesOffenceProceedings": "",
+                  "isLifeDuration": false,
+                  "isPublishedAsAPrompt": false,
+                  "isExcludedFromResults": false,
+                  "isAlwaysPublished": true,
+                  "publishedForNows": true,
+                  "isUrgent": false,
+                  "isD20": false,
+                  "amendmentDate": "2019-06-24",
+                  "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0"
+                }
+              ],
+              "notifiedPlea": {
+                "notifiedPleaDate": "2019-11-13",
+                "notifiedPleaValue": "NO_NOTIFICATION",
+                "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94"
+              },
+              "orderIndex": 1,
+              "plea": {
+                "delegatedPowers": {
+                  "firstName": "FirstName",
+                  "lastName": "LastName",
+                  "userId": "7eaf9c85-220d-4040-845c-d84c919b3b6f"
+                },
+                "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                "pleaDate": "2019-11-14",
+                "pleaValue": "NOT_GUILTY"
+              },
+              "verdict": {
+                "jurors": {
+                  "numberOfJurors": 12,
+                  "numberOfSplitJurors": 0,
+                  "unanimous": true
+                },
+                "lesserOrAlternativeOffence": {
+                  "offenceCode": "PS90010",
+                  "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                  "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                  "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket"
+                },
+                "offenceId": "a154d828-eaa7-47f0-b8d5-e81227831d94",
+                "originatingHearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+                "verdictDate": "2019-11-14",
+                "verdictType": {
+                  "category": "Guilty",
+                  "categoryType": "GUILTY_CONVICTED",
+                  "id": "165f95b1-fc13-4d87-9685-3eff703c1039"
+                }
+              },
+              "offenceFacts": {
+                "alcoholReadingAmount": 1,
+                "alcoholReadingMethodDescription": "desc"
+              }
+            }
+          ],
+          "personDefendant": {
+            "personDetails": {
+              "address": {
+                "address1": "Flat 1",
+                "address2": "1 Old Road",
+                "address3": "London",
+                "address4": "Merton",
+                "postcode": "SW99 1AA"
+              },
+              "contact": {
+                "home": "044-012345566",
+                "work": "01234-67859512",
+                "mobile": "0712345678",
+                "primaryEmail": "abc@test.com",
+                "secondaryEmail": "xyz@test.com"
+              },
+              "dateOfBirth": "1965-12-27",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+              },
+              "firstName": "Fred",
+              "gender": "MALE",
+              "lastName": "Smith",
+              "title": "MR"
+            }
+          },
+          "defendantCaseJudicialResults": [
+            {
+              "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17001",
+              "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+              "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+              "label": "Pay by date",
+              "isAdjournmentResult": false,
+              "isFinancialResult": true,
+              "isConvictedResult": false,
+              "isAvailableForCourtExtract": true,
+              "orderedDate": "2020-01-20",
+              "category": "FINAL",
+              "resultText": "Pay by date",
+              "terminatesOffenceProceedings": "",
+              "isLifeDuration": false,
+              "isPublishedAsAPrompt": false,
+              "publishedForNows": false,
+              "isExcludedFromResults": false,
+              "isAlwaysPublished": true,
+              "isUrgent": false,
+              "isD20": false,
+              "amendmentDate": "2019-06-24",
+              "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0"
+            },
+            {
+              "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17002",
+              "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+              "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+              "label": "Pay by date",
+              "isAdjournmentResult": false,
+              "isFinancialResult": true,
+              "isConvictedResult": false,
+              "isAvailableForCourtExtract": true,
+              "orderedDate": "2020-01-20",
+              "category": "FINAL",
+              "resultText": "Pay by date",
+              "terminatesOffenceProceedings": "",
+              "isLifeDuration": false,
+              "isPublishedAsAPrompt": false,
+              "isExcludedFromResults": false,
+              "isAlwaysPublished": true,
+              "publishedForNows": false,
+              "isUrgent": false,
+              "isD20": false,
+              "amendmentDate": "2019-06-24",
+              "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0"
+            },
+            {
+              "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17003",
+              "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+              "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+              "label": "Pay by date",
+              "isAdjournmentResult": false,
+              "isFinancialResult": true,
+              "isConvictedResult": false,
+              "isAvailableForCourtExtract": true,
+              "orderedDate": "2020-01-20",
+              "category": "FINAL",
+              "resultText": "Pay by date",
+              "terminatesOffenceProceedings": "",
+              "isLifeDuration": false,
+              "isPublishedAsAPrompt": false,
+              "isExcludedFromResults": false,
+              "isAlwaysPublished": true,
+              "publishedForNows": true,
+              "isUrgent": false,
+              "isD20": false,
+              "amendmentDate": "2019-06-24",
+              "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "courtApplications": [
+    {
+      "id": "c10e3b71-6a6d-45ef-9b62-34df4d54972a",
+      "applicant": {
+        "defendant": {
+          "id": "f21c2bdc-1602-46b1-bd4c-44199a0aeabc",
+          "masterDefendantId": "ded76309-c912-436b-a21b-a4c4450bc052",
+          "offences": [
+          ],
+          "personDefendant": {
+            "personDetails": {
+              "address": {
+                "address1": "Flat 1",
+                "address2": "1 Old Road",
+                "address3": "London",
+                "address4": "Merton",
+                "postcode": "SW99 1AA"
+              },
+              "contact": {
+                "home": "044-012345566",
+                "work": "01234-67859512",
+                "mobile": "0712345678",
+                "primaryEmail": "abc@test.com",
+                "secondaryEmail": "xyz@test.com"
+              },
+              "firstName": "Fred",
+              "gender": "MALE",
+              "lastName": "Smith"
+            }
+          }
+        }
+      },
+      "type": {
+        "id": "c10e3b71-6a6d-45ef-9b62-34df4d54972a"
+      },
+      "applicationReceivedDate": "2020-01-20",
+      "applicationStatus": "DRAFT",
+      "respondents": [
+        {
+          "partyDetails": {
+            "personDetails": {
+              "address": {
+                "address1": "Flat 1",
+                "address2": "1 Old Road",
+                "address3": "London",
+                "address4": "Merton",
+                "postcode": "SW99 1AA"
+              },
+              "contact": {
+                "home": "044-012345566",
+                "work": "01234-67859512",
+                "mobile": "0712345678",
+                "primaryEmail": "abc@test.com",
+                "secondaryEmail": "xyz@test.com"
+              },
+              "firstName": "Fred",
+              "gender": "MALE",
+              "lastName": "Smith"
+            },
+            "defendant": {
+              "id": "f21c2bdc-1602-46b1-bd4c-44199a0aeabc",
+              "masterDefendantId": "ded76309-c912-436b-a21b-a4c4450bc052",
+              "defendantCaseJudicialResults": [
+                {
+                  "judicialResultId": "25ce0d4b-b07e-41c9-956b-12cb24c68716",
+                  "judicialResultTypeId": "4f640ea6-88d4-4a3a-b816-ff5a79eaaa14",
+                  "category": "FINAL",
+                  "publishedForNows": false
+                }
+              ],
+              "offences": [
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "Flat 1",
+                    "address2": "1 Old Road",
+                    "address3": "London",
+                    "address4": "Merton",
+                    "postcode": "SW99 1AA"
+                  },
+                  "contact": {
+                    "home": "044-012345566",
+                    "work": "01234-67859512",
+                    "mobile": "0712345678",
+                    "primaryEmail": "abc@test.com",
+                    "secondaryEmail": "xyz@test.com"
+                  },
+                  "firstName": "Fred",
+                  "gender": "MALE",
+                  "lastName": "Smith"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "judicialResults": [
+        {
+          "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17001",
+          "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+          "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+          "label": "Pay by date",
+          "isAdjournmentResult": false,
+          "isFinancialResult": true,
+          "isConvictedResult": false,
+          "isAvailableForCourtExtract": true,
+          "orderedDate": "2020-01-20",
+          "category": "FINAL",
+          "resultText": "Pay by date",
+          "terminatesOffenceProceedings": "",
+          "isLifeDuration": false,
+          "isPublishedAsAPrompt": false,
+          "publishedForNows": false,
+          "isExcludedFromResults": false,
+          "isAlwaysPublished": true,
+          "isUrgent": false,
+          "isD20": false,
+          "amendmentDate": "2019-06-24",
+          "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0"
+        },
+        {
+          "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17002",
+          "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+          "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+          "label": "Pay by date",
+          "isAdjournmentResult": false,
+          "isFinancialResult": true,
+          "isConvictedResult": false,
+          "isAvailableForCourtExtract": true,
+          "orderedDate": "2020-01-20",
+          "category": "FINAL",
+          "resultText": "Pay by date",
+          "terminatesOffenceProceedings": "",
+          "isLifeDuration": false,
+          "isPublishedAsAPrompt": false,
+          "isExcludedFromResults": false,
+          "isAlwaysPublished": true,
+          "publishedForNows": false,
+          "isUrgent": false,
+          "isD20": false,
+          "amendmentDate": "2019-06-24",
+          "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0"
+        },
+        {
+          "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17003",
+          "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+          "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+          "label": "Pay by date",
+          "isAdjournmentResult": false,
+          "isFinancialResult": true,
+          "isConvictedResult": false,
+          "isAvailableForCourtExtract": true,
+          "orderedDate": "2020-01-20",
+          "category": "FINAL",
+          "resultText": "Pay by date",
+          "terminatesOffenceProceedings": "",
+          "isLifeDuration": false,
+          "isPublishedAsAPrompt": false,
+          "isExcludedFromResults": false,
+          "isAlwaysPublished": true,
+          "publishedForNows": true,
+          "isUrgent": false,
+          "isD20": false,
+          "amendmentDate": "2019-06-24",
+          "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0"
+        }
+      ],
+      "subject": {
+        "id": "f21c2bdc-1602-46b1-bd4c-44199a0aeabc",
+        "summonsRequired": false,
+        "notificationRequired": false,
+        "personDetails": {
+          "address": {
+            "address1": "Flat 1",
+            "address2": "1 Old Road",
+            "address3": "London",
+            "address4": "Merton",
+            "postcode": "SW99 1AA"
+          },
+          "contact": {
+            "home": "044-012345566",
+            "work": "01234-67859512",
+            "mobile": "0712345678",
+            "primaryEmail": "abc@test.com",
+            "secondaryEmail": "xyz@test.com"
+          },
+          "firstName": "John",
+          "gender": "MALE",
+          "lastName": "Beard"
+        }
+      }
+    }
+  ],
+  "courtCentre": {
+    "code": "1234",
+    "name": "Lavender Hill",
+    "welshName": "Lavender Hill",
+    "address": {
+      "address1": "Flat 1",
+      "address2": "1 Old Road",
+      "address3": "London",
+      "address4": "Merton",
+      "postcode": "SW99 1AA"
+    },
+    "welshAddress": {
+      "welshAddress1": "Flat 1",
+      "welshAddress2": "1 Old Road",
+      "welshAddress3": "London",
+      "welshAddress4": "Merton",
+      "postcode": "SW99 1AA"
+    },
+    "lja": {
+      "ljaCode": "1800",
+      "ljaName": "East Hampshire Magistrates' Court",
+      "welshLjaName": "East Hampshire Magistrates' Court"
+    }
+  },
+  "youthCourt": {
+      "yourtCourtId": 192883,
+      "name": "Cheshire Youth Court"
+  },
+  "youthCourtDefendantIds": [
+    "a285e3e9-0b71-4352-be31-670a8963359d",
+    "09a147b4-7e6b-11eb-9439-0242ac130002"
+  ],
+  "hearingDays": [
+    {
+      "sittingDay": "2018-03-20T16:14:29.000Z"
+    }
+  ],
+  "defendantJudicialResults": [
+    {
+      "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+      "judicialResult": {
+        "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17001",
+        "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+        "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+        "label": "Pay by date",
+        "isAdjournmentResult": false,
+        "isFinancialResult": true,
+        "isConvictedResult": false,
+        "isAvailableForCourtExtract": true,
+        "orderedDate": "2020-01-20",
+        "category": "FINAL",
+        "resultText": "Pay by date",
+        "terminatesOffenceProceedings": "",
+        "isLifeDuration": false,
+        "isPublishedAsAPrompt": false,
+        "publishedForNows": false,
+        "isExcludedFromResults": false,
+        "isAlwaysPublished": true,
+        "isUrgent": false,
+        "isD20": false,
+        "amendmentDate": "2019-06-24",
+        "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0"
+      }
+    },
+    {
+      "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+      "judicialResult": {
+        "judicialResultId": "8b13e723-07a5-47ad-b378-62478ad17002",
+        "judicialResultTypeId": "cfbe83c8-935b-4410-a68c-49452519f2d3",
+        "orderedHearingId": "e100d08a-ed4e-43a2-aae2-e9c5735713b0",
+        "label": "Pay by date",
+        "isAdjournmentResult": false,
+        "isFinancialResult": true,
+        "isConvictedResult": false,
+        "isAvailableForCourtExtract": true,
+        "orderedDate": "2020-01-20",
+        "category": "FINAL",
+        "resultText": "Pay by date",
+        "terminatesOffenceProceedings": "",
+        "isLifeDuration": false,
+        "isPublishedAsAPrompt": false,
+        "publishedForNows": true,
+        "isExcludedFromResults": false,
+        "isAlwaysPublished": true,
+        "isUrgent": false,
+        "isD20": false,
+        "amendmentDate": "2019-06-24",
+        "amendmentReasonId": "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0"
+      }
+    }
+  ]
+}

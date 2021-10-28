@@ -6,6 +6,7 @@ import uk.gov.justice.core.courts.CreateHearingApplicationLink;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -55,6 +56,18 @@ public class CreateHearingApplicationLinkHandler {
                 appendEventsToStream(createHearingApplicationLinkEnvelope, hearingEventStream, hearingAggregate.boxworkComplete());
             }
         }
+    }
+
+
+    @Handles("progression.command.update-hearing-for-allocation-fields")
+    public void handleForAllocationFields(final Envelope<UpdateHearingForAllocationFields> updateHearingForAllocationFieldsEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.command.update-hearing-for-allocation-fields {}", updateHearingForAllocationFieldsEnvelope.payload());
+
+        final UpdateHearingForAllocationFields updateHearingForAllocationFields = updateHearingForAllocationFieldsEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(updateHearingForAllocationFields.getId());
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events = hearingAggregate.updateAllocationFields(updateHearingForAllocationFields);
+        appendEventsToStream(updateHearingForAllocationFieldsEnvelope, eventStream, events);
     }
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {

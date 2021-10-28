@@ -28,6 +28,7 @@ public class HearingDeletedEventProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingDeletedEventProcessor.class.getName());
     private static final String PUBLIC_EVENTS_LISTING_ALLOCATED_HEARING_DELETED = "public.events.listing.allocated-hearing-deleted";
     private static final String PUBLIC_EVENTS_LISTING_UNALLOCATED_HEARING_DELETED = "public.events.listing.unallocated-hearing-deleted";
+    private static final String PUBLIC_EVENTS_LISTING_HEARING_DELETED = "public.events.listing.hearing-deleted";
     private static final String PROGRESSION_EVENT_HEARING_DELETED = "progression.event.hearing-deleted";
     private static final String PROGRESSION_COMMAND_DELETE_HEARING = "progression.command.delete-hearing";
     private static final String PROGRESSION_COMMAND_DELETE_HEARING_FOR_PROSECUTION_CASE = "progression.command.delete-hearing-for-prosecution-case";
@@ -44,12 +45,14 @@ public class HearingDeletedEventProcessor {
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
+
     @Handles(PUBLIC_EVENTS_LISTING_ALLOCATED_HEARING_DELETED)
     public void handleAllocatedHearingDeletedPublicEvent(final JsonEnvelope jsonEnvelope) {
 
         logEvent(PUBLIC_EVENTS_LISTING_ALLOCATED_HEARING_DELETED, jsonEnvelope);
 
         sendCommandDeleteHearing(jsonEnvelope);
+
     }
 
     @Handles(PUBLIC_EVENTS_LISTING_UNALLOCATED_HEARING_DELETED)
@@ -58,6 +61,16 @@ public class HearingDeletedEventProcessor {
         logEvent(PUBLIC_EVENTS_LISTING_UNALLOCATED_HEARING_DELETED, jsonEnvelope);
 
         sendCommandDeleteHearing(jsonEnvelope);
+
+    }
+
+    @Handles(PUBLIC_EVENTS_LISTING_HEARING_DELETED)
+    public void handleHearingDeletedPublicEvent(final JsonEnvelope jsonEnvelope) {
+
+        logEvent(PUBLIC_EVENTS_LISTING_HEARING_DELETED, jsonEnvelope);
+
+        sendCommandDeleteHearing(jsonEnvelope);
+
     }
 
     @Handles(PROGRESSION_EVENT_HEARING_DELETED)

@@ -66,6 +66,7 @@
                 "endDate": "2018-01-01",
                 "arrestDate": "2018-01-01",
                 "chargeDate": "2018-01-01",
+                "listingNumber" : 2,
                 "orderIndex": 1,
                 "offenceCode": "TTH105HY",
                 "offenceTitle": "ROBBERY",

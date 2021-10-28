@@ -520,6 +520,8 @@ public class CourtApplicationProcessorTest {
 
         verify(progressionService, never()).linkApplicationsToHearing(any(JsonEnvelope.class),
                 any(Hearing.class), any(List.class), eq(HearingListingStatus.SENT_FOR_LISTING));
+
+        verify(progressionService).populateHearingToProbationCaseworker(eq(event), eq(hearingId));
     }
 
     @Test
@@ -726,24 +728,32 @@ public class CourtApplicationProcessorTest {
     public void shouldProcessCourtApplicationWithSummonsEdited() {
         final UUID caseId = randomUUID();
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-proceedings-edited");
+        final UUID boxWorkHearingId = randomUUID();
         final UUID hearingId = randomUUID();
         final CourtApplicationProceedingsEdited courtApplicationProceedingsEdited = courtApplicationProceedingsEdited()
                 .withCourtApplication(courtApplication()
                         .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseId(caseId).build()))
                         .withId(randomUUID())
                         .build())
-                .withBoxHearing(BoxHearingRequest.boxHearingRequest().withId(hearingId).withApplicationDueDate(LocalDate.now()).
+                .withBoxHearing(BoxHearingRequest.boxHearingRequest().withId(boxWorkHearingId).withApplicationDueDate(LocalDate.now()).
                         withCourtCentre(CourtCentre.courtCentre().withName("Lavender Hill").build()).withJurisdictionType(JurisdictionType.CROWN).build())
-                .withCourtHearing(courtHearingRequest().withId(randomUUID()).build())
+                .withCourtHearing(courtHearingRequest().withId(hearingId).build())
                 .build();
         final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited);
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class)).thenReturn(courtApplicationProceedingsEdited);
         courtApplicationProcessor.processCourtApplicationEdited(event);
         ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender).send(captor.capture());
-        final JsonObject jsonObject = objectToJsonObjectConverter.convert(captor.getValue().payload());
-        assertThat(jsonObject.getString("hearingId"), is(hearingId.toString()));
+        verify(sender, times(2)).send(captor.capture());
+
+        assertThat(captor.getAllValues().get(0).metadata().name(), is("progression.command.update-court-application-to-hearing"));
+        final JsonObject command = objectToJsonObjectConverter.convert(captor.getAllValues().get(0).payload());
+        assertThat(command.getString("hearingId"), is(hearingId.toString()));
+        assertThat(command.getJsonObject("courtApplication"), is(notNullValue()));
+
+        assertThat(captor.getAllValues().get(1).metadata().name(), is("public.progression.events.hearing-extended"));
+        final JsonObject publicEvent = objectToJsonObjectConverter.convert(captor.getAllValues().get(1).payload());
+        assertThat(publicEvent.getString("hearingId"), is(boxWorkHearingId.toString()));
     }
 
     @Test
@@ -763,9 +773,16 @@ public class CourtApplicationProcessorTest {
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class)).thenReturn(courtApplicationProceedingsEdited);
         courtApplicationProcessor.processCourtApplicationEdited(event);
         ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender).send(captor.capture());
-        final JsonObject jsonObject = objectToJsonObjectConverter.convert(captor.getValue().payload());
-        assertThat(jsonObject.getString("hearingId"), is(hearingId.toString()));
+        verify(sender, times(2)).send(captor.capture());
+
+        assertThat(captor.getAllValues().get(0).metadata().name(), is("progression.command.update-court-application-to-hearing"));
+        final JsonObject command = objectToJsonObjectConverter.convert(captor.getAllValues().get(0).payload());
+        assertThat(command.getString("hearingId"), is(hearingId.toString()));
+        assertThat(command.getJsonObject("courtApplication"), is(notNullValue()));
+
+        assertThat(captor.getAllValues().get(1).metadata().name(), is("public.progression.events.hearing-extended"));
+        final JsonObject publicEvent = objectToJsonObjectConverter.convert(captor.getAllValues().get(1).payload());
+        assertThat(publicEvent.getString("hearingId"), is(hearingId.toString()));
     }
 
     @Test

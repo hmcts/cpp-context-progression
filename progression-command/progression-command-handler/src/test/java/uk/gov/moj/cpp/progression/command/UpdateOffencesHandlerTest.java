@@ -1,7 +1,10 @@
 package uk.gov.moj.cpp.progression.command;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
@@ -12,28 +15,38 @@ import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.CasesReferredToCourt;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingInitiateEnriched;
+import uk.gov.justice.core.courts.HearingOffencesUpdated;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.justice.core.courts.UpdateOffencesForHearing;
 import uk.gov.justice.core.courts.UpdateOffencesForProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.handler.UpdateOffencesHandler;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 
@@ -62,7 +75,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class UpdateOffencesHandlerTest {
 
     @Spy
-    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CasesReferredToCourt.class);
+    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CasesReferredToCourt.class, HearingOffencesUpdated.class);
     @Mock
     private EventSource eventSource;
     @Mock
@@ -84,6 +97,7 @@ public class UpdateOffencesHandlerTest {
     private UUID defendantId;
     private UUID offenceId;
     private String offenceCode;
+    private HearingAggregate hearingAggregate;
 
     private static final String SEXUAL_OFFENCE_RR_DESCRIPTION = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
     private  static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
@@ -95,8 +109,10 @@ public class UpdateOffencesHandlerTest {
          offenceId = randomUUID();
          offenceCode = new StringGenerator().next();
         aggregate = new CaseAggregate();
+        hearingAggregate = new HearingAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
     }
 
     @Test
@@ -132,6 +148,44 @@ public class UpdateOffencesHandlerTest {
         updateOffencesHandler.handle(envelope);
 
         Stream<JsonEnvelope> events =  verifyAppendAndGetArgumentFrom(eventStream);
+    }
+
+    @Test
+    public void updateOffenceForHearing() throws EventStreamException {
+        final List<Offence> offences  =  Stream.of(
+                Offence.offence().withId(randomUUID()).withOffenceCode(randomUUID().toString()).withOffenceTitle("RegularOffence1").withReportingRestrictions(Collections.singletonList(ReportingRestriction.reportingRestriction().withId(randomUUID()).withLabel(YOUTH_RESTRICTION).withOrderedDate(LocalDate.now()).build())).build(),
+                Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withOffenceTitle("SexualOffence1").build()
+        ).collect(Collectors.toList());
+
+        final UUID hearingId = randomUUID();
+        final UpdateOffencesForHearing updateOffencesForHearing = UpdateOffencesForHearing.updateOffencesForHearing()
+                .withHearingId(hearingId)
+                .withDefendantId(defendantId)
+                .withUpdatedOffences(offences).build();
+        hearingAggregate = getEventStreamReady(hearingId);
+        when(this.aggregateService.get(this.eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-offences-for-hearing")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<UpdateOffencesForHearing> envelope = envelopeFrom(metadata, updateOffencesForHearing);
+
+        updateOffencesHandler.handleUpdateOffencesForHearing(envelope);
+        Stream<JsonEnvelope> events =  verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(events, streamContaining(
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.hearing-offences-updated"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                        withJsonPath("$.hearingId", notNullValue()))
+                                ))
+                )
+        );
+
     }
 
     @Test
@@ -195,6 +249,12 @@ public class UpdateOffencesHandlerTest {
                                     .build()))
                             .build())
                     .build());
+        }};
+    }
+
+    private HearingAggregate getEventStreamReady(final UUID hearingId) {
+        return new HearingAggregate() {{
+            apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(Hearing.hearing().withId(hearingId).build()).build());
         }};
     }
 

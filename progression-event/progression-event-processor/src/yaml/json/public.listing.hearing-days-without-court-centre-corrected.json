@@ -1,0 +1,12 @@
+{
+  "id" : "f10a950b-8922-4820-a4be-e839f9e24063",
+  "hearingDays": [
+    {
+      "listingSequence": 1,
+      "sittingDay": "2021-03-22T10:00:00.000Z",
+      "courtRoomId": "b4562684-9209-3ec4-a544-7f80dabd94d8",
+      "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "listedDurationMinutes": 1
+    }
+  ]
+}

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.summons;
 
 import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -10,10 +11,16 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.core.courts.AddDefendantsToCourtProceedings.addDefendantsToCourtProceedings;
 import static uk.gov.justice.core.courts.AssociatedPerson.associatedPerson;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
@@ -38,6 +45,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.genera
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCaseWithMatchers;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
@@ -58,6 +66,8 @@ import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyTemplatePay
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.Utilities.JsonUtil.toJsonString;
 
+
+import com.jayway.restassured.path.json.JsonPath;
 import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
@@ -70,6 +80,7 @@ import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.AbstractIT;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
@@ -80,6 +91,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.jms.JMSException;
@@ -125,6 +137,8 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
 
     private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createProducer();
     private final MessageConsumer nowsMaterialRequestRecordedConsumer = privateEvents.createConsumer(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED);
+    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
+
     private static final String DOCUMENT_TEXT = STRING.next();
 
 
@@ -149,10 +163,12 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
     @AfterClass
     public static void tearDown() throws JMSException {
         PUBLIC_MESSAGE_PRODUCER.close();
+        messageConsumerHearingPopulatedToProbationCaseWorker.close();
     }
 
     @Before
     public void setUp() {
+        while(QueueUtil.retrieveMessageAsString(messageConsumerHearingPopulatedToProbationCaseWorker, 1L).isPresent());
         stubInitiateHearing();
         stubDocumentCreate(DOCUMENT_TEXT);
         IdMapperStub.setUp();
@@ -177,7 +193,7 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
     public void shouldGenerateSummonsPayloadForFirstHearingWhenSuppressed(final String summonsCode, final String summonsType, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws IOException {
         final boolean summonsSuppressed = true;
         initiateCourtProceedings(getPayloadForInitiatingCourtProceedings(isYouth, summonsCode, summonsSuppressed, FIRST_HEARING_START_TIME, isWelsh));
-        verifySummonsGeneratedOnHearingConfirmed(defendantId1, offenceId1, isWelsh, summonsType, templateName, numberOfDocuments);
+        verifySummonsGeneratedOnHearingConfirmed(defendantId1, offenceId1, isWelsh, summonsType, templateName, numberOfDocuments, isYouth);
 
         verifyMaterialCreated();
 
@@ -205,7 +221,7 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
     public void shouldGenerateSummonsPayloadForFirstHearingWhenNotSuppressed(final String summonsCode, final String summonsType, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws IOException {
         final boolean summonsSuppressed = false;
         initiateCourtProceedings(getPayloadForInitiatingCourtProceedings(isYouth, summonsCode, summonsSuppressed, FIRST_HEARING_START_TIME, isWelsh));
-        verifySummonsGeneratedOnHearingConfirmed(defendantId1, offenceId1, isWelsh, summonsType, templateName, numberOfDocuments);
+        verifySummonsGeneratedOnHearingConfirmed(defendantId1, offenceId1, isWelsh, summonsType, templateName, numberOfDocuments, isYouth);
 
         verifyMaterialCreated();
 
@@ -234,21 +250,23 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
         final boolean summonsSuppressed = false;
         final boolean isWelsh = false;
         initiateCourtProceedings(getPayloadForInitiatingCourtProceedings(isYouth, summonsCode, summonsSuppressed, FIRST_HEARING_START_TIME, isWelsh));
-        verifySummonsGeneratedOnHearingConfirmed(defendantId1, offenceId1, true, summonsType, templateName, numberOfDocuments);
+        verifySummonsGeneratedOnHearingConfirmed(defendantId1, offenceId1, true, summonsType, templateName, numberOfDocuments, isYouth);
 
         // Adding second defendant with hearing details different to first defendant
         final String offenceId2 = randomUUID().toString();
         final AddDefendantsToCourtProceedings addSecondDefendantToCourtProceedings = buildAddDefendantToCourtProceedings(caseId, defendantId2, offenceId2, false, FIRST_HEARING_START_TIME.plusWeeks(2), summonsSuppressed, isYouth);
         whenDefendantIsAddedToCase(addSecondDefendantToCourtProceedings);
 
-        verifySummonsGeneratedOnHearingConfirmed(defendantId2, offenceId2, isWelsh, summonsType, templateName, numberOfDocuments, false);
+        verifySummonsGeneratedOnHearingConfirmed(defendantId2, offenceId2, isWelsh, summonsType, templateName, numberOfDocuments, false, isYouth);
 
         // Adding third defendant with hearing details matching first defendant
         final String offenceId3 = randomUUID().toString();
         final AddDefendantsToCourtProceedings addThirdDefendantToCourtProceedings = buildAddDefendantToCourtProceedings(caseId, defendantId3, offenceId3, false, FIRST_HEARING_START_TIME, summonsSuppressed, isYouth);
         whenDefendantIsAddedToCase(addThirdDefendantToCourtProceedings);
 
-        verifySummonsGeneratedOnHearingConfirmed(defendantId3, offenceId3, isWelsh, summonsType, templateName, numberOfDocuments, true);
+        verifySummonsGeneratedOnHearingConfirmed(defendantId3, offenceId3, isWelsh, summonsType, templateName, numberOfDocuments, true, isYouth);
+
+
     }
 
     private void whenDefendantIsAddedToCase(final AddDefendantsToCourtProceedings payload) throws IOException {
@@ -257,11 +275,11 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
                 toJsonString(payload));
     }
 
-    private void verifySummonsGeneratedOnHearingConfirmed(final String defendantId, final String offenceId, final boolean isWelsh, final String summonsType, final String templateName, final int numberOfDocuments) {
-        verifySummonsGeneratedOnHearingConfirmed(defendantId, offenceId, isWelsh, summonsType, templateName, numberOfDocuments, false);
+    private void verifySummonsGeneratedOnHearingConfirmed(final String defendantId, final String offenceId, final boolean isWelsh, final String summonsType, final String templateName, final int numberOfDocuments, final Boolean isYouth) {
+        verifySummonsGeneratedOnHearingConfirmed(defendantId, offenceId, isWelsh, summonsType, templateName, numberOfDocuments, false, isYouth);
     }
 
-    private void verifySummonsGeneratedOnHearingConfirmed(final String defendantId, final String offenceId, final boolean isWelsh, final String summonsType, final String templateName, final int numberOfDocuments, final boolean existingHearingMatchedForDefendant) {
+    private void verifySummonsGeneratedOnHearingConfirmed(final String defendantId, final String offenceId, final boolean isWelsh, final String summonsType, final String templateName, final int numberOfDocuments, final boolean existingHearingMatchedForDefendant, final boolean isYouth) {
         final String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId,
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
                 withJsonPath("$.prosecutionCase.defendants[?(@.id == '" + defendantId + "')].offences[0]", hasSize(greaterThanOrEqualTo(1))),
@@ -271,6 +289,7 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
             sendPublicEventForConfirmingDefendantAdditionInListing(hearingId, defendantId, isWelsh);
         } else {
             sendPublicEventToConfirmHearingForInitiatedCase(hearingId, defendantId, offenceId, caseId, isWelsh);
+            verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(hearingId, isYouth, messageConsumerHearingPopulatedToProbationCaseWorker);
         }
 
         verifyDocumentAddedToCdes(defendantId, numberOfDocuments);

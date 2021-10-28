@@ -16,6 +16,14 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+import com.google.common.collect.Lists;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
@@ -28,6 +36,8 @@ import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequ
 import uk.gov.justice.core.courts.UpdateDefendantForHearing;
 import uk.gov.justice.core.courts.UpdateDefendantForMatchedDefendant;
 import uk.gov.justice.core.courts.UpdateDefendantForProsecutionCase;
+import uk.gov.justice.core.courts.UpdateHearingWithNewDefendant;
+import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -48,14 +58,6 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateDefendantHandlerTest {
 
@@ -64,7 +66,8 @@ public class UpdateDefendantHandlerTest {
             ProsecutionCaseDefendantUpdated.class,
             ProsecutionCaseUpdateDefendantsWithMatchedRequested.class,
             ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2.class,
-            HearingDefendantUpdated.class);
+            HearingDefendantUpdated.class,
+            NewDefendantAddedToHearing.class);
     @Mock
     private EventSource eventSource;
     @Mock
@@ -242,6 +245,63 @@ public class UpdateDefendantHandlerTest {
                                 .withName("progression.event.hearing-defendant-updated"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.defendant.id", is(defendantId.toString())),
+                                withJsonPath("$.hearingId", is(hearingId.toString()))
+                                )
+                        ))
+
+                )
+        );
+    }
+
+    @Test
+    public void shouldHandleAddDefendantForHearing() throws EventStreamException {
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final DefendantUpdate defendant =
+                DefendantUpdate.defendantUpdate().withPersonDefendant(PersonDefendant.personDefendant().build())
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .withId(defendantId)
+                        .withMasterDefendantId(masterDefendantId)
+                        .build();
+
+        final UpdateHearingWithNewDefendant updateDefendant = UpdateHearingWithNewDefendant.updateHearingWithNewDefendant()
+                .withDefendants(Lists.newArrayList(Defendant.defendant().withId(masterDefendantId).build()))
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withHearingId(hearingId)
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-hearing-with-new-defendant")
+                .withId(randomUUID())
+                .build();
+
+        hearingAggregate.apply(HearingResulted.hearingResulted()
+                .withHearing(Hearing.hearing()
+                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                                        .withId(prosecutionCaseId)
+                                .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
+                                        .withId(defendantId)
+                                        .withMasterDefendantId(masterDefendantId)
+                                        .build())))
+                                .build()))
+                        .build())
+                .build());
+
+
+        final Envelope<UpdateHearingWithNewDefendant> envelope = envelopeFrom(metadata, updateDefendant);
+        updateDefendantHandler.handleUpdateHearingWithNewDefendant(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.new-defendant-added-to-hearing"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.defendants[0].id", is(masterDefendantId.toString())),
                                 withJsonPath("$.hearingId", is(hearingId.toString()))
                                 )
                         ))

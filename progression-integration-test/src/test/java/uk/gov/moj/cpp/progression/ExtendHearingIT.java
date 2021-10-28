@@ -20,6 +20,8 @@ import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHea
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+
+import org.hamcrest.CoreMatchers;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
@@ -242,7 +244,9 @@ public class ExtendHearingIT extends AbstractIT {
     private void queryAndVerifyHearingIsExtended(final String allocatedHearingId, final int numberOfProsecutionCases) {
         final Matcher[] hearingMatchers = {
                 withJsonPath("$", notNullValue()),
-                withJsonPath("$.hearing.id", is(allocatedHearingId))
+                withJsonPath("$.hearing.id", is(allocatedHearingId)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].listingNumber", CoreMatchers.is(1)),
+                withJsonPath("$.hearing.prosecutionCases[1].defendants[0].offences[0].listingNumber", CoreMatchers.is(1))
         };
 
        final String dbHearing =  pollForResponse("/hearingSearch/" + allocatedHearingId, PROGRESSION_QUERY_HEARING_JSON, hearingMatchers);

@@ -480,4 +480,5 @@ public class ApplicationAggregate implements Aggregate {
                 .withSummonsApprovalRequired(courtApplicationProceedingsInitiated.getSummonsApprovalRequired())
                 .build();
     }
+
 }

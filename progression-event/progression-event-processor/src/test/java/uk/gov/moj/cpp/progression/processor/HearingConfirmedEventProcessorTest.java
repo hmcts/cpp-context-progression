@@ -135,8 +135,9 @@ public class HearingConfirmedEventProcessorTest {
         final UUID caseId = randomUUID();
 
         final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final UUID hearingId = randomUUID();
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
-                .withId(randomUUID())
+                .withId(hearingId)
                 .withProsecutionCases(singletonList(confirmedProsecutionCase))
                 .build();
         JsonObject prosecutionCaseJson = createProsecutionCaseJson(offenceId, defendantId, caseId);
@@ -358,8 +359,9 @@ public class HearingConfirmedEventProcessorTest {
         final UUID caseId = randomUUID();
 
         final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final UUID hearingId = randomUUID();
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
-                .withId(randomUUID())
+                .withId(hearingId)
                 .withProsecutionCases(singletonList(confirmedProsecutionCase))
                 .withExistingHearingId(randomUUID())
                 .build();
@@ -396,7 +398,7 @@ public class HearingConfirmedEventProcessorTest {
         when(enveloper.withMetadataFrom(envelope, "progression.command.extend-hearing-defendant-request-update-requested")).thenReturn(enveloperFunction);
         when(progressionService.transformHearingToHearingListingNeeds(any(Hearing.class), any(UUID.class))).thenReturn(hearingListingNeeds);
         when(partialHearingConfirmService.getDifferences(any(), any())).thenReturn(new ArrayList<>());
-
+        when(progressionService.transformToHearingFrom(any(), any())).thenReturn(Hearing.hearing().build());
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
 
         eventProcessor.processEvent(envelope);
@@ -405,6 +407,7 @@ public class HearingConfirmedEventProcessorTest {
         verify(objectToJsonObjectConverter, times(2)).convert(any());
         verify(progressionService).transformHearingToHearingListingNeeds(any(), any());
         verify(progressionService).transformToHearingFrom(any(), any());
+        verify(progressionService).populateHearingToProbationCaseworker(eq(envelope), eq(hearingId));
     }
 
     @Test(expected = CourtApplicationAndCaseNotFoundException.class)
@@ -531,6 +534,7 @@ public class HearingConfirmedEventProcessorTest {
                                 .withId(randomUUID())
                                 .withOffences(singletonList(Offence.offence()
                                         .withId(randomUUID())
+                                        .withListingNumber(1)
                                         .build()))
                                 .build()))
                         .build()))
@@ -665,6 +669,7 @@ public class HearingConfirmedEventProcessorTest {
 
         //Then
         verify(sender, times(2)).send(finalEnvelope);
+        verify(progressionService).populateHearingToProbationCaseworker(any(JsonEnvelope.class), any(UUID.class));
     }
 
     @Test

@@ -1,0 +1,50 @@
+{
+  "updatedHearing": {
+    "id": "HEARING_ID",
+    "type": {
+      "description": "Application",
+      "id": "cf73207f-3ced-488a-82a0-3fba79c2ce05"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "hearingLanguage": "WELSH",
+    "judiciary": [
+      {
+        "isBenchChairman": false,
+        "isDeputy": false,
+        "judicialId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "judicialRoleType":{
+          "judicialRoleTypeId":"433a9f33-12fd-455c-bc2f-a1cb4c5692cb",
+          "judiciaryType":"MAGISTRATE"
+        }
+      }
+    ],
+    "courtCentre": {
+      "address": {
+        "address1": "176b Lavender Hill",
+        "address2": "London",
+        "address3": "address line 3",
+        "address4": "address line 4",
+        "address5": "address line 5",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY01",
+      "id": "d9bff7d8-6168-4163-ad77-3b98d61de174",
+      "lja": {
+        "ljaCode": "1080",
+        "ljaName": "Bedfordshire Magistrates' Court",
+        "welshLjaName": "WELSH_NAME"
+      },
+      "name": "South Western (Lavender Hill)"
+    },
+    "reportingRestrictionReason" : "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
+    "courtApplicationIds" : [
+      "APPLICATION_ID"
+    ],
+    "hearingDays": [
+      {
+        "sittingDay": "2018-09-28T12:13:00.000Z",
+        "listedDurationMinutes": 0
+      }
+    ]
+  }
+}

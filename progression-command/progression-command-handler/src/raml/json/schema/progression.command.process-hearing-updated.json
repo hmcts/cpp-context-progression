@@ -5,6 +5,9 @@
   "properties": {
     "confirmedHearing": {
       "$ref": "http://justice.gov.uk/core/courts/confirmedHearing.json"
+    },
+    "updatedHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json#"
     }
   },
   "required": [

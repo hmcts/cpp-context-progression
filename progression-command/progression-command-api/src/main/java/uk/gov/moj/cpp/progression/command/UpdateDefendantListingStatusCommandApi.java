@@ -5,6 +5,7 @@ import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.removeProperty;
 
+
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -30,6 +31,17 @@ public class UpdateDefendantListingStatusCommandApi {
                 .build();
 
         sender.send(envelopeFrom(metadata,removeProperty(envelope.payloadAsJsonObject(), "hearingId")));
+
+    }
+
+    @Handles("progression.update-listing-number")
+    public void handleUpdateListingNumbers(final JsonEnvelope envelope) {
+
+        final Metadata metadata = metadataFrom(envelope.metadata())
+                .withName("progression.command.update-listing-number")
+                .build();
+
+        sender.send(envelopeFrom(metadata,envelope.payloadAsJsonObject()));
 
     }
 

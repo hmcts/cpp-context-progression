@@ -2,9 +2,14 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
+
+import java.util.Map;
+import java.util.UUID;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
@@ -13,7 +18,9 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDefendantUpdated;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -167,7 +174,31 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
             }
         });
 
-        hearingRepository.save(getHearingEntity(hearing));
+        hearingRepository.save(prepareHearingEntity(hearing, hearingEntity));
+
+    }
+
+    @Handles("progression.event.prosecution-case-listing-number-updated")
+    public void processProsecutionCaseUpdatedWithListingNumber(final JsonEnvelope event) {
+        final ProsecutionCaseListingNumberUpdated prosecutionCaseListingNumberUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseListingNumberUpdated.class);
+        final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(prosecutionCaseListingNumberUpdated.getProsecutionCaseId());
+        final JsonObject prosecutionCaseJson = jsonFromString(prosecutionCaseEntity.getPayload());
+        final ProsecutionCase persistentProsecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
+
+
+        final Map<UUID, Integer> listingMap = prosecutionCaseListingNumberUpdated.getOffenceListingNumbers().stream().collect(Collectors.toMap(OffenceListingNumbers::getOffenceId, OffenceListingNumbers::getListingNumber,Math::max));
+        final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase().withValuesFrom(persistentProsecutionCase)
+                .withDefendants(persistentProsecutionCase.getDefendants().stream()
+                        .map(defendant -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(defendant)
+                                .withOffences(defendant.getOffences().stream()
+                                        .map(offence -> uk.gov.justice.core.courts.Offence.offence().withValuesFrom(offence)
+                                                .withListingNumber(ofNullable(listingMap.get(offence.getId())).orElse(offence.getListingNumber()))
+                                                .build())
+                                        .collect(toList()))
+                                .build())
+                        .collect(toList()))
+                .build();
+        repository.save(getProsecutionCaseEntity(updatedProsecutionCase));
 
     }
 
@@ -286,30 +317,16 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                         : getUpdatedAssociatedPeople(originDefendant.getAssociatedPersons(), defendant.getAssociatedPersons());
 
         return Defendant.defendant()
-                .withOffences(getUpdatedOffencesWithNonNowsJudicialResults(originDefendant.getOffences()))
+                .withValuesFrom(originDefendant)
                 .withPersonDefendant(updatedPersonDefendant)
                 .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
                 .withAssociatedPersons(updatedAssociatedPeople)
                 .withId(defendant.getId())
-                .withMasterDefendantId(originDefendant.getMasterDefendantId())
-                .withCourtProceedingsInitiated(originDefendant.getCourtProceedingsInitiated())
-                .withMitigation(originDefendant.getMitigation())
-                .withMitigationWelsh(originDefendant.getMitigationWelsh())
                 .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
-                .withProsecutionAuthorityReference(originDefendant.getProsecutionAuthorityReference())
-                .withProsecutionCaseId(originDefendant.getProsecutionCaseId())
-                .withWitnessStatement(originDefendant.getWitnessStatement())
-                .withWitnessStatementWelsh(originDefendant.getWitnessStatementWelsh())
                 .withDefenceOrganisation(defendant.getDefenceOrganisation())
                 .withPncId(defendant.getPncId())
-                .withDefendantCaseJudicialResults(originDefendant.getDefendantCaseJudicialResults())
                 .withAliases(defendant.getAliases())
                 .withIsYouth(defendant.getIsYouth())
-                .withCroNumber(originDefendant.getCroNumber())
-                .withLegalAidStatus(originDefendant.getLegalAidStatus())
-                .withAssociatedDefenceOrganisation(originDefendant.getAssociatedDefenceOrganisation())
-                .withProceedingsConcluded(originDefendant.getProceedingsConcluded())
-                .withAssociationLockedByRepOrder(originDefendant.getAssociationLockedByRepOrder())
                 .build();
 
     }
@@ -487,10 +504,12 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         return pCaseEntity;
     }
 
-    private HearingEntity getHearingEntity(final Hearing hearing) {
+    private HearingEntity prepareHearingEntity(final Hearing hearing, final HearingEntity hearingEntity) {
         final HearingEntity entity = new HearingEntity();
         entity.setHearingId(hearing.getId());
         entity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
+        entity.setListingStatus(hearingEntity.getListingStatus());
+        entity.setResultLines(hearingEntity.getResultLines());
         return entity;
     }
 }

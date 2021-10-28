@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/hearing-updated-for-allocation-fields.json",
+  "type": "object",
+  "properties": {
+    "courtCentre": {
+      "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
+    },
+    "hearingLanguage": {
+      "$ref": "http://justice.gov.uk/core/courts/hearingLanguage.json"
+    },
+    "type": {
+      "$ref": "http://justice.gov.uk/core/courts/hearingType.json"
+    },
+    "hearingDays": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/hearingDay.json"
+      }
+    },
+    "courtApplication": {
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json"
+    }
+  },
+  "required": [
+    "courtCentre",
+    "type",
+    "hearingDays"
+  ],
+  "additionalProperties": false
+}

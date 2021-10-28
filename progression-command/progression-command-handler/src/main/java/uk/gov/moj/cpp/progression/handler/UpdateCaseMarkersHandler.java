@@ -21,6 +21,7 @@ import javax.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class UpdateCaseMarkersHandler {
@@ -43,6 +44,16 @@ public class UpdateCaseMarkersHandler {
         final EventStream eventStream = eventSource.getStreamById(updateCaseMarkers.getProsecutionCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
         final Stream<Object> events = caseAggregate.updateCaseMarkers(updateCaseMarkers.getCaseMarkers(), updateCaseMarkers.getProsecutionCaseId(), updateCaseMarkers.getHearingId());
+        appendEventsToStream(envelope, eventStream, events);
+    }
+
+    @Handles("progression.command.update-case-markers-to-hearing")
+    public void handleToHearing(final Envelope<UpdateCaseMarkers> envelope) throws EventStreamException {
+        LOGGER.debug("progression.command.update-case-markers-to-hearing {}", envelope.payload());
+        final UpdateCaseMarkers updateCaseMarkers = envelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(updateCaseMarkers.getHearingId());
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events = hearingAggregate.updateCaseMarkers(updateCaseMarkers.getCaseMarkers(), updateCaseMarkers.getProsecutionCaseId(), updateCaseMarkers.getHearingId());
         appendEventsToStream(envelope, eventStream, events);
     }
 

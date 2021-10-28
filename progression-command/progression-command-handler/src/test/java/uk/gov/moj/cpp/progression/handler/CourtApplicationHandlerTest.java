@@ -53,6 +53,7 @@ import uk.gov.justice.core.courts.ApplicationReferredToCourtHearing;
 import uk.gov.justice.core.courts.ApplicationReferredToExistingHearing;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.BoxHearingRequest;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
@@ -67,8 +68,11 @@ import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.HearingResultedUpdateApplication;
+import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved;
 import uk.gov.justice.core.courts.JudicialRole;
@@ -76,7 +80,9 @@ import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.UpdateCourtApplicationToHearing;
 import uk.gov.justice.core.courts.WeekCommencingDate;
+import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -90,6 +96,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
+import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
 import java.time.ZonedDateTime;
@@ -97,10 +104,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.tngtech.java.junit.dataprovider.DataProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -132,7 +137,9 @@ public class CourtApplicationHandlerTest {
             CourtApplicationSummonsRejected.class,
             CourtApplicationSummonsApproved.class,
             InitiateCourtHearingAfterSummonsApproved.class,
-            HearingResultedApplicationUpdated.class
+            HearingResultedApplicationUpdated.class,
+            HearingUpdatedWithCourtApplication.class,
+            HearingPopulatedToProbationCaseworker.class
     );
     @Mock
     private EventSource eventSource;
@@ -1732,6 +1739,61 @@ public class CourtApplicationHandlerTest {
                                 withJsonPath("$.courtApplication.id", is(applicationId.toString())),
                                 withJsonPath("$.courtApplication.applicationStatus", is(ApplicationStatus.FINALISED.toString()))
                         )))));
+    }
+
+    @Test
+    public void shouldUpdateApplicationInHearingAndRaiseProbationEvent() throws EventStreamException {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                                .withId(applicationId)
+                                .withApplicationReference("A")
+                                .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                                .build()))
+                        .build())
+                .build());
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-court-application-to-hearing")
+                .withId(randomUUID())
+                .build();
+        final UpdateCourtApplicationToHearing hearingUpdateApplication = UpdateCourtApplicationToHearing.updateCourtApplicationToHearing()
+                .withHearingId(hearingId)
+                .withCourtApplication(courtApplication()
+                        .withId(applicationId)
+                        .withApplicationReference("B")
+                        .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                        .build())
+                .build();
+
+        courtApplicationHandler.hearingUpdatedWithApplication(envelopeFrom(metadata, hearingUpdateApplication));
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.hearing-updated-with-court-application"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication.id", is(applicationId.toString())),
+                                withJsonPath("$.courtApplication.applicationReference", is("B"))
+                        ))),
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.events.hearing-populated-to-probation-caseworker"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.hearing.courtApplications[0].id", is(applicationId.toString())),
+                                withJsonPath("$.hearing.courtApplications[0].applicationReference", is("B")),
+                                withJsonPath("$.hearing.id", is(hearingId.toString()))
+                        )))));
+
     }
 
     private void offenceWordingTestForCourtOrder(final UUID judicialResultTypeId) throws EventStreamException {

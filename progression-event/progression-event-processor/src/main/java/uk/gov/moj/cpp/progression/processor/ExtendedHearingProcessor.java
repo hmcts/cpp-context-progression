@@ -74,7 +74,6 @@ public class ExtendedHearingProcessor {
 
     @Handles("progression.event.hearing-extended-processed")
     public void processed(final JsonEnvelope jsonEnvelope) {
-
         final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
         final HearingExtendedProcessed hearingExtendedProcessed = jsonObjectToObjectConverter.convert(payload, HearingExtendedProcessed.class);
         final UUID hearingId = hearingExtendedProcessed.getHearingRequest().getId();
@@ -114,6 +113,7 @@ public class ExtendedHearingProcessor {
             final JsonObject hearingProsecutionCases =  objectToJsonObjectConverter.convert(hearingExtendedEvent);
             sender.send(envelop(hearingProsecutionCases).withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).withMetadataFrom(jsonEnvelope));
             progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, prosecutionCases);
+            progressionService.populateHearingToProbationCaseworker(jsonEnvelope, hearingId);
         }
     }
 

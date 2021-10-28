@@ -21,6 +21,7 @@ import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
@@ -33,21 +34,6 @@ import static uk.gov.moj.cpp.progression.test.TestUtilities.print;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.json.JsonObject;
-
 import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
 import org.hamcrest.Matcher;
@@ -55,6 +41,19 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
+import uk.gov.moj.cpp.progression.stub.HearingStub;
+import uk.gov.moj.cpp.progression.stub.IdMapperStub;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+import java.util.Optional;
+import java.util.UUID;
 
 @SuppressWarnings("squid:S1607")
 public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
@@ -68,6 +67,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.event.hearing-application-link-created";
     private static final MessageConsumer messageConsumerLink = privateEvents.createConsumer(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
     private static final String MAGISTRATES_JURISDICTION_TYPE = "MAGISTRATES";
+    private static final MessageConsumer messageConsumerListingNumberUpdated = privateEvents.createConsumer("progression.event.listing-number-updated");
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
@@ -167,6 +167,14 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
                         .build());
         pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(ACTIVE.getDescription()));
 
+    }
+
+    public static void pollForApplicationWithListingNumber(final String applicationId, final String offenceId, final Integer listingNumber) {
+        pollForApplication(applicationId,
+                withJsonPath("$.courtApplication.id", equalTo(applicationId)),
+                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].id", equalTo(offenceId)),
+                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].listingNumber", equalTo(listingNumber))
+        );
     }
 
     private String doVerifyProsecutionCaseDefendantListingStatusChanged() {

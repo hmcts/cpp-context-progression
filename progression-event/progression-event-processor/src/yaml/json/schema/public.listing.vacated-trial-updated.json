@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/listing/courts/vacated-trial-updated.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "isVacated": {
+      "type": "boolean"
+    },
+    "vacatedTrialReasonId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "allocated": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "hearingId",
+    "isVacated",
+    "allocated"
+  ],
+  "additionalProperties": false
+}

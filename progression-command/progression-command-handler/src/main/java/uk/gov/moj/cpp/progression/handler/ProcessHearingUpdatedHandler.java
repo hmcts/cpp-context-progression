@@ -38,7 +38,7 @@ public class ProcessHearingUpdatedHandler {
         final ProcessHearingUpdated processHearingUpdated = processHearingUpdatedEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(processHearingUpdated.getConfirmedHearing().getId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
-        final Stream<Object> event = hearingAggregate.processHearingUpdated(processHearingUpdated.getConfirmedHearing());
+        final Stream<Object> event = hearingAggregate.processHearingUpdated(processHearingUpdated.getConfirmedHearing(), processHearingUpdated.getUpdatedHearing());
         appendEventsToStream(processHearingUpdatedEnvelope, eventStream, event);
     }
 

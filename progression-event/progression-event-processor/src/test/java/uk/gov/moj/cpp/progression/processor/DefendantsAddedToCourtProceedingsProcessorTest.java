@@ -47,6 +47,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
@@ -117,6 +118,9 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Mock
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Mock
     private ListCourtHearingTransformer listCourtHearingTransformer;
@@ -312,7 +316,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
         //When
         eventProcessor.process(jsonEnvelope);
-        verify(sender, times(4)).send(envelopeCaptor.capture());
+        verify(sender, times(5)).send(envelopeCaptor.capture());
 
         assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), is("progression.command.process-matched-defendants"));
         assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("prosecutionCaseId"), is(PROSECUTION_CASE_ID.toString()));
@@ -325,6 +329,8 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
         assertThat(envelopeCaptor.getAllValues().get(3).metadata().name(), is("progression.command.add-or-store-defendants-and-listing-hearing-requests"));
         assertThat(envelopeCaptor.getAllValues().get(3).payload(), is(payload));
+
+        assertThat(envelopeCaptor.getAllValues().get(4).metadata().name(), is("progression.command.update-hearing-with-new-defendant"));
 
         verify(listingService, never()).listCourtHearing(jsonEnvelope, listCourtHearing);
         verify(progressionService, never()).updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);

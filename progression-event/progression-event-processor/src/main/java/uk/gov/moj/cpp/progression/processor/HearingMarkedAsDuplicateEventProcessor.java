@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.UUID.fromString;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -14,6 +15,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 import java.util.List;
 import java.util.UUID;
@@ -51,6 +53,9 @@ public class HearingMarkedAsDuplicateEventProcessor {
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
+    @Inject
+    private ProgressionService progressionService;
+
 
     @Handles(PUBLIC_HEARING_MARKED_AS_DUPLICATE_EVENT)
     public void handleHearingMarkedAsDuplicatePublicEvent(final JsonEnvelope envelope) {
@@ -59,7 +64,8 @@ public class HearingMarkedAsDuplicateEventProcessor {
         }
 
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
-        jsonObjectBuilder.add(HEARING_ID, envelope.payloadAsJsonObject().getString(HEARING_ID));
+        final String hearingId = envelope.payloadAsJsonObject().getString(HEARING_ID);
+        jsonObjectBuilder.add(HEARING_ID, hearingId);
 
         if (envelope.payloadAsJsonObject().containsKey(PROSECUTION_CASE_IDS)) {
             jsonObjectBuilder.add(PROSECUTION_CASE_IDS, envelope.payloadAsJsonObject().getJsonArray(PROSECUTION_CASE_IDS));
@@ -71,6 +77,8 @@ public class HearingMarkedAsDuplicateEventProcessor {
 
         sender.send(envelopeFrom(metadataFrom(envelope.metadata()).withName(COMMAND_MARK_HEARING_AS_DUPLICATE),
                 jsonObjectBuilder.build()));
+
+        progressionService.populateHearingToProbationCaseworker(envelope, fromString(hearingId));
 
     }
 

@@ -1,15 +1,20 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
@@ -22,8 +27,12 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import com.google.common.collect.ImmutableMap;
+import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.justice.core.courts.Hearing;
@@ -57,8 +66,10 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     private static final MessageConsumer messageConsumerNextHearingsRequestedPrivateEvent = privateEvents.createConsumer("progression.event.next-hearings-requested");
     private static final MessageConsumer messageConsumerRelatedHearingRequestedPrivateEvent = privateEvents.createConsumer("progression.event.related-hearing-requested");
     private static final MessageConsumer messageConsumerUnscheduledNextHearingsRequestedPrivateEvent = privateEvents.createConsumer("progression.event.unscheduled-next-hearings-requested");
+    private static final MessageConsumer messageConsumerProsecutionCaseListingNumberUpdatedEvent = privateEvents.createConsumer("progression.event.prosecution-case-listing-number-updated");
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private final JsonObjectToObjectConverter jsonObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
+    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
 
     private String userId;
     private String hearingId;
@@ -79,10 +90,13 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         messageConsumerNextHearingsRequestedPrivateEvent.close();
         messageConsumerRelatedHearingRequestedPrivateEvent.close();
         messageConsumerUnscheduledNextHearingsRequestedPrivateEvent.close();
+        messageConsumerHearingPopulatedToProbationCaseWorker.close();
+        messageConsumerProsecutionCaseListingNumberUpdatedEvent.close();
     }
 
     @Before
     public void setUp() {
+        while(QueueUtil.retrieveMessageAsString(messageConsumerHearingPopulatedToProbationCaseWorker, 1L).isPresent());
         final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
         FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
         cleanViewStoreTables();
@@ -153,6 +167,84 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         final Offence offence = hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0);
         assertThat(offence.getJudicialResults().size(), equalTo(1));
         assertThat(offence.getJudicialResults().get(0).getOrderedDate(), equalTo(LocalDate.of(2021, 03, 29)));
+
+    }
+
+    @Test
+    public void shouldNotBeJudicialResultsInNewHearing() throws Exception {
+
+        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
+                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+            addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(caseId, defendantId);
+            pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+            hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        }
+
+        final Metadata metadata = metadataBuilder()
+                .withId(randomUUID())
+                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
+                .withUserId(userId)
+                .build();
+
+        JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
+
+        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
+                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+
+            sendMessage(messageProducerClientPublic,
+                    PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
+
+            doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        }
+        verifyInMessagingQueueForCasesReferredToCourts();
+        verifyProsecutionCaseListingNumberUpdatedEvent(caseId, 1);
+        verifyQueryHearingWithListingNumber(hearingId, 1);
+        verifyProsecutionCaseWithListingNumber(0, 1);
+
+        final  String newHearingId;
+        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
+                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+
+            sendMessage(messageProducerClientPublic,
+                    PUBLIC_EVENTS_HEARING_HEARING_RESULTED, getHearingJsonObject(PUBLIC_EVENTS_HEARING_HEARING_RESULTED + "-with-grown.json", caseId,
+                            hearingId, defendantId, newCourtCentreId, newCourtCentreName, reportingRestrictionId, "2021-03-29"), metadataBuilder()
+                            .withId(randomUUID())
+                            .withName(PUBLIC_EVENTS_HEARING_HEARING_RESULTED)
+                            .withUserId(userId)
+                            .build());
+            JsonPath message = QueueUtil.retrieveMessage(messageConsumerProsecutionCaseDefendantListingStatusChanged, isJson(Matchers.allOf(
+                    withJsonPath("$.hearing.id", not(is(hearingId))))));
+            Assert.assertNotNull(message);
+            newHearingId = message.getString("hearing.id");
+
+            verifyInMessagingQueueForHearingResultedPrivateEvent();
+            verifyInMessagingQueueForProsecutionCasesResultedV2PrivateEvent();
+        }
+
+        final Hearing hearing = getHearingFromQuery();
+        final Offence offence = hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0);
+        assertThat(offence.getJudicialResults().size(), equalTo(1));
+        assertThat(offence.getJudicialResults().get(0).getOrderedDate(), equalTo(LocalDate.of(2021, 03, 29)));
+
+        verifyProsecutionCaseWithListingNumber(1, 1);
+
+        while(QueueUtil.retrieveMessageAsString(messageConsumerHearingPopulatedToProbationCaseWorker, 1L).isPresent());
+        hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, newHearingId, defendantId, courtCentreId, courtCentreName);
+        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
+                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+
+            sendMessage(messageProducerClientPublic,
+                    PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
+
+            doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        }
+        verifyProsecutionCaseWithListingNumber(1, 2);
+
+        verifyQueryHearingWithListingNumber(newHearingId, 2);
+        JsonPath messageDaysMatchers = QueueUtil.retrieveMessage(messageConsumerHearingPopulatedToProbationCaseWorker, isJson(Matchers.allOf(
+                withJsonPath("$.hearing.id", CoreMatchers.is(hearingId)))));
+        Assert.assertNull(messageDaysMatchers);
 
     }
 
@@ -344,6 +436,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
             verifyInMessagingQueueForHearingResultedPrivateEvent();
             verifyInMessagingQueueForProsecutionCasesResultedV2PrivateEvent();
             verifyInMessagingQueueForNextHearingsRequestedPrivateEvent();
+
         }
 
         Matcher[] personDefendantOffenceUpdatedMatchers = {
@@ -567,6 +660,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         assertTrue(message.isPresent());
     }
 
+
     private static void verifyInMessagingQueueForRelatedHearingRequestedPrivateEvent() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerRelatedHearingRequestedPrivateEvent);
         assertTrue(message.isPresent());
@@ -575,6 +669,31 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     private static void verifyInMessagingQueueForUnscheduledNextHearingsRequestedPrivateEvent() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerUnscheduledNextHearingsRequestedPrivateEvent);
         assertTrue(message.isPresent());
+    }
+
+    private void verifyProsecutionCaseListingNumberUpdatedEvent(final String caseId, final int listingNumber){
+        JsonPath messageDaysMatchers = QueueUtil.retrieveMessage(messageConsumerProsecutionCaseListingNumberUpdatedEvent, isJson(Matchers.allOf(
+                withJsonPath("$.prosecutionCaseId", CoreMatchers.is(caseId)),
+                withJsonPath("$.offenceListingNumbers[0].listingNumber", is(listingNumber)))));
+        Assert.assertNotNull(messageDaysMatchers);
+    }
+
+    private void verifyQueryHearingWithListingNumber(final String hearingId, final int listingNumber) {
+        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+                withJsonPath("$.hearing.id", Matchers.is(hearingId)),
+                withJsonPath("$.hearing.prosecutionCases[0].id", Matchers.is(caseId)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].id", Matchers.is(defendantId)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].listingNumber", is(listingNumber))
+        );
+    }
+
+    private void verifyProsecutionCaseWithListingNumber(final int offenceIndex, final int listingNumber) {
+        pollProsecutionCasesProgressionFor(caseId,
+                withJsonPath("$.prosecutionCase.id", Matchers.is(caseId)),
+                withJsonPath("$.prosecutionCase.defendants[0].id", Matchers.is(defendantId)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences["+offenceIndex+"].listingNumber", is(listingNumber)),
+                withoutJsonPath("$.prosecutionCase.defendants[0].offences["+(offenceIndex ==1 ? 0 : 1)+"].listingNumber")
+        );
     }
 
 }

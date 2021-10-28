@@ -1,9 +1,11 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
@@ -20,8 +22,12 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -51,6 +57,8 @@ public class PartialAllocationOfHearingIT extends AbstractIT {
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
     private static final MessageConsumer messageConsumerProgressionHearingExtendedEvent = privateEvents.createConsumer("progression.event.hearing-extended");
     private static final MessageConsumer messageConsumerProgressionSummonsDataPreparedEvent = privateEvents.createConsumer("progression.event.summons-data-prepared");
+    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
+
 
     @BeforeClass
     public static void setUp() {
@@ -63,6 +71,7 @@ public class PartialAllocationOfHearingIT extends AbstractIT {
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
         messageConsumerProgressionHearingExtendedEvent.close();
         messageConsumerProgressionSummonsDataPreparedEvent.close();
+        messageConsumerHearingPopulatedToProbationCaseWorker.close();
     }
 
     @Test
@@ -98,6 +107,12 @@ public class PartialAllocationOfHearingIT extends AbstractIT {
 
         doVerifyProgressionHearingExtendedEvent(extendedHearingId, caseId1);
         queryAndVerifyHearingIsExtended(extendedHearingId, 2);
+        JsonPath messageDaysMatchers = QueueUtil.retrieveMessage(messageConsumerHearingPopulatedToProbationCaseWorker, isJson(Matchers.allOf(
+                withJsonPath("$.hearing.id", CoreMatchers.is(extendedHearingId)),
+                        withJsonPath("$.hearing.prosecutionCases", hasSize(2)),
+                withJsonPath("$.hearing.courtCentre.id", CoreMatchers.is(courtCentreId1))
+                )));
+        Assert.assertNotNull(messageDaysMatchers);
     }
 
     @Test

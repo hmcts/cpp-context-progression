@@ -8,10 +8,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingDeleted;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
@@ -69,10 +71,12 @@ public class HearingAggregateTest {
         final UUID hearingId = randomUUID();
 
         final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
                 .withProsecutionCases(
                         asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
+                                        .withDefendants(asList(Defendant.defendant().build()))
                                         .build()
                         )
                 )
@@ -80,6 +84,7 @@ public class HearingAggregateTest {
                         asList(
                                 CourtApplication.courtApplication()
                                         .withId(courtApplicationId)
+                                        .withSubject(CourtApplicationParty.courtApplicationParty().build())
                                         .build()
                         )
                 )
@@ -88,11 +93,15 @@ public class HearingAggregateTest {
         setField(hearingAggregate, "hearing", hearing);
         final List<Object> eventStream = hearingAggregate.deleteHearing(hearingId).collect(toList());
 
-        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.size(), is(2));
         final HearingDeleted hearingDeleted = (HearingDeleted) eventStream.get(0);
         assertThat(hearingDeleted.getHearingId(), is(hearingId));
         assertThat(hearingDeleted.getProsecutionCaseIds().get(0), is(prosecutionCaseId));
         assertThat(hearingDeleted.getCourtApplicationIds().get(0), is(courtApplicationId));
+        final DeletedHearingPopulatedToProbationCaseworker deletedHearingPopulatedToProbationCaseworker = (DeletedHearingPopulatedToProbationCaseworker) eventStream.get(1);
+        assertThat(deletedHearingPopulatedToProbationCaseworker.getHearing().getId(), is(hearingId));
+        assertThat(deletedHearingPopulatedToProbationCaseworker.getHearing().getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
+        assertThat(deletedHearingPopulatedToProbationCaseworker.getHearing().getCourtApplications().get(0).getId(), is(courtApplicationId));
 
     }
 

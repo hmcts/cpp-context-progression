@@ -31,16 +31,6 @@
     },
     "courtApplicationIds": [
         "APPLICATION_ID"
-    ],
-    "hearingDays": [
-      {
-        "sittingDay": "2018-09-28T12:13:00.000Z",
-        "listedDurationMinutes": 0
-      },
-      {
-        "sittingDay": "2018-09-30T09:30:00.000Z",
-        "listedDurationMinutes": 0
-      }
     ]
   }
 }

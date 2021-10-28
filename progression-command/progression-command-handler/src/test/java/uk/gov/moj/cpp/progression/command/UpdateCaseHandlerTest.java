@@ -29,6 +29,8 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseCreated;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -99,6 +101,12 @@ public class UpdateCaseHandlerTest {
                         randomUUID()),
                         handlerTestHelper.convertFromFile("json/hearing-resulted-update-case.json", HearingResultedUpdateCase.class));
 
+        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+                .withProsecutionCase(envelope.payload().getProsecutionCase())
+                .build();
+
+        this.aggregate.apply(prosecutionCaseCreated);
+
         updateCaseHandler.handle(envelope);
 
         assertThat(eventStream, eventStreamAppendedWith(
@@ -150,7 +158,7 @@ public class UpdateCaseHandlerTest {
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withId(randomUUID())
                 .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
-
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
                 .withDefendants(defendantList).build();
 
 
@@ -162,6 +170,12 @@ public class UpdateCaseHandlerTest {
                 envelopeFrom(metadataFor("progression.command.hearing-resulted-update-case",
                         randomUUID()),
                         hearingResultedUpdateCase);
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+        this.aggregate.apply(prosecutionCaseCreated);
 
         updateCaseHandler.handle(envelope);
 
@@ -213,9 +227,14 @@ public class UpdateCaseHandlerTest {
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withId(randomUUID())
                 .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
-
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
                 .withDefendants(defendantList).build();
 
+        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+        this.aggregate.apply(prosecutionCaseCreated);
 
         HearingResultedUpdateCase hearingResultedUpdateCase = HearingResultedUpdateCase.hearingResultedUpdateCase()
                 .withProsecutionCase(prosecutionCase)

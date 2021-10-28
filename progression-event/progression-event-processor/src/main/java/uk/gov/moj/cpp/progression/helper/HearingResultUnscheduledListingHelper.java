@@ -3,13 +3,21 @@ package uk.gov.moj.cpp.progression.helper;
 import static java.lang.Boolean.TRUE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.collectingAndThen;
 
+
+import java.util.Collection;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
 import uk.gov.justice.core.courts.ListUnscheduledCourtHearing;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -92,7 +100,15 @@ public class HearingResultUnscheduledListingHelper {
                 .withJudiciary(unscheduledListingNeeds.getJudiciary())
                 .withReportingRestrictionReason(unscheduledListingNeeds.getReportingRestrictionReason())
                 .withType(unscheduledListingNeeds.getType())
-                .withProsecutionCases(unscheduledListingNeeds.getProsecutionCases())
+                .withProsecutionCases(ofNullable(unscheduledListingNeeds.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                        .map(pc -> ProsecutionCase.prosecutionCase().withValuesFrom(pc)
+                        .withDefendants(pc.getDefendants().stream()
+                                .map(defendant -> Defendant.defendant().withValuesFrom(defendant)
+                                        .withOffences(defendant.getOffences().stream()
+                                                .map(offence -> Offence.offence().withValuesFrom(offence).withJudicialResults(null).build())
+                                                .collect(Collectors.toList())).build())
+                                .collect(Collectors.toList())).build())
+                        .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                 .withHearingDays(hearingDays)
                 .build();
     }
@@ -151,5 +167,9 @@ public class HearingResultUnscheduledListingHelper {
 
         return offence.getJudicialResults().stream()
                 .anyMatch(jr -> TRUE.equals(jr.getIsUnscheduled()) || unscheduledCourtHearingListTransformer.hasNextHearingWithDateToBeFixed(jr));
+    }
+
+    private <T> UnaryOperator<List<T>> getListOrNull() {
+        return list -> list.isEmpty() ? null : list;
     }
 }

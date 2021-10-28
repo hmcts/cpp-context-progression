@@ -331,14 +331,8 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
         assertThat(offences.get(0).get("id"), is(EXPECTED_OFFENCE_ID));
 
         final List<HashMap> judicialResults = defendantListingStatusChangedPayload.getJsonObject("hearing.prosecutionCases[0].defendants[0].offences[0].judicialResults");
-        assertThat(judicialResults.size(), is(1));
-        assertThat(judicialResults.get(0).get("judicialResultId"), is(EXPECTED_JUDICIAL_RESULT_ID));
-        assertThat(judicialResults.get(0).get("judicialResultTypeId"), is(EXPECTED_JUDICIAL_RESULT_TYPEID));
+        assertThat(judicialResults, is(nullValue()));
 
-        final List<HashMap> judicialResultPrompts = defendantListingStatusChangedPayload.getJsonObject("hearing.prosecutionCases[0].defendants[0]" +
-                ".offences[0].judicialResults[0].judicialResultPrompts");
-        assertThat(judicialResultPrompts.size(), is(1));
-        assertThat(judicialResultPrompts.get(0).get("judicialResultPromptTypeId"), is(EXPECTED_JUDICIAL_RESULT_PROMPT_TYPEID));
     }
 
     private void doVerifyRecordedEventPayload(final JsonPath recordedEventPayload, final String existingHearingId, final String unscheduledHearingId) {

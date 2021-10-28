@@ -23,8 +23,10 @@ import java.util.Set;
 import java.util.UUID;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anySet;
@@ -128,6 +130,22 @@ public class HearingResultUnscheduledListingHelperTest {
 
         boolean actual = hearingResultUnscheduledListingHelper.checksIfUnscheduledHearingNeedsToBeCreated(hearing);
         assertThat(actual, is(false));
+    }
+
+    @Test
+    public void shouldRemoveJudicialResultsForUnscheduledHearing(){
+        final HearingUnscheduledListingNeeds unscheduledListingNeeds = HearingUnscheduledListingNeeds.hearingUnscheduledListingNeeds()
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withDefendants(singletonList(Defendant.defendant()
+                                .withOffences(singletonList(Offence.offence()
+                                        .withJudicialResults(singletonList(JudicialResult.judicialResult().build()))
+                                        .build()))
+                                .build()))
+                        .build()))
+                .build();
+        final Hearing hearing = hearingResultUnscheduledListingHelper.convertToHearing(unscheduledListingNeeds, null);
+
+        assertThat(hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getJudicialResults(), is(nullValue()));
     }
 
     private JudicialResult judicialResultWithFlag(){

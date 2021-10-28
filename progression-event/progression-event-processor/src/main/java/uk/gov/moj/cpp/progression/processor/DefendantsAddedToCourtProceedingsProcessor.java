@@ -8,6 +8,8 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -15,8 +17,10 @@ import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.UpdateHearingWithNewDefendant;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -28,6 +32,8 @@ import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -39,12 +45,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class DefendantsAddedToCourtProceedingsProcessor {
 
@@ -52,6 +52,9 @@ public class DefendantsAddedToCourtProceedingsProcessor {
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Inject
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Inject
     private ListCourtHearingTransformer listCourtHearingTransformer;
@@ -121,6 +124,10 @@ public class DefendantsAddedToCourtProceedingsProcessor {
                 final UUID hearingId = getMatchedHearingId(futureHearings, listHearingRequestsForExistingHearing.get(0));
                 LOGGER.info("Adding newly added defendants on case '{} to existing hearing '{}'", prosecutionCaseId, hearingId);
                 summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, getListDefendantRequests(listHearingRequestsForExistingHearing), hearingId);
+                sender.send(envelopeFrom(
+                        metadataFrom(jsonEnvelope.metadata()).withName("progression.command.update-hearing-with-new-defendant"),
+                        tranformToUpdateHearing(hearingId, prosecutionCaseId, defendantsAddedToCourtProceedings.getDefendants())
+                ));
             }
 
             final List<ListHearingRequest> listHearingRequestsForNewHearing = listHearingRequestByFutureAndNewHearings.getNewDefendantsToCreateNewHearings().getListHearingRequests();
@@ -138,6 +145,15 @@ public class DefendantsAddedToCourtProceedingsProcessor {
 
         }
     }
+
+    private JsonObject tranformToUpdateHearing(final UUID hearingId, final String prosecutionCaseId, final List<Defendant> defendants) {
+        final UpdateHearingWithNewDefendant updateHearingWithNewDefendant = UpdateHearingWithNewDefendant.updateHearingWithNewDefendant()
+                .withHearingId(hearingId)
+                .withProsecutionCaseId(UUID.fromString(prosecutionCaseId))
+                .withDefendants(defendants).build();
+        return objectToJsonObjectConverter.convert(updateHearingWithNewDefendant);
+    }
+
 
     @Handles("progression.event.defendants-and-listing-hearing-requests-added")
     public void processDefendantsAndListHearingRequestsAdded(final JsonEnvelope jsonEnvelope) {

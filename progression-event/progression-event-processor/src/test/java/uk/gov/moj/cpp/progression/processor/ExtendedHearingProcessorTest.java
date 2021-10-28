@@ -22,6 +22,7 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
@@ -111,8 +112,9 @@ public class ExtendedHearingProcessorTest {
     public void shouldHandleHearingExtendedEventMessageForExistingHearingForCase() {
 
 
+        final UUID hearingId = UUID.randomUUID();
         final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
-                .withId(UUID.randomUUID())
+                .withId(hearingId)
                 .withProsecutionCases(Arrays.asList(prosecutionCase)).build();
 
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
@@ -127,7 +129,7 @@ public class ExtendedHearingProcessorTest {
         verify(sender).send(senderJsonEnvelopeCaptor.capture());
         verify(progressionService, times(1)).linkProsecutionCasesToHearing(any(JsonEnvelope.class),any(UUID.class),any(List.class));
         verify(progressionService).updateDefendantYouthForProsecutionCase(any(), anyList());
-
+        verify(progressionService).populateHearingToProbationCaseworker(any(JsonEnvelope.class), eq(hearingId));
         assertThat(senderJsonEnvelopeCaptor.getValue().metadata().name(), is("public.progression.events.hearing-extended"));
     }
 

@@ -4,6 +4,7 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Matchers.any;
@@ -12,11 +13,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+
+import java.util.Arrays;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Ethnicity;
 import uk.gov.justice.core.courts.InitiationCode;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.PoliceOfficerInCase;
@@ -173,6 +178,45 @@ public class ProsecutionCaseDefendantUpdatedEventListenerTest {
         assertThat(defendantProperties.getJsonObject(0).getString("id"), is(defendantId.toString()));
         assertThat(defendantProperties.getJsonObject(0).getString("masterDefendantId"), is(defendantId.toString()));
         assertThat(updatedProsecutionCaseEntity.getCaseId(), is(prosecutionCaseId));
+    }
+
+    @Test
+    public void shouldUpdateViewStoreWithListingNumber(){
+        final UUID offenceId = randomUUID();
+
+        ProsecutionCaseListingNumberUpdated event = ProsecutionCaseListingNumberUpdated.prosecutionCaseListingNumberUpdated()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withOffenceListingNumbers(singletonList(OffenceListingNumbers.offenceListingNumbers()
+                        .withOffenceId(offenceId)
+                        .withListingNumber(10)
+                        .build()))
+                .build();
+
+        final JsonObject eventPayloadJsonObject = objectToJsonObjectConverter.convert(event);
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(eventPayloadJsonObject);
+        ProsecutionCase caseInDb = ProsecutionCase.prosecutionCase()
+                .withDefendants(singletonList(Defendant.defendant()
+                        .withOffences(Arrays.asList(Offence.offence()
+                                .withId(offenceId)
+                                .build(), Offence.offence()
+                                .withId(randomUUID())
+                                .build()))
+                        .build()))
+                .build();
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(prosecutionCaseId);
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(caseInDb).toString());
+        when(prosecutionCaseRepository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
+
+        prosecutionCaseDefendantUpdatedEventListener.processProsecutionCaseUpdatedWithListingNumber(jsonEnvelope);
+
+        verify(prosecutionCaseRepository).save(argumentCaptor.capture());
+        final ProsecutionCaseEntity updatedProsecutionCaseEntity = argumentCaptor.getValue();
+        final ProsecutionCase updatedCase = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(updatedProsecutionCaseEntity.getPayload()), ProsecutionCase.class);
+
+        assertThat(updatedCase.getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
+        assertThat(updatedCase.getDefendants().get(0).getOffences().get(0).getListingNumber(), is(10));
+        assertThat(updatedCase.getDefendants().get(0).getOffences().get(1).getListingNumber(), is(nullValue()));
     }
 
     private ProsecutionCase getProsecutionCase(final UUID prosecutionCaseId,

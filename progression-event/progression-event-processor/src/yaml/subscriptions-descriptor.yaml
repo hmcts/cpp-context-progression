@@ -14,11 +14,17 @@ subscriptions_descriptor:
         - name: progression.event.court-document-uploaded
           schema_uri: http://justice.gov.uk/core/courts/courts-document-uploaded.json
 
+        - name: progression.event.listing-number-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.listing-number-updated.json
+
         - name: progression.event.court-document-removed
           schema_uri: http://justice.gov.uk/core/courts/courts-document-removed.json
 
         - name: progression.event.defendant-bail-document-created
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-bail-document-created
+
+        - name: progression.event.hearing-application-link-created
+          schema_uri: http://justice.gov.uk/core/courts/hearing-application-link-created.json
 
         - name: progression.events.offences-for-defendant-changed
           schema_uri: http://justice.gov.uk/progression/courts/offences-for-defendant-changed.json
@@ -80,6 +86,9 @@ subscriptions_descriptor:
         - name: progression.event.case-ejected
           schema_uri: http://justice.gov.uk/core/courts/case-ejected.json
 
+        - name: progression.events.hearing-days-without-court-centre-corrected
+          schema_uri: http://justice.gov.uk/progression/events/progression.events.hearing-days-without-court-centre-corrected.json
+
         - name: progression.event.application-ejected
           schema_uri: http://justice.gov.uk/core/courts/application-ejected.json
 
@@ -97,6 +106,12 @@ subscriptions_descriptor:
 
         - name: progression.event.case-markers-updated
           schema_uri: http://justice.gov.uk/core/courts/case-markers-updated.json
+
+        - name: progression.event.case-markers-shared-with-hearings
+          schema_uri: http://justice.gov.uk/core/courts/case-markers-shared-with-hearings.json
+
+        - name: progression.event.case-markers-updated-in-hearing
+          schema_uri: http://justice.gov.uk/core/courts/case-markers-updated-in-hearing.json
 
         - name: progression.event.case-note-added
           schema_uri: http://justice.gov.uk/core/courts/case-note-added.json
@@ -278,6 +293,24 @@ subscriptions_descriptor:
         - name: progression.event.delete-next-hearings-requested
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.delete-next-hearings-requested.json
 
+        - name: progression.events.hearing-populated-to-probation-caseworker
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.hearing-populated-to-probation-caseworker.json
+
+        - name: progression.events.deleted-hearing-populated-to-probation-caseworker
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.deleted-hearing-populated-to-probation-caseworker.json
+
+        - name: progression.event.hearing-defendant-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-defendant-updated.json
+
+        - name: progression.event.all-hearing-offences-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.all-hearing-offences-updated.json
+
+        - name: progression.event.hearing-offences-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-offences-updated.json
+
+        - name: progression.event.new-defendant-added-to-hearing
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.new-defendant-added-to-hearing.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 
@@ -355,6 +388,10 @@ subscriptions_descriptor:
 
         - name: progression.event.hearing-updated-processed
           schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-updated-processed.json
+
+        - name: progression.event.hearing-trial-vacated
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-trial-vacated.json
+
           # Deprecated API  - End
       event_source_name: progression
 
@@ -404,6 +441,9 @@ subscriptions_descriptor:
         - name: public.events.hearing.marked-as-duplicate
           schema_uri: http://justice.gov.uk/hearing/courts/hearing.events.marked-as-duplicate.json
 
+        - name: public.hearing.trial-vacated
+          schema_uri: http://justice.gov.uk/hearing/courts/public.hearing.trial-vacated.json
+
         # Notification notify
         - name: public.notificationnotify.events.notification-failed
           schema_uri: http://justice.gov.uk/core/courts/public.notificationnotify.events.notification-failed.json
@@ -437,6 +477,10 @@ subscriptions_descriptor:
         - name: public.events.listing.unallocated-hearing-deleted
           schema_uri: http://justice.gov.uk/listingcourts/public.events.listing.unallocated-hearing-deleted.json
 
+        # Hearing Deleted
+        - name: public.events.listing.hearing-deleted
+          schema_uri: http://justice.gov.uk/listingcourts/public.events.listing.hearing-deleted.json
+
         # Hearing Unallocated
         - name: public.events.listing.hearing-unallocated
           schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.hearing-unallocated.json
@@ -461,5 +505,11 @@ subscriptions_descriptor:
 
         - name: public.events.hearing.prosecution-case-created-in-hearing
           schema_uri: http://justice.gov.uk/hearing/courts/public.events.hearing.prosecution-case-created-in-hearing.json
+
+        - name: public.events.listing.hearing-days-without-court-centre-corrected
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.hearing-days-without-court-centre-corrected.json
+
+        - name : public.listing.vacated-trial-updated
+          schema_uri: http://justice.gov.uk/listing/courts/vacated-trial-updated.json
 
       event_source_name: public.event.source

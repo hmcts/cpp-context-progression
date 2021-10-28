@@ -5,6 +5,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.justice.core.courts.UpdateListingNumber;
+import uk.gov.justice.core.courts.UpdateOffencesForHearing;
 import uk.gov.justice.core.courts.UpdateOffencesForProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
@@ -18,6 +20,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 
 import java.time.LocalDate;
@@ -76,6 +79,27 @@ public class UpdateOffencesHandler {
         final Stream<Object> events = caseAggregate.updateOffences(offences,prosecutionCaseId,defendantId,offencesJsonObjectOptional);
 
         appendEventsToStream(updateDefedantEnvelope, eventStream, events);
+    }
+
+    @Handles("progression.command.update-offences-for-hearing")
+    public void handleUpdateOffencesForHearing(final Envelope<UpdateOffencesForHearing> updateOffencesForHearingEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.command.update-offences-for-hearing {}", updateOffencesForHearingEnvelope.payload());
+        final UpdateOffencesForHearing updateOffencesForHearing = updateOffencesForHearingEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(updateOffencesForHearing.getHearingId());
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events = hearingAggregate.updateOffence(updateOffencesForHearing.getDefendantId(), updateOffencesForHearing.getUpdatedOffences());
+        appendEventsToStream(updateOffencesForHearingEnvelope, eventStream, events);
+    }
+
+    @Handles("progression.command.update-listing-number")
+    public void handleUpdateListingNumberOfOffences(final Envelope<UpdateListingNumber> updateOffencesForHearingEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.command.update-offences-for-hearing {}", updateOffencesForHearingEnvelope.payload());
+
+        final UpdateListingNumber updateListingNumber = updateOffencesForHearingEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(updateListingNumber.getHearingId());
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events = hearingAggregate.updateOffencesWithListingNumber(updateListingNumber.getOffenceListingNumbers());
+        appendEventsToStream(updateOffencesForHearingEnvelope, eventStream, events);
     }
 
     private Offence addYouthRestrictions(final Offence offence) {
