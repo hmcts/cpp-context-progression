@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.progression.transformer;
 
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingExtendedProcessed;
+import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.progression.courts.ProsecutionCasesReferredToCourt;
 
@@ -30,6 +33,29 @@ public class ProsecutionCasesReferredToCourtTransformer {
                                             .withHearingDays(hearingInitiate.getHearing().getHearingDays())
                                             .build())
                     )
+            );
+        }
+        return listProsecutionCasesReferredToCourts;
+    }
+
+    public static List<ProsecutionCasesReferredToCourt> transform(final HearingExtendedProcessed hearingExtendedProcessed) {
+        final List<ProsecutionCasesReferredToCourt> listProsecutionCasesReferredToCourts = new ArrayList<>();
+        final HearingListingNeeds hearingListingNeeds = hearingExtendedProcessed.getHearingRequest();
+        final Hearing hearing = hearingExtendedProcessed.getHearing();
+        if (hearingExtendedProcessed.getHearingRequest().getProsecutionCases() != null) {
+            hearingExtendedProcessed.getHearingRequest().getProsecutionCases().stream().forEach(prosecutionCase ->
+                    prosecutionCase.getDefendants()
+                            .forEach(defendant ->
+                                    listProsecutionCasesReferredToCourts.add(
+                                            ProsecutionCasesReferredToCourt.prosecutionCasesReferredToCourt()
+                                                    .withCourtCentre(hearing.getCourtCentre())
+                                                    .withDefendantId(defendant.getId())
+                                                    .withDefendantOffences(defendant.getOffences().stream().map(offence -> offence.getId()).collect(Collectors.toList()))
+                                                    .withHearingId(hearingListingNeeds.getId())
+                                                    .withProsecutionCaseId(prosecutionCase.getId())
+                                                    .withHearingDays(hearing.getHearingDays())
+                                                    .build())
+                            )
             );
         }
         return listProsecutionCasesReferredToCourts;

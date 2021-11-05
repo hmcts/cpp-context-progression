@@ -2,8 +2,10 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Objects.nonNull;
 import static javax.json.Json.createArrayBuilder;
+import static uk.gov.justice.progression.courts.ProsecutionCasesReferredToCourt.*;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.moj.cpp.progression.processor.HearingConfirmedEventProcessor.PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -12,6 +14,7 @@ import uk.gov.justice.core.courts.HearingExtended;
 import uk.gov.justice.core.courts.HearingExtendedProcessed;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.progression.courts.ProsecutionCasesReferredToCourt;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -19,6 +22,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+import uk.gov.moj.cpp.progression.transformer.ProsecutionCasesReferredToCourtTransformer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -98,6 +102,14 @@ public class ExtendedHearingProcessor {
           progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, prosecutionCases);
         } else if (nonNull(prosecutionCases)){
             LOGGER.info("extending hearing {} for prosecution cases",hearingId);
+
+            final List<ProsecutionCasesReferredToCourt> prosecutionCasesReferredToCourts =
+                    ProsecutionCasesReferredToCourtTransformer.transform(hearingExtendedProcessed);
+
+            prosecutionCasesReferredToCourts.forEach(prosecutionCasesReferredToCourt -> {
+                final JsonObject prosecutionCasesReferredToCourtJson = objectToJsonObjectConverter.convert(prosecutionCasesReferredToCourt);
+                sender.send(envelop(prosecutionCasesReferredToCourtJson).withName(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT).withMetadataFrom(jsonEnvelope));
+            });
 
             final List<UUID> caseIds = prosecutionCases.stream().map(ProsecutionCase::getId).collect(Collectors.toList());
             progressionService.linkProsecutionCasesToHearing(jsonEnvelope, hearingId, caseIds);
