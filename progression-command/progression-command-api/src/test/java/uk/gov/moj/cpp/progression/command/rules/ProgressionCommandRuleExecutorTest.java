@@ -71,7 +71,7 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         SendingCommittalHearingInfoTest("progression.command.sending-committal-hearing-information", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"),
         SentenceHearingDateTest("progression.command.sentence-hearing-date", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"),
         SendingSheetCompleteRuleTest("progression.command.complete-sending-sheet", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"),
-        ReferCaseToCourtTest("progression.refer-cases-to-court", "Legal Advisers"),
+        ReferCaseToCourtTest("progression.refer-cases-to-court", "Legal Advisers", "Magistrates"),
         UpdateDefendentDetails("progression.update-defendant-for-prosecution-case", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Court Associate"),
         UpdateOffences("progression.update-offences-for-prosecution-case", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Court Associate"),
         UploadCourtDocument("progression.upload-court-document", "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "District Judge", "Court Associate", "Probation Admin", "Second Line Support", "Deputies", "DJMC", "Youth Offending Service Admin", "Judge", "Recorders"),

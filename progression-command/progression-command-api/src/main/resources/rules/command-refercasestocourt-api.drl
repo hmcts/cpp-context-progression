@@ -8,7 +8,7 @@ rule "Command - Rule for refer to court"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.refer-cases-to-court");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers"));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers", "Magistrates"));
   then
     $outcome.setSuccess(true);
 end
