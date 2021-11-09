@@ -43,6 +43,7 @@ import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReferralReason;
+import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.core.courts.Source;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 
@@ -54,8 +55,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SuppressWarnings({"squid:ClassVariableVisibilityCheck", "squid:S1067", "pmd:NullAssignment","squid:CommentedOutCodeLine","squid:S1135"})
+@SuppressWarnings({"squid:ClassVariableVisibilityCheck", "squid:S1067", "pmd:NullAssignment", "squid:CommentedOutCodeLine", "squid:S1135"})
 public class CoreTestTemplates {
+
+    private static final String SEXUAL_OFFENCE_RR_DESCRIPTION = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
+    private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
 
     public enum DefendantType {
         PERSON, ORGANISATION
@@ -77,6 +81,7 @@ public class CoreTestTemplates {
         private boolean minimumPerson;
         private boolean minimumOrganisation;
         private boolean minimumOffence;
+        private boolean reportingRestrictions;
 
         private Map<UUID, Map<UUID, List<UUID>>> structure = toMap(randomUUID(), toMap(randomUUID(), asList(randomUUID())));
 
@@ -87,6 +92,11 @@ public class CoreTestTemplates {
 
         public CoreTemplateArguments setHearingLanguage(HearingLanguage hearingLanguage) {
             this.hearingLanguage = hearingLanguage;
+            return this;
+        }
+
+        public CoreTemplateArguments setReportingRestrictions(final boolean reportingRestrictions) {
+            this.reportingRestrictions = reportingRestrictions;
             return this;
         }
 
@@ -267,6 +277,12 @@ public class CoreTestTemplates {
                 .withVehicleRegistration((STRING.next()));
     }
 
+    public static Offence.Builder offenceWithReportingRestrictions(CoreTemplateArguments args, UUID offenceId, List<ReportingRestriction> reportingRestrictions) {
+        final Offence.Builder offencebuilder = offence(args, offenceId);
+        offencebuilder.withReportingRestrictions(reportingRestrictions);
+        return offencebuilder;
+    }
+
     public static Offence.Builder offence(CoreTemplateArguments args, UUID offenceId) {
 
         if (args.isMinimumOffence()) {
@@ -366,7 +382,7 @@ public class CoreTestTemplates {
                 .withProsecutionAuthorityReference((STRING.next()))
                 .withOffences(
                         structure.getV().stream()
-                                .map(offenceId -> offence(args, offenceId).build())
+                                .map(offenceId -> args.reportingRestrictions ? offenceWithReportingRestrictions(args, offenceId, getDefaultReportingRestrictions()).build() : offence(args, offenceId).build())
                                 .collect(toList())
                 )
                 .withAssociatedPersons(args.isMinimumAssociatedPerson() ? asList(associatedPerson(args).build()) : null)
@@ -375,6 +391,12 @@ public class CoreTestTemplates {
                 .withLegalEntityDefendant((args.defendantType == DefendantType.ORGANISATION ? legalEntityDefendant(args).build() : null))
                 .withAliases(asList(DefendantAlias.defendantAlias().withLastName(STRING.next()).build()))
                 .withPncId((STRING.next()));
+    }
+
+    private static List<ReportingRestriction> getDefaultReportingRestrictions() {
+        return Stream.of(ReportingRestriction.reportingRestriction().withId(randomUUID()).withLabel(YOUTH_RESTRICTION).withOrderedDate(LocalDate.now()).build(),
+                ReportingRestriction.reportingRestriction().withId(randomUUID()).withLabel(SEXUAL_OFFENCE_RR_DESCRIPTION).withOrderedDate(LocalDate.now()).build()
+        ).collect(toList());
     }
 
     public static ProsecutionCase.Builder prosecutionCase(CoreTemplateArguments args, Pair<UUID, Map<UUID, List<UUID>>> structure) {

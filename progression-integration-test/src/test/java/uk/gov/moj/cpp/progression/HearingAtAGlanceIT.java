@@ -10,9 +10,9 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
@@ -27,7 +27,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
-import uk.gov.moj.cpp.progression.util.FeatureToggleUtil;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,17 +35,16 @@ import java.util.UUID;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.json.Json;
 import javax.json.JsonObject;
 
+import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.ReadContext;
 import org.apache.http.HttpStatus;
-import com.google.common.collect.ImmutableMap;
 import org.hamcrest.Matcher;
+import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
@@ -143,6 +141,28 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
         verifyInMessagingQueueForHearingResultedCaseUpdated();
+    }
+
+    @Test
+    public void shouldRetainCurrentReportingRestrictionsAfterManuallyAddingOnewithHearing() throws Exception {
+
+        enableAmendReshareFeature(true);
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+        sendMessage(messageProducerClientPublic,
+                PUBLIC_HEARING_RESULTED_V2, getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
+                        hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID), JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PUBLIC_HEARING_RESULTED_V2)
+                        .withUserId(userId)
+                        .build());
+
+        pollProsecutionCasesProgressionFor(caseId, getHearingAtaGlanceMatchersWithReportingRestrictions());
+        verifyInMessagingQueueForHearingResultedCaseUpdated();
+
     }
 
     @Test
@@ -266,6 +286,14 @@ public class HearingAtAGlanceIT extends AbstractIT {
                 withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.label", equalTo("Surcharge")),
                 withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.judicialResultId", notNullValue())
 
+        };
+    }
+
+    private Matcher[] getHearingAtaGlanceMatchersWithReportingRestrictions() {
+        return new Matcher[]{
+                withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.label", equalTo("Surcharge")),
+                withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.judicialResultId", notNullValue()),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[*]", IsCollectionWithSize.hasSize(2))
         };
     }
 

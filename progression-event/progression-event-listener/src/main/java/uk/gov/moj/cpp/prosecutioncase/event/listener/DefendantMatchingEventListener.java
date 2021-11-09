@@ -90,7 +90,14 @@ public class DefendantMatchingEventListener {
             LOGGER.debug("received event progression.event.defendant-matched {} ", event.toObfuscatedDebugString());
         }
         final DefendantMatched defendantMatched = jsonObjectConverter.convert(event.payloadAsJsonObject(), DefendantMatched.class);
-        defendantPartialMatchRepository.remove(defendantPartialMatchRepository.findByDefendantId(defendantMatched.getDefendantId()));
+        final DefendantPartialMatchEntity defendantPartialMatchEntity = defendantPartialMatchRepository.findByDefendantId(defendantMatched.getDefendantId());
+
+        if (nonNull(defendantPartialMatchEntity)) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Removing defendant partial match entity with defendant id: {} ", defendantMatched.getDefendantId());
+            }
+            defendantPartialMatchRepository.remove(defendantPartialMatchEntity);
+        }
     }
 
     @Handles("progression.event.defendant-unmatched")
@@ -164,7 +171,7 @@ public class DefendantMatchingEventListener {
 
     private void associateMasterDefendantToDefendant(final UUID defendantId, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID hearingId) {
         final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findOptionalByCaseId(prosecutionCaseId);
-        if (isNull(prosecutionCaseEntity)){
+        if (isNull(prosecutionCaseEntity)) {
             LOGGER.warn("ProsecutionCase not found: {}", prosecutionCaseId);
             return;
         }
@@ -184,8 +191,8 @@ public class DefendantMatchingEventListener {
                 matchDefendantCaseHearingEntity.setMasterDefendantId(masterDefendantId);
                 matchDefendantCaseHearingEntity.setProsecutionCaseId(prosecutionCaseId);
                 matchDefendantCaseHearingEntity.setHearingId(hearingId);
-                if(nonNull(hearingId)) {
-                    matchDefendantCaseHearingEntity.setHearing( hearingRepository.findBy(hearingId) );
+                if (nonNull(hearingId)) {
+                    matchDefendantCaseHearingEntity.setHearing(hearingRepository.findBy(hearingId));
                 }
                 matchDefendantCaseHearingEntity.setProsecutionCase(prosecutionCaseRepository.findByCaseId(prosecutionCaseId));
             }

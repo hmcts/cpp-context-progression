@@ -130,6 +130,21 @@ public class DefendantMatchingEventListenerTest {
     }
 
     @Test
+    public void deleteDefendantPartialMatchNoAnyDefendantPartialMatchEntityInDB() {
+        final UUID defendantId = UUID.randomUUID();
+        final DefendantMatched event = DefendantMatched.defendantMatched()
+                .withDefendantId(defendantId)
+                .withHasDefendantAlreadyBeenDeleted(Boolean.FALSE)
+                .build();
+
+        when(defendantPartialMatchRepository.findByDefendantId(defendantId)).thenReturn(null);
+        listener.deleteDefendantPartialMatch(envelopeFrom(metadataWithRandomUUID("progression.event.defendant-partial-match-deleted"),
+                objectToJsonObjectConverter.convert(event)));
+
+        verify(this.defendantPartialMatchRepository).findByDefendantId(defendantId);
+    }
+
+    @Test
     public void unmatchDefendant() {
         final UUID defendantId = UUID.randomUUID();
         final UUID masterDefendantId = UUID.randomUUID();

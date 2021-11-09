@@ -185,6 +185,8 @@
             "label": "Next hearing in Crown Court",
             "lastSharedDateTime": "2020-06-27",
             "lifeDuration": false,
+            "orderedDate": "2020-06-27",
+            "orderedHearingId": "1de482e8-9656-4bcc-938d-95345def0b8a",
             "nextHearing": {
               "adjournmentReason": "",
               "courtCentre": {
@@ -211,8 +213,6 @@
                 "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
               }
             },
-            "orderedDate": "2020-06-27",
-            "orderedHearingId": "1de482e8-9656-4bcc-938d-95345def0b8a",
             "postHearingCustodyStatus": "A",
             "publishedAsAPrompt": true,
             "rollUpPrompts": false,

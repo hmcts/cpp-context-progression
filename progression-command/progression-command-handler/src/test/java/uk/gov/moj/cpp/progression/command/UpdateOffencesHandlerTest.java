@@ -100,14 +100,15 @@ public class UpdateOffencesHandlerTest {
     private HearingAggregate hearingAggregate;
 
     private static final String SEXUAL_OFFENCE_RR_DESCRIPTION = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
-    private  static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
+    private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
+    private static final String MANUAL_RESTRICTION = "Order made under Section 11 of the Contempt of Court Act 1981";
 
     @Before
     public void setup() {
-         caseId = randomUUID();
-         defendantId = randomUUID();
-         offenceId = randomUUID();
-         offenceCode = new StringGenerator().next();
+        caseId = randomUUID();
+        defendantId = randomUUID();
+        offenceId = randomUUID();
+        offenceCode = new StringGenerator().next();
         aggregate = new CaseAggregate();
         hearingAggregate = new HearingAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
@@ -219,6 +220,94 @@ public class UpdateOffencesHandlerTest {
 
     }
 
+    @Test
+    public void shouldNotOverrideOnManuallyAddedReportingRestrictionForSexualOffence() throws Exception {
+        final List<Offence> offences = Stream.of(
+                Offence.offence().withId(randomUUID()).withOffenceCode(randomUUID().toString()).withOffenceTitle("RegularOffence1").withReportingRestrictions(Collections.singletonList(ReportingRestriction.reportingRestriction().withId(randomUUID()).withLabel(YOUTH_RESTRICTION).withOrderedDate(LocalDate.now()).build())).build(),
+                Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withOffenceTitle("SexualOffence1").build()
+        ).collect(Collectors.toList());
+
+        UpdateOffencesForProsecutionCase updateOffencesForProsecutionCase = prepareDatabByOffences(caseId, defendantId, offences);
+
+        aggregate = getEventStreamReady(caseId, defendantId);
+        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
+                SEXUAL_OFFENCE_RR_DESCRIPTION,
+                "json/referencedataoffences.offences-list.json");
+
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-offences-for-prosecution-case")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<UpdateOffencesForProsecutionCase> envelope = envelopeFrom(metadata, updateOffencesForProsecutionCase);
+
+        updateOffencesHandler.handle(envelope);
+
+        verifyAppendAndGetArgumentFrom(eventStream);
+
+    }
+
+    @Test
+    public void withAggregateWithoutOffence() throws Exception {
+        final List<Offence> offences = Stream.of(
+                Offence.offence().withId(randomUUID()).withOffenceCode(randomUUID().toString()).withOffenceTitle("RegularOffence1").withReportingRestrictions(Collections.singletonList(ReportingRestriction.reportingRestriction().withId(randomUUID()).withLabel(YOUTH_RESTRICTION).withOrderedDate(LocalDate.now()).build())).build(),
+                Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withOffenceTitle("SexualOffence1").build()
+        ).collect(Collectors.toList());
+
+        UpdateOffencesForProsecutionCase updateOffencesForProsecutionCase = prepareDatabByOffences(caseId, defendantId, offences);
+
+        aggregate = getEventStreamReady(caseId, defendantId);
+        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
+                SEXUAL_OFFENCE_RR_DESCRIPTION,
+                "json/referencedataoffences.offences-list.json");
+
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-offences-for-prosecution-case")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<UpdateOffencesForProsecutionCase> envelope = envelopeFrom(metadata, updateOffencesForProsecutionCase);
+
+        updateOffencesHandler.handle(envelope);
+
+        verifyAppendAndGetArgumentFrom(eventStream);
+
+    }
+
+    @Test
+    public void withAggregateOffenceAndWithRR() throws Exception {
+        final List<Offence> offences = Stream.of(
+                Offence.offence().withId(offenceId).withOffenceCode(randomUUID().toString()).withOffenceTitle("SexualOffence1").withReportingRestrictions(Collections.singletonList(ReportingRestriction.reportingRestriction().withId(randomUUID()).withLabel(MANUAL_RESTRICTION).withOrderedDate(LocalDate.now()).build())).build()
+        ).collect(Collectors.toList());
+
+        UpdateOffencesForProsecutionCase updateOffencesForProsecutionCase = prepareDatabByOffences(caseId, defendantId, offences);
+
+        aggregate = getEventStreamWithOffenceandMutlipleRR(caseId, defendantId, offenceId);
+        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-offences-for-prosecution-case")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<UpdateOffencesForProsecutionCase> envelope = envelopeFrom(metadata, updateOffencesForProsecutionCase);
+
+        updateOffencesHandler.handle(envelope);
+
+        Stream<JsonEnvelope> results = verifyAppendAndGetArgumentFrom(eventStream);
+
+    }
+
     private List<JsonObject> prepareReferenceDataOffencesJsonObject(final UUID offenceId,
                                                                     final String offenceCode,
                                                                     final String legislation,
@@ -230,8 +319,23 @@ public class UpdateOffencesHandlerTest {
         final JsonReader jsonReader = Json.createReader(new StringReader(referenceDataOffenceJsonString));
 
 
-        final List<JsonObject> referencedataOffencesJsonObject = jsonReader.readObject().getJsonArray("offences") .getValuesAs(JsonObject.class);
+        final List<JsonObject> referencedataOffencesJsonObject = jsonReader.readObject().getJsonArray("offences").getValuesAs(JsonObject.class);
         return referencedataOffencesJsonObject;
+    }
+
+    private CaseAggregate getEventStreamWithOffenceandMutlipleRR(final UUID caseId, final UUID defendantId, final UUID offenceId) {
+        return new CaseAggregate() {{
+            apply(ProsecutionCaseCreated.prosecutionCaseCreated()
+                    .withProsecutionCase(ProsecutionCase.prosecutionCase()
+                            .withId(caseId)
+                            .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                            .withDefendants(singletonList(Defendant.defendant()
+                                    .withId(defendantId)
+                                    .withOffences(getOneOffenceWithMultipleRR(offenceId))
+                                    .build()))
+                            .build())
+                    .build());
+        }};
     }
 
     private CaseAggregate getEventStreamReady(final UUID caseId, final UUID defendantId) {
@@ -258,7 +362,19 @@ public class UpdateOffencesHandlerTest {
         }};
     }
 
-    private UpdateOffencesForProsecutionCase  prepareData(final UUID caseId,final UUID defendantId, final UUID offenceId, final String offenceCode) {
+    private List<Offence> getOneOffenceWithMultipleRR(final UUID offenceId) {
+        return singletonList(Offence.offence().withId(offenceId).withOrderIndex(1)
+                .withReportingRestrictions(Stream.of(
+                        ReportingRestriction.reportingRestriction()
+                                .withId(randomUUID())
+                                .withLabel("Youth Restriction")
+                                .withOrderedDate(LocalDate.now()).build(),
+                        ReportingRestriction.reportingRestriction().withId(randomUUID())
+                                .withLabel("Sexual Offence Restriction")
+                                .withOrderedDate(LocalDate.now()).build()).collect(Collectors.toList())).build());
+    }
+
+    private UpdateOffencesForProsecutionCase prepareData(final UUID caseId, final UUID defendantId, final UUID offenceId, final String offenceCode) {
         final List<Offence> offences = Stream.of(
                 Offence.offence().withId(randomUUID()).withOffenceCode(randomUUID().toString()).withOffenceTitle("RegularOffence1").build(),
                 Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withOffenceTitle("SexualOffence1").build()

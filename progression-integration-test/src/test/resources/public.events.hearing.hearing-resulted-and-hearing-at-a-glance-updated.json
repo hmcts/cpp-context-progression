@@ -131,6 +131,14 @@
                 "modeOfTrial": "a",
                 "wording": "a",
                 "wordingWelsh": "a",
+                "reportingRestrictions": [
+                  {
+                    "id": "1bed87c6-f1fd-46ca-9f7e-d74d0142a613",
+                    "judicialResultId": "dfbb575d-6b88-489f-9f90-f960bfafa742",
+                    "label": "Order made under Section 11 of the Contempt of Court Act 1981",
+                    "orderedDate": "2021-08-30"
+                  }
+                ],
                 "startDate": "2018-01-01",
                 "endDate": "2018-01-01",
                 "arrestDate": "2018-01-01",

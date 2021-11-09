@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.prosecutioncase.persistence;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -65,6 +66,12 @@ public class DefendantPartialMatchRepositoryTest {
         assertThat(actual.getDefendantName(), is(DEFENDANT_NAME));
         assertThat(actual.getCaseReceivedDatetime(), is(CASE_RECEIVED_DATETIME));
         assertThat(actual.getPayload(), is(PAYLOAD));
+    }
+
+    @Test
+    public void shouldFindPartialMatchedDefendantByDefendantIdNoRecordOnDB() {
+        final DefendantPartialMatchEntity actual = repository.findByDefendantId(UUID.randomUUID());
+        assertThat(actual, is(nullValue()));
     }
 
     @Test

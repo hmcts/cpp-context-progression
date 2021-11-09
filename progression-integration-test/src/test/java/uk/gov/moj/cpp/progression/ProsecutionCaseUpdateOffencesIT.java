@@ -43,8 +43,11 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
                         // defendant offence reporting restrictions and offencecode assertion
                         withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].id", is("3789ab16-e588-4b7f-806a-44dc0eb0e75e")),
                         withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", is("Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992")),
-                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", is(LocalDate.now().toString())),
-                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", is("2021-08-28")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[1].id", is("6fdc9e9d-6f0a-4d02-92e9-bc5765475182")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[1].label", is("Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[1].orderedDate", is("2021-08-28")))
         );
 
         pollProsecutionCasesProgressionFor(caseId, caseWithOffenceMatchers);
