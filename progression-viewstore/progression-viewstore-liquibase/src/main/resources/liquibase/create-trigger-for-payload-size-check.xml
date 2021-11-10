@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-trigger-for-payload-size-check" author="progression">
+        <sql>
+            CREATE OR REPLACE FUNCTION check_size()
+            RETURNS TRIGGER
+            LANGUAGE PLPGSQL
+            AS '
+            BEGIN
+                IF bit_length(NEW.payload)/1000000 > 150 THEN
+                RAISE EXCEPTION ''Payload size is bigger than allowed'';
+                END IF;
+            RETURN NEW;
+            END;
+            '
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS check_payload_for_insert_update_hearing ON hearing ;
+            CREATE TRIGGER check_payload_for_insert_update_hearing BEFORE INSERT OR UPDATE ON hearing
+            FOR EACH ROW EXECUTE PROCEDURE  check_size();
+
+        </sql>
+        <sql>
+            DROP TRIGGER IF EXISTS check_payload_for_insert_update_prosecution_case ON prosecution_case ;
+            CREATE TRIGGER check_payload_for_insert_update_prosecution_case BEFORE INSERT OR UPDATE ON prosecution_case
+            FOR EACH ROW EXECUTE PROCEDURE  check_size();
+        </sql>
+
+    </changeSet>
+
+</databaseChangeLog>
