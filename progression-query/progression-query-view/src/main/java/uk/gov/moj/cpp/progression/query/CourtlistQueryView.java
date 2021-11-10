@@ -20,7 +20,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats.STANDARD;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
 
-
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationType;
@@ -46,6 +45,8 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.view.service.ListingService;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -64,8 +65,6 @@ import javax.json.JsonObjectBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 @SuppressWarnings({"squid:S1170", "squid:S00116"})
 @ServiceComponent(Component.QUERY_VIEW)
@@ -418,8 +417,7 @@ public class CourtlistQueryView {
         offenceBuilder.add("offenceCode", offence.getOffenceCode());
         offenceBuilder.add("offenceTitle", offence.getOffenceTitle());
         offenceBuilder.add("offenceWording", offence.getWording());
-        offenceBuilder.add(LISTING_NUMBER, offence.getListingNumber());
-
+        ofNullable(offence.getListingNumber()).ifPresent(listingNumber -> offenceBuilder.add(LISTING_NUMBER, listingNumber));
         ofNullable(offence.getOffenceTitleWelsh()).ifPresent(welshOffenceTitle -> offenceBuilder.add("welshOffenceTitle", welshOffenceTitle));
         ofNullable(offence.getOffenceLegislation()).ifPresent(offenceLegislation -> offenceBuilder.add("offenceLegislation", offenceLegislation));
     }

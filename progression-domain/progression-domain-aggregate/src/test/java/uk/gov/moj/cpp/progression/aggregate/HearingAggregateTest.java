@@ -1,9 +1,11 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
+import static com.google.common.collect.ImmutableList.of;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -11,7 +13,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArguments.toMap;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments;
 
-import com.google.common.collect.Lists;
 import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
 import uk.gov.justice.core.courts.BreachedApplications;
@@ -60,6 +61,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.collect.Lists;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -206,6 +208,35 @@ public class HearingAggregateTest {
 
         assertThat(events.get(0).getHearing().getProsecutionCases(), is(nullValue()));
         assertThat(events.get(0).getHearing().getCourtApplications(), is(notNullValue()));
+    }
+
+
+    @Test
+    public void shouldRaiseHearingResultedEventWhenHearingResultsAreSaved() {
+
+        final UUID offenceId = randomUUID();
+        final Hearing hearing = getHearing(offenceId);
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+
+        // hearing resulted without listing number
+        final Hearing hearingResult = Hearing.hearing().withValuesFrom(hearing).withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
+                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                        .withId(randomUUID())
+                        .withIsYouth(true)
+                        .withOffences(of(Offence.offence()
+                                .withId(offenceId)
+                                .build()))
+                        .build()
+                )))
+                .build()
+        ))).build();
+
+        final Stream<Object> eventStream = hearingAggregate.saveHearingResult(hearingResult,ZonedDateTime.now(),of(randomUUID()));
+
+        final List<?> eventList = eventStream.collect(toList());
+        assertThat(eventList.get(0), instanceOf(HearingResulted.class));
+        int listingNumber = ((HearingResulted) eventList.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getListingNumber();
+        assertThat(listingNumber,is(1));
     }
 
     @Test
@@ -798,6 +829,30 @@ public class HearingAggregateTest {
     private HearingResulted createHearingResulted(final Hearing hearing) {
         return HearingResulted.hearingResulted().withHearing(hearing).build();
     }
+
+    private Hearing getHearing(final UUID offenceId){
+        return Hearing.hearing()
+                .withId(randomUUID())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
+                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                .withId(randomUUID())
+                                .withIsYouth(true)
+                                .withOffences(of(Offence.offence()
+                                        .withId(offenceId)
+                                        .withListingNumber(1)
+                                        .build()))
+                                .build()
+                        )))
+                        .build()
+                )))
+                .withCourtApplications(new ArrayList<>(asList(CourtApplication.courtApplication()
+                        .withSubject(CourtApplicationParty.courtApplicationParty()
+                                .withMasterDefendant(MasterDefendant.masterDefendant().withIsYouth(false).build()).build())
+                        .build())))
+                .build();
+    }
+
 
     private HearingDaysWithoutCourtCentreCorrected createHearingDaysWithoutCourtCentreCorrected() {
         return HearingDaysWithoutCourtCentreCorrected.hearingDaysWithoutCourtCentreCorrected()

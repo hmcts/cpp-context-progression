@@ -388,7 +388,8 @@ public class HearingAggregate implements Aggregate {
         LOGGER.debug("Hearing Resulted.");
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
-        final List<ProsecutionCase> updatedProsecutionCasesForOriginalHearing = ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+        final Hearing hearingWithOriginalListingNumber = getHearingWithOriginalListingNumbers(hearing);
+        final List<ProsecutionCase> updatedProsecutionCasesForOriginalHearing = ofNullable(hearingWithOriginalListingNumber.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .map(this::updateCaseForAdjourn)
                 .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
 
@@ -396,39 +397,39 @@ public class HearingAggregate implements Aggregate {
                 .map(this::getUpdatedProsecutionCase)
                 .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
 
-        final List<CourtApplication> updatedCourtApplications = ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+        final List<CourtApplication> updatedCourtApplications = ofNullable(hearingWithOriginalListingNumber.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
                 .map(courtApplication -> updateApplicationWithAdjourn(courtApplication))
                 .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
 
         final Hearing updatedHearing = hearing()
                 .withProsecutionCases(updatedProsecutionCases)
-                .withDefendantJudicialResults(hearing.getDefendantJudicialResults())
-                .withIsBoxHearing(hearing.getIsBoxHearing())
-                .withId(hearing.getId())
-                .withHearingDays(hearing.getHearingDays())
-                .withCourtCentre(hearing.getCourtCentre())
-                .withJurisdictionType(hearing.getJurisdictionType())
-                .withType(hearing.getType())
-                .withHearingLanguage(hearing.getHearingLanguage())
+                .withDefendantJudicialResults(hearingWithOriginalListingNumber.getDefendantJudicialResults())
+                .withIsBoxHearing(hearingWithOriginalListingNumber.getIsBoxHearing())
+                .withId(hearingWithOriginalListingNumber.getId())
+                .withHearingDays(hearingWithOriginalListingNumber.getHearingDays())
+                .withCourtCentre(hearingWithOriginalListingNumber.getCourtCentre())
+                .withJurisdictionType(hearingWithOriginalListingNumber.getJurisdictionType())
+                .withType(hearingWithOriginalListingNumber.getType())
+                .withHearingLanguage(hearingWithOriginalListingNumber.getHearingLanguage())
                 .withCourtApplications(updatedCourtApplications)
-                .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
-                .withJudiciary(hearing.getJudiciary())
-                .withDefendantAttendance(hearing.getDefendantAttendance())
-                .withDefendantReferralReasons(hearing.getDefendantReferralReasons())
-                .withHasSharedResults(hearing.getHasSharedResults())
-                .withDefenceCounsels(hearing.getDefenceCounsels())
-                .withProsecutionCounsels(hearing.getProsecutionCounsels())
-                .withRespondentCounsels(hearing.getRespondentCounsels())
-                .withApplicationPartyCounsels(hearing.getApplicationPartyCounsels())
-                .withCrackedIneffectiveTrial(hearing.getCrackedIneffectiveTrial())
-                .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
-                .withHearingCaseNotes(hearing.getHearingCaseNotes())
-                .withCourtApplicationPartyAttendance(hearing.getCourtApplicationPartyAttendance())
-                .withCompanyRepresentatives(hearing.getCompanyRepresentatives())
-                .withIntermediaries(hearing.getIntermediaries())
-                .withIsEffectiveTrial(hearing.getIsEffectiveTrial())
-                .withYouthCourtDefendantIds(hearing.getYouthCourtDefendantIds())
-                .withYouthCourt(hearing.getYouthCourt())
+                .withReportingRestrictionReason(hearingWithOriginalListingNumber.getReportingRestrictionReason())
+                .withJudiciary(hearingWithOriginalListingNumber.getJudiciary())
+                .withDefendantAttendance(hearingWithOriginalListingNumber.getDefendantAttendance())
+                .withDefendantReferralReasons(hearingWithOriginalListingNumber.getDefendantReferralReasons())
+                .withHasSharedResults(hearingWithOriginalListingNumber.getHasSharedResults())
+                .withDefenceCounsels(hearingWithOriginalListingNumber.getDefenceCounsels())
+                .withProsecutionCounsels(hearingWithOriginalListingNumber.getProsecutionCounsels())
+                .withRespondentCounsels(hearingWithOriginalListingNumber.getRespondentCounsels())
+                .withApplicationPartyCounsels(hearingWithOriginalListingNumber.getApplicationPartyCounsels())
+                .withCrackedIneffectiveTrial(hearingWithOriginalListingNumber.getCrackedIneffectiveTrial())
+                .withReportingRestrictionReason(hearingWithOriginalListingNumber.getReportingRestrictionReason())
+                .withHearingCaseNotes(hearingWithOriginalListingNumber.getHearingCaseNotes())
+                .withCourtApplicationPartyAttendance(hearingWithOriginalListingNumber.getCourtApplicationPartyAttendance())
+                .withCompanyRepresentatives(hearingWithOriginalListingNumber.getCompanyRepresentatives())
+                .withIntermediaries(hearingWithOriginalListingNumber.getIntermediaries())
+                .withIsEffectiveTrial(hearingWithOriginalListingNumber.getIsEffectiveTrial())
+                .withYouthCourtDefendantIds(hearingWithOriginalListingNumber.getYouthCourtDefendantIds())
+                .withYouthCourt(hearingWithOriginalListingNumber.getYouthCourt())
                 .build();
 
         streamBuilder.add(HearingResulted.hearingResulted()
@@ -436,7 +437,7 @@ public class HearingAggregate implements Aggregate {
                 .withSharedTime(sharedTime)
                 .build());
 
-        final Hearing originalHearing = hearing().withValuesFrom(hearing).withProsecutionCases(updatedProsecutionCasesForOriginalHearing)
+        final Hearing originalHearing = hearing().withValuesFrom(hearingWithOriginalListingNumber).withProsecutionCases(updatedProsecutionCasesForOriginalHearing)
                 .withCourtApplications(updatedCourtApplications).build();
 
         streamBuilder.add(prosecutionCaseDefendantListingStatusChanged()
@@ -444,7 +445,7 @@ public class HearingAggregate implements Aggregate {
                 .withHearingListingStatus(HearingListingStatus.HEARING_RESULTED)
                 .build());
 
-        if (isNotEmpty(hearing.getProsecutionCases())) {
+        if (isNotEmpty(hearingWithOriginalListingNumber.getProsecutionCases())) {
             streamBuilder.add(prosecutionCasesResulted()
                     .withHearing(originalHearing)
                     .withShadowListedOffences(shadowListedOffences)
@@ -452,7 +453,7 @@ public class HearingAggregate implements Aggregate {
                     .build());
         }
 
-        if (isNotEmpty(hearing.getCourtApplications())) {
+        if (isNotEmpty(hearingWithOriginalListingNumber.getCourtApplications())) {
             streamBuilder.add(applicationsResulted()
                     .withHearing(originalHearing)
                     .withShadowListedOffences(shadowListedOffences)
