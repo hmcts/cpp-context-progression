@@ -4,6 +4,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.link.LinkType;
 import uk.gov.moj.cpp.progression.events.LinkResponseResults;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -65,9 +67,22 @@ public class LinkSplitMergeHelper {
     }
 
     public static JsonObject createResponsePayload(final LinkResponseResults response) {
-        return Json.createObjectBuilder()
-                .add("linkResponseResults", response.toString())
-                .build();
+        return createResponsePayload(response, new ArrayList());
     }
 
+    public static JsonObject createResponsePayload(final LinkResponseResults response,
+                                                   final List<String> invalidCaseUrns) {
+
+        final JsonObjectBuilder objectBuilder = Json.createObjectBuilder()
+                .add("linkResponseResults", response.toString());
+
+        if (!invalidCaseUrns.isEmpty()) {
+            final JsonArrayBuilder invalidCaseUrnsArray = Json.createArrayBuilder();
+            for (final String caseUrn : invalidCaseUrns) {
+                invalidCaseUrnsArray.add(caseUrn);
+            }
+            objectBuilder.add("invalidCaseUrns", invalidCaseUrnsArray);
+        }
+        return objectBuilder.build();
+    }
 }

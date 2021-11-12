@@ -403,6 +403,29 @@ public class CaseAggregate implements Aggregate {
 
     }
 
+    private void handleListingNumberUpdated(final ProsecutionCaseListingNumberUpdated prosecutionCaseListingNumberUpdated) {
+        final Map<UUID, Integer> listingMap = prosecutionCaseListingNumberUpdated.getOffenceListingNumbers().stream().collect(Collectors.toMap(OffenceListingNumbers::getOffenceId, OffenceListingNumbers::getListingNumber, Math::max));
+        this.prosecutionCase = ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
+                .withDefendants(prosecutionCase.getDefendants().stream()
+                        .map(defendant -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(defendant)
+                                .withOffences(defendant.getOffences().stream()
+                                        .map(offence -> uk.gov.justice.core.courts.Offence.offence().withValuesFrom(offence)
+                                                .withListingNumber(getListingNumber(listingMap, offence))
+                                                .build())
+                                        .collect(toList()))
+                                .build())
+                        .collect(toList()))
+                .build();
+        this.prosecutionCase.getDefendants().forEach(defendant ->
+                this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences())
+        );
+    }
+
+    private Integer getListingNumber(final Map<UUID, Integer> listingMap, final uk.gov.justice.core.courts.Offence offence) {
+        final int oldListingNumber = ofNullable(offence.getListingNumber()).orElse(Integer.MIN_VALUE);
+        return ofNullable(listingMap.get(offence.getId())).map(listingNumber -> Math.max(listingNumber, oldListingNumber)).orElse(offence.getListingNumber());
+    }
+
     private void updateDefendantProceedingConcluded(final uk.gov.justice.core.courts.Defendant defendant,
                                                     final Boolean proceedingsConcluded) {
         if (nonNull(proceedingsConcluded)) {
@@ -415,31 +438,6 @@ public class CaseAggregate implements Aggregate {
                 defendantProceedingConcluded.put(defendant.getProsecutionCaseId(), newDefendantProceedingsConcludedMap);
             }
         }
-    }
-
-    private void handleListingNumberUpdated(final ProsecutionCaseListingNumberUpdated prosecutionCaseListingNumberUpdated) {
-        final Map<UUID, Integer> listingMap = prosecutionCaseListingNumberUpdated.getOffenceListingNumbers().stream().collect(Collectors.toMap(OffenceListingNumbers::getOffenceId, OffenceListingNumbers::getListingNumber, Math::max));
-
-        this.prosecutionCase = ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
-                .withDefendants(prosecutionCase.getDefendants().stream()
-                        .map(defendant -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(defendant)
-                                .withOffences(defendant.getOffences().stream()
-                                        .map(offence -> uk.gov.justice.core.courts.Offence.offence().withValuesFrom(offence)
-                                                .withListingNumber(getListingNumber(listingMap, offence))
-                                                .build())
-                                        .collect(toList()))
-                                .build())
-                        .collect(toList()))
-                .build();
-
-        this.prosecutionCase.getDefendants().forEach(defendant ->
-                this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences())
-        );
-    }
-
-    private Integer getListingNumber(final Map<UUID, Integer> listingMap, final uk.gov.justice.core.courts.Offence offence) {
-        final int oldListingNumber = ofNullable(offence.getListingNumber()).orElse(Integer.MIN_VALUE);
-        return ofNullable(listingMap.get(offence.getId())).map(listingNumber -> Math.max(listingNumber, oldListingNumber)).orElse(offence.getListingNumber());
     }
 
     private uk.gov.justice.core.courts.Defendant updateDefendantFrom(final DefendantUpdate defendantUpdate) {
@@ -919,7 +917,6 @@ public class CaseAggregate implements Aggregate {
 
         return updatedCaseStatus;
     }
-
 
     public Stream<Object> updateOffences(final List<uk.gov.justice.core.courts.Offence> offences, final UUID prosecutionCaseId, final UUID defendantId, final Optional<List<JsonObject>> referenceDataOffences) {
         LOGGER.debug("Offences information is being updated.");
@@ -1974,6 +1971,7 @@ public class CaseAggregate implements Aggregate {
                 .withExtendedTimeLimit(extendedTimeLimit)
                 .build()));
     }
+
 
     private List<uk.gov.justice.core.courts.Defendant> updateDefendantWithOriginalListingNumbers(final ProsecutionCase prosecutionCaseFromCommand) {
         final List<uk.gov.justice.core.courts.Defendant> updatedDefendants = getUpdatedDefendants(prosecutionCaseFromCommand);

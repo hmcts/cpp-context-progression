@@ -102,7 +102,7 @@ public class AbstractIT {
     }
 
 
-    private static void defaultStubs() {
+    protected static void defaultStubs() {
         setupAsAuthorisedUser(USER_ID_VALUE);
         setupAsSystemUser(USER_ID_VALUE_AS_ADMIN);
         mockMaterialUpload();

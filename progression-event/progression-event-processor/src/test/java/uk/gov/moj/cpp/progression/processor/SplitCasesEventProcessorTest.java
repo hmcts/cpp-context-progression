@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -98,7 +99,9 @@ public class SplitCasesEventProcessorTest {
         assertThat(publicEvent.metadata(),
                 withMetadataEnvelopedFrom(requestMessage).withName("public.progression.link-cases-response"));
         assertTrue(publicEvent.payload().getString("linkResponseResults").equals(REFERENCE_ALREADY_LINKED.toString()));
-
+        assertThat(publicEvent.payload().getJsonArray("invalidCaseUrns").size(), is(2));
+        assertThat(publicEvent.payload().getJsonArray("invalidCaseUrns").get(0).toString(), is("\"caseUrn/1\""));
+        assertThat(publicEvent.payload().getJsonArray("invalidCaseUrns").get(1).toString(), is("\"caseUrn/2\""));
     }
 
     @Test

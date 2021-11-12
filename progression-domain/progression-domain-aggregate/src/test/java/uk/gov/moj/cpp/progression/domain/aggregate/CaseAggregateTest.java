@@ -193,6 +193,7 @@ public class CaseAggregateTest {
             .withCourtProceedingsInitiated(ZonedDateTime.now())
             .build();
 
+
     private static final List<uk.gov.justice.core.courts.Defendant> defendants = new ArrayList<uk.gov.justice.core.courts.Defendant>() {{
         add(defendant);
     }};
@@ -441,9 +442,6 @@ public class CaseAggregateTest {
         final UUID defendantId2 = randomUUID();
         final UUID defendantId3 = randomUUID();
 
-
-
-
         final List<uk.gov.justice.core.courts.Defendant> defendantsWithReadyForReview = getDefendantsWithProceedingsConcluded(caseId, defendantId1, defendantId2, defendantId3, false, true, true, 5);
 
         final ProsecutionCase prosecutionCaseWithNoCaseStatus = prosecutionCase()
@@ -496,7 +494,7 @@ public class CaseAggregateTest {
 
         this.caseAggregate.createProsecutionCase(prosecutionCaseWithNoCaseStatus);
 
-        final List<uk.gov.justice.core.courts.Defendant> defendantsWithInactiveStatus = getDefendantsWithProceedingsConcluded(caseId, defendantId1, defendantId2, defendantId3, true, true, true, 5 );
+        final List<uk.gov.justice.core.courts.Defendant> defendantsWithInactiveStatus = getDefendantsWithProceedingsConcluded(caseId, defendantId1, defendantId2, defendantId3, true, true, true, 5);
         final ProsecutionCase prosecutionCaseWithInactiveCaseStatus = prosecutionCase().withDefendants(defendantsWithInactiveStatus).withCaseStatus(INACTIVE.getDescription()).withId(caseId).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedInactiveStatus = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithInactiveCaseStatus).build();
 

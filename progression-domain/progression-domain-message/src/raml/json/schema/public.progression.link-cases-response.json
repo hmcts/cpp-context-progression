@@ -11,6 +11,13 @@
         "REFERENCE_NOT_VALID",
         "SUCCESS"
       ]
+    },
+    "invalidCaseUrns": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [

@@ -1439,9 +1439,9 @@ public class HearingAggregate implements Aggregate {
 
     private Offence updateLastAdjournmentDateAndHearingType(final Optional<Offence> optOffenceFromAggregate, final Offence offence, final LocalDate orderedDate, final String adjournmentReason) {
         return optOffenceFromAggregate.map(offenceFromAggregate -> Offence.offence().withValuesFrom(offence)
-                .withLastAdjournDate(offenceFromAggregate.getLastAdjournDate())
-                .withLastAdjournedHearingType(offenceFromAggregate.getLastAdjournedHearingType())
-                .build())
+                        .withLastAdjournDate(offenceFromAggregate.getLastAdjournDate())
+                        .withLastAdjournedHearingType(offenceFromAggregate.getLastAdjournedHearingType())
+                        .build())
                 .orElseGet(() -> Offence.offence().withValuesFrom(offence)
                         .withLastAdjournDate(orderedDate)
                         .withLastAdjournedHearingType(adjournmentReason)
@@ -1450,18 +1450,18 @@ public class HearingAggregate implements Aggregate {
 
     private Optional<Offence> getMatchedOffenceWithGreaterOrderedDateFromApplicationInState(final UUID offenceId, final LocalDate orderedDate) {
         return Stream.of(ofNullable(this.hearing).map(hearingFromAggregate -> ofNullable(hearingFromAggregate.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)).orElseGet(Stream::empty)
-                        .map(CourtApplication::getCourtApplicationCases)
-                        .filter(Objects::nonNull)
-                        .flatMap(Collection::stream)
-                        .map(CourtApplicationCase::getOffences)
-                        .filter(Objects::nonNull)
-                        .flatMap(Collection::stream),
-                ofNullable(this.hearing).map(hearingFromAggregate -> ofNullable(hearingFromAggregate.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)).orElseGet(Stream::empty)
-                        .map(CourtApplication::getCourtOrder)
-                        .filter(Objects::nonNull)
-                        .map(CourtOrder::getCourtOrderOffences)
-                        .flatMap(Collection::stream)
-                        .map(CourtOrderOffence::getOffence))
+                                .map(CourtApplication::getCourtApplicationCases)
+                                .filter(Objects::nonNull)
+                                .flatMap(Collection::stream)
+                                .map(CourtApplicationCase::getOffences)
+                                .filter(Objects::nonNull)
+                                .flatMap(Collection::stream),
+                        ofNullable(this.hearing).map(hearingFromAggregate -> ofNullable(hearingFromAggregate.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)).orElseGet(Stream::empty)
+                                .map(CourtApplication::getCourtOrder)
+                                .filter(Objects::nonNull)
+                                .map(CourtOrder::getCourtOrderOffences)
+                                .flatMap(Collection::stream)
+                                .map(CourtOrderOffence::getOffence))
                 .flatMap(i -> i)
                 .filter(offenceFromAggregate -> offenceFromAggregate.getId().equals(offenceId))
                 .filter(offenceFromAggregate -> ofNullable(offenceFromAggregate.getLastAdjournDate()).orElse(LocalDate.MIN).isAfter(orderedDate))

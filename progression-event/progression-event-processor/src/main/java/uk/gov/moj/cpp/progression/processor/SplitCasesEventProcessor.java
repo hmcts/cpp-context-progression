@@ -21,6 +21,8 @@ import uk.gov.moj.cpp.progression.events.LinkResponseResults;
 import uk.gov.moj.cpp.progression.events.ValidateSplitCases;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -61,6 +63,7 @@ public class SplitCasesEventProcessor {
         }
 
         final AtomicBoolean failed = new AtomicBoolean(false);
+        final List<String> invalidCaseUrns = new ArrayList();
         validateSplitCases.getCaseUrns().stream().forEach(
                 e -> {
                     //check if given modified URN is already linked before
@@ -70,6 +73,7 @@ public class SplitCasesEventProcessor {
                                 sc -> {
                                     final JsonObject splitCase = Json.createObjectBuilder().add("splitCase", sc).build();
                                     if (splitCase.getJsonObject("splitCase").getString(CASE_URN).contains(e)) {
+                                        invalidCaseUrns.add(e);
                                         failed.set(true);
                                     }
                                 });
@@ -79,7 +83,7 @@ public class SplitCasesEventProcessor {
 
         if (failed.get()) {
             // raise error message for UI
-            sender.send(Enveloper.envelop(createResponsePayload(LinkResponseResults.REFERENCE_ALREADY_LINKED)).withName(PUBLIC_PROGRESSION_LINK_CASES_RESPONSE).withMetadataFrom(envelope));
+            sender.send(Enveloper.envelop(createResponsePayload(LinkResponseResults.REFERENCE_ALREADY_LINKED, invalidCaseUrns)).withName(PUBLIC_PROGRESSION_LINK_CASES_RESPONSE).withMetadataFrom(envelope));
             LOGGER.error("Split cases failed. Reference already exists - {}", envelope.payloadAsJsonObject());
         } else {
             // raise a new command to do the actual splitting
