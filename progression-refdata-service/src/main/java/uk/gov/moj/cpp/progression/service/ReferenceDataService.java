@@ -50,6 +50,7 @@ public class ReferenceDataService {
     public static final String REFERENCEDATA_QUERY_HEARING_TYPES = "referencedata.query.hearing-types";
     public static final String REFERENCEDATA_QUERY_NATIONALITIES = "referencedata.query.country-nationality";
     public static final String REFERENCEDATA_GET_REFERRAL_REASONS = "referencedata.query.referral-reasons";
+    public static final String REFERENCEDATA_GET_REFERRAL_REASON_BY_ID = "reference-data.query.get-referral-reason";
     public static final String REFERENCEDATA_QUERY_PROSECUTOR = "referencedata.query.prosecutor";
     public static final String ID = "id";
     public static final String REFERENCEDATA_QUERY_PROSECUTOR_BY_OUCODE = "referencedata.query.get.prosecutor.by.oucode";
@@ -240,6 +241,19 @@ public class ReferenceDataService {
                 .map(jsonValue -> (JsonObject) jsonValue)
                 .filter(jsonObject -> jsonObject.getString(ID).equals(id.toString()))
                 .findFirst();
+    }
+
+
+    public Optional<JsonObject> getReferralReasonByReferralReasonId(final JsonEnvelope event, final UUID referralReasonId, final Requester requester) {
+
+        final Envelope<JsonObject> envelope = requester.request(envelop(createObjectBuilder().add(ID, referralReasonId.toString()).build())
+                .withName(REFERENCEDATA_GET_REFERRAL_REASON_BY_ID)
+                .withMetadataFrom(event), JsonObject.class);
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(" get referral reasons '{}' received with payload {} ", REFERENCEDATA_GET_REFERRAL_REASON_BY_ID, envelope.payload());
+        }
+        return Optional.ofNullable(envelope.payload());
     }
 
     public CourtCentre getCourtCentre(final JsonEnvelope jsonEnvelope, final String postcode, final String prosecutionAuthorityCode, final Requester requester) {

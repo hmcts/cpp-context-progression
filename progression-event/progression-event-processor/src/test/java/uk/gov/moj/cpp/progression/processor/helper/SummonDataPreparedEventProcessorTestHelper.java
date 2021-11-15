@@ -92,16 +92,15 @@ public class SummonDataPreparedEventProcessorTestHelper {
     }
 
     public static JsonObject generateReferralReasonsJson(String referralId) {
+
         return createObjectBuilder()
-                .add("referralReasons", createArrayBuilder()
-                        .add(createObjectBuilder()
-                                .add("id", referralId)
-                                .add("reason", "Sections 135")
-                                .add("welshReason", "Reason for Welsh")
-                                .add("subReason", "reason text")
-                                .add("welshSubReason", "welsh reason text")
-                        ))
-                .build();
+                .add("id", referralId)
+                .add("reason", "Sections 135")
+                .add("welshReason", "Reason for Welsh")
+                .add("subReason", "reason text")
+                .add("welshSubReason", "welsh reason text")
+                .add("summonsWording", "summonsWording text")
+                .add("summonsWordingWelsh", "summonsWordingWelsh  text").build();
     }
 
     public static ProsecutionCase generateProsecutionCase(String caseId, String defendantId, final String summonsCode, final boolean isYouth) {

@@ -417,7 +417,7 @@ public class ListCourtHearingTransformer {
             return null;
         }
         final UUID referralId = referralReason.getId();
-        final JsonObject jsonObject = referenceDataService.getReferralReasonById(jsonEnvelope, referralId, requester)
+        final JsonObject jsonObject = referenceDataService.getReferralReasonByReferralReasonId(jsonEnvelope, referralId, requester)
                 .orElseThrow(() -> new ReferenceDataNotFoundException("ReferralReason", referralId.toString()));
         return jsonObject.getString("reason");
     }

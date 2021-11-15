@@ -130,7 +130,7 @@ public class CaseDefendantSummonsServiceTest {
     public void verifySummonsPayloadGeneratedFor(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {
 
         if (SJP_REFERRAL == summonsRequired) {
-            when(referenceDataService.getReferralReasons(envelope, requester)).thenReturn(Optional.of(generateReferralReasonsJson(REFERRAL_ID.toString())));
+            when(referenceDataService.getReferralReasonByReferralReasonId(envelope, REFERRAL_ID, requester)).thenReturn(Optional.of(generateReferralReasonsJson(REFERRAL_ID.toString())));
         }
 
         when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(envelope), eq(requester))).thenReturn(getRefDataOffences());

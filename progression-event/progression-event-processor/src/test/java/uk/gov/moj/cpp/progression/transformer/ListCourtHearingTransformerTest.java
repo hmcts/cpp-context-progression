@@ -156,7 +156,7 @@ public class ListCourtHearingTransformerTest {
                         .withId(courtCenterId)
                         .withName("South Western (Lavender Hill)")
                         .withWelshName("welshName_Test").build());
-        when(referenceDataService.getReferralReasonById(any(), any(), any()))
+        when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
                 .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
@@ -203,7 +203,7 @@ public class ListCourtHearingTransformerTest {
                         .withName("South Western (Lavender Hill)")
                         .withWelshName("welshName_Test").build());
 
-        when(referenceDataService.getReferralReasonById(any(), any(), any()))
+        when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
                 .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
 
         //When
@@ -253,7 +253,7 @@ public class ListCourtHearingTransformerTest {
                         .withName("South Western (Lavender Hill)")
                         .withWelshName("welshName_Test").build());
 
-        when(referenceDataService.getReferralReasonById(any(), any(), any()))
+        when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
                 .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
 
         final ListCourtHearing actual = listCourtHearingTransformer
@@ -305,7 +305,7 @@ public class ListCourtHearingTransformerTest {
                         .withName("South Western (Lavender Hill)")
                         .withWelshName("welshName_Test").build());
 
-        when(referenceDataService.getReferralReasonById(any(), any(), any()))
+        when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
                 .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
 
         //When
@@ -351,7 +351,7 @@ public class ListCourtHearingTransformerTest {
         when(referenceDataService.getHearingType(any(), any(UUID.class), any())).thenReturn(Optional.of(jsonObject));
         when(referenceDataService.getCourtCentre(envelopeReferral, postcode, prosecutingAuth, requester))
                 .thenReturn(CourtCentre.courtCentre().withId(courtCenterId).build());
-        when(referenceDataService.getReferralReasonById(any(), any(), any()))
+        when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
                 .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
 
         when(referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(any(), any(), any(), any()))
@@ -435,7 +435,7 @@ public class ListCourtHearingTransformerTest {
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
                 Json.createObjectBuilder().build());
 
-        when(referenceDataService.getReferralReasonById(any(), any(), any()))
+        when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
                 .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
@@ -476,7 +476,7 @@ public class ListCourtHearingTransformerTest {
                 JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
                 Json.createObjectBuilder().build());
 
-        when(referenceDataService.getReferralReasonById(any(), any(), any()))
+        when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
                 .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer

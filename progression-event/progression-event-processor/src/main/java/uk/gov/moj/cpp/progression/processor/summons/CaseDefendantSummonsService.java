@@ -129,9 +129,9 @@ public class CaseDefendantSummonsService {
         if (SJP_REFERRAL == summonsRequired) {
             final UUID referralReasonId = nonNull(defendantRequest.getReferralReason()) ? defendantRequest.getReferralReason().getId() : null;
             if (nonNull(referralReasonId)) {
-                final Optional<JsonObject> referralReasonsJsonOptional = referenceDataService.getReferralReasons(jsonEnvelope, requester);
+                final Optional<JsonObject> referralReasonsJsonOptional = referenceDataService.getReferralReasonByReferralReasonId(jsonEnvelope, referralReasonId, requester);
                 final JsonObject referralReasonsJson = referralReasonsJsonOptional.orElseThrow(IllegalArgumentException::new);
-                summonsDocumentContent.withReferralContent(populateSummonsReferral(extractReferralReason(referralReasonsJson, referralReasonId.toString())));
+                summonsDocumentContent.withReferralContent(populateSummonsReferral(referralReasonsJson));
             }
         }
         return summonsDocumentContent.build();
@@ -213,13 +213,6 @@ public class CaseDefendantSummonsService {
                 prosecutionCaseIdentifier.getCaseURN();
     }
 
-    private JsonObject extractReferralReason(final JsonObject referralReasonsJson, String referralReasonId) {
-        return referralReasonsJson.getJsonArray("referralReasons").getValuesAs(JsonObject.class).stream()
-                .filter(e -> referralReasonId.equals(e.getString("id")))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No referral reason present for SJP referred case with referral reason ID " + referralReasonId));
-    }
-
     private ReferralSummonsDocumentContent populateSummonsReferral(final JsonObject referralReason) {
         return referralSummonsDocumentContent()
                 .withId(UUID.fromString(referralReason.getString("id")))
@@ -227,6 +220,8 @@ public class CaseDefendantSummonsService {
                 .withReferralReasonWelsh(referralReason.getString("welshReason", EMPTY))
                 .withReferralText(referralReason.getString("subReason", EMPTY))
                 .withReferralTextWelsh(referralReason.getString("welshSubReason", EMPTY))
+                .withSummonsWording(referralReason.getString("summonsWording", EMPTY))
+                .withSummonsWordingWelsh(referralReason.getString("summonsWordingWelsh", EMPTY))
                 .build();
     }
 
