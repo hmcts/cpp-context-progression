@@ -28,6 +28,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import javax.json.JsonArray;
@@ -74,6 +75,8 @@ public class ProsecutionCaseOffencesUpdatedEventListenerTest {
 
     @InjectMocks
     private ProsecutionCaseOffencesUpdatedEventListener prosecutionCaseOffencesUpdatedEventListener;
+    private UUID OffenceId11 = UUID.fromString("47e5462b-6565-4648-a905-393d62ad39e2");
+    private UUID OffenceId12 = UUID.fromString("ff3c0de8-972f-44cb-accb-8028e2561fa5");
 
     @Before
     public void setUp() {
@@ -83,6 +86,8 @@ public class ProsecutionCaseOffencesUpdatedEventListenerTest {
 
     @Test
     public void testProcessProsecutionCaseOffencesUpdatedWhenOffenceLegalAidStatusIsNull() {
+
+
         final ProsecutionCase prosecutionCase = getProsecutionCase();
 
         final DefendantCaseOffences defendantCaseOffences = getDefendantCaseOffencesWithNullOffenceLegalAidStatus();
@@ -105,6 +110,7 @@ public class ProsecutionCaseOffencesUpdatedEventListenerTest {
         assertThat(defendantProperties.getJsonObject(0).get("isYouth").toString(), is("true"));
         assertThat(defendantProperties.getJsonObject(0).getString("id"), is(defendantId.toString()));
         assertThat(defendantProperties.getJsonObject(0).getString("masterDefendantId"), is(masterDefendantId.toString()));
+        assertThat(defendantProperties.getJsonObject(0).getJsonArray("offences").size(), is(2));
         assertThat(updatedProsecutionCaseEntity.getCaseId(), is(id));
     }
 
@@ -118,7 +124,12 @@ public class ProsecutionCaseOffencesUpdatedEventListenerTest {
         return DefendantCaseOffences.defendantCaseOffences()
                 .withProsecutionCaseId(prosecutionCaseId)
                 .withDefendantId(defendantId)
-                .withOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
+                .withOffences(Arrays.asList(
+                        Offence.offence().withId(OffenceId11).build(),
+                        Offence.offence().withId(OffenceId12).build(),
+                        Offence.offence().withId(OffenceId11).build(),
+                        Offence.offence().withId(OffenceId12).build()
+                ))
                 .build();
     }
 
@@ -143,7 +154,12 @@ public class ProsecutionCaseOffencesUpdatedEventListenerTest {
                                 .withId(defendantId)
                                 .withMasterDefendantId(masterDefendantId)
                                 .withIsYouth(true)
-                                .withOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
+                                .withOffences(Arrays.asList(
+                                        Offence.offence().withId(OffenceId11).build(),
+                                        Offence.offence().withId(OffenceId12).build(),
+                                        Offence.offence().withId(OffenceId11).build(),
+                                        Offence.offence().withId(OffenceId12).build()
+                                ))
                                 .build())
                 )
                 .withInitiationCode(InitiationCode.C)
