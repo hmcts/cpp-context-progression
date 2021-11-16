@@ -58,6 +58,7 @@ import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmai
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoEmailNotificationIsRaised;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoLetterRequested;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.getLanguagePrefix;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.getSubjectDateOfBirth;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.sendPublicEventToConfirmHearingForInitiatedCase;
@@ -173,6 +174,7 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
         stubDocumentCreate(DOCUMENT_TEXT);
         IdMapperStub.setUp();
         NotificationServiceStub.setUp();
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
         caseId = randomUUID().toString();
         caseUrn = generateUrn();
