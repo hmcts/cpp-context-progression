@@ -251,7 +251,7 @@ public class ReferenceDataService {
                 .withMetadataFrom(event), JsonObject.class);
 
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(" get referral reasons '{}' received with payload {} ", REFERENCEDATA_GET_REFERRAL_REASON_BY_ID, envelope.payload());
+            LOGGER.info(" get referral reasons by referral reason Id '{}' received with payload {} ", REFERENCEDATA_GET_REFERRAL_REASON_BY_ID, envelope.payload());
         }
         return Optional.ofNullable(envelope.payload());
     }

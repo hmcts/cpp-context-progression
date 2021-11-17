@@ -20,6 +20,7 @@ import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoEmailNotificationIsRaised;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryReferralReasons;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.getLanguagePrefix;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.sendPublicEventToConfirmHearingForInitiatedCase;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyCaseDocumentAddedToCdes;
@@ -115,6 +116,8 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
         IdMapperStub.setUp();
         NotificationServiceStub.setUp();
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
+        stubQueryReferralReasons("/restResource/referencedata.query.referral-reasons-by-id.json", randomUUID());
+
 
         caseId = randomUUID().toString();
         courtDocumentId = randomUUID().toString();

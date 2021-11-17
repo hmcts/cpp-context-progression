@@ -132,8 +132,8 @@ public class CaseDefendantSummonsService {
                 final Optional<JsonObject> referralReasonsJsonOptional = referenceDataService.getReferralReasonByReferralReasonId(jsonEnvelope, referralReasonId, requester);
                 final JsonObject referralReasonsJson = referralReasonsJsonOptional.orElseThrow(IllegalArgumentException::new);
                 summonsDocumentContent.withReferralContent(populateSummonsReferral(referralReasonsJson));
+                }
             }
-        }
         return summonsDocumentContent.build();
     }
 
