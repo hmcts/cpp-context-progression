@@ -43,6 +43,7 @@ import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransf
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -227,11 +228,17 @@ public class HearingResultEventProcessor {
         return shouldPopulateCommittingCourt.get();
     }
 
-    private boolean hasCommittingCourt(JudicialResult judicialResult) {
-        return nonNull(judicialResult.getResultDefinitionGroup()) &&
-                (judicialResult.getResultDefinitionGroup().contains(COMMITTED_TO_CC) ||
-                        judicialResult.getResultDefinitionGroup().contains(SENT_TO_CC));
+    private boolean hasCommittingCourt(final JudicialResult judicialResult) {
+        if (Objects.nonNull(judicialResult.getResultDefinitionGroup())) {
+            return Arrays.asList(judicialResult.getResultDefinitionGroup()
+                    .toLowerCase().replace(" ", "")
+                    .split(","))
+                    .stream()
+                    .anyMatch(value -> COMMITTED_TO_CC.equalsIgnoreCase(value) || SENT_TO_CC.equalsIgnoreCase(value));
+        }
+        return false;
     }
+
 
     private void adjournHearingToExistingHearings(final JsonEnvelope jsonEnvelope, final Hearing hearing, final List<UUID> shadowListedOffences, final boolean shouldPopulateCommittingCourt, final Optional<CommittingCourt> committingCourt) {
         LOGGER.info("Hearing adjourned to exiting hearing or hearings :: {}", hearing.getId());

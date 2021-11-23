@@ -104,6 +104,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -486,7 +487,16 @@ public class HearingResultEventProcessorTest {
     public void shouldPassCommittingCourtIsMagsAndSentToCC() throws IOException {
         final UUID defendantUUUID = randomUUID();
         final UUID offenceUUID = randomUUID();
-        final List<ProsecutionCase> prosecutionCases = mockPublicHearingResultedWithSendingCourtOffenceResult(defendantUUUID, offenceUUID, "CCSC");
+        final List<ProsecutionCase> prosecutionCases = mockPublicHearingResultedWithSendingCourtOffenceResult(defendantUUUID, offenceUUID, "CCSC", "SentToCC");
+
+        sendToCrownCourt(prosecutionCases, defendantUUUID);
+    }
+
+    @Test
+    public void shouldPassCommittingCourtIsMagsAndSentToCCWhenResultDefinitionGroupHasMultipleCommaSeparatedValues() throws IOException {
+        final UUID defendantUUUID = randomUUID();
+        final UUID offenceUUID = randomUUID();
+        final List<ProsecutionCase> prosecutionCases = mockPublicHearingResultedWithSendingCourtOffenceResult(defendantUUUID, offenceUUID, "CCSC", "SentToCC, ELMON");
 
         sendToCrownCourt(prosecutionCases, defendantUUUID);
     }
@@ -495,7 +505,7 @@ public class HearingResultEventProcessorTest {
     public void shouldPassCommittingCourtIsMagsAndCommittedToCC() throws IOException {
         final UUID defendantUUUID = randomUUID();
         final UUID offenceUUID = randomUUID();
-        final List<ProsecutionCase> prosecutionCases = mockPublicHearingResultedWithSendingCourtOffenceResult(defendantUUUID, offenceUUID, "CCIC");
+        final List<ProsecutionCase> prosecutionCases = mockPublicHearingResultedWithSendingCourtOffenceResult(defendantUUUID, offenceUUID, "CCIC", "CommittedToCC");
 
         sendToCrownCourt(prosecutionCases, defendantUUUID);
     }
@@ -689,6 +699,7 @@ public class HearingResultEventProcessorTest {
         this.eventProcessor.handleProsecutionCasesResulted(event);
 
         verify(this.sender).send(this.envelopeArgumentCaptor.capture());
+        verify(nextHearingService, atLeastOnce()).getNextHearingDetails(any(), Mockito.eq(true), any());
         verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture());
         verify(listingService, atLeastOnce()).listCourtHearing(envelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
 
@@ -696,7 +707,7 @@ public class HearingResultEventProcessorTest {
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(defendantUUUID));
     }
 
-    private List<ProsecutionCase> mockPublicHearingResultedWithSendingCourtOffenceResult(final UUID defendantUUUID, final UUID offenceUUID, final String cjsCode) {
+    private List<ProsecutionCase> mockPublicHearingResultedWithSendingCourtOffenceResult(final UUID defendantUUUID, final UUID offenceUUID, final String cjsCode, final String resultDefinitionGroup) {
 
         return singletonList(prosecutionCase()
                 .withDefendants(singletonList(defendant()
@@ -705,6 +716,7 @@ public class HearingResultEventProcessorTest {
                                 .withId(offenceUUID)
                                 .withJudicialResults(singletonList(judicialResult()
                                         .withCjsCode(cjsCode)
+                                        .withResultDefinitionGroup(resultDefinitionGroup)
                                         .build()))
                                 .build()))
                         .build()))
