@@ -66,6 +66,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsRejectedService;
 import uk.gov.moj.cpp.progression.service.ListingService;
@@ -266,6 +267,10 @@ public class CourtApplicationProcessor {
 
         LOGGER.info(" Box work Referred with payload {}", hearingInitiateCommand);
         sender.send(envelopeFrom(metadataFrom(jsonEnvelope.metadata()).withName(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED), hearingInitiateCommand));
+    }
+
+    private void triggerRetryOnCaseNotFound(final String prosecutionCase) {
+        throw new CaseNotFoundException("Prosecution case not found, so retrying -->>" + prosecutionCase);
     }
 
     @Handles("progression.event.application-referred-to-court-hearing")
@@ -542,6 +547,8 @@ public class CourtApplicationProcessor {
                     if (isNotEmpty(updatedProsecutionCase.getDefendants())) {
                         prosecutionCases.add(updatedProsecutionCase);
                     }
+                } else {
+                    triggerRetryOnCaseNotFound(courtApplicationCase.getProsecutionCaseId().toString());
                 }
             });
         }
