@@ -186,7 +186,11 @@ public class HearingResultedIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", is("Reporting Restriction Label")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", is("2020-10-20")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].previousDaysHeldInCustody", is(5)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].dateHeldInCustodySince", is("2018-08-10"))
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].dateHeldInCustodySince", is("2018-08-10")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].indicatedPlea.offenceId", is("00000000-0000-0000-0000-000000000000")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].indicatedPlea.indicatedPleaDate", is("2018-01-01")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].indicatedPlea.indicatedPleaValue", is("INDICATED_GUILTY")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].indicatedPlea.source", is("ONLINE"))
         };
 
         pollProsecutionCasesProgressionFor(caseId, personDefendantOffenceUpdatedMatchers);
@@ -197,7 +201,11 @@ public class HearingResultedIT extends AbstractIT {
                 withJsonPath("$.defendants[0].ctlExpiryDate", is(custodyTimeLimit)),
                 withJsonPath("$.defendants[0].ctlExpiryCountDown", is(ctlExpiryCountDown)),
                 withJsonPath("$.defendants[0].caagDefendantOffences[0].custodyTimeLimit.timeLimit", is(custodyTimeLimit)),
-                withJsonPath("$.defendants[0].caagDefendantOffences[0].custodyTimeLimit.daysSpent", is(55))
+                withJsonPath("$.defendants[0].caagDefendantOffences[0].custodyTimeLimit.daysSpent", is(55)),
+                withJsonPath("$.defendants[0].caagDefendantOffences[0].indicatedPlea.offenceId", is("00000000-0000-0000-0000-000000000000")),
+                withJsonPath("$.defendants[0].caagDefendantOffences[0].indicatedPlea.indicatedPleaDate", is("2018-01-01")),
+                withJsonPath("$.defendants[0].caagDefendantOffences[0].indicatedPlea.indicatedPleaValue", is("INDICATED_GUILTY")),
+                withJsonPath("$.defendants[0].caagDefendantOffences[0].indicatedPlea.source", is("ONLINE"))
         };
         pollProsecutionCasesProgressionForCAAG(caseId, prosecutionCasesProgressionForCAAG);
 

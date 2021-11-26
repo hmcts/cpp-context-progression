@@ -42,6 +42,8 @@ import uk.gov.justice.core.courts.BailStatus;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.IndicatedPlea;
+import uk.gov.justice.core.courts.IndicatedPleaValue;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.core.courts.Person;
@@ -117,6 +119,7 @@ public class CaseAtAGlanceHelperTest {
     private static final String RESULT_WORDING = "Some result wording";
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(1990, 9, 29);
     private static final LocalDate PLEA_DATE = LocalDate.of(2020, 9, 29);
+    private static final LocalDate INDICATED_PLEA_DATE = LocalDate.of(2020, 9, 30);
     private static final LocalDate VERDICT_DATE = LocalDate.of(2020, 9, 29);
     private static final String ORG_NAME = "Org name";
 
@@ -279,6 +282,8 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getOrderIndex(), is(2));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getPlea().getPleaValue(), is(PLEA_GUILTY));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getPlea().getPleaDate(), is(PLEA_DATE));
+        assertThat(defendantSmith.getCaagDefendantOffences().get(0).getIndicatedPlea().getIndicatedPleaValue(), is(IndicatedPleaValue.INDICATED_GUILTY));
+        assertThat(defendantSmith.getCaagDefendantOffences().get(0).getIndicatedPlea().getIndicatedPleaDate(), is(INDICATED_PLEA_DATE));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getVerdict().getVerdictType().getCategory(), is(GUILTY));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getVerdict().getVerdictDate(), is(VERDICT_DATE));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getOffenceLegislation(), is(OFFENCE_LEGISLATION));
@@ -299,6 +304,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getCount(), nullValue());
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getOrderIndex(), nullValue());
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getPlea(), nullValue());
+        assertThat(defendantRambo.getCaagDefendantOffences().get(0).getIndicatedPlea(), nullValue());
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getVerdict(), nullValue());
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getOffenceLegislation(), nullValue());
         assertThat(defendantRambo.getCaagDefendantOffences().get(0).getStartDate(), nullValue());
@@ -670,6 +676,10 @@ public class CaseAtAGlanceHelperTest {
                                                 plea().withPleaDate(PLEA_DATE.minusDays(1)).withPleaValue(PLEA_NOT_GUILTY).build(),
                                                 plea().withPleaDate(PLEA_DATE.plusDays(1)).build())
                                         )
+                                        .withIndicatedPlea(IndicatedPlea.indicatedPlea()
+                                                .withIndicatedPleaValue(IndicatedPleaValue.INDICATED_GUILTY)
+                                                .withIndicatedPleaDate(INDICATED_PLEA_DATE)
+                                                .build())
                                         .withVerdicts(asList(
                                                 verdict().withVerdictDate(VERDICT_DATE.plusDays(1)).build(),
                                                 verdict()

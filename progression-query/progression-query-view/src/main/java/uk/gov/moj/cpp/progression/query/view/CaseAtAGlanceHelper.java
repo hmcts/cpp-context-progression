@@ -17,6 +17,7 @@ import static uk.gov.justice.progression.courts.LegalEntityDefendant.legalEntity
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
+import uk.gov.justice.core.courts.IndicatedPlea;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.core.courts.Marker;
@@ -36,6 +37,7 @@ import uk.gov.justice.progression.courts.CaagResults;
 import uk.gov.justice.progression.courts.CaseDetails;
 import uk.gov.justice.progression.courts.Defendants;
 import uk.gov.justice.progression.courts.Hearings;
+import uk.gov.justice.progression.courts.Offences;
 import uk.gov.justice.progression.courts.ProsecutorDetails;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
 
@@ -179,6 +181,7 @@ public class CaseAtAGlanceHelper {
                 final List<JudicialResult> resultsFromAllHearings = getResultsFromAllHearings(defendant.getId(), offence.getId());
                 final List<CaagResults> caagResultsList = extractResults(resultsFromAllHearings);
                 final Optional<Plea> plea = getPlea(defendant.getId(), offence.getId());
+                final Optional<IndicatedPlea> indicatedPlea = getIndicatedPlea(defendant.getId(), offence.getId());
                 final Optional<Verdict> verdict = getVerdict(defendant.getId(), offence.getId());
 
                 caagDefendantOffenceBuilder.withCaagResults(caagResultsList);
@@ -197,6 +200,7 @@ public class CaseAtAGlanceHelper {
                 caagDefendantOffenceBuilder.withAllocationDecision(offence.getAllocationDecision());
                 caagDefendantOffenceBuilder.withCustodyTimeLimit(offence.getCustodyTimeLimit());
                 plea.ifPresent(caagDefendantOffenceBuilder::withPlea);
+                indicatedPlea.ifPresent(caagDefendantOffenceBuilder::withIndicatedPlea);
                 verdict.ifPresent(caagDefendantOffenceBuilder::withVerdict);
 
                 if (CollectionUtils.isNotEmpty(offence.getReportingRestrictions())) {
@@ -327,6 +331,17 @@ public class CaseAtAGlanceHelper {
                 .flatMap(offences -> offences.getPleas().stream())
                 .filter(plea -> nonNull(plea.getPleaValue()) && nonNull(plea.getPleaDate()))
                 .max(comparing(Plea::getPleaDate));
+    }
+
+    private Optional<IndicatedPlea> getIndicatedPlea(final UUID defendantId, final UUID offenceId) {
+        return getResultedHearings()
+                .flatMap(hearings -> hearings.getDefendants().stream())
+                .filter(defendants -> defendantId.equals(defendants.getId()))
+                .flatMap(defendants -> defendants.getOffences().stream())
+                .filter(offences -> offenceId.equals(offences.getId()) && nonNull(offences.getIndicatedPlea()))
+                .map(Offences::getIndicatedPlea)
+                .filter(indicatedPlea -> nonNull(indicatedPlea.getIndicatedPleaValue()) && nonNull(indicatedPlea.getIndicatedPleaDate()))
+                .findFirst();
     }
 
 

@@ -201,6 +201,9 @@
         "plea": {
           "$ref": "http://justice.gov.uk/core/courts/plea.json"
         },
+        "indicatedPlea": {
+          "$ref": "http://justice.gov.uk/core/courts/indicatedPlea.json"
+        },
         "verdict": {
           "$ref": "http://justice.gov.uk/core/courts/verdict.json"
         },
