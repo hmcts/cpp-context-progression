@@ -143,6 +143,20 @@ public class DocumentQueryApiTest {
     }
 
     @Test
+    public void shouldHandleSearchCourtDocumentsQueryWithPagination() {
+        when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.with.pagination").build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().build());
+        when(requester.request(query)).thenReturn(response);
+
+        assertThat(target.searchCourtDocumentsWithPagination(query), equalTo(response));
+
+        verify(requester).request(jsonEnvelopeArgumentCaptor.capture());
+        final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
+
+        assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments.with.pagination"));
+    }
+
+    @Test
     public void shouldNotGetSharedCourtDocumentsForMagsUserNotPartOfHearing() {
         final UUID magsUserId = randomUUID();
         final UUID hearingId = randomUUID();

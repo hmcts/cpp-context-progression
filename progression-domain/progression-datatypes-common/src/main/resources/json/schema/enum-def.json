@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/enum-def.json",
+  "definitions": {
+    "sortField": {
+      "id": "http://moj.gov.uk/cpp/progression/enums/sortField.json",
+      "type": "string",
+      "enum": [
+        "date",
+        "section"
+      ]
+    },
+    "sortOrder": {
+      "id": "http://moj.gov.uk/cpp/progression/enums/sortOrder.json",
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  }
+}

@@ -102,6 +102,9 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.courtdocuments+json
             name: progression.query.courtdocuments
+        (mapping):
+            responseType: application/vnd.progression.query.courtdocuments.with.pagination+json
+            name: progression.query.courtdocuments.with.pagination
         ...
       queryParameters:
               caseId:
@@ -119,7 +122,38 @@ protocols: [ HTTP, HTTPS ]
                 type: string
                 example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
                 required: false
-
+              documentName:
+                description: name of the material
+                type: string
+                example: indictment-v1
+                required: false
+              sectionId:
+                description: sectionId of the material
+                type: string
+                example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374
+                required: false
+              sortField:
+                description:  the name of the field that sorting will be applied
+                enum: [date,section]
+                example: section
+                type: string
+                required: false
+              sortOrder:
+                description: sort direction
+                enum: [asc, desc]
+                example: asc
+                type: string
+                required: false
+              page:
+                description: page
+                example: 2
+                type: integer
+                required: false
+              pageSize:
+                description: size
+                example: 20
+                type: integer
+                required: false
       responses:
             200:
                 description: OK
@@ -127,6 +161,9 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.courtdocuments+json:
                     example:  !include json/progression.query.courtdocuments.json
                     schema:  !include json/schema/progression.query.courtdocuments.json
+                  application/vnd.progression.query.courtdocuments.with.pagination+json:
+                    example:  !include json/progression.query.courtdocuments.with.pagination.json
+                    schema:  !include json/schema/progression.query.courtdocuments.with.pagination.json
 
 /search:
   get:

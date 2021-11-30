@@ -15,6 +15,9 @@
     },
     "statusCode": {
       "type": "integer"
+     },
+    "clientContext": {
+      "type": "string"
     }
   },
   "required": [

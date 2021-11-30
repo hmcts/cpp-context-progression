@@ -38,6 +38,15 @@ rule "Query - Access control for  progression.query.courtdocuments"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.courtdocuments.with.pagination"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.courtdocuments.with.pagination");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Court Associate", "Court Clerks", "Crown Court Admin", "Court Administrators", "Legal Advisers", "Listing Officers"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.courtdocuments.for.defence"
   when
     $outcome: Outcome();

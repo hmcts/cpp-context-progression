@@ -4,6 +4,7 @@ import static java.nio.charset.Charset.defaultCharset;
 import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,7 +43,10 @@ import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider;
 import uk.gov.moj.cpp.progression.domain.constant.NotificationStatus;
 import uk.gov.moj.cpp.progression.domain.constant.NotificationType;
+import uk.gov.moj.cpp.progression.domain.pojo.SearchCriteria;
+import uk.gov.moj.cpp.progression.query.view.service.CourtDocumentIndexService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentTypeRBAC;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NotificationStatusEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
@@ -88,8 +92,22 @@ import org.mockito.stubbing.Answer;
 @RunWith(MockitoJUnitRunner.class)
 public class CourtDocumentQueryViewTest {
 
+    private static final String SECTION = "section";
+    private static final String SORT_FIELD = "sortField";
+    private static final String SORT_ORDER = "sortOrder";
+    private static final String ASC = "asc";
+    private static final String PAGE = "page";
+    private static final String PAGE_SIZE = "pageSize";
+    private static final String CASE_ID = "caseId";
+    public static final String DESC = "desc";
+    public static final String DATE = "date";
+    public static final String DOCUMENT_NAME = "documentName";
+
     @InjectMocks
     private CourtDocumentQuery target;
+
+    @Mock
+    private CourtDocumentIndexService courtDocumentIndexService;
 
     @Mock
     private ProsecutionCaseRepository prosecutionCaseRepository;
@@ -422,7 +440,7 @@ public class CourtDocumentQueryViewTest {
         final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         final Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex = new HashMap<>();
         final Map<UUID, UUID> courtDocumentId2Id = new HashMap<>();
-        final UUID documentTypeId  = DOCUMENT_TYPE_ID_1;
+        final UUID documentTypeId = DOCUMENT_TYPE_ID_1;
         addId(null, randomUUID(), null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, documentTypeId,null);
         jsonBuilder.add(CourtDocumentQuery.DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
 
@@ -454,6 +472,455 @@ public class CourtDocumentQueryViewTest {
 
 
     }
+
+
+    @Test
+    public void shouldFindDocumentsByPaginationOrderBySectionAsc() throws IOException {
+
+        final UUID caseId = randomUUID();
+        final int pageSize = 2;
+
+        final SearchCriteria searchCriteria = SearchCriteria.searchCriteria()
+                .withCaseId(caseId)
+                .build();
+
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .build();
+
+        final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, SECTION, ASC, null);
+
+        when(courtDocumentIndexService.countByCriteria(searchCriteria)).thenReturn(Long.valueOf(4));
+        when(courtDocumentIndexService.getCourtDocumentIndexByCriteria(any())).thenReturn(asList(
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders0", "2020-09-18T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders3", "2020-09-20T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders1", "2020-09-17T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders2", "2020-09-21T08:56:14.195Z"))
+        ));
+        mockUserGroups(userGroupArray, jsonEnvelopeIn);
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+
+        //query first page
+        JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(jsonEnvelopeIn);
+        CourtdocumentsWithPagination result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtdocumentsWithPagination.class);
+        assertThat(result.getPaginationData().getTotalRecordCount(), is(4));
+        assertThat(result.getCourtDocuments().size(), is(pageSize));
+        assertThat(result.getPaginationData().getPage(), is(1));
+        assertThat(result.getPaginationData().getPageSize(), is(2));
+        assertThat(result.getPaginationData().getSortOrder().toString(), is(ASC));
+        assertThat(result.getPaginationData().getSortField().toString(), is(SECTION));
+        assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders0"));
+        assertThat(result.getCourtDocuments().get(1).getDocumentTypeDescription(), is("Court Final orders1"));
+
+        //query second page
+        jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(getJsonEnvelopeForQueryRequest(caseId, pageSize, 2, SECTION, ASC, null));
+        result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtdocumentsWithPagination.class);
+        assertThat(result.getPaginationData().getTotalRecordCount(), is(4));
+        assertThat(result.getCourtDocuments().size(), is(pageSize));
+        assertThat(result.getPaginationData().getPage(), is(2));
+        assertThat(result.getPaginationData().getPageSize(), is(2));
+        assertThat(result.getPaginationData().getSortOrder().toString(), is(ASC));
+        assertThat(result.getPaginationData().getSortField().toString(), is(SECTION));
+        assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders2"));
+        assertThat(result.getCourtDocuments().get(1).getDocumentTypeDescription(), is("Court Final orders3"));
+
+    }
+
+    @Test
+    public void shouldFindDocumentsByPaginationOrderBySectionDesc() throws IOException {
+
+        final UUID caseId = randomUUID();
+        final int pageSize = 2;
+
+        final SearchCriteria searchCriteria = SearchCriteria.searchCriteria()
+                .withCaseId(caseId)
+                .build();
+
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .build();
+
+        final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, SECTION, DESC, null);
+
+        when(courtDocumentIndexService.countByCriteria(searchCriteria)).thenReturn(Long.valueOf(4));
+        when(courtDocumentIndexService.getCourtDocumentIndexByCriteria(any())).thenReturn(asList(
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders0", "2020-09-18T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders3", "2020-09-20T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders1", "2020-09-17T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders2", "2020-09-21T08:56:14.195Z"))
+        ));
+        mockUserGroups(userGroupArray, jsonEnvelopeIn);
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+
+        //query first page
+        JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(jsonEnvelopeIn);
+        CourtdocumentsWithPagination result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtdocumentsWithPagination.class);
+        assertThat(result.getPaginationData().getTotalRecordCount(), is(4));
+        assertThat(result.getCourtDocuments().size(), is(pageSize));
+        assertThat(result.getPaginationData().getPage(), is(1));
+        assertThat(result.getPaginationData().getPageSize(), is(2));
+        assertThat(result.getPaginationData().getSortOrder().toString(), is(DESC));
+        assertThat(result.getPaginationData().getSortField().toString(), is(SECTION));
+        assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders3"));
+        assertThat(result.getCourtDocuments().get(1).getDocumentTypeDescription(), is("Court Final orders2"));
+
+        //query second page
+        jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(getJsonEnvelopeForQueryRequest(caseId, pageSize, 2, SECTION, DESC, null));
+        result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtdocumentsWithPagination.class);
+        assertThat(result.getPaginationData().getTotalRecordCount(), is(4));
+        assertThat(result.getCourtDocuments().size(), is(pageSize));
+        assertThat(result.getPaginationData().getPage(), is(2));
+        assertThat(result.getPaginationData().getPageSize(), is(2));
+        assertThat(result.getPaginationData().getSortOrder().toString(), is(DESC));
+        assertThat(result.getPaginationData().getSortField().toString(), is(SECTION));
+        assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders1"));
+        assertThat(result.getCourtDocuments().get(1).getDocumentTypeDescription(), is("Court Final orders0"));
+
+    }
+
+    @Test
+    public void shouldFindDocumentsByPaginationOrderByDateAsc() throws IOException {
+
+        final UUID caseId = randomUUID();
+        final int pageSize = 2;
+
+        final SearchCriteria searchCriteria = SearchCriteria.searchCriteria()
+                .withCaseId(caseId)
+                .build();
+
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .build();
+
+        final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, DATE, ASC, null);
+
+        when(courtDocumentIndexService.countByCriteria(searchCriteria)).thenReturn(Long.valueOf(4));
+        when(courtDocumentIndexService.getCourtDocumentIndexByCriteria(any())).thenReturn(asList(
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders0", "2020-09-18T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders3", "2020-09-20T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders1", "2020-09-17T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders2", "2020-09-21T08:56:14.195Z"))
+        ));
+        mockUserGroups(userGroupArray, jsonEnvelopeIn);
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+
+        //query first page
+        JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(jsonEnvelopeIn);
+        CourtdocumentsWithPagination result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtdocumentsWithPagination.class);
+        assertThat(result.getPaginationData().getTotalRecordCount(), is(4));
+        assertThat(result.getCourtDocuments().size(), is(pageSize));
+        assertThat(result.getPaginationData().getPage(), is(1));
+        assertThat(result.getPaginationData().getPageSize(), is(2));
+        assertThat(result.getPaginationData().getSortOrder().toString(), is(ASC));
+        assertThat(result.getPaginationData().getSortField().toString(), is(DATE));
+        assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders1"));
+        assertThat(result.getCourtDocuments().get(0).getMaterial().getUploadDateTime().toString(), is("2020-09-17T08:56:14.195Z[UTC]"));
+        assertThat(result.getCourtDocuments().get(1).getDocumentTypeDescription(), is("Court Final orders0"));
+        assertThat(result.getCourtDocuments().get(1).getMaterial().getUploadDateTime().toString(), is("2020-09-18T08:56:14.195Z[UTC]"));
+
+        //query second page
+        jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(getJsonEnvelopeForQueryRequest(caseId, pageSize, 2, DATE, ASC, null));
+        result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtdocumentsWithPagination.class);
+        assertThat(result.getPaginationData().getTotalRecordCount(), is(4));
+        assertThat(result.getCourtDocuments().size(), is(pageSize));
+        assertThat(result.getPaginationData().getPage(), is(2));
+        assertThat(result.getPaginationData().getPageSize(), is(2));
+        assertThat(result.getPaginationData().getSortOrder().toString(), is(ASC));
+        assertThat(result.getPaginationData().getSortField().toString(), is(DATE));
+        assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders3"));
+        assertThat(result.getCourtDocuments().get(0).getMaterial().getUploadDateTime().toString(), is("2020-09-20T08:56:14.195Z[UTC]"));
+        assertThat(result.getCourtDocuments().get(1).getDocumentTypeDescription(), is("Court Final orders2"));
+        assertThat(result.getCourtDocuments().get(1).getMaterial().getUploadDateTime().toString(), is("2020-09-21T08:56:14.195Z[UTC]"));
+
+    }
+
+
+    @Test
+    public void shouldFindDocumentsByPaginationOrderByDateDesc() throws IOException {
+
+        final UUID caseId = randomUUID();
+        final int pageSize = 2;
+
+        final SearchCriteria searchCriteria = SearchCriteria.searchCriteria()
+                .withCaseId(caseId)
+                .build();
+
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .build();
+
+        final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, DATE, DESC, null);
+
+        when(courtDocumentIndexService.countByCriteria(searchCriteria)).thenReturn(Long.valueOf(4));
+        when(courtDocumentIndexService.getCourtDocumentIndexByCriteria(any())).thenReturn(asList(
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders0", "2020-09-18T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders3", "2020-09-20T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders1", "2020-09-17T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders2", "2020-09-21T08:56:14.195Z"))
+        ));
+        mockUserGroups(userGroupArray, jsonEnvelopeIn);
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+
+        //query first page
+        JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(jsonEnvelopeIn);
+        CourtdocumentsWithPagination result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtdocumentsWithPagination.class);
+        assertThat(result.getPaginationData().getTotalRecordCount(), is(4));
+        assertThat(result.getCourtDocuments().size(), is(pageSize));
+        assertThat(result.getPaginationData().getPage(), is(1));
+        assertThat(result.getPaginationData().getPageSize(), is(2));
+        assertThat(result.getPaginationData().getSortOrder().toString(), is(DESC));
+        assertThat(result.getPaginationData().getSortField().toString(), is(DATE));
+        assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders2"));
+        assertThat(result.getCourtDocuments().get(0).getMaterial().getUploadDateTime().toString(), is("2020-09-21T08:56:14.195Z[UTC]"));
+        assertThat(result.getCourtDocuments().get(1).getDocumentTypeDescription(), is("Court Final orders3"));
+        assertThat(result.getCourtDocuments().get(1).getMaterial().getUploadDateTime().toString(), is("2020-09-20T08:56:14.195Z[UTC]"));
+
+        //query second page
+        jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(getJsonEnvelopeForQueryRequest(caseId, pageSize, 2, DATE, DESC, null));
+        result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtdocumentsWithPagination.class);
+        assertThat(result.getPaginationData().getTotalRecordCount(), is(4));
+        assertThat(result.getCourtDocuments().size(), is(pageSize));
+        assertThat(result.getPaginationData().getPage(), is(2));
+        assertThat(result.getPaginationData().getPageSize(), is(2));
+        assertThat(result.getPaginationData().getSortOrder().toString(), is(DESC));
+        assertThat(result.getPaginationData().getSortField().toString(), is(DATE));
+        assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders0"));
+        assertThat(result.getCourtDocuments().get(0).getMaterial().getUploadDateTime().toString(), is("2020-09-18T08:56:14.195Z[UTC]"));
+        assertThat(result.getCourtDocuments().get(1).getDocumentTypeDescription(), is("Court Final orders1"));
+        assertThat(result.getCourtDocuments().get(1).getMaterial().getUploadDateTime().toString(), is("2020-09-17T08:56:14.195Z[UTC]"));
+
+    }
+
+    @Test
+    public void shouldFindDocumentsByPaginationOrderByDateDescWithDocumentNameFilteringFullMatch() throws IOException {
+
+        final UUID caseId = randomUUID();
+        final int pageSize = 2;
+
+        final SearchCriteria searchCriteria = SearchCriteria.searchCriteria()
+                .withCaseId(caseId)
+                .build();
+
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .build();
+
+        final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, DATE, DESC, "Court Final orders1");
+
+        when(courtDocumentIndexService.countByCriteria(searchCriteria)).thenReturn(Long.valueOf(4));
+        when(courtDocumentIndexService.getCourtDocumentIndexByCriteria(any())).thenReturn(asList(
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders0", "2020-09-18T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders3", "2020-09-20T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders1", "2020-09-17T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders2", "2020-09-21T08:56:14.195Z"))
+        ));
+        mockUserGroups(userGroupArray, jsonEnvelopeIn);
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+
+        //query first page
+        JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(jsonEnvelopeIn);
+        CourtdocumentsWithPagination result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtdocumentsWithPagination.class);
+        assertThat(result.getPaginationData().getTotalRecordCount(), is(1));
+        assertThat(result.getCourtDocuments().size(), is(1));
+        assertThat(result.getPaginationData().getPage(), is(1));
+        assertThat(result.getPaginationData().getPageSize(), is(pageSize));
+        assertThat(result.getPaginationData().getSortOrder().toString(), is(DESC));
+        assertThat(result.getPaginationData().getSortField().toString(), is(DATE));
+        assertThat(result.getCourtDocuments().get(0).getName(), is("Court Final orders1"));
+
+    }
+
+    @Test
+    public void shouldFindDocumentsByPaginationOrderByDateDescWithDocumentNameFilteringPartialMatch() throws IOException {
+
+        final UUID caseId = randomUUID();
+        final int pageSize = 2;
+
+        final SearchCriteria searchCriteria = SearchCriteria.searchCriteria()
+                .withCaseId(caseId)
+                .build();
+
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .build();
+
+        final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, DATE, DESC, "cd");
+
+        when(courtDocumentIndexService.countByCriteria(searchCriteria)).thenReturn(Long.valueOf(4));
+        when(courtDocumentIndexService.getCourtDocumentIndexByCriteria(any())).thenReturn(asList(
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "AbcCourt Final orders0", "2020-09-18T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "BcdCourt Final orders3", "2020-09-20T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "CdeCourt Final orders1", "2020-09-17T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "DefCourt Final orders2", "2020-09-21T08:56:14.195Z"))
+        ));
+        mockUserGroups(userGroupArray, jsonEnvelopeIn);
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+
+        //query first page
+        JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(jsonEnvelopeIn);
+        CourtdocumentsWithPagination result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtdocumentsWithPagination.class);
+        assertThat(result.getPaginationData().getTotalRecordCount(), is(1));
+        assertThat(result.getCourtDocuments().size(), is(1));
+        assertThat(result.getPaginationData().getPage(), is(1));
+        assertThat(result.getPaginationData().getPageSize(), is(pageSize));
+        assertThat(result.getPaginationData().getSortOrder().toString(), is(DESC));
+        assertThat(result.getPaginationData().getSortField().toString(), is(DATE));
+        assertThat(result.getCourtDocuments().get(0).getName(), is("CdeCourt Final orders1"));
+
+    }
+
+    @Test
+    public void shouldFindDocumentsAndFilterRestrictedDocumentTypesByPaginationOrderBySectionAsc() throws IOException {
+
+        final UUID caseId = randomUUID();
+        final int pageSize = 2;
+
+        final SearchCriteria searchCriteria = SearchCriteria.searchCriteria()
+                .withCaseId(caseId)
+                .build();
+
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .build();
+
+        final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, SECTION, ASC, null);
+
+        when(courtDocumentIndexService.countByCriteria(searchCriteria)).thenReturn(Long.valueOf(4));
+        when(courtDocumentIndexService.getCourtDocumentIndexByCriteria(any())).thenReturn(asList(
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload-restricted-doc-type.json", "Court Final orders0", "2020-09-18T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders3", "2020-09-20T08:56:14.195Z"))
+        ));
+        mockUserGroups(userGroupArray, jsonEnvelopeIn);
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+
+        //query first page
+        JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(jsonEnvelopeIn);
+        CourtdocumentsWithPagination result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtdocumentsWithPagination.class);
+        assertThat(result.getPaginationData().getTotalRecordCount(), is(1));
+        assertThat(result.getCourtDocuments().size(), is(1));
+        assertThat(result.getPaginationData().getPage(), is(1));
+        assertThat(result.getPaginationData().getPageSize(), is(2));
+        assertThat(result.getPaginationData().getSortOrder().toString(), is(ASC));
+        assertThat(result.getPaginationData().getSortField().toString(), is(SECTION));
+        assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders3"));
+
+    }
+
+    @Test
+    public void shouldFindNoDocumentWithPaginationDueToNotAuthorisedDocumentType() throws IOException {
+
+        final UUID caseId = randomUUID();
+        final int pageSize = 2;
+
+        final SearchCriteria searchCriteria = SearchCriteria.searchCriteria()
+                .withCaseId(caseId)
+                .build();
+
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .build();
+
+        final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, SECTION, ASC, null);
+
+        when(courtDocumentIndexService.countByCriteria(searchCriteria)).thenReturn(Long.valueOf(4));
+        when(courtDocumentIndexService.getCourtDocumentIndexByCriteria(any())).thenReturn(asList(
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload-restricted-doc-type.json", "Court Final orders0", "2020-09-18T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload-restricted-doc-type.json", "Court Final orders3", "2020-09-20T08:56:14.195Z"))
+        ));
+        mockUserGroups(userGroupArray, jsonEnvelopeIn);
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+
+        //query first page
+        JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(jsonEnvelopeIn);
+        CourtdocumentsWithPagination result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtdocumentsWithPagination.class);
+        assertThat(result.getPaginationData().getTotalRecordCount(), is(0));
+        assertThat(result.getCourtDocuments().size(), is(0));
+        assertThat(result.getPaginationData().getPage(), is(1));
+        assertThat(result.getPaginationData().getPageSize(), is(2));
+        assertThat(result.getPaginationData().getSortOrder().toString(), is(ASC));
+        assertThat(result.getPaginationData().getSortField().toString(), is(SECTION));
+
+    }
+
+    @Test
+    public void shouldFindDocumentsAndFilterRestrictedDocumentByPaginationOrderBySectionAsc() throws IOException {
+
+        final UUID caseId = randomUUID();
+        final int pageSize = 2;
+
+        final SearchCriteria searchCriteria = SearchCriteria.searchCriteria()
+                .withCaseId(caseId)
+                .build();
+
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .build();
+
+        final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, SECTION, ASC, null);
+
+        when(courtDocumentIndexService.countByCriteria(searchCriteria)).thenReturn(Long.valueOf(4));
+        when(courtDocumentIndexService.getCourtDocumentIndexByCriteria(any())).thenReturn(asList(
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload-restricted-document.json", "Court Final orders0", "2020-09-18T08:56:14.195Z")),
+                getCourtDocumentIndexEntity(getCourtDocumentPayload("court-document-payload.json", "Court Final orders3", "2020-09-20T08:56:14.195Z"))
+        ));
+        mockUserGroups(userGroupArray, jsonEnvelopeIn);
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+
+        //query first page
+        JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsWithPagination(jsonEnvelopeIn);
+        CourtdocumentsWithPagination result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtdocumentsWithPagination.class);
+        assertThat(result.getPaginationData().getTotalRecordCount(), is(1));
+        assertThat(result.getCourtDocuments().size(), is(1));
+        assertThat(result.getPaginationData().getPage(), is(1));
+        assertThat(result.getPaginationData().getPageSize(), is(2));
+        assertThat(result.getPaginationData().getSortOrder().toString(), is(ASC));
+        assertThat(result.getPaginationData().getSortField().toString(), is(SECTION));
+        assertThat(result.getCourtDocuments().get(0).getDocumentTypeDescription(), is("Court Final orders3"));
+
+    }
+
+    private JsonEnvelope getJsonEnvelopeForQueryRequest(final UUID caseId, final int pageSize, final int page, final String sortField, final String sortOrder, final String documentName) {
+        final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add(SORT_FIELD, sortField);
+        jsonBuilder.add(SORT_ORDER, sortOrder);
+        jsonBuilder.add(CASE_ID, caseId.toString());
+        jsonBuilder.add(PAGE, page);
+        jsonBuilder.add(PAGE_SIZE, pageSize);
+        if(nonNull(documentName)){
+            jsonBuilder.add(DOCUMENT_NAME, documentName);
+        }
+
+        JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID())
+                        .withName(CourtDocumentQuery.COURT_DOCUMENTS_SEARCH_WITH_PAGINATION_NAME)
+                        .withUserId(randomUUID().toString())
+                        .build(),
+                jsonBuilder.build());
+        return jsonEnvelopeIn;
+    }
+
+    private String getCourtDocumentPayload(final String resourceName, final String section, final String uploadDate) throws IOException {
+        return getJsonPayloadAsString(resourceName)
+                .replace("TYPE_DESCRIPTION", section)
+                .replace("DOCUMENT_NAME", section)
+                .replace("UPLOAD_DATE", uploadDate);
+    }
+
+    private CourtDocumentIndexEntity getCourtDocumentIndexEntity(final String payload) {
+        final CourtDocumentIndexEntity courtDocumentIndexEntity = new CourtDocumentIndexEntity();
+        courtDocumentIndexEntity.setCourtDocument(getCourtDocumentEntity(payload));
+        courtDocumentIndexEntity.setId(randomUUID());
+        return courtDocumentIndexEntity;
+    }
+
+    private CourtDocumentEntity getCourtDocumentEntity(final String payload) {
+        final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
+        courtDocumentEntity.setCourtDocumentId(randomUUID());
+        courtDocumentEntity.setName("doc name");
+        courtDocumentEntity.setPayload(payload);
+        return courtDocumentEntity;
+    }
+
 
     @Test
     public void shouldFindDocumentsByCaseIdNotPermitted() throws IOException {
@@ -596,10 +1063,13 @@ public class CourtDocumentQueryViewTest {
     }
 
     private JsonObject getJsonPayload(final String fileName) throws IOException {
-        final String jsonString = Resources.toString(Resources.getResource(fileName), defaultCharset());
         return Json.createReader(
-                new ByteArrayInputStream(jsonString.getBytes()))
+                new ByteArrayInputStream(getJsonPayloadAsString(fileName).getBytes()))
                 .readObject();
+    }
+
+    private String getJsonPayloadAsString(final String fileName) throws IOException {
+        return Resources.toString(Resources.getResource(fileName), defaultCharset());
     }
 
     @Test
@@ -691,7 +1161,7 @@ public class CourtDocumentQueryViewTest {
 
         when(rbacProvider.isLoggedInUserAllowedToReadDocument((Action) any())).thenReturn(true);
         mockUserGroups(userGroupArray, jsonEnvelopeIn);
-        mockReferenceData(jsonEnvelopeIn,userGroupArray);
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
         final CourtDocumentIndex expectedIndex = courtDocumentIndexBuilder.build();
         final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
         assertTrue(jsonEnvelopeOut.payloadAsJsonObject().getJsonArray("documentIndices").isEmpty());
@@ -879,7 +1349,7 @@ public class CourtDocumentQueryViewTest {
         assertThat(materialCount, is(1));
     }
 
-    private void mockUserGroups(final JsonArray userGroupArray, final JsonEnvelope jsonEnvelopeIn ) {
+    private void mockUserGroups(final JsonArray userGroupArray, final JsonEnvelope jsonEnvelopeIn) {
         final JsonObject groups = Json.createObjectBuilder().add("groups", userGroupArray).build();
 
         when(response.payload()).thenReturn(groups);
@@ -889,7 +1359,7 @@ public class CourtDocumentQueryViewTest {
                 .withName("usersgroups.get-groups-by-user")
                 .build();
         final JsonObject payload = Json.createObjectBuilder().add("userId", jsonEnvelopeIn
-        .metadata().userId().get()).build();
+                .metadata().userId().get()).build();
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
 
 
@@ -897,7 +1367,7 @@ public class CourtDocumentQueryViewTest {
     }
 
 
-    private void mockReferenceData(final JsonEnvelope jsonEnvelopeIn , final JsonArray userGroupArray) throws IOException {
+    private void mockReferenceData(final JsonEnvelope jsonEnvelopeIn, final JsonArray userGroupArray) throws IOException {
 
         final JsonObject documentsAccess = getJsonPayload("get-all-document-type-access.json");
         when(responseFromRefData.payload()).thenReturn(documentsAccess);
@@ -908,9 +1378,9 @@ public class CourtDocumentQueryViewTest {
             final JsonEnvelope envelope = (JsonEnvelope) invocationOnMock.getArguments()[0];
             JsonObject request = envelope.payloadAsJsonObject();
             JsonObject responsePayload = null;
-            if(envelope.metadata().name().equals("referencedata.get-all-document-type-access")){
+            if (envelope.metadata().name().equals("referencedata.get-all-document-type-access")) {
                 responsePayload = documentsAccess;
-            }else if(envelope.metadata().name().equals("usersgroups.get-groups-by-user")){
+            } else if (envelope.metadata().name().equals("usersgroups.get-groups-by-user")) {
                 responsePayload = groups;
             }
             return envelopeFrom(envelope.metadata(), responsePayload);
@@ -949,7 +1419,7 @@ public class CourtDocumentQueryViewTest {
         final JsonEnvelope jsonEnvelopeOut = target.getCaseNotifications(jsonEnvelopeIn);
         assertThat(jsonEnvelopeOut.payloadAsJsonObject().getJsonArray("notificationStatus").size(), is(1));
     }
-    
+
     @Test
     public void shouldGetCourtDocumentByCaseIdAndDefedantId() throws IOException {
         shouldFindDocuments(true, true, asList(UUID.randomUUID(), UUID.randomUUID()), UUID.randomUUID(), null , "Legal Advisers");
