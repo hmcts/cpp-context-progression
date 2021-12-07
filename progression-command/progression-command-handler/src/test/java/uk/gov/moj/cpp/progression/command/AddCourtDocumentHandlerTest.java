@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -23,18 +24,16 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.json.JsonValue;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import uk.gov.justice.core.courts.AddCourtDocument;
-import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.CourtsDocumentAdded;
-import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.core.courts.*;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.requester.Requester;
@@ -57,13 +56,12 @@ import uk.gov.moj.cpp.referencedata.json.schemas.DocumentTypeAccess;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.Id;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -129,7 +127,6 @@ public class AddCourtDocumentHandlerTest {
                 .withContainsFinancialMeans(false)
                 .withSeqNum(10)
                 .build();
-
     }
 
     @Before
@@ -201,7 +198,6 @@ public class AddCourtDocumentHandlerTest {
                                 withJsonPath("$.courtDocument.seqNum", is(10))
                                 )
                         ))
-
                 )
         );
     }
@@ -237,6 +233,21 @@ public class AddCourtDocumentHandlerTest {
     }
 
     private void isCpsCaseHandleWith(Boolean isCpsCase) throws Exception{
+        final JsonObject userOrganisationDetails = Json.createObjectBuilder()
+                .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
+                .add("organisationType","HMCTS")
+                .add("organisationName", "Bodgit and Scarper LLP")
+                .add("addressLine1","Legal House")
+                .add("addressLine2","15 Sewell Street")
+                .add( "addressLine3", "Hammersmith")
+                .add("addressLine4", "London")
+                .add("addressPostcode","SE14 2AB")
+                .add("phoneNumber","080012345678")
+                .add("email","joe@example.com")
+                .add("laaContractNumbers",Json.createArrayBuilder()
+                        .add("LAA3482374WER")
+                        .add("LAA3482374WEM")).build();
+
         final AddCourtDocument addCourtDocument = addCourtDocument()
                 .withCourtDocument(buildCourtDocument())
                 .withIsCpsCase(isCpsCase)
@@ -245,16 +256,21 @@ public class AddCourtDocumentHandlerTest {
         final Metadata metadata = Envelope
                 .metadataBuilder()
                 .withName("progression.command.add-court-document")
+                .withUserId(randomUUID().toString())
                 .withId(randomUUID())
                 .build();
+
+        final Envelope<AddCourtDocument> envelope = envelopeFrom(metadata, addCourtDocument);
         final CourtDocument enrichedCourtDocument = CourtDocument.courtDocument().build();
         final DocumentTypeAccess documentTypeData = DocumentTypeAccess.documentTypeAccess().withActionRequired(false).build();
+
         when(courtDocumentEnricher.enrichWithMaterialUserGroups(any(), any())).thenReturn(enrichedCourtDocument);
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(new CourtDocumentAggregate());
         when(documentTypeAccessProvider.getDocumentTypeAccess(any(), any())).thenReturn(documentTypeData);
 
-        final Envelope<AddCourtDocument> envelope = envelopeFrom(metadata, addCourtDocument);
+        when(usersGroupService.getOrganisationDetailsForUser(envelope)).thenReturn(Envelope.envelopeFrom(metadata, userOrganisationDetails));
+
         addCourtDocumentHandler.handle(envelope);
 
         verify(eventStream).append(eventCaptor.capture());
@@ -263,31 +279,62 @@ public class AddCourtDocumentHandlerTest {
         if(isCpsCase != null){
             assertThat(expectedIsCpsCase.get(0), is(isCpsCase ? JsonValue.TRUE : JsonValue.FALSE ));
         }
-
     }
 
     private void isUnbundledDocumentHandleWith(final Boolean isUnbundledDocument) throws Exception{
+        final JsonObject userOrganisationDetails = Json.createObjectBuilder()
+                .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
+                .add("organisationType","HMCTS")
+                .add("organisationName", "Bodgit and Scarper LLP")
+                .add("addressLine1","Legal House")
+                .add("addressLine2","15 Sewell Street")
+                .add( "addressLine3", "Hammersmith")
+                .add("addressLine4", "London")
+                .add("addressPostcode","SE14 2AB")
+                .add("phoneNumber","080012345678")
+                .add("email","joe@example.com")
+                .add("laaContractNumbers",Json.createArrayBuilder()
+                        .add("LAA3482374WER")
+                        .add("LAA3482374WEM")).build();
+
+        CourtDocument courtDocument = CourtDocument.courtDocument()
+                .withCourtDocumentId(randomUUID())
+                .withDocumentTypeDescription("documentTypeDescription")
+                .withDocumentTypeId(randomUUID())
+                .withDocumentCategory(DocumentCategory.documentCategory().build())
+                .withMimeType("pdf")
+                .withName("name")
+                .withMaterials(Arrays.asList(Material.material().withReceivedDateTime(ZonedDateTime.now()).build()))
+                .withSendToCps(false)
+                .build();
+
         final AddCourtDocument addCourtDocument = addCourtDocument()
-                .withCourtDocument(buildCourtDocument())
+                .withCourtDocument(courtDocument)
                 .withIsUnbundledDocument(isUnbundledDocument)
                 .build();
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
                 .withName("progression.command.add-court-document")
+                .withUserId(randomUUID().toString())
                 .withId(randomUUID())
                 .build();
+
+        final Envelope<AddCourtDocument> envelope = envelopeFrom(metadata, addCourtDocument);
         final CourtDocument enrichedCourtDocument = CourtDocument.courtDocument().build();
         final DocumentTypeAccess documentTypeData = DocumentTypeAccess.documentTypeAccess().withActionRequired(false).build();
+
         when(courtDocumentEnricher.enrichWithMaterialUserGroups(any(), any())).thenReturn(enrichedCourtDocument);
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(new CourtDocumentAggregate());
         when(documentTypeAccessProvider.getDocumentTypeAccess(any(), any())).thenReturn(documentTypeData);
 
-        final Envelope<AddCourtDocument> envelope = envelopeFrom(metadata, addCourtDocument);
+        when(usersGroupService.getOrganisationDetailsForUser(envelope)).thenReturn(Envelope.envelopeFrom(metadata, userOrganisationDetails));
+
         addCourtDocumentHandler.handle(envelope);
 
         verify(eventStream).append(eventCaptor.capture());
+
         List<JsonValue> expectedIsUnbundledDocument = eventCaptor.getValue().collect(Collectors.toList())
                 .stream()
                 .map(t -> (JsonObject)t.payload()).map(t-> t.get("isUnbundledDocument"))
@@ -299,7 +346,6 @@ public class AddCourtDocumentHandlerTest {
         if(CollectionUtils.isNotEmpty(expectedIsUnbundledDocument)){
             assertThat(expectedIsUnbundledDocument.get(0), is(isUnbundledDocument ? JsonValue.TRUE : JsonValue.FALSE ));
         }
-
     }
 
     private JsonObject buildCourtDocumentWithoutDocumentType() {

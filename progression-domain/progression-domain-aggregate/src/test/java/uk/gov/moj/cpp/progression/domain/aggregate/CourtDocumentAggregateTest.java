@@ -1,5 +1,21 @@
 package uk.gov.moj.cpp.progression.domain.aggregate;
 
+import org.hamcrest.CoreMatchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import uk.gov.justice.core.courts.*;
+import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
 import static java.time.ZonedDateTime.now;
@@ -7,39 +23,10 @@ import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.isA;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-
-import uk.gov.justice.core.courts.CaseDocument;
-import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.CourtDocumentAudit;
-import uk.gov.justice.core.courts.CourtDocumentPrintTimeUpdated;
-import uk.gov.justice.core.courts.CourtDocumentSendToCps;
-import uk.gov.justice.core.courts.CourtDocumentShareFailed;
-import uk.gov.justice.core.courts.CourtDocumentShared;
-import uk.gov.justice.core.courts.CourtDocumentUpdateFailed;
-import uk.gov.justice.core.courts.CourtDocumentUpdated;
-import uk.gov.justice.core.courts.CourtsDocumentAdded;
-import uk.gov.justice.core.courts.CourtsDocumentCreated;
-import uk.gov.justice.core.courts.DefendantDocument;
-import uk.gov.justice.core.courts.DocumentCategory;
-import uk.gov.justice.core.courts.DuplicateShareCourtDocumentRequestReceived;
-import uk.gov.justice.core.courts.Material;
-import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
-
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
 
 public class CourtDocumentAggregateTest {
 
@@ -50,9 +37,11 @@ public class CourtDocumentAggregateTest {
             .withDocumentCategory(DocumentCategory.documentCategory().build())
             .withMimeType("pdf")
             .withName("name")
+            .withMaterials(Arrays.asList(Material.material().withReceivedDateTime(ZonedDateTime.now()).build()))
             .withSendToCps(false)
             .build();
 
+    @InjectMocks
     private CourtDocumentAggregate target;
 
     @Before
@@ -326,5 +315,61 @@ public class CourtDocumentAggregateTest {
         final Stream<Object> objectStream = target.updateCourtDocumentPrintTime(materialId, courtDocumentId, printedAt);
         final Object event = objectStream.findFirst().get();
         assertThat(event.getClass(), is(equalTo(CourtDocumentPrintTimeUpdated.class)));
+    }
+
+    @Test
+    public void documentReviewRequiredAddedToCourtDocumentIfUserInHMCTSGroup(){
+        final boolean  actionRequired = true;
+        final UUID materialId = randomUUID();
+        final String section = "abc";
+        final Boolean isCpsCase = true;
+        final Boolean isUnbundledDocument = true;
+        final JsonObject userOrganisationDetails = Json.createObjectBuilder()
+                .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
+                .add("organisationType","LEGAL_ORGANISATION")
+                .add("organisationName", "Bodgit and Scarper LLP")
+                .add("addressLine1","Legal House")
+                .add("addressLine2","15 Sewell Street")
+                .add( "addressLine3", "Hammersmith")
+                .add("addressLine4", "London")
+                .add("addressPostcode","SE14 2AB")
+                .add("phoneNumber","080012345678")
+                .add("email","joe@example.com")
+                .add("laaContractNumbers",Json.createArrayBuilder()
+                        .add("LAA3482374WER")
+                        .add("LAA3482374WEM")).build();
+
+        Stream<Object> objectStream =  target.addCourtDocument(courtDocument,actionRequired, materialId, section, isCpsCase, isUnbundledDocument, userOrganisationDetails);
+        List<Object> list = objectStream.collect(Collectors.toList());
+
+        assertThat(list, hasItem(isA(DocumentReviewRequired.class)));
+    }
+
+    @Test
+    public void documentReviewRequiredNotAddedToCourtDocumentIfUserNotInHMCTSGroup(){
+        final boolean  actionRequired = true;
+        final UUID materialId = randomUUID();
+        final String section = "abc";
+        final Boolean isCpsCase = true;
+        final Boolean isUnbundledDocument = true;
+        final JsonObject userOrganisationDetails = Json.createObjectBuilder()
+                .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
+                .add("organisationType","HMCTS")
+                .add("organisationName", "Bodgit and Scarper LLP")
+                .add("addressLine1","Legal House")
+                .add("addressLine2","15 Sewell Street")
+                .add( "addressLine3", "Hammersmith")
+                .add("addressLine4", "London")
+                .add("addressPostcode","SE14 2AB")
+                .add("phoneNumber","080012345678")
+                .add("email","joe@example.com")
+                .add("laaContractNumbers",Json.createArrayBuilder()
+                        .add("LAA3482374WER")
+                        .add("LAA3482374WEM")).build();
+
+        Stream<Object> objectStream =  target.addCourtDocument(courtDocument,actionRequired, materialId, section, isCpsCase, isUnbundledDocument, userOrganisationDetails);
+        List<Object> list = objectStream.collect(Collectors.toList());
+
+        assertThat(list, not(hasItem(DocumentReviewRequired.class)));
     }
 }

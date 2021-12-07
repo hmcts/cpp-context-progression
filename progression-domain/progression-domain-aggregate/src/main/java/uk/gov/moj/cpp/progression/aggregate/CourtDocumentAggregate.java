@@ -1,5 +1,15 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.justice.core.courts.*;
+import uk.gov.justice.domain.aggregate.Aggregate;
+
+import javax.json.JsonObject;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.stream.Stream;
+
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -15,44 +25,12 @@ import static uk.gov.justice.core.courts.DocumentReviewRequired.documentReviewRe
 import static uk.gov.justice.core.courts.DuplicateShareCourtDocumentRequestReceived.duplicateShareCourtDocumentRequestReceived;
 import static uk.gov.justice.core.courts.Material.material;
 import static uk.gov.justice.core.courts.SharedCourtDocument.sharedCourtDocument;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
-
-import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.CourtDocumentAudit;
-import uk.gov.justice.core.courts.CourtDocumentSendToCps;
-import uk.gov.justice.core.courts.CourtDocumentShareFailed;
-import uk.gov.justice.core.courts.CourtDocumentShared;
-import uk.gov.justice.core.courts.CourtDocumentUpdateFailed;
-import uk.gov.justice.core.courts.CourtDocumentUpdated;
-import uk.gov.justice.core.courts.CourtsDocumentAdded;
-import uk.gov.justice.core.courts.CourtsDocumentCreated;
-import uk.gov.justice.core.courts.CourtsDocumentRemoved;
-import uk.gov.justice.core.courts.DocumentCategory;
-import uk.gov.justice.core.courts.DocumentTypeRBAC;
-import uk.gov.justice.core.courts.Material;
-import uk.gov.justice.core.courts.SharedCourtDocument;
-import uk.gov.justice.domain.aggregate.Aggregate;
-
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.*;
 
 public class CourtDocumentAggregate implements Aggregate {
 
     private static final long serialVersionUID = 101L;
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentAggregate.class);
-    private static final String YOUTH_OFFENDING_SERVICE_ADMIN = "Youth Offending Service Admin";
     public static final String PROBATION_ADMIN = "Probation Admin";
     public static final String DEFENCE_USERS = "Defence Users";
 
@@ -213,28 +191,23 @@ public class CourtDocumentAggregate implements Aggregate {
     }
 
     public Stream<Object> addCourtDocument(final CourtDocument courtDocument,
-                                           final List<String> groups,
                                            final boolean actionRequired,
                                            final UUID materialId,
                                            final String section,
                                            final Boolean isCpsCase,
-                                           final Boolean isUnbundledDocument) {
+                                           final Boolean isUnbundledDocument,
+                                           final JsonObject userOrganisationDetails) {
         LOGGER.debug("Court document being added");
 
         final Stream.Builder<Object> streamBuilder = builder();
-        streamBuilder.add(CourtsDocumentAdded.courtsDocumentAdded()
-                .withCourtDocument(courtDocument)
-                .withIsCpsCase(isCpsCase)
-                .withIsUnbundledDocument(isUnbundledDocument)
-                .build());
 
-        if (actionRequired &&
-                (groups.contains(YOUTH_OFFENDING_SERVICE_ADMIN)
-                        || groups.contains(PROBATION_ADMIN)
-                        || groups.contains(DEFENCE_USERS))) {
-
-
-                    streamBuilder.add(documentReviewRequired()
+        if (actionRequired && !"HMCTS".equals(userOrganisationDetails.getString("organisationType"))) {
+            streamBuilder.add(CourtsDocumentAdded.courtsDocumentAdded()
+                    .withCourtDocument(courtDocument)
+                    .withIsCpsCase(isCpsCase)
+                    .withIsUnbundledDocument(isUnbundledDocument)
+                    .build())
+                    .add(documentReviewRequired()
                             .withDocumentId(courtDocument.getCourtDocumentId())
                             .withDocumentType(section)
                             .withMaterialId(materialId)
@@ -244,9 +217,13 @@ public class CourtDocumentAggregate implements Aggregate {
                             .withProsecutingAuthority("")
                             .withDocumentName(courtDocument.getName())
                             .withReceivedDateTime(courtDocument.getMaterials().stream().findFirst().orElse(material().build()).getReceivedDateTime())
-                            .withCode(singletonList("uploaded-review-required")
-                            ).build()
-            );
+                            .withCode(singletonList("uploaded-review-required")).build());
+        } else {
+            streamBuilder.add(CourtsDocumentAdded.courtsDocumentAdded()
+                    .withCourtDocument(courtDocument)
+                    .withIsCpsCase(isCpsCase)
+                    .withIsUnbundledDocument(isUnbundledDocument)
+                    .build());
         }
 
         return apply(streamBuilder.build());

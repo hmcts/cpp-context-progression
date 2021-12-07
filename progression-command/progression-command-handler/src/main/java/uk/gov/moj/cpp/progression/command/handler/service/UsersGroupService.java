@@ -66,7 +66,7 @@ public class UsersGroupService {
         return isNull(response) || response.isEmpty();
     }
 
-    protected Envelope<JsonObject> getOrganisationDetailsForUser(final Envelope<?> envelope) {
+    public Envelope<JsonObject> getOrganisationDetailsForUser(final Envelope<?> envelope) {
 
         final String userId = envelope.metadata().userId()
                 .orElseThrow(() -> new IllegalStateException(USER_ID_NOT_SUPPLIED_FOR_THE_USER_GROUPS_LOOK_UP));
@@ -81,7 +81,6 @@ public class UsersGroupService {
                 requestEnvelope.payload()
                 ), JsonObject.class
         );
-
     }
 
     protected Envelope<UserDetails> getUserDetailsAsAdmin(final Envelope<?> envelope) {
@@ -112,7 +111,6 @@ public class UsersGroupService {
                 orgDetailsJsonEnvelope
                 ), JsonObject.class
         );
-
     }
 
     protected JsonObject getOrganisationForOrganisationId(final Envelope<?> envelope, final String organisationId) {
@@ -156,7 +154,6 @@ public class UsersGroupService {
         return OrganisationDetails.of(fromString(jsonResultEnvelope.payload().getString(ORGANISATION_ID)),
                 jsonResultEnvelope.payload().getString(ORGANISATION_NAME),
                 jsonResultEnvelope.payload().getString(ORGANISATION_TYPE));
-
     }
 
     public OrganisationDetails getOrganisationDetailsForOrganisationId(final Envelope<?> envelope, final String organisationId) {

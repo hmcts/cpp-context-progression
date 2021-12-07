@@ -1,10 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
-import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
-
+import org.slf4j.Logger;
 import uk.gov.justice.core.courts.AddCourtDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -18,21 +14,20 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
 import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
-import uk.gov.moj.cpp.progression.command.handler.service.payloads.UserGroupDetails;
 import uk.gov.moj.cpp.progression.handler.courts.document.CourtDocumentEnricher;
 import uk.gov.moj.cpp.progression.handler.courts.document.DefaultCourtDocumentFactory;
 import uk.gov.moj.cpp.progression.handler.courts.document.DocumentTypeAccessProvider;
 import uk.gov.moj.cpp.progression.helper.EnvelopeHelper;
 import uk.gov.moj.cpp.referencedata.json.schemas.DocumentTypeAccess;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import java.util.stream.Stream;
 
-import org.slf4j.Logger;
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
+import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
 @SuppressWarnings("squid:S1168")
 @ServiceComponent(COMMAND_HANDLER)
@@ -71,6 +66,7 @@ public class AddCourtDocumentHandler {
         logger.debug("progression.command.add-court-document {}", addCourtDocumentEnvelope);
 
         final CourtDocument courtDocument = defaultCourtDocumentFactory.createDefaultCourtDocument(
+
                 addCourtDocumentEnvelope
                         .payload()
                         .getCourtDocument());
@@ -91,10 +87,10 @@ public class AddCourtDocumentHandler {
                 eventStream,
                 CourtDocumentAggregate.class);
 
-        final List<String> retrievedUserGroupDetails = usersGroupService.getUserGroupsForUser(addCourtDocumentEnvelope).stream().map(UserGroupDetails::getGroupName).collect(Collectors.toList());
+        final JsonObject organisationDetailsForUser = usersGroupService.getOrganisationDetailsForUser(addCourtDocumentEnvelope).payload();
 
-        final Stream<Object> events = courtDocumentAggregate.addCourtDocument(enrichedCourtDocument, retrievedUserGroupDetails, documentTypeAccess.getActionRequired(), addCourtDocumentEnvelope.payload().getMaterialId(), documentTypeAccess.getSection(),
-                addCourtDocumentEnvelope.payload().getIsCpsCase(), addCourtDocumentEnvelope.payload().getIsUnbundledDocument());
+        final Stream<Object> events = courtDocumentAggregate.addCourtDocument(enrichedCourtDocument,  documentTypeAccess.getActionRequired(), addCourtDocumentEnvelope.payload().getMaterialId(), documentTypeAccess.getSection(),
+                addCourtDocumentEnvelope.payload().getIsCpsCase(), addCourtDocumentEnvelope.payload().getIsUnbundledDocument(), organisationDetailsForUser);
 
         eventStream.append(events.map(toEnvelopeWithMetadataFrom(addCourtDocumentEnvelope)));
     }
