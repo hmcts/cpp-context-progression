@@ -111,6 +111,17 @@ public class WireMockStubUtils {
         waitForStubToBeReady(format("/users/{0}/organisation", userId), CONTENT_TYPE_QUERY_USER_ORGANISATION);
     }
 
+    public static void stubUserGroupOrganisation(final String responsePayLoad) {
+        stubPingFor("usersgroups-service");
+
+        stubFor(get(urlMatching("/usersgroups-service/query/api/rest/usersgroups/users/.*/organisation"))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(responsePayLoad)));
+
+    }
+
 
     public static void mockMaterialUpload() {
         stubPingFor("material-service");

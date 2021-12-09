@@ -1,15 +1,5 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.justice.core.courts.*;
-import uk.gov.justice.domain.aggregate.Aggregate;
-
-import javax.json.JsonObject;
-import java.time.ZonedDateTime;
-import java.util.*;
-import java.util.stream.Stream;
-
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -17,6 +7,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Stream.builder;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.CourtDocumentPrintTimeUpdated.courtDocumentPrintTimeUpdated;
 import static uk.gov.justice.core.courts.CourtDocumentShared.courtDocumentShared;
 import static uk.gov.justice.core.courts.CourtDocumentUpdated.courtDocumentUpdated;
@@ -25,7 +16,38 @@ import static uk.gov.justice.core.courts.DocumentReviewRequired.documentReviewRe
 import static uk.gov.justice.core.courts.DuplicateShareCourtDocumentRequestReceived.duplicateShareCourtDocumentRequestReceived;
 import static uk.gov.justice.core.courts.Material.material;
 import static uk.gov.justice.core.courts.SharedCourtDocument.sharedCourtDocument;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.*;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.CourtDocumentAudit;
+import uk.gov.justice.core.courts.CourtDocumentSendToCps;
+import uk.gov.justice.core.courts.CourtDocumentShareFailed;
+import uk.gov.justice.core.courts.CourtDocumentShared;
+import uk.gov.justice.core.courts.CourtDocumentUpdateFailed;
+import uk.gov.justice.core.courts.CourtDocumentUpdated;
+import uk.gov.justice.core.courts.CourtsDocumentAdded;
+import uk.gov.justice.core.courts.CourtsDocumentCreated;
+import uk.gov.justice.core.courts.CourtsDocumentRemoved;
+import uk.gov.justice.core.courts.DocumentCategory;
+import uk.gov.justice.core.courts.DocumentTypeRBAC;
+import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.core.courts.SharedCourtDocument;
+import uk.gov.justice.domain.aggregate.Aggregate;
+
+import javax.json.JsonObject;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 public class CourtDocumentAggregate implements Aggregate {
 
@@ -201,7 +223,8 @@ public class CourtDocumentAggregate implements Aggregate {
 
         final Stream.Builder<Object> streamBuilder = builder();
 
-        if (actionRequired && !"HMCTS".equals(userOrganisationDetails.getString("organisationType"))) {
+        final String organisationType = userOrganisationDetails.getString("organisationType", null);
+        if (actionRequired && isNotEmpty(organisationType) && !"HMCTS".equals(organisationType)) {
             streamBuilder.add(CourtsDocumentAdded.courtsDocumentAdded()
                     .withCourtDocument(courtDocument)
                     .withIsCpsCase(isCpsCase)

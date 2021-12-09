@@ -7,6 +7,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -84,7 +85,6 @@ public class AddCourtDocumentIT extends AbstractIT {
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_DROOL), "stub-data/usersgroups.get-invalid-groups-by-user.json");
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_RBAC), "stub-data/usersgroups.get-invalid-rbac-groups-by-user.json");
         setupAsAuthorisedUser(fromString(CHAMBER_USER_ID), "stub-data/usersgroups.get-chamber-groups-by-user.json");
-
     }
 
 
@@ -100,6 +100,7 @@ public class AddCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldAddCourtDocument() throws IOException {
+
         verifyAddCourtDocument(null, "460f7ec0-c002-11e8-a355-529269fb1459");
         verifyForCourtDocumentNotified();
     }
@@ -411,8 +412,8 @@ public class AddCourtDocumentIT extends AbstractIT {
         assertThat(updatedProsecutionCase, is(expectedProsecutionCase));
 
         verifyCasesForSearchCriteria("Billy", new Matcher[]{
-                withJsonPath("$.searchResults[0].defendantName", containsString("Billy")),
-                withJsonPath("$.searchResults[0].cpsProsecutor", containsString("TFL-CM"))
+                withJsonPath("$.searchResults.[*].defendantName", hasItem(containsString("Billy"))),
+                withJsonPath("$.searchResults.[*].cpsProsecutor", hasItem(containsString("TFL-CM")))
         });
     }
 

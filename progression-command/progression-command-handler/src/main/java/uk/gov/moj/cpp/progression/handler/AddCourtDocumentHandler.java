@@ -65,7 +65,7 @@ public class AddCourtDocumentHandler {
     public void handle(final Envelope<AddCourtDocument> addCourtDocumentEnvelope) throws EventStreamException {
         logger.debug("progression.command.add-court-document {}", addCourtDocumentEnvelope);
 
-        final CourtDocument courtDocument = defaultCourtDocumentFactory.createDefaultCourtDocument(
+            final CourtDocument courtDocument = defaultCourtDocumentFactory.createDefaultCourtDocument(
 
                 addCourtDocumentEnvelope
                         .payload()
