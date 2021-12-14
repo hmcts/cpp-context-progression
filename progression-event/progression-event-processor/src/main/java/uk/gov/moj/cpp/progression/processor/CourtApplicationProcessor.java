@@ -16,6 +16,7 @@ import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.Hearing.hearing;
 import static uk.gov.justice.core.courts.HearingDay.hearingDay;
 import static uk.gov.justice.core.courts.HearingListingStatus.SENT_FOR_LISTING;
+import static uk.gov.justice.core.courts.LinkType.LINKED;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected.publicProgressionCourtApplicationSummonsRejected;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -547,7 +548,7 @@ public class CourtApplicationProcessor {
                     if (isNotEmpty(updatedProsecutionCase.getDefendants())) {
                         prosecutionCases.add(updatedProsecutionCase);
                     }
-                } else {
+                } else if(LINKED.equals(application.getType().getLinkType())){
                     triggerRetryOnCaseNotFound(courtApplicationCase.getProsecutionCaseId().toString());
                 }
             });

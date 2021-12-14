@@ -376,6 +376,42 @@ public class CourtApplicationProcessorTest {
         courtApplicationProcessor.processBoxWorkApplication(event);
     }
 
+
+    @Test
+    public void shouldNotThrowExceptionForStandaloneBoxWorkApplicationWhenProsecutionCaseNotFound() throws IOException {
+        //Given
+        final UUID applicationId = randomUUID();
+
+        final String caseId_1 = randomUUID().toString();
+        final String caseId_2 = randomUUID().toString();
+        final String masterDefendantId1 = randomUUID().toString();
+
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-boxwork");
+
+        String inputPayload = Resources.toString(getResource("progression.event.standalone-application-referred-to-boxwork.json"), defaultCharset());
+        inputPayload = inputPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
+                .replaceAll("RANDOM_ARN", STRING.next())
+                .replace("CASE_ID_1", caseId_1)
+                .replace("CASE_ID_2", caseId_2)
+                .replace("MASTER_DEFENDANT_ID", masterDefendantId1);
+
+        final JsonObject payload = stringToJsonObjectConverter.convert(inputPayload);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_1)))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId_1)
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId1)
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                )))).build()));
+
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_2)))
+                .thenReturn(Optional.empty());
+
+        //When
+        courtApplicationProcessor.processBoxWorkApplication(event);
+    }
+
     @Test
     public void shouldCallBoxWorkWhenCourtApplicationInitiated() throws IOException {
         //Given
