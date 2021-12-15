@@ -372,4 +372,72 @@ public class CourtDocumentAggregateTest {
 
         assertThat(list, not(hasItem(DocumentReviewRequired.class)));
     }
+
+    @Test
+    public void documentReviewRequiredNotAddedToCourtDocumentIfUserHasEmptyOrganisation(){
+        final boolean  actionRequired = true;
+        final UUID materialId = randomUUID();
+        final String section = "abc";
+        final Boolean isCpsCase = true;
+        final Boolean isUnbundledDocument = true;
+        final JsonObject userOrganisationDetails = Json.createObjectBuilder()
+                .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
+                .add("organisationType","")
+                .add("organisationName", "Bodgit and Scarper LLP")
+                .add("addressLine1","Legal House")
+                .add("addressLine2","15 Sewell Street")
+                .add( "addressLine3", "Hammersmith")
+                .add("addressLine4", "London")
+                .add("addressPostcode","SE14 2AB")
+                .add("phoneNumber","080012345678")
+                .add("email","joe@example.com")
+                .add("laaContractNumbers",Json.createArrayBuilder()
+                        .add("LAA3482374WER")
+                        .add("LAA3482374WEM")).build();
+
+        Stream<Object> objectStream =  target.addCourtDocument(courtDocument,actionRequired, materialId, section, isCpsCase, isUnbundledDocument, userOrganisationDetails);
+        List<Object> list = objectStream.collect(Collectors.toList());
+
+        assertThat(list, not(hasItem(DocumentReviewRequired.class)));
+    }
+
+    @Test
+    public void documentReviewRequiredNotAddedToCourtDocumentIfUserHasNullOrganisation(){
+        final boolean  actionRequired = true;
+        final UUID materialId = randomUUID();
+        final String section = "abc";
+        final Boolean isCpsCase = true;
+        final Boolean isUnbundledDocument = true;
+        final JsonObject userOrganisationDetails = Json.createObjectBuilder()
+                .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
+                .add("organisationType",JsonObject.NULL)
+                .add("organisationName", "Bodgit and Scarper LLP")
+                .add("addressLine1","Legal House")
+                .add("addressLine2","15 Sewell Street")
+                .add( "addressLine3", "Hammersmith")
+                .add("addressLine4", "London")
+                .add("addressPostcode","SE14 2AB")
+                .add("phoneNumber","080012345678")
+                .add("email","joe@example.com")
+                .add("laaContractNumbers",Json.createArrayBuilder()
+                        .add("LAA3482374WER")
+                        .add("LAA3482374WEM")).build();
+
+        Stream<Object> objectStream =  target.addCourtDocument(courtDocument,actionRequired, materialId, section, isCpsCase, isUnbundledDocument, userOrganisationDetails);
+        List<Object> list = objectStream.collect(Collectors.toList());
+
+        assertThat(list, not(hasItem(DocumentReviewRequired.class)));
+    }
+
+    @Test
+    public void documentReviewRequiredNotAddedToCourtDocumentIfUserDoesNotHaveAnyOrganisation(){
+        final boolean  actionRequired = true;
+        final UUID materialId = randomUUID();
+        final String section = "abc";
+        final Boolean isCpsCase = true;
+        final Boolean isUnbundledDocument = true;
+        Stream<Object> objectStream =  target.addCourtDocument(courtDocument,actionRequired, materialId, section, isCpsCase, isUnbundledDocument, null);
+        List<Object> list = objectStream.collect(Collectors.toList());
+        assertThat(list, not(hasItem(DocumentReviewRequired.class)));
+    }
 }

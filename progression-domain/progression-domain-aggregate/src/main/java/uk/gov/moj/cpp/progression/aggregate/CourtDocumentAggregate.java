@@ -223,7 +223,7 @@ public class CourtDocumentAggregate implements Aggregate {
 
         final Stream.Builder<Object> streamBuilder = builder();
 
-        final String organisationType = userOrganisationDetails.getString("organisationType", null);
+        final String organisationType = userOrganisationDetails != null ? userOrganisationDetails.getString("organisationType", null) : null;
         if (actionRequired && isNotEmpty(organisationType) && !"HMCTS".equals(organisationType)) {
             streamBuilder.add(CourtsDocumentAdded.courtsDocumentAdded()
                     .withCourtDocument(courtDocument)
