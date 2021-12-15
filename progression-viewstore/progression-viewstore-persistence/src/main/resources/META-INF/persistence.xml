@@ -9,10 +9,9 @@
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
         <jta-data-source>java:/DS.progression</jta-data-source>
         <class>uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail</class>
-        <!-- properties>
-            <property name="hibernate.archive.autodetection" value="class" />
-            <property name="hibernate.hbm2ddl.auto" value="update" />
-        </properties-->
+        <properties>
+            <property name="jboss.as.jpa.providerModule" value="org.hibernate:5.2"/>
+        </properties>
     </persistence-unit>
 
 </persistence>
