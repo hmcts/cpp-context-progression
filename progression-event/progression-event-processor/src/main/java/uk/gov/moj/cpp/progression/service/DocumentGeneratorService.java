@@ -25,6 +25,7 @@ import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.formatters.AccountingDivisionCodeFormatter;
 import uk.gov.moj.cpp.progression.processor.exceptions.InvalidHearingTimeException;
 import uk.gov.moj.cpp.progression.processor.exceptions.NowsTemplateNameNotFoundException;
 import uk.gov.moj.cpp.progression.service.exception.FileUploadException;
@@ -35,18 +36,26 @@ import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientPro
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.transaction.Transactional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +70,8 @@ public class DocumentGeneratorService {
     private static final String ERROR_MESSAGE = "Error while uploading document generation or upload ";
     public static final String NCES_DOCUMENT_TEMPLATE_NAME = "NCESNotification";
     public static final String NCES_DOCUMENT_ORDER = "NCESDocumentOrder";
+    public static final String ACCOUNTING_DIVISION_CODE = "accountingDivisionCode";
+    public static final String FINANCIAL_ORDER_DETAILS = "financialOrderDetails";
 
     private final DocumentGeneratorClientProducer documentGeneratorClientProducer;
 
@@ -78,6 +89,8 @@ public class DocumentGeneratorService {
 
     private final NowDocumentValidator nowDocumentValidator;
 
+    private final ObjectMapper mapper;
+
     @Inject
     public DocumentGeneratorService(final SystemUserProvider systemUserProvider,
                                     final DocumentGeneratorClientProducer documentGeneratorClientProducer,
@@ -86,7 +99,8 @@ public class DocumentGeneratorService {
                                     final UploadMaterialService uploadMaterialService,
                                     final MaterialUrlGenerator materialUrlGenerator,
                                     final ApplicationParameters applicationParameters,
-                                    final NowDocumentValidator nowDocumentValidator
+                                    final NowDocumentValidator nowDocumentValidator,
+                                    final ObjectMapper mapper
     ) {
         this.systemUserProvider = systemUserProvider;
         this.documentGeneratorClientProducer = documentGeneratorClientProducer;
@@ -96,6 +110,7 @@ public class DocumentGeneratorService {
         this.materialUrlGenerator = materialUrlGenerator;
         this.applicationParameters = applicationParameters;
         this.nowDocumentValidator = nowDocumentValidator;
+        this.mapper = mapper;
     }
 
     @Transactional(REQUIRES_NEW)
@@ -104,15 +119,17 @@ public class DocumentGeneratorService {
         try {
             final String orderName = nowDocumentRequest.getNowContent().getOrderName();
             final DocumentGeneratorClient documentGeneratorClient = documentGeneratorClientProducer.documentGeneratorClient();
-            final JsonObject nowsDocumentOrderJson = objectToJsonObjectConverter.convert(nowDocumentRequest.getNowContent());
-            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, getTemplateName(nowDocumentRequest), getSystemUserUuid());
+            final JsonObject nowDocumentContentJson = objectToJsonObjectConverter.convert(nowDocumentRequest.getNowContent());
+            final JsonObject updatedNowContent = updateNowContentWithAccountDivisionCode(nowDocumentContentJson);
+
+            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(updatedNowContent, getTemplateName(nowDocumentRequest), getSystemUserUuid());
             addDocumentToMaterial(sender, originatingEnvelope, getTimeStampAmendedFileName(orderName),
                     new ByteArrayInputStream(resultOrderAsByteArray), userId, nowDocumentRequest.getHearingId().toString(), nowDocumentRequest.getMaterialId(),
                     nowDocumentRequest.getNowDistribution(), nowDocumentRequest.getNowContent().getOrderAddressee());
         } catch (IOException | RuntimeException e) {
             LOGGER.error(ERROR_MESSAGE, e);
             updateMaterialStatusAsFailed(sender, originatingEnvelope, nowDocumentRequest.getMaterialId());
-            throw new RuntimeException("Progression : exception while generating NOWs document " , e);
+            throw new RuntimeException("Progression : exception while generating NOWs document ", e);
         }
     }
 
@@ -284,7 +301,7 @@ public class DocumentGeneratorService {
         }
 
         final List<String> emailAddresses = Stream.of(orderAddressee.getAddress().getEmailAddress1(),
-                orderAddressee.getAddress().getEmailAddress2())
+                        orderAddressee.getAddress().getEmailAddress2())
                 .filter(StringUtils::isNoneBlank)
                 .collect(Collectors.toList());
 
@@ -371,4 +388,34 @@ public class DocumentGeneratorService {
     private UUID getSystemUserUuid() {
         return systemUserProvider.getContextSystemUserId().orElseThrow(() -> new NowsTemplateNameNotFoundException("Could not find systemId "));
     }
+
+    private JsonObject updateNowContentWithAccountDivisionCode(final JsonObject jsonObject) throws JsonProcessingException {
+        final JsonNode jsonNode = mapper.valueToTree(jsonObject);
+
+        if (Objects.nonNull(jsonNode.path(FINANCIAL_ORDER_DETAILS)) && !(jsonNode.path(FINANCIAL_ORDER_DETAILS).isMissingNode())) {
+            final ObjectNode financialOrderDetailsNode = (ObjectNode) jsonNode.path(FINANCIAL_ORDER_DETAILS);
+            final String divisionCode = convertJsonNodeToString(financialOrderDetailsNode.path(ACCOUNTING_DIVISION_CODE));
+
+            financialOrderDetailsNode.put(ACCOUNTING_DIVISION_CODE, AccountingDivisionCodeFormatter
+                    .formatAccountingDivisionCode(divisionCode));
+            return jsonFromString(mapper.writeValueAsString(jsonNode));
+        }
+
+        return jsonObject;
+    }
+
+    private String convertJsonNodeToString(JsonNode jsonNode) {
+        if (jsonNode.isMissingNode()) {
+            return StringUtils.EMPTY;
+        }
+        return jsonNode.asText();
+    }
+
+    private static JsonObject jsonFromString(final String jsonObjectStr) {
+        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonObject object = jsonReader.readObject();
+        jsonReader.close();
+        return object;
+    }
+
 }

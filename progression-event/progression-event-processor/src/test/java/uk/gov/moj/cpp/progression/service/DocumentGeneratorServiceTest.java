@@ -11,14 +11,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.ACCOUNTING_DIVISION_CODE;
+import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.FINANCIAL_ORDER_DETAILS;
 import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.NCES_DOCUMENT_TEMPLATE_NAME;
 import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentRequestTemplate;
 
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.nces.DocumentContent;
 import uk.gov.justice.core.courts.nces.NcesNotificationRequested;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileStorer;
@@ -34,14 +38,18 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -92,6 +100,16 @@ public class DocumentGeneratorServiceTest {
     @Captor
     ArgumentCaptor<UploadMaterialContext> uploadMaterialContextArgumentCaptor;
 
+    @Captor
+    ArgumentCaptor<JsonObject> nowDocumentContentArgumentCaptor;
+
+    @Captor
+    ArgumentCaptor<DocumentContent> documentContentArgumentCaptorr;
+
+    @Spy
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+
     @Test
     public void shouldGenerateNowDocumentWithLetterFlagsAsTrueWhenDocumentPostable() throws Exception {
         when(nowDocumentValidator.isPostable(any(OrderAddressee.class))).thenReturn(TRUE);
@@ -111,8 +129,11 @@ public class DocumentGeneratorServiceTest {
         final UUID systemUserId = randomUUID();
         final byte[] documentData = {34, 56, 78, 90};
         final JsonObject nowsDocumentOrderJson = mock(JsonObject.class);
-
-        when(objectToJsonObjectConverter.convert(nowDocumentRequest.getNowContent())).thenReturn(nowsDocumentOrderJson);
+        final ObjectMapper mapper = new ObjectMapper();
+        final JsonObject nowDocumentContentJson = createNowDocumentContent();
+        final JsonNode node = mapper.readTree(nowDocumentContentJson.toString());
+        when(objectMapper.valueToTree(any())).thenReturn(node);
+        when(objectToJsonObjectConverter.convert(nowDocumentRequest.getNowContent())).thenReturn(nowDocumentContentJson);
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(documentData);
@@ -144,25 +165,27 @@ public class DocumentGeneratorServiceTest {
         assertThat(uploadMaterialContext.getEmailNotifications().get(1).getSendToAddress(), is("emailAddress2@test.com"));
         assertThat(uploadMaterialContext.isFirstClassLetter(), is(expectedLetterFlag));
         assertThat(uploadMaterialContext.isSecondClassLetter(), is(expectedLetterFlag));
+
+        verify(documentGeneratorClient, times(1)).generatePdfDocument(nowDocumentContentArgumentCaptor.capture(), anyString(), any(UUID.class));
+        JsonObject nowDocumentContentContext = nowDocumentContentArgumentCaptor.getValue();
+        assertThat(nowDocumentContentContext.getJsonObject(FINANCIAL_ORDER_DETAILS).getString(ACCOUNTING_DIVISION_CODE), is("077"));
     }
 
     @Test
     public void shouldGenerateNces() throws Exception {
         final NcesNotificationRequested ncesNotificationRequested = TestTemplates.generateNcesNotificationRequested();
-
+        final JsonObject ncesDocumentContent = createNcesDocumentContent();
         final UUID systemUserId = randomUUID();
         final byte[] documentData = {34, 56, 78, 90};
-        final JsonObject ncesDocumentOrderJson = mock(JsonObject.class);
-
-        when(objectToJsonObjectConverter.convert(ncesNotificationRequested.getDocumentContent())).thenReturn(ncesDocumentOrderJson);
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(ncesDocumentContent);
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-        when(documentGeneratorClient.generatePdfDocument(ncesDocumentOrderJson, NCES_DOCUMENT_TEMPLATE_NAME, systemUserId))
+        when(documentGeneratorClient.generatePdfDocument(ncesDocumentContent, NCES_DOCUMENT_TEMPLATE_NAME, systemUserId))
                 .thenReturn(documentData);
 
         final UUID userId = randomUUID();
 
-        when(documentGeneratorClient.generatePdfDocument(ncesDocumentOrderJson, NCES_DOCUMENT_TEMPLATE_NAME, systemUserId)).thenReturn(documentData);
+        when(documentGeneratorClient.generatePdfDocument(ncesDocumentContent, NCES_DOCUMENT_TEMPLATE_NAME, systemUserId)).thenReturn(documentData);
 
         documentGeneratorService.generateNcesDocument(sender, originatingEnvelope, userId, ncesNotificationRequested);
 
@@ -176,6 +199,29 @@ public class DocumentGeneratorServiceTest {
         UploadMaterialContext uploadMaterialContext = uploadMaterialContextArgumentCaptor.getValue();
         assertThat(uploadMaterialContext.getMaterialId(), is(ncesNotificationRequested.getMaterialId()));
         assertThat(uploadMaterialContext.getCaseId(), is(ncesNotificationRequested.getCaseId()));
+
+        verify(documentGeneratorClient, times(1)).generatePdfDocument(nowDocumentContentArgumentCaptor.capture(), anyString(), any(UUID.class));
+
+        verify(objectToJsonObjectConverter, times(1)).convert(documentContentArgumentCaptorr.capture());
+        DocumentContent documentContentContext = documentContentArgumentCaptorr.getValue();
+        assertThat(documentContentContext.getDivisionCode(), is("77"));
+    }
+
+    private JsonObject createNowDocumentContent() {
+        return Json.createObjectBuilder()
+                .add("defendant", Json.createObjectBuilder().add("address", Json.createObjectBuilder().add("emailAddress1", "emailAddress1@test.com")
+                        .add("emailAddress1", "emailAddress1@test.com").build()).build())
+                .add("financialOrderDetails",
+                        Json.createObjectBuilder().add(ACCOUNTING_DIVISION_CODE, "77").build())
+                .build();
+    }
+
+    private JsonObject createNcesDocumentContent() {
+        return Json.createObjectBuilder()
+                .add("defendant", Json.createObjectBuilder().add("address", Json.createObjectBuilder().add("emailAddress1", "emailAddress1@test.com")
+                        .add("emailAddress1", "emailAddress1@test.com").build()).build())
+                .add(ACCOUNTING_DIVISION_CODE, "77")
+                .build();
     }
 
 }

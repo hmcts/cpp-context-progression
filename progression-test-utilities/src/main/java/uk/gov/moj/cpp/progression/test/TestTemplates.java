@@ -138,7 +138,7 @@ public class TestTemplates {
         return FinancialOrderDetails.financialOrderDetails()
                 .withBacsAccountNumber("BACS1234567")
                 .withAccountPaymentReference("Sample_Account_Payment_Reference")
-                .withAccountingDivisionCode(123)
+                .withAccountingDivisionCode(77)
                 .withTotalBalance("100.00")
                 .withTotalAmountImposed("95.00")
                 .withEnforcementPhoneNumber("1234567890")
@@ -212,7 +212,7 @@ public class TestTemplates {
                                 .withDefendant(Defendant.defendant().build())
                                 .withGobAccountNumber("gobnumber")
                                 .withAmendmentType("Granted refused")
-                                .withDivisionCode("203")
+                                .withDivisionCode("77")
                                 .withDefendantCaseOffences(
                                         Arrays.asList(defendantCaseOffenceTemplate(12)))
 

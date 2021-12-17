@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static com.jayway.jsonassert.JsonAssert.with;
 import static java.lang.Boolean.TRUE;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -21,6 +22,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.progression.processor.NowsRequestedEventProcessor.PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT;
+import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.ACCOUNTING_DIVISION_CODE;
+import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.FINANCIAL_ORDER_DETAILS;
 import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.PROGRESSION_COMMAND_UPDATE_NOWS_MATERIAL_STATUS;
 import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentRequestTemplate;
 import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentRequestTemplateWithNonVisibleUserList;
@@ -136,6 +139,8 @@ public class NowsRequestedEventProcessorTest {
     private ArgumentCaptor<JsonObject> jsonObjectArgumentCaptor;
     @Captor
     private ArgumentCaptor<UploadMaterialContext> uploadMaterialContextArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<JsonObject> nowContentArgumentCaptor;
 
     public static NowDocumentRequest nowsRequestedTemplate() {
         return generateNowDocumentRequestTemplate(UUID.randomUUID());
@@ -166,7 +171,8 @@ public class NowsRequestedEventProcessorTest {
                         this.uploadMaterialService,
                         materialUrlGenerator,
                         applicationParameters,
-                        nowDocumentValidator),
+                        nowDocumentValidator,
+                        objectMapper),
                 this.jsonObjectToObjectConverter,
                 this.objectToJsonObjectConverter,
                 this.refDataService,
@@ -198,7 +204,7 @@ public class NowsRequestedEventProcessorTest {
 
         this.nowsRequestedEventProcessor.processNowDocumentRequested(eventEnvelope);
 
-        verify(this.documentGeneratorClient).generatePdfDocument(any(), any(), eq(systemUserid));
+        verify(this.documentGeneratorClient).generatePdfDocument(nowContentArgumentCaptor.capture(), any(), eq(systemUserid));
         verify(this.uploadMaterialService).uploadFile(uploadMaterialContextArgumentCaptor.capture());
         verify(this.fileStorer).store(jsonObjectArgumentCaptor.capture(), inputStreamArgumentCaptor.capture());
         assertThat(jsonObjectArgumentCaptor.getValue().getString(FILE_NAME), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
@@ -221,7 +227,8 @@ public class NowsRequestedEventProcessorTest {
         final DefaultEnvelope<?> publicNowDocumentRequestedEnvelope = this.envelopeArgumentCaptor.getAllValues().get(1);
         assertThat(publicNowDocumentRequestedEnvelope.metadata().name(), is(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED));
         assertThat(((JsonObject) publicNowDocumentRequestedEnvelope.payload()).getString("materialId"), is(nowDocumentRequested.getMaterialId().toString()));
-
+        final String updatedNowContent = ((JsonObject) (nowContentArgumentCaptor.getValue().get(FINANCIAL_ORDER_DETAILS))).toString();
+        with(updatedNowContent).assertThat(ACCOUNTING_DIVISION_CODE, is("077"));
     }
 
     @Test
