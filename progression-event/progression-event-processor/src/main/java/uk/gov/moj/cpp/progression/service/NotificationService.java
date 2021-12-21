@@ -412,6 +412,8 @@ public class NotificationService {
                 templateId = applicationParameters.getDefenceInstructionTemplateId();
             } else if (cpsNotification.getTemplateType() == EmailTemplateType.DISASSOCIATION) {
                 templateId = applicationParameters.getDefenceDisassociationTemplateId();
+            } else if (cpsNotification.getTemplateType() == EmailTemplateType.ASSOCIATION) {
+                templateId = applicationParameters.getDefenceAssociationTemplateId();
             }
             emailChannelBuilder.withTemplateId(UUID.fromString(templateId));
         } catch (final IllegalArgumentException ex) {

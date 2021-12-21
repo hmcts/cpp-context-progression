@@ -96,7 +96,7 @@ public class ReceiveRepresentationOrderHandler {
                 final UUID prosecutionCaseId = receiveRepresentationOrderForDefendant.getProsecutionCaseId();
                 final EventStream eventStream = eventSource.getStreamById(prosecutionCaseId);
                 final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-                final Stream<Object> events = caseAggregate.receiveRepresentationOrderForDefendant(receiveRepresentationOrderForDefendant, laaReference, organisationDetails.getId(), organisationDetails.getName(), associatedOrganisationId, optionalDefendant.get());
+                final Stream<Object> events = caseAggregate.receiveRepresentationOrderForDefendant(receiveRepresentationOrderForDefendant, laaReference, organisationDetails , associatedOrganisationId, optionalDefendant.get(), prosecutionCase);
                 appendEventsToStream(envelope, eventStream, events);
             }
         } else {

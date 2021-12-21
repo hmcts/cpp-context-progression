@@ -22,6 +22,10 @@ public class ApplicationParameters {
     private String defenceDisassociationTemplateId;
 
     @Inject
+    @Value(key = "defenceAssociationTemplateId")
+    private String defenceAssociationTemplateId;
+
+    @Inject
     @Value(key = "ncesEmailTemplateId")
     private String ncesEmailTemplateId;
 
@@ -110,6 +114,10 @@ public class ApplicationParameters {
     @Inject
     @Value(key = "statdec_send_appointment_letter_template_id")
     private String statDecSendAppointmentLetterTemplateId;
+
+    public String getDefenceAssociationTemplateId() {
+        return defenceAssociationTemplateId;
+    }
 
     public String getNcesEmailTemplateId() {
 

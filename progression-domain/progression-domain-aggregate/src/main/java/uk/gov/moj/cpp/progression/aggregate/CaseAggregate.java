@@ -11,6 +11,9 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.Address.address;
+import static uk.gov.justice.core.courts.Organisation.organisation;
+import static uk.gov.justice.core.courts.UpdatedOrganisation.updatedOrganisation;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
@@ -66,7 +69,6 @@ import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
-import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.PartialMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
@@ -180,7 +182,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 6744269354919757996L;
+    private static final long serialVersionUID = 956786935491975799L;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     private static final String HEARING_PAYLOAD_PROPERTY = "hearing";
@@ -1140,7 +1142,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> receiveRepresentationOrderForDefendant(final ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant, final LaaReference laaReference,
-                                                                 final UUID organisationId, final String organisationName, final String associatedOrganisationId, final uk.gov.justice.core.courts.Defendant defendant) {
+                                                                 final OrganisationDetails organisationDetails, final String associatedOrganisationId, final uk.gov.justice.core.courts.Defendant defendant, final ProsecutionCase prosecutionCase) {
         LOGGER.debug("Receive Representation Order for Defendant.");
         final UUID defendantId = receiveRepresentationOrderForDefendant.getDefendantId();
         final UUID prosecutionCaseId = receiveRepresentationOrderForDefendant.getProsecutionCaseId();
@@ -1173,7 +1175,7 @@ public class CaseAggregate implements Aggregate {
                     .withProsecutionCaseId(receiveRepresentationOrderForDefendant.getProsecutionCaseId())
                     .build();
             final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper.getOffencesForDefendantUpdated(updatedOffenceList, offencesList, prosecutionCaseId, defendantId);
-            handleDefenceOrganisationAssociationAndDisassociation(organisationId, organisationName, associatedOrganisationId, prosecutionCaseId, defendantId, laaContractNumber, streamBuilder);
+            handleDefenceOrganisationAssociationAndDisassociation(organisationDetails.getId(), organisationDetails.getName(), associatedOrganisationId, prosecutionCaseId, defendantId, laaContractNumber, streamBuilder);
             final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisation()
                     .withDefenceOrganisation(receiveRepresentationOrderForDefendant.getDefenceOrganisation())
                     .withIsAssociatedByLAA(true)
@@ -1216,6 +1218,20 @@ public class CaseAggregate implements Aggregate {
                                 .withPersonDefendant(defendant.getPersonDefendant())
                                 .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)
                                 .build())
+                        .withProsecutionAuthorityId(getProsecutorId(prosecutionCase))
+                        .withCaseUrn(prosecutionCase.getProsecutionCaseIdentifier().getCaseURN())
+                        .withUpdatedOrganisation(updatedOrganisation()
+                                .withAddressLine1(organisationDetails.getAddressLine1())
+                                .withAddressLine2(organisationDetails.getAddressLine2())
+                                .withAddressLine3(organisationDetails.getAddressLine3())
+                                .withAddressLine4(organisationDetails.getAddressLine4())
+                                .withId(organisationDetails.getId())
+                                .withAddressPostcode(organisationDetails.getAddressPostcode())
+                                .withEmail(organisationDetails.getEmail())
+                                .withLaaContractNumber(organisationDetails.getLaaContractNumber())
+                                .withPhoneNumber(organisationDetails.getPhoneNumber())
+                                .withName(organisationDetails.getName())
+                                .build())
                         .build());
 
             }
@@ -1238,8 +1254,8 @@ public class CaseAggregate implements Aggregate {
             final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisation()
                     .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
                             .withLaaContractNumber(laaContractNumber)
-                            .withOrganisation(Organisation.organisation()
-                                    .withAddress(Address.address()
+                            .withOrganisation(organisation()
+                                    .withAddress(address()
                                             .withAddress1(organisationDetails.getAddressLine1())
                                             .withAddress2(organisationDetails.getAddressLine2())
                                             .withAddress3(organisationDetails.getAddressLine3())
@@ -1833,6 +1849,16 @@ public class CaseAggregate implements Aggregate {
             return NO_VALUE.getDescription();
         }
 
+    }
+
+    private String getProsecutorId(final ProsecutionCase prosecutionCase) {
+        String prosecutorId = null;
+        if (nonNull(prosecutionCase.getProsecutor()) && nonNull(prosecutionCase.getProsecutor().getProsecutorId())) {
+            prosecutorId = prosecutionCase.getProsecutor().getProsecutorId().toString();
+        } else if (nonNull(prosecutionCase.getProsecutionCaseIdentifier()) && nonNull(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId())) {
+            prosecutorId = prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId().toString();
+        }
+        return prosecutorId;
     }
 
     private void hearingConfirmedCaseStatusUpdated(final HearingConfirmedCaseStatusUpdated hearingConfirmedCaseStatusUpdated) {

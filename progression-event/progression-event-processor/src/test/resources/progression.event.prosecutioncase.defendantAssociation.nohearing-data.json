@@ -1,0 +1,130 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "SJP_REFERRAL",
+    "defendants": [
+      {
+        "id": "924cbf53-0b51-4633-9e99-2682be854af4",
+        "isYouth": false,
+        "numberOfPreviousConvictionsCited": 99,
+        "offences": [
+          {
+            "chargeDate": "2018-08-01",
+            "convictionDate": "2019-12-12",
+            "count": 1,
+            "id": "a624732b-9b47-4c2e-8aca-933324507624",
+            "modeOfTrial": "Summary",
+            "notifiedPlea": {
+              "notifiedPleaDate": "2019-12-12",
+              "notifiedPleaValue": "NO_NOTIFICATION",
+              "offenceId": "a624732b-9b47-4c2e-8aca-933324507624"
+            },
+            "offenceCode": "PS90010",
+            "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+            "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+            "offenceLegislationWelsh": "",
+            "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+            "offenceTitleWelsh": "",
+            "orderIndex": 1,
+            "startDate": "2018-07-02",
+            "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+          }
+        ],
+        "personDefendant": {
+          "personDetails": {
+            "address": {
+              "address1": "Flat 1",
+              "address2": "1 Old Road",
+              "address3": "London",
+              "address4": "Merton",
+              "postcode": "SW99 1AA"
+            },
+            "contact": {},
+            "dateOfBirth": "1965-12-27",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {},
+            "firstName": "Fred",
+            "gender": "MALE",
+            "middleName": "John",
+            "lastName": "Smith",
+            "title": "MR"
+          }
+        },
+        "prosecutionCaseId": "01702930-c1c8-4cfb-8f1c-1df9a58f4e5b"
+      }
+    ],
+    "id": "01702930-c1c8-4cfb-8f1c-1df9a58f4e5b",
+    "initiationCode": "J",
+    "prosecutionCaseIdentifier": {
+      "prosecutionAuthorityCode": "TFL",
+      "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+      "prosecutionAuthorityReference": "TFL9135196"
+    },
+    "statementOfFacts": "Prosecution Facts"
+  },
+  "courtDocuments": [
+    {
+      "courtDocumentId": "f78b58d2-c44c-4ce0-b26d-c9da72a1c281",
+      "documentCategory": {
+        "defendantDocument": {
+          "defendants": [
+            "924cbf53-0b51-4633-9e99-2682be854af4"
+          ],
+          "prosecutionCaseId": "01702930-c1c8-4cfb-8f1c-1df9a58f4e5b"
+        }
+      },
+      "documentTypeDescription": "Summons",
+      "documentTypeId": "f78b58d2-c44c-4ce0-b26d-c9da72a1c281",
+      "materials": [
+        {
+          "generationStatus": "generated",
+          "id": "c0960745-7ae6-4eb3-b9a2-2bf450818a42",
+          "name": "Summons",
+          "uploadDateTime": "2019-12-12T07:28:25.796Z"
+        }
+      ],
+      "name": "Summons - "
+    },
+    {
+      "containsFinancialMeans": false,
+      "courtDocumentId": "7d663e7f-36a1-467f-be3c-e6a7048e2759",
+      "documentCategory": {
+        "defendantDocument": {
+          "defendants": [
+            "924cbf53-0b51-4633-9e99-2682be854af4"
+          ],
+          "prosecutionCaseId": "01702930-c1c8-4cfb-8f1c-1df9a58f4e5b"
+        }
+      },
+      "documentTypeDescription": "Basis of Plea",
+      "documentTypeId": "460f77c2-c002-11e8-a355-529269fb1459",
+      "isRemoved": false,
+      "materials": [
+        {
+          "id": "212a2011-8aa1-4b8e-9aaf-3974dc4c7689",
+          "name": "Bloggs_John_TEST URN_PLEA.pdf",
+          "uploadDateTime": "2019-12-12T07:27:51.439Z"
+        }
+      ],
+      "mimeType": "application/pdf",
+      "name": "Bloggs_John_TEST URN_PLEA.pdf - "
+    }
+  ],
+  "hearingsAtAGlance": {
+    "courtApplications": [],
+    "defendantHearings": [
+      {
+        "defendantId": "924cbf53-0b51-4633-9e99-2682be854af4",
+        "defendantName": "Fred Smith",
+        "hearingIds": [
+          "87f568bd-7285-4d7b-b76a-e83ac96309e4"
+        ]
+      }
+    ],
+    "id": "01702930-c1c8-4cfb-8f1c-1df9a58f4e5b",
+    "prosecutionCaseIdentifier": {
+      "prosecutionAuthorityCode": "TFL",
+      "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+      "prosecutionAuthorityReference": "TFL9135196"
+    }
+  }
+}
