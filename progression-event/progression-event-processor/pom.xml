@@ -66,7 +66,13 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
+            <artifactId>resteasy-client</artifactId>            <exclusions>
+            <exclusion>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+            </exclusion>
+        </exclusions>
+
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.core.domain</groupId>
@@ -154,7 +160,16 @@
                     <groupId>uk.gov.moj.cpp.core.domain</groupId>
                     <artifactId>common-core-domain</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
