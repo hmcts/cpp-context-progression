@@ -55,12 +55,12 @@ import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBe
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 
 import java.nio.charset.Charset;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
@@ -119,7 +119,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
     private final String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
     private final String statusCode = "G2";
     private final String laaContractNumber = "LAA3456";
-
+    private final String futureHearingDate = LocalDate.now().plusYears(1) + "T09:30:00.000Z";
     private String organisationId;
     private String caseId;
     private String defendantId;
@@ -712,7 +712,8 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId)
-                .replaceAll("COURT_CENTRE_NAME", courtCentreName);
+                .replaceAll("COURT_CENTRE_NAME", courtCentreName)
+                .replaceAll("FUTURE_HEARING_DATE", futureHearingDate);
         LOGGER.info("Payload: " + strPayload);
         LOGGER.info("COURT_CENTRE_ID==" + courtCentreId);
         LOGGER.info("COURT_CENTRE_NAME==" + courtCentreName);
