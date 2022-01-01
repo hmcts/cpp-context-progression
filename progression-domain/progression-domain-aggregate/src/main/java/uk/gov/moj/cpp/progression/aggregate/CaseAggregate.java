@@ -418,9 +418,7 @@ public class CaseAggregate implements Aggregate {
                                 .build())
                         .collect(toList()))
                 .build();
-        this.prosecutionCase.getDefendants().forEach(defendant ->
-                this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences())
-        );
+
     }
 
     private Integer getListingNumber(final Map<UUID, Integer> listingMap, final uk.gov.justice.core.courts.Offence offence) {

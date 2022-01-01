@@ -141,9 +141,6 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
 
             final List<Offence> persistedOffences = new ArrayList<>(optionalDefendant.get().getOffences());
 
-            //Delete
-            final List<Offence> offenceDetailListDel = getDeletedOffences(defendantCaseOffences.getOffences(), defendant.getOffences());
-            defendant.getOffences().removeAll(offenceDetailListDel);
 
             //amend
             mergeOffence(persistedOffences, defendantCaseOffences.getOffences(), defendant.getOffences());
@@ -190,16 +187,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                 : offenceLegalAidStatus;
     }
 
-    private static List<Offence> getDeletedOffences(
-            final List<Offence> commandOffences,
-            final List<Offence> existingOffences) {
-        return existingOffences.stream()
-                .filter(existingOffence -> !commandOffences.stream()
-                        .map(Offence::getId)
-                        .collect(Collectors.toList())
-                        .contains(existingOffence.getId()))
-                .collect(Collectors.toList());
-    }
+
 
     private static List<Offence> getAddedOffences(
             final List<Offence> commandOffences,
