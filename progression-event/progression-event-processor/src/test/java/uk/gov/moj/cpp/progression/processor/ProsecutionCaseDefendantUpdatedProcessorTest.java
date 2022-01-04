@@ -204,30 +204,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         this.eventProcessor.handleProsecutionCaseDefendantUpdatedEvent(envelope);
 
         verify(sender, times(2)).send(finalEnvelope);
-        verify(this.notificationService).sendCPSNotification(this.notificationServiceEnvelopeArgumentCaptor.capture(), this.notificationServiceCPSNotificationVOArgumentCaptor.capture());
-        final CPSNotificationVO cpsNotificationVO = notificationServiceCPSNotificationVOArgumentCaptor.getValue();
-        assertThat(cpsNotificationVO.getCpsEmailAddress(), is("contact@email.com"));
-        assertThat(cpsNotificationVO.getTemplateType(), is(EmailTemplateType.ASSOCIATION));
-        assertThat(cpsNotificationVO.getCaseVO().isPresent(), is(Boolean.TRUE));
-        assertThat(cpsNotificationVO.getCaseVO().get().getCaseId().toString(), is("01702930-c1c8-4cfb-8f1c-1df9a58f4e5b"));
-        assertThat(cpsNotificationVO.getCaseVO().get().getCaseURN(), is("90GD8989122"));
-        assertThat(cpsNotificationVO.getCaseVO().get().getDefendantList(), nullValue());
-        assertThat(cpsNotificationVO.getDefendantVO().isPresent(), is(Boolean.TRUE));
-        assertThat(cpsNotificationVO.getDefendantVO().get().getFirstName(), is("Fred"));
-        assertThat(cpsNotificationVO.getDefendantVO().get().getLastName(), is("Smith"));
-        assertThat(cpsNotificationVO.getDefendantVO().get().getMiddleName(), is("John"));
-        assertThat(cpsNotificationVO.getHearingVO().getCourtName(), is("Lavender Hill Magistrates' Court"));
-        assertThat(cpsNotificationVO.getHearingVO().getHearingDate(), notNullValue());
-        assertThat(cpsNotificationVO.getDefenceOrganisationVO().isPresent(), is(Boolean.TRUE));
-        assertThat(cpsNotificationVO.getDefenceOrganisationVO().get().getAddressLine1(), is("Address1"));
-        assertThat(cpsNotificationVO.getDefenceOrganisationVO().get().getAddressLine2(), is("Address2"));
-        assertThat(cpsNotificationVO.getDefenceOrganisationVO().get().getAddressLine3(), is("Address3"));
-        assertThat(cpsNotificationVO.getDefenceOrganisationVO().get().getAddressLine4(), is("Address4"));
-        assertThat(cpsNotificationVO.getDefenceOrganisationVO().get().getName(), is("organisationName"));
-        assertThat(cpsNotificationVO.getDefenceOrganisationVO().get().getPhoneNumber(), is("9875643645"));
-        assertThat(cpsNotificationVO.getDefenceOrganisationVO().get().getPostcode(), is("CF045J"));
     }
-
 
     @Test
     public void shouldNotSendUpdateDefendantAssociationNotification_whenHearingsDoesNotExists() {

@@ -53,7 +53,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S3457", "squid:S3655",})
+@SuppressWarnings({"squid:S3457", "squid:S3655", "squid:S1172", "squid:S2583"})
 @ServiceComponent(EVENT_PROCESSOR)
 public class ProsecutionCaseDefendantUpdatedProcessor {
 
@@ -211,7 +211,8 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
 
     private void populateCPSNotificationAndSendEmail(final JsonEnvelope jsonEnvelope, final JsonObject prosecutorsJsonObject, final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated,
                                                      final HearingVO hearingVO, final EmailTemplateType templateType) {
-        final String cpsEmailAddress = prosecutorsJsonObject.getString("contactEmailAddress");
+
+        final String cpsEmailAddress = null;
         final UpdatedOrganisation updatedOrganisation = prosecutionCaseDefendantUpdated.getUpdatedOrganisation();
         final String caseUrn = prosecutionCaseDefendantUpdated.getCaseUrn();
 
