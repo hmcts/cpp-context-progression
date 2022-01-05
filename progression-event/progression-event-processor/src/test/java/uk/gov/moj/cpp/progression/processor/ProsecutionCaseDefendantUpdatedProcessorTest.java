@@ -3,10 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static com.google.common.io.Resources.getResource;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static javax.json.Json.createObjectBuilder;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -35,7 +32,6 @@ import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 import uk.gov.moj.cpp.progression.value.object.CPSNotificationVO;
-import uk.gov.moj.cpp.progression.value.object.EmailTemplateType;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -201,9 +197,45 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(enveloper.withMetadataFrom(envelope, COMMAND_UPDATE_DEFENDANT_FOR_HEARING)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
 
+        final String testCPSEmail = "abc@xyz.com";
+        final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress", testCPSEmail).build();
+
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(sampleJsonObject));
+
         this.eventProcessor.handleProsecutionCaseDefendantUpdatedEvent(envelope);
 
         verify(sender, times(2)).send(finalEnvelope);
+        verify(notificationService, times(1)).sendCPSNotification(any(), any());
+    }
+
+
+    @Test
+    public void shouldNotSendUpdateDefendantAssociationNotification_whenFutureHearingExists_AndCpsEmailDoesNotExists() {
+        final UUID PROSECUTOR_ID = randomUUID();
+        final String PROSECUTOR_CODE = "D24AW";
+        final String CASE_URN = "90GD8989122";
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        final UUID hearingId = randomUUID();
+        final ProsecutionCaseDefendantUpdated inputEvent = buildProsecutionCaseDefendantUpdatedObject(CASE_URN, PROSECUTOR_CODE, PROSECUTOR_ID, Arrays.asList(hearingId));
+        when(jsonObjectToObjectConverterMock.convert(payload, ProsecutionCaseDefendantUpdated.class))
+                .thenReturn(inputEvent);
+        when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
+
+        when(enveloper.withMetadataFrom(envelope, PUBLIC_CASE_DEFENDANT_CHANGED)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, COMMAND_UPDATE_DEFENDANT_FOR_HEARING)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+
+        final JsonObject sampleJsonObject = createObjectBuilder().build();
+
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(sampleJsonObject));
+
+        this.eventProcessor.handleProsecutionCaseDefendantUpdatedEvent(envelope);
+
+        verify(sender, times(2)).send(finalEnvelope);
+        verify(notificationService, never()).sendCPSNotification(any(), any());
     }
 
     @Test
