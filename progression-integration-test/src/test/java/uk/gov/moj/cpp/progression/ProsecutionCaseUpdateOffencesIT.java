@@ -10,6 +10,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper.OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import org.junit.Ignore;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
 import java.time.LocalDate;
@@ -66,6 +67,7 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
     }
 
     @Test
+    @Ignore("This test is irrelavant after change in case aggregate as we don't delete the offence now")
     public void shouldUpdateProsecutionCaseAddOffences() throws Exception {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
@@ -113,6 +115,8 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
 
     private void updateOffenceAndVerify(String newOffenceId, int orderIndex, String offenceCode) {
 
+        final int offenceIndex = orderIndex -1;
+
         // when
         helper.updateOffences(newOffenceId, offenceCode);
 
@@ -121,10 +125,10 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         helper.verifyInMessagingQueueForOffencesUpdated();
 
         final Matcher[] matchers = {
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is(offenceCode)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is(newOffenceId)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(1)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].orderIndex", is(orderIndex))
+                withJsonPath("$.prosecutionCase.defendants[0].offence["+ offenceIndex +"].offenceCode", is(offenceCode)),
+                withJsonPath("$.prosecutionCase.defendants[0].offence["+ offenceIndex +"].id", is(newOffenceId)),
+                withJsonPath("$.prosecutionCase.defendants[0].offence["+ offenceIndex +"].count", is(1)),
+                withJsonPath("$.prosecutionCase.defendants[0].offence["+ offenceIndex +"].orderIndex", is(orderIndex))
         };
         pollProsecutionCasesProgressionFor(caseId, matchers);
     }

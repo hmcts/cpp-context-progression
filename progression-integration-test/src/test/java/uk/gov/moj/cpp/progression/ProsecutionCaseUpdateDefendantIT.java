@@ -157,9 +157,6 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, additionalMatchersForDOBUpdated.toArray(new Matcher[additionalMatchersForDOBUpdated.size()]));
         helper.verifyInMessagingQueueForDefendentChanged();
 
-        //UI will trigger this if the age is changed to Youth
-        PreAndPostConditionHelper.sendCurrentOffencesToUpdateOffencesCommand(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, additionalMatchersForReportingRestrictionsAfterDOBUpdated.toArray(new Matcher[additionalMatchersForReportingRestrictionsAfterDOBUpdated.size()]));
 
     }
 
