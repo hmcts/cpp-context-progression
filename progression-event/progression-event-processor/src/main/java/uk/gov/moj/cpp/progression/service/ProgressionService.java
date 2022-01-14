@@ -20,7 +20,9 @@ import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 
-
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.BoxworkApplicationReferred;
@@ -69,7 +71,14 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
+import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
 
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -84,18 +93,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-@SuppressWarnings({"squid:CommentedOutCodeLine", "squid:S1188", "squid:S2789", "squid:S3655", "squid:S1192", "squid:S1168", "pmd:NullAssignment", "squid:CallToDeprecatedMethod"})
+@SuppressWarnings({"squid:CommentedOutCodeLine", "squid:S1188", "squid:S2789", "squid:S3655", "squid:S1192", "squid:S1168", "pmd:NullAssignment", "squid:CallToDeprecatedMethod", "squid:S1166", "squid:S2221"})
 public class ProgressionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProgressionService.class);
@@ -210,7 +208,7 @@ public class ProgressionService {
     }
 
     private List<CourtApplication> removeJudicialResults(final List<CourtApplication> courtApplications) {
-        if(courtApplications == null){
+        if (courtApplications == null) {
             return null;
         }
         return courtApplications.stream()
@@ -278,7 +276,7 @@ public class ProgressionService {
             final List<Offence> matchedDefendantOffence = matchedDefendant.getOffences().stream()
                     .filter(offence -> confirmedDefendantConsumer.getOffences().stream()
                             .anyMatch(o -> o.getId().equals(offence.getId())))
-                    .map(offence -> Offence.offence().withValuesFrom(offence).withListingNumber(ofNullable(offence.getListingNumber()).orElse(0)+1).build())
+                    .map(offence -> Offence.offence().withValuesFrom(offence).withListingNumber(ofNullable(offence.getListingNumber()).orElse(0) + 1).build())
                     .collect(Collectors.toList());
 
             final List<Offence> matchedDefendantAndPleaRemovedOffences = new ArrayList<>();
@@ -366,7 +364,7 @@ public class ProgressionService {
                 .withId(matchedDefendant.getId())
                 .withMasterDefendantId(matchedDefendant.getMasterDefendantId())
                 .withCourtProceedingsInitiated(matchedDefendant.getCourtProceedingsInitiated())
-                .withOffences( matchedDefendantOffence.stream().map(offence -> Offence.offence().withValuesFrom(offence).withJudicialResults(null).build()).collect(toList()))
+                .withOffences(matchedDefendantOffence.stream().map(offence -> Offence.offence().withValuesFrom(offence).withJudicialResults(null).build()).collect(toList()))
                 .withAssociatedPersons(matchedDefendant.getAssociatedPersons())
                 .withDefenceOrganisation(matchedDefendant.getDefenceOrganisation())
                 .withAssociatedDefenceOrganisation(matchedDefendant.getAssociatedDefenceOrganisation())
@@ -549,7 +547,7 @@ public class ProgressionService {
 
     private boolean isYouthUpdated(final Defendant confirmedDefendantConsumer, final Defendant defEnt) {
         if (nonNull(confirmedDefendantConsumer.getIsYouth())) {
-           return !confirmedDefendantConsumer.getIsYouth().equals(Optional.ofNullable(defEnt.getIsYouth()).orElse(Boolean.FALSE));
+            return !confirmedDefendantConsumer.getIsYouth().equals(Optional.ofNullable(defEnt.getIsYouth()).orElse(Boolean.FALSE));
         }
         return false;
     }
@@ -594,23 +592,31 @@ public class ProgressionService {
 
     public Optional<JsonObject> getProsecutionCaseDetailById(final JsonEnvelope envelope, final String caseId) {
         Optional<JsonObject> result = Optional.empty();
+
         final JsonObject requestParameter = createObjectBuilder()
                 .add(CASE_ID, caseId)
                 .build();
 
         LOGGER.info("caseId {} ,   get prosecution case detail request {}", caseId, requestParameter);
 
-        final JsonEnvelope prosecutioncase = requester.requestAsAdmin(enveloper
-                .withMetadataFrom(envelope, PROGRESSION_QUERY_PROSECUTION_CASES)
-                .apply(requestParameter));
+        try {
+            final JsonEnvelope prosecutioncase = requester.requestAsAdmin(enveloper
+                    .withMetadataFrom(envelope, PROGRESSION_QUERY_PROSECUTION_CASES)
+                    .apply(requestParameter));
 
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("caseId {} prosecution case detail payload {}", caseId, prosecutioncase.toObfuscatedDebugString());
+            }
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("caseId {} prosecution case detail payload {}", caseId, prosecutioncase.toObfuscatedDebugString());
-        }
+            if (!prosecutioncase.payloadAsJsonObject().isEmpty()) {
+                result = Optional.of(prosecutioncase.payloadAsJsonObject());
+            }
+        } catch (Exception e) {
 
-        if (!prosecutioncase.payloadAsJsonObject().isEmpty()) {
-            result = Optional.of(prosecutioncase.payloadAsJsonObject());
+            LOGGER.debug(String.format("Prosecution case detail not found for case id : %s", caseId), e.getCause());
+
+            throw new CourtApplicationAndCaseNotFoundException(String.format("Prosecution case detail not found for case id : %s", caseId));
+
         }
         return result;
     }

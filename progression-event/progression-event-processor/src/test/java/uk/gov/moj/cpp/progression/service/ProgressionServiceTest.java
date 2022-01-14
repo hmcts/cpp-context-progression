@@ -131,6 +131,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings({"squid:S1607"})
@@ -221,23 +222,23 @@ public class ProgressionServiceTest {
         verify(sender).send(envelopeArgumentCaptor.capture());
 
         assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                metadata().withName(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA),
-                payloadIsJson(
-                        allOf(
-                                withJsonPath("$.courtCentre.id", is(confirmedHearing.getCourtCentre().getId().toString())),
-                                withJsonPath("$.courtCentre.name", is(confirmedHearing.getCourtCentre().getName())),
-                                withJsonPath("$.courtCentre.roomId", is(confirmedHearing.getCourtCentre().getRoomId().toString())),
-                                withJsonPath("$.courtCentre.roomName", is(confirmedHearing.getCourtCentre().getRoomName())),
-                                withJsonPath("$.courtCentre.welshName", is(confirmedHearing.getCourtCentre().getWelshName())),
-                                withJsonPath("$.courtCentre.welshRoomName", is(confirmedHearing.getCourtCentre().getWelshRoomName())),
-                                withJsonPath("$.hearingDateTime", is(HEARING_DATE_1)),
-                                withJsonPath("$.confirmedProsecutionCaseIds[0].id", is(CASE_ID_1.toString())),
-                                withJsonPath("$.confirmedProsecutionCaseIds[0].confirmedDefendantIds[0]", is(DEFENDANT_ID_1.toString())),
-                                withJsonPath("$.confirmedProsecutionCaseIds[1].id", is(CASE_ID_2.toString())),
-                                withJsonPath("$.confirmedProsecutionCaseIds[1].confirmedDefendantIds[0]", is(DEFENDANT_ID_2.toString()))
+                        metadata().withName(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA),
+                        payloadIsJson(
+                                allOf(
+                                        withJsonPath("$.courtCentre.id", is(confirmedHearing.getCourtCentre().getId().toString())),
+                                        withJsonPath("$.courtCentre.name", is(confirmedHearing.getCourtCentre().getName())),
+                                        withJsonPath("$.courtCentre.roomId", is(confirmedHearing.getCourtCentre().getRoomId().toString())),
+                                        withJsonPath("$.courtCentre.roomName", is(confirmedHearing.getCourtCentre().getRoomName())),
+                                        withJsonPath("$.courtCentre.welshName", is(confirmedHearing.getCourtCentre().getWelshName())),
+                                        withJsonPath("$.courtCentre.welshRoomName", is(confirmedHearing.getCourtCentre().getWelshRoomName())),
+                                        withJsonPath("$.hearingDateTime", is(HEARING_DATE_1)),
+                                        withJsonPath("$.confirmedProsecutionCaseIds[0].id", is(CASE_ID_1.toString())),
+                                        withJsonPath("$.confirmedProsecutionCaseIds[0].confirmedDefendantIds[0]", is(DEFENDANT_ID_1.toString())),
+                                        withJsonPath("$.confirmedProsecutionCaseIds[1].id", is(CASE_ID_2.toString())),
+                                        withJsonPath("$.confirmedProsecutionCaseIds[1].confirmedDefendantIds[0]", is(DEFENDANT_ID_2.toString()))
 
+                                )
                         )
-                )
                 )
         );
     }
@@ -277,36 +278,36 @@ public class ProgressionServiceTest {
         verify(sender).send(envelopeArgumentCaptor.capture());
 
         assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                metadata().withName(PUBLIC_EVENT_HEARING_DETAIL_CHANGED),
-                payloadIsJson(
-                        allOf(
-                                withJsonPath("$.hearing.id", is(updatedHearing.getId().toString())),
-                                withJsonPath("$.hearing.type.description", is(updatedHearing.getType().getDescription())),
-                                withJsonPath("$.hearing.type.id", is(updatedHearing.getType().getId().toString())),
-                                withJsonPath("$.hearing.jurisdictionType", is(updatedHearing.getJurisdictionType().toString())),
-                                withJsonPath("$.hearing.reportingRestrictionReason", is(updatedHearing.getReportingRestrictionReason())),
-                                withJsonPath("$.hearing.hearingLanguage", is(updatedHearing.getHearingLanguage().toString())),
-                                withJsonPath("$.hearing.hearingDays[0].sittingDay", is(HEARING_DATE_1)),
-                                withJsonPath("$.hearing.hearingDays[1].sittingDay", is(HEARING_DATE_2)),
-                                withJsonPath("$.hearing.hearingDays[2].sittingDay", is(HEARING_DATE_3)),
-                                withJsonPath("$.hearing.courtCentre.id", is(COURT_CENTRE_ID.toString())),
-                                withJsonPath("$.hearing.courtCentre.name", is(COURT_CENTRE_NAME)),
-                                withJsonPath("$.hearing.judiciary[0].judicialId", is(JUDICIARY_ID_1.toString())),
-                                withJsonPath("$.hearing.judiciary[0].title", is(JUDICIARY_TITLE_1)),
-                                withJsonPath("$.hearing.judiciary[0].firstName", is(JUDICIARY_FIRST_NAME_1)),
-                                withJsonPath("$.hearing.judiciary[0].lastName", is(JUDICIARY_LAST_NAME_1)),
-                                withJsonPath("$.hearing.judiciary[0].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(0).getJudicialRoleType().getJudiciaryType())),
-                                withJsonPath("$.hearing.judiciary[0].isDeputy", is(updatedHearing.getJudiciary().get(0).getIsDeputy())),
-                                withJsonPath("$.hearing.judiciary[0].isBenchChairman", is(updatedHearing.getJudiciary().get(0).getIsBenchChairman())),
-                                withJsonPath("$.hearing.judiciary[1].judicialId", is(JUDICIARY_ID_2.toString())),
-                                withJsonPath("$.hearing.judiciary[1].title", is(JUDICIARY_TITLE_2)),
-                                withJsonPath("$.hearing.judiciary[1].firstName", is(JUDICIARY_FIRST_NAME_2)),
-                                withJsonPath("$.hearing.judiciary[1].lastName", is(JUDICIARY_LAST_NAME_2)),
-                                withJsonPath("$.hearing.judiciary[1].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(1).getJudicialRoleType().getJudiciaryType())),
-                                withJsonPath("$.hearing.judiciary[1].isDeputy", is(updatedHearing.getJudiciary().get(1).getIsDeputy())),
-                                withJsonPath("$.hearing.judiciary[1].isBenchChairman", is(updatedHearing.getJudiciary().get(1).getIsBenchChairman()))
+                        metadata().withName(PUBLIC_EVENT_HEARING_DETAIL_CHANGED),
+                        payloadIsJson(
+                                allOf(
+                                        withJsonPath("$.hearing.id", is(updatedHearing.getId().toString())),
+                                        withJsonPath("$.hearing.type.description", is(updatedHearing.getType().getDescription())),
+                                        withJsonPath("$.hearing.type.id", is(updatedHearing.getType().getId().toString())),
+                                        withJsonPath("$.hearing.jurisdictionType", is(updatedHearing.getJurisdictionType().toString())),
+                                        withJsonPath("$.hearing.reportingRestrictionReason", is(updatedHearing.getReportingRestrictionReason())),
+                                        withJsonPath("$.hearing.hearingLanguage", is(updatedHearing.getHearingLanguage().toString())),
+                                        withJsonPath("$.hearing.hearingDays[0].sittingDay", is(HEARING_DATE_1)),
+                                        withJsonPath("$.hearing.hearingDays[1].sittingDay", is(HEARING_DATE_2)),
+                                        withJsonPath("$.hearing.hearingDays[2].sittingDay", is(HEARING_DATE_3)),
+                                        withJsonPath("$.hearing.courtCentre.id", is(COURT_CENTRE_ID.toString())),
+                                        withJsonPath("$.hearing.courtCentre.name", is(COURT_CENTRE_NAME)),
+                                        withJsonPath("$.hearing.judiciary[0].judicialId", is(JUDICIARY_ID_1.toString())),
+                                        withJsonPath("$.hearing.judiciary[0].title", is(JUDICIARY_TITLE_1)),
+                                        withJsonPath("$.hearing.judiciary[0].firstName", is(JUDICIARY_FIRST_NAME_1)),
+                                        withJsonPath("$.hearing.judiciary[0].lastName", is(JUDICIARY_LAST_NAME_1)),
+                                        withJsonPath("$.hearing.judiciary[0].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(0).getJudicialRoleType().getJudiciaryType())),
+                                        withJsonPath("$.hearing.judiciary[0].isDeputy", is(updatedHearing.getJudiciary().get(0).getIsDeputy())),
+                                        withJsonPath("$.hearing.judiciary[0].isBenchChairman", is(updatedHearing.getJudiciary().get(0).getIsBenchChairman())),
+                                        withJsonPath("$.hearing.judiciary[1].judicialId", is(JUDICIARY_ID_2.toString())),
+                                        withJsonPath("$.hearing.judiciary[1].title", is(JUDICIARY_TITLE_2)),
+                                        withJsonPath("$.hearing.judiciary[1].firstName", is(JUDICIARY_FIRST_NAME_2)),
+                                        withJsonPath("$.hearing.judiciary[1].lastName", is(JUDICIARY_LAST_NAME_2)),
+                                        withJsonPath("$.hearing.judiciary[1].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(1).getJudicialRoleType().getJudiciaryType())),
+                                        withJsonPath("$.hearing.judiciary[1].isDeputy", is(updatedHearing.getJudiciary().get(1).getIsDeputy())),
+                                        withJsonPath("$.hearing.judiciary[1].isBenchChairman", is(updatedHearing.getJudiciary().get(1).getIsBenchChairman()))
+                                )
                         )
-                )
                 )
         );
     }
@@ -766,7 +767,7 @@ public class ProgressionServiceTest {
         final Hearing expectedHearing = Hearing.hearing()
                 .withIsBoxHearing(true).withId(UUID.randomUUID())
                 .withCourtApplications(asList(CourtApplication.courtApplication()
-                       .withId(applicationId).build()))
+                        .withId(applicationId).build()))
                 .withHearingDays(asList(HearingDay.hearingDay()
                         .withListedDurationMinutes(10)
                         .withSittingDay(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z")).build()))
@@ -803,22 +804,22 @@ public class ProgressionServiceTest {
         verify(sender).send(envelopeArgumentCaptor.capture());
 
         assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                metadata().withName(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTENDED_HEARING),
-                payloadIsJson(
-                        allOf(
-                                withJsonPath("$.confirmedHearing.courtCentre.id", is(confirmedHearing.getCourtCentre().getId().toString())),
-                                withJsonPath("$.confirmedHearing.courtCentre.name", is(confirmedHearing.getCourtCentre().getName())),
-                                withJsonPath("$.confirmedHearing.courtCentre.roomId", is(confirmedHearing.getCourtCentre().getRoomId().toString())),
-                                withJsonPath("$.confirmedHearing.courtCentre.roomName", is(confirmedHearing.getCourtCentre().getRoomName())),
-                                withJsonPath("$.confirmedHearing.courtCentre.welshName", is(confirmedHearing.getCourtCentre().getWelshName())),
-                                withJsonPath("$.confirmedHearing.courtCentre.welshRoomName", is(confirmedHearing.getCourtCentre().getWelshRoomName())),
-                                withJsonPath("$.confirmedHearing.prosecutionCases[0].id", is(CASE_ID_1.toString())),
-                                withJsonPath("$.confirmedHearing.prosecutionCases[0].defendants[0].id", is(DEFENDANT_ID_1.toString())),
-                                withJsonPath("$.confirmedHearing.prosecutionCases[1].id", is(CASE_ID_2.toString())),
-                                withJsonPath("$.confirmedHearing.prosecutionCases[1].defendants[0].id", is(DEFENDANT_ID_2.toString()))
+                        metadata().withName(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTENDED_HEARING),
+                        payloadIsJson(
+                                allOf(
+                                        withJsonPath("$.confirmedHearing.courtCentre.id", is(confirmedHearing.getCourtCentre().getId().toString())),
+                                        withJsonPath("$.confirmedHearing.courtCentre.name", is(confirmedHearing.getCourtCentre().getName())),
+                                        withJsonPath("$.confirmedHearing.courtCentre.roomId", is(confirmedHearing.getCourtCentre().getRoomId().toString())),
+                                        withJsonPath("$.confirmedHearing.courtCentre.roomName", is(confirmedHearing.getCourtCentre().getRoomName())),
+                                        withJsonPath("$.confirmedHearing.courtCentre.welshName", is(confirmedHearing.getCourtCentre().getWelshName())),
+                                        withJsonPath("$.confirmedHearing.courtCentre.welshRoomName", is(confirmedHearing.getCourtCentre().getWelshRoomName())),
+                                        withJsonPath("$.confirmedHearing.prosecutionCases[0].id", is(CASE_ID_1.toString())),
+                                        withJsonPath("$.confirmedHearing.prosecutionCases[0].defendants[0].id", is(DEFENDANT_ID_1.toString())),
+                                        withJsonPath("$.confirmedHearing.prosecutionCases[1].id", is(CASE_ID_2.toString())),
+                                        withJsonPath("$.confirmedHearing.prosecutionCases[1].defendants[0].id", is(DEFENDANT_ID_2.toString()))
 
+                                )
                         )
-                )
                 )
         );
 
@@ -849,16 +850,16 @@ public class ProgressionServiceTest {
         verify(sender).send(envelopeArgumentCaptor.capture());
 
         assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                metadata().withName(PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION),
-                payloadIsJson(
-                        allOf(
-                                withJsonPath("$.hearingId", is(hearingId.toString())),
-                                withJsonPath("$.prosecutionCasesToRemove[0].caseId", is(caseId.toString())),
-                                withJsonPath("$.prosecutionCasesToRemove[0].defendantsToRemove[0].defendantId", is(defendantId.toString())),
-                                withJsonPath("$.prosecutionCasesToRemove[0].defendantsToRemove[0].offencesToRemove[0].offenceId", is(offenceId.toString()))
+                        metadata().withName(PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION),
+                        payloadIsJson(
+                                allOf(
+                                        withJsonPath("$.hearingId", is(hearingId.toString())),
+                                        withJsonPath("$.prosecutionCasesToRemove[0].caseId", is(caseId.toString())),
+                                        withJsonPath("$.prosecutionCasesToRemove[0].defendantsToRemove[0].defendantId", is(defendantId.toString())),
+                                        withJsonPath("$.prosecutionCasesToRemove[0].defendantsToRemove[0].offencesToRemove[0].offenceId", is(offenceId.toString()))
 
+                                )
                         )
-                )
                 )
         );
     }
@@ -1550,16 +1551,43 @@ public class ProgressionServiceTest {
 
         verify(sender).send(envelopeArgumentCaptor.capture());
         assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                metadata().withName(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK),
-                payloadIsJson(
-                        allOf(
-                                withoutJsonPath("$.hearing.courtApplications[0].judicialResults"),
-                                withoutJsonPath("$.hearing.courtApplications[0].courtOrder.courtOrderOffences[0].offence.judicialResults"),
-                                withoutJsonPath("$.hearing.courtApplications[0].courtApplicationCases[0].offences[0].judicialResults")
+                        metadata().withName(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK),
+                        payloadIsJson(
+                                allOf(
+                                        withoutJsonPath("$.hearing.courtApplications[0].judicialResults"),
+                                        withoutJsonPath("$.hearing.courtApplications[0].courtOrder.courtOrderOffences[0].offence.judicialResults"),
+                                        withoutJsonPath("$.hearing.courtApplications[0].courtApplicationCases[0].offences[0].judicialResults")
+                                )
                         )
                 )
-                )
         );
+
+    }
+
+    @Test(expected = CourtApplicationAndCaseNotFoundException.class)
+    public void transformProsecutionCaseShouldThrowExceptionIfProsecutionCaseDoesNotExist() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID defendant1sOffence1 = randomUUID();
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
+                .withId(caseId)
+                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
+                        .withId(defendant1)
+                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
+                                .withId(defendant1sOffence1)
+                                .build()))
+                        .build()))
+                .build());
+
+        final LocalDate earliestHearingDate = LocalDate.now();
+        final JsonEnvelope jsonEnvelope = getEnvelope("progression.event.next-hearings-requested");
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withSeedingHearingId(UUID.randomUUID())
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .build();
+
+        progressionService.transformProsecutionCase(confirmedProsecutionCases, earliestHearingDate, jsonEnvelope, seedingHearing);
 
     }
 
@@ -1600,25 +1628,25 @@ public class ProgressionServiceTest {
                 .withCpsOrganisation("A01")
                 .withTrialReceiptType("Voluntary bill")
                 .withDefendants(asList(Defendant.defendant()
-                                .withId(defendant)
-                                .withIsYouth(Boolean.FALSE)
-                                .withOffences(asList(Offence.offence()
-                                                .withId(offence)
-                                                .withListingNumber(listingNumber)
-                                                .withPlea(Plea.plea().withPleaValue("NOT_GUILTY").build())
-                                                .withJudicialResults(asList(
-                                                        JudicialResult.judicialResult()
-                                                                .withNextHearing(NextHearing.nextHearing().withJurisdictionType(JurisdictionType.MAGISTRATES).build())
-                                                                .build(),
-                                                        JudicialResult.judicialResult()
-                                                                .build(),
-                                                        JudicialResult.judicialResult()
-                                                                .withNextHearing(NextHearing.nextHearing().withJurisdictionType(jurisdictionType).build())
-                                                                .build()))
-                                                .build()
-                                        ))
+                        .withId(defendant)
+                        .withIsYouth(Boolean.FALSE)
+                        .withOffences(asList(Offence.offence()
+                                .withId(offence)
+                                .withListingNumber(listingNumber)
+                                .withPlea(Plea.plea().withPleaValue("NOT_GUILTY").build())
+                                .withJudicialResults(asList(
+                                        JudicialResult.judicialResult()
+                                                .withNextHearing(NextHearing.nextHearing().withJurisdictionType(JurisdictionType.MAGISTRATES).build())
+                                                .build(),
+                                        JudicialResult.judicialResult()
+                                                .build(),
+                                        JudicialResult.judicialResult()
+                                                .withNextHearing(NextHearing.nextHearing().withJurisdictionType(jurisdictionType).build())
+                                                .build()))
                                 .build()
-                      ))
+                        ))
+                        .build()
+                ))
                 .build();
     }
 
