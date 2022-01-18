@@ -4,6 +4,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
@@ -28,15 +30,22 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.material.client.MaterialClient;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.awaitility.core.ConditionTimeoutException;
+import org.hamcrest.MatcherAssert;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,47 +60,39 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class MaterialServiceTest {
 
-    @InjectMocks
-    private MaterialService service;
-
-    @Mock
-    private Sender sender;
-
-    @Mock
-    private Requester requester;
-
     @Spy
     private final Enveloper enveloper = createEnveloper();
-
-    @Captor
-    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
-
-    @Mock
-    private JsonEnvelope envelope;
-
-    @Mock
-    private JsonObject courtDocumentUploadJson;
-
-    @Mock
-    private CourtsDocumentUploaded courtsDocumentUploaded;
-
-    @Mock
-    private JsonEnvelope finalEnvelope;
-
+    @Spy
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    @Spy
+    @InjectMocks
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
     @Mock
     Metadata metadata;
-
+    @InjectMocks
+    private MaterialService service;
+    @Mock
+    private Sender sender;
+    @Mock
+    private Requester requester;
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+    @Mock
+    private JsonEnvelope envelope;
+    @Mock
+    private JsonObject courtDocumentUploadJson;
+    @Mock
+    private CourtsDocumentUploaded courtsDocumentUploaded;
+    @Mock
+    private JsonEnvelope finalEnvelope;
     @Mock
     private Function<Object, JsonEnvelope> enveloperFunction;
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-
-    @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    @Mock
+    private MaterialClient materialClient;
+    @Mock
+    private Response response;
 
     @Before
     public void initMocks() {
@@ -143,5 +144,64 @@ public class MaterialServiceTest {
         assertThat(result.get().getString("mimeType"), is("text"));
         assertThat(result.get().getString("materialAddedDate"), is("2016-05-03"));
         verifyNoMoreInteractions(requester);
+    }
+
+
+    @Test
+    public void shouldGetMaterialMetadataV2() {
+
+        //given
+        final UUID materialId = UUID.randomUUID();
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("materialId", materialId.toString())
+                .add("fileName", "abc.txt")
+                .add("mimeType", "text")
+                .add("materialAddedDate", "2016-05-03")
+                .build();
+        when(requester.requestAsAdmin(any(JsonEnvelope.class), any(Class.class))).thenReturn(finalEnvelope);
+        when(finalEnvelope.payload()).thenReturn(payload);
+
+        //when
+        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID(MATERIAL_METADETA_QUERY))
+                .build();
+        final String result = service.getMaterialMetadataV2(envelope, materialId);
+
+        //then
+        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture(), any(Class.class));
+        MatcherAssert.assertThat(result, is("abc.txt"));
+        verifyNoMoreInteractions(requester);
+    }
+
+    @Test
+    public void shouldThrowcConditionTimeoutExceptionWhenMaterialMetadataV2ReturnsPayloadAsNull() {
+
+        //given
+        final UUID materialId = UUID.randomUUID();
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("materialId", materialId.toString())
+                .add("fileName", "abc.txt")
+                .add("mimeType", "text")
+                .add("materialAddedDate", "2016-05-03")
+                .build();
+        when(requester.requestAsAdmin(any(JsonEnvelope.class), any(Class.class))).thenReturn(finalEnvelope);
+        when(finalEnvelope.payload()).thenReturn(null);
+
+        //when
+        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID(MATERIAL_METADETA_QUERY))
+                .build();
+        final ConditionTimeoutException conditionTimeoutException = Assert.assertThrows(ConditionTimeoutException.class, () -> service.getMaterialMetadataV2(envelope, materialId));
+
+        //then
+        MatcherAssert.assertThat(conditionTimeoutException, notNullValue());
+    }
+
+
+    @Test
+    public void shouldTestGetDocumentFromMaterial() {
+        when(materialClient.getMaterial(any(UUID.class), any(UUID.class))).thenReturn(response);
+        final InputStream inputStream = new ByteArrayInputStream("initialString".getBytes());
+        when(response.readEntity(InputStream.class)).thenReturn(inputStream);
+        final byte[] documentContent = service.getDocumentContent(randomUUID(), randomUUID());
+        assertEquals("Material stream size not as expected", 13, documentContent.length);
     }
 }

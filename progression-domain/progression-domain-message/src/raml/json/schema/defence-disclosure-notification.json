@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/defence-disclosure-notification.json",
+  "type": "object",
+  "properties": {
+    "eventNotification": {
+      "type": "object",
+      "properties": {
+        "subjectBusinessObjectId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "subjectDetails": {
+          "$ref": "http://justice.gov.uk/core/courts/addMaterialV2.json#"
+        },
+        "callbackURL": {
+          "type": "string"
+        },
+        "businessEventType": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "subjectDetails",
+    "businessEventType",
+    "subjectBusinessObjectId"
+  ],
+  "additionalProperties": false
+}

@@ -53,8 +53,6 @@ public class CourtDocumentAggregate implements Aggregate {
 
     private static final long serialVersionUID = 101L;
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentAggregate.class);
-    public static final String PROBATION_ADMIN = "Probation Admin";
-    public static final String DEFENCE_USERS = "Defence Users";
 
     private final List<SharedCourtDocument> sharedCourtDocumentList = new ArrayList<>();
 
@@ -143,7 +141,7 @@ public class CourtDocumentAggregate implements Aggregate {
         final List<UUID> defendants = this.courtDocument.getDocumentCategory().getDefendantDocument() != null ? this.courtDocument.getDocumentCategory().getDefendantDocument().getDefendants() : emptyList();
         if (!defendants.isEmpty()) {
             defendants.forEach(defendant ->
-                addEvents(builder, createSharedCourtDocument(courtDocumentId, hearingId, userGroupId, userId, Optional.of(defendant)))
+                    addEvents(builder, createSharedCourtDocument(courtDocumentId, hearingId, userGroupId, userId, Optional.of(defendant)))
             );
         } else {
             addEvents(builder, createSharedCourtDocument(courtDocumentId, hearingId, userGroupId, userId, Optional.empty()));
@@ -161,7 +159,7 @@ public class CourtDocumentAggregate implements Aggregate {
 
         defendant.ifPresent(shareCourtDocumentBuilder::withDefendantId);
 
-        if(isNull(this.courtDocument.getDocumentCategory().getApplicationDocument())) {
+        if (isNull(this.courtDocument.getDocumentCategory().getApplicationDocument())) {
             shareCourtDocumentBuilder.withCaseIds(getProsecutionCaseIds(this.courtDocument.getDocumentCategory()));
         }
         return shareCourtDocumentBuilder.build();
@@ -197,11 +195,11 @@ public class CourtDocumentAggregate implements Aggregate {
         }
     }
 
-    public Stream<Object> createCourtDocument(final CourtDocument courtDocument) {
+    public Stream<Object> createCourtDocument(final CourtDocument courtDocument, final Boolean isCpsCase) {
         LOGGER.debug("court document is being created .");
         final Stream.Builder<Object> builder = builder();
         builder.add(courtsDocumentCreated().withCourtDocument(courtDocument).build());
-        if (nonNull(courtDocument.getSendToCps()) && courtDocument.getSendToCps()) {
+        if (nonNull(courtDocument.getSendToCps()) && courtDocument.getSendToCps() && nonNull(isCpsCase) && isCpsCase) {
             builder.add(CourtDocumentSendToCps.courtDocumentSendToCps().withCourtDocument(courtDocument).build());
         }
         return apply(builder.build());
@@ -253,18 +251,18 @@ public class CourtDocumentAggregate implements Aggregate {
     }
 
     private UUID getProsecutionCaseId(final CourtDocument courtDocument) {
-       if(null != courtDocument.getDocumentCategory()) {
-           final DocumentCategory documentCategory = courtDocument.getDocumentCategory();
-           if(documentCategory.getApplicationDocument() != null ) {
-               return documentCategory.getApplicationDocument().getProsecutionCaseId();
-           } else if (documentCategory.getCaseDocument() != null) {
-               return  documentCategory.getCaseDocument().getProsecutionCaseId();
+        if (null != courtDocument.getDocumentCategory()) {
+            final DocumentCategory documentCategory = courtDocument.getDocumentCategory();
+            if (documentCategory.getApplicationDocument() != null) {
+                return documentCategory.getApplicationDocument().getProsecutionCaseId();
+            } else if (documentCategory.getCaseDocument() != null) {
+                return documentCategory.getCaseDocument().getProsecutionCaseId();
 
-           } else if (documentCategory.getDefendantDocument() != null) {
-               return documentCategory.getDefendantDocument().getProsecutionCaseId();
-           }
-       }
-       return null;
+            } else if (documentCategory.getDefendantDocument() != null) {
+                return documentCategory.getDefendantDocument().getProsecutionCaseId();
+            }
+        }
+        return null;
     }
 
     public Stream<Object> removeCourtDocument(final UUID courtDocumentId, final UUID materialId, final boolean isRemoved) {

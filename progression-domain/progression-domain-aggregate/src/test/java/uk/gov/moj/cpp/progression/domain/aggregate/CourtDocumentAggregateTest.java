@@ -1,21 +1,5 @@
 package uk.gov.moj.cpp.progression.domain.aggregate;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import uk.gov.justice.core.courts.*;
-import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
 import static java.time.ZonedDateTime.now;
@@ -23,10 +7,45 @@ import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.isA;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+
+import uk.gov.justice.core.courts.CaseDocument;
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.CourtDocumentAudit;
+import uk.gov.justice.core.courts.CourtDocumentPrintTimeUpdated;
+import uk.gov.justice.core.courts.CourtDocumentSendToCps;
+import uk.gov.justice.core.courts.CourtDocumentShareFailed;
+import uk.gov.justice.core.courts.CourtDocumentShared;
+import uk.gov.justice.core.courts.CourtDocumentUpdateFailed;
+import uk.gov.justice.core.courts.CourtDocumentUpdated;
+import uk.gov.justice.core.courts.CourtsDocumentAdded;
+import uk.gov.justice.core.courts.CourtsDocumentCreated;
+import uk.gov.justice.core.courts.DefendantDocument;
+import uk.gov.justice.core.courts.DocumentCategory;
+import uk.gov.justice.core.courts.DocumentReviewRequired;
+import uk.gov.justice.core.courts.DuplicateShareCourtDocumentRequestReceived;
+import uk.gov.justice.core.courts.Material;
+import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
+
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.hamcrest.CoreMatchers;
+import org.junit.Test;
 
 public class CourtDocumentAggregateTest {
 
@@ -41,13 +60,7 @@ public class CourtDocumentAggregateTest {
             .withSendToCps(false)
             .build();
 
-    @InjectMocks
-    private CourtDocumentAggregate target;
-
-    @Before
-    public void setUp() {
-        target = new CourtDocumentAggregate();
-    }
+    private CourtDocumentAggregate target = new CourtDocumentAggregate();
 
     @Test
     public void shouldReturnCourtDocumentSharedWhenNotADuplicate() {
@@ -114,7 +127,7 @@ public class CourtDocumentAggregateTest {
                         .withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(caseId).build()).build())
                 .withSendToCps(false)
                 .build();
-        this.target.createCourtDocument(courtDocument);
+        this.target.createCourtDocument(courtDocument, true);
     }
 
     private void createCourtDocumentWithDefendant(final UUID caseId, List<UUID> defandants) {
@@ -124,7 +137,7 @@ public class CourtDocumentAggregateTest {
                         .withDefendantDocument(DefendantDocument.defendantDocument().withDefendants(defandants).withProsecutionCaseId(caseId).build()).build())
                 .withSendToCps(false)
                 .build();
-        this.target.createCourtDocument(courtDocument);
+        this.target.createCourtDocument(courtDocument, true);
     }
 
 
@@ -187,7 +200,7 @@ public class CourtDocumentAggregateTest {
     @Test
     public void shouldReturnCourtsDocumentCreated() {
 
-        final List<Object> eventStream = target.createCourtDocument(courtDocument).collect(toList());
+        final List<Object> eventStream = target.createCourtDocument(courtDocument, true).collect(toList());
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
@@ -263,7 +276,7 @@ public class CourtDocumentAggregateTest {
                 .withName("name")
                 .withSendToCps(true)
                 .build();
-        final List<Object> eventStream = target.createCourtDocument(courtDocument).collect(toList());
+        final List<Object> eventStream = target.createCourtDocument(courtDocument, true).collect(toList());
 
         assertThat(eventStream.size(), is(2));
         final Object object = eventStream.get(0);
@@ -271,6 +284,25 @@ public class CourtDocumentAggregateTest {
         final Object object1 = eventStream.get(1);
         assertThat(object1.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentSendToCps.class)));
     }
+
+    @Test
+    public void shouldReturnOnlyCourtsDocumentCreatedEventWhenProsecutorIsNotCPS() {
+        final CourtDocument courtDocument = CourtDocument.courtDocument()
+                .withCourtDocumentId(randomUUID())
+                .withDocumentTypeDescription("documentTypeDescription")
+                .withDocumentTypeId(randomUUID())
+                .withDocumentCategory(DocumentCategory.documentCategory().build())
+                .withMimeType("pdf")
+                .withName("name")
+                .withSendToCps(true)
+                .build();
+        final List<Object> eventStream = target.createCourtDocument(courtDocument, false).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.equalTo(CourtsDocumentCreated.class)));
+    }
+
 
     @Test
     public void shouldReturnCourtsDocumentUpdatedAndCourtDocumentNotified() {

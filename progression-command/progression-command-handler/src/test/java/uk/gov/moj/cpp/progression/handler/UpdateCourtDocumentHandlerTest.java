@@ -69,6 +69,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateCourtDocumentHandlerTest {
 
+    private static final DateTimeFormatter ISO_8601_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             CourtDocumentUpdated.class, CourtDocumentPrintTimeUpdated.class);
@@ -92,20 +93,17 @@ public class UpdateCourtDocumentHandlerTest {
     private JsonEnvelope envelope;
     @InjectMocks
     private UpdateCourtDocumentHandler target;
-
-    private static final DateTimeFormatter ISO_8601_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-
     private CourtDocumentAggregate aggregate;
 
     private static JsonObject buildDocumentTypeDataWithRBAC(final String documentCategory) {
-        return Json.createObjectBuilder().add("section","charges")
+        return Json.createObjectBuilder().add("section", "charges")
                 .add("documentCategory", documentCategory)
                 .add("courtDocumentTypeRBAC",
-                Json.createObjectBuilder()
-                        .add("uploadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer").build()).build())
-                        .add("readUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build())
-                        .add("downloadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build()).build())
-                .add("seqNum",10)
+                        Json.createObjectBuilder()
+                                .add("uploadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer").build()).build())
+                                .add("readUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build())
+                                .add("downloadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build()).build())
+                .add("seqNum", 10)
                 .build();
     }
 
@@ -126,7 +124,7 @@ public class UpdateCourtDocumentHandlerTest {
                 .withMaterials(new ArrayList<>())
                 .withSendToCps(false)
                 .build();
-        this.aggregate.createCourtDocument(courtDocument);
+        this.aggregate.createCourtDocument(courtDocument, true);
 
         ReflectionUtil.setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
         ReflectionUtil.setField(this.jsonToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());

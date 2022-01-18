@@ -1,0 +1,219 @@
+package uk.gov.moj.cpp.progression.transformer;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static uk.gov.justice.core.courts.AddMaterialV2.addMaterialV2;
+import static uk.gov.justice.core.courts.CourtApplicationSubject.courtApplicationSubject;
+import static uk.gov.justice.core.courts.CpsOrganisationDefendantDetails.cpsOrganisationDefendantDetails;
+import static uk.gov.justice.core.courts.CpsPersonDefendantDetails.cpsPersonDefendantDetails;
+import static uk.gov.justice.core.courts.DefendantSubject.defendantSubject;
+import static uk.gov.justice.core.courts.EventNotification.eventNotification;
+import static uk.gov.justice.core.courts.ProsecutionCaseSubject.prosecutionCaseSubject;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+
+import uk.gov.justice.core.courts.AddMaterialV2;
+import uk.gov.justice.core.courts.CourtApplicationSubject;
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.CpsOrganisationDefendantDetails;
+import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantSubject;
+import uk.gov.justice.core.courts.EventNotification;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ProsecutionCaseSubject;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.MaterialService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class CourtDocumentTransformer {
+
+    public static final String OUCODE = "oucode";
+    private static final String BUSINESS_EVENT_TYPE = "defence-requested-to-notify-cps-of-material";
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentTransformer.class);
+
+    @Inject
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Inject
+    private ReferenceDataService referenceDataService;
+
+    @Inject
+    @ServiceComponent(EVENT_PROCESSOR)
+    private Requester requester;
+
+    @Inject
+    private MaterialService materialService;
+
+    public Optional<String> transform(final CourtDocument courtDocument, final Optional<JsonObject> prosecutionCaseJsonOptional, final JsonEnvelope envelope) {
+
+        final UUID subjectBusinessObjectId = getSubjectBusinessObjectIdFromCaseOrApplicationOrDefendants(courtDocument);
+        if (isNull(subjectBusinessObjectId)) {
+            LOGGER.error("Unable to transform the payload. subjectBusinessObjectId is null. CourtDocumentId is {}", courtDocument.getCourtDocumentId());
+            return empty();
+        }
+
+        final AddMaterialV2.Builder addMaterialV2 = buildAddMaterialV2(envelope, courtDocument);
+        final CourtApplicationSubject courtApplicationSubject = buildCourtApplicationSubject(courtDocument);
+        addMaterialV2.withCourtApplicationSubject(courtApplicationSubject);
+
+        final Optional<ProsecutionCase> prosecutionCaseOptional = getProsecutionCase(prosecutionCaseJsonOptional);
+
+        if (prosecutionCaseOptional.isPresent()) {
+            final ProsecutionCaseSubject.Builder prosecutionCaseSubjectBuilder = prosecutionCaseSubject();
+            final Optional<Defendant> defendantLinkedToDocument = prosecutionCaseOptional.get().getDefendants().stream().filter(defendant -> defendant.getId().equals(subjectBusinessObjectId)).findFirst();
+
+            if (defendantLinkedToDocument.isPresent()) {
+                final DefendantSubject defendantSubject = buildDefendantSubject(defendantLinkedToDocument.get(), defendantLinkedToDocument.get());
+                prosecutionCaseSubjectBuilder.withDefendantSubject(defendantSubject);
+            }
+
+            buildProsecutionCaseSubject(prosecutionCaseSubjectBuilder, prosecutionCaseOptional.get(), envelope);
+            addMaterialV2.withProsecutionCaseSubject(prosecutionCaseSubjectBuilder.build());
+        }
+
+        final EventNotification eventNotification = buildEventNotification(addMaterialV2, subjectBusinessObjectId);
+        return ofNullable(objectToJsonObjectConverter.convert(eventNotification).toString());
+    }
+
+    private AddMaterialV2.Builder buildAddMaterialV2(final JsonEnvelope envelope, final CourtDocument courtDocument) {
+        final AddMaterialV2.Builder addMaterialV2 = addMaterialV2();
+        ofNullable(courtDocument.getMaterials().get(0).getId()).ifPresent(addMaterialV2::withMaterial);
+        ofNullable(courtDocument.getDocumentTypeDescription()).ifPresent(addMaterialV2::withMaterialType);
+        ofNullable(courtDocument.getMimeType()).ifPresent(addMaterialV2::withMaterialContentType);
+        ofNullable(courtDocument.getName()).ifPresent(addMaterialV2::withMaterialName);
+        ofNullable(getMaterialFileName(envelope, courtDocument.getMaterials().get(0).getId())).ifPresent(addMaterialV2::withFileName);
+        return addMaterialV2;
+    }
+
+    private String getMaterialFileName(final JsonEnvelope envelope, final UUID materialId) {
+        return materialService.getMaterialMetadataV2(envelope, materialId);
+    }
+
+    private EventNotification buildEventNotification(final AddMaterialV2.Builder addMaterialV2, final UUID defendantId) {
+        final EventNotification.Builder eventNotificationBuilder = eventNotification();
+        eventNotificationBuilder.withSubjectBusinessObjectId(defendantId);
+        eventNotificationBuilder.withSubjectDetails(addMaterialV2.build());
+        eventNotificationBuilder.withBusinessEventType(BUSINESS_EVENT_TYPE);
+        return eventNotificationBuilder.build();
+    }
+
+    private CourtApplicationSubject buildCourtApplicationSubject(final CourtDocument courtDocument) {
+        final CourtApplicationSubject.Builder courtApplicationSubjectBuilder = courtApplicationSubject();
+        if (ofNullable(courtDocument.getDocumentCategory().getApplicationDocument()).isPresent()) {
+            return courtApplicationSubjectBuilder.withCourtApplicationId(courtDocument.getDocumentCategory().getApplicationDocument().getApplicationId()).build();
+        }
+        return null;
+    }
+
+    private void buildProsecutionCaseSubject(final ProsecutionCaseSubject.Builder prosecutionCaseSubjectBuilder, final ProsecutionCase prosecutionCase, final JsonEnvelope envelope) {
+
+        final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+        if (nonNull(prosecutionCaseIdentifier.getCaseURN())) {
+            prosecutionCaseSubjectBuilder.withCaseUrn(prosecutionCaseIdentifier.getCaseURN());
+        } else {
+            prosecutionCaseSubjectBuilder.withCaseUrn(prosecutionCaseIdentifier.getProsecutionAuthorityReference());
+        }
+
+        if (nonNull(prosecutionCaseIdentifier.getProsecutionAuthorityOUCode())) {
+            prosecutionCaseSubjectBuilder.withProsecutingAuthority(prosecutionCaseIdentifier.getProsecutionAuthorityOUCode());
+        } else {
+            prosecutionCaseSubjectBuilder.withProsecutingAuthority(callRefDataToGetProsecutionAuthority(prosecutionCaseIdentifier.getProsecutionAuthorityId(), envelope));
+        }
+
+    }
+
+
+    private DefendantSubject buildDefendantSubject(final Defendant defendant, final Defendant defendantLinkedToDocument) {
+        final DefendantSubject.Builder defendantSubjectBuilder = defendantSubject();
+        boolean isEmptyDefendantSubject = true;
+
+        if (nonNull(defendant.getProsecutionAuthorityReference())) {
+            defendantSubjectBuilder.withProsecutorDefendantId(defendant.getProsecutionAuthorityReference());
+            isEmptyDefendantSubject = false;
+        }
+
+        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getArrestSummonsNumber())) {
+            defendantSubjectBuilder.withAsn(defendant.getPersonDefendant().getArrestSummonsNumber());
+            isEmptyDefendantSubject = false;
+        }
+
+        if (isEmptyDefendantSubject) {
+            final CpsOrganisationDefendantDetails cpsOrganisationDefendant = buildCpsOrganisationDefendantDetails(defendantLinkedToDocument);
+            final CpsPersonDefendantDetails cpsPersonDefendantDetails = buildCpsPersonDefendantDetails(defendantLinkedToDocument);
+            defendantSubjectBuilder.withCpsOrganisationDefendantDetails(cpsOrganisationDefendant);
+            defendantSubjectBuilder.withCpsPersonDefendantDetails(cpsPersonDefendantDetails);
+        }
+
+        return defendantSubjectBuilder.build();
+    }
+
+    private CpsOrganisationDefendantDetails buildCpsOrganisationDefendantDetails(final Defendant defendant) {
+        final CpsOrganisationDefendantDetails.Builder cpsOrganisationDefendantBuilder = cpsOrganisationDefendantDetails();
+        if (nonNull(defendant.getLegalEntityDefendant())) {
+            return cpsOrganisationDefendantBuilder.withOrganisationName(defendant.getLegalEntityDefendant().getOrganisation().getName()).build();
+        }
+        return null;
+    }
+
+    private CpsPersonDefendantDetails buildCpsPersonDefendantDetails(final Defendant defendant) {
+        final CpsPersonDefendantDetails.Builder cpsPersonDefendantDetailsBuilder = cpsPersonDefendantDetails();
+        if (nonNull(defendant.getPersonDefendant())) {
+            final Person person = defendant.getPersonDefendant().getPersonDetails();
+            cpsPersonDefendantDetailsBuilder.withForename(person.getFirstName());
+            cpsPersonDefendantDetailsBuilder.withForename2(person.getMiddleName());
+            cpsPersonDefendantDetailsBuilder.withSurname(person.getLastName());
+            cpsPersonDefendantDetailsBuilder.withDateOfBirth(person.getDateOfBirth());
+            cpsPersonDefendantDetailsBuilder.withTitle(person.getTitle());
+            return cpsPersonDefendantDetailsBuilder.build();
+        }
+
+        return null;
+    }
+
+    private Optional<ProsecutionCase> getProsecutionCase(final Optional<JsonObject> prosecutionCaseOptional) {
+        return prosecutionCaseOptional.map(jsonObject -> jsonObjectToObjectConverter.
+                convert(jsonObject.getJsonObject("prosecutionCase"),
+                        ProsecutionCase.class));
+    }
+
+    private String callRefDataToGetProsecutionAuthority(final UUID prosecutionAuthorityId, final JsonEnvelope envelope) {
+        final Optional<JsonObject> prosecutor = referenceDataService.getProsecutor(envelope, prosecutionAuthorityId, requester);
+        if (prosecutor.isPresent()) {
+            return prosecutor.get().getString(OUCODE);
+        }
+        return EMPTY;
+    }
+
+    private UUID getSubjectBusinessObjectIdFromCaseOrApplicationOrDefendants(final CourtDocument courtDocument) {
+
+        if (nonNull(courtDocument.getDocumentCategory().getCaseDocument())) {
+            return courtDocument.getDocumentCategory().getCaseDocument().getProsecutionCaseId();
+        } else if (nonNull(courtDocument.getDocumentCategory().getApplicationDocument())) {
+            return courtDocument.getDocumentCategory().getApplicationDocument().getApplicationId();
+        } else if (nonNull(courtDocument.getDocumentCategory().getDefendantDocument())) {
+            return courtDocument.getDocumentCategory().getDefendantDocument().getDefendants().get(0);
+        }
+        return null;
+    }
+}

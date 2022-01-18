@@ -361,8 +361,24 @@ public class ReferenceDataService {
                 .withName(REFERENCEDATA_QUERY_PROSECUTOR)
                 .withMetadataFrom(event));
 
+       final JsonEnvelope response = requester.request(request);
 
-        final JsonEnvelope response = requester.request(request);
+        if (response.payload() == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(response.payloadAsJsonObject());
+    }
+
+    public Optional<JsonObject> getProsecutorV2(final JsonEnvelope event, final UUID id, final Requester requester) {
+
+        LOGGER.info(" Calling {} to get prosecutors for {} ", REFERENCEDATA_QUERY_PROSECUTOR, id);
+
+        final JsonObject payload = Json.createObjectBuilder().add(ID, id.toString()).build();
+
+        final JsonEnvelope response = requester.request(envelop(payload)
+                .withName(REFERENCEDATA_QUERY_PROSECUTOR)
+                .withMetadataFrom(event));
 
         if (response.payload() == null) {
             return Optional.empty();

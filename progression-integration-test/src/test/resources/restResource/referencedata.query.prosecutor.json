@@ -13,6 +13,7 @@
     "address3": "London",
     "postcode": "SW1H 0TL"
   },
+  "cpsFlag": true,
   "contactEmailAddress": "test@test.com",
   "informantEmailAddress": "test@test.com"
 }

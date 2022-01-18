@@ -9,6 +9,10 @@
     "isUnbundledDocument": {
       "type": "boolean",
       "default": false
+    },
+    "isCpsCase": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

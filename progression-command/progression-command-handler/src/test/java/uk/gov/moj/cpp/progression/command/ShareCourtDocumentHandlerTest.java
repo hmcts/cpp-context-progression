@@ -60,7 +60,7 @@ public class ShareCourtDocumentHandlerTest {
                         .withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(caseId).build()).build())
                 .withSendToCps(false)
                 .build();
-        this.aggregate.createCourtDocument(courtDocument);
+        this.aggregate.createCourtDocument(courtDocument, true);
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(aggregate);
     }

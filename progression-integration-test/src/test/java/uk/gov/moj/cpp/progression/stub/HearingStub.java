@@ -30,13 +30,6 @@ public class HearingStub {
     public static final String HEARING_COMMAND = "/hearing-service/command/api/rest/hearing/hearings";
     public static final String HEARING_RESPONSE_TYPE = "application/vnd.hearing.initiate+json";
 
-    private static final String HEARING_SUBSCRIPTION_QUERY_URL =
-            "/hearing-service/query/api/rest/hearing/retrieve?referenceDate=%s&nowTypeId=%s";
-    private static final String HEARING_SUBSCRIPTION_QUERY_URL2 =
-            "/hearing-service/query/api/rest/hearing/retrieve?nowTypeId=%s&referenceDate=%s";
-
-    private static final String HEARING_SUBSCRIPTIONS_MEDIA_TYPE = "application/vnd.hearing.retrieve-subscriptions+json";
-
     public static void stubInitiateHearing() {
         InternalEndpointMockUtils.stubPingFor("hearing-service");
 

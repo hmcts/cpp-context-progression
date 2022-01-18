@@ -47,14 +47,12 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class CreateCourtDocumentHandler {
 
+    public static final String READ_USER_GROUPS = "readUserGroups";
+    public static final String COURT_DOCUMENT_TYPE_RBAC = "courtDocumentTypeRBAC";
     private static final String UPLOAD_ACCESS = "uploadUserGroups";
     private static final String READ_ACCESS = "readUserGroups";
     private static final String DOWNLOAD_ACCESS = "downloadUserGroups";
     private static final String DELETE_ACCESS = "deleteUserGroups";
-
-    public static final String READ_USER_GROUPS = "readUserGroups";
-    public static final String COURT_DOCUMENT_TYPE_RBAC = "courtDocumentTypeRBAC";
-
     private static final Logger LOGGER =
             LoggerFactory.getLogger(CreateCourtDocumentHandler.class.getName());
     @Inject
@@ -78,11 +76,12 @@ public class CreateCourtDocumentHandler {
         final CourtDocument courtDocument = setDefaults(createCourtDocumentEnvelope.payload().getCourtDocument());
         final EventStream eventStream = eventSource.getStreamById(courtDocument.getCourtDocumentId());
         final CourtDocumentAggregate courtDocumentAggregate = aggregateService.get(eventStream, CourtDocumentAggregate.class);
-        final Stream<Object> events = courtDocumentAggregate.createCourtDocument(enrichCourtDocument(courtDocument,JsonEnvelope.envelopeFrom(createCourtDocumentEnvelope.metadata(),JsonValue.NULL)));
+        final Boolean isCpsCase = createCourtDocumentEnvelope.payload().getIsCpsCase();
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(createCourtDocumentEnvelope.metadata(), JsonValue.NULL);
+        final Stream<Object> events = courtDocumentAggregate.createCourtDocument(enrichCourtDocument(courtDocument, jsonEnvelope), isCpsCase);
 
         appendEventsToStream(createCourtDocumentEnvelope, eventStream, events);
     }
-
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
@@ -91,23 +90,23 @@ public class CreateCourtDocumentHandler {
                         .map(enveloper.withMetadataFrom(jsonEnvelope)));
     }
 
-    private CourtDocument enrichCourtDocument(final CourtDocument courtDocument, final JsonEnvelope incomingEvent){
+    private CourtDocument enrichCourtDocument(final CourtDocument courtDocument, final JsonEnvelope incomingEvent) {
 
-        if(!needToEnrichCourtDocument(courtDocument)){
+        if (!needToEnrichCourtDocument(courtDocument)) {
             return courtDocument;
         }
         final Optional<JsonObject> documentTypeData = refDataService.getDocumentTypeAccessData(courtDocument.getDocumentTypeId(), incomingEvent, requester);
         final JsonObject documentTypeDataJsonObject = documentTypeData.orElseThrow(() -> new RuntimeException("failed to look up nows document type " + courtDocument.getDocumentTypeId()));
 
         final JsonObject documentTypeRBACData = documentTypeDataJsonObject.getJsonObject(COURT_DOCUMENT_TYPE_RBAC);
-        final Integer seqNum = Integer.parseInt(documentTypeDataJsonObject.getJsonNumber("seqNum")==null ? "0" : documentTypeDataJsonObject.getJsonNumber("seqNum").toString());
+        final Integer seqNum = Integer.parseInt(documentTypeDataJsonObject.getJsonNumber("seqNum") == null ? "0" : documentTypeDataJsonObject.getJsonNumber("seqNum").toString());
         final List<String> rbacUserGroups = getRBACUserGroups(documentTypeRBACData, READ_USER_GROUPS);
 
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(courtDocument.getCourtDocumentId())
                 .withDocumentTypeId(courtDocument.getDocumentTypeId())
                 .withDocumentTypeDescription(courtDocument.getDocumentTypeDescription())
-                .withMaterials(getCourtDocumentMaterials(courtDocument,rbacUserGroups))
+                .withMaterials(getCourtDocumentMaterials(courtDocument, rbacUserGroups))
                 .withDocumentCategory(
                         DocumentCategory.documentCategory()
                                 .withNowDocument(courtDocument.getDocumentCategory().getNowDocument())
@@ -126,17 +125,17 @@ public class CreateCourtDocumentHandler {
                 .build();
     }
 
-    private List<Material> getCourtDocumentMaterials(final CourtDocument courtDocument, final List<String> rbacUserGroups){
-        if(CollectionUtils.isEmpty(courtDocument.getMaterials()) ) {
+    private List<Material> getCourtDocumentMaterials(final CourtDocument courtDocument, final List<String> rbacUserGroups) {
+        if (CollectionUtils.isEmpty(courtDocument.getMaterials())) {
             return new ArrayList<>();
         }
 
         List<String> permittedGroups = courtDocument.getMaterials().get(0).getUserGroups();
-        if(permittedGroups == null) {
+        if (permittedGroups == null) {
             permittedGroups = rbacUserGroups;
         }
 
-        if(!permittedGroups.containsAll(rbacUserGroups)) {
+        if (!permittedGroups.containsAll(rbacUserGroups)) {
             permittedGroups = Stream.concat(emptyIfNull(rbacUserGroups)
                     .map(el -> el.replace("\"", "")), emptyIfNull(courtDocument.getMaterials().get(0).getUserGroups()))
                     .collect(Collectors.toList());
@@ -157,7 +156,7 @@ public class CreateCourtDocumentHandler {
                 .orElseGet(Stream::empty);
     }
 
-    private DocumentTypeRBAC getRBACDataObject(final JsonObject documentTypeRBACData){
+    private DocumentTypeRBAC getRBACDataObject(final JsonObject documentTypeRBACData) {
         return DocumentTypeRBAC.
                 documentTypeRBAC()
                 .withUploadUserGroups(getRBACUserGroups(documentTypeRBACData, UPLOAD_ACCESS))
@@ -167,7 +166,7 @@ public class CreateCourtDocumentHandler {
                 .build();
     }
 
-    private boolean needToEnrichCourtDocument(final CourtDocument courtDocument){
+    private boolean needToEnrichCourtDocument(final CourtDocument courtDocument) {
         return (courtDocument.getDocumentTypeRBAC() == null || courtDocument.getSeqNum() == null);
     }
 

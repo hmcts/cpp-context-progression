@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor.document;
 
 import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -44,16 +45,15 @@ import javax.json.JsonObject;
 public class CourtDocumentAddedProcessor {
 
     public static final String PUBLIC_COURT_DOCUMENT_ADDED = "public.progression.court-document-added";
-    protected static final String PUBLIC_IDPC_COURT_DOCUMENT_RECEIVED = "public.progression.idpc-document-received";
     public static final UUID IDPC_DOCUMENT_TYPE_ID = fromString("41be14e8-9df5-4b08-80b0-1e670bc80a5b");
+    public static final String SECTION = "section";
+    protected static final String PUBLIC_IDPC_COURT_DOCUMENT_RECEIVED = "public.progression.idpc-document-received";
     protected static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
     protected static final String PROGRESSION_COMMAND_UPDATE_CASE_FOR_CPS_PROSECUTOR = "progression.command.update-case-for-cps-prosecutor";
     private static final String IS_CPS_CASE = "isCpsCase";
     private static final String IS_UNBUNDLED_DOCUMENT = "isUnbundledDocument";
     private static final String PROSECUTION_CASE = "prosecutionCase";
     private static final String IS_NOTIFY_DEFENCE = "notifyDefence";
-    public static final String SECTION = "section";
-
     @Inject
     private Sender sender;
 
@@ -76,40 +76,39 @@ public class CourtDocumentAddedProcessor {
     private Requester requester;
 
 
-    private boolean isProsecutorExists(final JsonEnvelope envelope, UUID caseId) {
-        final Optional<JsonObject> prosecutionCaseDetailById = progressionService.getProsecutionCaseDetailById(envelope, caseId.toString());
-        return prosecutionCaseDetailById.isPresent() && nonNull(prosecutionCaseDetailById.get().getJsonObject(PROSECUTION_CASE).getJsonObject("prosecutor"));
-    }
-
     @Handles("progression.event.court-document-added")
     public void handleCourtDocumentAddEvent(final JsonEnvelope envelope) {
         final CourtsDocumentAdded courtsDocumentAdded = jsonObjectConverter.convert(envelope.payloadAsJsonObject(), CourtsDocumentAdded.class);
         final CourtDocument courtDocument = courtsDocumentAdded.getCourtDocument();
         JsonObject payload = envelope.payloadAsJsonObject();
-        if (payload.get(IS_CPS_CASE) != null && "true".equals(payload.get(IS_CPS_CASE).toString())) {
-            final Optional<UUID> caseId = getCaseIdFromDocuments(courtDocument.getDocumentCategory());
-            caseId.ifPresent(id -> {
-                if (!isProsecutorExists(envelope, id)) {
-                    sender.send(Enveloper.envelop(createObjectBuilder().add("caseId", id.toString()).build()).withName(PROGRESSION_COMMAND_UPDATE_CASE_FOR_CPS_PROSECUTOR).withMetadataFrom(envelope));
-                }
-            });
+        Optional<JsonObject> prosecutor = Optional.empty();
+
+        final Optional<UUID> caseId = getCaseIdFromDocuments(courtDocument.getDocumentCategory());
+        if (caseId.isPresent()) {
+            prosecutor = getProsecutor(envelope, caseId.get());
+            sendUpdateCaseForCpsProsecutionCommandWhenProsecutorIsAbsent(envelope, payload, prosecutor, caseId.get());
         }
-        if (envelope.payloadAsJsonObject().get(IS_CPS_CASE) != null) {
-            payload = JsonHelper.removeProperty(payload, IS_CPS_CASE);
-        }
-        if (nonNull(envelope.payloadAsJsonObject().get(IS_UNBUNDLED_DOCUMENT))) {
+
+        if (nonNull(payload.get(IS_UNBUNDLED_DOCUMENT))) {
             payload = JsonHelper.removeProperty(payload, IS_UNBUNDLED_DOCUMENT);
         }
-        sender.send(Enveloper.envelop(payload).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).withMetadataFrom(envelope));
+
+        payload = sendCreateCourtDocumentCommandAndRemoveCpsCaseFlag(envelope, payload, prosecutor);
+
         final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_COURT_DOCUMENT_ADDED).build();
         sender.send(uk.gov.justice.services.messaging.Envelope.envelopeFrom(metadata, payload));
+
         if (requiresEmailNotification(envelope, courtDocument)) {
             final JsonObject documentTypeData = getDocumentTypeData(envelope, courtDocument.getDocumentTypeId());
             if (isNotifyDefence(documentTypeData) && isBundled(envelope)) {
-                defenceNotificationService.prepareNotificationsForCourtDocument(envelope, courtDocument, getDocumentSection(documentTypeData),courtDocument.getName());
+                defenceNotificationService.prepareNotificationsForCourtDocument(envelope, courtDocument, getDocumentSection(documentTypeData), courtDocument.getName());
             }
         }
 
+        sendIdpcCourtDocumentPublicEvent(envelope, courtsDocumentAdded, courtDocument);
+    }
+
+    private void sendIdpcCourtDocumentPublicEvent(final JsonEnvelope envelope, final CourtsDocumentAdded courtsDocumentAdded, final CourtDocument courtDocument) {
         if (courtsDocumentAdded.getCourtDocument().getDocumentTypeId().equals(IDPC_DOCUMENT_TYPE_ID)) {
             final DefendantDocument defendantDocument = courtDocument.getDocumentCategory().getDefendantDocument();
             final List<UUID> defendantIds = defendantDocument.getDefendants();
@@ -124,6 +123,32 @@ public class CourtDocumentAddedProcessor {
                                             sender.send(envelopeFrom(idpcMetadata,
                                                     createIDPCReceivedBody(material, defendantDocument.getProsecutionCaseId(), defendantId)))));
         }
+    }
+
+    private void sendUpdateCaseForCpsProsecutionCommandWhenProsecutorIsAbsent(final JsonEnvelope envelope, final JsonObject payload, final Optional<JsonObject> prosecutor, final UUID caseId) {
+        if (payload.get(IS_CPS_CASE) != null && "true".equals(payload.get(IS_CPS_CASE).toString()) && !prosecutor.isPresent()) {
+            sender.send(Enveloper.envelop(createObjectBuilder().add("caseId", caseId.toString()).build()).withName(PROGRESSION_COMMAND_UPDATE_CASE_FOR_CPS_PROSECUTOR).withMetadataFrom(envelope));
+        }
+    }
+
+    private JsonObject sendCreateCourtDocumentCommandAndRemoveCpsCaseFlag(final JsonEnvelope envelope, final JsonObject payload, final Optional<JsonObject> prosecutor) {
+        boolean isCpsCaseFlag = false;
+        if (prosecutor.isPresent()) {
+            final Optional<JsonObject> prosecutorJsonObject = referenceDataService.getProsecutorV2(envelope, fromString(prosecutor.get().getString("prosecutorId")), requester);
+            if (prosecutorJsonObject.isPresent() && prosecutorJsonObject.get().getBoolean("cpsFlag", false)) {
+                isCpsCaseFlag = true;
+            }
+        }
+
+        final JsonObject updatedPayload = JsonHelper.addProperty(payload, IS_CPS_CASE, isCpsCaseFlag);
+        sender.send(Enveloper.envelop(updatedPayload).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).withMetadataFrom(envelope));
+
+        return JsonHelper.removeProperty(payload, IS_CPS_CASE);
+    }
+
+    private Optional<JsonObject> getProsecutor(final JsonEnvelope envelope, UUID caseId) {
+        final Optional<JsonObject> prosecutionCaseDetailById = progressionService.getProsecutionCaseDetailById(envelope, caseId.toString());
+        return prosecutionCaseDetailById.map(jsonObject -> jsonObject.getJsonObject(PROSECUTION_CASE).getJsonObject("prosecutor"));
     }
 
     private String getDocumentSection(final JsonObject documentTypeData) {
@@ -187,7 +212,7 @@ public class CourtDocumentAddedProcessor {
         if (defendantDocument != null) {
             return Optional.of(defendantDocument.getProsecutionCaseId());
         }
-        return Optional.empty();
+        return empty();
     }
 }
 
