@@ -232,14 +232,14 @@ public class ProgressionService {
                                                 .collect(toList()))
                                         .build())
                                 .orElse(null))
-                        .withCourtApplicationCases(courtApplication.getCourtApplicationCases().stream()
+                        .withCourtApplicationCases(nonNull(courtApplication.getCourtApplicationCases()) ? courtApplication.getCourtApplicationCases().stream()
                                 .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase()
                                         .withValuesFrom(courtApplicationCase)
                                         .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
                                                 .map(courtApplicationOffence -> Offence.offence().withValuesFrom(courtApplicationOffence).withJudicialResults(null).build())
                                                 .collect(collectingAndThen(toList(), getListOrNull())))
                                         .build())
-                                .collect(collectingAndThen(toList(), getListOrNull())))
+                                .collect(collectingAndThen(toList(), getListOrNull())) :null)
                         .build())
                 .collect(toList());
     }
