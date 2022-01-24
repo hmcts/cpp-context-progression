@@ -32,6 +32,7 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
@@ -142,7 +143,7 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
                 withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test"))
         };
 
-        pollForCourtApplication(courtApplicationId, applicationMatchers);
+         pollForCourtApplication(courtApplicationId, applicationMatchers);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));

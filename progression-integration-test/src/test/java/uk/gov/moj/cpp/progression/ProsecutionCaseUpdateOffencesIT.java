@@ -14,6 +14,7 @@ import org.junit.Ignore;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
 import java.time.LocalDate;
+import java.util.stream.Stream;
 
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
@@ -63,7 +64,7 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(1)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].id", is("3789ab16-e588-4b7f-806a-44dc0eb0e75e")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", is("Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992")),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", is(LocalDate.now().plusDays(1).toString())));
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", is("2020-01-01")));
     }
 
     @Test

@@ -1,9 +1,12 @@
 package uk.gov.moj.cpp.progression.util;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,10 +16,20 @@ import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsCollectionWithSize;
 
 public class ReferProsecutionCaseToCrownCourtHelper {
+    private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
 
     public static Matcher<? super ReadContext>[] getProsecutionCaseMatchers(final String caseId, final String defendantId) {
         return getProsecutionCaseMatchers(caseId, defendantId, Collections.emptyList());
 
+    }
+
+    public static List<Matcher<? super ReadContext>> getYouthReportingRestrictionsMatchers(final LocalDate orderedDate, final LocalDate dateOfBirth, final int expectedRestrictionsCount) {
+        List<Matcher<? super ReadContext>> matchers = new ArrayList<>();
+        matchers.add(withJsonPath("$.prosecutionCase.defendants[0].offences[*].reportingRestrictions", hasSize(equalTo(expectedRestrictionsCount))));
+        matchers.add(withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", is(YOUTH_RESTRICTION)));
+        matchers.add(withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.dateOfBirth", is(dateOfBirth.toString())));
+        matchers.add(withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", is(orderedDate.toString())));
+        return matchers;
     }
 
     public static Matcher<? super ReadContext>[] getProsecutionCaseMatchersWithOffence(final String caseId, final String defendantId, final List<Matcher<? super ReadContext>> additionalMatchers) {
@@ -224,10 +237,8 @@ public class ReferProsecutionCaseToCrownCourtHelper {
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.code", is("C")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.description", is("Remanded into Custody")),
-
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodyTimeLimit", is("2018-01-01")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.driverNumber", is("AACC12345")),
-
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.name", is("Disneyland Paris")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.employerOrganisation.incorporationNumber", is("Mickeymouse1"))
         );

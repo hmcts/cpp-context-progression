@@ -439,14 +439,11 @@ public class PreAndPostConditionHelper {
     }
 
     public static Response sendCurrentOffencesToUpdateOffencesCommand (final String caseId, final String defendantId)  throws  IOException{
-        final String jsonString = getPayload("progression.command.update-offences-for-prosecutioncase-after-defendant-dob-change.json");
+        final String jsonString = getPayload("progression.command.update-offences-for-prosecutioncase-after-defendant-dob-change.json")
+                .replaceAll("DEFENDANT_ID",defendantId)
+                .replaceAll("CASE_ID",caseId);
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
-        String request;
-
-        jsonObjectPayload.getJSONObject("defendantCaseOffences").put("defendantId", defendantId);
-        jsonObjectPayload.getJSONObject("defendantCaseOffences").put("prosecutionCaseId", caseId);
-
-        request = jsonObjectPayload.toString();
+        String request = jsonObjectPayload.toString();
        return postCommand(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), "application/vnd.progression.update-offences-for-prosecution-case+json", request);
     }
 

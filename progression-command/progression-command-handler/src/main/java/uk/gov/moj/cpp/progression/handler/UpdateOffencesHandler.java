@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ReportingRestriction;
@@ -76,7 +77,7 @@ public class UpdateOffencesHandler {
         final List<String> offenceCodes = offences.stream().map(Offence::getOffenceCode).collect(Collectors.toList());
         final Optional<List<JsonObject>> offencesJsonObjectOptional = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelopeFrom(updateDefedantEnvelope.metadata(), JsonValue.NULL), requester);
 
-        final Stream<Object> events = caseAggregate.updateOffences(offences,prosecutionCaseId,defendantId,offencesJsonObjectOptional);
+        final Stream<Object> events = caseAggregate.updateOffences(dedupAllReportingRestrictions(offences),prosecutionCaseId,defendantId,offencesJsonObjectOptional);
 
         appendEventsToStream(updateDefedantEnvelope, eventStream, events);
     }
@@ -87,7 +88,7 @@ public class UpdateOffencesHandler {
         final UpdateOffencesForHearing updateOffencesForHearing = updateOffencesForHearingEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateOffencesForHearing.getHearingId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
-        final Stream<Object> events = hearingAggregate.updateOffence(updateOffencesForHearing.getDefendantId(), updateOffencesForHearing.getUpdatedOffences());
+        final Stream<Object> events = hearingAggregate.updateOffence(updateOffencesForHearing.getDefendantId(), dedupAllReportingRestrictions(updateOffencesForHearing.getUpdatedOffences()));
         appendEventsToStream(updateOffencesForHearingEnvelope, eventStream, events);
     }
 

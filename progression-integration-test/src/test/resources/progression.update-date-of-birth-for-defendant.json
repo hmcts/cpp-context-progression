@@ -92,8 +92,10 @@
     ],
     "personDefendant": {
       "personDetails": {
+        "title": "DR",
         "firstName": "Harry",
-        "lastName": "Smith",
+        "middleName": "Jack",
+        "lastName": "Kane Junior",
         "dateOfBirth": "DATE_OF_BIRTH",
         "address": {
           "address1": "703 MALLERTON WAY",
@@ -109,17 +111,38 @@
         "nationalityDescription": "British",
         "nationalityCode": "GBR",
         "ethnicity": {
-          "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+          "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
           "selfDefinedEthnicityDescription": "British",
-          "selfDefinedEthnicityCode": "W1"
+          "selfDefinedEthnicityCode": "W1",
+          "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
         }
       },
       "arrestSummonsNumber": "TFL",
+      "employerOrganisation": {
+        "name": "Disneyland Paris",
+        "incorporationNumber": "Mickeymouse1",
+        "address": {
+          "address1": "Disney Road",
+          "address2": "Disney Town",
+          "address3": "Disney District",
+          "address4": "Paris",
+          "address5": "France",
+          "postcode": "CR7 0AA"
+        },
+        "contact": {
+          "work": "0207 654 3246 extn 1234",
+          "primaryEmail": "person@hotmail.com",
+          "secondaryEmail": "associate@hotmail.com",
+          "fax": "a"
+        }
+      },
       "bailStatus": {
         "code": "C",
-        "description": "Custody or remanded into custody",
-        "id": "12e69486-4d01-3403-a50a-7419ca040635"
-      }
+        "description": "Remanded into Custody",
+        "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5"
+      },
+      "custodyTimeLimit": "2018-01-01",
+      "driverNumber": "AACC12345"
     },
     "masterDefendantId": "e641d232-bc35-4dca-93fa-db8c0a69a92d"
   }

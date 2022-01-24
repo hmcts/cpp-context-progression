@@ -434,7 +434,7 @@ public class HearingResultsCommandHandlerTest {
         final List<JsonEnvelope> events = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
         assertThat(events.size(), is(3));
 
-        checkEventsContentOfHearingResultedWithManuallyAddedReportingRestrictions(hearingId, caseId, events, 3);
+        checkEventsContentOfHearingResultedWithManuallyAddedReportingRestrictions(hearingId, caseId, events, 1);
 
     }
 

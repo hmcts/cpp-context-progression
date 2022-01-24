@@ -133,34 +133,6 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
 
 
     @Test
-    public void shouldUpdateOffencesWithYouthReportingRestrictionsWhenDefendantAgeUpdatedToYouth() throws Exception {
-
-        final List<Matcher<? super ReadContext>> additionalMatchersForNoRR = new ArrayList<>();
-        additionalMatchersForNoRR.add(withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.dateOfBirth", is("1980-01-01")));
-        additionalMatchersForNoRR.add((withoutJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions")));
-
-        addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, additionalMatchersForNoRR));
-
-        final List<Matcher> additionalMatchersForDOBUpdated = new ArrayList<>();
-        additionalMatchersForDOBUpdated.add(withJsonPath("$.prosecutionCase.id", is(caseId)));
-        additionalMatchersForDOBUpdated.add(withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("Harry")));
-        additionalMatchersForDOBUpdated.add(withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.dateOfBirth", is("2010-01-01")));
-
-        final List<Matcher> additionalMatchersForReportingRestrictionsAfterDOBUpdated = new ArrayList<>();
-        additionalMatchersForReportingRestrictionsAfterDOBUpdated.add(withJsonPath("$.prosecutionCase.id", is(caseId)));
-        additionalMatchersForReportingRestrictionsAfterDOBUpdated.add(withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("Harry")));
-        additionalMatchersForReportingRestrictionsAfterDOBUpdated.add(withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.dateOfBirth", is("2010-01-01")));
-        additionalMatchersForReportingRestrictionsAfterDOBUpdated.add(withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", is(YOUTH_RESTRICTION)));
-
-        helper.updateDateOfBirthForDefendant(caseId, defendantId, LocalDate.of(2010, 01, 01));
-        pollProsecutionCasesProgressionFor(caseId, additionalMatchersForDOBUpdated.toArray(new Matcher[additionalMatchersForDOBUpdated.size()]));
-        helper.verifyInMessagingQueueForDefendentChanged();
-
-
-    }
-
-    @Test
     public void shouldUpdateDefendantDetailsWithHearingLanguageNeeds() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,

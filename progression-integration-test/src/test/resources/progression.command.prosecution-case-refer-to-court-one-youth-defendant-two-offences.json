@@ -63,7 +63,14 @@
                   "vehicleRegistration": "AA12345",
                   "alcoholReadingAmount": 111,
                   "alcoholReadingMethodCode": "2222"
-                }
+                },
+                "reportingRestrictions": [
+                  {
+                    "id": "db78fe3e-0fcc-4a49-afc1-b26b8a64dca5",
+                    "label": "Section 49 of the Children and Young Persons Act 1933 applies",
+                    "orderedDate": "2021-01-20"
+                  }
+                ]
               },
               {
                 "id": "4789ab16-0bb7-4ef1-87ef-c936bf0364f1",
@@ -85,7 +92,51 @@
                   "vehicleRegistration": "AA12345",
                   "alcoholReadingAmount": 111,
                   "alcoholReadingMethodCode": "2222"
-                }
+                },
+                "reportingRestrictions": [
+                  {
+                    "id": "322cbb37-5fa2-43b9-be0c-e2e7e81e3a77",
+                    "label": "Section 49 of the Children and Young Persons Act 1933 applies",
+                    "orderedDate": "2021-01-20"
+                  }
+                ]
+              }
+            ],
+            "associatedPersons": [
+              {
+                "person": {
+                  "title": "DR",
+                  "firstName": "Harry",
+                  "middleName": "Jack",
+                  "lastName": "Kane",
+                  "dateOfBirth": "1995-01-01",
+                  "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                  "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                  "disabilityStatus": "a",
+                  "gender": "MALE",
+                  "interpreterLanguageNeeds": "Hindi",
+                  "documentationLanguageNeeds": "WELSH",
+                  "nationalInsuranceNumber": "NH222222B",
+                  "occupation": "Footballer",
+                  "occupationCode": "F",
+                  "address": {
+                    "address1": "22",
+                    "address2": "Acacia Avenue",
+                    "address3": "Acacia Town",
+                    "address4": "Acacia City",
+                    "address5": "Acacia Country",
+                    "postcode": "CR7 0AA"
+                  },
+                  "contact": {
+                    "home": "123456",
+                    "work": "7891011",
+                    "mobile": "+45678910",
+                    "primaryEmail": "harry.kane@spurs.co.uk",
+                    "secondaryEmail": "harry.kane@hotmail.com",
+                    "fax": "3425678"
+                  }
+                },
+                "role": "parent"
               }
             ],
             "personDefendant": {
@@ -94,7 +145,7 @@
                 "firstName": "Harry",
                 "middleName": "Jack",
                 "lastName": "Kane Junior",
-                "dateOfBirth": "2005-01-01",
+                "dateOfBirth": "2006-01-01",
                 "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                 "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                 "disabilityStatus": "a",
