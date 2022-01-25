@@ -364,6 +364,21 @@ public class ProgressionService {
                 updateCommandBuilder.build()));
     }
 
+    public void increaseListingNumber(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase, final UUID hearingId) {
+        final JsonArrayBuilder offenceListingNumbersBuilder = Json.createArrayBuilder();
+        prosecutionCase.getDefendants().stream()
+                .flatMap(defendant -> defendant.getOffences().stream())
+                .forEach(offence -> offenceListingNumbersBuilder.add(offence.getId().toString()));
+
+        final JsonObjectBuilder updateCommandBuilder = createObjectBuilder()
+                .add("prosecutionCaseId", prosecutionCase.getId().toString())
+                .add("hearingId", hearingId.toString())
+                .add("offenceIds", offenceListingNumbersBuilder.build());
+
+        sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName("progression.command.increase-listing-number-to-prosecution-case"),
+                updateCommandBuilder.build()));
+    }
+
     private static Defendant populateDefendant(final Defendant matchedDefendant, final List<Offence>
             matchedDefendantOffence, final LocalDate earliestHearingDate) {
         final Defendant.Builder builder = Defendant.defendant()

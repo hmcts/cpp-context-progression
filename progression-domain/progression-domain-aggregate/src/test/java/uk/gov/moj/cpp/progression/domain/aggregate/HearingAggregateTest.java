@@ -7,6 +7,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+
+import java.util.Collections;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Defendant;
@@ -16,6 +18,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingDeleted;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
+import uk.gov.justice.progression.courts.OffenceInHearingDeleted;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
@@ -69,6 +72,7 @@ public class HearingAggregateTest {
         final UUID prosecutionCaseId = randomUUID();
         final UUID courtApplicationId = randomUUID();
         final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
 
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
@@ -76,7 +80,11 @@ public class HearingAggregateTest {
                         asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
-                                        .withDefendants(asList(Defendant.defendant().build()))
+                                        .withDefendants(asList(Defendant.defendant()
+                                                .withOffences(Collections.singletonList(Offence.offence()
+                                                        .withId(offenceId)
+                                                        .build()))
+                                                .build()))
                                         .build()
                         )
                 )
@@ -93,16 +101,19 @@ public class HearingAggregateTest {
         setField(hearingAggregate, "hearing", hearing);
         final List<Object> eventStream = hearingAggregate.deleteHearing(hearingId).collect(toList());
 
-        assertThat(eventStream.size(), is(2));
+        assertThat(eventStream.size(), is(3));
         final HearingDeleted hearingDeleted = (HearingDeleted) eventStream.get(0);
         assertThat(hearingDeleted.getHearingId(), is(hearingId));
         assertThat(hearingDeleted.getProsecutionCaseIds().get(0), is(prosecutionCaseId));
         assertThat(hearingDeleted.getCourtApplicationIds().get(0), is(courtApplicationId));
-        final DeletedHearingPopulatedToProbationCaseworker deletedHearingPopulatedToProbationCaseworker = (DeletedHearingPopulatedToProbationCaseworker) eventStream.get(1);
+        final DeletedHearingPopulatedToProbationCaseworker deletedHearingPopulatedToProbationCaseworker = (DeletedHearingPopulatedToProbationCaseworker) eventStream.get(2);
         assertThat(deletedHearingPopulatedToProbationCaseworker.getHearing().getId(), is(hearingId));
         assertThat(deletedHearingPopulatedToProbationCaseworker.getHearing().getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
         assertThat(deletedHearingPopulatedToProbationCaseworker.getHearing().getCourtApplications().get(0).getId(), is(courtApplicationId));
 
+        final OffenceInHearingDeleted offenceInHearingDeleted = (OffenceInHearingDeleted) eventStream.get(1);
+        assertThat(offenceInHearingDeleted.getProsecutionCaseIds().get(0), is(prosecutionCaseId));
+        assertThat(offenceInHearingDeleted.getOffenceIds().get(0), is(offenceId));
     }
 
     @Test

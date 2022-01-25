@@ -25,7 +25,12 @@
         "defendants": [
           {
             "id": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
-            "prosecutionCaseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f"
+            "prosecutionCaseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f",
+            "offences" : [
+              {
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+              }
+            ]
           }
         ],
         "id": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f",

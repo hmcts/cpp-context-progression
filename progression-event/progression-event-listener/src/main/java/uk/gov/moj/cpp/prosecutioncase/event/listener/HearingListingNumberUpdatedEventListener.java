@@ -20,6 +20,7 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingListingNumberUpdated;
 import uk.gov.justice.core.courts.ListingNumberUpdated;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
@@ -52,15 +53,38 @@ public class HearingListingNumberUpdatedEventListener {
     public void handleListingNumberUpdatedEvent(final Envelope<ListingNumberUpdated> event) {
 
         final ListingNumberUpdated listingNumberUpdated = event.payload();
+        final Map<UUID, Integer> listingMap = listingNumberUpdated.getOffenceListingNumbers().stream().collect(Collectors.toMap(OffenceListingNumbers::getOffenceId, OffenceListingNumbers::getListingNumber,Math::max));
+        final UUID hearingId = listingNumberUpdated.getHearingId();
 
-        final HearingEntity dbHearingEntity = hearingRepository.findBy(listingNumberUpdated.getHearingId());
-
+        final HearingEntity dbHearingEntity = hearingRepository.findBy(hearingId);
         final JsonObject dbHearingJsonObject = jsonFromString(dbHearingEntity.getPayload());
-
         final Hearing hearing = jsonObjectToObjectConverter.convert(dbHearingJsonObject, Hearing.class);
 
 
-        final Map<UUID, Integer> listingMap = listingNumberUpdated.getOffenceListingNumbers().stream().collect(Collectors.toMap(OffenceListingNumbers::getOffenceId, OffenceListingNumbers::getListingNumber,Math::max));
+        updateListingNumber(listingMap, dbHearingEntity, hearing);
+
+    }
+
+    @Handles("progression.event.hearing-listing-number-updated")
+    public void handleHaeringListingNumberUpdatedEvent(final Envelope<HearingListingNumberUpdated> event) {
+
+        final HearingListingNumberUpdated hearingListingNumberUpdated = event.payload();
+        final Map<UUID, Integer> listingMap = hearingListingNumberUpdated.getOffenceListingNumbers().stream().collect(Collectors.toMap(OffenceListingNumbers::getOffenceId, OffenceListingNumbers::getListingNumber,Math::max));
+        final UUID hearingId = hearingListingNumberUpdated.getHearingId();
+
+        final HearingEntity dbHearingEntity = hearingRepository.findBy(hearingId);
+        if(dbHearingEntity == null){
+            return;
+        }
+        final JsonObject dbHearingJsonObject = jsonFromString(dbHearingEntity.getPayload());
+        final Hearing hearing = jsonObjectToObjectConverter.convert(dbHearingJsonObject, Hearing.class);
+
+
+        updateListingNumber(listingMap, dbHearingEntity, hearing);
+
+    }
+
+    private void updateListingNumber(final Map<UUID, Integer> listingMap, final HearingEntity dbHearingEntity, final Hearing hearing) {
         final Hearing.Builder builder = Hearing.hearing().withValuesFrom(hearing)
                 .withProsecutionCases(ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
                         .map(prosecutionCase -> ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
@@ -80,7 +104,6 @@ public class HearingListingNumberUpdatedEventListener {
         dbHearingEntity.setPayload(updatedJsonObject.toString());
         // save in updated hearing in hearing table
         hearingRepository.save(dbHearingEntity);
-
     }
 
     private static JsonObject jsonFromString(final String jsonObjectStr) {

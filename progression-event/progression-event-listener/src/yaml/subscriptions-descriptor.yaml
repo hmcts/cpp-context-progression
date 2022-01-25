@@ -110,8 +110,17 @@ subscriptions_descriptor:
         - name: progression.event.listing-number-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.listing-number-updated.json
 
+        - name: progression.event.hearing-listing-number-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-listing-number-updated.json
+
         - name: progression.event.prosecution-case-listing-number-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.prosecution-case-listing-number-updated.json
+
+        - name: progression.event.prosecution-case-listing-number-decreased
+          schema_uri: http://justice.gov.uk/core/courts/prosecution-case-listing-number-decreased.json
+
+        - name: progression.event.prosecution-case-listing-number-increased
+          schema_uri: http://justice.gov.uk/core/courts/prosecution-case-listing-number-increased.json
 
         - name: progression.event.defendant-defence-organisation-changed
           schema_uri: http://justice.gov.uk/core/courts/defendant-defence-organisation-changed.json

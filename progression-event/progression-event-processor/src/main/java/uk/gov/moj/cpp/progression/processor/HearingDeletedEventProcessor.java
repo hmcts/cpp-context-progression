@@ -1,12 +1,17 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
+
+import java.util.List;
+import javax.json.JsonArrayBuilder;
 import uk.gov.justice.progression.courts.HearingDeleted;
+import uk.gov.justice.progression.courts.OffenceInHearingDeleted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -33,6 +38,8 @@ public class HearingDeletedEventProcessor {
     private static final String PROGRESSION_COMMAND_DELETE_HEARING = "progression.command.delete-hearing";
     private static final String PROGRESSION_COMMAND_DELETE_HEARING_FOR_PROSECUTION_CASE = "progression.command.delete-hearing-for-prosecution-case";
     private static final String PROGRESSION_COMMAND_DELETE_HEARING_FOR_COURT_APPLICATION = "progression.command.delete-hearing-for-court-application";
+    private static final String PROGRESSION_COMMAND_DECREASE_LISTING_NUMBER_FOR_PROSECUTION_CASE = "progression.command.decrease-listing-number-for-prosecution-case";
+
 
     private static final String HEARING_ID = "hearingId";
     private static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
@@ -73,6 +80,16 @@ public class HearingDeletedEventProcessor {
 
     }
 
+    @Handles("progression.event.offence-in-hearing-deleted")
+    public void handleOffenceInHearingDeleted(final JsonEnvelope jsonEnvelope){
+        final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
+        final OffenceInHearingDeleted offenceInHearingDeleted = jsonObjectToObjectConverter.convert(payload, OffenceInHearingDeleted.class);
+
+        offenceInHearingDeleted.getProsecutionCaseIds().forEach(prosecutionCaseId ->
+                sendCommandDecreaseListingNumberForProsecutionCase(jsonEnvelope, prosecutionCaseId, offenceInHearingDeleted.getOffenceIds())
+        );
+    }
+
     @Handles(PROGRESSION_EVENT_HEARING_DELETED)
     public void handleHearingDeletedPrivateEvent(final JsonEnvelope jsonEnvelope) {
 
@@ -101,6 +118,18 @@ public class HearingDeletedEventProcessor {
 
         sender.send(envelopeFrom(metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_COMMAND_DELETE_HEARING_FOR_PROSECUTION_CASE),
                 deleteHearingCommandBuilder.build()));
+    }
+
+    private void sendCommandDecreaseListingNumberForProsecutionCase(final JsonEnvelope jsonEnvelope, final UUID prosecutionCaseId, final List<UUID> offenceIds) {
+        final JsonArrayBuilder offenceIdsBuilder = createArrayBuilder();
+        offenceIds.forEach(id -> offenceIdsBuilder.add(id.toString()));
+
+        final JsonObjectBuilder decreaseListingNumberCommandBuilder = createObjectBuilder()
+                .add(PROSECUTION_CASE_ID, prosecutionCaseId.toString())
+                .add("offenceIds", offenceIdsBuilder.build());
+
+        sender.send(envelopeFrom(metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_COMMAND_DECREASE_LISTING_NUMBER_FOR_PROSECUTION_CASE),
+                decreaseListingNumberCommandBuilder.build()));
     }
 
     private void sendCommandDeleteHearingForCourtApplication(final JsonEnvelope jsonEnvelope, final UUID hearingId, final UUID courtApplicationId) {

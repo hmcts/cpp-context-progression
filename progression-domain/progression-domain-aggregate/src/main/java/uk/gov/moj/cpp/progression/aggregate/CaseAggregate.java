@@ -75,6 +75,9 @@ import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
 import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberIncreased;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
@@ -93,7 +96,6 @@ import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseCreatedInHearing;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequested;
 import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
@@ -419,6 +421,8 @@ public class CaseAggregate implements Aggregate {
                         e -> this.hasProsecutionCaseBeenCreated = true
                 ),
                 when(ProsecutionCaseListingNumberUpdated.class).apply(this::handleListingNumberUpdated),
+                when(ProsecutionCaseListingNumberIncreased.class).apply(this::handleListingNumberIncreased),
+                when(ProsecutionCaseListingNumberDecreased.class).apply(this::handleListingNumberDecreased),
                 when(DefendantsAndListingHearingRequestsAdded.class).apply(
                         e -> {
                             this.defendantsToBeAdded.clear();
@@ -437,6 +441,34 @@ public class CaseAggregate implements Aggregate {
                         }
                 ),
                 otherwiseDoNothing());
+
+    }
+
+    private void handleListingNumberDecreased(final ProsecutionCaseListingNumberDecreased prosecutionCaseListingNumberDecreased) {
+        final Set<UUID> listingSet = prosecutionCaseListingNumberDecreased.getOffenceIds().stream().collect(Collectors.toSet());
+
+        handleListingNumber(listingSet, -1);
+    }
+
+    private void handleListingNumberIncreased(final ProsecutionCaseListingNumberIncreased prosecutionCaseListingNumberIncreased) {
+        final Set<UUID> listingSet = prosecutionCaseListingNumberIncreased.getOffenceListingNumbers().stream().map(OffenceListingNumbers::getOffenceId).collect(Collectors.toSet());
+        handleListingNumber(listingSet, 1);
+    }
+
+    private void handleListingNumber(final Set<UUID> listingSet, int accumulator) {
+        this.prosecutionCase = ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
+                .withDefendants(prosecutionCase.getDefendants().stream()
+                        .map(defendant -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(defendant)
+                                .withOffences(defendant.getOffences().stream()
+                                        .map(offence -> uk.gov.justice.core.courts.Offence.offence().withValuesFrom(offence)
+                                                .withListingNumber((listingSet.contains(offence.getId()) ?
+                                                        Integer.valueOf(ofNullable(offence.getListingNumber()).orElse(0) +accumulator) :
+                                                        offence.getListingNumber()))
+                                                .build())
+                                        .collect(toList()))
+                                .build())
+                        .collect(toList()))
+                .build();
 
     }
 
@@ -1739,6 +1771,42 @@ public class CaseAggregate implements Aggregate {
                             .build())
                     .build());
         } else {
+            return Stream.empty();
+        }
+    }
+
+    public Stream<Object> increaseListingNumber(final List<UUID> offenceIds, final UUID hearingId) {
+        if (nonNull(this.prosecutionCase)) {
+            final List<OffenceListingNumbers> offenceListingNumbers = this.prosecutionCase.getDefendants().stream()
+                    .flatMap(defendant -> defendant.getOffences().stream())
+                    .filter(offence -> offenceIds.contains(offence.getId()))
+                    .map(offence -> OffenceListingNumbers.offenceListingNumbers()
+                            .withListingNumber(ofNullable(offence.getListingNumber()).orElse(0) + 1)
+                            .withOffenceId(offence.getId())
+                            .build())
+                    .collect(toList());
+
+            return apply(Stream.builder()
+                    .add(ProsecutionCaseListingNumberIncreased.prosecutionCaseListingNumberIncreased()
+                            .withProsecutionCaseId(this.prosecutionCase.getId())
+                            .withHearingId(hearingId)
+                            .withOffenceListingNumbers(offenceListingNumbers)
+                            .build())
+                    .build());
+        } else {
+            return Stream.empty();
+        }
+    }
+
+    public Stream<Object> decreaseListingNumbers(final List<UUID> offenceIds) {
+        if(nonNull(this.prosecutionCase)) {
+            return apply(Stream.builder()
+                    .add(ProsecutionCaseListingNumberDecreased.prosecutionCaseListingNumberDecreased()
+                            .withProsecutionCaseId(this.prosecutionCase.getId())
+                            .withOffenceIds(offenceIds)
+                            .build())
+                    .build());
+        }else{
             return Stream.empty();
         }
     }

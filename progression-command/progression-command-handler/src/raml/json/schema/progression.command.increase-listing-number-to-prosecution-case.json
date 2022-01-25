@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/increase-listing-number-to-prosecution-case.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "offenceIds" : {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      }
+    }
+  },
+  "required": [
+    "offenceIds",
+    "hearingId",
+    "prosecutionCaseId"
+  ],
+  "additionalProperties": false
+}

@@ -158,7 +158,7 @@ public class HearingConfirmedEventProcessor {
             }
 
             ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
-                    .forEach(prosecutionCase -> progressionService.updateListingNumber(jsonEnvelope, prosecutionCase));
+                    .forEach(prosecutionCase -> progressionService.increaseListingNumber(jsonEnvelope, prosecutionCase, hearing.getId()));
 
 
             progressionService.prepareSummonsData(jsonEnvelope, confirmedHearing);
@@ -306,7 +306,7 @@ public class HearingConfirmedEventProcessor {
         }
 
         ofNullable(incomingHearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
-                .forEach(prosecutionCase -> progressionService.updateListingNumber(jsonEnvelope, prosecutionCase));
+                .forEach(prosecutionCase -> progressionService.increaseListingNumber(jsonEnvelope, prosecutionCase, hearingListingNeeds.getId()));
 
         final ExtendHearing extendHearing = ExtendHearing.extendHearing()
                 .withExtendedHearingFrom(confirmedHearing.getId())

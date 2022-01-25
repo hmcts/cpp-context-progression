@@ -18,6 +18,7 @@ import java.util.Arrays;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Ethnicity;
 import uk.gov.justice.core.courts.InitiationCode;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Offence;
@@ -216,6 +217,43 @@ public class ProsecutionCaseDefendantUpdatedEventListenerTest {
 
         assertThat(updatedCase.getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
         assertThat(updatedCase.getDefendants().get(0).getOffences().get(0).getListingNumber(), is(10));
+        assertThat(updatedCase.getDefendants().get(0).getOffences().get(1).getListingNumber(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldUpdateViewStoreWithDecreasedListingNumber(){
+        final UUID offenceId = randomUUID();
+
+        ProsecutionCaseListingNumberDecreased event = ProsecutionCaseListingNumberDecreased.prosecutionCaseListingNumberDecreased()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withOffenceIds(singletonList(offenceId))
+                .build();
+
+        final JsonObject eventPayloadJsonObject = objectToJsonObjectConverter.convert(event);
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(eventPayloadJsonObject);
+        ProsecutionCase caseInDb = ProsecutionCase.prosecutionCase()
+                .withDefendants(singletonList(Defendant.defendant()
+                        .withOffences(Arrays.asList(Offence.offence()
+                                .withId(offenceId)
+                                .withListingNumber(5)
+                                .build(), Offence.offence()
+                                .withId(randomUUID())
+                                .build()))
+                        .build()))
+                .build();
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(prosecutionCaseId);
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(caseInDb).toString());
+        when(prosecutionCaseRepository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
+
+        prosecutionCaseDefendantUpdatedEventListener.processProsecutionCaseListingNumberDecreased(jsonEnvelope);
+
+        verify(prosecutionCaseRepository).save(argumentCaptor.capture());
+        final ProsecutionCaseEntity updatedProsecutionCaseEntity = argumentCaptor.getValue();
+        final ProsecutionCase updatedCase = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(updatedProsecutionCaseEntity.getPayload()), ProsecutionCase.class);
+
+        assertThat(updatedCase.getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
+        assertThat(updatedCase.getDefendants().get(0).getOffences().get(0).getListingNumber(), is(4));
         assertThat(updatedCase.getDefendants().get(0).getOffences().get(1).getListingNumber(), is(nullValue()));
     }
 

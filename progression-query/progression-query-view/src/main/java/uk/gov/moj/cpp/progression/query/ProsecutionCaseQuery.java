@@ -86,6 +86,7 @@ public class ProsecutionCaseQuery {
     public static final String CASE_STATUS = "caseStatus";
     public static final String CASE_STATUS_ACTIVE = "ACTIVE";
     private static final String ORDER_DATE = "orderDate";
+    public static final String NO_CASE_FOUND_YET_FOR_CASE_ID = "# No case found yet for caseId '{}'";
 
     @Inject
     private ProsecutionCaseRepository prosecutionCaseRepository;
@@ -182,7 +183,7 @@ public class ProsecutionCaseQuery {
             }
 
         } catch (final NoResultException e) {
-            LOGGER.info("# No case found yet for caseId '{}'", caseId.get());
+            LOGGER.info(NO_CASE_FOUND_YET_FOR_CASE_ID, caseId.get());
         }
 
         return JsonEnvelope.envelopeFrom(
@@ -224,7 +225,7 @@ public class ProsecutionCaseQuery {
             }
 
         } catch (final NoResultException e) {
-            LOGGER.warn("# No case found yet for caseId '{}'", caseId.get());
+            LOGGER.warn(NO_CASE_FOUND_YET_FOR_CASE_ID, caseId.get());
         }
 
         return JsonEnvelope.envelopeFrom(envelope.metadata(), jsonObjectBuilder.build());
@@ -242,7 +243,7 @@ public class ProsecutionCaseQuery {
             }
             jsonObjectBuilder.add(PROSECUTION_CASE, prosecutionCase);
         } catch (final NoResultException e) {
-            LOGGER.info("# No case found yet for caseId '{}'", caseId.get());
+            LOGGER.info(NO_CASE_FOUND_YET_FOR_CASE_ID, caseId.get());
         }
 
         return JsonEnvelope.envelopeFrom(

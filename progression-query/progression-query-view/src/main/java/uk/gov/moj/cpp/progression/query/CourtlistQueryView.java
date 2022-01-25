@@ -219,7 +219,10 @@ public class CourtlistQueryView {
     private JsonObject enrichHearingFromCase(JsonObject hearingFromListing, final Hearing hearing, final UUID caseId) {
 
         //DD-15717: deliberately loading case details from database as the copy of case on hearing object within progression is out of date
-        final List<ProsecutionCase> prosecutionCases =  getProsecutionCaseFromDb(caseId);
+        final List<ProsecutionCase> prosecutionCasesFromViewStore =  getProsecutionCaseFromDb(caseId);
+        final List<ProsecutionCase> prosecutionCases =  ofNullable(hearing.getProsecutionCases())
+                .map(prosecutionCasesFromHearing -> getProsecutionCaseWithListingNumberInHearings(prosecutionCasesFromViewStore, prosecutionCasesFromHearing))
+                .orElseGet(() -> prosecutionCasesFromViewStore);
 
         if (isNotEmpty(prosecutionCases)) {
             final Optional<ProsecutionCase> prosecutionCase = prosecutionCases.stream()
@@ -255,6 +258,28 @@ public class CourtlistQueryView {
 
         hearingFromListing = addProperty(hearingFromListing, DEFENDANTS, defendantsArray.build());
         return hearingFromListing;
+    }
+
+    private List<ProsecutionCase> getProsecutionCaseWithListingNumberInHearings(final List<ProsecutionCase> prosecutionCasesFromViewStore, final List<ProsecutionCase> prosecutionCasesFromHearing ){
+
+        final Map<UUID, Integer> listingMap = prosecutionCasesFromHearing.stream().flatMap(pc -> pc.getDefendants().stream())
+                .flatMap(defendant -> defendant.getOffences().stream())
+                .filter(offence -> nonNull(offence.getListingNumber()))
+                .collect(toMap(uk.gov.justice.core.courts.Offence::getId, uk.gov.justice.core.courts.Offence::getListingNumber, Math::max));
+
+        return prosecutionCasesFromViewStore.stream()
+                .map(ps -> ProsecutionCase.prosecutionCase().withValuesFrom(ps)
+                        .withDefendants(ps.getDefendants().stream()
+                                .map(def -> Defendant.defendant().withValuesFrom(def)
+                                        .withOffences(def.getOffences().stream()
+                                                .map(of->Offence.offence().withValuesFrom(of)
+                                                        .withListingNumber(listingMap.get(of.getId()))
+                                                        .build())
+                                                .collect(toList()))
+                                        .build())
+                                .collect(toList()))
+                        .build())
+                .collect(toList());
     }
 
     private List<ProsecutionCase> getProsecutionCaseFromDb(final UUID caseId) {

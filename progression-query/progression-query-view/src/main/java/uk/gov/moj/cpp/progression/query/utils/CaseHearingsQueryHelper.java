@@ -67,7 +67,7 @@ public class CaseHearingsQueryHelper {
     public static JsonObject buildCaseHearingTypesResponse(final Map<UUID, String> hearingTypes) {
         final JsonArrayBuilder hearingTypesBuilder = createArrayBuilder();
         hearingTypes.entrySet().stream().forEach(hearingType ->
-                hearingTypesBuilder.add(createObjectBuilder().add("hearingId", String.valueOf(hearingType.getKey())).add("type", hearingType.getValue()).build()));
+                hearingTypesBuilder.add(createObjectBuilder().add(HEARING_ID, String.valueOf(hearingType.getKey())).add("type", hearingType.getValue()).build()));
         return createObjectBuilder().add(HEARING_TYPES, hearingTypesBuilder).build();
     }
 }

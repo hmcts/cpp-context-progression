@@ -84,7 +84,7 @@ public class HearingUpdatedIT extends AbstractIT {
             .createConsumer(PUBLIC_HEARING_DETAIL_CHANGED);
     private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
     private static final MessageConsumer messageConsumerHearingOffenceUpdated = privateEvents.createConsumer("progression.event.hearing-offences-updated");
-    private static final MessageConsumer messageConsumerListingNumberUpdated = privateEvents.createConsumer("progression.event.prosecution-case-listing-number-updated");
+    private static final MessageConsumer messageConsumerListingNumberIncreased = privateEvents.createConsumer("progression.event.prosecution-case-listing-number-increased");
     private static final String OFFENCE_ID = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
     private static final String OFFENCE_ID2 = "4789ab16-0bb7-4ef1-87ef-c936bf0364f1";
 
@@ -113,7 +113,7 @@ public class HearingUpdatedIT extends AbstractIT {
         messageConsumerClientPublicForReferToCourtOnHearingInitiated.close();
         messageConsumerHearingPopulatedToProbationCaseWorker.close();
         messageConsumerHearingOffenceUpdated.close();
-        messageConsumerListingNumberUpdated.close();
+        messageConsumerListingNumberIncreased.close();
     }
 
     @Test
@@ -304,7 +304,7 @@ public class HearingUpdatedIT extends AbstractIT {
         }
 
 
-        final JsonPath message = QueueUtil.retrieveMessage(messageConsumerListingNumberUpdated, isJson(withJsonPath("$.prosecutionCaseId", CoreMatchers.is(caseId))));
+        final JsonPath message = QueueUtil.retrieveMessage(messageConsumerListingNumberIncreased, isJson(withJsonPath("$.prosecutionCaseId", CoreMatchers.is(caseId))));
         assertNotNull(message);
         final List<HashMap> listingNumbers = message.getList("offenceListingNumbers", HashMap.class);
         assertThat(listingNumbers.get(0).get("offenceId"), is(OFFENCE_ID));
@@ -360,7 +360,7 @@ public class HearingUpdatedIT extends AbstractIT {
         }
 
 
-        final JsonPath message = QueueUtil.retrieveMessage(messageConsumerListingNumberUpdated, isJson(withJsonPath("$.prosecutionCaseId", CoreMatchers.is(caseId))));
+        final JsonPath message = QueueUtil.retrieveMessage(messageConsumerListingNumberIncreased, isJson(withJsonPath("$.prosecutionCaseId", CoreMatchers.is(caseId))));
         assertNotNull(message);
         final List<HashMap> listingNumbers = message.getList("offenceListingNumbers", HashMap.class);
         assertThat(listingNumbers.size(), is(1));

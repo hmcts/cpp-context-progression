@@ -4,6 +4,7 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import uk.gov.justice.core.courts.HearingResultedUpdateCase;
 import uk.gov.justice.core.courts.UpdateListingNumberToProsecutionCase;
+import uk.gov.justice.progression.courts.IncreaseListingNumberToProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -41,9 +42,9 @@ public class UpdateCaseHandler {
 
     @Handles("progression.command.hearing-resulted-update-case")
     public void handle(final Envelope<HearingResultedUpdateCase> hearingResultedUpdateCaseEnvelope) throws EventStreamException {
-
-        LOGGER.debug("progression.command.hearing-resulted-update-case {}", hearingResultedUpdateCaseEnvelope.payload());
-
+        if(LOGGER.isDebugEnabled()) {
+            LOGGER.debug("progression.command.hearing-resulted-update-case {}", hearingResultedUpdateCaseEnvelope.payload());
+        }
         final HearingResultedUpdateCase hearingUpdate = hearingResultedUpdateCaseEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(hearingUpdate.getProsecutionCase().getId());
 
@@ -55,9 +56,9 @@ public class UpdateCaseHandler {
 
     @Handles("progression.command.update-listing-number-to-prosecution-case")
     public void handleUpdateListingNumber(final Envelope<UpdateListingNumberToProsecutionCase> updateListingNumberToProsecutionCaseEnvelope) throws EventStreamException {
-
-        LOGGER.debug("progression.command.update-listing-number-to-prosecution-case {}", updateListingNumberToProsecutionCaseEnvelope.payload());
-
+        if(LOGGER.isDebugEnabled()) {
+            LOGGER.debug("progression.command.update-listing-number-to-prosecution-case {}", updateListingNumberToProsecutionCaseEnvelope.payload());
+        }
         final UpdateListingNumberToProsecutionCase updateListingNumberToProsecutionCase = updateListingNumberToProsecutionCaseEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateListingNumberToProsecutionCase.getProsecutionCaseId());
 
@@ -65,6 +66,20 @@ public class UpdateCaseHandler {
         final Stream<Object> events = caseAggregate.updateListingNumber(updateListingNumberToProsecutionCase.getOffenceListingNumbers());
 
         appendEventsToStream(updateListingNumberToProsecutionCaseEnvelope, eventStream, events);
+    }
+
+    @Handles("progression.command.increase-listing-number-to-prosecution-case")
+    public void handleIncreaseListingNumber(final Envelope<IncreaseListingNumberToProsecutionCase> increaseListingNumberForProsecutionCaseEnvelope) throws EventStreamException {
+        if(LOGGER.isDebugEnabled()) {
+            LOGGER.debug("progression.command.increase-listing-number-to-prosecution-case {}", increaseListingNumberForProsecutionCaseEnvelope.payload());
+        }
+        final IncreaseListingNumberToProsecutionCase increaseListingNumberForProsecutionCase = increaseListingNumberForProsecutionCaseEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(increaseListingNumberForProsecutionCase.getProsecutionCaseId());
+
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+        final Stream<Object> events = caseAggregate.increaseListingNumber(increaseListingNumberForProsecutionCase.getOffenceIds(), increaseListingNumberForProsecutionCase.getHearingId());
+
+        appendEventsToStream(increaseListingNumberForProsecutionCaseEnvelope, eventStream, events);
     }
 
 

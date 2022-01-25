@@ -78,6 +78,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseCreatedInHearing;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ReferralReason;
@@ -414,6 +415,40 @@ public class CaseAggregateTest {
         assertThat(events.get(0).getProsecutionCaseId(), is(caseId));
         assertThat(events.get(0).getOffenceListingNumbers().get(0).getListingNumber(), is(10));
         assertThat(events.get(0).getOffenceListingNumbers().get(0).getOffenceId(), is(prosecutionCase.getDefendants().get(0).getOffences().get(0).getId()));
+    }
+
+    @Test
+    public void shouldDecreaseListingNumberOfCase() {
+        final UUID caseId = randomUUID();
+
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+
+        final List<uk.gov.justice.core.courts.Defendant> defendants = getDefendants(caseId, defendantId1, defendantId2, defendantId3);
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .withDefendants(defendants).withId(caseId).build();
+        final ProsecutionCaseCreated prosecutionCaseUpdated = ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+
+        final Object response = this.caseAggregate.apply(prosecutionCaseUpdated);
+
+
+        final List<ProsecutionCaseListingNumberDecreased> events = this.caseAggregate.decreaseListingNumbers(singletonList(defendants.get(1).getOffences().get(0).getId())).map(ProsecutionCaseListingNumberDecreased.class::cast).collect(toList());
+
+        final ProsecutionCase ProsecutionCaseInAggregate = ReflectionUtil.getValueOfField(this.caseAggregate, "prosecutionCase", ProsecutionCase.class);
+
+        assertThat(ProsecutionCaseInAggregate.getDefendants().get(0).getOffences().get(0).getId(), is(prosecutionCase.getDefendants().get(0).getOffences().get(0).getId()));
+        assertThat(ProsecutionCaseInAggregate.getDefendants().get(0).getOffences().get(0).getListingNumber(), is(nullValue()));
+        assertThat(ProsecutionCaseInAggregate.getDefendants().get(1).getOffences().get(0).getId(), is(prosecutionCase.getDefendants().get(1).getOffences().get(0).getId()));
+        assertThat(ProsecutionCaseInAggregate.getDefendants().get(1).getOffences().get(0).getListingNumber(), is(4));
+        assertThat(ProsecutionCaseInAggregate.getDefendants().get(2).getOffences().get(0).getId(), is(prosecutionCase.getDefendants().get(2).getOffences().get(0).getId()));
+        assertThat(ProsecutionCaseInAggregate.getDefendants().get(2).getOffences().get(0).getListingNumber(), is(nullValue()));
+
+        assertThat(events.get(0).getProsecutionCaseId(), is(caseId));
+        assertThat(events.get(0).getOffenceIds().get(0), is(defendants.get(1).getOffences().get(0).getId()));
+
     }
 
     @Test

@@ -4,6 +4,7 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 
 import uk.gov.justice.core.courts.ProcessHearingUpdated;
+import uk.gov.justice.core.courts.UpdateListingNumberToHearing;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -40,6 +41,15 @@ public class ProcessHearingUpdatedHandler {
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
         final Stream<Object> event = hearingAggregate.processHearingUpdated(processHearingUpdated.getConfirmedHearing(), processHearingUpdated.getUpdatedHearing());
         appendEventsToStream(processHearingUpdatedEnvelope, eventStream, event);
+    }
+
+    @Handles("progression.command.update-listing-number-to-hearing")
+    public void handleListingNumber(final Envelope<UpdateListingNumberToHearing> updateListingNumberToHearingEnvelope)  throws EventStreamException{
+        final UpdateListingNumberToHearing updateListingNumberToHearing = updateListingNumberToHearingEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(updateListingNumberToHearing.getHearingId());
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events = hearingAggregate.updateHearingWithListingNumber(updateListingNumberToHearing.getProsecutionCaseId(),updateListingNumberToHearing.getHearingId(),  updateListingNumberToHearing.getOffenceListingNumbers());
+        appendEventsToStream(updateListingNumberToHearingEnvelope, eventStream, events);
     }
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {

@@ -9,6 +9,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.Defendant;
@@ -18,6 +19,8 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDefendantUpdated;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberIncreased;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
@@ -193,6 +196,44 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                                 .withOffences(defendant.getOffences().stream()
                                         .map(offence -> uk.gov.justice.core.courts.Offence.offence().withValuesFrom(offence)
                                                 .withListingNumber(ofNullable(listingMap.get(offence.getId())).orElse(offence.getListingNumber()))
+                                                .build())
+                                        .collect(toList()))
+                                .build())
+                        .collect(toList()))
+                .build();
+        LOGGER.info("progression.event.prosecution-case-listing-number-updated {} ", objectToJsonObjectConverter.convert(updatedProsecutionCase));
+        repository.save(getProsecutionCaseEntity(updatedProsecutionCase));
+
+    }
+
+    @Handles("progression.event.prosecution-case-listing-number-decreased")
+    public void processProsecutionCaseListingNumberDecreased(final JsonEnvelope event) {
+        final ProsecutionCaseListingNumberDecreased prosecutionCaseListingNumberDecreased = jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseListingNumberDecreased.class);
+        final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(prosecutionCaseListingNumberDecreased.getProsecutionCaseId());
+        final Set<UUID> listingSet = prosecutionCaseListingNumberDecreased.getOffenceIds().stream().collect(Collectors.toSet());
+
+        saveListingNumber(prosecutionCaseEntity, listingSet, -1);
+    }
+
+
+    @Handles("progression.event.prosecution-case-listing-number-increased")
+    public void processProsecutionCaseListingNumberIncreased(final JsonEnvelope event) {
+        final ProsecutionCaseListingNumberIncreased prosecutionCaseListingNumberIncreased = jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseListingNumberIncreased.class);
+        final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(prosecutionCaseListingNumberIncreased.getProsecutionCaseId());
+        final Set<UUID> listingSet = prosecutionCaseListingNumberIncreased.getOffenceListingNumbers().stream().map(OffenceListingNumbers::getOffenceId).collect(Collectors.toSet());
+
+        saveListingNumber(prosecutionCaseEntity, listingSet, 1);
+    }
+
+    private void saveListingNumber(final ProsecutionCaseEntity prosecutionCaseEntity, final Set<UUID> listingSet, int accumulator){
+        final JsonObject prosecutionCaseJson = jsonFromString(prosecutionCaseEntity.getPayload());
+        final ProsecutionCase persistentProsecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
+        final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase().withValuesFrom(persistentProsecutionCase)
+                .withDefendants(persistentProsecutionCase.getDefendants().stream()
+                        .map(defendant -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(defendant)
+                                .withOffences(defendant.getOffences().stream()
+                                        .map(offence -> uk.gov.justice.core.courts.Offence.offence().withValuesFrom(offence)
+                                                .withListingNumber((listingSet.contains(offence.getId()) ? Integer.valueOf(ofNullable(offence.getListingNumber()).orElse(0) + accumulator ): offence.getListingNumber()))
                                                 .build())
                                         .collect(toList()))
                                 .build())

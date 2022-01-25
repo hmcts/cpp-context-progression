@@ -91,6 +91,28 @@ public class CourtlistQueryViewTest {
     }
 
     @Test
+    public void shouldEnrichCourtlistDocumentPayloadForProsecutionCases_ReadCaseFromProgressionViewStoreWithDifferentListingNumber() throws IOException {
+        final Optional<JsonObject> listingResponse = Optional.of(getJsonPayload("listing-hearing-with-prosecution-case.json"));
+        final List<Hearing> hearingList = getHearings("courtlists.hearings.repository.all.json");
+        when(listingService.searchCourtlist(any(JsonEnvelope.class))).thenReturn(listingResponse);
+        when(hearingQueryView.getHearings(any(List.class))).thenReturn(hearingList);
+        final ProsecutionCase prosecutionCase = getHearings("courtlists.hearings.repository.all.without.listing.number.json").get(0).getProsecutionCases().get(0);
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+        when(prosecutionCaseRepository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
+
+        final JsonEnvelope query = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName("progression.search.court.list").build(),
+                Json.createObjectBuilder().build());
+
+        final JsonObject expected = getJsonPayload("courtlist-expected-with-prosecution-cases.json");
+        final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
+        assertThat(actual, is(expected));
+    }
+
+    @Test
     public void shouldEnrichCourtlistDocumentPayloadForProsecutionCasesWhenListingNumberIsNull() throws IOException {
         final Optional<JsonObject> listingResponse = Optional.of(getJsonPayload("listing-hearing-with-prosecution-case.json"));
         final List<Hearing> hearingList = getHearingsWithoutCase();

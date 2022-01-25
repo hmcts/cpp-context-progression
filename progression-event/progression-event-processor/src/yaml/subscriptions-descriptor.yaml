@@ -17,6 +17,9 @@ subscriptions_descriptor:
         - name: progression.event.listing-number-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.listing-number-updated.json
 
+        - name: progression.event.hearing-listing-number-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-listing-number-updated.json
+
         - name: progression.event.court-document-removed
           schema_uri: http://justice.gov.uk/core/courts/courts-document-removed.json
 
@@ -328,6 +331,9 @@ subscriptions_descriptor:
         - name: progression.event.new-defendant-added-to-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.new-defendant-added-to-hearing.json
 
+        - name: progression.event.prosecution-case-listing-number-increased
+          schema_uri: http://justice.gov.uk/core/courts/prosecution-case-listing-number-increased.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 
@@ -390,6 +396,9 @@ subscriptions_descriptor:
 
         - name: progression.event.hearing-deleted
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-deleted.json
+
+        - name: progression.event.offence-in-hearing-deleted
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.offence-in-hearing-deleted.json
 
         - name: progression.event.cases-added-for-updated-related-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.cases-added-for-updated-related-hearing.json

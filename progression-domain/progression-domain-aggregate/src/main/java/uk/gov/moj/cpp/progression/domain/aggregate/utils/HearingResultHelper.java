@@ -78,6 +78,34 @@ public class HearingResultHelper {
                 );
     }
 
+    public static boolean isNextHearingDeleted(final Hearing resultedHearing, final Hearing aggregateHearing){
+        if (aggregateHearing == null){
+            return false;
+        }
+        final boolean doNewHearingHasNewHearing = doProsecutionCasesContainNextHearing(resultedHearing.getProsecutionCases()) ||
+                doCourtApplicationsContainNextHearing(resultedHearing.getCourtApplications()) ;
+
+        final boolean doOldHearingHasNewHearing = doProsecutionCasesContainNextHearing(aggregateHearing.getProsecutionCases()) ||
+                doCourtApplicationsContainNextHearing(aggregateHearing.getCourtApplications()) ;
+
+        return doOldHearingHasNewHearing && ! doNewHearingHasNewHearing ;
+
+    }
+
+    private static boolean doProsecutionCasesContainNextHearing(final List<ProsecutionCase> prosecutionCases) {
+        return isNotEmpty(prosecutionCases) && prosecutionCases.stream()
+                .map(ProsecutionCase::getDefendants)
+                .flatMap(Collection::stream)
+                .map(Defendant::getOffences)
+                .flatMap(Collection::stream)
+                .map(Offence::getJudicialResults)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .anyMatch(judicialResult ->
+                        nonNull(judicialResult.getNextHearing())
+                );
+    }
+
     /**
      * Check if any of the judicial result's group matches the specified result definition groups
      *
@@ -453,6 +481,12 @@ public class HearingResultHelper {
         return isNotEmpty(courtApplications) && courtApplications.stream()
                 .flatMap(courtApplication -> getAllJudicialResultsFromApplication(courtApplication).stream())
                 .anyMatch(judicialResult -> TRUE.equals(judicialResult.getIsNewAmendment()) && nonNull(judicialResult.getNextHearing()));
+    }
+
+    private static boolean doCourtApplicationsContainNextHearing(final List<CourtApplication> courtApplications) {
+        return isNotEmpty(courtApplications) && courtApplications.stream()
+                .flatMap(courtApplication -> getAllJudicialResultsFromApplication(courtApplication).stream())
+                .anyMatch(judicialResult -> nonNull(judicialResult.getNextHearing()));
     }
 
     private static List<JudicialResult> getAllJudicialResultsFromApplication(final CourtApplication courtApplication) {
