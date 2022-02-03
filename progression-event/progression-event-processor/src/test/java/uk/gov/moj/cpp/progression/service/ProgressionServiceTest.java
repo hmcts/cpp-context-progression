@@ -54,6 +54,7 @@ import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.CrackedIneffectiveTrial;
 import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DefendantAttendance;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DefendantsToRemove;
@@ -184,6 +185,8 @@ public class ProgressionServiceTest {
     private Sender sender;
     @Spy
     private ListToJsonArrayConverter listToJsonArrayConverter;
+    @Spy
+    private ListToJsonArrayConverter resultListToJsonArrayConverter;
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
     @Captor
@@ -209,6 +212,8 @@ public class ProgressionServiceTest {
         setField(this.listToJsonArrayConverter, "mapper", objectMapper);
         setField(this.jsonObjectConverter, "objectMapper", objectMapper);
         setField(this.listToJsonArrayConverter, "stringToJsonObjectConverter", new StringToJsonObjectConverter());
+        setField(this.resultListToJsonArrayConverter, "mapper", objectMapper);
+        setField(this.resultListToJsonArrayConverter, "stringToJsonObjectConverter", new StringToJsonObjectConverter());
     }
 
 
@@ -453,6 +458,13 @@ public class ProgressionServiceTest {
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_HEARING_RESULTED_UPDATED_CASE);
 
         final UUID caseId = randomUUID();
+        final DefendantJudicialResult defendantJudicialResult = DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build())
+                .withMasterDefendantId(UUID.randomUUID())
+                .build();
+        final List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult);
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withDefendants(generateDefendantsForCase(randomUUID()))
                 .withId(caseId).build();
@@ -466,6 +478,7 @@ public class ProgressionServiceTest {
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase))
                 .add("courtApplications", listToJsonArrayConverter.convert(courtApplications))
+                .add("defendantJudicialResults", resultListToJsonArrayConverter.convert(defendantJudicialResults))
                 .build();
 
         when(enveloper.withMetadataFrom
@@ -473,7 +486,7 @@ public class ProgressionServiceTest {
 
         when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
 
-        progressionService.updateCase(envelope, prosecutionCase, courtApplications);
+        progressionService.updateCase(envelope, prosecutionCase, courtApplications, defendantJudicialResults);
         verify(sender).send(finalEnvelope);
     }
 

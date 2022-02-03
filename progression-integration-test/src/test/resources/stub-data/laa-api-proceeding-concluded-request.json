@@ -1,0 +1,11 @@
+{
+  "prosecutionConcludedRequest": {
+    "prosecutionConcluded": [
+      {
+        "defendantId": "DEFENDANT_ID",
+        "hearingIdWhereChangeOccurred": "HEARING_ID",
+        "isConcluded": "IS_CONCLUDED"
+      }
+    ]
+  }
+}

@@ -35,6 +35,8 @@ import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
+import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
@@ -73,6 +75,9 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -99,7 +104,8 @@ public class HearingResultHandlerTest {
             HearingResulted.class,
             ProsecutionCaseDefendantListingStatusChanged.class,
             ProsecutionCasesResulted.class,
-            ApplicationsResulted.class);
+            ApplicationsResulted.class,
+            LaaDefendantProceedingConcludedChanged.class);
 
     @InjectMocks
     private HearingResultHandler hearingResultHandler;
@@ -153,9 +159,9 @@ public class HearingResultHandlerTest {
 
         final List<Envelope> envelopes = envelopeStream.map(value -> (Envelope) value).collect(Collectors.toList());
 
-        final JsonEnvelope  hearingResultedEnvelope = (JsonEnvelope)envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = (JsonEnvelope) envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
-        final JsonEnvelope  defendantListingStatusEnvelope = (JsonEnvelope)envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.prosecutionCase-defendant-listing-status-changed")).findFirst().get();
+        final JsonEnvelope defendantListingStatusEnvelope = (JsonEnvelope) envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.prosecutionCase-defendant-listing-status-changed")).findFirst().get();
 
 
         assertThat(hearingResultedEnvelope.payloadAsJsonObject().getJsonObject("hearing")
@@ -188,9 +194,124 @@ public class HearingResultHandlerTest {
                         .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
 
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(randomUUID())
+                .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
+                .withCpsOrganisation("A01")
+                .withDefendants(createDefendant(Arrays.asList(offence1, offence2))).build();
+        final HearingResult hearingResult = hearingResult()
+                .withHearing(Hearing.hearing()
+                        .withProsecutionCases(Arrays.asList(prosecutionCase))
+                        .withId(UUID.randomUUID())
+                        .build())
+                .build();
+
+        aggregate.apply(hearingResult.getHearing());
+
+        final Metadata metadata = getMetadata();
+
+        final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+
+        hearingResultHandler.handle(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        final List<Envelope> envelopes = envelopeStream.map(value -> (Envelope) value).collect(Collectors.toList());
+
+        final JsonEnvelope hearingResultedEnvelope = (JsonEnvelope) envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+        assertThat(hearingResultedEnvelope, jsonEnvelope(metadata().withName("progression.event.hearing-resulted"), payloadIsJson(CoreMatchers.allOf(
+                withJsonPath("$.hearing", notNullValue()),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[1].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[1].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())),
+                withJsonPath("$.hearing.prosecutionCases[0].cpsOrganisation", is("A01")))
+
+        )));
+
+
+    }
+
+    @Test
+    public void shouldProcessCommand_whenOneDefendantHaveFinalCategoryAndOffencesOfSecondDefendantHaveFinalCategory_expectProceedingConcludedAsTrue() throws Exception {
+
+        aggregate.apply(createPayload().getHearing());
+
+        final Metadata metadata = getMetadata();
+
+        final Envelope<HearingResult> envelope = envelopeFrom(metadata, createPayload());
+
+        hearingResultHandler.handle(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        final List<Envelope> envelopes = envelopeStream.map(value -> (Envelope) value).collect(Collectors.toList());
+
+        final JsonEnvelope hearingResultedEnvelope = (JsonEnvelope) envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+        assertThat(hearingResultedEnvelope, jsonEnvelope(metadata().withName("progression.event.hearing-resulted"), payloadIsJson(CoreMatchers.allOf(
+                withJsonPath("$.hearing", notNullValue()),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[1].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())),
+                withJsonPath("$.hearing.prosecutionCases[0].cpsOrganisation", is("A01")))
+
+        )));
+    }
+
+    private HearingResult createPayload(){
+        Offence offence1 = Offence.offence()
+                .withId(randomUUID())
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
+                .build();
+        Offence offence2 = Offence.offence()
+                .withId(randomUUID())
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
+                .build();
+
+        Offence offence3 = Offence.offence()
+                .withId(randomUUID())
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.INTERMEDIARY).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
+                .build();
+
         Defendant defendant = Defendant.defendant()
                 .withId(randomUUID())
-                .withOffences(Arrays.asList(offence1, offence2))
+                .withOffences(Arrays.asList(offence3))
+                .withDefendantCaseJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .withOrderedDate(LocalDate.now())
+                        .withOffenceId(UUID.randomUUID())
+                        .build()))
                 .build();
         Defendant defendant2 = Defendant.defendant()
                 .withId(randomUUID())
@@ -212,11 +333,17 @@ public class HearingResultHandlerTest {
                         .build())
                 .build();
 
-        aggregate.apply(hearingResult.getHearing());
+        return hearingResult;
+    }
+
+    @Test
+    public void shouldProcessCommand_whenOnlyOneDefendantHaveFinalCategory_expectCaseStatusNotInActive() throws Exception {
+
+        aggregate.apply(createHearingResultPayload().getHearing());
 
         final Metadata metadata = getMetadata();
 
-        final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+        final Envelope<HearingResult> envelope = envelopeFrom(metadata, createHearingResultPayload());
 
         hearingResultHandler.handle(envelope);
 
@@ -224,42 +351,26 @@ public class HearingResultHandlerTest {
 
         final List<Envelope> envelopes = envelopeStream.map(value -> (Envelope) value).collect(Collectors.toList());
 
-        final JsonEnvelope  hearingResultedEnvelope = (JsonEnvelope)envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = (JsonEnvelope) envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
         assertThat(hearingResultedEnvelope, jsonEnvelope(metadata().withName("progression.event.hearing-resulted"), payloadIsJson(CoreMatchers.allOf(
-                                withJsonPath("$.hearing", notNullValue()),
-                                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].proceedingsConcluded",
-                                        is(true)),
-                                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].proceedingsConcluded",
-                                        is(true)),
-                                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[1].proceedingsConcluded",
-                                        is(true)),
-                                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].proceedingsConcluded",
-                                        is(true)),
-                                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[0].proceedingsConcluded",
-                                        is(true)),
-                                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[1].proceedingsConcluded",
-                                        is(true)),
-                                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())),
-                                withJsonPath("$.hearing.prosecutionCases[0].cpsOrganisation", is("A01")))
+                withJsonPath("$.hearing", notNullValue()),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].proceedingsConcluded",
+                        is(false)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[0].proceedingsConcluded",
+                        is(false)),
+                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(CaseStatusEnum.READY_FOR_REVIEW.getDescription())),
+                withJsonPath("$.hearing.prosecutionCases[0].cpsOrganisation", is("A01")))
 
-                        )));
-
-
+        )));
     }
 
-    @Test
-    public void shouldProcessCommand_whenAllOffencesOfDefendantHaveNoFinalCategory_expectProceedingConcludedAsFalse() throws Exception {
-
+    private HearingResult createHearingResultPayload(){
         Offence offence1 = Offence.offence()
-                .withId(randomUUID())
-                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                        .withIsAdjournmentResult(false)
-                        .withCategory(JudicialResultCategory.INTERMEDIARY).build(), JudicialResult.judicialResult()
-                        .withIsAdjournmentResult(false)
-                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
-                .build();
-        Offence offence2 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
                         .withIsAdjournmentResult(false)
@@ -270,20 +381,99 @@ public class HearingResultHandlerTest {
 
         Defendant defendant = Defendant.defendant()
                 .withId(randomUUID())
-                .withOffences(Arrays.asList(offence1, offence2))
+                .withOffences(Arrays.asList(offence1))
+                .withDefendantCaseJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .withOrderedDate(LocalDate.now())
+                        .withOffenceId(UUID.randomUUID())
+                        .build()))
                 .build();
         Defendant defendant2 = Defendant.defendant()
                 .withId(randomUUID())
-                .withOffences(Arrays.asList(offence1, offence2))
+                .withOffences(Arrays.asList(offence1))
                 .build();
+
         List<Defendant> defendantList = new ArrayList<Defendant>();
         defendantList.add(defendant);
         defendantList.add(defendant2);
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withId(randomUUID())
                 .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
-
+                .withCpsOrganisation("A01")
                 .withDefendants(defendantList).build();
+        final HearingResult hearingResult = hearingResult()
+                .withHearing(Hearing.hearing()
+                        .withProsecutionCases(Arrays.asList(prosecutionCase))
+                        .withId(UUID.randomUUID())
+                        .build())
+                .build();
+
+        return hearingResult;
+    }
+
+    @Test
+    public void shouldProcessCommand_whenHearingHaveFinalCategory_expectCaseStatusInActive() throws Exception {
+
+        aggregate.apply(createPayloadWIthHearingHavingFinalCategory().getHearing());
+
+        final Metadata metadata = getMetadata();
+
+        final Envelope<HearingResult> envelope = envelopeFrom(metadata, createPayloadWIthHearingHavingFinalCategory());
+
+        hearingResultHandler.handle(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        final List<Envelope> envelopes = envelopeStream.map(value -> (Envelope) value).collect(Collectors.toList());
+
+        final JsonEnvelope hearingResultedEnvelope = (JsonEnvelope) envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+        assertThat(hearingResultedEnvelope, jsonEnvelope(metadata().withName("progression.event.hearing-resulted"), payloadIsJson(CoreMatchers.allOf(
+                withJsonPath("$.hearing", notNullValue()),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())),
+                withJsonPath("$.hearing.prosecutionCases[0].cpsOrganisation", is("A01")))
+
+        )));
+    }
+
+    private HearingResult createPayloadWIthHearingHavingFinalCategory(){
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(randomUUID())
+                .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
+                .withCpsOrganisation("A01")
+                .withDefendants(createDefendant(createOffences())).build();
+        final HearingResult hearingResult = hearingResult()
+                .withHearing(Hearing.hearing()
+                        .withProsecutionCases(Arrays.asList(prosecutionCase))
+                        .withId(UUID.randomUUID())
+                        .withDefendantJudicialResults(Arrays.asList(DefendantJudicialResult.defendantJudicialResult()
+                                .withJudicialResult(JudicialResult.judicialResult()
+                                        .withCategory(JudicialResultCategory.FINAL)
+                                        .withOrderedDate(LocalDate.now())
+                                        .build())
+                                .build()))
+                        .build())
+                .build();
+
+        return  hearingResult;
+    }
+
+    @Test
+    public void shouldProcessCommand_whenAllOffencesOfDefendantHaveNoFinalCategory_expectProceedingConcludedAsFalse() throws Exception {
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(randomUUID())
+                .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
+                .withDefendants(createDefendant(createOffences())).build();
         final HearingResult hearingResult = hearingResult()
                 .withHearing(Hearing.hearing()
                         .withProsecutionCases(Arrays.asList(prosecutionCase))
@@ -300,7 +490,7 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
         assertThat(hearingResultedEnvelope,
                 jsonEnvelope(
                         metadata()
@@ -323,8 +513,6 @@ public class HearingResultHandlerTest {
                         ))
 
 
-
-
         );
     }
 
@@ -340,7 +528,7 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         assertThat(hearingResultedEnvelope,
@@ -368,7 +556,7 @@ public class HearingResultHandlerTest {
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
         assertThat(hearingResultedEnvelope,
                 jsonEnvelope(
@@ -395,7 +583,7 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         assertThat(hearingResultedEnvelope,
@@ -456,7 +644,7 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.filter(env -> env.metadata().name().equals("progression.event.prosecution-cases-resulted")).findFirst().get();
+        final JsonEnvelope prosecutionCasesResultedEnvelope = envelopeStream.filter(env -> env.metadata().name().equals("progression.event.prosecution-cases-resulted")).findFirst().get();
 
 
         assertThat(prosecutionCasesResultedEnvelope,
@@ -491,12 +679,12 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         verifyProsecutionCaseWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
 
-        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.prosecution-cases-resulted")).findFirst().get();
+        final JsonEnvelope prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.prosecution-cases-resulted")).findFirst().get();
         verifyProsecutionCaseWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.prosecution-cases-resulted");
 
     }
@@ -507,10 +695,10 @@ public class HearingResultHandlerTest {
         final List<ProsecutionCase> prosecutionCases = getProsecutionCasesWithAdjourn(LocalDate.now());
 
         final Hearing firstHearing = Hearing.hearing()
-                        .withProsecutionCases(getProsecutionCasesWithAdjournedOffences(prosecutionCases, LocalDate.now().minusDays(1)))
-                        .withJurisdictionType(JurisdictionType.CROWN)
-                        .withType(HearingType.hearingType().withDescription("First Hearing").build())
-                        .build();
+                .withProsecutionCases(getProsecutionCasesWithAdjournedOffences(prosecutionCases, LocalDate.now().minusDays(1)))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withType(HearingType.hearingType().withDescription("First Hearing").build())
+                .build();
 
         aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
 
@@ -523,12 +711,12 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelopeFrom(getMetadata(), hearingResult().withHearing(resultHearing).build()));
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         verifyProsecutionCaseWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
 
-        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.prosecution-cases-resulted")).findFirst().get();
+        final JsonEnvelope prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.prosecution-cases-resulted")).findFirst().get();
         verifyProsecutionCaseWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.prosecution-cases-resulted");
     }
 
@@ -553,12 +741,12 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelopeFrom(getMetadata(), hearingResult().withHearing(resultHearing).build()));
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         verifyProsecutionCaseWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
 
-        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.prosecution-cases-resulted")).findFirst().get();
+        final JsonEnvelope prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.prosecution-cases-resulted")).findFirst().get();
         verifyProsecutionCaseWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.prosecution-cases-resulted");
     }
 
@@ -577,12 +765,12 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         verifyApplicationCasesWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
 
-        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        final JsonEnvelope prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
         verifyApplicationCasesWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
 
     }
@@ -611,12 +799,12 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         verifyApplicationCasesWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
 
-        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        final JsonEnvelope prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
         verifyApplicationCasesWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
 
     }
@@ -645,12 +833,12 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         verifyApplicationCasesWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
 
-        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        final JsonEnvelope prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
         verifyApplicationCasesWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
 
     }
@@ -670,12 +858,12 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         verifyApplicationCourtOrderWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
 
-        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        final JsonEnvelope prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
         verifyApplicationCourtOrderWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
 
     }
@@ -704,12 +892,12 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         verifyApplicationCourtOrderWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
 
-        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        final JsonEnvelope prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
         verifyApplicationCourtOrderWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
 
     }
@@ -738,12 +926,12 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         verifyApplicationCourtOrderWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
 
-        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        final JsonEnvelope prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
         verifyApplicationCourtOrderWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
 
     }
@@ -764,13 +952,13 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         verifyApplicationCourtOrderWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
         verifyApplicationCasesWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
 
-        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        final JsonEnvelope prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
         verifyApplicationCourtOrderWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
         verifyApplicationCasesWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
 
@@ -800,13 +988,13 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         verifyApplicationCourtOrderWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
         verifyApplicationCasesWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
 
-        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        final JsonEnvelope prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
         verifyApplicationCourtOrderWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
         verifyApplicationCasesWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
     }
@@ -835,16 +1023,17 @@ public class HearingResultHandlerTest {
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-        final JsonEnvelope  hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+        final JsonEnvelope hearingResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
 
         verifyApplicationCourtOrderWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
         verifyApplicationCasesWithAdjournUpdate(hearingResultedEnvelope, "progression.event.hearing-resulted");
 
-        final JsonEnvelope  prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
+        final JsonEnvelope prosecutionCasesResultedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.applications-resulted")).findFirst().get();
         verifyApplicationCourtOrderWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
         verifyApplicationCasesWithAdjournUpdate(prosecutionCasesResultedEnvelope, "progression.event.applications-resulted");
     }
+
     private void verifyProsecutionCaseWithAdjournUpdate(final JsonEnvelope prosecutionCasesResultedEnvelope, final String eventName) {
         assertThat(prosecutionCasesResultedEnvelope,
                 jsonEnvelope(
@@ -903,7 +1092,7 @@ public class HearingResultHandlerTest {
                 .withCourtApplicationCases(
                         singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(randomUUID()).build()))
                 .withCourtOrder(CourtOrder.courtOrder().withId(randomUUID())
-                            .withOrderingCourt(CourtCentre.courtCentre().withId(randomUUID()).build())
+                        .withOrderingCourt(CourtCentre.courtCentre().withId(randomUUID()).build())
                         .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
                                 .withOffence(Offence.offence().build()).build())).build())
                 .withRespondents(singletonList(CourtApplicationParty.courtApplicationParty().build()))
@@ -937,6 +1126,7 @@ public class HearingResultHandlerTest {
         final List<Defendant> defendants = singletonList(Defendant.defendant()
                 .withId(randomUUID())
                 .withOffences(getOffenceWithAdjourn(orderedDate))
+                .withProceedingsConcluded(true)
                 .build());
 
         return singletonList(prosecutionCase().withId(randomUUID()).withDefendants(defendants).withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription()).build());
@@ -997,10 +1187,10 @@ public class HearingResultHandlerTest {
 
     private List<CourtApplication> getApplicationsWithAdjournedOffences(final List<CourtApplication> applications, final LocalDate plusDays) {
         return applications.stream()
-                .map(courtApplication ->  CourtApplication.courtApplication()
+                .map(courtApplication -> CourtApplication.courtApplication()
                         .withValuesFrom(courtApplication)
                         .withCourtApplicationCases(ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
-                                .map(courtApplicationCase->CourtApplicationCase.courtApplicationCase()
+                                .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase()
                                         .withValuesFrom(courtApplicationCase)
                                         .withOffences(courtApplicationCase.getOffences().stream()
                                                 .map(offence -> Offence.offence()
@@ -1045,5 +1235,40 @@ public class HearingResultHandlerTest {
 
     private <T> UnaryOperator<List<T>> getListOrNull() {
         return list -> list.isEmpty() ? null : list;
+    }
+
+    private  List<Offence> createOffences(){
+        Offence offence1 = Offence.offence()
+                .withId(randomUUID())
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.INTERMEDIARY).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
+                .build();
+        Offence offence2 = Offence.offence()
+                .withId(randomUUID())
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.INTERMEDIARY).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
+                .build();
+
+        return Arrays.asList(offence1, offence2);
+    }
+
+    private List<Defendant> createDefendant(final List<Offence> listOfOffences){
+        Defendant defendant = Defendant.defendant()
+                .withId(randomUUID())
+                .withOffences(listOfOffences)
+                .build();
+        Defendant defendant2 = Defendant.defendant()
+                .withId(randomUUID())
+                .withOffences(listOfOffences)
+                .build();
+
+        return Arrays.asList(defendant, defendant2);
+
     }
 }

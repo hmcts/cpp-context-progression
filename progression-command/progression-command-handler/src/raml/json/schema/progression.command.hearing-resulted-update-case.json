@@ -12,6 +12,13 @@
       "items": {
         "$ref": "http://justice.gov.uk/core/courts/courtApplication.json"
       }
+    },
+    "defendantJudicialResults": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/defendantJudicialResult.json"
+       }
     }
   },
   "required": [

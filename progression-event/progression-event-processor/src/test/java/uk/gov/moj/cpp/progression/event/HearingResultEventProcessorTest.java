@@ -44,6 +44,7 @@ import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAttendance;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -147,6 +148,9 @@ public class HearingResultEventProcessorTest {
 
     @Captor
     private ArgumentCaptor<List<CourtApplication>> courtApplicationsArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<List<DefendantJudicialResult>> defendantJudicialResultArgumentCaptor;
 
     @Captor
     private ArgumentCaptor<Hearing> hearingArgumentCaptor;
@@ -475,7 +479,7 @@ public class HearingResultEventProcessorTest {
         this.eventProcessor.handleProsecutionCasesResulted(event);
 
         verify(this.sender).send(this.envelopeArgumentCaptor.capture());
-        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture());
         verify(listingService, atLeastOnce()).listCourtHearing(envelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(1));
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(defendantUuid1));
@@ -700,7 +704,7 @@ public class HearingResultEventProcessorTest {
 
         verify(this.sender).send(this.envelopeArgumentCaptor.capture());
         verify(nextHearingService, atLeastOnce()).getNextHearingDetails(any(), Mockito.eq(true), any());
-        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture());
         verify(listingService, atLeastOnce()).listCourtHearing(envelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
 
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(1));

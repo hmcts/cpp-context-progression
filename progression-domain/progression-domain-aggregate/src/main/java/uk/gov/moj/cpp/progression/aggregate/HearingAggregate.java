@@ -49,6 +49,7 @@ import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.CustodyTimeLimit;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
 import uk.gov.justice.core.courts.DefendantRequestToExtendHearingCreated;
 import uk.gov.justice.core.courts.DefendantUpdate;
@@ -126,7 +127,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188"})
+@SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
     private static final long serialVersionUID = 9128521802762667383L;
@@ -395,7 +396,7 @@ public class HearingAggregate implements Aggregate {
                 .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
 
         final List<ProsecutionCase> updatedProsecutionCases = ofNullable(updatedProsecutionCasesForOriginalHearing).map(Collection::stream).orElseGet(Stream::empty)
-                .map(this::getUpdatedProsecutionCase)
+                .map(prosecutionCase -> getUpdatedProsecutionCase(prosecutionCase, hearingWithOriginalListingNumber.getDefendantJudicialResults()))
                 .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
 
         final List<CourtApplication> updatedCourtApplications = ofNullable(hearingWithOriginalListingNumber.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
@@ -676,10 +677,10 @@ public class HearingAggregate implements Aggregate {
                 .build();
     }
 
-    private ProsecutionCase getUpdatedProsecutionCase(ProsecutionCase prosecutionCase) {
+    private ProsecutionCase getUpdatedProsecutionCase(ProsecutionCase prosecutionCase, List<DefendantJudicialResult> hearingdefendantJudicialResults) {
         final List<Defendant> updatedDefendants = new ArrayList<>();
 
-        final boolean allDefendantProceedingConcluded = isAllDefendantProceedingConcluded(prosecutionCase, updatedDefendants);
+        final boolean allDefendantProceedingConcluded = isAllDefendantProceedingConcluded(prosecutionCase, hearingdefendantJudicialResults, updatedDefendants);
         return ProsecutionCase.prosecutionCase()
                 .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
                 .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
@@ -1232,7 +1233,7 @@ public class HearingAggregate implements Aggregate {
 
     private HearingResulted createHearingResultedEvent(final Hearing hearing, final ZonedDateTime sharedTime, final LocalDate hearingDay) {
         final Hearing.Builder updatedHearingBuilder = Hearing.hearing();
-        final List<ProsecutionCase> updatedProsecutionCases = ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty).map(this::getUpdatedProsecutionCase).collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+        final List<ProsecutionCase> updatedProsecutionCases = ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty).map(prosecutionCase -> getUpdatedProsecutionCase(prosecutionCase, hearing.getDefendantJudicialResults())).collect(collectingAndThen(Collectors.toList(), getListOrNull()));
 
         updatedHearingBuilder
                 .withProsecutionCases(updatedProsecutionCases)

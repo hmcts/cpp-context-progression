@@ -54,6 +54,13 @@ public class ApplicationParameters {
     @Value(key = "RELAY_CASE_ON_CPP_FUNCTION_PATH")
     private String relayCaseOnCppFunctionPath;
 
+    @Inject
+    @Value(key = "laa.defendantProceedingsConcluded.apim.url", defaultValue ="http://localhost:8080/LAA/v1/caseOutcome/conclude")
+    private String defendantProceedingsConcludedApimUrl;
+
+    @Inject
+    @Value(key = "laa.defendantProceedingsConcluded.apim.subscription.key", defaultValue ="3674a16507104b749a76b29b6c837352")
+    private String subscriptionKey;
 
     @Inject
     @Value(key = "notifyDefenceOfNewMaterialTemplateId", defaultValue = "f5d3b9e6-0583-4062-b00d-38d02b548409")
@@ -153,6 +160,14 @@ public class ApplicationParameters {
 
     public String getRelayCaseOnCppFunctionPath() {
         return relayCaseOnCppFunctionPath;
+    }
+
+    public String getDefendantProceedingsConcludedApimUrl() {
+        return defendantProceedingsConcludedApimUrl;
+    }
+
+    public String getSubscriptionKey() {
+        return subscriptionKey;
     }
 
     public String getCpsCourtDocumentTemplateId() {

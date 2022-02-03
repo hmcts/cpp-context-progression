@@ -37,6 +37,7 @@ import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingConfirmed;
@@ -136,6 +137,7 @@ public class ProgressionService {
     private static final String PLEA_TYPE_GUILTY_NO = "No";
     private static final String PLEA_TYPE_GUILTY_FLAG_FIELD = "pleaTypeGuiltyFlag";
     public static final String NOTIFY_NCES = "notifyNCES";
+    private static final String DEFENDANT_JUDICIAL_RESULTS = "defendantJudicialResults";
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -165,6 +167,10 @@ public class ProgressionService {
 
     @Inject
     private ListingService listingService;
+
+    @Inject
+    private ListToJsonArrayConverter<DefendantJudicialResult> resultListToJsonArrayConverter;
+
 
     private static JsonArray transformProsecutionCases(final List<ConfirmedProsecutionCase> prosecutionCases) {
         final JsonArrayBuilder prosecutionCasesArrayBuilder = createArrayBuilder();
@@ -1140,14 +1146,17 @@ public class ProgressionService {
         );
     }
 
-    public void updateCase(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase, final List<CourtApplication> courtApplications) {
+    public void updateCase(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase, final List<CourtApplication> courtApplications, final List<DefendantJudicialResult> defendantJudicialResults) {
         final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
         final JsonObjectBuilder payloadBuilder = createObjectBuilder();
         payloadBuilder.add(PROSECUTION_CASE, prosecutionCaseJson);
         if (isNotEmpty(courtApplications)) {
             payloadBuilder.add(COURT_APPLICATIONS, listToJsonArrayConverter.convert(courtApplications));
         }
-        sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_HEARING_RESULTED_UPDATE_CASE)
+        if(isNotEmpty(defendantJudicialResults)){
+            payloadBuilder.add(DEFENDANT_JUDICIAL_RESULTS, resultListToJsonArrayConverter.convert(defendantJudicialResults));
+        }
+       sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_HEARING_RESULTED_UPDATE_CASE)
                 .apply(payloadBuilder.build()));
     }
 

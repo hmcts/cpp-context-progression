@@ -83,6 +83,11 @@
             <groupId>uk.gov.justice.framework-api</groupId>
             <artifactId>framework-api-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.common.library.utils</groupId>
+            <artifactId>cpp-platform-data-utils-rest</artifactId>
+            <version>${cpp.platform-libraries.version}</version>
+        </dependency>
         <!-- Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>

@@ -10,7 +10,7 @@
     "hearingLanguage": "ENGLISH",
     "hearingDays": [
       {
-        "sittingDay": "2021-03-29T05:27:17.210Z",
+        "sittingDay": "2015-01-12T05:27:17.210Z",
         "listingSequence": 0,
         "listedDurationMinutes": 0
       }
@@ -114,16 +114,16 @@
                     "firstName": "a",
                     "lastName": "a"
                   },
-                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "offenceId": "00000000-0000-0000-0000-000000000000",
                   "pleaDate": "2018-01-01",
                   "pleaValue": "GUILTY"
                 },
                 "verdict": {
                   "originatingHearingId": "00000000-0000-0000-0000-000000000000",
-                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "offenceId": "00000000-0000-0000-0000-000000000000",
                   "verdictDate": "2018-01-01",
                   "verdictType": {
-                    "id": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+                    "id": "00000000-0000-0000-0000-000000000000",
                     "sequence": 0,
                     "description": "a",
                     "category": "a",
@@ -158,11 +158,11 @@
                     "isFinancialResult": true,
                     "isConvictedResult": true,
                     "isAvailableForCourtExtract": true,
-                    "amendmentDate": "2021-03-29",
+                    "amendmentDate": "0000-01-01",
                     "amendmentReason": "a",
                     "cjsCode": "a",
                     "rank": 0.1,
-                    "orderedDate": "ORDERED_DATE",
+                    "orderedDate": "2021-10-21",
                     "lastSharedDateTime": "a",
                     "courtClerk": {
                       "userId": "00000000-0000-0000-0000-000000000000",
@@ -179,7 +179,65 @@
                       "firstName": "a",
                       "lastName": "a"
                     },
-                    "approvedDate": "2021-03-29",
+                    "approvedDate": "0000-01-01",
+                    "usergroups": [
+                      "a"
+                    ],
+                    "category": "FINAL",
+                    "terminatesOffenceProceedings": false,
+                    "lifeDuration" : false,
+                    "rollUpPrompts": false,
+                    "publishedForNows" : false,
+                    "publishedAsAPrompt" : false,
+                    "excludedFromResults" : false,
+                    "alwaysPublished" : false,
+                    "urgent" : false,
+                    "d20" : false,
+                    "resultText" : "resultText",
+                    "judicialResultPrompts": [
+                      {
+                        "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
+                        "label": "a",
+                        "welshLabel": "a",
+                        "value": "a",
+                        "promptSequence": 0.1,
+                        "promptReference": "a",
+                        "courtExtract": "Y"
+                      }
+                    ]
+                  },
+                  {
+                    "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                    "judicialResultId": "87e9e18a-4114-11ea-b77f-2e728ce88125",
+                    "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+                    "label": "a",
+                    "welshLabel": "a",
+                    "isAdjournmentResult": true,
+                    "isFinancialResult": true,
+                    "isConvictedResult": true,
+                    "isAvailableForCourtExtract": true,
+                    "amendmentDate": "0000-01-01",
+                    "amendmentReason": "a",
+                    "cjsCode": "a",
+                    "rank": 0.1,
+                    "orderedDate": "2021-10-01",
+                    "lastSharedDateTime": "a",
+                    "courtClerk": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "delegatedPowers": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "fourEyesApproval": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "approvedDate": "0000-01-01",
                     "usergroups": [
                       "a"
                     ],
@@ -215,12 +273,18 @@
                     "orderedDate": "2020-10-20"
                   }
                 ],
-                "laaApplnReference": {
-                  "applicationReference": "LAA-API-TEST-1228",
-                  "statusCode": "FM",
-                  "statusDate": "1980-07-16",
-                  "statusDescription": "Failed on Means",
-                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+                "previousDaysHeldInCustody": 5,
+                "dateHeldInCustodySince": "2018-08-10",
+                "laaApplnReference":{
+                  "applicationReference":"LAA REF OFF 1",
+                  "effectiveEndDate":"2021-11-16",
+                  "effectiveStartDate":"2021-10-27",
+                  "statusDate":"2021-10-27",
+                  "laaContractNumber":"12345",
+                  "offenceLevelStatus":"STATUS",
+                  "statusCode":"LAA STATUS CODE OFF 1",
+                  "statusDescription":"LAA STATUS CODE OFF 1",
+                  "statusId":"c68c435d-dc0d-44b3-b2b7-76b49f6d6e5a"
                 }
               }
             ],
@@ -465,7 +529,5 @@
       "youthCourtId" :"a4cd3c1d-be10-410d-a50d-e260cdbf6d19"
     }
   },
-  "sharedTime": "2021-03-29T10:00:00Z",
-  "isReshare": false,
-  "hearingDay": "ORDERED_DATE"
+  "sharedTime": "2016-06-01T10:00:00Z"
 }

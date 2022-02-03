@@ -42,6 +42,7 @@ import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -50,10 +51,12 @@ import java.util.UUID;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -81,6 +84,10 @@ public class HearingResultedIT extends AbstractIT {
     private String newCourtCentreName;
     private String applicationId;
     private String reportingRestrictionId;
+
+    private static final String PROGRESSION_EVENT_DEFENDANT_LISTING_STATUS_CHANGED ="progression.event.prosecutionCase-defendant-listing-status-changed";
+    private static final String PROGRESSION_EVENT_DEFENDANT_PROCEEDING_CONCLUDED_CHANGED="progression.event.defendant-proceeding-concluded-changed";
+
 
     @AfterClass
     public static void tearDown() throws JMSException {
@@ -461,9 +468,8 @@ public class HearingResultedIT extends AbstractIT {
 
         }
 
-        verifyPostListCourtHearingWithCommittingCourt(caseId, defendantId,"MAGISTRATES");
+        verifyPostListCourtHearingWithCommittingCourt(caseId, defendantId, "MAGISTRATES");
     }
-
 
     private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
@@ -512,5 +518,6 @@ public class HearingResultedIT extends AbstractIT {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
         assertTrue(message.isPresent());
     }
+
 }
 

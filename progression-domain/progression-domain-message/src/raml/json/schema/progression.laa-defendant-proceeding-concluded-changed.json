@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/exract/progression.laa-defendant-proceeding-concluded-changed.json",
+  "type": "object",
+  "properties": {
+    "prosecutionConcludedRequest": {
+      "$ref": "http://justice.gov.uk/progression/courts/api/prosecutionConcludedForLAA.json"
+    }
+  },
+  "required": [
+    "prosecutionConcluded"
+  ],
+  "additionalProperties": false
+}

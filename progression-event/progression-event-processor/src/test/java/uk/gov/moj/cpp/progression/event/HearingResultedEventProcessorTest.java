@@ -12,6 +12,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -111,6 +112,9 @@ public class HearingResultedEventProcessorTest {
     private ArgumentCaptor<List<CourtApplication>> courtApplicationsArgumentCaptor;
 
     @Captor
+    private ArgumentCaptor<List<DefendantJudicialResult>> defendantJudicialResultArgumentCaptor;
+
+    @Captor
     private ArgumentCaptor<ListNextHearings> listNextHearingsArgumentCaptor;
 
     @Captor
@@ -168,7 +172,7 @@ public class HearingResultedEventProcessorTest {
         this.eventProcessor.handleProsecutionCasesResultedV2(event);
 
         verifyNoMoreInteractions(sender);
-        verify(progressionService, times(2)).updateCase(Mockito.eq(event), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture());
+        verify(progressionService, times(2)).updateCase(Mockito.eq(event), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture());
 
         final List<ProsecutionCase> capturedCases = prosecutionCaseArgumentCaptor.getAllValues();
         assertTrue(capturedCases.stream().anyMatch(c -> caseId1.equals(c.getId())));

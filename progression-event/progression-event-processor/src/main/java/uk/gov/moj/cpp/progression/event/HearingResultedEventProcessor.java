@@ -120,7 +120,7 @@ public class HearingResultedEventProcessor {
             LOGGER.debug("Sending commands to update cases following hearing results shared for hearing id: {}", hearing.getId());
         }
 
-        hearing.getProsecutionCases().forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications()));
+        hearing.getProsecutionCases().forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications(), hearing.getDefendantJudicialResults()));
     }
 
     @Handles("progression.event.next-hearings-requested")

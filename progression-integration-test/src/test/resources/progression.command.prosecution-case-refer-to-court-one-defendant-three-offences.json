@@ -44,92 +44,107 @@
             },
             "offences": [
               {
+                "arrestDate": "2005-11-19",
+                "chargeDate": "2004-12-09",
+                "count": 0,
+                "endorsableFlag": false,
                 "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-                "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
-                "wording": "No Travel Card",
-                "wordingWelsh": "No Travel Card In Welsh",
-                "startDate": "2018-01-01",
-                "endDate": "2018-01-01",
-                "arrestDate": "2018-01-01",
-                "chargeDate": "2018-01-01",
-                "orderIndex": 1,
-                "count": 0,
-                "notifiedPlea": {
-                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-                  "notifiedPleaDate": "2018-04-01",
-                  "notifiedPleaValue": "NOTIFIED_GUILTY"
+                "isDisposed": false,
+                "laaApplnReference": {
+                  "applicationReference": "LAA-APP-REF",
+                  "offenceLevelStatus": "Refused",
+                  "statusCode": "FM",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Failed on Means",
+                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
                 },
-                "offenceFacts": {
-                  "vehicleRegistration": "AA12345",
-                  "alcoholReadingAmount": 111,
-                  "alcoholReadingMethodCode": "2222"
-                }
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "category": "FINAL",
+                    "cjsCode": "1017",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "dvlaCode": "J",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "b1b35fcc-c035-4105-8e2e-4fd92230ea90",
+                    "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "label": "Absolute discharge",
+                    "lastSharedDateTime": "2021-11-17",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "ORDERED_DATE",
+                    "orderedHearingId": "a390e5cc-e9ff-4c1e-959c-5b8ec0b6cda2",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 23500,
+                    "resultText": "Absolute discharge\n",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "b1b35fcc-c035-4105-8e2e-4fd92230ea90",
+                    "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Rhyddhad diamod"
+                  }
+                ],
+                "modeOfTrial": "Summary",
+                "offenceCode": "TW01046",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                "orderIndex": 500,
+                "proceedingsConcluded": false,
+                "startDate": "2004-12-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
               },
               {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2021-11-22",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "82078809-8720-43fa-9027-a824fdd585c7",
+                  "originatingHearingId": "a390e5cc-e9ff-4c1e-959c-5b8ec0b6cda2",
+                  "sequenceNumber": 100
+                },
+                "convictionDate": "2021-11-22",
+                "count": 0,
                 "id": "4789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-                "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
-                "wording": "No Travel Card",
-                "wordingWelsh": "No Travel Card In Welsh",
-                "startDate": "2018-01-01",
-                "endDate": "2018-01-01",
-                "arrestDate": "2018-01-01",
-                "chargeDate": "2018-01-01",
-                "orderIndex": 1,
-                "count": 0,
-                "notifiedPlea": {
-                  "offenceId": "4789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-                  "notifiedPleaDate": "2018-04-01",
-                  "notifiedPleaValue": "NOTIFIED_GUILTY"
+                "isDisposed": true,
+                "laaApplnReference": {
+                  "applicationReference": "LAA-APP-REF",
+                  "offenceLevelStatus": "Granted",
+                  "statusCode": "GR",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Granted (One Advocate)",
+                  "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
                 },
-                "offenceFacts": {
-                  "vehicleRegistration": "AA12345",
-                  "alcoholReadingAmount": 111,
-                  "alcoholReadingMethodCode": "2222"
-                }
-              },
-              {
-                "id": "5789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-                "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
-                "wording": "No Travel Card",
-                "wordingWelsh": "No Travel Card In Welsh",
-                "startDate": "2018-01-01",
-                "endDate": "2018-01-01",
-                "arrestDate": "2018-01-01",
-                "chargeDate": "2018-01-01",
-                "orderIndex": 1,
-                "count": 0,
-                "notifiedPlea": {
-                  "offenceId": "5789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-                  "notifiedPleaDate": "2018-04-01",
-                  "notifiedPleaValue": "NOTIFIED_GUILTY"
-                },
-                "offenceFacts": {
-                  "vehicleRegistration": "AA12345",
-                  "alcoholReadingAmount": 111,
-                  "alcoholReadingMethodCode": "2222"
-                }
-              },
-              {
-                "id": "6789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-                "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
-                "wording": "No Travel Card",
-                "wordingWelsh": "No Travel Card In Welsh",
-                "startDate": "2018-01-01",
-                "endDate": "2018-01-01",
-                "arrestDate": "2018-01-01",
-                "chargeDate": "2018-01-01",
-                "orderIndex": 1,
-                "count": 0,
-                "notifiedPlea": {
-                  "offenceId": "6789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-                  "notifiedPleaDate": "2018-04-01",
-                  "notifiedPleaValue": "NOTIFIED_GUILTY"
-                },
-                "offenceFacts": {
-                  "vehicleRegistration": "AA12345",
-                  "alcoholReadingAmount": 111,
-                  "alcoholReadingMethodCode": "2222"
-                }
+                "modeOfTrial": "Indictable",
+                "offenceCode": "TH68025",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "6abe3e81-1de0-4c42-b0d2-2dc38f5c44c8",
+                "offenceLegislation": "Contrary to section 8(2) of the Theft Act 1968.",
+                "offenceTitle": "Assault with intent to commit robbery",
+                "orderIndex": 502,
+                "proceedingsConcluded": false,
+                "startDate": "2021-11-02",
+                "wording": "svfdg"
               }
             ],
             "associatedPersons": [
@@ -175,7 +190,7 @@
                 "firstName": "Harry",
                 "middleName": "Jack",
                 "lastName": "Kane Junior",
-                "dateOfBirth": "1983-01-01",
+                "dateOfBirth": "2010-01-01",
                 "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                 "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                 "disabilityStatus": "a",

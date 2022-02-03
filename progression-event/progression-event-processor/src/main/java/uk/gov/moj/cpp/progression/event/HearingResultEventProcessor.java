@@ -172,7 +172,7 @@ public class HearingResultEventProcessor {
     }
 
     private void updateProsecutionCase(JsonEnvelope event, Hearing hearing) {
-        ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty).forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications()));
+        ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty).forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications(), hearing.getDefendantJudicialResults()));
     }
 
     private void updateApplications(final JsonEnvelope event, final Hearing hearing) {

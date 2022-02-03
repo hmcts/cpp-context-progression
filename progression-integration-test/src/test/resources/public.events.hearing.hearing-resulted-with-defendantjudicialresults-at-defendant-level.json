@@ -63,6 +63,61 @@
             "witnessStatementWelsh": "a",
             "mitigation": "a",
             "mitigationWelsh": "a",
+            "defendantCaseJudicialResults":[
+              {
+                "alwaysPublished":false,
+                "category":"FINAL",
+                "cjsCode":"3011",
+                "courtClerk":{
+                  "firstName":"Erica",
+                  "lastName":"Wilson",
+                  "userId":"a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20":false,
+                "excludedFromResults":false,
+                "isAdjournmentResult":false,
+                "isAvailableForCourtExtract":true,
+                "isConvictedResult":true,
+                "isDeleted":false,
+                "isFinancialResult":true,
+                "judicialResultId":"edeeba78-8f38-410c-bf87-483acaaae7b2",
+                "judicialResultPrompts":[
+                  {
+                    "courtExtract":"Y",
+                    "isFinancialImposition":true,
+                    "judicialResultPromptTypeId":"f63b0bb5-7d93-4dab-bc3d-b4bd27152871",
+                    "label":"Amount of costs",
+                    "promptReference":"AOC",
+                    "promptSequence":100,
+                    "type":"CURR",
+                    "usergroups":[
+
+                    ],
+                    "value":"£60",
+                    "welshLabel":""
+                  }
+                ],
+                "judicialResultTypeId":"f5d492b8-a09b-4f70-9ceb-aa06c306a7dc",
+                "label":"Costs to Crown Prosecution Service",
+                "lastSharedDateTime":"2020-06-11",
+                "lifeDuration":false,
+                "orderedDate":"2020-06-11",
+                "orderedHearingId":"85751204-4c05-4fa8-970f-8b1ffc4b94ec",
+                "postHearingCustodyStatus":"A",
+                "publishedAsAPrompt":false,
+                "publishedForNows":false,
+                "rank":10800,
+                "resultText":"Costs to Crown Prosecution Service\nAmount of costs £60",
+                "resultWording":"Cost of Crown from result wording \nAmount of costs £70",
+                "rollUpPrompts":true,
+                "terminatesOffenceProceedings":false,
+                "urgent":false,
+                "usergroups":[
+
+                ],
+                "welshLabel":"Costau i Wasanaeth Erlyn y Goron"
+              }
+            ],
             "offences": [
               {
                 "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",

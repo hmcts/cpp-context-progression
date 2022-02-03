@@ -214,14 +214,7 @@
                     "label": "Reporting Restriction Label",
                     "orderedDate": "2020-10-20"
                   }
-                ],
-                "laaApplnReference": {
-                  "applicationReference": "LAA-API-TEST-1228",
-                  "statusCode": "FM",
-                  "statusDate": "1980-07-16",
-                  "statusDescription": "Failed on Means",
-                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
-                }
+                ]
               }
             ],
             "associatedPersons": [

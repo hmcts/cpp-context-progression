@@ -409,6 +409,8 @@ subscriptions_descriptor:
         - name: progression.event.hearing-trial-vacated
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-trial-vacated.json
 
+        - name: progression.event.laa-defendant-proceeding-concluded-changed
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.laa-defendant-proceeding-concluded-changed.json
           # Deprecated API  - End
       event_source_name: progression
 
