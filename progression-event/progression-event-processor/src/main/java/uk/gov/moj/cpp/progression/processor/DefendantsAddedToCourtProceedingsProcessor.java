@@ -101,6 +101,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
             final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("prosecutionCase"),
                     ProsecutionCase.class);
 
+
             final List<Hearing> futureHearings = getFutureHearings(jsonEnvelope, prosecutionCase, prosecutionCaseJsonObject.get());
 
             final ListHearingRequestByFutureAndNewHearings listHearingRequestByFutureAndNewHearings =

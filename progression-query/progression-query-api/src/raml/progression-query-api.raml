@@ -642,6 +642,94 @@ protocols: [ HTTP, HTTPS ]
                     example: !include json/progression.query.court-proceedings-for-application.json
                     schema: !include json/schema/progression.query.court-proceedings-for-application.json
 
+/prosecutioncases/{caseId}/pet:
+  uriParameters:
+        caseId:
+          description: ID of case to retrieve pets
+          type: string
+  get:
+    description: |
+      Gets the pets by caseId
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.pets-for-case+json
+        name: progression.query.pets-for-case
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.pets-for-case+json:
+              example:  !include json/progression.query.pets-for-case.json
+              schema:  !include json/schema/progression.query.pets-for-case.json
+
+
+/pet/{petId}:
+  uriParameters:
+        petId:
+          description: ID of pet to get
+          type: string
+  get:
+    description: |
+      Gets the pet by urn
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.pet+json
+        name: progression.query.pet
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.pet+json:
+              example:  !include json/progression.query.pet.json
+              schema:  !include json/schema/progression.query.pet.json
+
+/pet/{petId}/history:
+  uriParameters:
+        petId:
+          description: ID of pet to get history
+          type: string
+  get:
+    description: |
+      Gets the pet update history by urn
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.pet-change-history+json
+        name: progression.query.pet-change-history
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.pet-change-history+json:
+              example:  !include json/progression.query.pet-change-history.json
+              schema:  !include json/schema/progression.query.pet-change-history.json
+
+
+/prosecutioncases/{caseId}/defendant/{defendantId}/pet:
+  uriParameters:
+        caseId:
+          description: ID of case to retrieve pets
+          type: string
+        defendantId:
+          description: ID of defendant
+          type: string
+  get:
+    description: |
+      Get the defendant user
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.pet-for-defendant+json
+        name: progression.query.pet-for-defendant
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.pet-for-defendant+json:
+              example:  !include json/progression.query.pet-for-defendant.json
+              schema:  !include json/schema/progression.query.pet-for-defendant.json
 
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****

@@ -64,6 +64,14 @@ import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.PartialMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.PetDetailReceived;
+import uk.gov.justice.core.courts.PetDetailUpdated;
+import uk.gov.justice.core.courts.PetFormCreated;
+import uk.gov.justice.core.courts.PetFormDefendantUpdated;
+import uk.gov.justice.core.courts.PetFormFinalised;
+import uk.gov.justice.core.courts.PetFormReceived;
+import uk.gov.justice.core.courts.PetFormUpdated;
+import uk.gov.justice.core.courts.PetOperationFailed;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseCreatedInHearing;
@@ -702,7 +710,7 @@ public class CaseAggregateTest {
     @Test
     public void shouldInvalidateSendingSheetWrongDefendants() {
         final List<Object> objects = applySendingSheet(a -> {
-            final Defendant defendant = new Defendant();
+            final uk.gov.moj.cpp.progression.domain.event.Defendant defendant = new uk.gov.moj.cpp.progression.domain.event.Defendant();
             defendant.setId(UUID.randomUUID());
             Whitebox.setInternalState(this.caseAggregate, "defendants", new HashSet<>(asList(defendant)));
         });
@@ -760,6 +768,29 @@ public class CaseAggregateTest {
         assertThat(((ConvictionDateRemoved) response).getOffenceId(), is(offenceId));
     }
 
+    private List<Object> applySendingSheet(final Consumer<CaseAggregate> adjustInternals) {
+        createCompleteSendingSheetEnvelope();
+        final SendingSheetCompleted sendingSheetCompleted = new SendingSheetCompleted();
+        final Hearing hearing = new Hearing();
+        hearing.setCaseId(UUID.fromString("4daefec6-5f77-4109-82d9-1e60544a6c05"));
+        sendingSheetCompleted.setHearing(hearing);
+        final Set<uk.gov.moj.cpp.progression.domain.event.Defendant> defendants = new HashSet<>();
+        final uk.gov.moj.cpp.progression.domain.event.Defendant defendant = new uk.gov.moj.cpp.progression.domain.event.Defendant();
+        defendants.add(defendant);
+        defendant.setId(UUID.fromString(DEFENDANT_ID));
+        final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
+        offenceIdsByDefendantId.put(UUID.fromString(DEFENDANT_ID), new HashSet(asList(UUID.fromString(OFFENCE_ID))));
+        //green path internals
+        Whitebox.setInternalState(this.caseAggregate, "courtCentreId", CC_COURT_CENTRE_ID);
+        Whitebox.setInternalState(this.caseAggregate, "defendants", defendants);
+        Whitebox.setInternalState(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
+        adjustInternals.accept(this.caseAggregate);
+
+        final Stream<Object> stream = this.caseAggregate.completeSendingSheet(this.envelope);
+        return stream.collect(Collectors.toList());
+
+    }
+
     @Test
     public void shouldApplyCompleteSendingSheetPreviouslyCompleted() {
         final List<Object> objects = applySendingSheet(a -> {
@@ -770,6 +801,139 @@ public class CaseAggregateTest {
         final Object obj = objects.get(0);
         assertThat(obj, instanceOf(SendingSheetPreviouslyCompleted.class));
         assertThat(CASE_ID, equalTo(((SendingSheetPreviouslyCompleted) obj).getCaseId().toString()));
+    }
+
+    private void createDefendant(final UUID defendantId) {
+        final UUID caseId = randomUUID();
+        final uk.gov.moj.cpp.progression.domain.event.Defendant defendant = new uk.gov.moj.cpp.progression.domain.event.Defendant(defendantId);
+        final Offence offence = new Offence(randomUUID(),
+                randomUUID().toString(),
+                null,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                LocalDate.now(),
+                LocalDate.now(),
+                LocalDate.now(),
+                LocalDate.now());
+        final Person person = new Person(randomUUID(), "", "", "", LocalDate.now(), "", "", "", "", "", "", "", null);
+        final DefendantAdded defendantAdded = new DefendantAdded(caseId, defendantId, person, "", asList(offence), "CaseUrn");
+        this.caseAggregate.apply(defendantAdded);
+    }
+
+    private void createCompleteSendingSheetEnvelope() {
+        when(this.envelope.payloadAsJsonObject()).thenReturn(this.jsonObj);
+        when(this.jsonObj.getString(Mockito.eq("caseId"))).thenReturn(CASE_ID);
+        when(this.jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
+        when(this.jsonObj.getString(Mockito.eq("planDate"))).thenReturn(LocalDate.now().toString());
+        when(this.jsonObj.getString(Mockito.eq("sendingCommittalDate")))
+                .thenReturn(LocalDate.now().toString());
+        when(this.jsonObj.getString(Mockito.eq("sentenceHearingDate")))
+                .thenReturn(LocalDate.now().toString());
+        when(this.jsonObj.getString(Mockito.eq("courtCentreId")))
+                .thenReturn(COURT_CENTRE_ID);
+
+        final UUID defendantId = randomUUID();
+        when(this.jsonObj.getJsonArray(Mockito.eq("defendants"))).thenReturn(Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("id", defendantId.toString()).build())
+                .build());
+
+
+        when(this.jsonObj.getJsonObject("hearing")).thenReturn(Json.createObjectBuilder()
+                .add("courtCentreName", COURT_CENTRE_NAME)
+                .add("courtCentreId", COURT_CENTRE_ID).add("type", HEARING_TYPE)
+                .add("sendingCommittalDate", SENDING_COMMITTAL_DATE).add("caseId", CASE_ID)
+                .add("caseUrn", CASE_URN)
+                .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+                        .add("id", DEFENDANT_ID)
+                        .add("personId", DEFENDANT_PERSON_ID)
+                        .add("firstName", DEFENDANT_FIRST_NAME).add("lastName", DEFENDANT_LAST_NAME)
+                        .add("nationality", DEFENDANT_NATIONALITY).add("gender", DEFENDANT_GENDER)
+                        .add("address", Json.createObjectBuilder()
+                                .add("address1", DEFENDANT_ADDRESS_1)
+                                .add("address2", DEFENDANT_ADDRESS_2)
+                                .add("address3", DEFENDANT_ADDRESS_3)
+                                .add("address4", DEFENDANT_ADDRESS_4)
+                                .add("postcode", DEFENDANT_POSTCODE).build())
+                        .add("dateOfBirth", DEFENDANT_DATE_OF_BIRTH)
+                        .add("bailStatus", BAIL_STATUS)
+                        .add("custodyTimeLimitDate", CUSTODY_TIME_LIMIT_DATE)
+                        .add("defenceOrganisation", DEFENCE_ORGANISATION)
+                        .add("interpreter", Json.createObjectBuilder()
+                                .add("needed", INTERPRETER_NEEDED)
+                                .add("language", INTERPRETER_LANGUAGE).build())
+                        .add("offences", Json.createArrayBuilder().add(Json
+                                .createObjectBuilder()
+                                .add("id", OFFENCE_ID)
+                                .add("offenceCode", OFFENCE_CODE)
+                                .add("indicatedPlea", Json.createObjectBuilder().add("id", INDICATED_PLEA_ID).add("value", INDICATED_PLEA_VALUE).add("allocationDecision", ALLOCATION_DECISION).build())
+                                .add("section", SECTION)
+                                .add("wording", WORDING)
+                                .add("reason", REASON)
+                                .add("description", DESCRIPTION)
+                                .add("category", CATEGORY)
+                                .add("startDate", START_DATE)
+                                .add("endDate", END_DATE).build()))
+                        .build()).build())
+                .build());
+        when(this.jsonObj.getJsonObject("crownCourtHearing"))
+                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
+                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
+                        .build());
+    }
+
+    private void assertSendingSheetCompletedValues(final SendingSheetCompleted ssCompleted) {
+        assertThat(CC_HEARING_DATE, equalTo(ssCompleted.getCrownCourtHearing().getCcHearingDate()));
+        assertThat(CC_COURT_CENTRE_ID, equalTo(ssCompleted.getCrownCourtHearing().getCourtCentreId().toString()));
+        assertThat(CC_COURT_CENTRE_NAME, equalTo(ssCompleted.getCrownCourtHearing().getCourtCentreName()));
+        assertSendingSheetCompletedHearingValues(ssCompleted.getHearing());
+    }
+
+    private void assertSendingSheetCompletedHearingValues(final Hearing hearing) {
+        assertThat(COURT_CENTRE_NAME, equalTo(hearing.getCourtCentreName()));
+        assertThat(COURT_CENTRE_ID, equalTo(hearing.getCourtCentreId()));
+        assertThat(HEARING_TYPE, equalTo(hearing.getType()));
+        assertThat(SENDING_COMMITTAL_DATE, equalTo(hearing.getSendingCommittalDate()));
+        assertThat(CASE_URN, equalTo(hearing.getCaseUrn()));
+        assertThat(CASE_ID, equalTo(hearing.getCaseId().toString()));
+        assertHearingDefendant(hearing.getDefendants().get(0));
+    }
+
+    private void assertHearingDefendant(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Defendant defendant) {
+        assertThat(DEFENDANT_ID, equalTo(defendant.getId().toString()));
+        assertThat(DEFENDANT_PERSON_ID, equalTo(defendant.getPersonId().toString()));
+        assertThat(DEFENDANT_FIRST_NAME, equalTo(defendant.getFirstName()));
+        assertThat(DEFENDANT_LAST_NAME, equalTo(defendant.getLastName()));
+        assertThat(DEFENDANT_ADDRESS_1, equalTo(defendant.getAddress().getAddress1()));
+        assertThat(DEFENDANT_ADDRESS_2, equalTo(defendant.getAddress().getAddress2()));
+        assertThat(DEFENDANT_ADDRESS_3, equalTo(defendant.getAddress().getAddress3()));
+        assertThat(DEFENDANT_ADDRESS_4, equalTo(defendant.getAddress().getAddress4()));
+        assertThat(DEFENDANT_POSTCODE, equalTo(defendant.getAddress().getPostcode()));
+        assertThat(DEFENDANT_DATE_OF_BIRTH, equalTo(defendant.getDateOfBirth()));
+        assertThat(BAIL_STATUS, equalTo(defendant.getBailStatus()));
+        assertThat(CUSTODY_TIME_LIMIT_DATE, equalTo(defendant.getCustodyTimeLimitDate()));
+        assertThat(DEFENCE_ORGANISATION, equalTo(defendant.getDefenceOrganisation()));
+        assertThat(INTERPRETER_NEEDED, equalTo(defendant.getInterpreter().getNeeded()));
+        assertThat(INTERPRETER_LANGUAGE, equalTo(defendant.getInterpreter().getLanguage()));
+        assertDefendantOffence(defendant.getOffences().get(0));
+    }
+
+    private void assertDefendantOffence(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence offence) {
+        assertThat(OFFENCE_ID, equalTo(offence.getId().toString()));
+        assertThat(OFFENCE_CODE, equalTo(offence.getOffenceCode()));
+        assertThat(INDICATED_PLEA_ID, equalTo(offence.getIndicatedPlea().getId().toString()));
+        assertThat(INDICATED_PLEA_VALUE, equalTo(offence.getIndicatedPlea().getValue()));
+        assertThat(ALLOCATION_DECISION, equalTo(offence.getIndicatedPlea().getAllocationDecision()));
+        assertThat(SECTION, equalTo(offence.getSection()));
+        assertThat(WORDING, equalTo(offence.getWording()));
+        assertThat(REASON, equalTo(offence.getReason()));
+        assertThat(DESCRIPTION, equalTo(offence.getDescription()));
+        assertThat(CATEGORY, equalTo(offence.getCategory()));
+        assertThat(START_DATE, equalTo(offence.getStartDate()));
+        assertThat(END_DATE, equalTo(offence.getEndDate()));
     }
 
     @Test
@@ -1174,7 +1338,7 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldUpdateCaseStatusWhenAllApplicationResultsAreFinalized() {
+    public void shouldUpdateCaseStatusWhenAllApplicationResultsAreFinalised() {
         final UUID caseId = randomUUID();
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withCourtApplicationCases(
@@ -1218,7 +1382,7 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldNotUpdateCaseStatusWhenAllApplicationResultsAreNotFinalized() {
+    public void shouldNotUpdateCaseStatusWhenAllApplicationResultsAreNotFinalised() {
         final UUID caseId = randomUUID();
         final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
                 .withId(randomUUID())
@@ -1256,7 +1420,7 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldUpdateCaseStatusAsInactiveWhenAllApplicationResultsAreFinalized() {
+    public void shouldUpdateCaseStatusAsInactiveWhenAllApplicationResultsAreFinalised() {
         final UUID caseId = randomUUID();
 
         final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
@@ -1457,15 +1621,185 @@ public class CaseAggregateTest {
     public void shouldRemovedProsecutionCaseRelatedToHearing() {
         final UUID prosecutionCaseId = randomUUID();
         final UUID hearingId = randomUUID();
-
         final List<Object> eventStream = caseAggregate.removeHearingRelatedToProsecutionCase(hearingId, prosecutionCaseId).collect(toList());
-
         assertThat(eventStream.size(), is(1));
         final HearingRemovedForProsecutionCase hearingDeletedForProsecutionCase = (HearingRemovedForProsecutionCase) eventStream.get(0);
         assertThat(hearingDeletedForProsecutionCase.getHearingId(), is(hearingId));
         assertThat(hearingDeletedForProsecutionCase.getProsecutionCaseId(), is(prosecutionCaseId));
     }
 
+    @Test
+    public void shouldGeneratePetFormCreatedWhenDefendantAndOffenceIsValid() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID formId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String formData = "test data";
+        final UUID petId = randomUUID();
+        final UUID userId = randomUUID();
+
+        setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
+
+        final Map<UUID, List<UUID>> defendantOffenceIds = new HashMap<>();
+        defendantOffenceIds.put(defendantId, asList(offenceId));
+
+        final List<Object> eventStream = caseAggregate.createPetForm(petId, caseId, formId, defendantOffenceIds, formData, userId).collect(toList());;
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(PetFormCreated.class)));
+    }
+
+    @Test
+    public void shouldGeneratePetFormReceivedEvent() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID formId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID petId = randomUUID();
+
+        setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
+
+        final Map<UUID, List<UUID>> defendantOffenceIds = new HashMap<>();
+        defendantOffenceIds.put(defendantId, asList(offenceId));
+
+        final List<Object> eventStream = caseAggregate.receivePetForm(petId, caseId, formId, defendantOffenceIds).collect(toList());;
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(PetFormReceived.class)));
+    }
+
+    @Test
+    public void shouldGeneratePetFormUpdated() {
+        final UUID caseId = randomUUID();
+        final String formData = "test data";
+        final UUID offenceId = randomUUID();
+        final UUID petId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, List<UUID>> petIdOffenceIdsMap =  new HashMap<>();
+        petIdOffenceIdsMap.put(petId, asList(offenceId));
+        setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
+
+        final List<Object> eventStream = caseAggregate.updatePetForm(caseId, formData, petId, userId).collect(toList());;
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(PetFormUpdated.class)));
+    }
+
+    @Test
+    public void shouldGeneratePetFormFinalised() {
+        final UUID caseId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID petId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, List<UUID>> petIdOffenceIdsMap =  new HashMap<>();
+        petIdOffenceIdsMap.put(petId, asList(offenceId));
+        setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
+        setField(caseAggregate, "prosecutionCase", prosecutionCase()
+                .withDefendants(asList(uk.gov.justice.core.courts.Defendant.defendant()
+                        .withId(randomUUID())
+                        .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                .withId(offenceId)
+                                .build()))
+                        .build(),
+                        uk.gov.justice.core.courts.Defendant.defendant()
+                                .withId(randomUUID())
+                                .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                        .withId(randomUUID())
+                                        .build()))
+                                .build()))
+                .build());
+
+        final List<Object> eventStream = caseAggregate.finalisePetForm(caseId, petId, userId).collect(toList());;
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(PetFormFinalised.class)));
+        final PetFormFinalised petFormFinalised = (PetFormFinalised)object;
+        assertThat(petFormFinalised.getProsecutionCase().getDefendants().size(), is(1));
+        assertThat(petFormFinalised.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(1));
+        assertThat(petFormFinalised.getProsecutionCase().getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
+    }
+
+    @Test
+    public void shouldNotGeneratePetFormFinalised() {
+        final UUID caseId = randomUUID();
+        final UUID petId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final List<Object> eventStream = caseAggregate.finalisePetForm(caseId, petId, userId).collect(toList());;
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(PetOperationFailed.class)));
+    }
+
+    @Test
+    public void shouldGeneratePetDetailUpdated() {
+        final UUID caseId = randomUUID();
+        final String formData = "test data";
+        final UUID offenceId = randomUUID();
+        final UUID petId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, List<UUID>> petIdOffenceIdsMap =  new HashMap<>();
+        petIdOffenceIdsMap.put(petId, asList(offenceId));
+        setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
+
+        final List<Object> eventStream = caseAggregate.updatePetDetail(caseId, petId, Arrays.asList(),userId).collect(toList());;
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(PetDetailUpdated.class)));
+    }
+
+    @Test
+    public void shouldGeneratePetDetailReceived() {
+        final UUID caseId = randomUUID();
+        final String formData = "test data";
+        final UUID offenceId = randomUUID();
+        final UUID petId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, List<UUID>> petIdOffenceIdsMap =  new HashMap<>();
+        petIdOffenceIdsMap.put(petId, asList(offenceId));
+        setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
+
+        final List<Object> eventStream = caseAggregate.receivePetDetail(caseId, petId, Arrays.asList(),userId).collect(toList());;
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(PetDetailReceived.class)));
+    }
+
+    @Test
+    public void shouldGeneratePetFormDefendantUpdatedEvent() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String defendantData = "{}";
+        final UUID petId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, List<UUID>> petIdOffenceIdsMap =  new HashMap<>();
+        petIdOffenceIdsMap.put(petId, asList(offenceId));
+
+        setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, randomUUID()));
+        setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
+
+        final List<Object> eventStream = caseAggregate.updatePetFormForDefendant(petId, caseId, defendantId, defendantData, userId).collect(toList());;
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(PetFormDefendantUpdated.class)));
+    }
+
+    private ProsecutionCase createProsecutionCase(final UUID defendantId, final UUID offenceId){
+        return prosecutionCase()
+                .withDefendants(asList(uk.gov.justice.core.courts.Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                .withId(offenceId)
+                                .build()))
+                        .build()))
+                .build();
+    }
     @Test
     public void shouldRaiseDefendantsAndListingHearingRequestsStoredEvent() {
 
@@ -1831,163 +2165,6 @@ public class CaseAggregateTest {
         final List<uk.gov.justice.core.courts.Defendant> defendants = new ArrayList<>();
         defendants.add(defendant1);
         return defendants;
-    }
-
-
-    private List<Object> applySendingSheet(final Consumer<CaseAggregate> adjustInternals) {
-        createCompleteSendingSheetEnvelope();
-        final SendingSheetCompleted sendingSheetCompleted = new SendingSheetCompleted();
-        final Hearing hearing = new Hearing();
-        hearing.setCaseId(UUID.fromString("4daefec6-5f77-4109-82d9-1e60544a6c05"));
-        sendingSheetCompleted.setHearing(hearing);
-        final Set<Defendant> defendants = new HashSet<>();
-        final Defendant defendant = new Defendant();
-        defendants.add(defendant);
-        defendant.setId(UUID.fromString(DEFENDANT_ID));
-        final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
-        offenceIdsByDefendantId.put(UUID.fromString(DEFENDANT_ID), new HashSet(asList(UUID.fromString(OFFENCE_ID))));
-        //green path internals
-        Whitebox.setInternalState(this.caseAggregate, "courtCentreId", CC_COURT_CENTRE_ID);
-        Whitebox.setInternalState(this.caseAggregate, "defendants", defendants);
-        Whitebox.setInternalState(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
-        adjustInternals.accept(this.caseAggregate);
-
-        final Stream<Object> stream = this.caseAggregate.completeSendingSheet(this.envelope);
-        return stream.collect(Collectors.toList());
-
-    }
-
-    private void createDefendant(final UUID defendantId) {
-        final UUID caseId = randomUUID();
-        final Defendant defendant = new Defendant(defendantId);
-        final Offence offence = new Offence(randomUUID(),
-                randomUUID().toString(),
-                null,
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                LocalDate.now(),
-                LocalDate.now(),
-                LocalDate.now(),
-                LocalDate.now());
-        final Person person = new Person(randomUUID(), "", "", "", LocalDate.now(), "", "", "", "", "", "", "", null);
-        final DefendantAdded defendantAdded = new DefendantAdded(caseId, defendantId, person, "", asList(offence), "CaseUrn");
-        this.caseAggregate.apply(defendantAdded);
-    }
-
-    private void createCompleteSendingSheetEnvelope() {
-        when(this.envelope.payloadAsJsonObject()).thenReturn(this.jsonObj);
-        when(this.jsonObj.getString(Mockito.eq("caseId"))).thenReturn(CASE_ID);
-        when(this.jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
-        when(this.jsonObj.getString(Mockito.eq("planDate"))).thenReturn(LocalDate.now().toString());
-        when(this.jsonObj.getString(Mockito.eq("sendingCommittalDate")))
-                .thenReturn(LocalDate.now().toString());
-        when(this.jsonObj.getString(Mockito.eq("sentenceHearingDate")))
-                .thenReturn(LocalDate.now().toString());
-        when(this.jsonObj.getString(Mockito.eq("courtCentreId")))
-                .thenReturn(COURT_CENTRE_ID);
-
-        final UUID defendantId = randomUUID();
-        when(this.jsonObj.getJsonArray(Mockito.eq("defendants"))).thenReturn(Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("id", defendantId.toString()).build())
-                .build());
-
-
-        when(this.jsonObj.getJsonObject("hearing")).thenReturn(Json.createObjectBuilder()
-                .add("courtCentreName", COURT_CENTRE_NAME)
-                .add("courtCentreId", COURT_CENTRE_ID).add("type", HEARING_TYPE)
-                .add("sendingCommittalDate", SENDING_COMMITTAL_DATE).add("caseId", CASE_ID)
-                .add("caseUrn", CASE_URN)
-                .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
-                        .add("id", DEFENDANT_ID)
-                        .add("personId", DEFENDANT_PERSON_ID)
-                        .add("firstName", DEFENDANT_FIRST_NAME).add("lastName", DEFENDANT_LAST_NAME)
-                        .add("nationality", DEFENDANT_NATIONALITY).add("gender", DEFENDANT_GENDER)
-                        .add("address", Json.createObjectBuilder()
-                                .add("address1", DEFENDANT_ADDRESS_1)
-                                .add("address2", DEFENDANT_ADDRESS_2)
-                                .add("address3", DEFENDANT_ADDRESS_3)
-                                .add("address4", DEFENDANT_ADDRESS_4)
-                                .add("postcode", DEFENDANT_POSTCODE).build())
-                        .add("dateOfBirth", DEFENDANT_DATE_OF_BIRTH)
-                        .add("bailStatus", BAIL_STATUS)
-                        .add("custodyTimeLimitDate", CUSTODY_TIME_LIMIT_DATE)
-                        .add("defenceOrganisation", DEFENCE_ORGANISATION)
-                        .add("interpreter", Json.createObjectBuilder()
-                                .add("needed", INTERPRETER_NEEDED)
-                                .add("language", INTERPRETER_LANGUAGE).build())
-                        .add("offences", Json.createArrayBuilder().add(Json
-                                .createObjectBuilder()
-                                .add("id", OFFENCE_ID)
-                                .add("offenceCode", OFFENCE_CODE)
-                                .add("indicatedPlea", Json.createObjectBuilder().add("id", INDICATED_PLEA_ID).add("value", INDICATED_PLEA_VALUE).add("allocationDecision", ALLOCATION_DECISION).build())
-                                .add("section", SECTION)
-                                .add("wording", WORDING)
-                                .add("reason", REASON)
-                                .add("description", DESCRIPTION)
-                                .add("category", CATEGORY)
-                                .add("startDate", START_DATE)
-                                .add("endDate", END_DATE).build()))
-                        .build()).build())
-                .build());
-        when(this.jsonObj.getJsonObject("crownCourtHearing"))
-                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
-                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
-                        .build());
-    }
-
-    private void assertSendingSheetCompletedValues(final SendingSheetCompleted ssCompleted) {
-        assertThat(CC_HEARING_DATE, equalTo(ssCompleted.getCrownCourtHearing().getCcHearingDate()));
-        assertThat(CC_COURT_CENTRE_ID, equalTo(ssCompleted.getCrownCourtHearing().getCourtCentreId().toString()));
-        assertThat(CC_COURT_CENTRE_NAME, equalTo(ssCompleted.getCrownCourtHearing().getCourtCentreName()));
-        assertSendingSheetCompletedHearingValues(ssCompleted.getHearing());
-    }
-
-    private void assertSendingSheetCompletedHearingValues(final Hearing hearing) {
-        assertThat(COURT_CENTRE_NAME, equalTo(hearing.getCourtCentreName()));
-        assertThat(COURT_CENTRE_ID, equalTo(hearing.getCourtCentreId()));
-        assertThat(HEARING_TYPE, equalTo(hearing.getType()));
-        assertThat(SENDING_COMMITTAL_DATE, equalTo(hearing.getSendingCommittalDate()));
-        assertThat(CASE_URN, equalTo(hearing.getCaseUrn()));
-        assertThat(CASE_ID, equalTo(hearing.getCaseId().toString()));
-        assertHearingDefendant(hearing.getDefendants().get(0));
-    }
-
-    private void assertHearingDefendant(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Defendant defendant) {
-        assertThat(DEFENDANT_ID, equalTo(defendant.getId().toString()));
-        assertThat(DEFENDANT_PERSON_ID, equalTo(defendant.getPersonId().toString()));
-        assertThat(DEFENDANT_FIRST_NAME, equalTo(defendant.getFirstName()));
-        assertThat(DEFENDANT_LAST_NAME, equalTo(defendant.getLastName()));
-        assertThat(DEFENDANT_ADDRESS_1, equalTo(defendant.getAddress().getAddress1()));
-        assertThat(DEFENDANT_ADDRESS_2, equalTo(defendant.getAddress().getAddress2()));
-        assertThat(DEFENDANT_ADDRESS_3, equalTo(defendant.getAddress().getAddress3()));
-        assertThat(DEFENDANT_ADDRESS_4, equalTo(defendant.getAddress().getAddress4()));
-        assertThat(DEFENDANT_POSTCODE, equalTo(defendant.getAddress().getPostcode()));
-        assertThat(DEFENDANT_DATE_OF_BIRTH, equalTo(defendant.getDateOfBirth()));
-        assertThat(BAIL_STATUS, equalTo(defendant.getBailStatus()));
-        assertThat(CUSTODY_TIME_LIMIT_DATE, equalTo(defendant.getCustodyTimeLimitDate()));
-        assertThat(DEFENCE_ORGANISATION, equalTo(defendant.getDefenceOrganisation()));
-        assertThat(INTERPRETER_NEEDED, equalTo(defendant.getInterpreter().getNeeded()));
-        assertThat(INTERPRETER_LANGUAGE, equalTo(defendant.getInterpreter().getLanguage()));
-        assertDefendantOffence(defendant.getOffences().get(0));
-    }
-
-    private void assertDefendantOffence(final uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence offence) {
-        assertThat(OFFENCE_ID, equalTo(offence.getId().toString()));
-        assertThat(OFFENCE_CODE, equalTo(offence.getOffenceCode()));
-        assertThat(INDICATED_PLEA_ID, equalTo(offence.getIndicatedPlea().getId().toString()));
-        assertThat(INDICATED_PLEA_VALUE, equalTo(offence.getIndicatedPlea().getValue()));
-        assertThat(ALLOCATION_DECISION, equalTo(offence.getIndicatedPlea().getAllocationDecision()));
-        assertThat(SECTION, equalTo(offence.getSection()));
-        assertThat(WORDING, equalTo(offence.getWording()));
-        assertThat(REASON, equalTo(offence.getReason()));
-        assertThat(DESCRIPTION, equalTo(offence.getDescription()));
-        assertThat(CATEGORY, equalTo(offence.getCategory()));
-        assertThat(START_DATE, equalTo(offence.getStartDate()));
-        assertThat(END_DATE, equalTo(offence.getEndDate()));
     }
 
     private static ProsecutionCase createProsecutionCase(final List<uk.gov.justice.core.courts.Defendant> defendants) {

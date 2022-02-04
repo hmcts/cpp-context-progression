@@ -37,6 +37,16 @@ public class StubUtil {
 
     }
 
+    public static void setupLoggedInUsersPermissionQueryStub() {
+        InternalEndpointMockUtils.stubPingFor("usersgroups-service");
+        stubFor(get(urlPathEqualTo("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permission"))
+                .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getPayload("stub-data/usersgroups.user-permissions.json"))));
+
+    }
+
     public static void setupMaterialStub(String materialId) {
         InternalEndpointMockUtils.stubPingFor("material-service");
         stubFor(get(urlMatching("/material-service/query/api/rest/material/material/" + materialId + "/metadata"))
@@ -58,6 +68,14 @@ public class StubUtil {
                         .withBody(materialContent)));
     }
 
+    public static void setupMaterialStructuredPetQuery(final String structuredFormId) {
+        InternalEndpointMockUtils.stubPingFor("material-service");
+        stubFor(get(urlMatching(MATERIAL_QUERY_URL +"/structured-form/" + structuredFormId))
+                .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getPayload("stub-data/material.query.structured-form.json").replace("STRUCTURED_FORM_ID", structuredFormId))));
+    }
 
     public static String getJsonBodyStr(final String path, final String caseId,
                                         final String defendantId, final String defendant2Id) {

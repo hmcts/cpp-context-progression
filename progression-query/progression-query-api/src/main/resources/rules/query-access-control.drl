@@ -8,7 +8,7 @@ global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAn
 global uk.gov.moj.cpp.accesscontrol.progression.providers.ProgressionProvider progressionProvider;
 global uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider rbacProvider;
 global uk.gov.justice.api.resource.service.CourtDocumentProvider courtDocumentProvider;
-
+import uk.gov.moj.cpp.progression.query.api.helper.RuleConstants;
 
 rule "Query - Access control for progression.query.shared-court-documents"
   when
@@ -462,3 +462,40 @@ rule "Query - API - progression.search.court.list"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Rule for query pet"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.pet");
+    eval(userAndGroupProvider.hasPermission($action, RuleConstants.petFormGrantAccessPermission()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for query pets-for-case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.pets-for-case");
+    eval(userAndGroupProvider.hasPermission($action, RuleConstants.petFormGrantAccessPermission()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for query pet-change-history"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.pet-change-history");
+    eval(userAndGroupProvider.hasPermission($action, RuleConstants.petFormGrantAccessPermission()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for query pet-for-defendant"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.pet-for-defendant");
+    eval(userAndGroupProvider.hasPermission($action, RuleConstants.petFormGrantAccessPermission()));
+  then
+    $outcome.setSuccess(true);
+end
+

@@ -373,7 +373,7 @@ public class NowDocumentRequestIT extends AbstractIT {
     private String getNowDocumentRequest(final String hearingId, final Matcher... matchers) {
         return poll(requestParams(getReadUrl(StringUtils.join("/nows/hearing/", hearingId)),
                 "application/vnd.progression.query.now-document-request-by-hearing+json")
-                .withHeader(HeaderConstants.USER_ID, USER_ID))
+                .withHeader(HeaderConstants.USER_ID, UUID.randomUUID()))
                 .timeout(40, TimeUnit.SECONDS)
                 .until(status().is(javax.ws.rs.core.Response.Status.OK),
                         payload().isJson(allOf(matchers))).getPayload();

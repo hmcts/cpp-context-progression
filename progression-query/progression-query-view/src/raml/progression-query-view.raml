@@ -550,6 +550,27 @@ protocols: [ HTTP, HTTPS ]
                     example: !include json/progression.query.court-proceedings-for-application.json
                     schema: !include json/schema/progression.query.court-proceedings-for-application.json
 
+/prosecutioncases/{caseId}/pet:
+  uriParameters:
+        caseId:
+          description: ID of case to retrieve pets
+          type: string
+  get:
+    description: |
+      Gets the pets by caseId
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.pets-for-case+json
+        name: progression.query.pets-for-case
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.pets-for-case+json:
+              example:  !include json/progression.query.pets-for-case.json
+              schema:  !include json/schema/progression.query.pets-for-case.json
+
 # ***** Deprecated API - Start ********
 
 # ***** Do not add any new API in this section *****

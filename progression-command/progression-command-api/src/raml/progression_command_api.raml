@@ -873,3 +873,77 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
         202:
           description: Request accepted
+
+/pet:
+  post:
+    description: |
+      Create Pet form
+      ...
+      (mapping):
+        requestType: application/vnd.progression.create-pet-form+json
+        name: progression.create-pet-form
+      ...
+    body:
+      application/vnd.progression.create-pet-form+json:
+        example:
+          !include json/progression.create-pet-form.json
+        schema:
+          !include json/schema/progression.create-pet-form.json
+    responses:
+      202:
+        description: OK
+
+/pet/{petId}:
+  post:
+    description: |
+      Update Pet form
+      ...
+      (mapping):
+        requestType: application/vnd.progression.update-pet-form+json
+        name: progression.update-pet-form
+      (mapping):
+        requestType: application/vnd.progression.finalise-pet-form+json
+        name: progression.finalise-pet-form
+      (mapping):
+        requestType: application/vnd.progression.update-pet-detail+json
+        name: progression.update-pet-detail
+      ...
+    body:
+      application/vnd.progression.update-pet-form+json:
+        example:
+          !include json/progression.update-pet-form.json
+        schema:
+          !include json/schema/progression.update-pet-form.json
+      application/vnd.progression.finalise-pet-form+json:
+        example:
+          !include json/progression.finalise-pet-form.json
+        schema:
+          !include json/schema/progression.finalise-pet-form.json
+      application/vnd.progression.update-pet-detail+json:
+        example:
+          !include json/progression.update-pet-detail.json
+        schema:
+          !include json/schema/progression.update-pet-detail.json
+
+    responses:
+      202:
+        description: OK
+
+/defendant/{defendantId}/update-pet-form:
+  post:
+    description: |
+      Update Pet form for defendant
+      ...
+      (mapping):
+        requestType: application/vnd.progression.update-pet-form-for-defendant+json
+        name: progression.update-pet-form-for-defendant
+      ...
+    body:
+      application/vnd.progression.update-pet-form-for-defendant+json:
+        example:
+          !include json/progression.update-pet-form-for-defendant.json
+        schema:
+          !include json/schema/progression.update-pet-form-for-defendant.json
+    responses:
+      202:
+        description: OK

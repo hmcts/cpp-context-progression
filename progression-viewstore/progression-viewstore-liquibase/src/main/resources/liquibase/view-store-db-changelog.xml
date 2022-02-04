@@ -90,5 +90,5 @@
     <include file="liquibase/add-cps-prosecutor-search-prosecution-case.xml"/>
     <include file="liquibase/add-index-court-document-index-table.xml"/>
     <include file="liquibase/create-trigger-for-payload-size-check.xml"/>
-
+    <include file="liquibase/add-pet-case-defendant-offence.xml"/>
 </databaseChangeLog>

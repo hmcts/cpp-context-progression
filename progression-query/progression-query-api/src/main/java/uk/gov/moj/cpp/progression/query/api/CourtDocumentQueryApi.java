@@ -11,6 +11,7 @@ import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper
 
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;

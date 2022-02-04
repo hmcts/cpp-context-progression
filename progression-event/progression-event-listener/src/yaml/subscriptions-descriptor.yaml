@@ -228,6 +228,17 @@ subscriptions_descriptor:
         - name: progression.event.hearing-defendant-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-defendant-updated.json
 
+        - name: progression.event.pet-form-created
+          schema_uri: http://justice.gov.uk/core/courts/pet-form-created.json
+
+        - name: progression.event.pet-detail-updated
+          schema_uri: http://justice.gov.uk/core/courts/pet-detail-updated.json
+
+        - name: progression.event.pet-detail-received
+          schema_uri: http://justice.gov.uk/core/courts/pet-detail-received.json
+
+        - name: progression.event.pet-form-received
+          schema_uri: http://justice.gov.uk/core/courts/pet-form-received.json
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

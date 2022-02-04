@@ -1,0 +1,17 @@
+{
+  "pets": [
+    {
+      "petId": "PET_ID",
+      "defendants": [
+        {
+          "defendantId": "DEFENDANT_ID",
+          "caseId": "CASE_ID",
+          "offences": [
+            "OFFENCE_ID1",
+            "OFFENCE_ID2"
+          ]
+        }
+      ]
+    }
+  ]
+}

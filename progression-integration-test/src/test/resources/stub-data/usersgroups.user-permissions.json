@@ -1,0 +1,8 @@
+{
+  "permissions": [
+    {
+      "object": "PetForm",
+      "action": "GrantAccess"
+    }
+  ]
+}

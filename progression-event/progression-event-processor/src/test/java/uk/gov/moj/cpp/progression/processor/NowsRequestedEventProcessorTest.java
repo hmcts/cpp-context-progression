@@ -47,6 +47,7 @@ import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
+import uk.gov.moj.cpp.progression.service.MaterialService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 import uk.gov.moj.cpp.progression.service.UploadMaterialContext;
 import uk.gov.moj.cpp.progression.service.UploadMaterialService;
@@ -113,6 +114,8 @@ public class NowsRequestedEventProcessorTest {
     @Mock
     private UploadMaterialService uploadMaterialService;
     @Mock
+    private MaterialService materialService;
+    @Mock
     private ApplicationParameters applicationParameters;
     @Mock
     private MaterialUrlGenerator materialUrlGenerator;
@@ -172,7 +175,8 @@ public class NowsRequestedEventProcessorTest {
                         materialUrlGenerator,
                         applicationParameters,
                         nowDocumentValidator,
-                        objectMapper),
+                        objectMapper,
+                        this.materialService),
                 this.jsonObjectToObjectConverter,
                 this.objectToJsonObjectConverter,
                 this.refDataService,

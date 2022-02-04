@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/pet-operation-failed.json",
+  "type": "object",
+  "properties": {
+    "petId": {
+      "description": "Pet Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "Case Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "command": {
+      "description": "Logged In User Id",
+      "type": "string"
+    },
+    "message": {
+      "description": "Logged In User Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "petId",
+    "command",
+    "message"
+  ],
+  "additionalProperties": false
+}

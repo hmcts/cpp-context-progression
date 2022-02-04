@@ -9,7 +9,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.jayway.awaitility.Awaitility.await;
+import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -17,11 +19,15 @@ import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBe
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
 
 public class MaterialStub {
+
+    public static final String MATERIAL_METADATA_QUERY = "/material-service/query/api/rest/material/material/.*/metadata";
+    public static final String MATERIAL_METADATA_QUERY_TYPE = "material.query.material-metadata";
 
     public static final String UPLOAD_MATERIAL_COMMAND = "/material-service/command/api/rest/material/material";
     public static final String MATERIAL_UPLOAD_COMMAND_TYPE = "material.command.upload-file";
@@ -40,6 +46,23 @@ public class MaterialStub {
                 .willReturn(aResponse().withStatus(SC_OK)));
 
         waitForStubToBeReady(UPLOAD_MATERIAL_COMMAND, MATERIAL_UPLOAD_COMMAND_TYPE);
+    }
+
+    public static void stubMaterialMetadata() {
+        InternalEndpointMockUtils.stubPingFor("material-service");
+
+        stubFor(get(urlPathMatching(MATERIAL_METADATA_QUERY))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", UUID.randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(createObjectBuilder()
+                                .add("materialAddedDate", ZonedDateTime.now().toString())
+                                .add("mimeType", "pdf")
+                                .add("fileName", "filename.pdf")
+                                .build().toString())
+                ));
+
+        waitForStubToBeReady(format(MATERIAL_METADATA_QUERY, UUID.randomUUID()), MATERIAL_METADATA_QUERY_TYPE);
     }
 
     public static void verifyMaterialCreated() {

@@ -28,6 +28,7 @@ import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.formatters.AccountingDivisionCodeFormatter;
 import uk.gov.moj.cpp.progression.processor.exceptions.InvalidHearingTimeException;
 import uk.gov.moj.cpp.progression.processor.exceptions.NowsTemplateNameNotFoundException;
+import uk.gov.moj.cpp.progression.service.exception.DocumentGenerationException;
 import uk.gov.moj.cpp.progression.service.exception.FileUploadException;
 import uk.gov.moj.cpp.progression.service.utils.NowDocumentValidator;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
@@ -72,6 +73,8 @@ public class DocumentGeneratorService {
     public static final String NCES_DOCUMENT_ORDER = "NCESDocumentOrder";
     public static final String ACCOUNTING_DIVISION_CODE = "accountingDivisionCode";
     public static final String FINANCIAL_ORDER_DETAILS = "financialOrderDetails";
+    public static final String PET_DOCUMENT_TEMPLATE_NAME = "PetNotification";
+    public static final String PET_DOCUMENT_ORDER = "PetDocumentOrder";
 
     private final DocumentGeneratorClientProducer documentGeneratorClientProducer;
 
@@ -91,6 +94,8 @@ public class DocumentGeneratorService {
 
     private final ObjectMapper mapper;
 
+    private final MaterialService materialService;
+
     @Inject
     public DocumentGeneratorService(final SystemUserProvider systemUserProvider,
                                     final DocumentGeneratorClientProducer documentGeneratorClientProducer,
@@ -100,7 +105,8 @@ public class DocumentGeneratorService {
                                     final MaterialUrlGenerator materialUrlGenerator,
                                     final ApplicationParameters applicationParameters,
                                     final NowDocumentValidator nowDocumentValidator,
-                                    final ObjectMapper mapper
+                                    final ObjectMapper mapper,
+                                    final MaterialService materialService
     ) {
         this.systemUserProvider = systemUserProvider;
         this.documentGeneratorClientProducer = documentGeneratorClientProducer;
@@ -111,6 +117,7 @@ public class DocumentGeneratorService {
         this.applicationParameters = applicationParameters;
         this.nowDocumentValidator = nowDocumentValidator;
         this.mapper = mapper;
+        this.materialService = materialService;
     }
 
     @Transactional(REQUIRES_NEW)
@@ -149,6 +156,19 @@ public class DocumentGeneratorService {
 
         } catch (IOException | RuntimeException e) {
             LOGGER.error(ERROR_MESSAGE, e);
+        }
+    }
+
+    @Transactional(REQUIRES_NEW)
+    public String generatePetDocument(final JsonEnvelope originatingEnvelope, final JsonObject petForm, final UUID materialId) {
+        try {
+            final DocumentGeneratorClient documentGeneratorClient = documentGeneratorClientProducer.documentGeneratorClient();
+            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(petForm, PET_DOCUMENT_TEMPLATE_NAME, getSystemUserUuid());
+            final String filename = getTimeStampAmendedFileName(PET_DOCUMENT_ORDER);
+            addDocumentToMaterial(originatingEnvelope, filename , new ByteArrayInputStream(resultOrderAsByteArray), materialId);
+            return filename;
+        } catch (IOException | RuntimeException e) {
+            throw new DocumentGenerationException(e);
         }
     }
 
@@ -217,6 +237,18 @@ public class DocumentGeneratorService {
                                        final boolean isRemotePrintingRequired) {
 
         addDocumentToMaterial(sender, originatingEnvelope, filename, fileContent, userId, hearingId, materialId, caseId, applicationId, isRemotePrintingRequired, null);
+    }
+
+    private void addDocumentToMaterial(final JsonEnvelope originatingEnvelope, final String filename, final InputStream fileContent, final UUID materialId) {
+
+        try {
+            final UUID fileId = storeFile(fileContent, filename);
+            LOGGER.info("Stored material {} in file store {}", materialId, fileId);
+            materialService.uploadMaterial(fileId, materialId, originatingEnvelope);
+        } catch (final FileServiceException e) {
+            LOGGER.error("Error while uploading file {}", filename);
+            throw new FileUploadException(e);
+        }
     }
 
     private void addDocumentToMaterial(Sender sender, JsonEnvelope originatingEnvelope, final String filename, final InputStream fileContent,

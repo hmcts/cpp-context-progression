@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/create-pet-form.json",
+  "type": "object",
+  "properties": {
+    "petId": {
+      "description": "Pet Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "Case Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "formId": {
+      "description": "Form Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "petDefendants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "defendantId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+
+          "offenceIds": {
+            "type": "array",
+            "items": {
+              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+            }
+          }
+        },
+        "required": [
+          "defendantId",
+          "offenceIds"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "petFormData": {
+      "description": "Pet Form Data",
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "petId",
+    "formId",
+    "petDefendants"
+  ],
+  "additionalProperties": false
+}

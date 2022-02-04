@@ -7,6 +7,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.Originator.assembleEnvelopeWithPayloadAndMetaDetails;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
@@ -41,9 +43,11 @@ import org.slf4j.LoggerFactory;
 public class MaterialService {
     protected static final String UPLOAD_MATERIAL = "material.command.upload-file";
     protected static final String MATERIAL_METADETA_QUERY = "material.query.material-metadata";
+    protected static final String MATERIAL_STRUCTURED_FORM_QUERY = "material.query.structured-form";
     private static final Logger LOGGER = LoggerFactory.getLogger(MaterialService.class.getCanonicalName());
     private static final String FIELD_MATERIAL_ID = "materialId";
     private static final String FILE_NAME = "fileName";
+    private static final String FIELD_STRUCTURED_FORM_ID = "structuredFormId";
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
     private Sender sender;
@@ -78,10 +82,12 @@ public class MaterialService {
 
         LOGGER.info("materialId {} material metadata request ", materialId);
 
+
         final JsonEnvelope materialMetadata = requester.requestAsAdmin(enveloper
                 .withMetadataFrom(envelope, MATERIAL_METADETA_QUERY)
                 .apply(requestParameter));
 
+        LOGGER.info("material {} metadata {}", materialId, materialMetadata.payload());
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("materialId {} material metadata ref data payload {}", materialId, materialMetadata.toObfuscatedDebugString());
         }
@@ -121,5 +127,18 @@ public class MaterialService {
             LOGGER.info("Exception in converting inputstream to bytes {}", ioException);
             throw new RuntimeException("Converting inputStream to bytes failed", ioException);
         }
+    }
+
+    public Optional<JsonObject> getStructuredForm(final JsonEnvelope envelope, final UUID structuredFormId) {
+
+        final JsonObject requestParameter = createObjectBuilder()
+                .add(FIELD_STRUCTURED_FORM_ID, structuredFormId.toString()).build();
+
+        LOGGER.info("structuredFormId {} material structured form request ", structuredFormId);
+
+        final JsonEnvelope structuredForm = requester.request(envelopeFrom(metadataFrom(envelope.metadata())
+                .withName(MATERIAL_STRUCTURED_FORM_QUERY), requestParameter));
+
+        return Optional.ofNullable(structuredForm.payloadAsJsonObject());
     }
 }

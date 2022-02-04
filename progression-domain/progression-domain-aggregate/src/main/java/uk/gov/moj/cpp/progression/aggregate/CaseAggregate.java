@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -70,6 +71,15 @@ import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.PartialMatchedDefendantSearchResultStored;
+import uk.gov.justice.core.courts.PetDefendants;
+import uk.gov.justice.core.courts.PetDetailReceived;
+import uk.gov.justice.core.courts.PetDetailUpdated;
+import uk.gov.justice.core.courts.PetFormCreated;
+import uk.gov.justice.core.courts.PetFormDefendantUpdated;
+import uk.gov.justice.core.courts.PetFormFinalised;
+import uk.gov.justice.core.courts.PetFormReceived;
+import uk.gov.justice.core.courts.PetFormUpdated;
+import uk.gov.justice.core.courts.PetOperationFailed;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseCreatedInHearing;
@@ -154,6 +164,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -213,6 +224,7 @@ public class CaseAggregate implements Aggregate {
     private final Map<UUID, List<Cases>> exactMatchedDefendants = new HashMap<>();
     private final Set<UUID> matchedDefendantIds = new HashSet<>();
     private final Map<UUID, UUID> defendantAssociatedDefenceOrganisation = new HashMap<>();
+    private final Map<UUID, List<UUID>> petIdOffenceIdsMap = new HashMap<>();
     private final Map<UUID, uk.gov.justice.core.courts.Defendant> defendantsMap = new HashMap<>();
     private final List<uk.gov.justice.core.courts.Defendant> defendantsToBeAdded = new ArrayList<>();
     private final List<ListHearingRequest> listHearingRequestsToBeAdded = new ArrayList<>();
@@ -401,6 +413,8 @@ public class CaseAggregate implements Aggregate {
                             this.listHearingRequestsToBeAdded.clear();
                         }
                 ),
+                when(PetFormCreated.class).apply(this::onPetFormCreated),
+                when(PetFormReceived.class).apply(this::onPetFormReceived),
                 otherwiseDoNothing());
 
     }
@@ -486,6 +500,7 @@ public class CaseAggregate implements Aggregate {
         hearingResultedCaseUpdated.getProsecutionCase().getDefendants().stream().forEach(defendant -> {
             this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
             updateDefendantProceedingConcluded(defendant, defendant.getProceedingsConcluded());
+            this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
         });
 
         if (pc.getCaseStatus() != null && !currentProsecutionCaseStatus.equalsIgnoreCase(INACTIVE.getDescription())) {
@@ -608,7 +623,7 @@ public class CaseAggregate implements Aggregate {
 
         if (incomingCourtCentreId == null || !incomingCourtCentreId.equals(courtCentreId)) {
             LOGGER.error("CourtCentreId mismatch for case with id: {}. courtCentreId:{}, incomingCourtCentreId:{}", caseId, courtCentreId, incomingCourtCentreId);
-            return apply(Stream.of(new SendingSheetInvalidated(caseId, String.format("CourtCentreId mismatch. courtCentreId:%s, incomingCourtCentreId:%s", courtCentreId, incomingCourtCentreId))));
+            return apply(Stream.of(new SendingSheetInvalidated(caseId, format("CourtCentreId mismatch. courtCentreId:%s, incomingCourtCentreId:%s", courtCentreId, incomingCourtCentreId))));
         }
 
         final Map<UUID, Set<UUID>> incomingDefendantId2OffenceIds = sendingSheetToDefendantOffenceMap(payload);
@@ -624,7 +639,7 @@ public class CaseAggregate implements Aggregate {
                 LOGGER.error("CaseId: {}: invalid sending sheet defendant ids specified do not match history: ({}) / ({}) ", caseId,
                         uuidsToString.apply(incomingDefendantId2OffenceIds.keySet()), uuidsToString.apply(defendantUUIDs));
             }
-            return apply(Stream.of(new SendingSheetInvalidated(caseId, String.format("defendant ids specified do not match history: (%s) / (%s) ",
+            return apply(Stream.of(new SendingSheetInvalidated(caseId, format("defendant ids specified do not match history: (%s) / (%s) ",
                     uuidsToString.apply(incomingDefendantId2OffenceIds.keySet()), uuidsToString.apply(defendantUUIDs)))));
 
         }
@@ -644,7 +659,7 @@ public class CaseAggregate implements Aggregate {
                     LOGGER.error("CaseId: %s: invalid sending sheet, offence ids for DefendantId: %s ids specified do not match history: ({}) / ({}) ", caseId, defendantUUID,
                             uuidsToString.apply(incomingDefendantId2OffenceIds.keySet()), uuidsToString.apply(defendantUUIDs));
                 }
-                return apply(Stream.of(new SendingSheetInvalidated(caseId, String.format("invalid sending sheet, offence ids for DefendantId: %s ids specified do not match history: (%s) / (%s) ",
+                return apply(Stream.of(new SendingSheetInvalidated(caseId, format("invalid sending sheet, offence ids for DefendantId: %s ids specified do not match history: (%s) / (%s) ",
                         defendantUUID, uuidsToString.apply(incomingOffenceIds), uuidsToString.apply(offenceIds)))));
             }
         }
@@ -778,10 +793,11 @@ public class CaseAggregate implements Aggregate {
     }
 
     /**
-     * Stores defendants and list hearing requests (to be added to hearing) in aggregate
-     * if the prosecution case has not been created in hearing context - event DefendantsAndListingHearingRequestsStored.
-     * Releases defendants and list hearing requests (to be added to hearing) in aggregate
-     * if the prosecution case has already been created in hearing context - event DefendantsAndListingHearingRequestsAdded.
+     * Stores defendants and list hearing requests (to be added to hearing) in aggregate if the
+     * prosecution case has not been created in hearing context - event
+     * DefendantsAndListingHearingRequestsStored. Releases defendants and list hearing requests (to
+     * be added to hearing) in aggregate if the prosecution case has already been created in hearing
+     * context - event DefendantsAndListingHearingRequestsAdded.
      *
      * @param defendants
      * @param listHearingRequests
@@ -806,9 +822,10 @@ public class CaseAggregate implements Aggregate {
     }
 
     /**
-     * This method is invoked after the prosecution case has been created in hearing context - event DefendantsAndListingHearingRequestsAdded.
-     * Releases any defendants and list hearing requests (to be added to hearing) stored in aggregate
-     * to hearing context - event DefendantsAndListingHearingRequestsAdded.
+     * This method is invoked after the prosecution case has been created in hearing context - event
+     * DefendantsAndListingHearingRequestsAdded. Releases any defendants and list hearing requests
+     * (to be added to hearing) stored in aggregate to hearing context - event
+     * DefendantsAndListingHearingRequestsAdded.
      *
      * @param prosecutionCaseId
      * @return
@@ -898,7 +915,9 @@ public class CaseAggregate implements Aggregate {
     private String getUpdatedCaseStatus(final ProsecutionCase prosecutionCase) {
         final Map<UUID, Boolean> caseDefendantsFromDefendantProceedingsConcluded = defendantProceedingConcluded.get(prosecutionCase.getId());
 
-        final List<UUID> caseDefendantsFromCurrentHearing = prosecutionCase.getDefendants().stream().map(e -> e.getId()).collect(Collectors.toList());
+        final List<UUID> caseDefendantsFromCurrentHearing = prosecutionCase.getDefendants().stream()
+                .map(uk.gov.justice.core.courts.Defendant::getId)
+                .collect(Collectors.toList());
 
         final Map<UUID, Boolean> otherCaseDefendantsNotRepresentedOnCurrentHearing = getOtherCaseDefendantsNotRepresentedOnCurrentHearing(caseDefendantsFromDefendantProceedingsConcluded, caseDefendantsFromCurrentHearing);
 
@@ -2027,7 +2046,7 @@ public class CaseAggregate implements Aggregate {
         if (nonNull(caseDefendantsFromDefendantProceedingsConcluded)) {
             otherCaseDefendantsNotRepresentedOnCurrentHearing = caseDefendantsFromDefendantProceedingsConcluded.entrySet().stream()
                     .filter(defendantId -> !caseDefendantsFromCurrentHearing.contains(defendantId.getKey()))
-                    .collect(toMap(map -> map.getKey(), map -> map.getValue()));
+                    .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
         }
         return otherCaseDefendantsNotRepresentedOnCurrentHearing;
     }
@@ -2037,6 +2056,245 @@ public class CaseAggregate implements Aggregate {
             return otherCaseDefendantsNotRepresentedOnCurrentHearing.values().stream().allMatch(proceedingsConcluded -> proceedingsConcluded.equals(TRUE));
         }
         return true;
+    }
+
+    public Stream<Object> createPetForm(final UUID petId, final UUID caseId, final UUID formId, final Map<UUID, List<UUID>> defendantOffenceIds, final String petFormData,
+                                        final UUID userId) {
+        final List<UUID> offenceIds = defendantOffenceIds.values().stream()
+                .flatMap(Collection::stream)
+                .collect(toList());
+
+        final Boolean petExists = petIdOffenceIdsMap.values().stream()
+                .flatMap(List::stream)
+                .anyMatch(offenceIds::contains);
+
+        if (petExists) {
+            return apply(Stream.of(PetOperationFailed.petOperationFailed()
+                    .withCaseId(caseId)
+                    .withPetId(petId)
+                    .withCommand("create-pet-form")
+                    .withMessage("Pet already exists for one of the offences.")
+                    .build()));
+        }
+
+        return apply(Stream.of(PetFormCreated.petFormCreated()
+                .withCaseId(caseId)
+                .withPetDefendants(buildPetDefendants(defendantOffenceIds))
+                .withFormId(formId)
+                .withPetFormData(petFormData)
+                .withPetId(petId)
+                .withUserId(userId)
+                .build()));
+    }
+
+    public Stream<Object> updatePetFormForDefendant(final UUID petId, final UUID caseId, final UUID defendantId, final String defendantData, final UUID userId) {
+        if (!petIdOffenceIdsMap.containsKey(petId)) {
+            return apply(Stream.of(PetOperationFailed.petOperationFailed()
+                    .withCaseId(caseId)
+                    .withPetId(petId)
+                    .withCommand("update-pet-form-for-defendant")
+                    .withMessage(format("Pet (%s) does not exists.", petId))
+                    .build()));
+        }
+
+        return apply(Stream.of(PetFormDefendantUpdated.petFormDefendantUpdated()
+                .withPetId(petId)
+                .withCaseId(caseId)
+                .withDefendantId(defendantId)
+                .withDefendantData(defendantData)
+                .withUserId(userId)
+                .build()));
+    }
+
+    public Stream<Object> receivePetForm(final UUID petId, final UUID caseId, final UUID formId, final Map<UUID, List<UUID>> defendantOffenceIds) {
+        final List<UUID> offenceIds = defendantOffenceIds.values().stream()
+                .flatMap(Collection::stream)
+                .collect(toList());
+
+        final Boolean petExists = petIdOffenceIdsMap.values().stream()
+                .flatMap(List::stream)
+                .anyMatch(offenceIds::contains);
+
+        if (petExists) {
+            return apply(Stream.of(PetOperationFailed.petOperationFailed()
+                    .withCaseId(caseId)
+                    .withPetId(petId)
+                    .withCommand("receive-pet-form")
+                    .withMessage("Pet already exists for one of the offences.")
+                    .build()));
+        }
+
+        return apply(Stream.of(PetFormReceived.petFormReceived()
+                .withCaseId(caseId)
+                .withPetDefendants(buildPetDefendants(defendantOffenceIds))
+                .withFormId(formId)
+                .withPetId(petId)
+                .build()));
+    }
+
+    private List<PetDefendants> buildPetDefendants(final Map<UUID, List<UUID>> defendantOffenceIds) {
+        return defendantOffenceIds.entrySet().stream().map(entry -> PetDefendants.petDefendants()
+                .withDefendantId(entry.getKey())
+                .withOffenceIds(entry.getValue())
+                .build()).collect(toList());
+    }
+
+    public Stream<Object> updatePetForm(final UUID caseId, final String petFormData,
+                                        final UUID petId, final UUID userId) {
+        if (!petIdOffenceIdsMap.containsKey(petId)) {
+            return apply(Stream.of(PetOperationFailed.petOperationFailed()
+                    .withCaseId(caseId)
+                    .withPetId(petId)
+                    .withCommand("update-pet-form")
+                    .withMessage(format("Pet (%s) does not exists.", petId))
+                    .build()));
+        }
+
+        return apply(Stream.of(PetFormUpdated.petFormUpdated()
+                .withCaseId(caseId)
+                .withPetFormData(petFormData)
+                .withPetId(petId)
+                .withUserId(userId)
+                .build()));
+    }
+
+    public Stream<Object> finalisePetForm(final UUID caseId,
+                                          final UUID petId, final UUID userId) {
+        if (isNull(prosecutionCase)) {
+            return apply(Stream.of(PetOperationFailed.petOperationFailed()
+                    .withCaseId(caseId)
+                    .withPetId(petId)
+                    .withCommand("finalise-pet-form")
+                    .withMessage(format("ProsecutionCase(%s) does not exists.", caseId))
+                    .build()));
+        }
+
+        if (!petIdOffenceIdsMap.containsKey(petId)) {
+            return apply(Stream.of(PetOperationFailed.petOperationFailed()
+                    .withCaseId(caseId)
+                    .withPetId(petId)
+                    .withCommand("finalise-pet-form")
+                    .withMessage(format("Pet (%s) does not exists.", petId))
+                    .build()));
+        }
+
+        final ProsecutionCase petProsecutionCase = ProsecutionCase.prosecutionCase()
+                .withValuesFrom(prosecutionCase)
+                .withDefendants(filterPetDefendants(petId, prosecutionCase.getDefendants()))
+                .build();
+
+        return apply(Stream.of(PetFormFinalised.petFormFinalised()
+                .withCaseId(caseId)
+                .withProsecutionCase(petProsecutionCase)
+                .withPetId(petId)
+                .withUserId(userId)
+                .build()));
+    }
+
+    public Stream<Object> updatePetDetail(final UUID caseId,
+                                          final UUID petId, final List<PetDefendants> petDefendants, final UUID userId) {
+        if (!petIdOffenceIdsMap.containsKey(petId)) {
+            return apply(Stream.of(PetOperationFailed.petOperationFailed()
+                    .withCaseId(caseId)
+                    .withPetId(petId)
+                    .withCommand("update-pet-detail")
+                    .withMessage(format("Pet (%s) does not exists.", petId))
+                    .build()));
+        }
+        final List<UUID> offenceIds = petIdOffenceIdsMap.entrySet().stream()
+                .filter(k -> !k.getKey().equals(petId))
+                .flatMap(k -> k.getValue().stream())
+                .collect(toList());
+
+        if (petDefendants.stream().flatMap(s -> s.getOffenceIds().stream()).anyMatch(offenceIds::contains)) {
+            apply(Stream.of(PetOperationFailed.petOperationFailed()
+                    .withCaseId(caseId)
+                    .withPetId(petId)
+                    .withCommand("update-pet-detail")
+                    .withMessage("Pet already exists for one of the offences.")
+                    .build()));
+            return empty();
+        }
+        return apply(Stream.of(PetDetailUpdated.petDetailUpdated()
+                .withCaseId(caseId)
+                .withPetId(petId)
+                .withPetDefendants(petDefendants)
+                .withUserId(userId)
+                .build()));
+
+    }
+
+    public Stream<Object> receivePetDetail(final UUID caseId,
+                                           final UUID petId, final List<PetDefendants> petDefendants, final UUID userId) {
+        if (!petIdOffenceIdsMap.containsKey(petId)) {
+            apply(Stream.of(PetOperationFailed.petOperationFailed()
+                    .withCaseId(caseId)
+                    .withPetId(petId)
+                    .withCommand("receive-pet-detail")
+                    .withMessage(format("Pet (%s) does not exists.", petId))
+                    .build()));
+            return empty();
+        }
+        final List<UUID> offenceIds = petIdOffenceIdsMap.values().stream()
+                .flatMap(Collection::stream)
+                .collect(toList());
+
+        if (petDefendants.stream().flatMap(s -> s.getOffenceIds().stream()).anyMatch(s -> offenceIds.contains(s))) {
+            apply(Stream.of(PetOperationFailed.petOperationFailed()
+                    .withCaseId(caseId)
+                    .withPetId(petId)
+                    .withCommand("receive-pet-detail")
+                    .withMessage("Pet already exists for one of the offences.")
+                    .build()));
+            return empty();
+        }
+        return apply(Stream.of(PetDetailReceived.petDetailReceived()
+                .withCaseId(caseId)
+                .withPetId(petId)
+                .withPetDefendants(petDefendants)
+                .withUserId(userId)
+                .build()));
+
+    }
+
+    private void onPetFormCreated(final PetFormCreated petFormCreated) {
+        updatePetIdOffenceIdsMap(petFormCreated.getPetId(), petFormCreated.getPetDefendants());
+    }
+
+    private void onPetFormReceived(final PetFormReceived petFormReceived) {
+        updatePetIdOffenceIdsMap(petFormReceived.getPetId(), petFormReceived.getPetDefendants());
+    }
+
+    private void updatePetIdOffenceIdsMap(final UUID petId, final List<PetDefendants> petDefendantsList) {
+        final List<UUID> offenceIds = petDefendantsList.stream()
+                .flatMap(petDefendants -> petDefendants.getOffenceIds().stream())
+                .collect(toList());
+
+        petIdOffenceIdsMap.put(petId, offenceIds);
+    }
+
+    private List<uk.gov.justice.core.courts.Defendant> filterPetDefendants(final UUID petId, final List<uk.gov.justice.core.courts.Defendant> defendants) {
+        return defendants.stream()
+                .map(defendant -> buildDefendantForPet(petId, defendant))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toList());
+    }
+
+    private Optional<uk.gov.justice.core.courts.Defendant> buildDefendantForPet(final UUID petId, final uk.gov.justice.core.courts.Defendant defendant) {
+        final List<UUID> offenceIds = petIdOffenceIdsMap.get(petId);
+        final List<uk.gov.justice.core.courts.Offence> offences = defendant.getOffences().stream()
+                .filter(o -> offenceIds.contains(o.getId()))
+                .collect(toList());
+
+        if (offences.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(uk.gov.justice.core.courts.Defendant.defendant()
+                .withValuesFrom(defendant)
+                .withOffences(offences)
+                .build());
     }
 
 }
