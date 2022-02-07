@@ -35,6 +35,7 @@ import uk.gov.justice.core.courts.Material;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;

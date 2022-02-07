@@ -31,9 +31,11 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingUpdatedEventProcessor {
@@ -168,4 +170,6 @@ public class HearingUpdatedEventProcessor {
                 .build())
                 .collect(toList());
     }
+
+
 }

@@ -7,6 +7,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
+import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.buildCaseHearingTypesResponse;
 import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.buildCaseHearingsResponse;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
 
@@ -33,6 +34,7 @@ import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseCpsProsecutorEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MatchDefendantCaseHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SearchProsecutionCaseEntity;
@@ -46,10 +48,12 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseH
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCaseRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -81,6 +85,7 @@ public class ProsecutionCaseQuery {
     public static final String PROSECUTION_CASE = "prosecutionCase";
     public static final String CASE_STATUS = "caseStatus";
     public static final String CASE_STATUS_ACTIVE = "ACTIVE";
+    private static final String ORDER_DATE = "orderDate";
 
     @Inject
     private ProsecutionCaseRepository prosecutionCaseRepository;
@@ -225,11 +230,44 @@ public class ProsecutionCaseQuery {
         return JsonEnvelope.envelopeFrom(envelope.metadata(), jsonObjectBuilder.build());
     }
 
+    @Handles("progression.query.case")
+    public JsonEnvelope getCase(final JsonEnvelope envelope) {
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        final Optional<UUID> caseId = getUUID(envelope.payloadAsJsonObject(), CASE_ID);
+        try {
+            final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseId.get());
+            JsonObject prosecutionCase = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
+            if (!prosecutionCase.containsKey(CASE_STATUS)) {
+                prosecutionCase = addProperty(prosecutionCase, CASE_STATUS, CASE_STATUS_ACTIVE);
+            }
+            jsonObjectBuilder.add(PROSECUTION_CASE, prosecutionCase);
+        } catch (final NoResultException e) {
+            LOGGER.info("# No case found yet for caseId '{}'", caseId.get());
+        }
+
+        return JsonEnvelope.envelopeFrom(
+                envelope.metadata(),
+                jsonObjectBuilder.build());
+    }
+
     @Handles("progression.query.casehearings")
     public JsonEnvelope getCaseHearings(final JsonEnvelope envelope) {
         final Optional<UUID> caseId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), CASE_ID);
         final List<Hearings> hearings = hearingAtAGlanceService.getCaseHearings(caseId.get());
         final JsonObject responsePayload = buildCaseHearingsResponse(hearings);
+        return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
+    }
+
+    @Handles("progression.query.case.hearingtypes")
+    public JsonEnvelope getCaseHearingTypes(final JsonEnvelope envelope) {
+        final JsonObject payloadAsJsonObject = envelope.payloadAsJsonObject();
+        final UUID caseId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), CASE_ID)
+                .orElseThrow(() -> new IllegalArgumentException("caseId parameter cannot be empty!"));
+
+        final LocalDate orderDate = payloadAsJsonObject.containsKey(ORDER_DATE) ? LocalDate.parse(payloadAsJsonObject.getString(ORDER_DATE)) : LocalDate.now();
+
+        final List<HearingEntity> hearings = hearingAtAGlanceService.getCaseHearingEntities(caseId);
+        final JsonObject responsePayload = buildCaseHearingTypesResponse(getHearingTypes(hearings, orderDate));
         return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
     }
 
@@ -373,5 +411,21 @@ public class ProsecutionCaseQuery {
                 .map(Defendant::getMasterDefendantId)
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    public Map<UUID, String> getHearingTypes(final List<HearingEntity> allHearings, final LocalDate orderDate) {
+        return allHearings.stream()
+                .filter(hearing -> hasHearingOnDate(hearing, orderDate))
+                .collect(Collectors.toMap(HearingEntity::getHearingId, this::getHearingType));
+    }
+
+    private String getHearingType(final HearingEntity hearingEntity) {
+        final JsonObject hearingJson = stringToJsonObjectConverter.convert(hearingEntity.getPayload());
+        final uk.gov.justice.core.courts.Hearing hearing = jsonObjectToObjectConverter.convert(hearingJson, uk.gov.justice.core.courts.Hearing.class);
+        return hearing.getType().getDescription();
+    }
+
+    private static boolean hasHearingOnDate(final HearingEntity hearing, final LocalDate orderDate) {
+        return Objects.nonNull(hearing.getConfirmedDate()) && hearing.getConfirmedDate().isEqual(orderDate);
     }
 }

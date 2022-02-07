@@ -6,7 +6,10 @@ import uk.gov.justice.progression.courts.Hearings;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static java.util.Objects.nonNull;
 import static javax.json.Json.createArrayBuilder;
@@ -21,11 +24,12 @@ public class CaseHearingsQueryHelper {
     public static final String NAME = "name";
     public static final String ROOM_ID = "roomId";
     public static final String ROOM_NAME = "roomName";
+    public static final String HEARING_TYPES = "hearingTypes";
 
     private CaseHearingsQueryHelper() {
     }
 
-    public static JsonObject buildCaseHearingsResponse(final List<Hearings> hearings){
+    public static JsonObject buildCaseHearingsResponse(final List<Hearings> hearings) {
         final JsonArrayBuilder hearingsBuilder = createArrayBuilder();
 
         hearings.forEach(hearing -> {
@@ -36,7 +40,7 @@ public class CaseHearingsQueryHelper {
         return createObjectBuilder().add(HEARINGS, hearingsBuilder).build();
     }
 
-    private static JsonObject buildHearing(final Hearings hearing){
+    private static JsonObject buildHearing(final Hearings hearing) {
         final JsonObjectBuilder builder = createObjectBuilder()
                 .add(HEARING_ID, hearing.getId().toString());
 
@@ -47,7 +51,7 @@ public class CaseHearingsQueryHelper {
         return builder.build();
     }
 
-    private static JsonObject buildCourtCentre(final CourtCentre courtCentre){
+    private static JsonObject buildCourtCentre(final CourtCentre courtCentre) {
         final JsonObjectBuilder builder = createObjectBuilder()
                 .add(ID, courtCentre.getId().toString())
                 .add(NAME, courtCentre.getName());
@@ -58,5 +62,12 @@ public class CaseHearingsQueryHelper {
         }
 
         return builder.build();
+    }
+
+    public static JsonObject buildCaseHearingTypesResponse(final Map<UUID, String> hearingTypes) {
+        final JsonArrayBuilder hearingTypesBuilder = createArrayBuilder();
+        hearingTypes.entrySet().stream().forEach(hearingType ->
+                hearingTypesBuilder.add(createObjectBuilder().add("hearingId", String.valueOf(hearingType.getKey())).add("type", hearingType.getValue()).build()));
+        return createObjectBuilder().add(HEARING_TYPES, hearingTypesBuilder).build();
     }
 }

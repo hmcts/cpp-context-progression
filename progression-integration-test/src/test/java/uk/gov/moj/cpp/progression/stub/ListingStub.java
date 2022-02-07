@@ -320,4 +320,18 @@ public class ListingStub {
 
         waitForStubToBeReady(urlPath, LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE);
     }
+
+    public static void stubListingSearchHearingsQuery(final String resource) {
+
+        stubPingFor("listing-service");
+
+        final String urlPath = format("/listing-service/query/api/rest/listing/hearings/any-allocation");
+        stubFor(get(urlPathEqualTo(urlPath))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(getPayload(resource))));
+
+        waitForStubToBeReady(urlPath, LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE);
+    }
 }

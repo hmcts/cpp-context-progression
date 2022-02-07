@@ -1,9 +1,6 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.addProperty;
-
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -24,6 +21,9 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.addProperty;
+
 @ServiceComponent(Component.QUERY_API)
 public class ProsecutionCaseQueryApi {
     private static final String ORGANISATION_NAME = "name";
@@ -36,7 +36,6 @@ public class ProsecutionCaseQueryApi {
     private static final String COURT_ORDERS = "courtOrders";
     private static final String MASTER_DEFENDANT_ID = "masterDefendantId";
 
-
     @Inject
     private Requester requester;
 
@@ -45,7 +44,6 @@ public class ProsecutionCaseQueryApi {
 
     @Inject
     private CourtOrderService courtOrderService;
-
 
     @Handles("progression.query.prosecutioncase")
     public JsonEnvelope getCaseProsecutionCase(final JsonEnvelope query) {
@@ -106,6 +104,11 @@ public class ProsecutionCaseQueryApi {
         return appQueryResponse;
     }
 
+    @Handles("progression.query.case")
+    public JsonEnvelope getProsecutionCase(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
     @Handles("progression.query.casehearings")
     public JsonEnvelope getCaseHearings(final JsonEnvelope query){
         return requester.request(query);
@@ -139,6 +142,11 @@ public class ProsecutionCaseQueryApi {
     public JsonEnvelope ejectCase(final JsonEnvelope query) {
 
         return query;
+    }
+
+    @Handles("progression.query.case.hearingtypes")
+    public JsonEnvelope getCaseHearingTypes(final JsonEnvelope query){
+        return requester.request(query);
     }
 
     private JsonObject createOrganisation(final JsonObject completeOrganisationDetails) {

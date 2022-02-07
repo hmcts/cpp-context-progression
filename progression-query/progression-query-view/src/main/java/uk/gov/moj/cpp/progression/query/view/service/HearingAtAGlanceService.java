@@ -610,4 +610,10 @@ public class HearingAtAGlanceService {
         }
         return nameBuilder.toString();
     }
+
+    public List<HearingEntity> getCaseHearingEntities(final UUID caseId) {
+        LOGGER.info("Get case Hearing entities for case {}", caseId);
+        final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByCaseId(caseId);
+        return getHearingEntities(caseDefendantHearingEntities);
+    }
 }

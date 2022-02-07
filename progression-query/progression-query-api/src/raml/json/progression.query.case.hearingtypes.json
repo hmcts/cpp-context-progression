@@ -1,0 +1,12 @@
+{
+  "hearingTypes": [
+    {
+      "hearingId": "8e6fad58-49fe-4825-afc9-a4d7887c892d",
+      "type": "First hearing"
+    },
+    {
+      "hearingId": "a09ac0cb-e3ab-422e-91d3-0a5b34f68ae8",
+      "type": "Sentence"
+    }
+  ]
+}

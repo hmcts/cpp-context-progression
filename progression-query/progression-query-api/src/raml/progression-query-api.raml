@@ -82,6 +82,9 @@ protocols: [ HTTP, HTTPS ]
         Return the case progression details for the prosecution case Id.
         ...
         (mapping):
+            responseType: application/vnd.progression.query.case+json
+            name: progression.query.case
+        (mapping):
             responseType: application/vnd.progression.query.prosecutioncase+json
             name: progression.query.prosecutioncase
         (mapping):
@@ -90,11 +93,21 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.casehearings+json
             name: progression.query.casehearings
+        (mapping):
+            responseType: application/vnd.progression.query.case.hearingtypes+json
+            name: progression.query.case.hearingtypes
         ...
+      queryParameters:
+        orderDate:
+          description: Order Date
+          type: string
       responses:
             200:
                 description: OK
                 body:
+                  application/vnd.progression.query.case+json:
+                    example:  !include json/progression.query.case.json
+                    schema:  !include json/schema/progression.query.case.json
                   application/vnd.progression.query.prosecutioncase+json:
                     example:  !include json/progression.query.prosecutioncase.json
                     schema:  !include json/schema/progression.query.prosecutioncase.json
@@ -104,6 +117,9 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.casehearings+json:
                     example:  !include json/progression.query.casehearings.json
                     schema:  !include json/schema/progression.query.casehearings.json
+                  application/vnd.progression.query.case.hearingtypes+json:
+                    example:  !include json/progression.query.case.hearingtypes.json
+                    schema:  !include json/schema/progression.query.case.hearingtypes.json
 
 /defendant-requests/{defendantId}:
   uriParameters:

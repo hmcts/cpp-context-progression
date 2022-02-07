@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -22,12 +23,15 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initia
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithPoliceBailInfo;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +46,7 @@ public class CaseAtAGlanceIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_NON_STD_ORGANISATION_PROSECUTOR = "progression.command.initiate-court-proceedings-non-std-organisation.json";
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_WITHOUT_BAIL_CONDITION = "progression.command.initiate-court-proceedings-without-bail-condition.json";
     public static final String PROGRESSION_QUERY_GET_CASE_HEARINGS = "application/vnd.progression.query.casehearings+json";
+    public static final String PROGRESSION_QUERY_GET_CASE_HEARING_TYPES = "application/vnd.progression.query.case.hearingtypes+json";
 
     private String caseId;
     private String materialIdActive;
@@ -54,7 +59,6 @@ public class CaseAtAGlanceIT extends AbstractIT {
     private String linkedApplicationId;
 
     ProsecutionCaseUpdateDefendantHelper helper;
-
 
     @Before
     public void setUp() {
@@ -310,5 +314,34 @@ public class CaseAtAGlanceIT extends AbstractIT {
 
     }
 
+    @Test
+    public void shouldVerifyProsecutionCase() throws IOException {
+        //given
+        initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+
+        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
+
+        pollCasesProgressionFor(caseId, prosecutionCaseMatchers);
+    }
+
+    @Test
+    public void shouldVerifyNoCaseHearingTypesWhenCaseNotConfirmed() throws Exception {
+        final String earliestStartDateTime = ZonedDateTimes.fromString("2020-07-15T18:32:04.238Z").toString();
+        //given
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+
+        final LocalDate HEARING_DATE_1 = LocalDate.of(2020,07,15);
+        verifyNoCaseHearingTypes(caseId, HEARING_DATE_1);
+    }
+
+    private static void verifyNoCaseHearingTypes(final String caseId, final LocalDate  orderDate) {
+        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId + "?orderDate=" +orderDate.toString()), PROGRESSION_QUERY_GET_CASE_HEARING_TYPES)
+                .withHeader(USER_ID, randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.hearingTypes.length()", is(0)))));
+    }
 }
 

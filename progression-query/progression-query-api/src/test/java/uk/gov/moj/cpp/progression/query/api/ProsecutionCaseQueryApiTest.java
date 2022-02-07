@@ -22,7 +22,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-
 @RunWith(MockitoJUnitRunner.class)
 public class ProsecutionCaseQueryApiTest {
 
@@ -39,6 +38,8 @@ public class ProsecutionCaseQueryApiTest {
     private static final String PROSECUTION_CASE_QUERY_API_EXPECTED_WITH_COURT_ORDERS_JSON = "json/caseQueryApiWithCourtOrdersExpectedResponse.json";
     private static final String PROSECUTION_CASE_QUERY_API_EXPECTED_WITH_COURT_ORDERS_MULTIPLE_DEFENDANTS_JSON = "json/caseQueryApiWithCourtOrdersMultipleDefendantsExpectedResponse.json";
     private static final String PROSECUTION_CASE_QUERY_API_EXPECTED_WIT_NO_COURT_ORDERS_JSON = "json/caseQueryApiWithNoCourtOrdersExpectedResponse.json";
+    private static final String CASE_QUERY_VIEW_JSON = "json/caseQueryResponse.json";
+    private static final String CASE_QUERY_API_EXPECTED_JSON = "json/caseQueryExpectedResponse.json";
     private static final String PROSECUTION_CASE_QUERY = "progression.query.prosecutioncase";
 
     @Mock
@@ -188,5 +189,20 @@ public class ProsecutionCaseQueryApiTest {
         final JsonEnvelope prosecutionCaseForCaseAtAGlance = prosecutionCaseQueryApi.getProsecutionCaseForCaseAtAGlance(query);
 
         assertThat(prosecutionCaseForCaseAtAGlance.payloadAsJsonObject(), equalTo(caagResponse));
+    }
+
+    @Test
+    public void shouldHandleCaseQuery() {
+        final JsonObject prosecutionCasePayload = QueryClientTestBase.readJson(CASE_QUERY_VIEW_JSON, JsonObject.class);
+
+        final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY, randomUUID());
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
+
+        when(requester.request(query)).thenReturn(envelope);
+        final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getProsecutionCase(query);
+
+        final JsonObject expectedProsecutionCaseResponse = QueryClientTestBase.readJson(CASE_QUERY_API_EXPECTED_JSON, JsonObject.class);
+
+        assertThat(actualProsecutionCaseResponse.payloadAsJsonObject(), equalTo(expectedProsecutionCaseResponse));
     }
 }

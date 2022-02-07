@@ -510,6 +510,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         entity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
         entity.setListingStatus(hearingEntity.getListingStatus());
         entity.setResultLines(hearingEntity.getResultLines());
+        entity.setConfirmedDate(hearingEntity.getConfirmedDate());
         return entity;
     }
 }

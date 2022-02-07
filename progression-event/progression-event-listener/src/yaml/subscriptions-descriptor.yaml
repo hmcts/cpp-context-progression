@@ -239,6 +239,9 @@ subscriptions_descriptor:
 
         - name: progression.event.pet-form-received
           schema_uri: http://justice.gov.uk/core/courts/pet-form-received.json
+
+        - name: progression.hearing-initiate-enriched
+          schema_uri: http://justice.gov.uk/core/courts/progression.event-hearing-initiate-enriched.json
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

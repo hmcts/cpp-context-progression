@@ -85,7 +85,7 @@ public class UpdateCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldUpdateCourtDocumentPrintDateTimeWhenDocumentHasBeenConfirmedAsPrinted() throws IOException {
-        addCourtDocument();
+        addCourtDocumentWithPrintedDate(completedAt);
         produceNotificationSentPublicEvent(notificationId, sentTime, completedAt);
         verifyPrintDateTimeUpdated(completedAt);
     }
@@ -112,6 +112,18 @@ public class UpdateCourtDocumentIT extends AbstractIT {
                 .replaceAll("%CASE_ID%", caseId)
                 .replaceAll("%MATERIAL_ID%", materialId.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId);
+        final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + documentId),
+                "application/vnd.progression.add-court-document+json",
+                body);
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+    }
+
+    private void addCourtDocumentWithPrintedDate(final ZonedDateTime completedAt) throws IOException {
+        final String body = getPayload("progression.court-document-to-be-printed-with-printed-date.json").replaceAll("%DOCUMENT_ID%", documentId.toString())
+                .replaceAll("%CASE_ID%", caseId)
+                .replaceAll("%MATERIAL_ID%", materialId.toString())
+                .replaceAll("%DEFENDANT_ID%", defendantId)
+                .replaceAll("%PRINT_DATE%", completedAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")));
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + documentId),
                 "application/vnd.progression.add-court-document+json",
                 body);

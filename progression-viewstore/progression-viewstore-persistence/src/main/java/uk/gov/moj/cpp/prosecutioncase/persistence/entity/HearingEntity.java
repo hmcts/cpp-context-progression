@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.prosecutioncase.persistence.entity;
 import uk.gov.justice.core.courts.HearingListingStatus;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +36,9 @@ public class HearingEntity implements Serializable {
     @Column(name="listing_status")
     @Enumerated(EnumType.STRING)
     private HearingListingStatus listingStatus;
+
+    @Column(name="confirmed_date")
+    private LocalDate confirmedDate;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "hearing", orphanRemoval = true)
     private Set<HearingResultLineEntity> resultLines = new HashSet<>();
@@ -82,5 +86,13 @@ public class HearingEntity implements Serializable {
 
     public void setResultLines(final Set<HearingResultLineEntity> resultLines) {
         this.resultLines = resultLines;
+    }
+
+    public LocalDate getConfirmedDate() {
+        return confirmedDate;
+    }
+
+    public void setConfirmedDate(final LocalDate confirmedDate) {
+        this.confirmedDate = confirmedDate;
     }
 }

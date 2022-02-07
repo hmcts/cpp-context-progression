@@ -88,6 +88,11 @@
             <artifactId>cpp-platform-data-utils-rest</artifactId>
             <version>${cpp.platform-libraries.version}</version>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.common.library.utils</groupId>
+            <artifactId>cpp-platform-data-utils-rest</artifactId>
+            <version>${cpp.platform-libraries.version}</version>
+        </dependency>
         <!-- Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>
@@ -164,6 +169,14 @@
                 <exclusion>
                     <groupId>uk.gov.moj.cpp.core.domain</groupId>
                     <artifactId>common-core-domain</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>

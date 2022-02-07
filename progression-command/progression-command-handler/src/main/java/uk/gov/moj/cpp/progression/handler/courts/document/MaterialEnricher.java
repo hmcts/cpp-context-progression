@@ -30,7 +30,8 @@ public class MaterialEnricher {
                 .withName(material.getName())
                 .withUserGroups(readUserGroups)
                 .withUploadDateTime(uploadDateTime)
-                .withReceivedDateTime(material.getReceivedDateTime()).build();
+                .withReceivedDateTime(material.getReceivedDateTime())
+                .withPrintedDateTime(material.getPrintedDateTime()).build();
     }
 
     private ZonedDateTime getUploadDateTime(final Material material) {
