@@ -42,7 +42,7 @@ public class LaaDefendantProceedingConcludedEventProcessor {
         final uk.gov.justice.progression.courts.exract.LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = uk.gov.justice.progression.courts.exract.LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged()
                 .withProsecutionConcludedRequest(proceedingConcludedConverter.getProsecutionConcludedRequest(defendantProceedingConcludedChanged.getDefendants(), defendantProceedingConcludedChanged.getProsecutionCaseId(), defendantProceedingConcludedChanged.getHearingId()))
                 .build();
-        final Integer statusCode = azureFunctionService.concludeDefendantProceeding(objectToJsonObjectConverter.convert(laaDefendantProceedingConcludedChanged).toString());
+        final Integer statusCode = azureFunctionService.concludeDefendantProceeding(objectToJsonObjectConverter.convert(laaDefendantProceedingConcludedChanged.getProsecutionConcludedRequest()).toString());
 
         LOGGER.info("Azure concludeDefendantProceeding function response with status code {}", statusCode);
     }
