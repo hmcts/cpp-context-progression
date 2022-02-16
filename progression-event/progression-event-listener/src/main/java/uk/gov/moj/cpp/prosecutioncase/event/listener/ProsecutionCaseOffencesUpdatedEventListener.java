@@ -208,6 +208,8 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                 .withArrestDate(updatedOffence.getArrestDate())
                 .withChargeDate(updatedOffence.getChargeDate())
                 .withEndDate(updatedOffence.getEndDate())
+                .withConvictingCourt(nonNull(updatedOffence.getConvictingCourt()) ? updatedOffence.getConvictingCourt() : null)
+                .withConvictionDate(nonNull(updatedOffence.getConvictionDate()) ? updatedOffence.getConvictionDate() : null)
                 .withOffenceTitle(updatedOffence.getOffenceTitle())
                 .withOffenceTitleWelsh(updatedOffence.getOffenceTitleWelsh())
                 .withWording(updatedOffence.getWording())

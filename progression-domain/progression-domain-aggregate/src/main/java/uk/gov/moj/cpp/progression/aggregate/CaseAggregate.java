@@ -542,6 +542,10 @@ public class CaseAggregate implements Aggregate {
         return defendantFinancialDocs;
     }
 
+    public Map<UUID, List<uk.gov.justice.core.courts.Offence>> getDefendantCaseOffences(){
+        return defendantCaseOffences;
+    }
+
     private void deleteFinancialData(final FinancialMeansDeleted financialMeansDeleted) {
         this.defendantFinancialDocs.remove(financialMeansDeleted.getDefendantId());
     }
@@ -1052,6 +1056,30 @@ public class CaseAggregate implements Aggregate {
         }
         return apply(streamBuilder.build());
 
+    }
+
+
+
+    public Stream<Object> updateOffences(final List<uk.gov.justice.core.courts.Offence> updatedOffences, final List<uk.gov.justice.core.courts.Offence> existingOffences,
+                                         final UUID prosecutionCaseId, final UUID defendantId, final Optional<List<JsonObject>> referenceDataOffences) {
+
+        LOGGER.info("Offences courtCentre is being updated for convicting court.");
+        final DefendantCaseOffences newDefendantCaseOffences = DefendantCaseOffences.defendantCaseOffences()
+                .withOffences(updatedOffences)
+                .withDefendantId(defendantId)
+                .withLegalAidStatus(defendantLegalAidStatus.get(defendantId))
+                .withProsecutionCaseId(prosecutionCaseId)
+                .build();
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()
+                .withDefendantCaseOffences(newDefendantCaseOffences).build());
+        if (this.defendantCaseOffences.containsKey(defendantId)) {
+            final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper
+                    .getOffencesForDefendantChanged(updatedOffences,existingOffences, prosecutionCaseId, defendantId, referenceDataOffences);
+            offencesForDefendantChanged.ifPresent(streamBuilder::add);
+        }
+        LOGGER.info("Offences courtCentre update being applied.");
+        return apply(streamBuilder.build());
     }
 
     public Stream<Object> updateCaseMarkers(final List<Marker> caseMarkers, final UUID prosecutionCaseId, final UUID hearingId) {

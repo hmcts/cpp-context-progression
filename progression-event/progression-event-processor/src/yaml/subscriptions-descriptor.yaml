@@ -525,6 +525,9 @@ subscriptions_descriptor:
         - name: public.events.listing.offences-removed-from-existing-allocated-hearing
           schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.offences-removed-from-existing-allocated-hearing.json
 
+        - name: public.sjp.events.conviction-court-resolved
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.events.conviction-court-resolved.json
+
         - name: public.events.listing.cases-added-for-updated-related-hearing
           schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.cases-added-for-updated-related-hearing.json
 

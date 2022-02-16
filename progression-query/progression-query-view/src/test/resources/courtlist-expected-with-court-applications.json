@@ -35,13 +35,13 @@
                       "firstName": "Robert12",
                       "surname": "Smith12",
                       "gender": "MALE",
-                      "age": 40,
+                      "age": 50,
                       "address": {
                         "address1": "1234",
                         "address2": "StreetDescription",
                         "address3": "Locality2O"
                       },
-                      "dateOfBirth": "29 Jan 1982",
+                      "dateOfBirth": "29 Jan 1972",
                       "nationality": "British",
                       "defenceCounsels": [
                         {
@@ -134,13 +134,13 @@
                       "firstName": "Robert12",
                       "surname": "Smith12",
                       "gender": "MALE",
-                      "age": 40,
+                      "age": 50,
                       "address": {
                         "address1": "1234",
                         "address2": "StreetDescription",
                         "address3": "Locality2O"
                       },
-                      "dateOfBirth": "29 Jan 1982",
+                      "dateOfBirth": "29 Jan 1972",
                       "nationality": "British",
                       "defenceCounsels": [
                         {

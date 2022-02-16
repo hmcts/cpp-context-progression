@@ -289,6 +289,52 @@ public class ReferenceDataService {
 
     }
 
+    public CourtCentre getCourtByCourtHouseOUCode(final String courtHouseOUCode, final JsonEnvelope envelope, final Requester requester) {
+        final CourtCentre.Builder courtCentreBuilder = CourtCentre.courtCentre();
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("oucode", courtHouseOUCode)
+                .build();
+        LOGGER.info(" Calling {} to get court centre for {} ", REFERENCEDATA_GET_COURTCENTER, courtHouseOUCode);
+        final JsonEnvelope response = requester.request(envelop(payload)
+                .withName(REFERENCEDATA_GET_COURTCENTER)
+                .withMetadataFrom(envelope));
+
+        final JsonEnvelope organisationUnitsResponse = requester.requestAsAdmin(response);
+
+        JsonObject jsonObject = organisationUnitsResponse.payloadAsJsonObject();
+
+        final Optional<JsonObject> courtOptional = jsonObject
+                .getJsonArray("organisationunits")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .filter(e->courtHouseOUCode.equals(e.getString("oucode")))
+                .findFirst();
+
+        populateCourtCenter( courtCentreBuilder, courtOptional);
+        return courtCentreBuilder.build();
+    }
+
+    private void populateCourtCenter(final CourtCentre.Builder courtCentreBuilder,
+                                     final Optional<JsonObject> courtOptional) {
+        if(courtOptional.isPresent()) {
+            final JsonObject court = courtOptional.get();
+            courtCentreBuilder
+                    .withId(extractUUID(court, ID))
+                    .withName(court.getString("oucodeL3Name", null))
+                    .withCode(court.getString(OUCODE, null));
+            if (court.getBoolean("isWelsh", false)) {
+                courtCentreBuilder
+                        .withWelshName(court.getString("oucodeL3WelshName", null))
+                        .withWelshCourtCentre(court.getBoolean("isWelsh", false));
+            }
+        }
+    }
+
+    public static UUID extractUUID(final JsonObject object, final String key) {
+        return object.containsKey(key) && !object.getString(key).isEmpty() ? fromString(object.getString(key, null)) : null;
+    }
+
     public Optional<JsonObject> getEthinicity(final JsonEnvelope event, final UUID id, final Requester requester) {
 
         LOGGER.info(" Calling {} to get ethinicity for {} ", REFERENCEDATA_QUERY_ETHNICITIES, id);

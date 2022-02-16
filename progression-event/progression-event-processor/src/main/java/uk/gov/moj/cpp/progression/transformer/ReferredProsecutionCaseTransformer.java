@@ -212,6 +212,7 @@ public class ReferredProsecutionCaseTransformer {
                 .withArrestDate(referredOffence.getArrestDate())
                 .withChargeDate(referredOffence.getChargeDate())
                 .withConvictionDate(referredOffence.getConvictionDate())
+                .withConvictingCourt(referredOffence.getConvictingCourt())
                 .withCount(nonNull(referredOffence.getCount()) ? referredOffence.getCount() : 0)
                 .withEndDate(referredOffence.getEndDate())
                 .withOffenceDefinitionId(referredOffence.getOffenceDefinitionId())

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/add-convicting-court.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "addConvictingInformation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "convictionDate": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+          },
+          "convictingCourt": {
+            "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
+          },
+          "offenceId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          }
+        },
+        "required": [
+          "convictionDate",
+          "convictingCourt",
+          "offenceId"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "caseId",
+    "addConvictingInformation"
+  ],
+  "additionalProperties": false
+}
