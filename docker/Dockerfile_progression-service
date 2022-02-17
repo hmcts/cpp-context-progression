@@ -29,4 +29,4 @@ RUN chmod -R 755 /tmp/liquibase
 COPY scripts/liquibase.sh /tmp/liquibase/liquibase.sh
 RUN chown ${wildfly_user}:${wildfly_user} /tmp/liquibase/liquibase.sh && chmod 755 /tmp/liquibase/liquibase.sh
 USER ${wildfly_user}
-LABEL base_build_tag {base_tag}
+LABEL base_image {base_image}
