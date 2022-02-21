@@ -1,0 +1,135 @@
+{
+  "prosecutionCaseId" : "f6a3bd7a-4d8f-4f5f-90f0-4be8c38d6e19",
+  "hearingIds" : ["f9c09d58-13fe-4ec3-8bb3-283cc5b96913"],
+  "matchedDefendants": [
+    {
+      "defendantId": "7e2f843e-d639-40b3-8611-8015f3a18958",
+      "prosecutionCaseId": "1e2f843e-d639-40b3-8611-8015f3a18952",
+      "masterDefendantId": "ba3ae264-1812-4066-aaa3-17164edbcf30",
+      "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z"
+    },
+    {
+      "defendantId": "0baecac5-222b-402d-9047-84803679edae",
+      "prosecutionCaseId": "642826a3-5ab3-40c9-b369-7b330f47c1a7",
+      "masterDefendantId": "daea9def-3949-4062-8827-b2464cf841a2",
+      "courtProceedingsInitiated": "2020-02-12T05:27:17.210Z"
+    }
+  ],
+  "defendant": {
+    "id": "cf73207f-3ced-488a-82a0-3fba79c2ce01",
+    "masterDefendantId": "cf73207f-3ced-488a-82a0-3fba79c2ce01",
+    "prosecutionCaseId": "cf73207f-3ced-488a-82a0-3fba79c2ce02",
+    "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
+    "numberOfPreviousConvictionsCited": 5,
+    "prosecutionAuthorityReference": "TFL12345-ABC",
+    "associatedPersons": [
+      {
+        "person": {
+          "title": "DR",
+          "firstName": "Harry",
+          "middleName": "Jack",
+          "lastName": "Kane",
+          "dateOfBirth": "1995-01-01",
+          "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+          "nationalityCode": "GBR",
+          "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+          "additionalNationalityCode": "USA",
+          "disabilityStatus": "a",
+          "ethnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+          "ethnicityCode": "IC1",
+          "gender": "MALE",
+          "interpreterLanguageNeeds": "Welsh",
+          "documentationLanguageNeeds": "WELSH",
+          "nationalInsuranceNumber": "NH222222B",
+          "occupation": "Footballer",
+          "occupationCode": "F",
+          "address": {
+            "address1": "22",
+            "address2": "Acacia Avenue",
+            "address3": "Acacia Town",
+            "address4": "Acacia City",
+            "address5": "Acacia Country",
+            "postcode": "GIR 0AA"
+          },
+          "contact": {
+            "home": "123456",
+            "work": "7891011",
+            "mobile": "45678910",
+            "primaryEmail": "harry.kane@spurs.co.uk",
+            "secondaryEmail": "harry.kane@hotmail.com",
+            "fax": "3425678"
+          }
+        },
+        "role": "parent"
+      }
+    ],
+    "personDefendant": {
+      "personDetails": {
+        "title": "DR",
+        "firstName": "Harry",
+        "middleName": "Jack",
+        "lastName": "Kane Junior",
+        "dateOfBirth": "2010-01-01",
+        "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+        "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+        "additionalNationalityCode": "USA",
+        "disabilityStatus": "a",
+        "ethnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+        "gender": "MALE",
+        "interpreterLanguageNeeds": "Welsh",
+        "documentationLanguageNeeds": "WELSH",
+        "nationalInsuranceNumber": "NH323232B",
+        "occupation": "Kid",
+        "occupationCode": "F",
+        "specificRequirements": "Screen",
+        "address": {
+          "address1": "22",
+          "address2": "Acacia Avenue",
+          "address3": "Acacia Town",
+          "address4": "Acacia City",
+          "address5": "Acacia Country",
+          "postcode": "GIR 0AA"
+        },
+        "contact": {
+          "home": "123456",
+          "work": "7891011",
+          "mobile": "45678910",
+          "primaryEmail": "harry.kanejunior@spurs.co.uk",
+          "secondaryEmail": "harry.kanejunior@hotmail.com",
+          "fax": "3425678"
+        }
+      },
+      "bailStatus": "IN_CUSTODY",
+      "custodyTimeLimit": "2018-01-01",
+      "perceivedBirthYear": 2015,
+      "observedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+      "selfDefinedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+      "driverNumber": "AACC12345",
+      "pncId": "1234567",
+      "arrestSummonsNumber": "arrest123",
+      "aliases": [
+        "johnny robber",
+        "jack the knife"
+      ],
+      "employerOrganisation": {
+        "name": "Disneyland Paris",
+        "incorporationNumber": "Mickeymouse1",
+        "address": {
+          "address1": "Disney Road",
+          "address2": "Disney Town",
+          "address3": "Disney District",
+          "address4": "Paris",
+          "address5": "France",
+          "postcode": "CR7 0AA"
+        },
+        "contact": {
+          "work": "0207 654 3246 extn 1234",
+          "primaryEmail": "person@hotmail.com",
+          "secondaryEmail": "associate@hotmail.com",
+          "fax": "a"
+        }
+      },
+      "employerPayrollReference": "payyou1234"
+    }
+  }
+}

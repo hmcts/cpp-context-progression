@@ -732,7 +732,11 @@ public class HearingAggregate implements Aggregate {
         return list -> list.isEmpty() ? null : list;
     }
 
-    public Stream<Object> updateDefendant(final UUID hearingId, final DefendantUpdate defendantUpdate) {
+    public Stream<Object> updateDefendant(final UUID hearingId, final DefendantUpdate defendantUpdate, final Boolean updateOnlyNonResulted) {
+        if(ofNullable(updateOnlyNonResulted).orElse(false) && HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus)){
+            return Stream.empty();
+        }
+
         return apply(Stream.of(HearingDefendantUpdated.hearingDefendantUpdated()
                 .withDefendant(defendantUpdate)
                 .withHearingId(hearingId)

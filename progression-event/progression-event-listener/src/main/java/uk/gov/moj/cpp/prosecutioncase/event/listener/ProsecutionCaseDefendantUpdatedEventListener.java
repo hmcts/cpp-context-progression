@@ -383,6 +383,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 .withPncId(defendant.getPncId())
                 .withAliases(defendant.getAliases())
                 .withIsYouth(defendant.getIsYouth())
+                .withMasterDefendantId(nonNull(defendant.getMasterDefendantId()) ? defendant.getMasterDefendantId() : originDefendant.getMasterDefendantId())
                 .build();
 
     }

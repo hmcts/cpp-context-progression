@@ -18,6 +18,7 @@ import uk.gov.moj.cpp.progression.events.DefendantUnmatched;
 import uk.gov.moj.cpp.progression.events.DefendantUnmatchedV2;
 import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdated;
+import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdatedIntoHearings;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdatedV2;
 import uk.gov.moj.cpp.progression.events.MatchedDefendants;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -120,6 +121,17 @@ public class DefendantMatchingEventProcessor {
         }
     }
 
+    @Handles("progression.event.master-defendant-id-updated-into-hearings")
+    public void handleMasterDefendantIdUpdatedEventForHearing(final JsonEnvelope envelope) {
+        final MasterDefendantIdUpdatedIntoHearings masterDefendantIdUpdated = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), MasterDefendantIdUpdatedIntoHearings.class);
+        final MatchedDefendants masterDefendant = getMasterDefendant(masterDefendantIdUpdated.getMatchedDefendants());
+
+        if (Objects.nonNull(masterDefendant)) {
+            masterDefendantIdUpdated.getHearingIds().forEach(hearingId ->
+                    updateHearing(envelope, masterDefendant.getMasterDefendantId(), masterDefendantIdUpdated.getDefendant(), hearingId));
+        }
+    }
+
     @Handles("progression.event.defendants-master-defendant-id-updated")
     public void handleDefendantsMasterDefendantIdUpdatedEvent(final JsonEnvelope envelope) {
         final DefendantsMasterDefendantIdUpdated masterDefendantIdUpdated = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantsMasterDefendantIdUpdated.class);
@@ -172,6 +184,18 @@ public class DefendantMatchingEventProcessor {
 
         sender.send(Enveloper.envelop(publicEventPayload)
                 .withName("public.progression.case-defendant-changed")
+                .withMetadataFrom(envelope));
+    }
+
+    private void updateHearing(final JsonEnvelope envelope, final UUID masterDefendantId, final Defendant defendant, final UUID hearingId) {
+        final JsonObject publicEventPayload = createObjectBuilder()
+                .add("hearingId", hearingId.toString())
+                .add("defendant", objectToJsonObjectConverter.convert(updateDefendant(defendant, masterDefendantId)))
+                .add("updateOnlyNonResulted", true)
+                .build();
+
+        sender.send(Enveloper.envelop(publicEventPayload)
+                .withName("progression.command.update-defendant-for-hearing")
                 .withMetadataFrom(envelope));
     }
 

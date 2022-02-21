@@ -17,6 +17,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
 import com.google.common.collect.Lists;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,9 +30,11 @@ import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDefendantUpdated;
 import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequested;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2;
@@ -335,6 +338,56 @@ public class UpdateDefendantHandlerTest {
 
                 )
         );
+    }
+
+    @Test
+    public void shouldHNotUpdateDefendantForResultedHearing() throws EventStreamException {
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final DefendantUpdate defendant =
+                DefendantUpdate.defendantUpdate().withPersonDefendant(PersonDefendant.personDefendant().build())
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .withId(defendantId)
+                        .withMasterDefendantId(masterDefendantId)
+                        .build();
+
+        final UpdateDefendantForHearing updateDefendant = UpdateDefendantForHearing.updateDefendantForHearing()
+                .withDefendant(defendant)
+                .withHearingId(hearingId)
+                .withUpdateOnlyNonResulted(true)
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-defendant-for-hearing")
+                .withId(randomUUID())
+                .build();
+
+        final Hearing hearing = Hearing.hearing()
+                .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                        .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withMasterDefendantId(masterDefendantId)
+                                .build())))
+                        .build()))
+                .build();
+        hearingAggregate.apply(HearingResulted.hearingResulted()
+                .withHearing(hearing)
+                .build());
+
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
+                .withHearing(hearing)
+                .withHearingListingStatus(HearingListingStatus.HEARING_RESULTED)
+                .build());
+
+        final Envelope<UpdateDefendantForHearing> envelope = envelopeFrom(metadata, updateDefendant);
+        updateDefendantHandler.handleUpdateDefendantForHearing(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream.collect(Collectors.toList()).isEmpty(), is(true));
     }
 
     @Test

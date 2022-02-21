@@ -76,7 +76,7 @@ public class UpdateDefendantHandler {
 
         final EventStream eventStream = eventSource.getStreamById(hearingId);
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
-        final Stream<Object> events = hearingAggregate.updateDefendant(hearingId, defendantUpdate);
+        final Stream<Object> events = hearingAggregate.updateDefendant(hearingId, defendantUpdate, defendantDetailsToUpdate.getUpdateOnlyNonResulted());
         appendEventsToStream(updateDefendantEnvelope, eventStream, events);
     }
 

@@ -20,6 +20,7 @@ import static uk.gov.moj.cpp.progression.applications.applicationHelper.Applicat
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.matchDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithDefendantAsAdult;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
@@ -37,7 +38,6 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import com.jayway.restassured.path.json.JsonPath;
 import java.util.HashMap;
 import java.util.List;
-import javax.json.Json;
 import org.hamcrest.CoreMatchers;
 
 import com.google.common.io.Resources;
@@ -45,7 +45,6 @@ import java.nio.charset.Charset;
 import java.util.UUID;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -151,6 +150,43 @@ public class HearingUpdatedIT extends AbstractIT {
                 withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", updatedHearingIdFilter))
         });
         verifyInMessagingQueue(messageConsumerClientPublicForHearingDetailChanged);
+    }
+
+    @Test
+    public void shouldUpdateHearingWhenDefendantMatched() throws Exception {
+        final String prosecutionCaseId_1 = randomUUID().toString();
+        final String defendantId_1 = randomUUID().toString();
+        final String masterDefendantId_1 = randomUUID().toString();
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        pollProsecutionCasesProgressionFor(caseId, new Matcher[]{
+                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath("$.prosecutionCase.defendants[0].id", equalTo(defendantId)),
+                withJsonPath("$.prosecutionCase.defendants[0].masterDefendantId", equalTo(defendantId))
+        });
+        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+                withJsonPath("$.hearing.id", Matchers.is(hearingId)),
+                withJsonPath("$.hearing.prosecutionCases[0].id", Matchers.is(caseId)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].id", Matchers.is(defendantId)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].masterDefendantId", Matchers.is(defendantId))
+        );
+
+        matchDefendant(caseId, defendantId, prosecutionCaseId_1, defendantId_1 , masterDefendantId_1);
+
+        pollProsecutionCasesProgressionFor(caseId, new Matcher[]{
+                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath("$.prosecutionCase.defendants[0].id", equalTo(defendantId)),
+                withJsonPath("$.prosecutionCase.defendants[0].masterDefendantId", equalTo(masterDefendantId_1))
+        });
+        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+                withJsonPath("$.hearing.id", Matchers.is(hearingId)),
+                withJsonPath("$.hearing.prosecutionCases[0].id", Matchers.is(caseId)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].id", Matchers.is(defendantId)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].masterDefendantId", Matchers.is(masterDefendantId_1))
+        );
     }
 
     @Test

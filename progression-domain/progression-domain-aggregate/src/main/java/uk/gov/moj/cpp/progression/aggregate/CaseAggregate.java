@@ -163,6 +163,7 @@ import uk.gov.moj.cpp.progression.events.DefendantUnmatchedV2;
 import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.LinkCases;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdated;
+import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdatedIntoHearings;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdatedV2;
 import uk.gov.moj.cpp.progression.events.MatchedDefendants;
 import uk.gov.moj.cpp.progression.events.MergeCases;
@@ -1674,6 +1675,12 @@ public class CaseAggregate implements Aggregate {
                         .withHearingId(latestHearingId)
                         .withMatchedDefendants(transform(matchDefendant.getMatchedDefendants()))
                         .withDefendant(defendantsMap.get(defendantId))
+                        .build());
+                streamBuilder.add(MasterDefendantIdUpdatedIntoHearings.masterDefendantIdUpdatedIntoHearings()
+                        .withDefendant(defendantsMap.get(defendantId))
+                        .withMatchedDefendants(transform(matchDefendant.getMatchedDefendants()))
+                        .withHearingIds(this.hearingIds.stream().collect(toList()))
+                        .withProsecutionCaseId(matchDefendant.getProsecutionCaseId())
                         .build());
             } else {
                 streamBuilder.add(MasterDefendantIdUpdated.masterDefendantIdUpdated()
