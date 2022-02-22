@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.Hearing.hearing;
 import static uk.gov.justice.core.courts.JudicialResult.judicialResult;
 import static uk.gov.justice.core.courts.LaaReference.laaReference;
+import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -137,6 +138,15 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         final UUID reportingRestrictionId1 = randomUUID();
         final UUID reportingRestrictionId2 = randomUUID();
         final String reportingRestrictionLabel = "RRLabel";
+        final UUID courtCentreId1 = randomUUID();
+        final String courtHearingLocation1 = "CourtHearingLocation1";
+        final String courtLocationCode1 = "CourtLocationCode1";
+        final String courtCentreName1 = "CourtCentreName1";
+        final UUID courtCentreId2 = randomUUID();
+        final String courtHearingLocation2 = "CourtHearingLocation2";
+        final String courtLocationCode2 = "CourtLocationCode2";
+        final String courtCentreName2 = "CourtCentreName2";
+
 
         final DefendantCaseOffences defendantCaseOffences = DefendantCaseOffences.defendantCaseOffences()
                 .withDefendantId(randomUUID())
@@ -144,6 +154,12 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
                 .withLegalAidStatus("Withdrawn")
                 .withOffences(Stream.of(offence()
                         .withId(offenceId)
+                        .withConvictingCourt(courtCentre()
+                                .withId(courtCentreId1)
+                                .withCourtHearingLocation(courtHearingLocation1)
+                                .withCourtLocationCode(courtLocationCode1)
+                                .withName(courtCentreName1)
+                                .build())
                         .withLaaApplnReference(laaReference()
                                 .withStatusCode("WD")
                                 .withLaaContractNumber("LAA1234")
@@ -161,13 +177,19 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
                         .withId(defendantCaseOffences.getDefendantId())
                         .withOffences(Stream.of(offence()
                                 .withId(offenceId)
+                                .withConvictingCourt(courtCentre()
+                                        .withId(courtCentreId2)
+                                        .withCourtHearingLocation(courtHearingLocation2)
+                                        .withCourtLocationCode(courtLocationCode2)
+                                        .withName(courtCentreName2)
+                                        .build())
                                 .withLaaApplnReference(laaReference()
                                         .withStatusCode("wd")
                                         .withLaaContractNumber("LAA1234")
                                         .withStatusDate(now())
                                         .build())
                                 .withReportingRestrictions(Stream.of(prepareReportingRestriction(reportingRestrictionId1, reportingRestrictionLabel),
-                                        prepareReportingRestriction(reportingRestrictionId2, reportingRestrictionLabel))
+                                                prepareReportingRestriction(reportingRestrictionId2, reportingRestrictionLabel))
                                         .collect(toList()))
                                 .withJudicialResults(Stream.of(judicialResult()
                                         .withJudicialResultId(randomUUID())
@@ -191,19 +213,19 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         final JsonObject jsonObject = createObjectBuilder()
                 .add("payload", createObjectBuilder()
                         .add("defendants", createArrayBuilder().add(createObjectBuilder()
-                                .add("id", defendantCaseOffences.getDefendantId().toString())
-                                .add("defendantLevelLegalAidStatus", "Withdrawn")
-                                .add("proceedingConcluded", true)
-                                .build())
+                                        .add("id", defendantCaseOffences.getDefendantId().toString())
+                                        .add("defendantLevelLegalAidStatus", "Withdrawn")
+                                        .add("proceedingConcluded", true)
+                                        .build())
                                 .build())
                         .build()).build();
         final JsonObject hearingJsonObject = createObjectBuilder()
                 .add("payload", createObjectBuilder()
                         .add("prosecutionCases", createArrayBuilder().add(createObjectBuilder()
-                                .add("id", defendantCaseOffences.getProsecutionCaseId().toString())
-                                .add("defendants", createArrayBuilder().add(createObjectBuilder()
-                                        .add("id", defendantCaseOffences.getDefendantId().toString()).build()))
-                                .build())
+                                        .add("id", defendantCaseOffences.getProsecutionCaseId().toString())
+                                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
+                                                .add("id", defendantCaseOffences.getDefendantId().toString()).build()))
+                                        .build())
                                 .build()).build()).build();
 
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class))
@@ -235,6 +257,13 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         assertThat(reportingRestrictionJsonNode.path("id").asText(), is(reportingRestrictionId1.toString()));
         assertThat(reportingRestrictionJsonNode.path("label").asText(), is(reportingRestrictionLabel));
         assertThat(reportingRestrictionJsonNode.path("orderedDate").asText(), is(now().toString()));
+
+        final JsonNode courtCentreListJsonNode = prosecutionCaseNode.path("defendants").get(0).path("offences").get(0).path("convictingCourt");
+        assertThat(courtCentreListJsonNode.path("id").asText(), is(courtCentreId1.toString()));
+        assertThat(courtCentreListJsonNode.path("courtLocationCode").asText(), is(courtLocationCode1));
+        assertThat(courtCentreListJsonNode.path("courtHearingLocation").asText(), is(courtHearingLocation1));
+        assertThat(courtCentreListJsonNode.path("courtLocationCode").asText(), is(courtLocationCode1));
+        assertThat(courtCentreListJsonNode.path("name").asText(), is(courtCentreName1));
     }
 
     @Test
