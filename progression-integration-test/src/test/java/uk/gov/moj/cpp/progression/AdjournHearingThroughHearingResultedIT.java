@@ -51,6 +51,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
@@ -213,6 +214,7 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
     }
 
     @Test
+    @Ignore
     public void shouldCallListingToNewHearingWithCourtOrder() throws Exception {
         enableAmendReshareFeature(false);
 
