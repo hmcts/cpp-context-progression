@@ -1,0 +1,37 @@
+{
+  "caseDefendantOrganisation": {
+    "caseId": "fcb1edc9-786a-462d-9400-318c95c7b700",
+    "urn": "ABCD09T56",
+    "defendants": [
+      {
+        "defendantId": "8a33d852-4f12-4146-8f1a-33ee38c80cff",
+        "defendantFirstName": "Gilbert",
+        "defendantLastName": "Ormsby",
+        "organisationName": "Harry & Co LLP",
+        "associatedOrganisation": "fcb1edc9-786a-462d-9400-318c95c7b700",
+        "organisationAddress": {
+          "address1": "Legal House",
+          "address2": "15 Sewell Street",
+          "address3": "Hammersmith",
+          "address4": "London",
+          "addressPostcode": "SE14 2AB"
+        }
+      },
+      {
+        "defendantId": "fcb1edc9-786a-462d-9400-318c95c7b700",
+        "defendantFirstName": "Robert",
+        "defendantLastName": "Ormsby",
+        "organisationName": "Bankrupt Capital",
+        "associatedOrganisation": "fcb1edc9-786a-462d-9400-318c95c7b700",
+        "organisationAddress": {
+          "address1": "b",
+          "address2": "b",
+          "address3": "b",
+          "address4": "b",
+          "address5": "b",
+          "postcode": "GIR1AB"
+        }
+      }
+    ]
+  }
+}

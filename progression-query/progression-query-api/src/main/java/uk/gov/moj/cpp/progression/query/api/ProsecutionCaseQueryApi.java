@@ -9,7 +9,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.api.service.CourtOrderService;
 import uk.gov.moj.cpp.progression.query.api.service.OrganisationService;
 
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -21,6 +21,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.addProperty;
 
@@ -35,6 +36,11 @@ public class ProsecutionCaseQueryApi {
     private static final String DEFENDANTS = "defendants";
     private static final String COURT_ORDERS = "courtOrders";
     private static final String MASTER_DEFENDANT_ID = "masterDefendantId";
+    private static final String ID = "id";
+    private static final String DEFENDANT_ID = "defendantId";
+    private static final String ORGANISATION_ADDRESS = "organisationAddress";
+    private static final String CASE_ID = "caseId";
+    private static final String REPRESENTATION = "representation";
 
     @Inject
     private Requester requester;
@@ -52,7 +58,7 @@ public class ProsecutionCaseQueryApi {
         final JsonObject queryViewPayload = appQueryResponse.payloadAsJsonObject();
         final JsonObject prosecutionCase = appQueryResponse.payloadAsJsonObject().getJsonObject("prosecutionCase");
 
-        if (Objects.nonNull(prosecutionCase)) {
+        if (nonNull(prosecutionCase)) {
             final JsonArray defendants = prosecutionCase.getJsonArray(DEFENDANTS);
             final JsonArrayBuilder activeCourtOrdersArrayBuilder = Json.createArrayBuilder();
 
@@ -62,9 +68,9 @@ public class ProsecutionCaseQueryApi {
 
             uniqueMasterDefendantIds.forEach(masterDefendantId -> {
                 final JsonObject courtOrders = courtOrderService.getCourtOrdersByDefendant(query, masterDefendantId, requester);
-                if (Objects.nonNull(courtOrders) && courtOrders.containsKey(COURT_ORDERS)) {
-                    final JsonArray activeCourtOrders= courtOrders.getJsonArray(COURT_ORDERS);
-                    if(!activeCourtOrders.isEmpty()) {
+                if (nonNull(courtOrders) && courtOrders.containsKey(COURT_ORDERS)) {
+                    final JsonArray activeCourtOrders = courtOrders.getJsonArray(COURT_ORDERS);
+                    if (!activeCourtOrders.isEmpty()) {
                         final JsonObjectBuilder objectBuilder = Json.createObjectBuilder()
                                 .add(MASTER_DEFENDANT_ID, masterDefendantId.toString())
                                 .add(COURT_ORDERS, activeCourtOrders);
@@ -87,17 +93,21 @@ public class ProsecutionCaseQueryApi {
         final JsonObject payload = appQueryResponse.payloadAsJsonObject();
         final JsonArray defendants = payload.getJsonArray(DEFENDANTS);
         final JsonArrayBuilder caagDefendantsBuilder = Json.createArrayBuilder();
-        if (Objects.nonNull(defendants)) {
-            defendants.forEach(defendantJson -> {
-                final JsonObject caagDefendant = (JsonObject) defendantJson;
-                final JsonObject associatedOrganisation = organisationService.getAssociatedOrganisation(query, caagDefendant.getString("id"), requester);
-                if (associatedOrganisation.containsKey("organisationId")) {
-                    final JsonObject representation = createOrganisation(associatedOrganisation);
-                    caagDefendantsBuilder.add(addProperty(caagDefendant, "representation", representation));
-                } else {
-                    caagDefendantsBuilder.add(caagDefendant);
-                }
-            });
+        if (nonNull(defendants)) {
+            final JsonObject associatedCaseDefendants = organisationService.getAssociatedCaseDefendantsWithOrganisationAddress(query, payload.getString(CASE_ID), requester);
+            final JsonArray associatedDefendants = associatedCaseDefendants.getJsonArray(DEFENDANTS);
+            defendants.stream().map(x -> (JsonObject) x)
+                    .forEach(caagDefendant -> {
+                        final Optional<JsonObject> matchingCaseDefendant = associatedDefendants.stream().map(x -> (JsonObject) x)
+                                .filter(cd -> caagDefendant.getString(ID).equals(cd.getString(DEFENDANT_ID))).findFirst();
+
+                        if (matchingCaseDefendant.isPresent() && nonNull(matchingCaseDefendant.get().getJsonObject(ORGANISATION_ADDRESS))) {
+                            final JsonObject representation = createOrganisation(matchingCaseDefendant.get());
+                            caagDefendantsBuilder.add(addProperty(caagDefendant, REPRESENTATION, representation));
+                        } else {
+                            caagDefendantsBuilder.add(caagDefendant);
+                        }
+                    });
             final JsonObject resultPayload = addProperty(payload, DEFENDANTS, caagDefendantsBuilder.build());
             return envelopeFrom(query.metadata(), resultPayload);
         }
@@ -110,7 +120,7 @@ public class ProsecutionCaseQueryApi {
     }
 
     @Handles("progression.query.casehearings")
-    public JsonEnvelope getCaseHearings(final JsonEnvelope query){
+    public JsonEnvelope getCaseHearings(final JsonEnvelope query) {
         return requester.request(query);
     }
 
@@ -145,13 +155,13 @@ public class ProsecutionCaseQueryApi {
     }
 
     @Handles("progression.query.case.hearingtypes")
-    public JsonEnvelope getCaseHearingTypes(final JsonEnvelope query){
+    public JsonEnvelope getCaseHearingTypes(final JsonEnvelope query) {
         return requester.request(query);
     }
 
     private JsonObject createOrganisation(final JsonObject completeOrganisationDetails) {
 
-        final JsonObject address = completeOrganisationDetails.getJsonObject("address");
+        final JsonObject address = completeOrganisationDetails.getJsonObject(ORGANISATION_ADDRESS);
         return Json.createObjectBuilder().add(ORGANISATION_NAME, completeOrganisationDetails.getString("organisationName"))
                 .add("address", Json.createObjectBuilder()
                         .add(ADDRESS_LINE_1, address.getString("address1"))

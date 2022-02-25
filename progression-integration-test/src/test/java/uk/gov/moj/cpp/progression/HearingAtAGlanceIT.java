@@ -16,7 +16,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
-import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
+import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
 import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -233,7 +233,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
     public void shouldSetDefendantLevelJudiciaryResultsAndQuery() throws Exception {
         enableAmendReshareFeature(false);
 
-        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
+        stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -256,8 +256,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
     @Test
     public void shouldSetDefendantLevelJudiciaryResultsAndQueryV2() throws Exception {
         enableAmendReshareFeature(true);
-
-        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
+        stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
