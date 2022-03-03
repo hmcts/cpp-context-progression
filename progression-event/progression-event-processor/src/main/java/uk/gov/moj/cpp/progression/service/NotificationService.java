@@ -59,7 +59,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by satishkumar on 12/11/2018.
  */
-@SuppressWarnings({"WeakerAccess", "squid:CommentedOutCodeLine", "squid:UnusedPrivateMethod", "squid:S1172"})
+@SuppressWarnings({"WeakerAccess", "squid:CommentedOutCodeLine", "squid:UnusedPrivateMethod", "squid:S1172","squid:CallToDeprecatedMethod"})
 public class NotificationService {
 
     public static final String CASE_ID = "caseId";
@@ -467,7 +467,9 @@ public class NotificationService {
                         courtApplication.getId(),
                         courtApplication.getApplicationReference(),
                         courtApplication.getType().getType(),
+                        courtApplication.getType().getTypeWelsh(),
                         courtApplication.getType().getLegislation(),
+                        courtApplication.getType().getLegislationWelsh(),
                         courtCentre,
                         courtApplicationParty,
                         null, // GPE-15039 Commented temporarily

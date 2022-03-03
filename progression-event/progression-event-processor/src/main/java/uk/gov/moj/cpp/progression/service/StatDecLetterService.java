@@ -41,6 +41,8 @@ public class StatDecLetterService {
 
     private static final String NAME = "name";
 
+    private static final String WELSH_NAME = "welshName";
+
     private static final String LJA = "lja";
 
     private static final String EMPTY = "";
@@ -96,7 +98,7 @@ public class StatDecLetterService {
         }
 
         final StatDacAppointmentLetterPayload statDacAppointmentLetterPayload = getStatDecAppointmentLetterPayload(hearingStartDateTime,courtApplication.getApplicationReference(),courtCentre,
-                courtCentreJson, localJusticeArea,courtApplicationParty,jurisdictionType, documentTemplateName);
+                 courtCentreJson, localJusticeArea,courtApplicationParty,jurisdictionType, documentTemplateName);
         final JsonObject documentPayload = objectToJsonObjectConverter.convert(statDacAppointmentLetterPayload);
 
         return  documentGeneratorService.generateDocument(envelope, documentPayload, documentTemplateName, sender, null, courtApplication.getId());
@@ -125,7 +127,9 @@ public class StatDecLetterService {
             builder.withOrderingCourt(OrderingCourt.builder()
                     .withLjaCode(ofNullable(localJusticeArea).map(area -> area.getString(NATIONAL_COURT_CODE, EMPTY)).orElse(EMPTY))
                     .withLjaName(ofNullable(localJusticeArea).map(area -> area.getString(NAME, EMPTY)).orElse(EMPTY))
+                    .withWelshLjaName(ofNullable(localJusticeArea).map(area -> area.getString(WELSH_NAME, EMPTY)).orElse(EMPTY))
                     .withCourtCenterName(ofNullable(courtCentre).map(CourtCentre::getName).orElse(EMPTY))
+                    .withWelshCourtCenterName(courtCentreJson.getString("oucodeL3WelshName", EMPTY))
                     .build());
         }
         if(STAT_DEC_COURT_HEARING.equalsIgnoreCase(documentTemplateName)) {

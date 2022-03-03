@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.domain;
 public class PostalHearingCourtDetails {
 
     private String courtName;
+    private String courtNameWelsh;
 
     private String hearingDate;
 
@@ -10,8 +11,9 @@ public class PostalHearingCourtDetails {
 
     private PostalAddress courtAddress;
 
-    public PostalHearingCourtDetails(final String courtName, final String hearingDate, final String hearingTime, final PostalAddress courtAddress) {
+    public PostalHearingCourtDetails(final String courtName, final String courtNameWelsh, final String hearingDate, final String hearingTime, final PostalAddress courtAddress) {
         this.courtName = courtName;
+        this.courtNameWelsh = courtNameWelsh;
         this.hearingDate = hearingDate;
         this.hearingTime = hearingTime;
         this.courtAddress = courtAddress;
@@ -19,6 +21,10 @@ public class PostalHearingCourtDetails {
 
     public String getCourtName() {
         return courtName;
+    }
+
+    public String getCourtNameWelsh() {
+        return courtNameWelsh;
     }
 
     public String getHearingDate() {
@@ -37,6 +43,7 @@ public class PostalHearingCourtDetails {
     public String toString() {
         return "PostalHearingCourtDetails{" +
                 "courtName='" + courtName + '\'' +
+                ", courtNameWelsh=" + courtNameWelsh +
                 ", hearingDate=" + hearingDate +
                 ", hearingTime=" + hearingTime +
                 ", courtAddress=" + courtAddress +
@@ -51,6 +58,8 @@ public class PostalHearingCourtDetails {
 
         private String courtName;
 
+        private String courtNameWelsh;
+
         private String hearingDate;
 
         private String hearingTime;
@@ -59,6 +68,11 @@ public class PostalHearingCourtDetails {
 
         public Builder withCourtName(final String courtName) {
             this.courtName = courtName;
+            return this;
+        }
+
+        public Builder withCourtNameWelsh(final String courtNameWelsh) {
+            this.courtNameWelsh = courtNameWelsh;
             return this;
         }
 
@@ -78,7 +92,7 @@ public class PostalHearingCourtDetails {
         }
 
         public PostalHearingCourtDetails build() {
-            return new PostalHearingCourtDetails(courtName, hearingDate, hearingTime, courtAddress);
+            return new PostalHearingCourtDetails(courtName, courtNameWelsh, hearingDate, hearingTime, courtAddress);
         }
 
     }

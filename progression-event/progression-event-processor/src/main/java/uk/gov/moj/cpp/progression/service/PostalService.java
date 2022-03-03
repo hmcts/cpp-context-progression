@@ -43,6 +43,7 @@ import javax.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("squid:CallToDeprecatedMethod")
 public class PostalService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostalService.class.getName());
@@ -53,11 +54,15 @@ public class PostalService {
 
     private static final String POSTAL_NOTIFICATION = "PostalNotification";
 
+    private static final String POSTAL_NOTIFICATION_BILINGUAL = "PostalNotificationBilingual";
+
     private static final String LOCAL_JUSTICE_AREA = "localJusticeArea";
 
     private static final String NATIONAL_COURT_CODE = "nationalCourtCode";
 
     private static final String NAME = "name";
+
+    private static final String NAME_WELSH = "welshName";
 
     private static final String LJA = "lja";
 
@@ -90,7 +95,9 @@ public class PostalService {
                                                 final UUID applicationId,
                                                 final String applicationReference,
                                                 final String applicationType,
+                                                final String applicationTypeWelsh,
                                                 final String legislation,
+                                                final String legislationWelsh,
                                                 final CourtCentre courtCentre,
                                                 final CourtApplicationParty courtApplicationParty,
                                                 final UUID linkedCaseId,
@@ -111,27 +118,46 @@ public class PostalService {
             localJusticeArea = ljaDetails.getJsonObject(LOCAL_JUSTICE_AREA);
         }
 
+        boolean isWelsh = false;
+        String courtCentreNameWelsh = null;
+        if(nonNull(courtCentre)){
+            final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getCourtRoomById(courtCentre.getId(), envelope, requester);
+            if (nonNull(courtCentreJsonOptional)) {
+                final JsonObject courtCentreJson = courtCentreJsonOptional.orElseThrow(() -> new IllegalArgumentException(String.format("Court centre '%s' not found", courtCentre.getId())));
+                isWelsh = courtCentreJson.getBoolean("isWelsh", false);
+                courtCentreNameWelsh = courtCentreJson.getString("oucodeL3WelshName", "");
+            }
+        }
+
         final PostalNotification postalNotification = buildPostalNotification(hearingDate,
                 hearingTime,
                 applicationReference,
                 applicationType,
+                applicationTypeWelsh,
                 legislation,
+                legislationWelsh,
                 courtCentre,
+                courtCentreNameWelsh,
                 localJusticeArea,
                 courtApplicationParty,
                 jurisdictionType);
-
-        sendPostalNotification(sender, envelope, applicationId, postalNotification, linkedCaseId);
+        sendPostalNotification(sender, envelope, applicationId, postalNotification, linkedCaseId, isWelsh);
 
     }
 
-    private void sendPostalNotification(final Sender sender, final JsonEnvelope envelope, final UUID applicationId, final PostalNotification postalNotification, final UUID linkedCaseId) {
+    private void sendPostalNotification(final Sender sender, final JsonEnvelope envelope, final UUID applicationId, final PostalNotification postalNotification, final UUID linkedCaseId, final boolean isWelsh) {
 
         final JsonObject postalNotificationPayload = objectToJsonObjectConverter.convert(postalNotification);
 
         LOGGER.info("Sending Postal Notification payload - {}", postalNotificationPayload);
 
-        final UUID materialId = documentGeneratorService.generateDocument(envelope, postalNotificationPayload, POSTAL_NOTIFICATION, sender, null, applicationId);
+        String templateName = POSTAL_NOTIFICATION;
+
+        if (isWelsh) {
+            templateName = POSTAL_NOTIFICATION_BILINGUAL;
+        }
+
+        final UUID materialId = documentGeneratorService.generateDocument(envelope, postalNotificationPayload, templateName, sender, null, applicationId);
 
         final CourtDocument courtDocument = courtDocument(applicationId, materialId, envelope, linkedCaseId);
 
@@ -148,8 +174,11 @@ public class PostalService {
                                                        final String hearingTime,
                                                        final String applicationReference,
                                                        final String applicationType,
+                                                       final String applicationTypeWelsh,
                                                        final String legislation,
+                                                       final String legislationWelsh,
                                                        final CourtCentre courtCentre,
+                                                       final String courtCentreNameWelsh,
                                                        final JsonObject localJusticeArea,
                                                        final CourtApplicationParty courtApplicationParty,
                                                        final JurisdictionType jurisdictionType) {
@@ -159,10 +188,12 @@ public class PostalService {
                 .withIssueDate(LocalDate.now())
                 .withApplicationType(ofNullable(applicationType).orElse(EMPTY))
                 .withLegislationText(ofNullable(legislation).orElse(EMPTY))
-                .withCourtCentreName(ofNullable(courtCentre).map(CourtCentre::getName).orElse(EMPTY));
+                .withCourtCentreName(ofNullable(courtCentre).map(CourtCentre::getName).orElse(EMPTY))
+                .withCourtCentreNameWelsh(courtCentreNameWelsh);
         if(jurisdictionType.equals(JurisdictionType.MAGISTRATES)){
             builder.withLjaCode(ofNullable(localJusticeArea).map(area -> area.getString(NATIONAL_COURT_CODE, EMPTY)).orElse(EMPTY))
-                    .withLjaName(ofNullable(localJusticeArea).map(area -> area.getString(NAME, EMPTY)).orElse(EMPTY));
+                    .withLjaName(ofNullable(localJusticeArea).map(area -> area.getString(NAME, EMPTY)).orElse(EMPTY))
+                    .withLjaNameWelsh(ofNullable(localJusticeArea).map(area -> area.getString(NAME_WELSH, EMPTY)).orElse(EMPTY));
         }
 
         //Check if the applicant is a defendant
@@ -176,11 +207,14 @@ public class PostalService {
                 .build();
 
         builder.withAddressee(postalAddressee);
+        builder.withApplicationTypeWelsh(applicationTypeWelsh);
+        builder.withLegislationTextWelsh(legislationWelsh);
 
         @SuppressWarnings({"squid:S2259"}) final PostalAddress postalAddress = getPostalAddress(ofNullable(courtCentre).map(CourtCentre::getAddress).orElse(null));
 
         final PostalHearingCourtDetails.Builder hearingCourtDetailsBuilder = PostalHearingCourtDetails.builder()
                 .withCourtName(ofNullable(courtCentre).map(CourtCentre::getName).orElse(EMPTY))
+                .withCourtNameWelsh(courtCentreNameWelsh)
                 .withHearingDate(hearingDate)
                 .withHearingTime(hearingTime);
 

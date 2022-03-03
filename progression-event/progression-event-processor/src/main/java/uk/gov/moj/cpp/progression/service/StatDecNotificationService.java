@@ -44,7 +44,7 @@ public class StatDecNotificationService {
     private MaterialUrlGenerator materialUrlGenerator;
 
 
-    public void sendNotification(final JsonEnvelope event, final UUID notificationId, final CourtApplication courtApplication, final CourtCentre courtCentre, final ZonedDateTime hearingStartDateTime, final JurisdictionType jurisdictionType, final String documentTemplateName) {
+    public void sendNotification(final JsonEnvelope event, final UUID notificationId, final CourtApplication courtApplication, final CourtCentre courtCentre,  final ZonedDateTime hearingStartDateTime, final JurisdictionType jurisdictionType, final String documentTemplateName) {
         Objects.requireNonNull(courtApplication);
 
         final CourtApplicationParty courtApplicationParty = courtApplication.getApplicant();

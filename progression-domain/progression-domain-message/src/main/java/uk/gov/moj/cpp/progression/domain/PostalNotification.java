@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.domain;
 
 import java.time.LocalDate;
 
+@SuppressWarnings("pmd:BeanMembersShouldSerialize")
 public class PostalNotification {
 
     private final String reference;
@@ -9,6 +10,8 @@ public class PostalNotification {
     private final String ljaCode;
 
     private final String ljaName;
+
+    private final String ljaNameWelsh;
 
     private final LocalDate issueDate;
 
@@ -18,26 +21,35 @@ public class PostalNotification {
 
     private final String applicationType;
 
+    private final String applicationTypeWelsh;
+
     private final String legislationText;
 
+    private final String legislationTextWelsh;
+
     private final String courtCentreName;
+
+    private final String courtCentreNameWelsh;
 
     private PostalHearingCourtDetails hearingCourtDetails;
 
     @SuppressWarnings({"squid:S00107"})
-    public PostalNotification(final String reference, final String ljaCode, final String ljaName, final LocalDate issueDate, final PostalDefendant defendant, final PostalAddressee addressee, final String applicationType, final String legislationText, final String courtCentreName, final PostalHearingCourtDetails hearingCourtDetails) {
+    public PostalNotification(final String reference, final String ljaCode, final String ljaName, final String ljaNameWelsh, final LocalDate issueDate, final PostalDefendant defendant, final PostalAddressee addressee, final String applicationType, final String applicationTypeWelsh, final String legislationText, final String legislationTextWelsh, final String courtCentreName, final String courtCentreNameWelsh, final PostalHearingCourtDetails hearingCourtDetails) {
         this.reference = reference;
         this.ljaCode = ljaCode;
         this.ljaName = ljaName;
+        this.ljaNameWelsh = ljaNameWelsh;
         this.issueDate = issueDate;
         this.defendant = defendant;
         this.addressee = addressee;
         this.applicationType = applicationType;
+        this.applicationTypeWelsh = applicationTypeWelsh;
         this.legislationText = legislationText;
+        this.legislationTextWelsh = legislationTextWelsh;
         this.courtCentreName = courtCentreName;
+        this.courtCentreNameWelsh = courtCentreNameWelsh;
         this.hearingCourtDetails = hearingCourtDetails;
     }
-
     public String getReference() {
         return reference;
     }
@@ -48,6 +60,10 @@ public class PostalNotification {
 
     public String getLjaName() {
         return ljaName;
+    }
+
+    public String getLjaNameWelsh() {
+        return ljaNameWelsh;
     }
 
     public LocalDate getIssueDate() {
@@ -66,6 +82,10 @@ public class PostalNotification {
         return courtCentreName;
     }
 
+    public String getCourtCentreNameWelsh() {
+        return courtCentreNameWelsh;
+    }
+
     public PostalHearingCourtDetails getHearingCourtDetails() {
         return hearingCourtDetails;
     }
@@ -78,6 +98,14 @@ public class PostalNotification {
         return legislationText;
     }
 
+    public String getApplicationTypeWelsh() {
+        return applicationTypeWelsh;
+    }
+
+    public String getLegislationTextWelsh() {
+        return legislationTextWelsh;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -88,12 +116,16 @@ public class PostalNotification {
                 "reference='" + reference + '\'' +
                 ", ljaCode='" + ljaCode + '\'' +
                 ", ljaName='" + ljaName + '\'' +
+                ", ljaNameWelsh='" + ljaNameWelsh + '\'' +
                 ", issueDate=" + issueDate +
                 ", defendant=" + defendant +
                 ", addressee=" + addressee +
                 ", applicationType='" + applicationType + '\'' +
+                ", applicationTypeWelsh='" + applicationTypeWelsh + '\'' +
                 ", legislationText='" + legislationText + '\'' +
+                ", legislationTextWelsh='" + legislationTextWelsh + '\'' +
                 ", courtCentreName='" + courtCentreName + '\'' +
+                ", courtCentreNameWelsh='" + courtCentreNameWelsh + '\'' +
                 ", hearingCourtDetails=" + hearingCourtDetails +
                 '}';
     }
@@ -106,6 +138,8 @@ public class PostalNotification {
 
         private String ljaName;
 
+        private String ljaNameWelsh;
+
         private LocalDate issueDate;
 
         private PostalDefendant defendant;
@@ -114,11 +148,17 @@ public class PostalNotification {
 
         private String courtCentreName;
 
+        private String courtCentreNameWelsh;
+
         private PostalHearingCourtDetails hearingCourtDetails;
 
         private String applicationType;
 
+        private String applicationTypeWelsh;
+
         private String legislationText;
+
+        private String legislationTextWelsh;
 
         public Builder withReference(final String reference) {
             this.reference = reference;
@@ -135,6 +175,10 @@ public class PostalNotification {
             return this;
         }
 
+        public Builder withLjaNameWelsh(final String ljaNameWelsh) {
+            this.ljaNameWelsh = ljaNameWelsh;
+            return this;
+        }
         public Builder withIssueDate(final LocalDate issueDate) {
             this.issueDate = issueDate;
             return this;
@@ -155,6 +199,11 @@ public class PostalNotification {
             return this;
         }
 
+        public Builder withCourtCentreNameWelsh(final String courtCentreNameWelsh) {
+            this.courtCentreNameWelsh = courtCentreNameWelsh;
+            return this;
+        }
+
         public Builder withHearingCourtDetails(final PostalHearingCourtDetails hearingCourtDetails) {
             this.hearingCourtDetails = hearingCourtDetails;
             return this;
@@ -165,13 +214,23 @@ public class PostalNotification {
             return this;
         }
 
+        public Builder withApplicationTypeWelsh(final String welshApplicationType) {
+            this.applicationTypeWelsh = welshApplicationType;
+            return this;
+        }
+
         public Builder withLegislationText(final String legislationText) {
             this.legislationText = legislationText;
             return this;
         }
 
+        public Builder withLegislationTextWelsh(final String welshLegislationText) {
+            this.legislationTextWelsh = welshLegislationText;
+            return this;
+        }
+
         public PostalNotification build() {
-            return new PostalNotification(reference, ljaCode, ljaName, issueDate, defendant, addressee, applicationType, legislationText, courtCentreName, hearingCourtDetails);
+            return new PostalNotification(reference, ljaCode, ljaName,ljaNameWelsh, issueDate, defendant, addressee, applicationType, applicationTypeWelsh, legislationText, legislationTextWelsh, courtCentreName, courtCentreNameWelsh, hearingCourtDetails);
         }
     }
 }
