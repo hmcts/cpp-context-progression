@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="add-case_note_id_pk" author="Salsa">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <primaryKeyExists tableName="case_note"/>
+            </not>
+        </preConditions>
+        <addPrimaryKey columnNames="id" constraintName="case_note_id_pk"
+                       tableName="case_note"/>
+    </changeSet>
+
+    <changeSet id="add-hearing_application_hearing_id_idx" author="Salsa">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="hearing_application_hearing_id_idx"
+                             tableName="hearing_application"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="hearing_application" indexName="hearing_application_hearing_id_idx">
+            <column name="hearing_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add-material_usergroup_material_id_idx" author="Salsa">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="material_usergroup_material_id_idx"
+                             tableName="material_usergroup"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="material_usergroup" indexName="material_usergroup_material_id_idx">
+            <column name="material_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add-document_rbac_create_usergroup_court_document_id_idx" author="Salsa">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="document_rbac_create_usergroup_court_document_id_idx"
+                             tableName="document_rbac_create_usergroup"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="document_rbac_create_usergroup"
+                     indexName="document_rbac_create_usergroup_court_document_id_idx">
+            <column name="court_document_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add-document_rbac_download_usergroup_court_document_id_idx" author="Salsa">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="document_rbac_download_usergroup_court_document_id_idx"
+                             tableName="document_rbac_download_usergroup"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="document_rbac_download_usergroup"
+                     indexName="document_rbac_download_usergroup_court_document_id_idx">
+            <column name="court_document_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add-document_rbac_read_usergroup_court_document_id_idx" author="Salsa">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="document_rbac_read_usergroup_court_document_id_idx"
+                             tableName="document_rbac_read_usergroup"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="document_rbac_read_usergroup"
+                     indexName="document_rbac_read_usergroup_court_document_id_idx">
+            <column name="court_document_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="drop-search_target_idx" author="Salsa">
+        <preConditions onFail="MARK_RAN">
+            <indexExists indexName="search_target_idx" tableName="search_prosecution_case"/>
+        </preConditions>
+        <dropIndex tableName="search_prosecution_case" indexName="search_target_idx"/>
+    </changeSet>
+
+    <changeSet id="add-search_prosecution_case_search_target_idx" author="Salsa">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="search_prosecution_case_search_target_idx"
+                             tableName="search_prosecution_case"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="search_prosecution_case"
+                     indexName="search_prosecution_case_search_target_idx">
+            <column name="search_target"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
