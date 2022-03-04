@@ -17,7 +17,7 @@
 #
 ##################################################################################################
 
-FRAMEWORK_VERSION=7.2.2
+FRAMEWORK_VERSION=8.0.2
 CONTEXT_NAME="progression"
 USER_NAME="admin"
 PASSWORD="admin"
