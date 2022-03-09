@@ -22,6 +22,8 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.justice.core.courts.AddCourtDocumentV2;
+import uk.gov.justice.core.courts.AddMaterialV2;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentAudit;
 import uk.gov.justice.core.courts.CourtDocumentSendToCps;
@@ -30,6 +32,7 @@ import uk.gov.justice.core.courts.CourtDocumentShared;
 import uk.gov.justice.core.courts.CourtDocumentUpdateFailed;
 import uk.gov.justice.core.courts.CourtDocumentUpdated;
 import uk.gov.justice.core.courts.CourtsDocumentAdded;
+import uk.gov.justice.core.courts.CourtsDocumentAddedV2;
 import uk.gov.justice.core.courts.CourtsDocumentCreated;
 import uk.gov.justice.core.courts.CourtsDocumentRemoved;
 import uk.gov.justice.core.courts.DocumentCategory;
@@ -219,6 +222,19 @@ public class CourtDocumentAggregate implements Aggregate {
                                            final JsonObject userOrganisationDetails) {
         LOGGER.debug("Court document being added");
 
+        final Stream.Builder<Object> streamBuilder = prepareEventsForAddCourtDocument(courtDocument, actionRequired, materialId, section, isCpsCase, isUnbundledDocument, userOrganisationDetails);
+
+        return apply(streamBuilder.build());
+    }
+
+    public Stream.Builder<Object> prepareEventsForAddCourtDocument(final CourtDocument courtDocument,
+                                                                   final boolean actionRequired,
+                                                                   final UUID materialId,
+                                                                   final String section,
+                                                                   final Boolean isCpsCase,
+                                                                   final Boolean isUnbundledDocument,
+                                                                   final JsonObject userOrganisationDetails) {
+
         final Stream.Builder<Object> streamBuilder = builder();
 
         final String organisationType = userOrganisationDetails != null ? userOrganisationDetails.getString("organisationType", null) : null;
@@ -246,6 +262,36 @@ public class CourtDocumentAggregate implements Aggregate {
                     .withIsUnbundledDocument(isUnbundledDocument)
                     .build());
         }
+
+        return streamBuilder;
+    }
+
+    public Stream<Object> addCourtDocumentV2(final CourtDocument courtDocument,
+                                             final boolean actionRequired,
+                                             final String section,
+                                             final AddCourtDocumentV2 addCourtDocumentV2,
+                                             final JsonObject userOrganisationDetails) {
+        LOGGER.debug("Court document V2 being added");
+
+        final Stream.Builder<Object> streamBuilder = prepareEventsForAddCourtDocument(courtDocument, actionRequired, addCourtDocumentV2.getMaterialId(), section, addCourtDocumentV2.getMaterialSubmittedV2().getIsCpsCase(), addCourtDocumentV2.getIsUnbundledDocument(), userOrganisationDetails);
+        streamBuilder.add(CourtsDocumentAddedV2.courtsDocumentAddedV2()
+                .withCourtDocument(courtDocument)
+                .withIsUnbundledDocument(addCourtDocumentV2.getIsUnbundledDocument())
+                .withMaterialSubmittedV2(AddMaterialV2.addMaterialV2()
+                        .withIsCpsCase(addCourtDocumentV2.getMaterialSubmittedV2().getIsCpsCase())
+                        .withCaseSubFolderName(addCourtDocumentV2.getMaterialSubmittedV2().getCaseSubFolderName())
+                        .withCourtApplicationSubject(addCourtDocumentV2.getMaterialSubmittedV2().getCourtApplicationSubject())
+                        .withExhibit(addCourtDocumentV2.getMaterialSubmittedV2().getExhibit())
+                        .withFileName(addCourtDocumentV2.getMaterialSubmittedV2().getFileName())
+                        .withMaterialContentType(addCourtDocumentV2.getMaterialSubmittedV2().getMaterialContentType())
+                        .withMaterialName(addCourtDocumentV2.getMaterialSubmittedV2().getMaterialName())
+                        .withProsecutionCaseSubject(addCourtDocumentV2.getMaterialSubmittedV2().getProsecutionCaseSubject())
+                        .withMaterialType(addCourtDocumentV2.getMaterialSubmittedV2().getMaterialType())
+                        .withSectionOrderSequence(addCourtDocumentV2.getMaterialSubmittedV2().getSectionOrderSequence())
+                        .withWitnessStatement(addCourtDocumentV2.getMaterialSubmittedV2().getWitnessStatement())
+                        .withTags(addCourtDocumentV2.getMaterialSubmittedV2().getTags())
+                        .build())
+                .build());
 
         return apply(streamBuilder.build());
     }

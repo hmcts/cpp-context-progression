@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.case-cps-details-updated-from-court-document.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "description": "Prosecution case Id",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "description": "Defendant Id",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "cpsDefendantId": {
+      "description": "cps defendant Id",
+      "type": "string"
+    },
+    "cpsOrganisation": {
+      "description": "cps Organisation",
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId"
+  ],
+  "additionalProperties": false
+}

@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -9,12 +8,15 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.AddCourtDocument.addCourtDocument;
+import static uk.gov.justice.core.courts.AddCourtDocumentV2.addCourtDocumentV2;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloperWithEvents;
@@ -24,16 +26,34 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.json.JsonValue;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import uk.gov.justice.core.courts.*;
+
+import uk.gov.justice.core.courts.AddCourtDocument;
+import uk.gov.justice.core.courts.AddCourtDocumentV2;
+import uk.gov.justice.core.courts.AddMaterialV2;
+import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.CourtsDocumentAdded;
+import uk.gov.justice.core.courts.CourtsDocumentAddedV2;
+import uk.gov.justice.core.courts.DefendantSubject;
+import uk.gov.justice.core.courts.DocumentCategory;
+import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseCreated;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ProsecutionCaseSubject;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.requester.Requester;
@@ -44,6 +64,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
 import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.handler.AddCourtDocumentHandler;
@@ -61,7 +82,6 @@ import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.Id;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -131,7 +151,7 @@ public class AddCourtDocumentHandlerTest {
 
     @Before
     public void setup() {
-        createEnveloperWithEvents(CourtsDocumentAdded.class);
+        createEnveloperWithEvents(CourtsDocumentAdded.class, CourtsDocumentAddedV2.class, CaseCpsDetailsUpdatedFromCourtDocument.class);
     }
 
     @Test
@@ -200,6 +220,86 @@ public class AddCourtDocumentHandlerTest {
                         ))
                 )
         );
+    }
+
+    @Test
+    public void shouldProcessCommandV2() throws Exception {
+        final String cpsDefendantId = randomUUID().toString();
+
+        final AddCourtDocumentV2 addCourtDocument = addCourtDocumentV2()
+                .withMaterialSubmittedV2(AddMaterialV2.addMaterialV2()
+                        .withIsCpsCase(true)
+                        .withProsecutionCaseSubject(ProsecutionCaseSubject.prosecutionCaseSubject().withCaseUrn("caseURN")
+                                .withOuCode("BA12345")
+                                .withDefendantSubject(DefendantSubject.defendantSubject()
+                                        .withCpsDefendantId(cpsDefendantId).build()).build()).build())
+                .withCpsFlag(true)
+                .withCourtDocument(buildCourtDocument()).build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.add-court-document-v2")
+                .withId(randomUUID())
+                .build();
+        final JsonObject userOrganisationDetails = Json.createObjectBuilder()
+                .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
+                .add("organisationType","HMCTS")
+                .add("organisationName", "Bodgit and Scarper LLP")
+                .add("addressLine1","Legal House")
+                .add("addressLine2","15 Sewell Street")
+                .add( "addressLine3", "Hammersmith")
+                .add("addressLine4", "London")
+                .add("addressPostcode","SE14 2AB")
+                .add("phoneNumber","080012345678")
+                .add("email","joe@example.com")
+                .add("laaContractNumbers",Json.createArrayBuilder()
+                        .add("LAA3482374WER")
+                        .add("LAA3482374WEM")).build();
+
+        final CourtDocument enrichedCourtDocument = CourtDocument.courtDocument().build();
+        final DocumentTypeAccess documentTypeData = DocumentTypeAccess.documentTypeAccess().withActionRequired(false).build();
+        when(courtDocumentEnricher.enrichWithMaterialUserGroups(any(), any())).thenReturn(enrichedCourtDocument);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(new CourtDocumentAggregate());
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        caseAggregate.apply(new ProsecutionCaseCreated(ProsecutionCase.prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .withDefendants(new ArrayList<>())
+                .build(), null));
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(documentTypeAccessProvider.getDocumentTypeAccess(any(), any())).thenReturn(documentTypeData);
+
+        final Envelope<AddCourtDocumentV2> envelope = envelopeFrom(metadata, addCourtDocument);
+        when(usersGroupService.getOrganisationDetailsForUser(envelope)).thenReturn(Envelope.envelopeFrom(metadata, userOrganisationDetails));
+        addCourtDocumentHandler.handleV2(envelope);
+
+        verify(eventStream, times(2)).append(eventCaptor.capture());
+        List<JsonEnvelope> events = eventCaptor.getAllValues().stream().flatMap(jsonEnvelopeStream -> jsonEnvelopeStream).collect(Collectors.toList());
+
+        JsonObject eventV2 = events.stream()
+                .filter(e -> e.metadata().name().equals("progression.event.court-document-added-v2"))
+                .map(t -> (JsonObject) t.payload())
+                .findFirst().orElse(null);
+
+        assertThat(eventV2.get("courtDocument"), is(notNullValue()));
+        assertThat(eventV2.getJsonObject("materialSubmittedV2").getJsonObject("prosecutionCaseSubject").getString("caseUrn"), is("caseURN"));
+
+        JsonObject eventV1 = events.stream()
+                .filter(e -> e.metadata().name().equals("progression.event.court-document-added"))
+                .map(t -> (JsonObject) t.payload())
+                .findFirst().orElse(null);
+
+        assertThat(eventV1.get("courtDocument"), is(notNullValue()));
+        assertThat(eventV1.getJsonObject("prosecutionCaseSubject"), is(nullValue()));
+
+        JsonObject eventCpsDetails = events.stream()
+                .filter(e -> e.metadata().name().equals("progression.event.case-cps-details-updated-from-court-document"))
+                .map(t -> (JsonObject) t.payload())
+                .findFirst().orElse(null);
+
+        assertThat(eventCpsDetails.getString("cpsDefendantId"), is(cpsDefendantId));
+        assertThat(eventCpsDetails.getString("cpsOrganisation"), is("BA12345"));
     }
 
     @Test

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/prosecution/casefile/json/schemas/exhibit.json",
+  "type": "object",
+  "properties": {
+    "reference": {
+      "description": "The reference provided for the exhibit and used by police staff",
+      "type": "string"
+    }
+  },
+  "required": [
+    "reference"
+  ],
+  "additionalProperties": false
+}

@@ -209,6 +209,30 @@ public class AddCourtDocumentIT extends AbstractIT {
 
     }
 
+    @Test
+    public void shouldAddCourtDocumentV2AndForbidToQueryWhenNoRbacMatches() throws IOException {
+
+        //Given
+        final String body = prepareAddCourtDocumentPayloadV2();
+        //When
+        final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
+                "application/vnd.progression.add-court-document-v2+json",
+                body);
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+
+        //Group Not Present in Drool rule
+
+        verifyQueryResultsForbidden(docId, USER_GROUP_NOT_PRESENT_DROOL, withJsonPath("$.error", StringContains.containsString(ACCESS_CONTROL_FAILED)));
+
+
+        //Group Not Present in RBAC
+        //Then
+        verifyQueryResultsForbidden(docId, USER_GROUP_NOT_PRESENT_RBAC, withJsonPath("$.error", StringContains.containsString(ACCESS_CONTROL_FAILED)));
+
+
+    }
+
 
     @Test
     public void shouldGetForbiddenExceptionWhenAddCourtDocumentAndNoRBACRulesMatches() throws IOException {
@@ -447,6 +471,14 @@ public class AddCourtDocumentIT extends AbstractIT {
         if (isCpsCase != null && isCpsCase == true) {
             body = body.replaceAll("\"isCpsCase\": false", "\"isCpsCase\": true");
         }
+        return body;
+    }
+
+    private String prepareAddCourtDocumentPayloadV2() {
+        String body = getPayload("progression.add-court-document-v2.json");
+        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
+                .replaceAll("%RANDOM_CASE_ID%", caseId.toString())
+                .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId.toString());
         return body;
     }
 

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "id": "http://moj.gov.uk/cpp/progression/query/courtdocuments-with-pagination.json",
+  "id": "http://justice.gov.uk/core/courts/courtdocuments-with-pagination.json",
   "properties": {
     "paginationData": {
       "$ref": "http://moj.gov.uk/cpp/progression/pagination-data.json"
@@ -9,7 +9,7 @@
     "courtDocuments": {
       "type": "array",
       "items": {
-        "$ref": "http://moj.gov.uk/cpp/progression/query/court-document-summary.json"
+        "$ref": "http://justice.gov.uk/core/courts/court-document-summary.json"
       }
     }
   },

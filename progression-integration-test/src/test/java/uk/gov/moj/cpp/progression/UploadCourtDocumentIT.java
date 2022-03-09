@@ -5,6 +5,9 @@ import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
@@ -16,6 +19,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCou
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getUploadCourtDocumentsByCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
@@ -23,6 +27,9 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumen
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import com.jayway.restassured.path.json.JsonPath;
+import javax.jms.JMSException;
+import org.junit.AfterClass;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.courts.progression.query.ApplicationDocument;
@@ -60,8 +67,11 @@ public class UploadCourtDocumentIT extends AbstractIT {
     private String docId;
     private String defendantId;
 
-    private final MessageConsumer publicEventConsumer = publicEvents
+    private static final MessageConsumer publicEventConsumer = publicEvents
             .createConsumer("public.progression.court-document-added");
+
+    private static final MessageConsumer privateEventConsumer = privateEvents
+            .createConsumer("progression.event.court-document-added-v2");
 
     @Before
     public void setup() {
@@ -70,6 +80,12 @@ public class UploadCourtDocumentIT extends AbstractIT {
         docId = randomUUID().toString();
         defendantId = randomUUID().toString();
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
+    }
+
+    @AfterClass
+    public static void after() throws JMSException {
+        publicEventConsumer.close();
+        privateEventConsumer.close();
     }
 
     @Test
@@ -110,6 +126,33 @@ public class UploadCourtDocumentIT extends AbstractIT {
 
         assertCourtDocumentByCase();
 
+        verifyInMessagingQueueForPublicCourtDocumentAdded();
+    }
+
+    @Test
+    public void shouldAddCourtDocumentV2() throws IOException, InterruptedException {
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
+
+
+        String body = Resources.toString(Resources.getResource("progression.add-court-document-v2.json"), Charset.defaultCharset());
+        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
+                .replaceAll("%RANDOM_CASE_ID%", caseId.toString())
+                .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId.toString());
+        final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId.toString()),
+                "application/vnd.progression.add-court-document-v2+json",
+                body);
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final Matcher[] matcher = {
+                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath("$.courtDocuments[0].courtDocumentId", equalTo(docId))
+        };
+
+        assertCourtDocumentByCase();
+        verifyInMessagingQueueForPrivateCourtDocumentAddedV2();
         verifyInMessagingQueueForPublicCourtDocumentAdded();
     }
 
@@ -181,6 +224,11 @@ public class UploadCourtDocumentIT extends AbstractIT {
 
     private void verifyInMessagingQueueForPublicCourtDocumentAdded() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventConsumer);
+        assertTrue(message.isPresent());
+    }
+
+    private void verifyInMessagingQueueForPrivateCourtDocumentAddedV2() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(privateEventConsumer);
         assertTrue(message.isPresent());
     }
 

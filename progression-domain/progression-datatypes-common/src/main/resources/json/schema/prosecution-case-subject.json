@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/prosecution/casefile/json/schemas/prosecution-case-subject.json",
+  "type": "object",
+  "description": "The prosecution case meta data for material relating to a prosecution case",
+  "properties": {
+    "caseUrn": {
+      "description": "The prosecuting authorities’ unique reference for a prosecution case",
+      "type": "string",
+      "maxLength": 36
+    },
+    "prosecutingAuthority": {
+      "description": "The OU Code of the prosecuting authority that has initiated court proceedings for the case",
+      "type": "string",
+      "maxLength": 7
+    },
+    "defendantSubject": {
+      "description": "The defendant meta data for the material",
+      "$ref": "http://cpp.moj.gov.uk/prosecution/casefile/json/schemas/defendant-subject.json"
+    }
+  },
+  "required": [
+    "caseUrn",
+    "prosecutingAuthority"
+  ],
+  "additionalProperties": false
+}

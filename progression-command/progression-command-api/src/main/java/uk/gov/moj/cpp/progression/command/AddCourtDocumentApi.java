@@ -66,6 +66,15 @@ public class AddCourtDocumentApi {
         sender.send(envelopeFrom(metadata, payload));
     }
 
+    @Handles("progression.add-court-document-v2")
+    public void handleV2(final JsonEnvelope envelope) {
+        final JsonObject payload =  envelope.payloadAsJsonObject();
+        final Metadata metadata = metadataFrom(envelope.metadata())
+                .withName("progression.command.add-court-document-v2")
+                .build();
+        sender.send(envelopeFrom(metadata, payload));
+    }
+
     @Handles("progression.add-court-document-for-defence")
     public void handleAddCourtDocumentForDefence(final JsonEnvelope envelope) {
 

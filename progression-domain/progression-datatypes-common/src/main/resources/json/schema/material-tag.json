@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/prosecution/casefile/json/schemas/material-tag.json",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "The business description of the tag",
+      "type": "string",
+      "maxLength": 35
+    },
+    "code": {
+      "description": "The code of a well-known tag in reference data",
+      "type": "string",
+      "maxLength": 6
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "name"
+      ]
+    },
+    {
+      "required": [
+        "code"
+      ]
+    }
+  ],
+  "additionalProperties": false
+}

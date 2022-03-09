@@ -237,6 +237,9 @@ subscriptions_descriptor:
         - name: progression.event.hearing-defendant-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-defendant-updated.json
 
+        - name: progression.event.case-cps-details-updated-from-court-document
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.case-cps-details-updated-from-court-document.json
+
         - name: progression.event.pet-form-created
           schema_uri: http://justice.gov.uk/core/courts/pet-form-created.json
 

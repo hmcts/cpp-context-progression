@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/prosecution/casefile/json/schemas/witness-statement.json",
+  "type": "object",
+  "properties": {
+    "statementNumber": {
+      "description": "The reference number for the statement that is provided by the investigating authority",
+      "type": "integer"
+    },
+    "dateTaken": {
+      "description": "A date and time that the satement was taken",
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "statementNumber"
+  ],
+  "additionalProperties": false
+}

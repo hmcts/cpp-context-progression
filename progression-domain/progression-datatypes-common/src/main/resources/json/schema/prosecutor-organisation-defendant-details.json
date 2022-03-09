@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/prosecution/casefile/json/schemas/prosecutor-organisation-defendant-details.json",
+  "type": "object",
+  "description": "The defendant organisation details for material relating to a defendant required to be matched with a defendant id provided by the prosecuting authority",
+  "properties": {
+    "organisationName": {
+      "description": "The name of a defendant that is a legal entity",
+      "type": "string"
+    },
+    "prosecutorDefendantId": {
+      "description": "A unique reference to a defendant within a prosecution. Provided by the prosecuting authority e.g. DWP",
+      "type": "string",
+      "maxLength": 36
+    }
+  },
+  "required": [
+    "organisationName",
+    "prosecutorDefendantId"
+  ],
+  "additionalProperties": false
+}

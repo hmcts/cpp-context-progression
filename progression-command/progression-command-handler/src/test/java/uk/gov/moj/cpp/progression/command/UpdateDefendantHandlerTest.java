@@ -28,8 +28,10 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDefendantUpdated;
+import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequested;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2;
@@ -128,6 +130,88 @@ public class UpdateDefendantHandlerTest {
                                 .withName("progression.event.prosecution-case-defendant-updated"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.defendant.id", is(defendantId.toString()))
+                                )
+                        ))
+
+                )
+        );
+    }
+
+    @Test
+    @SuppressWarnings("squid:S00112")
+    public void shouldKeepTitleWhenNewTitleDoesNotExist() throws Exception {
+
+        UUID defendantId = randomUUID();
+
+        UpdateDefendantForProsecutionCase updateDefendant = UpdateDefendantForProsecutionCase.updateDefendantForProsecutionCase()
+                .withDefendant(getDefendantUpdate(defendantId, null))
+                .build();
+
+        aggregate.apply(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
+                .withDefendant(getDefendantUpdate(defendantId, "Mr"))
+                .build());
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-defendant-for-prosecution-case")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<UpdateDefendantForProsecutionCase> envelope = envelopeFrom(metadata, updateDefendant);
+
+        updateDefendantHandler.handle(envelope);
+
+        Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.prosecution-case-defendant-updated"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.defendant.id", is(defendantId.toString())),
+                                withJsonPath("$.defendant.personDefendant.personDetails.title", is("Mr")),
+                                withJsonPath("$.defendant.personDefendant.personDetails.firstName", is("FirstName"))
+                                )
+                        ))
+
+                )
+        );
+    }
+
+    @Test
+    @SuppressWarnings("squid:S00112")
+    public void shouldChangeTitleWhenNewTitleExists() throws Exception {
+
+        UUID defendantId = randomUUID();
+
+        UpdateDefendantForProsecutionCase updateDefendant = UpdateDefendantForProsecutionCase.updateDefendantForProsecutionCase()
+                .withDefendant(getDefendantUpdate(defendantId, "Baron"))
+                .build();
+
+        aggregate.apply(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
+                .withDefendant(getDefendantUpdate(defendantId, "Mr"))
+                .build());
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-defendant-for-prosecution-case")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<UpdateDefendantForProsecutionCase> envelope = envelopeFrom(metadata, updateDefendant);
+
+        updateDefendantHandler.handle(envelope);
+
+        Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.prosecution-case-defendant-updated"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.defendant.id", is(defendantId.toString())),
+                                withJsonPath("$.defendant.personDefendant.personDetails.title", is("Baron")),
+                                withJsonPath("$.defendant.personDefendant.personDetails.firstName", is("FirstName"))
                                 )
                         ))
 
@@ -308,5 +392,19 @@ public class UpdateDefendantHandlerTest {
 
                 )
         );
+    }
+
+    private DefendantUpdate getDefendantUpdate(final UUID defendantId, final String title){
+        return DefendantUpdate.defendantUpdate().withPersonDefendant(PersonDefendant.personDefendant().build())
+                        .withProsecutionCaseId(randomUUID())
+                        .withId(defendantId)
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person()
+                                        .withFirstName("FirstName")
+                                        .withTitle(title)
+                                        .build())
+                                .build())
+                        .build();
+
     }
 }

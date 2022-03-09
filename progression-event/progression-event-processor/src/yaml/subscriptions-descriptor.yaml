@@ -331,6 +331,9 @@ subscriptions_descriptor:
         - name: progression.event.new-defendant-added-to-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.new-defendant-added-to-hearing.json
 
+        - name : progression.event.master-defendant-id-updated-into-hearings
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated-into-hearings.json
+
         - name: progression.event.prosecution-case-listing-number-increased
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-listing-number-increased.json
 

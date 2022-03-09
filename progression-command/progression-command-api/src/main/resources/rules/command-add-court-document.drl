@@ -15,4 +15,13 @@ rule "Command - add court document"
     $outcome.setSuccess(true);
 end
 
+rule "Command - add court document-v2"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.add-court-document-v2");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "System Users", "Defence Users", "District Judge", "Court Associate", "Probation Admin", "Second Line Support", "Deputies", "DJMC", "Youth Offending Service Admin", "Judge", "Recorders"))
+    and eval(rbacProvider.isLoggedInUserAllowedToUploadDocument($action))
+  then
+    $outcome.setSuccess(true);
+end
 

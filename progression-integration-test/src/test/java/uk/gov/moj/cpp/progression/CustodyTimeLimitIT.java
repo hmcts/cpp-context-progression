@@ -2,12 +2,14 @@ package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.temporal.ChronoUnit.DAYS;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
@@ -15,11 +17,17 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
+import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+
+import com.jayway.restassured.response.Response;
+import java.io.IOException;
+import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
@@ -33,6 +41,8 @@ import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
+
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,6 +69,8 @@ public class CustodyTimeLimitIT extends AbstractIT {
     private String bailStatusCode;
     private String bailStatusDescription;
     private String bailStatusId;
+    private static final String docId = randomUUID().toString();
+    private static final String cpsDefendantId = randomUUID().toString();
 
     @Before
     public void setUp() {
@@ -83,13 +95,15 @@ public class CustodyTimeLimitIT extends AbstractIT {
     }
 
     @Test
-    public void shouldUpdateOffenceCustodyTimeLimit() throws Exception {
+    public void shouldUpdateOffenceCustodyTimeLimitAndCpsDefendantId() throws Exception {
         stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
         final String extendedCustodyTimeLimit = "2022-09-10";
 
         enableAmendReshareFeature(true);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        verifyAddCourtDocumentForCase();
 
         final String initialHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
         final String hearingIdForCTLExtension = randomUUID().toString();
@@ -125,7 +139,7 @@ public class CustodyTimeLimitIT extends AbstractIT {
         verifyInMessagingQueueForExtendCustodyTimeLimitResulted(hearingIdForCTLExtension, caseId, offenceId, extendedCustodyTimeLimit);
         verifyInMessagingQueueForCustodyTimeLimitExtended(initialHearingId, offenceId, extendedCustodyTimeLimit);
         verifyInMessagingQueueForCustodyTimeLimitExtendedPublicEvent(initialHearingId, offenceId, extendedCustodyTimeLimit);
-        verifyOffenceUpdatedWithCustodyTimeLimit(initialHearingId, extendedCustodyTimeLimit);
+        verifyOffenceUpdatedWithCustodyTimeLimitAndCpsDefendantId(initialHearingId, extendedCustodyTimeLimit);
 
     }
 
@@ -187,7 +201,7 @@ public class CustodyTimeLimitIT extends AbstractIT {
 
     }
 
-    private void verifyOffenceUpdatedWithCustodyTimeLimit(final String hearingId, final String extendedCustodyTimeLimit) {
+    private void verifyOffenceUpdatedWithCustodyTimeLimitAndCpsDefendantId(final String hearingId, final String extendedCustodyTimeLimit) {
 
         final Matcher[] hearingMatchers = {
                 withJsonPath("$", notNullValue()),
@@ -197,12 +211,31 @@ public class CustodyTimeLimitIT extends AbstractIT {
         final String dbHearing =  pollForResponse("/hearingSearch/" + hearingId, HEARING_QUERY, hearingMatchers);
         final JsonObject hearing = stringToJsonObjectConverter.convert(dbHearing);
         final JsonObject custodyTimeLimit = hearing.getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getJsonObject("custodyTimeLimit");
-
+        final String actualCpsDefendantId = hearing.getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getString("cpsDefendantId");
         assertThat(custodyTimeLimit.getBoolean("isCtlExtended"), is(true));
         assertThat(custodyTimeLimit.getString("timeLimit"), is(extendedCustodyTimeLimit));
+        assertThat(actualCpsDefendantId, is(cpsDefendantId));
 
     }
 
+    private void verifyAddCourtDocumentForCase() throws IOException {
+        final String body = prepareAddCourtDocumentPayload();
+        final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
+                "application/vnd.progression.add-court-document-v2+json", body);
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.defendants[0].cpsDefendantId", is(cpsDefendantId)))));
+    }
+
+    private String prepareAddCourtDocumentPayload() {
+        String body = getPayload("progression.add-court-document-for-case-v2.json");
+        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId)
+                .replaceAll("%RANDOM_CASE_ID%", caseId)
+                .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId)
+                .replaceAll("%RANDOM_CPS_DEFENDANT_ID%", cpsDefendantId);
+
+        return body;
+    }
 }
 

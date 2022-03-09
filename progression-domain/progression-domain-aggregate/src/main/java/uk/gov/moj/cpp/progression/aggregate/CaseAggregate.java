@@ -22,7 +22,6 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createCaseAddedToCrownCourt;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createPsrForDefendantsRequested;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createSendingCommittalHearingInformationAdded;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantsWithLAAAndHearingOrCaseDefendantResults;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isAllDefendantProceedingConcluded;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isProceedingConcludedEventTriggered;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendants;
@@ -38,10 +37,12 @@ import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PEND
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
 import static uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated.defendantDefenceOrganisationDisassociated;
+import static uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument.caseCpsDetailsUpdatedFromCourtDocument;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllHearingOffencesUpdated;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
+import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
@@ -50,6 +51,7 @@ import uk.gov.justice.core.courts.CaseMarkersUpdated;
 import uk.gov.justice.core.courts.CaseNoteAddedV2;
 import uk.gov.justice.core.courts.CaseNoteEditedV2;
 import uk.gov.justice.core.courts.Cases;
+import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
 import uk.gov.justice.core.courts.CpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CustodyTimeLimit;
 import uk.gov.justice.core.courts.DefenceOrganisation;
@@ -72,9 +74,9 @@ import uk.gov.justice.core.courts.HearingExtended;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
-import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberIncreased;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
@@ -97,6 +99,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseCreatedInHearing;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
+import uk.gov.justice.core.courts.ProsecutionCaseSubject;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequested;
 import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
 import uk.gov.justice.core.courts.Prosecutor;
@@ -440,7 +443,22 @@ public class CaseAggregate implements Aggregate {
                             }
                         }
                 ),
+                when(CaseCpsDetailsUpdatedFromCourtDocument.class).apply(this::handleCaseCpsDetailsUpdatedFromCourtDocument),
                 otherwiseDoNothing());
+
+    }
+
+    private void handleCaseCpsDetailsUpdatedFromCourtDocument(final CaseCpsDetailsUpdatedFromCourtDocument caseCpsDetailsUpdatedFromCourtDocument){
+        this.prosecutionCase = ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
+                .withCpsOrganisation(isNull(prosecutionCase.getCpsOrganisation()) ? caseCpsDetailsUpdatedFromCourtDocument.getCpsOrganisation() : prosecutionCase.getCpsOrganisation())
+                .withDefendants(prosecutionCase.getDefendants().stream()
+                        .map(defendant -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(defendant)
+                                .withCpsDefendantId(defendant.getId().equals(caseCpsDetailsUpdatedFromCourtDocument.getDefendantId()) &&
+                                        !isNull(caseCpsDetailsUpdatedFromCourtDocument.getCpsDefendantId()) ?
+                                        fromString(caseCpsDetailsUpdatedFromCourtDocument.getCpsDefendantId()) : defendant.getCpsDefendantId())
+                                .build())
+                        .collect(toList()))
+                .build();
 
     }
 
@@ -912,8 +930,33 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> updateDefendantDetails(final DefendantUpdate updatedDefendant) {
         LOGGER.debug("Defendant information is being updated.");
+        // keep title if new title is blank.
+        final uk.gov.justice.core.courts.Defendant orgDefendant = defendantsMap.get(updatedDefendant.getId());
+        final Optional<String> orgTitle = ofNullable(orgDefendant)
+                .map(uk.gov.justice.core.courts.Defendant::getPersonDefendant)
+                .map(PersonDefendant::getPersonDetails)
+                .map(uk.gov.justice.core.courts.Person::getTitle);
+
+        final Optional<String> newTitle = ofNullable(updatedDefendant)
+                .map(DefendantUpdate::getPersonDefendant)
+                .map(PersonDefendant::getPersonDetails)
+                .map(uk.gov.justice.core.courts.Person::getTitle);
+
+        final DefendantUpdate newDefendant;
+        if(newTitle.isPresent() || !orgTitle.isPresent() || updatedDefendant.getPersonDefendant() == null){
+            newDefendant = updatedDefendant;
+        }else{
+            newDefendant = DefendantUpdate.defendantUpdate().withValuesFrom(updatedDefendant)
+                    .withPersonDefendant(PersonDefendant.personDefendant().withValuesFrom(updatedDefendant.getPersonDefendant())
+                            .withPersonDetails(uk.gov.justice.core.courts.Person.person().withValuesFrom(updatedDefendant.getPersonDefendant().getPersonDetails())
+                                    .withTitle(orgTitle.orElse(null))
+                                    .build())
+                            .build())
+                    .build();
+        }
+
         return apply(Stream.of(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
-                .withDefendant(updatedDefendant)
+                .withDefendant(newDefendant)
                 .withHearingIds(CollectionUtils.isNotEmpty(hearingIds) ? new ArrayList<>(this.hearingIds) : emptyList())
                 .build()));
     }
@@ -1801,6 +1844,21 @@ public class CaseAggregate implements Aggregate {
         } else {
             return Stream.empty();
         }
+    }
+
+    public Stream<Object> updateCpsDetails(final UUID caseId, final UUID defendantId, final ProsecutionCaseSubject prosecutionCaseSubject, final String ouCode) {
+        final String cpsDefendantId = ofNullable(prosecutionCaseSubject.getDefendantSubject())
+                .map(defendantSubject -> ofNullable(defendantSubject.getCpsDefendantId())
+                        .orElseGet(() -> ofNullable(defendantSubject.getCpsPersonDefendantDetails()).map(CpsPersonDefendantDetails::getCpsDefendantId).orElse(null)))
+                .orElse(null);
+
+        return apply(Stream.of(
+                caseCpsDetailsUpdatedFromCourtDocument()
+                        .withCaseId(caseId)
+                        .withCpsDefendantId(cpsDefendantId)
+                        .withCpsOrganisation(ouCode)
+                        .withDefendantId(defendantId)
+                        .build()));
     }
 
     public Stream<Object> increaseListingNumber(final List<UUID> offenceIds, final UUID hearingId) {

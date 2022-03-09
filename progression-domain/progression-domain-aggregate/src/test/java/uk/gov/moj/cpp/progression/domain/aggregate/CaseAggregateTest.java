@@ -30,6 +30,7 @@ import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFU
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
 
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
@@ -43,9 +44,11 @@ import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
 import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DefendantPartialMatchCreated;
+import uk.gov.justice.core.courts.DefendantSubject;
 import uk.gov.justice.core.courts.Defendants;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
@@ -81,6 +84,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
+import uk.gov.justice.core.courts.ProsecutionCaseSubject;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdated;
 import uk.gov.justice.progression.courts.DefendantsAndListingHearingRequestsStored;
@@ -99,7 +103,6 @@ import uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.ConvictionDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.ConvictionDateRemoved;
-import uk.gov.moj.cpp.progression.domain.event.Defendant;
 import uk.gov.moj.cpp.progression.domain.event.NewCaseDocumentReceivedEvent;
 import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
@@ -2109,6 +2112,114 @@ public class CaseAggregateTest {
         assertThat(eventStream.size(), is(0));
 
     }
+
+
+    @Test
+    public void shouldUpdateCpsOrganisationWhenEventRaised(){
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final ProsecutionCaseSubject prosecutionCaseSubject = ProsecutionCaseSubject.prosecutionCaseSubject()
+                .withOuCode("AB12345")
+                .build();
+
+        final List<Object> eventStream = this.caseAggregate.updateCpsDetails(prosecutionCase.getId(), defendant.getId(), prosecutionCaseSubject, "AB12345").collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+
+        final CaseCpsDetailsUpdatedFromCourtDocument caseCpsDetailsUpdatedFromCourtDocument = (CaseCpsDetailsUpdatedFromCourtDocument) eventStream.get(0);
+
+        assertThat(caseCpsDetailsUpdatedFromCourtDocument.getCaseId(), is(prosecutionCase.getId()));
+        assertThat(caseCpsDetailsUpdatedFromCourtDocument.getDefendantId(), is(defendant.getId()));
+        assertThat(caseCpsDetailsUpdatedFromCourtDocument.getCpsOrganisation(), is("AB12345"));
+
+        final ProsecutionCase updatedProsecutionCase = this.caseAggregate.getProsecutionCase();
+        assertThat(updatedProsecutionCase.getCpsOrganisation(), is("AB12345"));
+        assertThat(updatedProsecutionCase.getDefendants().get(0).getCpsDefendantId(), is(nullValue()));
+
+    }
+
+    @Test
+    public void shouldNotUpdateCpsOrganisationWhenEventRaisedWithNoCPS(){
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final ProsecutionCaseSubject prosecutionCaseSubject = ProsecutionCaseSubject.prosecutionCaseSubject()
+                .withOuCode("AB12345")
+                .build();
+
+        final List<Object> eventStream = this.caseAggregate.updateCpsDetails(prosecutionCase.getId(), defendant.getId(), prosecutionCaseSubject, null).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+
+        final CaseCpsDetailsUpdatedFromCourtDocument caseCpsDetailsUpdatedFromCourtDocument = (CaseCpsDetailsUpdatedFromCourtDocument) eventStream.get(0);
+
+        assertThat(caseCpsDetailsUpdatedFromCourtDocument.getCaseId(), is(prosecutionCase.getId()));
+        assertThat(caseCpsDetailsUpdatedFromCourtDocument.getDefendantId(), is(defendant.getId()));
+        assertThat(caseCpsDetailsUpdatedFromCourtDocument.getCpsOrganisation(), is(nullValue()));
+
+        final ProsecutionCase updatedProsecutionCase = this.caseAggregate.getProsecutionCase();
+        assertThat(updatedProsecutionCase.getCpsOrganisation(), is(nullValue()));
+        assertThat(updatedProsecutionCase.getDefendants().get(0).getCpsDefendantId(), is(nullValue()));
+
+    }
+
+    @Test
+    public void shouldUpdateCpsDefendantIdWhenEventRaised(){
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final UUID cpsDefendantId = randomUUID();
+        final ProsecutionCaseSubject prosecutionCaseSubject = ProsecutionCaseSubject.prosecutionCaseSubject()
+                .withOuCode("AB12345")
+                .withDefendantSubject(DefendantSubject.defendantSubject()
+                        .withCpsDefendantId(cpsDefendantId.toString())
+                        .build())
+                .build();
+
+        final List<Object> eventStream = this.caseAggregate.updateCpsDetails(prosecutionCase.getId(), defendant.getId(), prosecutionCaseSubject, "AB12345").collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+
+        final CaseCpsDetailsUpdatedFromCourtDocument caseCpsDetailsUpdatedFromCourtDocument = (CaseCpsDetailsUpdatedFromCourtDocument) eventStream.get(0);
+
+        assertThat(caseCpsDetailsUpdatedFromCourtDocument.getCaseId(), is(prosecutionCase.getId()));
+        assertThat(caseCpsDetailsUpdatedFromCourtDocument.getDefendantId(), is(defendant.getId()));
+        assertThat(caseCpsDetailsUpdatedFromCourtDocument.getCpsOrganisation(), is("AB12345"));
+
+        final ProsecutionCase updatedProsecutionCase = this.caseAggregate.getProsecutionCase();
+        assertThat(updatedProsecutionCase.getCpsOrganisation(), is("AB12345"));
+        assertThat(updatedProsecutionCase.getDefendants().get(0).getCpsDefendantId(), is(cpsDefendantId));
+
+    }
+
+    @Test
+    public void shouldUpdateCpsDefendantIdWhenEventRaisedWithCpsOrganisationDefendantDetails(){
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final UUID cpsDefendantId = randomUUID();
+        final ProsecutionCaseSubject prosecutionCaseSubject = ProsecutionCaseSubject.prosecutionCaseSubject()
+                .withOuCode("AB12345")
+                .withDefendantSubject(DefendantSubject.defendantSubject()
+                        .withCpsPersonDefendantDetails(CpsPersonDefendantDetails.cpsPersonDefendantDetails()
+                                .withCpsDefendantId(cpsDefendantId.toString())
+                                .build())
+                        .build())
+                .build();
+
+        final List<Object> eventStream = this.caseAggregate.updateCpsDetails(prosecutionCase.getId(), defendant.getId(), prosecutionCaseSubject, "AB12345").collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+
+        final CaseCpsDetailsUpdatedFromCourtDocument caseCpsDetailsUpdatedFromCourtDocument = (CaseCpsDetailsUpdatedFromCourtDocument) eventStream.get(0);
+
+        assertThat(caseCpsDetailsUpdatedFromCourtDocument.getCaseId(), is(prosecutionCase.getId()));
+        assertThat(caseCpsDetailsUpdatedFromCourtDocument.getDefendantId(), is(defendant.getId()));
+        assertThat(caseCpsDetailsUpdatedFromCourtDocument.getCpsOrganisation(), is("AB12345"));
+
+        final ProsecutionCase updatedProsecutionCase = this.caseAggregate.getProsecutionCase();
+        assertThat(updatedProsecutionCase.getCpsOrganisation(), is("AB12345"));
+        assertThat(updatedProsecutionCase.getDefendants().get(0).getCpsDefendantId(), is(cpsDefendantId));
+
+    }
+
 
     private DefendantsAddedToCourtProceedings buildDefendantsAddedToCourtProceedings(
             final UUID caseId, final UUID defendantId, final UUID defendantId2, final UUID offenceId) {

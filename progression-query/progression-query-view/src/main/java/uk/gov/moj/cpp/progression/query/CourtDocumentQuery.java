@@ -19,6 +19,8 @@ import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
+import uk.gov.justice.core.courts.CourtDocumentSummary;
+import uk.gov.justice.core.courts.CourtdocumentsWithPagination;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.ProsecutionCase;

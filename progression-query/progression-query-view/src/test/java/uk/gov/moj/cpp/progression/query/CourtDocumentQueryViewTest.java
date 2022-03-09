@@ -24,6 +24,7 @@ import static org.apache.commons.io.FileUtils.readFileToString;
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
+import uk.gov.justice.core.courts.CourtdocumentsWithPagination;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.DocumentTypeRBAC;
