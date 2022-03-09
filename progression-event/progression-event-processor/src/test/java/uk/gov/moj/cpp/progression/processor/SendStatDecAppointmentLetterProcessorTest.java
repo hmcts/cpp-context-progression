@@ -194,7 +194,7 @@ public class SendStatDecAppointmentLetterProcessorTest {
         when(referenceDataService.getCourtRoomById(any(),any(),any())).thenReturn(courtCentreJson);
         this.eventProcessor.process(eventEnvelope);
         verify(statDecNotificationService).sendNotification(any(),any(),any(),any(),any(),any(), captor.capture());
-        assertThat(captor.getValue(), equalTo("NPE_StatutoryDeclarationHearingBilingual"));
+        assertThat(captor.getValue(), equalTo("NPB_StatutoryDeclarationHearing"));
     }
 
     private Optional<JsonObject> getCourtCentreJson(final boolean isWelsh) {

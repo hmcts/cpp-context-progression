@@ -26,9 +26,9 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 public class SendStatDecAppointmentLetterProcessor {
 
     private static final String STAT_DEC_VIRTUAL_HEARING = "NPE_StatutoryDeclarationVirtualHearing";
-    private static final String STAT_DEC_VIRTUAL_HEARING_BILINGUAL = "NPE_StatutoryDeclarationVirtualHearingBilingual";
+    private static final String STAT_DEC_VIRTUAL_HEARING_BILINGUAL = "NPB_StatutoryDeclarationVirtualHearing";
     private static final String STAT_DEC_COURT_HEARING = "NPE_StatutoryDeclarationHearing";
-    private static final String STAT_DEC_COURT_HEARING_BILINGUAL = "NPE_StatutoryDeclarationHearingBilingual";
+    private static final String STAT_DEC_COURT_HEARING_BILINGUAL = "NPB_StatutoryDeclarationHearing";
     private static final ZoneId ZONE_ID = ZoneId.of(ZoneOffset.UTC.getId());
 
 
