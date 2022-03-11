@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.json.JsonObject;
 
@@ -94,7 +95,7 @@ public class DefendantHelper {
         boolean proceedingConcluded;
         if (isDefendantConcluded(defendantJudicialResults) || isCaseDefendantConcluded(defendant)) {
             proceedingConcluded = getUpdatedDefendantsWithProceedingConcluded(defendant, updatedOffences);
-        }else {
+        } else {
             proceedingConcluded = defendant.getOffences().stream()
                     .map(offence -> getUpdatedOffence(updatedOffences, offence, isConcluded(offence)))
                     .map(Offence::getProceedingsConcluded)
@@ -150,21 +151,8 @@ public class DefendantHelper {
                 final List<Offence> updatedOffences = new ArrayList<>();
                 final List<Offence> caseOffencesStateList = defendantCaseOffences.get(defendant.getId());
                 if (isNotEmpty(caseOffencesStateList)) {
-                    caseOffencesStateList.stream().forEach(previousOffenceState -> {
-                        if (nonNull(previousOffenceState.getLaaApplnReference()) && isNotEmpty(previousOffenceState.getJudicialResults())) {
-                            defendant.getOffences().stream()
-                                    .filter(inputOffence -> inputOffence.getId().equals(previousOffenceState.getId()))
-                                    .map(inputOffence -> getOffenceWithProceedingConcluded(updatedOffences, inputOffence, previousOffenceState))
-                                    .collect(toList());
-                        } else {
-                            defendant.getOffences().stream()
-                                    .filter(inputOffence -> inputOffence.getId().equals(previousOffenceState.getId()))
-                                    .map(inputOffence -> updatedOffences.add(inputOffence))
-                                    .collect(toList());
-
-                        }
-                    });
-                    final Defendant updatedDef = Defendant.defendant().withValuesFrom(defendant).withOffences(updatedOffences).build();
+                    getUpdatedOffencesForProceedingConcluded(caseOffencesStateList, defendant, updatedOffences);
+                    final Defendant updatedDef = Defendant.defendant().withValuesFrom(defendant).withOffences(updatedOffences.stream().distinct().collect(toList())).build();
                     updatedDefendantsWithPreviousProceedingChange.add(updatedDef);
                 } else {
                     updatedDefendantsWithPreviousProceedingChange.addAll(updatedDefendants);
@@ -174,7 +162,28 @@ public class DefendantHelper {
         }
     }
 
-    private static Offence getOffenceWithProceedingConcluded(final List<Offence> updatedOffences, Offence existingOffence, Offence previousOffence) {
+    private static void getUpdatedOffencesForProceedingConcluded(final List<Offence> caseOffencesStateList, final Defendant defendant, final List<Offence> updatedOffences) {
+        caseOffencesStateList.stream().forEach(previousOffenceState -> {
+            if (isNotEmpty(previousOffenceState.getJudicialResults())) {
+                defendant.getOffences().stream().forEach(offence -> {
+                    if (offence.getId().equals(previousOffenceState.getId())) {
+                        getOffenceWithProceedingConcluded(updatedOffences, offence, previousOffenceState);
+                    } else if (defendant.getOffences().stream().noneMatch(offence1 -> offence1.getId().equals(previousOffenceState.getId()))) {
+                        updateOffenceMap(updatedOffences, previousOffenceState);
+                        updatedOffences.add(previousOffenceState);
+                    }
+                });
+            } else {
+                defendant.getOffences().stream()
+                        .filter(inputOffence -> inputOffence.getId().equals(previousOffenceState.getId()))
+                        .map(inputOffence -> updatedOffences.add(inputOffence))
+                        .collect(toList());
+
+            }
+        });
+    }
+
+    private static Offence getOffenceWithProceedingConcluded(final List<Offence> updatedOffences, final Offence existingOffence, final Offence previousOffence) {
         final Offence.Builder offenceBuilder = Offence.offence();
         if (nonNull(previousOffence.getProceedingsConcluded()) && isEmpty(existingOffence.getJudicialResults())) {
             offenceBuilder.withValuesFrom(existingOffence).withProceedingsConcluded(previousOffence.getProceedingsConcluded())
@@ -182,10 +191,22 @@ public class DefendantHelper {
         } else {
             offenceBuilder.withValuesFrom(existingOffence);
         }
+
+        updateOffenceMap(updatedOffences, previousOffence);
         updatedOffences.add(offenceBuilder.build());
         return offenceBuilder.build();
     }
 
+    private static void updateOffenceMap(final List<Offence> updatedOffences, final Offence previousOffence) {
+        if (updatedOffences.stream().anyMatch(offence -> offence.getId().equals(previousOffence.getId()))) {
+            final int index = IntStream.range(0, updatedOffences.size())
+                    .filter(i -> updatedOffences.get(i).getId().equals(previousOffence.getId()))
+                    .findFirst().orElse(-1);
+            if (index >= 0) {
+                updatedOffences.remove(index);
+            }
+        }
+    }
 
     public static boolean isProceedingConcludedEventTriggered(Defendant defendant, Map<UUID, List<uk.gov.justice.core.courts.Offence>> offenceProceedingConcluded, Map<UUID, Boolean> defendantProceedingConcluded) {
         return nonNull(defendant.getProceedingsConcluded() && (!defendant.getProceedingsConcluded().equals(defendantProceedingConcluded.get(defendant.getId())) || isAnyChangeInProceedingConcludedFromPreviousState(defendant.getOffences(), offenceProceedingConcluded.get(defendant.getId()))));
