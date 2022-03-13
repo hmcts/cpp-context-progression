@@ -37,7 +37,7 @@ public class BookSlotsForApplicationIT extends AbstractIT {
 
     private static final String COURT_APPLICATION_CREATED = "public.progression.court-application-created";
 
-    private static final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer(COURT_APPLICATION_CREATED);
+    private static final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createPublicConsumer(COURT_APPLICATION_CREATED);
 
     @Before
     public void setUp() {

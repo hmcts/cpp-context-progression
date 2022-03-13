@@ -93,13 +93,13 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         final String caseUrn = applicationReference;
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-initiated")) {
+        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-initiated")) {
             addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }
 
 
-        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-initiated")) {
+        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-initiated")) {
             addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }
@@ -152,7 +152,7 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         final String caseUrn = applicationReference;
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-initiated")) {
+        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-initiated")) {
             addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }
@@ -165,7 +165,7 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         assertThat(addApplication1ResponseJsonObject.isPresent(), is(true));
 
 
-        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-initiated")) {
+        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-initiated")) {
             addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }
@@ -177,7 +177,7 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         Optional<JsonObject> addApplication2ResponseJsonObject = findBy(addApplication2Matcher);
         assertThat(addApplication2ResponseJsonObject.isPresent(), is(true));
 
-        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-edited")) {
+        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-edited")) {
             updateCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }

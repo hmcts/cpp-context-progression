@@ -52,8 +52,8 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private static final String HEARING_RESULTED_EVENT = "progression.event.hearing-resulted-case-updated";
     private static final String EVENT_LOCATION = "ingestion/progression.event.hearing-resulted-case-updated.json";
 
-    private static final MessageConsumer messageConsumer = privateEvents.createConsumer(HEARING_RESULTED_EVENT);
-    private static final MessageProducer messageProducer = privateEvents.createProducer();
+    private static final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer(HEARING_RESULTED_EVENT);
+    private static final MessageProducer messageProducer = privateEvents.createPrivateProducer();
 
     private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil;
 

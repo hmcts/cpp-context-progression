@@ -50,7 +50,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class ApplicationAtAGlanceIT extends AbstractIT {
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-aaag.json";

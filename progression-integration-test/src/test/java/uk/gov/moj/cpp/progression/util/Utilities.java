@@ -81,19 +81,19 @@ public class Utilities {
     }
 
     public static EventListener listenFor(String mediaType) {
-        return new EventListener(publicEvents.createConsumer(mediaType), mediaType);
+        return new EventListener(publicEvents.createPublicConsumer(mediaType), mediaType);
     }
 
     public static EventListener listenFor(String mediaType, long timeout) {
-        return new EventListener(publicEvents.createConsumer(mediaType), mediaType, timeout);
+        return new EventListener(publicEvents.createPublicConsumer(mediaType), mediaType, timeout);
     }
 
     public static EventListener listenForPrivateEvent(String mediaType) {
-        return new EventListener(privateEvents.createConsumer(mediaType), mediaType);
+        return new EventListener(privateEvents.createPrivateConsumer(mediaType), mediaType);
     }
 
     public static EventListener listenForPrivateEvent(String mediaType, long timeout) {
-        return new EventListener(privateEvents.createConsumer(mediaType), mediaType, timeout);
+        return new EventListener(privateEvents.createPrivateConsumer(mediaType), mediaType, timeout);
     }
 
     public static class JsonUtil {

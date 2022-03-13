@@ -68,10 +68,10 @@ public class UploadCourtDocumentIT extends AbstractIT {
     private String defendantId;
 
     private static final MessageConsumer publicEventConsumer = publicEvents
-            .createConsumer("public.progression.court-document-added");
+            .createPublicConsumer("public.progression.court-document-added");
 
     private static final MessageConsumer privateEventConsumer = privateEvents
-            .createConsumer("progression.event.court-document-added-v2");
+            .createPrivateConsumer("progression.event.court-document-added-v2");
 
     @Before
     public void setup() {

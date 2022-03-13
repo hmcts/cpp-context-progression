@@ -46,15 +46,15 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED = "public.progression.hearing-resulted";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
+            .createPublicConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
     private static final MessageConsumer messageConsumerClientPublicForHearingResultedCaseUpdated = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED);
+            .createPublicConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED);
     private static final MessageConsumer messageConsumerClientPublicForHearingResulted = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED);
+            .createPublicConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED);
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-            .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+            .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;

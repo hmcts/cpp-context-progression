@@ -54,7 +54,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final String REMOVAL_REASON = "Legal";
     private static final String STATUS_EJECTED = "EJECTED";
     private static final String STATUS_DRAFT = "DRAFT";
@@ -91,7 +91,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
 
         String applicationId = randomUUID().toString();
 
-        try (final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer(COURT_APPLICATION_CREATED)) {
+        try (final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createPublicConsumer(COURT_APPLICATION_CREATED)) {
 
             addStandaloneCourtApplication(applicationId, randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
 
@@ -112,7 +112,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
 
         pollForApplicationStatus(applicationId, "LISTED");
 
-        try (final MessageConsumer consumerForCaseOrApplicationEjected = publicEvents.createConsumer(CASE_OR_APPLICATION_EJECTED)) {
+        try (final MessageConsumer consumerForCaseOrApplicationEjected = publicEvents.createPublicConsumer(CASE_OR_APPLICATION_EJECTED)) {
 
             ejectCaseApplication(applicationId, caseId, REMOVAL_REASON, "eject/progression.eject-application.json");
 
@@ -136,7 +136,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
 
         String applicationId = randomUUID().toString();
 
-        try (final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer(COURT_APPLICATION_CREATED)) {
+        try (final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createPublicConsumer(COURT_APPLICATION_CREATED)) {
 
             addStandaloneCourtApplication(applicationId, randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
 
@@ -145,7 +145,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
 
         pollForApplicationStatus(applicationId, STATUS_DRAFT);
 
-        try (final MessageConsumer consumerForCaseOrApplicationEjected = publicEvents.createConsumer(CASE_OR_APPLICATION_EJECTED)) {
+        try (final MessageConsumer consumerForCaseOrApplicationEjected = publicEvents.createPublicConsumer(CASE_OR_APPLICATION_EJECTED)) {
 
             ejectCaseApplication(applicationId, caseId, REMOVAL_REASON, "eject/progression.eject-application.json");
 
@@ -174,7 +174,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
         // Creating first application for the case
         String firstApplicationId = randomUUID().toString();
 
-        try (final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer(COURT_APPLICATION_CREATED)) {
+        try (final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createPublicConsumer(COURT_APPLICATION_CREATED)) {
             initiateCourtProceedingsForCourtApplication(firstApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
 
             verifyInMessagingQueueForCourtApplicationCreated(firstApplicationId, consumerForCourtApplicationCreated);
@@ -193,7 +193,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
         // Creating second application for the case
         String secondApplicationId = randomUUID().toString();
 
-        try (final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer(COURT_APPLICATION_CREATED)) {
+        try (final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createPublicConsumer(COURT_APPLICATION_CREATED)) {
 
             initiateCourtProceedingsForCourtApplication(secondApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
             verifyInMessagingQueueForCourtApplicationCreated(secondApplicationId, consumerForCourtApplicationCreated);
@@ -204,7 +204,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
         //assert linked applications
         pollProsecutionCasesProgressionFor(caseId, getLinkedApplicationsMatcher(STATUS_UN_ALLOCATED));
 
-        try (final MessageConsumer consumerForCaseOrApplicationEjected = publicEvents.createConsumer(CASE_OR_APPLICATION_EJECTED)) {
+        try (final MessageConsumer consumerForCaseOrApplicationEjected = publicEvents.createPublicConsumer(CASE_OR_APPLICATION_EJECTED)) {
 
             // Eject case
             ejectCaseApplication(randomUUID().toString(), caseId, REMOVAL_REASON, "eject/progression.eject-case.json");

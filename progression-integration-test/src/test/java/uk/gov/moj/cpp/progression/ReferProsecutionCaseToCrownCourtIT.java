@@ -47,8 +47,8 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
 
-    private static final MessageConsumer consumerForReferToCourtRejected = publicEvents.createConsumer("public.progression.refer-prosecution-cases-to-court-rejected");
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+    private static final MessageConsumer consumerForReferToCourtRejected = publicEvents.createPublicConsumer("public.progression.refer-prosecution-cases-to-court-rejected");
+    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
     private static final String SENT_FOR_LISTING_STATUS = "SENT_FOR_LISTING";
 
     private String caseId;

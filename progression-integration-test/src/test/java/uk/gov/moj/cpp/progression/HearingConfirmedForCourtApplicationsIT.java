@@ -61,13 +61,13 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED = "public.hearing.resulted-case-updated";
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-            .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+            .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.event.hearing-application-link-created";
-    private static final MessageConsumer messageConsumerLink = privateEvents.createConsumer(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
+    private static final MessageConsumer messageConsumerLink = privateEvents.createPrivateConsumer(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
     private static final String MAGISTRATES_JURISDICTION_TYPE = "MAGISTRATES";
-    private static final MessageConsumer messageConsumerListingNumberUpdated = privateEvents.createConsumer("progression.event.listing-number-updated");
+    private static final MessageConsumer messageConsumerListingNumberUpdated = privateEvents.createPrivateConsumer("progression.event.listing-number-updated");
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;

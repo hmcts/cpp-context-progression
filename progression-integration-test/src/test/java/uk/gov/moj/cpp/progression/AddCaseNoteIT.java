@@ -34,7 +34,7 @@ public class AddCaseNoteIT extends AbstractIT {
 
     private String caseId = randomUUID().toString();
 
-    private static final MessageConsumer consumerForCaseNoteAdded = publicEvents.createConsumer("public.progression.case-note-added");
+    private static final MessageConsumer consumerForCaseNoteAdded = publicEvents.createPublicConsumer("public.progression.case-note-added");
 
     @Test
     public void shouldAddCaseNote() throws IOException {

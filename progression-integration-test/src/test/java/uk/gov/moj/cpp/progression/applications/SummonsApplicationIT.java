@@ -40,8 +40,8 @@ public class SummonsApplicationIT extends AbstractIT {
 
     @Before
     public void setUp() {
-        consumerForCourtApplicationCreated = privateEvents.createConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
-        consumerForCourtApplicationUpdated = privateEvents.createConsumer(COURT_APPLICATION_UPDATED);
+        consumerForCourtApplicationCreated = privateEvents.createPrivateConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
+        consumerForCourtApplicationUpdated = privateEvents.createPrivateConsumer(COURT_APPLICATION_UPDATED);
     }
 
     @After

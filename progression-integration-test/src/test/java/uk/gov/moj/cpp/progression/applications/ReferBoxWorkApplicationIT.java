@@ -95,11 +95,11 @@ public class ReferBoxWorkApplicationIT extends AbstractIT {
         NotificationServiceStub.setUp();
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = publicEvents.createConsumer(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED);
-        consumerForCourtApplicationCreated = privateEvents.createConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
-        publicEventsConsumerForHearingExtended = publicEvents.createConsumer(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED);
-        consumerForEmailRequested = privateEvents.createConsumer(EMAIL_REQUESTED_PRIVATE_EVENT);
-        consumerForPrintRequested = privateEvents.createConsumer(PRINT_REQUESTED_PRIVATE_EVENT);
+        messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED);
+        consumerForCourtApplicationCreated = privateEvents.createPrivateConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
+        publicEventsConsumerForHearingExtended = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED);
+        consumerForEmailRequested = privateEvents.createPrivateConsumer(EMAIL_REQUESTED_PRIVATE_EVENT);
+        consumerForPrintRequested = privateEvents.createPrivateConsumer(PRINT_REQUESTED_PRIVATE_EVENT);
     }
 
     @After

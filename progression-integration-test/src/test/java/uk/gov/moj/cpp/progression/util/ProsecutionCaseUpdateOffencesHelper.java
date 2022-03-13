@@ -28,7 +28,7 @@ public class ProsecutionCaseUpdateOffencesHelper extends AbstractTestHelper {
     private static final String WRITE_MEDIA_TYPE = "application/vnd.progression.update-offences-for-prosecution-case+json";
     private static final String TEMPLATE_UPDATE_OFFENCES_PAYLOAD = "progression.update-offences-for-prosecution-case.json";
     private final MessageConsumer publicEventsConsumerForOffencesUpdated =
-            QueueUtil.publicEvents.createConsumer(
+            QueueUtil.publicEvents.createPublicConsumer(
                     "public.progression.defendant-offences-changed");
     private final String defendantId;
     private final String caseId;
@@ -40,7 +40,7 @@ public class ProsecutionCaseUpdateOffencesHelper extends AbstractTestHelper {
         this.caseId = caseId;
         this.offenceId = offenceId;
 
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer("progression.event.prosecution-case-offences-updated");
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer("progression.event.prosecution-case-offences-updated");
     }
 
     public void updateOffences() {

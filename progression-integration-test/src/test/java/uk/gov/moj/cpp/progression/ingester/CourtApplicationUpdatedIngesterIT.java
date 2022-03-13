@@ -76,7 +76,7 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
 
         setUpCourtApplication(CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
-        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-edited")) {
+        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-edited")) {
             updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }
@@ -98,7 +98,7 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
 
         setUpCourtApplication(CREATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION);
 
-        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-edited")) {
+        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-edited")) {
             updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationReference, UPDATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }

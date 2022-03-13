@@ -136,9 +136,9 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
 
     private final String prosecutorCost = "£300.00";
 
-    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createProducer();
-    private final MessageConsumer nowsMaterialRequestRecordedConsumer = privateEvents.createConsumer(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED);
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createPublicProducer();
+    private final MessageConsumer nowsMaterialRequestRecordedConsumer = privateEvents.createPrivateConsumer(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED);
+    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
 
     private static final String DOCUMENT_TEXT = STRING.next();
 

@@ -44,7 +44,7 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
     public void setup() {
         stringToJsonObjectConverter = new StringToJsonObjectConverter();
         SysDocGeneratorStub.stubDocGeneratorEndPoint();
-        producer = QueueUtil.publicEvents.createProducer();
+        producer = QueueUtil.publicEvents.createPublicProducer();
     }
 
     @After

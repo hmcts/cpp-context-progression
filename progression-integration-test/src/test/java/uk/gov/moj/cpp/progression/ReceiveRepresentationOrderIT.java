@@ -98,19 +98,19 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
     private static final String NO_LAA_CONTRACT_NUMBER_REGISTER = "LAA12345";
 
     private static final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
+            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
     private static final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_ID_STATUS_UPDATED);
+            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_ID_STATUS_UPDATED);
     private static final MessageConsumer messageConsumerClientPublicForAssociationLockedReference = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_DEFENCE_ASSOCIATION_LOCKED_FOR_LAA);
+            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ASSOCIATION_LOCKED_FOR_LAA);
     private static final MessageConsumer messageConsumerClientPublicForLaaContractAssociation = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_DEFENCE_LAA_CONTRACT_ASSOCIATED);
+            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_LAA_CONTRACT_ASSOCIATED);
     private static final MessageConsumer messageConsumerClientPublicForDefenceOrganisationDisassociation = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_DISASSOCIATED);
+            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_DISASSOCIATED);
     private static final MessageConsumer messageConsumerClientPublicForDefenceOrganisationAssociation = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED);
+            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED);
 
-    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createProducer();
+    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createPublicProducer();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FILE = "public.listing.hearing-confirmed-cps-notification.json";
 

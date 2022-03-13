@@ -47,11 +47,11 @@ public class ACourtHearingMarkedAsDuplicateIT extends AbstractIT {
     private static final String PUBLIC_HEARING_MARKED_AS_DUPLICATE_EVENT = "public.events.hearing.marked-as-duplicate";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
-    private static final MessageConsumer messageConsumerHearingMarkedAsDuplicate = privateEvents.createConsumer("progression.event.hearing-marked-as-duplicate");
-    private static final MessageConsumer messageConsumerHearingMarkedAsDuplicateForCase = privateEvents.createConsumer("progression.event.hearing-marked-as-duplicate-for-case");
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+    private static final MessageConsumer messageConsumerHearingMarkedAsDuplicate = privateEvents.createPrivateConsumer("progression.event.hearing-marked-as-duplicate");
+    private static final MessageConsumer messageConsumerHearingMarkedAsDuplicateForCase = privateEvents.createPrivateConsumer("progression.event.hearing-marked-as-duplicate-for-case");
+    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
@@ -88,7 +88,7 @@ public class ACourtHearingMarkedAsDuplicateIT extends AbstractIT {
 
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);

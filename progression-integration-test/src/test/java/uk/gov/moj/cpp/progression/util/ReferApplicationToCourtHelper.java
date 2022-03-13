@@ -16,19 +16,19 @@ import javax.json.JsonObject;
 public class ReferApplicationToCourtHelper extends AbstractTestHelper {
 
     private static final MessageConsumer publicEventsConsumerForHearingExtended =
-            QueueUtil.publicEvents.createConsumer(
+            QueueUtil.publicEvents.createPublicConsumer(
                     "public.progression.events.hearing-extended");
 
     private static final MessageConsumer applicationReferralToExistingHearingMessageConsumer =
-            QueueUtil.privateEvents.createConsumer(
+            QueueUtil.privateEvents.createPrivateConsumer(
                     "progression.event.application-referral-to-existing-hearing");
 
     private static final MessageConsumer hearingApplicationLinkCreated =
-            QueueUtil.privateEvents.createConsumer(
+            QueueUtil.privateEvents.createPrivateConsumer(
                     "progression.event.hearing-application-link-created");
 
     public ReferApplicationToCourtHelper() {
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer("listing.command.list-court-hearing");
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer("listing.command.list-court-hearing");
     }
 
     public static void verifyHearingInMessagingQueueForReferToCourt() {

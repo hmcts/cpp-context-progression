@@ -38,10 +38,10 @@ public class UpdateDefendantHelper extends AbstractTestHelper {
     private static final String TEMPLATE_UPDATE_DEFENDANT_PERSON_PAYLOAD = "raml/json/progression.command.update-defendant.json";
     private static final String TEMPLATE_PDATE_DEFENDANT_BAIL_STATUS_PAYLOAD = "raml/json/progression.command.update-defendant-bail-status.json";
     private static final String TEMPLATE_EMPTY_DEFENDANT_PAYLOAD = "raml/json/progression.command.update-empty-defendant.json";
-    private static final MessageConsumer publicEventCompleteSendingSheetInvalidatedConsumer = QueueUtil.publicEvents.createConsumer(
+    private static final MessageConsumer publicEventCompleteSendingSheetInvalidatedConsumer = QueueUtil.publicEvents.createPublicConsumer(
             "public.progression.events.sending-sheet-previously-completed");
     private final MessageConsumer publicEventsConsumerForDefendantUpdated =
-            QueueUtil.publicEvents.createConsumer(
+            QueueUtil.publicEvents.createPublicConsumer(
                     "public.progression.events.defendant-updated");
     private final String defendantId;
     private final String caseId;
@@ -54,7 +54,7 @@ public class UpdateDefendantHelper extends AbstractTestHelper {
         this.caseId = caseId;
         this.personId = personId;
 
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_DEFENDANT_UPDATED);
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer(EVENT_SELECTOR_DEFENDANT_UPDATED);
     }
 
     public void updateDefendantPerson() {

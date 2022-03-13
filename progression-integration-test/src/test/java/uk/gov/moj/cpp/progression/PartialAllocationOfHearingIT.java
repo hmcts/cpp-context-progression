@@ -53,11 +53,11 @@ public class PartialAllocationOfHearingIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_WITH_EXTENDED_HEARING_ID = "public.listing.hearing-confirmed-with-extended-hearing-id.json";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final Logger LOGGER = LoggerFactory.getLogger(PartialAllocationOfHearingIT.class);
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
-    private static final MessageConsumer messageConsumerProgressionHearingExtendedEvent = privateEvents.createConsumer("progression.event.hearing-extended");
-    private static final MessageConsumer messageConsumerProgressionSummonsDataPreparedEvent = privateEvents.createConsumer("progression.event.summons-data-prepared");
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+    private static final MessageConsumer messageConsumerProgressionHearingExtendedEvent = privateEvents.createPrivateConsumer("progression.event.hearing-extended");
+    private static final MessageConsumer messageConsumerProgressionSummonsDataPreparedEvent = privateEvents.createPrivateConsumer("progression.event.summons-data-prepared");
+    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
 
 
     @BeforeClass

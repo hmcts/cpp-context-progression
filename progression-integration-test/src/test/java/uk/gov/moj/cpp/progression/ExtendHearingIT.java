@@ -55,10 +55,10 @@ public class ExtendHearingIT extends AbstractIT {
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PUBLIC_EVENTS_LISTING_ALLOCATED_HEARING_DELETED = "public.events.listing.allocated-hearing-deleted";
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtendHearingIT.class);
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
-    private static final MessageConsumer messageConsumerProgressionHearingExtendedEvent = privateEvents.createConsumer("progression.event.hearing-extended");
-    private static final MessageConsumer messageConsumerProgressionSummonsDataPreparedEvent = privateEvents.createConsumer("progression.event.summons-data-prepared");
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+    private static final MessageConsumer messageConsumerProgressionHearingExtendedEvent = privateEvents.createPrivateConsumer("progression.event.hearing-extended");
+    private static final MessageConsumer messageConsumerProgressionSummonsDataPreparedEvent = privateEvents.createPrivateConsumer("progression.event.summons-data-prepared");
 
     private static List<String> caseIds = new ArrayList<>();
     private static List<String> defendantIds = new ArrayList<>();

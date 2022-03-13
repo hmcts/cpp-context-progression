@@ -37,7 +37,7 @@ public class PartialHearingConfirmIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_LISTING_PARTIAL_HEARING_CONFIRMED = "public.listing.partial-hearing-confirmed.json";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 

@@ -36,9 +36,9 @@ public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_UPDATED = "public.listing.hearing-updated";
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression" +
             ".prosecution-cases-referred-to-court";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
+            .createPublicConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
     private String hearingId;
@@ -67,13 +67,13 @@ public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
     public void shouldUpdateCaseAtAGlance() throws Exception {
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged =
-                     privateEvents.createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                     privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             addProsecutionCaseToCrownCourt(caseId, defendantId);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
             hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         }
 
-        try (final MessageConsumer publicHearingDetailChangedConsumer = publicEvents.createConsumer("public.hearing-detail-changed")) {
+        try (final MessageConsumer publicHearingDetailChangedConsumer = publicEvents.createPublicConsumer("public.hearing-detail-changed")) {
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_UPDATED, getHearingJsonObject("public.listing.hearing-updated.json", caseId,
                             hearingId, defendantId, newCourtCentreId, newCourtCentreName), JsonEnvelope.metadataBuilder()

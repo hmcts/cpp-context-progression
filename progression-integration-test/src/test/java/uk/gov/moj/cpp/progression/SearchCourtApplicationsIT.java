@@ -29,7 +29,7 @@ public class SearchCourtApplicationsIT extends AbstractIT {
     private static final String JSON_RESULTS_DEFENDANT_PATH = "$.searchResults[0].defendantName";
     private static final String JSON_RESULTS_PROSECUTOR_PATH = "$.searchResults[0].prosecutor";
 
-    private static final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer("public.progression.court-application-created");
+    private static final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createPublicConsumer("public.progression.court-application-created");
 
     private static CourtApplicationRandomValues randomValues;
 

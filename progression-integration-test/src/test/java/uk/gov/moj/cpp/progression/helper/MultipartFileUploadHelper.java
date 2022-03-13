@@ -23,7 +23,7 @@ public class MultipartFileUploadHelper extends AbstractTestHelper{
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseUpdateOffencesHelper.class);
 
     private final MessageConsumer publicEventsConsumerForCourtDocUploaded =
-            QueueUtil.publicEvents.createConsumer("public.progression.events.court-document-uploaded");
+            QueueUtil.publicEvents.createPublicConsumer("public.progression.events.court-document-uploaded");
 
     public void verifyInMessagingQueueForCourtDocUploaded(final UUID materialId) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventsConsumerForCourtDocUploaded);

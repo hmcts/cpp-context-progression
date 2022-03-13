@@ -43,11 +43,11 @@ public class ProsecutionCaseUpdateDefendantWithMatchedHelper extends AbstractTes
 
     private final MessageConsumer publicEventsCaseDefendantChanged =
             QueueUtil.publicEvents
-                    .createConsumer("public.progression.case-defendant-changed");
+                    .createPublicConsumer("public.progression.case-defendant-changed");
 
     public ProsecutionCaseUpdateDefendantWithMatchedHelper() {
 
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer("progression.event.prosecution-case-defendant-updated");
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer("progression.event.prosecution-case-defendant-updated");
     }
 
     public static Response initiateCourtProceedingsForMatchedDefendants(final String caseId,

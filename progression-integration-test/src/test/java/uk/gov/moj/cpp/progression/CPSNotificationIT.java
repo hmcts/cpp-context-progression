@@ -63,9 +63,9 @@ public class CPSNotificationIT extends AbstractIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(CPSNotificationIT.class.getCanonicalName());
 
 
-    private static final MessageProducer PUBLIC_MESSAGE_CONSUMER = publicEvents.createProducer();
-    private static final MessageConsumer NOTIFICATION_EMAIL_REQUESTED = privateEvents.createConsumer("progression.event.email-requested");
-    private static final MessageConsumer NOTIFICATION_REQUEST_ACCEPTED = privateEvents.createConsumer("progression.event.notification-request-accepted");
+    private static final MessageProducer PUBLIC_MESSAGE_CONSUMER = publicEvents.createPublicProducer();
+    private static final MessageConsumer NOTIFICATION_EMAIL_REQUESTED = privateEvents.createPrivateConsumer("progression.event.email-requested");
+    private static final MessageConsumer NOTIFICATION_REQUEST_ACCEPTED = privateEvents.createPrivateConsumer("progression.event.notification-request-accepted");
     private static final String ORGANISATION_ID = "f8254db1-1683-483e-afb3-b87fde5a0a26";
     private static final String ORGANISATION_NAME = "Smith Associates Ltd.";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();

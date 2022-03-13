@@ -52,8 +52,8 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
 
 
 
-    private static final MessageConsumer messageConsumer = privateEvents.createConsumer(DEFENDANT_CHANGED_EVENT);
-    private static final MessageProducer messageProducer = privateEvents.createProducer();
+    private static final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer(DEFENDANT_CHANGED_EVENT);
+    private static final MessageProducer messageProducer = privateEvents.createPrivateProducer();
 
     private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil;
 

@@ -40,9 +40,9 @@ public class CaseLsmInfoIT extends AbstractIT {
     private static final String PROGRESSION_QUERY_CASE_LSM_INFO = "application/vnd.progression.query.case-lsm-info+json";
 
     private MessageConsumer publicEventConsumerForProsecutionCaseCreated = publicEvents
-            .createConsumer("public.progression.prosecution-case-created");
+            .createPublicConsumer("public.progression.prosecution-case-created");
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
 
     private String prosecutionCaseId_1;

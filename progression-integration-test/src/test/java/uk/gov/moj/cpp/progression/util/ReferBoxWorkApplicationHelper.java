@@ -46,9 +46,9 @@ public class ReferBoxWorkApplicationHelper extends AbstractTestHelper {
     public static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
-    private static final MessageConsumer messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = publicEvents.createConsumer(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED);
-    private static final MessageConsumer publicEventsConsumerForHearingExtended = publicEvents.createConsumer(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED);
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private static final MessageConsumer messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED);
+    private static final MessageConsumer publicEventsConsumerForHearingExtended = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED);
 
     final String userId = randomUUID().toString();
     final String hearingId = randomUUID().toString();
@@ -65,7 +65,7 @@ public class ReferBoxWorkApplicationHelper extends AbstractTestHelper {
 
     public ReferBoxWorkApplicationHelper() {
 
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer("hearing.command.initiate");
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer("hearing.command.initiate");
         sendMessage(messageProducerClientPublic, PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED, boxWorkApplicationJson, metadata);
 
     }

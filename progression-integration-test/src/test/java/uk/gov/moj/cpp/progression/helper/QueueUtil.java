@@ -43,19 +43,28 @@ public class QueueUtil {
     private static final long RETRIEVE_TIMEOUT = 90000;
     private static final long MESSAGE_RETRIEVE_TRIAL_TIMEOUT = 10000;
 
-    private final Session session;
+    private  Session session;
 
-    private final Topic topic;
+    private  Topic topic;
 
-    public static final QueueUtil privateEvents = new QueueUtil("progression.event");
+    private  Connection connection;
 
-    public static final QueueUtil publicEvents = new QueueUtil("public.event");
+    private final String topicName;
+
+    public static  QueueUtil privateEvents= new QueueUtil("progression.event");
+
+    public static  QueueUtil publicEvents = new QueueUtil("public.event");
 
     private QueueUtil(final String topicName) {
+        this.topicName = topicName;
+        initialize(topicName);
+    }
+
+    private void initialize(String topicName) {
         try {
             LOGGER.info("Artemis URI: {}", QUEUE_URI);
             final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(QUEUE_URI);
-            final Connection connection = factory.createConnection();
+            connection = factory.createConnection();
             connection.start();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             topic = new ActiveMQTopic(topicName);
@@ -65,23 +74,60 @@ public class QueueUtil {
         }
     }
 
-    public MessageConsumer createConsumer(final String eventSelector) {
+    public static boolean isAlive(Connection connection) {
         try {
+            return (connection != null && connection.getMetaData() != null);
+        } catch (JMSException ex) {
+            LOGGER.error("Failed on isAlive",ex);
+            return false;
+        }
+    }
+
+    public MessageConsumer createPrivateConsumer(final String eventSelector) {
+        try {
+            if(!isAlive(connection)){
+                initialize("progression.event");
+            }
             return session.createConsumer(topic, String.format(EVENT_SELECTOR_TEMPLATE, eventSelector));
         } catch (final JMSException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public MessageProducer createProducer() {
+    public MessageConsumer createPublicConsumer(final String eventSelector) {
         try {
+            if(!isAlive(connection)){
+                initialize("public.event");
+            }
+            return session.createConsumer(topic, String.format(EVENT_SELECTOR_TEMPLATE, eventSelector));
+        } catch (final JMSException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public MessageProducer createPublicProducer() {
+        try {
+            if(!isAlive(this.connection)){
+                initialize("public.event");
+            }
             return session.createProducer(topic);
         } catch (final JMSException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public MessageConsumer createConsumerForMultipleSelectors(final String... eventSelectors) {
+    public MessageProducer createPrivateProducer() {
+        try {
+            if(!isAlive(this.connection)){
+                initialize("progression.event");
+            }
+            return session.createProducer(topic);
+        } catch (final JMSException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public MessageConsumer createPrivateConsumerForMultipleSelectors(final String... eventSelectors) {
         final StringBuffer str = new StringBuffer("CPPNAME IN (");
         for (int i = 0; i < eventSelectors.length; i++) {
             if (i != 0) {
@@ -93,6 +139,30 @@ public class QueueUtil {
         str.append(")");
 
         try {
+            if(!isAlive(connection)){
+                this.initialize("progression.event");
+            }
+            return session.createConsumer(topic, str.toString());
+        } catch (final JMSException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public MessageConsumer createPublicConsumerForMultipleSelectors(final String... eventSelectors) {
+        final StringBuffer str = new StringBuffer("CPPNAME IN (");
+        for (int i = 0; i < eventSelectors.length; i++) {
+            if (i != 0) {
+                str.append(", ");
+            }
+
+            str.append("'").append(eventSelectors[i]).append("'");
+        }
+        str.append(")");
+
+        try {
+            if(!isAlive(connection)){
+                this.initialize("public.event");
+            }
             return session.createConsumer(topic, str.toString());
         } catch (final JMSException e) {
             throw new RuntimeException(e);
@@ -145,6 +215,22 @@ public class QueueUtil {
 
     public static Optional<String> retrieveMessageAsString(final MessageConsumer consumer, final long customTimeOutInMillis) {
         try {
+            final TextMessage message = (TextMessage) consumer.receive(customTimeOutInMillis);
+            if (message == null) {
+                LOGGER.error("No message retrieved using consumer with selector {}", consumer.getMessageSelector());
+                return Optional.empty();
+            }
+            return Optional.of(message.getText());
+        } catch (final JMSException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public  Optional<String> retrievePrivateMessageAsString(final MessageConsumer consumer, final long customTimeOutInMillis) {
+        try {
+            if(!isAlive(this.connection)){
+                this.initialize("progression.event");
+            }
             final TextMessage message = (TextMessage) consumer.receive(customTimeOutInMillis);
             if (message == null) {
                 LOGGER.error("No message retrieved using consumer with selector {}", consumer.getMessageSelector());

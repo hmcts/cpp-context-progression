@@ -57,8 +57,8 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
     public void setup() {
         stringToJsonObjectConverter = new StringToJsonObjectConverter();
         courtCentreId = randomUUID().toString();
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_RECORDED);
-        privateEventsConsumer2 = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_GENERATED);
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer(EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_RECORDED);
+        privateEventsConsumer2 = QueueUtil.privateEvents.createPrivateConsumer(EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_GENERATED);
         DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
         NotificationServiceStub.setUp();
     }

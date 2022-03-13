@@ -41,11 +41,11 @@ public class UpdateDefendantListingStatusIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final MessageConsumer messageConsumerClientPublicForHearingResultedCaseUpdated = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED);
+            .createPublicConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED);
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-            .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+            .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;

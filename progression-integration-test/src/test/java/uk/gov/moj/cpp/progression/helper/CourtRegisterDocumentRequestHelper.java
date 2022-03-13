@@ -47,8 +47,8 @@ public class CourtRegisterDocumentRequestHelper extends AbstractTestHelper {
     protected MessageProducer publicMessageProducer;
 
     public CourtRegisterDocumentRequestHelper() {
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_COURT_REGISTER_DOCUMENT_REQUEST_RECORDED);
-        publicMessageProducer = QueueUtil.publicEvents.createProducer();
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer(EVENT_SELECTOR_COURT_REGISTER_DOCUMENT_REQUEST_RECORDED);
+        publicMessageProducer = QueueUtil.publicEvents.createPublicProducer();
     }
 
     public void verifyCourtRegisterDocumentRequestRecordedPrivateTopic(final String courtCentreId) {

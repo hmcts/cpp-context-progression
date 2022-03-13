@@ -38,7 +38,7 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
 
     private final MessageConsumer publicEventsCaseDefendantChanged =
             QueueUtil.publicEvents
-                    .createConsumer("public.progression.case-defendant-changed");
+                    .createPublicConsumer("public.progression.case-defendant-changed");
 
     private String request;
 
@@ -50,7 +50,7 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         this.defendantId = defendantId;
         this.caseId = caseId;
 
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer("progression.event.prosecution-case-defendant-updated");
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer("progression.event.prosecution-case-defendant-updated");
     }
 
     public void updateDefendant() {

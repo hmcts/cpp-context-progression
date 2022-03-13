@@ -47,7 +47,7 @@ public class ApplicationExtractIT extends AbstractIT {
     private String updatedDefendantId;
 
     private static final String DOCUMENT_TEXT = STRING.next();
-    private static final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer("public.progression.court-application-created");
+    private static final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createPublicConsumer("public.progression.court-application-created");
 
     @Before
     public void setUp() {

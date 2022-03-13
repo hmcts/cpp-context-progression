@@ -63,7 +63,7 @@ public class RecordLAAReferenceIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
     private static final String PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
     private static final String PUBLIC_DEFENCE_ORGANISATION_FOR_LAA_DISASSOCIATED = "public.progression.defence-organisation-for-laa-disassociated";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private String caseId;
     private String defendantId;
     private static final String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
@@ -128,8 +128,8 @@ public class RecordLAAReferenceIT extends AbstractIT {
         final String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
 
-        try (final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
-             final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED)) {
+        try (final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
+             final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED)) {
             //Record LAA reference
             //When
             recordLAAReference(caseId, defendantId, offenceId, statusCode);
@@ -161,9 +161,9 @@ public class RecordLAAReferenceIT extends AbstractIT {
 
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
 
-        try (final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
-             final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED);
-             final MessageConsumer messageConsumerClientPublicForLaaDisasociated = publicEvents.createConsumer(PUBLIC_DEFENCE_ORGANISATION_FOR_LAA_DISASSOCIATED)) {
+        try (final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
+             final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED);
+             final MessageConsumer messageConsumerClientPublicForLaaDisasociated = publicEvents.createPublicConsumer(PUBLIC_DEFENCE_ORGANISATION_FOR_LAA_DISASSOCIATED)) {
 
             //Receive Representation Order
             //when
@@ -192,8 +192,8 @@ public class RecordLAAReferenceIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
 
-        try (final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
-             final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED)) {
+        try (final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
+             final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED)) {
 
             //Record LAA reference
             //When

@@ -69,9 +69,9 @@ public class AddCourtDocumentIT extends AbstractIT {
     public static final String USER_GROUP_NOT_PRESENT_DROOL = UUID.randomUUID().toString();
     public static final String USER_GROUP_NOT_PRESENT_RBAC = UUID.randomUUID().toString();
     public static final String CHAMBER_USER_ID = UUID.randomUUID().toString();
-    private static final MessageConsumer PRIVATE_MESSAGE_CONSUMER = privateEvents.createConsumer("progression.event.court-document-update-failed");
-    private static final MessageConsumer consumerForCourtDocumentUpdated = publicEvents.createConsumer(PUBLIC_EVENT_COURT_DOCUMENT_UPADTED);
-    private static final MessageConsumer consumerForCourDocumentNotified = privateEvents.createConsumer("progression.event.court-document-send-to-cps");
+    private static final MessageConsumer PRIVATE_MESSAGE_CONSUMER = privateEvents.createPrivateConsumer("progression.event.court-document-update-failed");
+    private static final MessageConsumer consumerForCourtDocumentUpdated = publicEvents.createPublicConsumer(PUBLIC_EVENT_COURT_DOCUMENT_UPADTED);
+    private static final MessageConsumer consumerForCourDocumentNotified = privateEvents.createPrivateConsumer("progression.event.court-document-send-to-cps");
     StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String caseId;
     private String docId;

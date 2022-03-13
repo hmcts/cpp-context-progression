@@ -100,7 +100,7 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
     public void shouldUpdateCourtApplicationAndGetConfirmation() throws Exception {
         setUpCourtApplication();
 
-        try (final MessageConsumer messageConsumer = privateEvents.createConsumer("progression.event.court-application-proceedings-edited")) {
+        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-edited")) {
             updateCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }

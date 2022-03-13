@@ -49,9 +49,9 @@ public class BreachApplicationIT extends AbstractIT {
 
     @Before
     public void setUp() {
-        consumerForCourtApplicationCreated = privateEvents.createConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
-        consumerForCourtApplicationProceedingsInitiated = privateEvents.createConsumer(COURT_APPLICATION_PROCEEDINGS_INITIATED_PRIVATE_EVENT);
-        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createConsumer(PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED);
+        consumerForCourtApplicationCreated = privateEvents.createPrivateConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
+        consumerForCourtApplicationProceedingsInitiated = privateEvents.createPrivateConsumer(COURT_APPLICATION_PROCEEDINGS_INITIATED_PRIVATE_EVENT);
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer(PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED);
         stubInitiateHearing();
     }
 

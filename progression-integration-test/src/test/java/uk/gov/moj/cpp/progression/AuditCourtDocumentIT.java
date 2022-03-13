@@ -43,7 +43,7 @@ public class AuditCourtDocumentIT extends AbstractIT {
     public static final String USER_GROUP_NOT_PRESENT_RBAC = UUID.randomUUID().toString();
     private static final String PRIVATE_COURT_DOCUMENT_AUDIT_EVENT = "progression.event.court-document-audit";
 
-    private static final MessageConsumer messageConsumerClientPrivateForCourtDocumentAudit = privateEvents.createConsumer(PRIVATE_COURT_DOCUMENT_AUDIT_EVENT);
+    private static final MessageConsumer messageConsumerClientPrivateForCourtDocumentAudit = privateEvents.createPrivateConsumer(PRIVATE_COURT_DOCUMENT_AUDIT_EVENT);
 
 
 

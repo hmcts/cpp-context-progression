@@ -63,11 +63,11 @@ public class ShareCourtDocumentIT extends AbstractIT {
     private static final String PRIVATE_DUPLICATE_SHARE_COURT_DOCUMENT_REQUEST_RECEIVED_EVENT = "progression.event.duplicate-share-court-document-request-received";
     private static final String PRIVATE_COURT_DOCUMENT_SHARE_FAILED_EVENT = "progression.event.court-document-share-failed";
 
-    private static final MessageConsumer messageConsumerClientPrivateForCourtDocumentShared = privateEvents.createConsumer(PRIVATE_COURT_DOCUMENT_SHARED_EVENT);
-    private static final MessageConsumer messageConsumerClientPrivateForDuplicateShareCourtDocumentRequestReceivedEvent = privateEvents.createConsumer(PRIVATE_DUPLICATE_SHARE_COURT_DOCUMENT_REQUEST_RECEIVED_EVENT);
-    private static final MessageConsumer messageConsumerClientPrivateForCourtDocumentShareFailedEvent = privateEvents.createConsumer(PRIVATE_COURT_DOCUMENT_SHARE_FAILED_EVENT);
-    private static final MessageConsumer messageConsumerCourtDocumentShareFailedPublicEvent = publicEvents.createConsumer(PUBLIC_COURT_DOCUMENT_SHARE_FAILED);
-    private static final MessageConsumer messageConsumerCourtDocumentSharedPublicEvent = publicEvents.createConsumer(PUBLIC_COURT_DOCUMENT_SHARED);
+    private static final MessageConsumer messageConsumerClientPrivateForCourtDocumentShared = privateEvents.createPrivateConsumer(PRIVATE_COURT_DOCUMENT_SHARED_EVENT);
+    private static final MessageConsumer messageConsumerClientPrivateForDuplicateShareCourtDocumentRequestReceivedEvent = privateEvents.createPrivateConsumer(PRIVATE_DUPLICATE_SHARE_COURT_DOCUMENT_REQUEST_RECEIVED_EVENT);
+    private static final MessageConsumer messageConsumerClientPrivateForCourtDocumentShareFailedEvent = privateEvents.createPrivateConsumer(PRIVATE_COURT_DOCUMENT_SHARE_FAILED_EVENT);
+    private static final MessageConsumer messageConsumerCourtDocumentShareFailedPublicEvent = publicEvents.createPublicConsumer(PUBLIC_COURT_DOCUMENT_SHARE_FAILED);
+    private static final MessageConsumer messageConsumerCourtDocumentSharedPublicEvent = publicEvents.createPublicConsumer(PUBLIC_COURT_DOCUMENT_SHARED);
 
     private static String caseId;
     private static String defendantLevelDocumentId1;

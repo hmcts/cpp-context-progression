@@ -40,7 +40,7 @@ public class SummonsHelper {
     private static final String PUBLIC_HEARING_CONFIRMED_PAYLOAD = "public.listing.summons-hearing-confirmed.json";
     private static final String PUBLIC_HEARING_CONFIRMED_EVENT = "public.listing.hearing-confirmed";
 
-    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createProducer();
+    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createPublicProducer();
 
     private static final JsonObjectToObjectConverter JSON_OBJECT_TO_OBJECT_CONVERTER = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 

@@ -37,7 +37,7 @@ import org.junit.Test;
 @SuppressWarnings({"squid:S1607"})
 public class NCESNotificationIT extends AbstractIT {
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
 
     private static final String DOCUMENT_TEXT = STRING.next();
     public static final String PROGRESSION_QUERY_API_QUERY_API_REST_PROGRESSION = "/progression-query-api/query/api/rest/progression";

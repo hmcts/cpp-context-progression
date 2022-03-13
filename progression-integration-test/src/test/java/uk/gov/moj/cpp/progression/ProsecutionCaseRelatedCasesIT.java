@@ -52,11 +52,11 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED = "public.hearing.resulted-case-updated";
 
     private MessageConsumer publicEventConsumerForProsecutionCaseCreated = publicEvents
-            .createConsumer("public.progression.prosecution-case-created");
+            .createPublicConsumer("public.progression.prosecution-case-created");
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-            .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+            .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 

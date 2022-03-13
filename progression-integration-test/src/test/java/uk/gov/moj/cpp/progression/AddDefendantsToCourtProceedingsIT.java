@@ -108,9 +108,9 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
     @Before
     public void setUp() {
-        messageConsumerClientPublicCourtProceedings = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS);
-        messageConsumerClientPublicCase = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_CASE);
-        messageProducerClientPublic = publicEvents.createProducer();
+        messageConsumerClientPublicCourtProceedings = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS);
+        messageConsumerClientPublicCase = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_CASE);
+        messageProducerClientPublic = publicEvents.createPublicProducer();
         stubDocumentCreate(DOCUMENT_TEXT);
         stubInitiateHearing();
     }

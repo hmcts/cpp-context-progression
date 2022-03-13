@@ -53,9 +53,9 @@ public class UpdateCaseMarkersIT extends AbstractIT {
     private String defendantDOB;
 
     private ProsecutionCaseUpdateCaseMarkersHelper helper;
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
 
     @AfterClass
     public static void tearDown() throws JMSException {
@@ -102,7 +102,7 @@ public class UpdateCaseMarkersIT extends AbstractIT {
         //given
         final String hearingId;
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             addProsecutionCaseToCrownCourtWithDefendantAsAdult(caseId, defendantId);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -119,7 +119,7 @@ public class UpdateCaseMarkersIT extends AbstractIT {
 
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);

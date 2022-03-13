@@ -33,7 +33,7 @@ import org.junit.Test;
 
 public class EditCaseNoteIT extends AbstractIT {
 
-    private static final MessageConsumer consumerForCaseNoteEdited = publicEvents.createConsumer("public.progression.case-note-edited");
+    private static final MessageConsumer consumerForCaseNoteEdited = publicEvents.createPublicConsumer("public.progression.case-note-edited");
     private final String caseId = randomUUID().toString();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 

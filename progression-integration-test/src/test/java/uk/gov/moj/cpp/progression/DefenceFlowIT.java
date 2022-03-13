@@ -65,7 +65,7 @@ public class DefenceFlowIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED = "public.progression.case-defendant-changed";
 
 
-    private static MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static MessageConsumer messageConsumerClientPublicForRecordLAAReference;
     private static MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated;
     private static MessageConsumer messageConsumerClientPublicForCaseDefendantChanged;
@@ -104,10 +104,10 @@ public class DefenceFlowIT extends AbstractIT {
 
     @Before
     public void setUp() {
-        messageConsumerClientPublicForRecordLAAReference = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
-        messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_AID_STATUS_UPDATED);
-        messageConsumerClientPublicForCaseDefendantChanged = publicEvents.createConsumer(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED);
-        multipleMessageConsumerClientPublicForCaseDefendantChanged = publicEvents.createConsumerForMultipleSelectors(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED);
+        messageConsumerClientPublicForRecordLAAReference = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
+        messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_AID_STATUS_UPDATED);
+        messageConsumerClientPublicForCaseDefendantChanged = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED);
+        multipleMessageConsumerClientPublicForCaseDefendantChanged = publicEvents.createPublicConsumerForMultipleSelectors(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED);
     }
 
     @After

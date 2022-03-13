@@ -66,12 +66,12 @@ public class ReportingRestrictionsIT extends AbstractIT {
     private String caseId;
     private String defendantId;
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static String userId;
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged =
-            privateEvents.createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+            privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
     private static final MessageConsumer consumerForCourtApplicationCreated =
-            publicEvents.createConsumer("public.progression.court-application-created");
+            publicEvents.createPublicConsumer("public.progression.court-application-created");
     private String hearingId1;
     private String hearingId2;
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -217,7 +217,7 @@ public class ReportingRestrictionsIT extends AbstractIT {
     }
 
     private void verifyPostHearingExtendedEvent(final String hearingId, String applicationId) {
-        final MessageConsumer hearingExtendedConsumer = publicEvents.createConsumer(APPLICATION_REFERRED_AND_HEARING_EXTENDED);
+        final MessageConsumer hearingExtendedConsumer = publicEvents.createPublicConsumer(APPLICATION_REFERRED_AND_HEARING_EXTENDED);
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(hearingExtendedConsumer);
         assertTrue(message.isPresent());
         assertThat(message.get().getString("hearingId"), equalTo(hearingId));

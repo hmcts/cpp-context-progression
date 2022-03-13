@@ -76,14 +76,14 @@ public class HearingUpdatedIT extends AbstractIT {
 
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression.prosecution-cases-referred-to-court";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
+            .createPublicConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
     private static final MessageConsumer messageConsumerClientPublicForHearingDetailChanged = publicEvents
-            .createConsumer(PUBLIC_HEARING_DETAIL_CHANGED);
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
-    private static final MessageConsumer messageConsumerHearingOffenceUpdated = privateEvents.createConsumer("progression.event.hearing-offences-updated");
-    private static final MessageConsumer messageConsumerListingNumberIncreased = privateEvents.createConsumer("progression.event.prosecution-case-listing-number-increased");
+            .createPublicConsumer(PUBLIC_HEARING_DETAIL_CHANGED);
+    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private static final MessageConsumer messageConsumerHearingOffenceUpdated = privateEvents.createPrivateConsumer("progression.event.hearing-offences-updated");
+    private static final MessageConsumer messageConsumerListingNumberIncreased = privateEvents.createPrivateConsumer("progression.event.prosecution-case-listing-number-increased");
     private static final String OFFENCE_ID = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
     private static final String OFFENCE_ID2 = "4789ab16-0bb7-4ef1-87ef-c936bf0364f1";
 
@@ -225,7 +225,7 @@ public class HearingUpdatedIT extends AbstractIT {
         String prosecutionAuthorityReference;
         String courtCentreName = "Lavender Hill Magistrate's Court";
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(caseId, defendantId);
             hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
             String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -270,7 +270,7 @@ public class HearingUpdatedIT extends AbstractIT {
         addStandaloneCourtApplication(applicationId, UUID.randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
         pollForApplicationStatus(applicationId, "DRAFT");
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             addProsecutionCaseToCrownCourtWithDefendantAsAdult(caseId, defendantId);
             hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         }
@@ -331,7 +331,7 @@ public class HearingUpdatedIT extends AbstractIT {
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, randomUUID().toString(), randomUUID().toString(), prosecutionAuthorityReference, courtCentreId, courtCentreName);
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
@@ -387,7 +387,7 @@ public class HearingUpdatedIT extends AbstractIT {
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, randomUUID().toString(), randomUUID().toString(), prosecutionAuthorityReference, courtCentreId, courtCentreName);
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);

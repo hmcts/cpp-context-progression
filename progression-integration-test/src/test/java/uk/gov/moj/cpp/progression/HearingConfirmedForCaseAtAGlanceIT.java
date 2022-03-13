@@ -35,7 +35,7 @@ import org.junit.Test;
 public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final String MAGISTRATES_JURISDICTION_TYPE = "MAGISTRATES";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();

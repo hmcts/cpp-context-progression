@@ -64,25 +64,25 @@ public class PetFormIT extends AbstractIT {
 
     public static final String CREATE_PET_FORM_MEDIA_TYPE = "application/vnd.progression.create-pet-form+json";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     public static final String UPDATE_PET_FORM_MEDIA_TYPE = "application/vnd.progression.update-pet-form+json";
 
     private static final String DOCUMENT_TEXT = STRING.next();
 
     private static MessageConsumer consumerForPetFormCreated = publicEvents
-            .createConsumer("public.progression.pet-form-created");
+            .createPublicConsumer("public.progression.pet-form-created");
 
     private static MessageConsumer consumerForPetFormUpdated = publicEvents
-            .createConsumer("public.progression.pet-form-updated");
+            .createPublicConsumer("public.progression.pet-form-updated");
 
     private static MessageConsumer consumerForPetFormDefendantUpdated = publicEvents
-            .createConsumer("public.progression.pet-form-defendant-updated");
+            .createPublicConsumer("public.progression.pet-form-defendant-updated");
 
     private static MessageConsumer consumerForPetFormFinalised = publicEvents
-            .createConsumer("public.progression.pet-form-finalised");
+            .createPublicConsumer("public.progression.pet-form-finalised");
 
     private static MessageConsumer consumerForCourtsDocumentAdded = privateEvents
-            .createConsumer("progression.event.court-document-added");
+            .createPrivateConsumer("progression.event.court-document-added");
 
     private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 

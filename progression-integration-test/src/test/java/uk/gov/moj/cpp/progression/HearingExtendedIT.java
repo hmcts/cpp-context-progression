@@ -53,7 +53,7 @@ public class HearingExtendedIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FILE = "public.listing.hearing-confirmed.json";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application.json";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     private String userId;
@@ -137,7 +137,7 @@ public class HearingExtendedIT extends AbstractIT {
     }
 
     private void verifyPostHearingExtendedEvent(final String hearingId) {
-        final MessageConsumer hearingExtendedConsumer = publicEvents.createConsumer(APPLICATION_REFERRED_AND_HEARING_EXTENDED);
+        final MessageConsumer hearingExtendedConsumer = publicEvents.createPublicConsumer(APPLICATION_REFERRED_AND_HEARING_EXTENDED);
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(hearingExtendedConsumer);
         assertTrue(message.isPresent());
         assertThat(message.get().getString("hearingId"), equalTo(hearingId));

@@ -65,9 +65,9 @@ public class UpdateCourtApplicationIT extends AbstractIT {
     private static final String COURT_APPLICATION_UPDATED = "progression.event.court-application-proceedings-edited";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
     private MessageConsumer consumerForCourtApplicationCreated;
     private MessageConsumer consumerForCourtApplicationUpdated;
 
@@ -78,8 +78,8 @@ public class UpdateCourtApplicationIT extends AbstractIT {
     public void setUp() {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
-        consumerForCourtApplicationCreated = publicEvents.createConsumer(COURT_APPLICATION_CREATED);
-        consumerForCourtApplicationUpdated = privateEvents.createConsumer(COURT_APPLICATION_UPDATED);
+        consumerForCourtApplicationCreated = publicEvents.createPublicConsumer(COURT_APPLICATION_CREATED);
+        consumerForCourtApplicationUpdated = privateEvents.createPrivateConsumer(COURT_APPLICATION_UPDATED);
     }
 
     @After
@@ -141,7 +141,7 @@ public class UpdateCourtApplicationIT extends AbstractIT {
         addStandaloneCourtApplication(applicationId, UUID.randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
         pollForApplicationStatus(applicationId, "DRAFT");
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             addProsecutionCaseToCrownCourtWithDefendantAsAdult(caseId, defendantId);
             hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         }

@@ -73,12 +73,12 @@ public class HearingDeletedIT extends AbstractIT {
 
     @Before
     public void setUp() {
-        messageProducerClientPublic = publicEvents.createProducer();
-        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
-        messageConsumerHearingDeleted = privateEvents.createConsumer("progression.event.hearing-deleted");
-        messageConsumerHearingDeletedForProsecutionCase = privateEvents.createConsumer("progression.event.hearing-deleted-for-prosecution-case");
-        messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
-        messageConsumerDeletedHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.deleted-hearing-populated-to-probation-caseworker");
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+        messageConsumerHearingDeleted = privateEvents.createPrivateConsumer("progression.event.hearing-deleted");
+        messageConsumerHearingDeletedForProsecutionCase = privateEvents.createPrivateConsumer("progression.event.hearing-deleted-for-prosecution-case");
+        messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+        messageConsumerDeletedHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.deleted-hearing-populated-to-probation-caseworker");
 
 
         HearingStub.stubInitiateHearing();
@@ -112,7 +112,7 @@ public class HearingDeletedIT extends AbstractIT {
 
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);

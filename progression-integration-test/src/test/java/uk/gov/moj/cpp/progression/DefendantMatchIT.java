@@ -53,19 +53,19 @@ import org.junit.Test;
 public class DefendantMatchIT extends AbstractIT {
 
     private final MessageConsumer publicEventConsumerForProsecutionCaseCreated = publicEvents
-            .createConsumer("public.progression.prosecution-case-created");
+            .createPublicConsumer("public.progression.prosecution-case-created");
     private final MessageConsumer publicEventConsumerForDefendantMatched = publicEvents
-            .createConsumer("public.progression.defendant-matched");
+            .createPublicConsumer("public.progression.defendant-matched");
     private final MessageConsumer publicEventConsumerForCaseDefendantChanged = publicEvents
-            .createConsumer("public.progression.case-defendant-changed");
+            .createPublicConsumer("public.progression.case-defendant-changed");
     private final MessageConsumer publicEventConsumerForCaseDefendantUpdated = privateEvents
-            .createConsumer("progression.event.prosecution-case-defendant-updated");
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+            .createPrivateConsumer("progression.event.prosecution-case-defendant-updated");
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private final MessageConsumer publicEventConsumerForDefendantUnmatched = publicEvents
-            .createConsumer("public.progression.defendant-unmatched");
+            .createPublicConsumer("public.progression.defendant-unmatched");
     private final MessageConsumer privateEventConsumerForDefendantPartialMatchCreated = privateEvents
-            .createConsumer("progression.event.defendant-partial-match-created");
+            .createPrivateConsumer("progression.event.defendant-partial-match-created");
 
     private String prosecutionCaseId_1;
     private String defendantId_1;

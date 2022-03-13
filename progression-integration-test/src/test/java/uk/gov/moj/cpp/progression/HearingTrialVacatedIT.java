@@ -50,11 +50,11 @@ public class HearingTrialVacatedIT extends AbstractIT {
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_LISTING_HEARING_UPDATED = "public.listing.hearing-updated";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
-    private static final MessageConsumer messageConsumerHearingTrialVacated = privateEvents.createConsumer("progression.event.hearing-trial-vacated");
+    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private static final MessageConsumer messageConsumerHearingTrialVacated = privateEvents.createPrivateConsumer("progression.event.hearing-trial-vacated");
     private String vacatedTrialReasonId;
 
     @Before
@@ -97,7 +97,7 @@ public class HearingTrialVacatedIT extends AbstractIT {
 
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
@@ -164,7 +164,7 @@ public class HearingTrialVacatedIT extends AbstractIT {
 
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
@@ -218,7 +218,7 @@ public class HearingTrialVacatedIT extends AbstractIT {
 
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
@@ -272,7 +272,7 @@ public class HearingTrialVacatedIT extends AbstractIT {
 
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);

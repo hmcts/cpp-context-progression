@@ -72,7 +72,7 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String DOCUMENT_TEXT = STRING.next();
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
@@ -136,13 +136,13 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
         courtCentreName = "Lavender Hill Magistrate's Court";
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
 
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             addProsecutionCaseToCrownCourt(caseId, defendantId, initialCaseUrn);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
             hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         }
 
-        try (final MessageConsumer progressionEventHearingResultedCaseUpdated = privateEvents.createConsumer("progression.event.hearing-resulted-case-updated")) {
+        try (final MessageConsumer progressionEventHearingResultedCaseUpdated = privateEvents.createPrivateConsumer("progression.event.hearing-resulted-case-updated")) {
             sendMessage(messageProducerClientPublic,
                     PUBLIC_HEARING_RESULTED, getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED + ".json", caseId,
                             hearingId, defendantId, courtCentreId, "C", "Remedy", "2593cf09-ace0-4b7d-a746-0703a29f33b5"), JsonEnvelope.metadataBuilder()

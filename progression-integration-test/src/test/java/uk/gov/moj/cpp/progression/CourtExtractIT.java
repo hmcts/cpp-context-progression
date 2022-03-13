@@ -65,7 +65,7 @@ public class CourtExtractIT extends AbstractIT {
     private static final String CROWN_COURT_EXTRACT = "CrownCourtExtract";
     private static final String CERTIFICATE_OF_CONVICTION = "CertificateOfConviction";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application.json";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_WITH_DEFENDANT_JSON = "progression.command.create-court-application-with-defendant.json";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -84,7 +84,7 @@ public class CourtExtractIT extends AbstractIT {
 
     public static void verifyInMessagingQueueForCasesReferredToCourts() {
         final String referredToCourt = "public.progression.prosecution-cases-referred-to-court";
-        final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents.createConsumer(referredToCourt);
+        final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents.createPublicConsumer(referredToCourt);
 
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
         assertTrue(message.isPresent());
@@ -206,7 +206,7 @@ public class CourtExtractIT extends AbstractIT {
         final String newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             addProsecutionCaseToCrownCourt(caseId, defendantId);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -265,7 +265,7 @@ public class CourtExtractIT extends AbstractIT {
         final String newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             addProsecutionCaseToCrownCourt(caseId, defendantId);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));

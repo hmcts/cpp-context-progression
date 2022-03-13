@@ -33,7 +33,7 @@ public class MaterialHelper {
                 .add("context", createObjectBuilder().add(JsonMetadata.USER_ID, randomUUID().toString()))
                 .build()).build();
 
-        sendMessage(publicEvents.createProducer(),
+        sendMessage(publicEvents.createPublicProducer(),
                 "material.material-added",
                 materialAddedPublicEventPayload,
                 metadata);

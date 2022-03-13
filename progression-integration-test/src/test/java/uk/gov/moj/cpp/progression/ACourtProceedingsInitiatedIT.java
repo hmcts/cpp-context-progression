@@ -38,7 +38,7 @@ import org.junit.Test;
 
 public class ACourtProceedingsInitiatedIT extends AbstractIT {
 
-    private static final MessageConsumer publicEventConsumer = publicEvents.createConsumer("public.progression.prosecution-case-created");
+    private static final MessageConsumer publicEventConsumer = publicEvents.createPublicConsumer("public.progression.prosecution-case-created");
     private String caseId;
     private String materialIdActive;
     private String materialIdDeleted;

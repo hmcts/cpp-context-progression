@@ -71,8 +71,8 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
     private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
     private static final String PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON = "application/vnd.progression.add-defendants-to-court-proceedings+json";
-    private static final MessageConsumer messageConsumerClientPublic = publicEvents.createConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS);
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageConsumer messageConsumerClientPublic = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS);
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private String caseId;
     private String courtDocumentId;
     private String materialIdActive;

@@ -70,13 +70,13 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
 
     private static final String USER_GROUP_NOT_PRESENT_DROOL = randomUUID().toString();
     private static final String USER_GROUP_NOT_PRESENT_RBAC = randomUUID().toString();
-    private static final MessageConsumer consumerForCourDocumentSendToCps = privateEvents.createConsumer("progression.event.court-document-send-to-cps");
-    private static final MessageConsumer consumerForProgressionCommandEmail = privateEvents.createConsumer("progression.event.email-requested");
+    private static final MessageConsumer consumerForCourDocumentSendToCps = privateEvents.createPrivateConsumer("progression.event.court-document-send-to-cps");
+    private static final MessageConsumer consumerForProgressionCommandEmail = privateEvents.createPrivateConsumer("progression.event.email-requested");
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
-    private static final MessageConsumer publicEventConsumer = publicEvents.createConsumer("public.progression.court-document-added");
+    private static final MessageConsumer publicEventConsumer = publicEvents.createPublicConsumer("public.progression.court-document-added");
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String caseId;
     private String docId;

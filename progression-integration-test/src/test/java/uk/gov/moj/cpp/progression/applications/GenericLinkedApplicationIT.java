@@ -33,7 +33,7 @@ public class GenericLinkedApplicationIT extends AbstractIT {
 
     @Before
     public void setUp() {
-        consumerForCourtApplicationCreated = privateEvents.createConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
+        consumerForCourtApplicationCreated = privateEvents.createPrivateConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
     }
 
     @After

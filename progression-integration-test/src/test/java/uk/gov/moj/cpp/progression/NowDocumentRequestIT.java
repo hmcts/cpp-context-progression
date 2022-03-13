@@ -85,7 +85,7 @@ public class NowDocumentRequestIT extends AbstractIT {
     private static final String ORIGINATOR_VALUE = "court";
     private static final String PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED = "public.progression.now-document-requested";
     private static final MessageConsumer messageConsumerClientPublicForNowDocumentRequested = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED);
+            .createPublicConsumer(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED);
 
     private String materialId;
     private String hearingId;
@@ -110,7 +110,7 @@ public class NowDocumentRequestIT extends AbstractIT {
 
     @Before
     public void setup() {
-        messageProducerClientPublic = publicEvents.createProducer();
+        messageProducerClientPublic = publicEvents.createPublicProducer();
         hearingId = randomUUID().toString();
         defendantId = randomUUID().toString();
         materialId = randomUUID().toString();
@@ -273,7 +273,7 @@ public class NowDocumentRequestIT extends AbstractIT {
                         .add(JsonMetadata.USER_ID, userId.toString()))
                 .build()).build();
 
-        sendMessage(publicEvents.createProducer(),
+        sendMessage(publicEvents.createPublicProducer(),
                 MATERIAL_MATERIAL_ADDED,
                 materialAddPublicEventPayload,
                 metadata);
@@ -284,7 +284,7 @@ public class NowDocumentRequestIT extends AbstractIT {
 
         final JsonObject payload = generateSuccessfulAcknowledgement(requestId);
 
-        sendMessage(publicEvents.createProducer(),
+        sendMessage(publicEvents.createPublicProducer(),
                 eventName,
                 payload,
                 metadataOf(randomUUID(), eventName)

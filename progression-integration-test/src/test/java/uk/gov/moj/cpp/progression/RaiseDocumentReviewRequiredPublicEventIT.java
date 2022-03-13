@@ -68,7 +68,7 @@ public class RaiseDocumentReviewRequiredPublicEventIT extends AbstractIT {
                 .replaceAll("%RANDOM_CASE_ID%", caseId.toString())
                 .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId.toString());
 
-        try (final MessageConsumer messageConsumer = publicEvents.createConsumer(PUBLIC_EVENT_DOCUMENT_REVIEW_REQUIRED)) {
+        try (final MessageConsumer messageConsumer = publicEvents.createPublicConsumer(PUBLIC_EVENT_DOCUMENT_REVIEW_REQUIRED)) {
             final Response response = postCommand(getWriteUrl("/courtdocument/" + documentId),
                     "application/vnd.progression.add-court-document+json",
                     addCourtDocumentPayload);

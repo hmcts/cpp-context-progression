@@ -36,21 +36,21 @@ public class NowsRequestHelper extends AbstractTestHelper {
     }
 
     public void verifyAccountNumberAddedToRequest(final String accountNumber, final String requestId) {
-        privateEventsConsumer = privateEvents.createConsumer(EVENT_NOW_REQUEST_WITH_ACCOUNT_NUMBER);
+        privateEventsConsumer = privateEvents.createPrivateConsumer(EVENT_NOW_REQUEST_WITH_ACCOUNT_NUMBER);
         final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
         assertThat(jsonResponse.getString("accountNumber"), Is.is(accountNumber));
         assertThat(jsonResponse.getString("requestId"), Is.is(requestId));
     }
 
     public void verifyAccountNumberIgnoredToRequest(final String accountNumber, final String requestId) {
-        privateEventsConsumer = privateEvents.createConsumer(EVENT_NOW_REQUEST_IGNORED_WITH_ACCOUNT_NUMBER);
+        privateEventsConsumer = privateEvents.createPrivateConsumer(EVENT_NOW_REQUEST_IGNORED_WITH_ACCOUNT_NUMBER);
         final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
         assertThat(jsonResponse.getString("accountNumber"), Is.is(accountNumber));
         assertThat(jsonResponse.getString("requestId"), Is.is(requestId));
     }
 
     public void verifyErrorEventRaised(final String errorCode, final String errorMessage) {
-        privateEventsConsumer = privateEvents.createConsumer(EVENT_ENFORCEMENT_ACKNOWLEDGMENT_ERROR);
+        privateEventsConsumer = privateEvents.createPrivateConsumer(EVENT_ENFORCEMENT_ACKNOWLEDGMENT_ERROR);
         final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
         assertThat(jsonResponse.getString("errorCode"), Is.is(errorCode));
         assertThat(jsonResponse.getString("errorMessage"), Is.is(errorMessage));

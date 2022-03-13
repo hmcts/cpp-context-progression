@@ -66,7 +66,7 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 public class GenericSummonsApplicationIT extends AbstractIT {
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final String COURT_APPLICATION_CREATED_PRIVATE_EVENT = "progression.event.court-application-created";
     private static final String INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED = "progression.event.initiate-court-hearing-after-summons-approved";
     private static final String COURT_APPLICATION_SUMMONS_REJECTED = "progression.event.court-application-summons-rejected";
@@ -92,12 +92,12 @@ public class GenericSummonsApplicationIT extends AbstractIT {
 
     @Before
     public void setUp() {
-        messageConsumerClientPublicSummonsApproved = publicEvents.createConsumer(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED);
-        messageConsumerClientPublicSummonsRejected = publicEvents.createConsumer(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_REJECTED);
-        messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = publicEvents.createConsumer(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED);
-        consumerForCourtApplicationCreated = privateEvents.createConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
-        consumerForInitiateCourtHearingAfterSummonsApproved = privateEvents.createConsumer(INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED);
-        consumerForSummonsRejected = privateEvents.createConsumer(COURT_APPLICATION_SUMMONS_REJECTED);
+        messageConsumerClientPublicSummonsApproved = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED);
+        messageConsumerClientPublicSummonsRejected = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_REJECTED);
+        messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED);
+        consumerForCourtApplicationCreated = privateEvents.createPrivateConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
+        consumerForInitiateCourtHearingAfterSummonsApproved = privateEvents.createPrivateConsumer(INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED);
+        consumerForSummonsRejected = privateEvents.createPrivateConsumer(COURT_APPLICATION_SUMMONS_REJECTED);
         stubInitiateHearing();
         IdMapperStub.setUp();
         NotificationServiceStub.setUp();

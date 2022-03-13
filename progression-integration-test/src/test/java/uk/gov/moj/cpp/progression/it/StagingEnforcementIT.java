@@ -31,7 +31,7 @@ public class StagingEnforcementIT extends AbstractIT {
 
     @Before
     public void onceBeforeEachTest(){
-        producer = publicEvents.createProducer();
+        producer = publicEvents.createPublicProducer();
     }
 
     @Test

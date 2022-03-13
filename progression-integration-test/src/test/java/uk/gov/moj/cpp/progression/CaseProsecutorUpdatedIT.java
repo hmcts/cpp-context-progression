@@ -39,7 +39,7 @@ import org.junit.Test;
 public class CaseProsecutorUpdatedIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final String DOCUMENT_TEXT = STRING.next();
     private String caseId;
     private String defendantId;
@@ -64,7 +64,7 @@ public class CaseProsecutorUpdatedIT extends AbstractIT {
         final String hearingId;
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             addProsecutionCaseToCrownCourt(caseId, defendantId);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -129,7 +129,7 @@ public class CaseProsecutorUpdatedIT extends AbstractIT {
 
     public static void verifyInMessagingQueueForCasesReferredToCourts() {
         final String referredToCourt = "public.progression.prosecution-cases-referred-to-court";
-        final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents.createConsumer(referredToCourt);
+        final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents.createPublicConsumer(referredToCourt);
 
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
         assertTrue(message.isPresent());

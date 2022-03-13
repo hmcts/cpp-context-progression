@@ -62,9 +62,9 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
     private static final String PROGRESSION_EVENT_UNSCHEDULED_HEARING_ALLOCATION_NOTIFIED = "progression.event.unscheduled-hearing-allocation-notified";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents
-            .createConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
+            .createPublicConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
 
     public static final String EXPECTED_OFFENCE_ID = "333bdd2a-6b7a-4002-bc8c-5c6f93844f41";
     public static final String EXPECTED_JUDICIAL_RESULT_ID = "94d6e18a-4114-11ea-b77f-2e728ce88125";
@@ -132,7 +132,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
         //amendment/resharing: should not raise any event
         final MessageConsumer messageConsumer = privateEvents
-                .createConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
+                .createPrivateConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_HEARING_RESULTED, getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING + ".json", caseId,
@@ -192,7 +192,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
         //amendment/resharing: should not raise any event
         final MessageConsumer messageConsumer = privateEvents
-                .createConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
+                .createPrivateConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_HEARING_RESULTED_V2, getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
@@ -242,7 +242,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
         //amendment/resharing: should not raise any event
         final MessageConsumer messageConsumer = privateEvents
-                .createConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
+                .createPrivateConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_HEARING_RESULTED, getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING + ".json", caseId,
@@ -286,7 +286,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
         //amendment/resharing: should not raise any event
         final MessageConsumer messageConsumer = privateEvents
-                .createConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
+                .createPrivateConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_HEARING_RESULTED_V2, getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
@@ -344,7 +344,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
     private String prepareHearingForTest() throws Exception{
         final MessageConsumer messageConsumer = privateEvents
-                .createConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
+                .createPrivateConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -368,7 +368,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
     private String prepareHearingForTestWithInitiate() throws Exception{
         final MessageConsumer messageConsumer = privateEvents
-                .createConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
+                .createPrivateConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
 
         //addProsecutionCaseToCrownCourt(caseId, defendantId);
         initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);

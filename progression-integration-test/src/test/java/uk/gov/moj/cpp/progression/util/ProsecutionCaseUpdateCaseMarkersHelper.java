@@ -34,7 +34,7 @@ public class ProsecutionCaseUpdateCaseMarkersHelper extends AbstractTestHelper {
 
     private final MessageConsumer publicEventsCaseMarkersUpdated =
             QueueUtil.publicEvents
-                    .createConsumer("public.progression.case-markers-updated");
+                    .createPublicConsumer("public.progression.case-markers-updated");
 
     private final String prosecutionCaseId;
     private String request;
@@ -46,14 +46,14 @@ public class ProsecutionCaseUpdateCaseMarkersHelper extends AbstractTestHelper {
     public void updateCaseMarkers() {
         request = getPayload(TEMPLATE_UPDATE_CASE_MARKERS_PAYLOAD);
         makePostCall(getWriteUrl("/prosecutioncases/" + prosecutionCaseId), WRITE_MEDIA_TYPE, request);
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer("progression.event.case-markers-updated");
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer("progression.event.case-markers-updated");
 
     }
 
     public void removeCaseMarkers() {
         request = getPayload(TEMPLATE_REMOVE_CASE_MARKERS_PAYLOAD);
         makePostCall(getWriteUrl("/prosecutioncases/" + prosecutionCaseId), WRITE_MEDIA_TYPE, request);
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer("progression.event.case-markers-updated");
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer("progression.event.case-markers-updated");
 
     }
 

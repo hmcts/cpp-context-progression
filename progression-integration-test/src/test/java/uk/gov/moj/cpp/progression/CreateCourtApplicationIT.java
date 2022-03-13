@@ -38,8 +38,8 @@ public class CreateCourtApplicationIT extends AbstractIT {
     private static final String COURT_APPLICATION_CREATED = "public.progression.court-application-created";
     private static final String COURT_APPLICATION_REJECTED = "public.progression.court-application-rejected";
 
-    private static final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createConsumer(COURT_APPLICATION_CREATED);
-    private static final MessageConsumer consumerForCourtApplicationRejected = publicEvents.createConsumer(COURT_APPLICATION_REJECTED);
+    private static final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createPublicConsumer(COURT_APPLICATION_CREATED);
+    private static final MessageConsumer consumerForCourtApplicationRejected = publicEvents.createPublicConsumer(COURT_APPLICATION_REJECTED);
 
     private String caseId;
     private String defendantId;

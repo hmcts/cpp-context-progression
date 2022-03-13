@@ -67,8 +67,8 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
     private static final String EVENT_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed.json";
     private static final String EVENT_WITH_LINKED_APPLICATION_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed-with-linked-applications.json";
 
-    private static final MessageConsumer messageConsumer = privateEvents.createConsumer(DEFENDANT_LISTING_STATUS_CHANGED_EVENT);
-    private static final MessageProducer messageProducer = privateEvents.createProducer();
+    private static final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer(DEFENDANT_LISTING_STATUS_CHANGED_EVENT);
+    private static final MessageProducer messageProducer = privateEvents.createPrivateProducer();
     private static final String COURT_APPLICATIONS = "courtApplications";
     private static final String APPLICATIONS = "applications";
     public static final String APPLICATIN_REFERENCE = "applicationReference";

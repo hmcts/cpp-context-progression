@@ -30,10 +30,10 @@ public class AdjournHearingHelper extends AbstractTestHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AdjournHearingHelper.class);
     private static final String PUBLIC_HEARING_HEARING_ADJOURNED = "public.hearing.adjourned";
-    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createProducer();
+    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createPublicProducer();
 
     private final MessageConsumer publicEventsConsumerForOffencesUpdated =
-            QueueUtil.publicEvents.createConsumer(
+            QueueUtil.publicEvents.createPublicConsumer(
                     "public.progression.defendant-offences-changed");
 
     private String adjournHearingRequest;
@@ -51,7 +51,7 @@ public class AdjournHearingHelper extends AbstractTestHelper {
         this.defendantId = defendantId;
         this.offenceId = offenceId;
         this.applicationId = applicationId;
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer("listing.command.list-court-hearing");
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer("listing.command.list-court-hearing");
     }
 
     public void adjournHearing() {

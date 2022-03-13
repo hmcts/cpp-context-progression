@@ -6,6 +6,6 @@ import uk.gov.moj.cpp.progression.helper.QueueUtil;
 public class ExtendHearingHelper extends AbstractTestHelper {
 
     public ExtendHearingHelper() {
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer("listing.command.list-court-hearing");
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer("listing.command.list-court-hearing");
     }
 }

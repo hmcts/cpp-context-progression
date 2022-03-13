@@ -66,13 +66,13 @@ public class AddDefendantsToHearingIT extends AbstractIT {
     private static final String PUBLIC_HEARING_PROSECUTION_CASE_CREATED_IN_HEARING_EVENT = "public.events.hearing.prosecution-case-created-in-hearing";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
-    private static final MessageConsumer messageConsumerDefendantsAndListingHearingRequestsStoredPrivateEvent = privateEvents.createConsumer("progression.event.defendants-and-listing-hearing-requests-stored");
-    private static final MessageConsumer messageConsumerDefendantsAddedToCourtProceedingsPrivateEvent = privateEvents.createConsumer("progression.event.defendants-added-to-court-proceedings");
-    private static final MessageConsumer messageConsumerProsecutionCaseCreatedInHearingPrivateEvent = privateEvents.createConsumer("progression.event.prosecution-case-created-in-hearing");
-    private static final MessageConsumer messageConsumerDefendantsAndListingHearingRequestsAddedPrivateEvent = privateEvents.createConsumer("progression.event.defendants-and-listing-hearing-requests-added");
-    private static final MessageConsumer messageConsumerDefendantsAddedToCourtProceedingsPublicEvent = publicEvents.createConsumer("public.progression.defendants-added-to-court-proceedings");
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private static final MessageConsumer messageConsumerDefendantsAndListingHearingRequestsStoredPrivateEvent = privateEvents.createPrivateConsumer("progression.event.defendants-and-listing-hearing-requests-stored");
+    private static final MessageConsumer messageConsumerDefendantsAddedToCourtProceedingsPrivateEvent = privateEvents.createPrivateConsumer("progression.event.defendants-added-to-court-proceedings");
+    private static final MessageConsumer messageConsumerProsecutionCaseCreatedInHearingPrivateEvent = privateEvents.createPrivateConsumer("progression.event.prosecution-case-created-in-hearing");
+    private static final MessageConsumer messageConsumerDefendantsAndListingHearingRequestsAddedPrivateEvent = privateEvents.createPrivateConsumer("progression.event.defendants-and-listing-hearing-requests-added");
+    private static final MessageConsumer messageConsumerDefendantsAddedToCourtProceedingsPublicEvent = publicEvents.createPublicConsumer("public.progression.defendants-added-to-court-proceedings");
+    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 

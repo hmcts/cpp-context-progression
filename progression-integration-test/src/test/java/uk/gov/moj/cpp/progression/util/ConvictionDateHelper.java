@@ -31,7 +31,7 @@ public class ConvictionDateHelper extends AbstractTestHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConvictionDateHelper.class);
     private static final String PUBLIC_HEARING_CONVICTION_DATE_CHANGED = "public.hearing.offence-conviction-date-changed";
     private static final String PUBLIC_HEARING_CONVICTION_DATE_REMOVED = "public.hearing.offence-conviction-date-removed";
-    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createProducer();
+    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createPublicProducer();
 
     private String addConvictionDateRequest;
 
@@ -48,7 +48,7 @@ public class ConvictionDateHelper extends AbstractTestHelper {
         this.offenceId = offenceId;
         this.courtApplicationId = courtApplicationId;
 
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumerForMultipleSelectors("progression.event.conviction-date-added", "progression.event.conviction-date-removed");
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumerForMultipleSelectors("progression.event.conviction-date-added", "progression.event.conviction-date-removed");
     }
 
     public void addConvictionDate() {

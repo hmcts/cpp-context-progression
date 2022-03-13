@@ -33,7 +33,7 @@ public class CaseProsecutorUpdateHelper extends AbstractTestHelper {
 
     private static final String NEW_PROSECUTION_AUTH_CODE = "TFL-CM";
 
-    private final MessageConsumer publicEventsCaseProsecutorUpdated = publicEvents.createConsumer("public.progression.events.cps-prosecutor-updated");
+    private final MessageConsumer publicEventsCaseProsecutorUpdated = publicEvents.createPublicConsumer("public.progression.events.cps-prosecutor-updated");
 
     private final String prosecutionCaseId;
     private String request;
@@ -46,8 +46,8 @@ public class CaseProsecutorUpdateHelper extends AbstractTestHelper {
 
     public void updateCaseProsecutor() {
         request = getPayload(TEMPLATE_UPDATE_CASE_PROSECUTOR_PAYLOAD);
-        privateEventsConsumer = privateEvents.createConsumer("progression.event.cps-prosecutor-updated");
-        caseProsecutorUpdatedPrivateEventsConsumer = privateEvents.createConsumer("progression.event.case-cps-prosecutor-updated");
+        privateEventsConsumer = privateEvents.createPrivateConsumer("progression.event.cps-prosecutor-updated");
+        caseProsecutorUpdatedPrivateEventsConsumer = privateEvents.createPrivateConsumer("progression.event.case-cps-prosecutor-updated");
         makePostCall(getWriteUrl("/prosecutioncases/" + prosecutionCaseId), WRITE_MEDIA_TYPE, request);
     }
 

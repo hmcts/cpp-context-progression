@@ -47,9 +47,9 @@ public class UpdateCourtDocumentIT extends AbstractIT {
     private static final String PROGRESSION_EVENT_PRINT_REQUESTED = "progression.event.print-requested";
     private static final String PROGRESSION_EVENT_PRINT_TIME_UPDATED = "progression.event.court-document-print-time-updated";
 
-    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createProducer();
-    private static final MessageConsumer PRINT_REQUESTED_CONSUMER = privateEvents.createConsumer(PROGRESSION_EVENT_PRINT_REQUESTED);
-    private static final MessageConsumer PRINT_TIME_UPDATED_CONSUMER = privateEvents.createConsumer(PROGRESSION_EVENT_PRINT_TIME_UPDATED);
+    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createPublicProducer();
+    private static final MessageConsumer PRINT_REQUESTED_CONSUMER = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PRINT_REQUESTED);
+    private static final MessageConsumer PRINT_TIME_UPDATED_CONSUMER = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PRINT_TIME_UPDATED);
 
     private String caseId;
     private String defendantId;

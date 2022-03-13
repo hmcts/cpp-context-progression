@@ -42,7 +42,7 @@ import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
 public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createProducer();
+    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
 
@@ -69,7 +69,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
 
         // initiation of first case
         try (final MessageConsumer publicEventConsumerForProsecutionCaseCreated = publicEvents
-                .createConsumer("public.progression.prosecution-case-created")) {
+                .createPublicConsumer("public.progression.prosecution-case-created")) {
             initiateCourtProceedingsForMatchedDefendants(prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
             verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
         }
@@ -79,7 +79,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
 
         // initiation of second case
         try (final MessageConsumer publicEventConsumerForProsecutionCaseCreated = publicEvents
-                .createConsumer("public.progression.prosecution-case-created")) {
+                .createPublicConsumer("public.progression.prosecution-case-created")) {
             initiateCourtProceedingsForMatchedDefendants(prosecutionCaseId_2, defendantId_2, defendantId_2);
             verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
         }
@@ -88,7 +88,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
 
         // match defendant2 associated to case 2
         try (final MessageConsumer publicEventConsumerForDefendantUpdated = publicEvents
-                .createConsumer("public.progression.case-defendant-changed")){
+                .createPublicConsumer("public.progression.case-defendant-changed")){
             matchDefendant(prosecutionCaseId_2, defendantId_2, prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
             verifyInMessagingQueueForDefendantUpdated(publicEventConsumerForDefendantUpdated);
         }
@@ -114,7 +114,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
 
 
         // Update Multiple Defendant on Same Hearing
-        final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createConsumer("progression.events.hearing-populated-to-probation-caseworker");
+        final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
 
         ProsecutionCaseUpdateDefendantWithMatchedHelper prosecutionCaseUpdateDefendantWithMatchedHelper = new ProsecutionCaseUpdateDefendantWithMatchedHelper();
 
