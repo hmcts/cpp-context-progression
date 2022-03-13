@@ -6,8 +6,11 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictionsForDefendants;
 
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -34,6 +37,7 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
@@ -95,6 +99,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
 
         if (originDefendant.isPresent()) {
             final Defendant updatedDefendant = updateDefendant(originDefendant.get(), defendantUpdate);
+            filterDuplicateOffencesById(updatedDefendant.getOffences());
             prosecutionCase.getDefendants().remove(originDefendant.get());
             prosecutionCase.getDefendants().add(updatedDefendant);
         }
@@ -125,6 +130,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                     prosecutionCaseInRepository.getDefendants().remove(defendantFromRepository.get());
                     // GPE-12381 . This has been done explicitly  not to loose  progression flag associationLockedByRepOrder when we receive result from hearing
                     final Defendant updatedDefendant = getUpdatedDefendant(originalDefendant, defendant);
+                    filterDuplicateOffencesById(updatedDefendant.getOffences());
                     prosecutionCaseInRepository.getDefendants().add(updatedDefendant);
                 }
             }
@@ -134,7 +140,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                     .withProsecutionCaseIdentifier(prosecutionCaseInRepository.getProsecutionCaseIdentifier())
                     .withProsecutor(prosecutionCaseInRepository.getProsecutor())
                     .withId(prosecutionCaseInRepository.getId())
-                    .withDefendants(prosecutionCaseInRepository.getDefendants())
+                    .withDefendants(dedupAllReportingRestrictionsForDefendants(prosecutionCaseInRepository.getDefendants()))
                     .withInitiationCode(prosecutionCaseInRepository.getInitiationCode())
                     .withOriginatingOrganisation(prosecutionCaseInRepository.getOriginatingOrganisation())
                     .withCpsOrganisation(prosecutionCaseInRepository.getCpsOrganisation())
@@ -173,12 +179,21 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
             if (oldDefendant.isPresent()) {
                 final Defendant updatedDefendant = updateDefendant(oldDefendant.get(), defendantUpdate);
                 prosecutionCase.getDefendants().remove(oldDefendant.get());
-                prosecutionCase.getDefendants().add(updatedDefendant);
+                filterDuplicateOffencesById(updatedDefendant.getOffences());
+                prosecutionCase.getDefendants().add(dedupAllReportingRestrictions(updatedDefendant));
             }
         });
 
         hearingRepository.save(prepareHearingEntity(hearing, hearingEntity));
 
+    }
+    private void filterDuplicateOffencesById(final List<Offence> offences) {
+        if (isNull(offences) || offences.isEmpty()) {
+            return;
+        }
+        final Set<UUID> offenceIds = new HashSet<>();
+        offences.removeIf(e -> !offenceIds.add(e.getId()));
+        LOGGER.info("Removing duplicate offence, offences count:{} and offences count after filtering:{} ", offences.size(), offenceIds.size());
     }
 
     @Handles("progression.event.prosecution-case-listing-number-updated")

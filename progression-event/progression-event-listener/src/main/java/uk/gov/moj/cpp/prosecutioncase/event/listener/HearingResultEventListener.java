@@ -7,6 +7,7 @@ import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
@@ -30,9 +31,12 @@ import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -80,10 +84,16 @@ public class HearingResultEventListener {
 
         //To save hearing result in current hearing and removing the defendant and case proceeding flag in it.
         final HearingResulted hearingResulted = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingResulted.class);
+        if(hearingResulted.getHearing().getProsecutionCases() != null) {
+            hearingResulted.getHearing().getProsecutionCases().stream().forEach(c -> deDupAllOffencesForProsecutionCase(c));
+        }
         final HearingEntity currentHearingEntity = hearingRepository.findBy(hearingResulted.getHearing().getId());
         final JsonObject currentHearingJson = jsonFromString(currentHearingEntity.getPayload());
         final Hearing originalCurrentHearing = jsonObjectConverter.convert(currentHearingJson, Hearing.class);
-        final Hearing updatedHearing = getUpdatedHearingForResulted(hearingResulted.getHearing(), originalCurrentHearing, hearingResulted.getHearingDay());
+        final Hearing updatedHearing = dedupAllReportingRestrictions(getUpdatedHearingForResulted(hearingResulted.getHearing(), originalCurrentHearing, hearingResulted.getHearingDay()));
+        if(updatedHearing.getProsecutionCases() != null) {
+            updatedHearing.getProsecutionCases().stream().forEach(c -> deDupAllOffencesForProsecutionCase(c));
+        }
         final String resultedHearingPayload = objectToJsonObjectConverter.convert(updatedHearing).toString();
         currentHearingEntity.setPayload(resultedHearingPayload);
         currentHearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
@@ -108,6 +118,22 @@ public class HearingResultEventListener {
                 }
             }
         }
+    }
+
+    private void deDupAllOffencesForProsecutionCase(final ProsecutionCase prosecutionCase) {
+
+        if (prosecutionCase != null) {
+            prosecutionCase.getDefendants().stream().forEach(def -> filterDuplicateOffencesById(def.getOffences()));
+        }
+    }
+
+    private void filterDuplicateOffencesById(final List<Offence> offences) {
+        if (isNull(offences) || offences.isEmpty()) {
+            return;
+        }
+        final Set<UUID> offenceIds = new HashSet<>();
+        offences.removeIf(e -> !offenceIds.add(e.getId()));
+        LOGGER.info("Removing duplicate offence, offences count:{} and offences count after filtering:{} ", offences.size(), offenceIds.size());
     }
 
     private Hearing getUpdatedHearingForNonResulted(final Hearing originalHearing, final Hearing resultedHearing) {

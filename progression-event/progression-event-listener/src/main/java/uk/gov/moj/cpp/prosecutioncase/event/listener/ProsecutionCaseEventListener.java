@@ -1,10 +1,14 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseNoteAdded;
@@ -15,6 +19,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
@@ -39,7 +44,9 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -80,16 +87,30 @@ public class ProsecutionCaseEventListener {
     @Inject
     private SearchProsecutionCase searchCase;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseEventListener.class);
+
+
 
     @Handles("progression.event.prosecution-case-created")
     public void processProsecutionCaseCreated(final JsonEnvelope event) {
         final ProsecutionCaseCreated prosecutionCaseCreated = jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseCreated.class);
-        final ProsecutionCase prosecutionCase = prosecutionCaseCreated.getProsecutionCase();
+        final ProsecutionCase prosecutionCase = dedupAllReportingRestrictions(prosecutionCaseCreated.getProsecutionCase());
 
         final List<Defendant> defendants = enrichDefendantsWithPoliceBailInformation(prosecutionCase);
 
+        defendants.stream().forEach(d -> filterDuplicateOffencesById(d.getOffences()));
+
         repository.save(getProsecutionCaseEntity(ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase).withDefendants(defendants).build()));
         makeSearchable(prosecutionCase);
+    }
+
+    private void filterDuplicateOffencesById(List<Offence> offences) {
+        if (isNull(offences) || offences.isEmpty()) {
+            return;
+        }
+        final Set<UUID> offenceIds = new HashSet<>();
+        offences.removeIf(e -> !offenceIds.add(e.getId()));
+        LOGGER.info("Removing duplicate offence, offences count:{} and offences count after filtering:{} ", offences.size(), offenceIds.size());
     }
 
     @Handles("progression.event.case-ejected")

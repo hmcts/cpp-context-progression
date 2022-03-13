@@ -29,6 +29,7 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.persistence.NoResultException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,8 +83,13 @@ public class HearingUpdatedForPartialAllocationEventListener {
     }
 
     private void removeFromCaseDefendantHearingMappingTable(final UUID hearingId, final UUID caseId, final UUID defendantId) {
+        CaseDefendantHearingEntity entityToRemove = null;
 
-        final CaseDefendantHearingEntity entityToRemove = caseDefendantHearingRepository.findByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
+        try {
+            entityToRemove = caseDefendantHearingRepository.findByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
+        } catch (NoResultException ex) {
+            LOGGER.warn("Entity not found: ", ex);
+        }
         if (nonNull(entityToRemove)) {
 
             caseDefendantHearingRepository.remove(entityToRemove);

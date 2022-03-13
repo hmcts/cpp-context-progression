@@ -33,7 +33,8 @@ import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHel
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.hasNewNextHearingsAndNextHearingOutsideOfMultiDaysHearing;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.isNextHearingDeleted;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.unscheduledNextHearingsRequiredFor;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.ReportingRestrictionHelper.dedupReportingRestrictions;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
 import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
@@ -126,6 +127,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,7 +135,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 9128521802762667383L;
+    private static final long serialVersionUID = 9128521802762667384L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -148,20 +150,25 @@ public class HearingAggregate implements Aggregate {
     private Boolean notifyNCES = false;
 
 
+    @VisibleForTesting
+    Hearing getHearing() {
+        return this.hearing;
+    }
+
     @Override
     public Object apply(final Object event) {
         return match(event).with(
                 when(HearingInitiateEnriched.class).apply(e ->
-                        this.hearing = e.getHearing()
+                        setHearing(e.getHearing())
                 ),
                 when(ProsecutionCaseDefendantListingStatusChanged.class).apply(e -> {
-                    this.hearing = e.getHearing();
+                    setHearing(e.getHearing());
                     this.committingCourt = findCommittingCourt(e.getHearing());
                     this.hearingListingStatus = e.getHearingListingStatus();
                     this.notifyNCES = nonNull(e.getNotifyNCES()) ? e.getNotifyNCES() : Boolean.FALSE;
                 }),
                 when(HearingResulted.class).apply(e -> {
-                    this.hearing = e.getHearing();
+                    setHearing(e.getHearing());
                     this.committingCourt = findCommittingCourt(e.getHearing());
                 }),
                 when(HearingDefendantRequestCreated.class).apply(e -> {
@@ -628,6 +635,10 @@ public class HearingAggregate implements Aggregate {
                                 .build())
                         .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                 .build();
+    }
+
+    private void setHearing(final Hearing hearing) {
+        this.hearing = dedupAllReportingRestrictions(hearing);
     }
 
     private void updateHearingExtended(final HearingExtendedProcessed hearingExtendedProcessed) {

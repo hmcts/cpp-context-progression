@@ -1,10 +1,8 @@
 package uk.gov.moj.cpp.application.event.listener;
 
-import static java.util.Objects.nonNull;
-import static java.util.UUID.randomUUID;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.ApplicationEjected;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -17,6 +15,7 @@ import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -37,16 +36,21 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-
-import org.apache.commons.collections.CollectionUtils;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestriction;
 
 @ServiceComponent(EVENT_LISTENER)
 public class CourtApplicationEventListener {
@@ -78,11 +82,16 @@ public class CourtApplicationEventListener {
     @Inject
     private InitiateCourtApplicationRepository initiateCourtApplicationRepository;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourtApplicationEventListener.class);
+
+
+
     @Handles("progression.event.court-application-created")
     public void processCourtApplicationCreated(final JsonEnvelope event) {
         final CourtApplicationCreated courtApplicationCreated = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationCreated.class);
         final CourtApplication courtApplication = courtApplicationCreated.getCourtApplication();
-        final CourtApplication applicationToBeSaved = buildCourtApplication(courtApplication);
+        deDupAllOffencesForCourtApplication(courtApplication);
+        final CourtApplication applicationToBeSaved = dedupAllReportingRestrictions(buildCourtApplication(courtApplication));
         courtApplicationRepository.save(getCourtApplicationEntity(applicationToBeSaved));
         makeStandaloneApplicationSearchable(applicationToBeSaved);
     }
@@ -90,7 +99,8 @@ public class CourtApplicationEventListener {
     @Handles("progression.event.court-application-added-to-case")
     public void processCourtApplicationAddedToCase(final JsonEnvelope event) {
         final CourtApplicationAddedToCase courtApplicationAddedToCase = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationAddedToCase.class);
-        final CourtApplication courtApplication = courtApplicationAddedToCase.getCourtApplication();
+        final CourtApplication courtApplication = dedupAllReportingRestrictions(courtApplicationAddedToCase.getCourtApplication());
+        deDupAllOffencesForCourtApplication(courtApplication);
         if (nonNull(courtApplication.getCourtApplicationCases())) {
             courtApplication.getCourtApplicationCases().forEach(courtApplicationCase -> {
                 final String caseReference = isNotBlank(courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN()) ?
@@ -129,7 +139,8 @@ public class CourtApplicationEventListener {
     @Handles("progression.event.court-application-updated")
     public void processCourtApplicationUpdated(final JsonEnvelope event) {
         final CourtApplicationUpdated courtApplicationUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationUpdated.class);
-        final CourtApplication updatedCourtApplication = courtApplicationUpdated.getCourtApplication();
+        final CourtApplication updatedCourtApplication = dedupAllReportingRestrictions(courtApplicationUpdated.getCourtApplication());
+        deDupAllOffencesForCourtApplication(updatedCourtApplication);
         final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(courtApplicationUpdated.getCourtApplication().getId());
         courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedCourtApplication).toString());
         courtApplicationRepository.save(courtApplicationEntity);
@@ -148,13 +159,15 @@ public class CourtApplicationEventListener {
 
     @Handles("progression.event.court-application-proceedings-initiated")
     public void processCourtApplicationProceedingsInitiated(final JsonEnvelope event) {
-        final CourtApplicationProceedingsInitiated initiateCourtApplicationProceedings = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class);
+        final CourtApplicationProceedingsInitiated initiateCourtApplicationProceedings = dedupReportingRestriction(jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class));
+        deDupAllOffencesForCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
         initiateCourtApplicationRepository.save(getInitiateCourtApplication(initiateCourtApplicationProceedings));
     }
 
     @Handles("progression.event.court-application-proceedings-edited")
     public void processCourtApplicationProceedingsEdited(final JsonEnvelope event) {
-        final CourtApplicationProceedingsEdited initiateCourtApplicationProceedings = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class);
+        final CourtApplicationProceedingsEdited initiateCourtApplicationProceedings = dedupReportingRestriction(jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class));
+        deDupAllOffencesForCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
         final InitiateCourtApplicationEntity initiateCourtApplicationEntity = initiateCourtApplicationRepository.findBy(initiateCourtApplicationProceedings.getCourtApplication().getId());
         initiateCourtApplicationRepository.save(updateInitiateCourtApplication(initiateCourtApplicationProceedings, initiateCourtApplicationEntity));
 
@@ -169,7 +182,8 @@ public class CourtApplicationEventListener {
         final HearingResultedApplicationUpdated hearingResultedApplicationUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingResultedApplicationUpdated.class);
         final CourtApplicationEntity applicationEntity = courtApplicationRepository.findByApplicationId(hearingResultedApplicationUpdated.getCourtApplication().getId());
         if (nonNull(applicationEntity)) {
-            final CourtApplication updatedCourtApplication = hearingResultedApplicationUpdated.getCourtApplication();
+            final CourtApplication updatedCourtApplication = dedupAllReportingRestrictions(hearingResultedApplicationUpdated.getCourtApplication());
+            deDupAllOffencesForCourtApplication(updatedCourtApplication);
             applicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedCourtApplication).toString());
             courtApplicationRepository.save(applicationEntity);
         }
@@ -270,5 +284,21 @@ public class CourtApplicationEventListener {
     private InitiateCourtApplicationProceedings.Builder initiateCourtApplicationProceedingsBuilder(InitiateCourtApplicationProceedings initiateCourtApplicationProceedings) {
         return InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
                 .withValuesFrom(initiateCourtApplicationProceedings);
+    }
+
+    private void deDupAllOffencesForCourtApplication(final CourtApplication courtApplication) {
+
+        if (courtApplication.getCourtApplicationCases() != null) {
+            courtApplication.getCourtApplicationCases().stream().forEach(apCase -> filterDuplicateOffencesById(apCase.getOffences()));
+        }
+    }
+
+    private void filterDuplicateOffencesById(final List<Offence> offences) {
+        if (isNull(offences) || offences.isEmpty()) {
+            return;
+        }
+        final Set<UUID> offenceIds = new HashSet<>();
+        offences.removeIf(e -> !offenceIds.add(e.getId()));
+        LOGGER.info("Removing duplicate offence, offences count:{} and offences count after filtering:{} ", offences.size(), offenceIds.size());
     }
 }

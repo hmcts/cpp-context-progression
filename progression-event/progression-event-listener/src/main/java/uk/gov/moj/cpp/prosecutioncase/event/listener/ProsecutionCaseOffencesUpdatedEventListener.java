@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PENDING;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictionsForDefendantCaseOffences;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
@@ -18,6 +19,7 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
@@ -70,7 +72,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
         final ProsecutionCaseOffencesUpdated prosecutionCaseOffencesUpdated =
                 jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseOffencesUpdated.class);
 
-        final DefendantCaseOffences defendantCaseOffences = prosecutionCaseOffencesUpdated.getDefendantCaseOffences();
+        final DefendantCaseOffences defendantCaseOffences = dedupAllReportingRestrictionsForDefendantCaseOffences((prosecutionCaseOffencesUpdated.getDefendantCaseOffences()));
         filterDuplicateOffencesById(defendantCaseOffences.getOffences());
 
         final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(defendantCaseOffences.getProsecutionCaseId());
@@ -83,6 +85,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
         final List<UUID> caseOffencesIds = prosecutionCase.getDefendants().stream()
                 .flatMap(d -> d.getOffences().stream())
                 .map(Offence::getId)
+                .distinct()
                 .collect(Collectors.toList());
         updateOffenceForDefendant(defendantCaseOffences, prosecutionCase);
         repository.save(getProsecutionCaseEntity(prosecutionCase));

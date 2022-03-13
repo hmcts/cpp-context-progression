@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.Hearing;
@@ -23,6 +24,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +59,11 @@ public class HearingDaysWithoutCourtCentreCorrectedEventListener {
         LOGGER.info("existing hearingObject : {}", dbHearingJsonObject);
 
         final Hearing dbHearing = jsonObjectToObjectConverter.convert(dbHearingJsonObject, Hearing.class);
+
+        if(isEmpty(dbHearing.getHearingDays())){
+            LOGGER.info("No hearing days to correct, returning ");
+            return;
+        }
 
         final List<HearingDay> hearingDayListToBeReplaced = createHearingDaysToBeReplaced(dbHearing.getHearingDays(), courtCentreId, courtRoomId);
 

@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.moj.cpp.progression.event.util.DuplicateOffencesHelper.filterDuplicateOffencesByIdForHearing;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -47,7 +49,7 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
 
     @Handles("progression.event.prosecutionCase-defendant-listing-status-changed")
     public void process(final JsonEnvelope event) {
-        final ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseDefendantListingStatusChanged.class);
+        final ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = dedupAllReportingRestrictions(jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseDefendantListingStatusChanged.class));
         final HearingEntity hearingEntity = transformHearing(prosecutionCaseDefendantListingStatusChanged.getHearing(), prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus());
         if (isNotEmpty(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases())) {
             prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().forEach(pc ->
@@ -89,6 +91,7 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
     private HearingEntity transformHearing(final Hearing hearing, final HearingListingStatus hearingListingStatus) {
         HearingEntity hearingEntity = hearingRepository.findBy(hearing.getId());
 
+
         // no updates should be allowed to hearing payload once its been resulted unless results are shared again
         if (hearingEntity != null && hearingEntity.getListingStatus() == HearingListingStatus.HEARING_RESULTED) {
             return hearingEntity;
@@ -98,6 +101,7 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
             hearingEntity = new HearingEntity();
             hearingEntity.setHearingId(hearing.getId());
         }
+        filterDuplicateOffencesByIdForHearing(hearing);
         hearingEntity.setListingStatus(hearingListingStatus);
         hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
         return hearingEntity;

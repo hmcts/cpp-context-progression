@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
 import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.CreateHearingDefendantRequest;
@@ -140,38 +141,53 @@ public class CourtProceedingsInitiatedProcessor {
         final Function<JsonObject, String> offenceKey = offenceJsonObject -> offenceJsonObject.getString("cjsOffenceCode");
 
         final List<Offence> offencesWithReportingRestriction = new ArrayList<>();
-        defendant.getOffences().forEach(offence -> {
-            final List<ReportingRestriction> reportingRestrictions = new ArrayList<>();
-            if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth()) && LocalDateUtils.isYouth(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth(), LocalDate.now()).booleanValue()) {
-                reportingRestrictions.add(new ReportingRestriction.Builder()
-                        .withId(randomUUID())
-                        .withOrderedDate(LocalDate.now())
-                        .withLabel(YOUTH_RESTRICTION).build());
-            }
-            final Offence.Builder builder = new Offence.Builder().withValuesFrom(offence);
-            if (referenceDataOffencesJsonObjectOptional.isPresent()) {
-                final Map<String, JsonObject> offenceCodeMap = referenceDataOffencesJsonObjectOptional.get().stream().collect(Collectors.toMap(offenceKey, Function.identity()));
-                final JsonObject referenceDataOffenceInfo = offenceCodeMap.get(offence.getOffenceCode());
-                if (nonNull(referenceDataOffenceInfo)) {
-                    builder.withEndorsableFlag(referenceDataOffenceInfo.getBoolean(ENDORSABLE_FLAG, false));
-                }
-                if (nonNull(referenceDataOffenceInfo) && equalsIgnoreCase(referenceDataOffenceInfo.getString("reportRestrictResultCode", StringUtils.EMPTY), SEXUAL_OFFENCE_RR_CODE)) {
-                    reportingRestrictions.add(new ReportingRestriction.Builder()
-                            .withId(randomUUID())
-                            .withLabel(SEXUAL_OFFENCE_RR_LABEL)
-                            .withOrderedDate(LocalDate.now())
-                            .build());
-                }
-            }
-
-            if (isNotEmpty(reportingRestrictions)) {
-                builder.withReportingRestrictions(reportingRestrictions);
-            }
-            offencesWithReportingRestriction.add(builder.build());
-        });
+        defendant.getOffences().forEach(offence -> populateReportingRestrictionForOffence(referenceDataOffencesJsonObjectOptional, defendant, offenceKey, offencesWithReportingRestriction, offence));
         if (isNotEmpty(defendant.getOffences())) {
             defendant.getOffences().clear();
             defendant.getOffences().addAll(offencesWithReportingRestriction);
+        }
+    }
+
+    private void populateReportingRestrictionForOffence(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final Defendant defendant, final Function<JsonObject, String> offenceKey, final List<Offence> offencesWithReportingRestriction, final Offence offence) {
+        final List<ReportingRestriction> reportingRestrictions = new ArrayList<>();
+        populateYouthReportingRestriction(defendant, reportingRestrictions);
+        final Offence.Builder builder = new Offence.Builder().withValuesFrom(offence);
+        populateSexualReportingRestriction(referenceDataOffencesJsonObjectOptional, offenceKey, offence, reportingRestrictions, builder);
+
+        if (isNotEmpty(offence.getReportingRestrictions())) {
+            reportingRestrictions.addAll(offence.getReportingRestrictions());
+        }
+
+        if (isNotEmpty(reportingRestrictions)) {
+            builder.withReportingRestrictions(dedupReportingRestrictions(reportingRestrictions));
+        }
+
+        offencesWithReportingRestriction.add(builder.build());
+    }
+
+    private void populateSexualReportingRestriction(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final Function<JsonObject, String> offenceKey, final Offence offence, final List<ReportingRestriction> reportingRestrictions, final Offence.Builder builder) {
+        if (referenceDataOffencesJsonObjectOptional.isPresent()) {
+            final Map<String, JsonObject> offenceCodeMap = referenceDataOffencesJsonObjectOptional.get().stream().collect(Collectors.toMap(offenceKey, Function.identity()));
+            final JsonObject referenceDataOffenceInfo = offenceCodeMap.get(offence.getOffenceCode());
+            if (nonNull(referenceDataOffenceInfo)) {
+                builder.withEndorsableFlag(referenceDataOffenceInfo.getBoolean(ENDORSABLE_FLAG, false));
+            }
+            if (nonNull(referenceDataOffenceInfo) && equalsIgnoreCase(referenceDataOffenceInfo.getString("reportRestrictResultCode", StringUtils.EMPTY), SEXUAL_OFFENCE_RR_CODE)) {
+                reportingRestrictions.add(new ReportingRestriction.Builder()
+                        .withId(randomUUID())
+                        .withLabel(SEXUAL_OFFENCE_RR_LABEL)
+                        .withOrderedDate(LocalDate.now())
+                        .build());
+            }
+        }
+    }
+
+    private void populateYouthReportingRestriction(final Defendant defendant, final List<ReportingRestriction> reportingRestrictions) {
+        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth()) && LocalDateUtils.isYouth(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth(), LocalDate.now()).booleanValue()) {
+            reportingRestrictions.add(new ReportingRestriction.Builder()
+                    .withId(randomUUID())
+                    .withOrderedDate(LocalDate.now())
+                    .withLabel(YOUTH_RESTRICTION).build());
         }
     }
 

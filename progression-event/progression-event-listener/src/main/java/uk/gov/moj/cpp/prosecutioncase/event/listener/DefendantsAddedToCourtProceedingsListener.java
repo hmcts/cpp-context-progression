@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -16,7 +17,14 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import static java.util.Objects.isNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 
 @ServiceComponent(EVENT_LISTENER)
 public class DefendantsAddedToCourtProceedingsListener {
@@ -47,10 +55,19 @@ public class DefendantsAddedToCourtProceedingsListener {
             final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
             final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
 
-            prosecutionCase.getDefendants().add(defendant);
+            filterDuplicateOffencesById(defendant.getOffences());
+            prosecutionCase.getDefendants().add(dedupAllReportingRestrictions(defendant));
             prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
             repository.save(prosecutionCaseEntity);
         }
     }
 
+    private void filterDuplicateOffencesById(final List<Offence> offences) {
+        if (isNull(offences) || offences.isEmpty()) {
+            return;
+        }
+        final Set<UUID> offenceIds = new HashSet<>();
+        offences.removeIf(e -> !offenceIds.add(e.getId()));
+        LOGGER.info("Removing duplicate offence, offences count:{} and offences count after filtering:{} ", offences.size(), offenceIds.size());
+    }
 }

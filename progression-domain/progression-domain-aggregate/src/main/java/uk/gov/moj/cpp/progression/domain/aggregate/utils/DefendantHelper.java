@@ -11,6 +11,8 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
@@ -389,7 +391,7 @@ public class DefendantHelper {
                         .withOrderedDate(LocalDate.now())
                         .build());
             }
-            builder.withReportingRestrictions(reportingRestrictions);
+            builder.withReportingRestrictions(dedupReportingRestrictions(reportingRestrictions));
         }
 
         return builder.build();

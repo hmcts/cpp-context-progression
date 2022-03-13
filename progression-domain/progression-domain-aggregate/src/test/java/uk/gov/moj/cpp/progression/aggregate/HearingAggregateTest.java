@@ -141,7 +141,7 @@ public class HearingAggregateTest {
 
         hearingAggregate.apply(extendCustodyTimeLimitResulted);
 
-        assertThat(hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0)
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0)
                 .getCustodyTimeLimit().getIsCtlExtended(), is(true));
     }
 

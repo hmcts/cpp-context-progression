@@ -30,6 +30,8 @@ import java.util.List;
 import static java.lang.Boolean.FALSE;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.moj.cpp.progression.event.util.DuplicateOffencesHelper.filterDuplicateOffencesByIdForCases;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictionsForCases;
 
 @ServiceComponent(EVENT_LISTENER)
 public class HearingExtendedEventListener {
@@ -58,7 +60,8 @@ public class HearingExtendedEventListener {
         final JsonObject payload = event.payloadAsJsonObject();
         final HearingExtended hearingExtended = jsonObjectToObjectConverter.convert(payload, HearingExtended.class);
         final HearingListingNeeds hearingListingNeeds = hearingExtended.getHearingRequest();
-        final List<ProsecutionCase> prosecutionCasesToAdd = hearingListingNeeds.getProsecutionCases();
+        final List<ProsecutionCase> prosecutionCasesToAdd = dedupAllReportingRestrictionsForCases(hearingListingNeeds.getProsecutionCases());
+        filterDuplicateOffencesByIdForCases(prosecutionCasesToAdd);
 
         if (isNotEmpty(hearingListingNeeds.getProsecutionCases())) {
             // unAllocated Hearing

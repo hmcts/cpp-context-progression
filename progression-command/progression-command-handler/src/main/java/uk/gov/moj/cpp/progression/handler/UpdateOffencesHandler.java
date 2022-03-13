@@ -2,7 +2,8 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.ReportingRestrictionHelper.dedupAllReportingRestrictions;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ReportingRestriction;
@@ -115,7 +116,7 @@ public class UpdateOffencesHandler {
         } else {
             reportingRestrictions.add(new ReportingRestriction(UUID.randomUUID(), null, YOUTH_RESTRICTION, LocalDate.now()));
         }
-        return builder.withReportingRestrictions(reportingRestrictions).build();
+        return builder.withReportingRestrictions(dedupReportingRestrictions(reportingRestrictions)).build();
     }
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {

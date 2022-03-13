@@ -19,6 +19,7 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoN
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.justice.progression.courts.SendStatdecAppointmentLetter.sendStatdecAppointmentLetter;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.getCourtApplicationWithConvictionDate;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 
 import uk.gov.justice.core.courts.ApplicationEjected;
 import uk.gov.justice.core.courts.ApplicationReferredIgnored;
@@ -80,7 +81,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 1331113876243908494L;
+    private static final long serialVersionUID = 1331113876243908495L;
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80527";
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
     private ApplicationStatus applicationStatus = ApplicationStatus.DRAFT;
@@ -109,7 +110,7 @@ public class ApplicationAggregate implements Aggregate {
                 when(ConvictionDateRemoved.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), null)),
                 when(CourtApplicationSummonsRejected.class).apply(e -> this.applicationStatus = FINALISED),
                 when(HearingResultedApplicationUpdated.class).apply(e -> {
-                    this.courtApplication = e.getCourtApplication();
+                    setCourtApplication(e.getCourtApplication());
                     this.applicationStatus = FINALISED;
                 }),
                 when(ApplicationEjected.class).apply(
@@ -119,6 +120,7 @@ public class ApplicationAggregate implements Aggregate {
                 ),
                 otherwiseDoNothing());
     }
+
 
     public Stream<Object> referApplicationToCourt(final HearingListingNeeds hearingListingNeeds) {
         LOGGER.debug("application has been referred to court");
@@ -456,10 +458,14 @@ public class ApplicationAggregate implements Aggregate {
                 .build();
     }
 
+    private void setCourtApplication(final CourtApplication courtApplication) {
+        this.courtApplication = dedupAllReportingRestrictions(courtApplication);
+    }
+
     private void handleEditCourtApplicationProceedings(CourtApplicationProceedingsEdited courtApplicationProceedingsEdited) {
-        this.courtApplication = courtApplicationProceedingsEdited.getCourtApplication();
+        setCourtApplication(courtApplicationProceedingsEdited.getCourtApplication());
         this.initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
-                .withCourtApplication(courtApplicationProceedingsEdited.getCourtApplication())
+                .withCourtApplication(this.courtApplication)
                 .withCourtHearing(courtApplicationProceedingsEdited.getCourtHearing())
                 .withBoxHearing(courtApplicationProceedingsEdited.getBoxHearing())
                 .withSummonsApprovalRequired(courtApplicationProceedingsEdited.getSummonsApprovalRequired())
@@ -471,10 +477,10 @@ public class ApplicationAggregate implements Aggregate {
     }
 
     private void handleCourtApplicationProceedings(final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated) {
-        this.courtApplication = courtApplicationProceedingsInitiated.getCourtApplication();
+        setCourtApplication(courtApplicationProceedingsInitiated.getCourtApplication());
         this.applicationReferredToNewHearing = isApplicationReferredToNewHearing(courtApplicationProceedingsInitiated);
         this.initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
-                .withCourtApplication(courtApplicationProceedingsInitiated.getCourtApplication())
+                .withCourtApplication(this.courtApplication)
                 .withCourtHearing(courtApplicationProceedingsInitiated.getCourtHearing())
                 .withBoxHearing(courtApplicationProceedingsInitiated.getBoxHearing())
                 .withSummonsApprovalRequired(courtApplicationProceedingsInitiated.getSummonsApprovalRequired())
