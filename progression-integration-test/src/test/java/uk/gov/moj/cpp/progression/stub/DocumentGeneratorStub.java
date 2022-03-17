@@ -17,11 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
 
 import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
@@ -29,11 +27,12 @@ import org.json.JSONObject;
 
 public class DocumentGeneratorStub {
 
-    public static final String PATH = "/system-documentgenerator-api/rest/documentgenerator/render";
+
+    public static final String PATH = "/systemdocgenerator-service/command/api/rest/systemdocgenerator/render";
 
     public static void stubDocumentCreate(String documentText) {
         stubFor(post(urlPathMatching(PATH))
-                .withHeader(CONTENT_TYPE, equalTo("application/vnd.system.documentgenerator.render+json"))
+                .withHeader(CONTENT_TYPE, equalTo("application/vnd.systemdocgenerator.render+json"))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withBody(documentText.getBytes())));
     }
@@ -69,7 +68,7 @@ public class DocumentGeneratorStub {
 
     private static List<String> getDocumentRequestsAsStream() {
         return findAll(postRequestedFor(urlPathMatching(PATH))
-                .withHeader(CONTENT_TYPE, equalTo("application/vnd.system.documentgenerator.render+json")))
+                .withHeader(CONTENT_TYPE, equalTo("application/vnd.systemdocgenerator.render+json")))
                 .stream()
                 .map(LoggedRequest::getBodyAsString)
                 .collect(Collectors.toList());
