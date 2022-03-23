@@ -75,8 +75,6 @@ public class DocumentGeneratorService {
     public static final String FINANCIAL_ORDER_DETAILS = "financialOrderDetails";
     public static final String PET_DOCUMENT_TEMPLATE_NAME = "PetNotification";
     public static final String PET_DOCUMENT_ORDER = "PetDocumentOrder";
-    public static final String STORED_MATERIAL_IN_FILE_STORE = "Stored material {} in file store {}";
-    public static final String ERROR_WHILE_UPLOADING_FILE = "Error while uploading file {}";
 
     private final DocumentGeneratorClientProducer documentGeneratorClientProducer;
 
@@ -245,10 +243,10 @@ public class DocumentGeneratorService {
 
         try {
             final UUID fileId = storeFile(fileContent, filename);
-            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId);
+            LOGGER.info("Stored material {} in file store {}", materialId, fileId);
             materialService.uploadMaterial(fileId, materialId, originatingEnvelope);
         } catch (final FileServiceException e) {
-            LOGGER.error(ERROR_WHILE_UPLOADING_FILE, filename);
+            LOGGER.error("Error while uploading file {}", filename);
             throw new FileUploadException(e);
         }
     }
@@ -263,7 +261,7 @@ public class DocumentGeneratorService {
 
         try {
             final UUID fileId = storeFile(fileContent, filename);
-            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId);
+            LOGGER.info("Stored material {} in file store {}", materialId, fileId);
             final UploadMaterialContextBuilder uploadMaterialContextBuilder = new UploadMaterialContextBuilder();
             if (nonNull(emailChannel)) {
                 uploadMaterialContextBuilder.setEmailNotifications(of(emailChannel));
@@ -282,7 +280,7 @@ public class DocumentGeneratorService {
                     .build());
 
         } catch (final FileServiceException e) {
-            LOGGER.error(ERROR_WHILE_UPLOADING_FILE, filename);
+            LOGGER.error("Error while uploading file {}", filename);
             throw new FileUploadException(e);
         }
     }
@@ -296,7 +294,7 @@ public class DocumentGeneratorService {
 
             final UUID fileId = storeFile(fileContent, filename);
 
-            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId);
+            LOGGER.info("Stored material {} in file store {}", materialId, fileId);
 
             final boolean isPostable = nowDocumentValidator.isPostable(orderAddressee);
             final boolean firstClassLetter = isFirstClassLetter(nowDistribution) && isPostable;
@@ -323,7 +321,7 @@ public class DocumentGeneratorService {
             uploadMaterialService.uploadFile(uploadMaterialContextBuilder.build());
 
         } catch (final FileServiceException e) {
-            LOGGER.error(ERROR_WHILE_UPLOADING_FILE, filename);
+            LOGGER.error("Error while uploading file {}", filename);
             throw new FileUploadException(e);
         }
     }

@@ -5,10 +5,7 @@ import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.fromStatusCode;
 import static javax.ws.rs.core.Response.status;
 import static uk.gov.justice.services.core.interceptor.InterceptorContext.interceptorContextWithInput;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -29,14 +26,13 @@ import uk.gov.moj.cpp.material.client.MaterialClient;
 import uk.gov.moj.cpp.progression.query.api.UserDetailsLoader;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
+import java.io.InputStream;
 import java.util.Optional;
 import java.util.UUID;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.ws.rs.WebApplicationException;
@@ -61,7 +57,6 @@ public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryAp
     public static final String PROGRESSION_QUERY_MATERIAL_CONTENT_DEFENCE = "progression.query.material-content-for-defence";
     private static final String MATERIAL_ID = "materialId";
     private static final String DEFENDANT_ID = "defendantId";
-    private static final String JSON_MIME_TYPE = "application/json";
     @Inject
     RestProcessor restProcessor;
 
@@ -129,7 +124,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryAp
 
         final JsonObjectBuilder builder = createObjectBuilder();
         builder.add(MATERIAL_ID, materialId);
-        defendantId.ifPresent(id -> builder.add(DEFENDANT_ID, id));
+        defendantId.ifPresent(id->builder.add(DEFENDANT_ID,id));
 
         return envelopeFrom(metadataBuilder()
                         .withId(randomUUID())
@@ -151,22 +146,9 @@ public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryAp
             final String materialId = document.payloadAsJsonObject().getString(MATERIAL_ID);
 
             final Response documentContentResponse = materialClient.getMaterial(fromString(materialId), systemUser);
-
-            final Response.Status documentContentResponseStatus = fromStatusCode(documentContentResponse.getStatus());
-            if (OK.equals(documentContentResponseStatus)) {
-                final String url = documentContentResponse.readEntity(String.class);
-                final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add("url", url)
-                        .build();
-
-                return Response
-                        .status(OK)
-                        .entity(jsonObject)
-                        .header(CONTENT_TYPE, JSON_MIME_TYPE)
-                        .build();
-            } else {
-                return Response.fromResponse(documentContentResponse).build();
-            }
+            return Response.fromResponse(documentContentResponse).entity(documentContentResponse.readEntity(InputStream.class)).build();
         }
     }
+
+
 }

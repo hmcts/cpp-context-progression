@@ -23,6 +23,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.core.accesscontrol.AccessControlViolationException;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorContext;
@@ -30,11 +31,11 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.client.MaterialClient;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
-import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
@@ -53,7 +54,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
 
-    private static final String JSON_CONTENT_TYPE = "application/json";
+    private static final String PDF_CONTENT_TYPE = "application/pdf";
 
     @Mock
     private MaterialClient materialClient;
@@ -76,7 +77,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
     private final UUID userId = randomUUID();
     private final UUID materialId = randomUUID();
     private final UUID systemUserId = randomUUID();
-    private final String documentUrl = "http://filelocation.com/myfile.pdf";
+    private final InputStream documentStream = new ByteArrayInputStream("test".getBytes());
 
     @Before
     public void init() {
@@ -87,23 +88,19 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
     public void shouldRunAllInterceptorsAndFetchAndStreamDocument() {
         final JsonEnvelope documentDetails = documentDetails(materialId);
 
-        final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, JSON_CONTENT_TYPE));
-
-        final JsonObject json = Json.createObjectBuilder()
-                .add("url", documentUrl)
-                .build();
+        final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, PDF_CONTENT_TYPE, HeaderConstants.ID, randomUUID()));
 
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
         when(materialClient.getMaterial(materialId, systemUserId)).thenReturn(documentContentResponse);
-        when(documentContentResponse.readEntity(String.class)).thenReturn(documentUrl);
+        when(documentContentResponse.readEntity(InputStream.class)).thenReturn(documentStream);
         when(documentContentResponse.getHeaders()).thenReturn(headers);
         when(documentContentResponse.getStatus()).thenReturn(SC_OK);
 
-        final Response documentContentResponse = endpointHandler.getMaterialByMaterialIdContent(materialId.toString(), userId);
+        final Response documentContentResponse = endpointHandler.getMaterialByMaterialIdContent( materialId.toString(), userId);
 
         assertThat(documentContentResponse.getStatus(), is(SC_OK));
         assertThat(documentContentResponse.getHeaders(), is(headers));
-        assertThat(documentContentResponse.getEntity(), is(json));
+        assertThat(documentContentResponse.getEntity(), is(documentStream));
 
         verifyInterceptorChainExecution();
     }
@@ -146,7 +143,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenThrow(interceptorException);
 
         try {
-            endpointHandler.getMaterialByMaterialIdContent(materialId.toString(), userId);
+            endpointHandler.getMaterialByMaterialIdContent( materialId.toString(), userId);
             fail("Interceptor exception expected");
         } catch (Exception e) {
             assertThat(e, is(interceptorException));
