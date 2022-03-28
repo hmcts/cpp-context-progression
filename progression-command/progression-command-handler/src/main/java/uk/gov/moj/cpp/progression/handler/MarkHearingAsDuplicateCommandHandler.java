@@ -46,7 +46,7 @@ public class MarkHearingAsDuplicateCommandHandler {
 
         final MarkHearingAsDuplicate markHearingAsDuplicate = markHearingAsDuplicateEnvelope.payload();
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("'progression.command.mark-hearing-as-duplicate' received with payload {}", markHearingAsDuplicate);
+            LOGGER.debug("'progression.command.mark-hearing-as-duplicate' received with payload {}", "hearingId: " + markHearingAsDuplicate.getHearingId());
         }
 
         final EventStream eventStream = eventSource.getStreamById(markHearingAsDuplicate.getHearingId());
@@ -61,7 +61,7 @@ public class MarkHearingAsDuplicateCommandHandler {
         final MarkHearingAsDuplicateForCase markHearingAsDuplicateForCase = markHearingAsDuplicateEnvelopeForCase.payload();
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("'progression.command.mark-hearing-as-duplicate-for-case' received with payload {}", markHearingAsDuplicateEnvelopeForCase);
+            LOGGER.debug("'progression.command.mark-hearing-as-duplicate-for-case' received with payload {}", "caseId: " + markHearingAsDuplicateEnvelopeForCase.payload().getCaseId() + " , " + "hearingId: " + markHearingAsDuplicateEnvelopeForCase.payload().getHearingId());
         }
         final EventStream eventStream = eventSource.getStreamById(markHearingAsDuplicateForCase.getCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);

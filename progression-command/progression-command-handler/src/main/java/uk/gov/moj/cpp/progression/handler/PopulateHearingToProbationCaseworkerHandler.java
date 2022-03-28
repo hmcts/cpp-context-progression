@@ -37,7 +37,7 @@ public class PopulateHearingToProbationCaseworkerHandler {
     public void handlePopulateHearingToProbationCaseworker(final Envelope<PopulateHearingToProbationCaseworker> populateHearingToProbationCaseworkerEnvelope) throws EventStreamException {
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("'{}' received with payload {}", "progression.command.populate-hearing-to-probation-caseworker", populateHearingToProbationCaseworkerEnvelope);
+            LOGGER.debug("'{}' received with payload {}", "progression.command.populate-hearing-to-probation-caseworker", "hearingId: " + populateHearingToProbationCaseworkerEnvelope.payload().getHearingId());
         }
 
         final PopulateHearingToProbationCaseworker populateHearingToProbationCaseworker = populateHearingToProbationCaseworkerEnvelope.payload();

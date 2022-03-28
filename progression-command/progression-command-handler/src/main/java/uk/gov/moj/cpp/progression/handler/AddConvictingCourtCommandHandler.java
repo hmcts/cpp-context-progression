@@ -52,7 +52,7 @@ public class AddConvictingCourtCommandHandler extends AbstractCommandHandler {
     @Handles("progression.command.add-convicting-court")
     public void handle(final Envelope<AddConvictingCourt> addConvictionCourtEnv) throws EventStreamException {
 
-            LOGGER.info("Handling progression.command.add-convicting-court {}", addConvictionCourtEnv.payload());
+        LOGGER.info("Handling progression.command.add-convicting-court {}", "caseID: " + addConvictionCourtEnv.payload().getCaseId());
 
         final EventStream eventStream = eventSource.getStreamById(addConvictionCourtEnv.payload().getCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);

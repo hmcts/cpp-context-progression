@@ -39,7 +39,7 @@ public class UpdateFinancialMeansDataHandler {
 
     @Handles("progression.command.update-financial-means-data")
     public void handle(final Envelope<CreateCourtDocument> createCourtDocumentEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-financial-means-data {}", createCourtDocumentEnvelope);
+        LOGGER.debug("progression.command.update-financial-means-data {}", "documentId: " + createCourtDocumentEnvelope.payload().getCourtDocument().getCourtDocumentId());
         final CourtDocument courtDocument = setDefaults(createCourtDocumentEnvelope.payload().getCourtDocument());
 
         if (isDefendantsFinancialData(courtDocument)) {

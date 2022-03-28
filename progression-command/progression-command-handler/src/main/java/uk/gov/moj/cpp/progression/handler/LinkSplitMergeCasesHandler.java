@@ -43,7 +43,7 @@ public class LinkSplitMergeCasesHandler {
     @Handles("progression.command.validate-link-cases")
     public void handleValidation(final Envelope<ValidateLinkCases> envelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.validate-link-cases payload: {}", envelope.payload());
+            LOGGER.debug("progression.command.validate-link-cases payload: {}", "prosecutionCaseId: " + envelope.payload().getProsecutionCaseId());
         }
         final ValidateLinkCases validateLinkCases = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(validateLinkCases.getProsecutionCaseId());
@@ -56,7 +56,7 @@ public class LinkSplitMergeCasesHandler {
     @Handles("progression.command.link-cases")
     public void handle(final Envelope<LinkCases> envelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.link-cases payload: {}", envelope.payload());
+            LOGGER.debug("progression.command.link-cases payload: {}", "prosecutionCaseId: " + envelope.payload().getProsecutionCaseId());
         }
         final LinkCases linkCases = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(linkCases.getProsecutionCaseId());

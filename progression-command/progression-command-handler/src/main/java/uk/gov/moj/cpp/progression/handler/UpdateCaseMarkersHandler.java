@@ -39,7 +39,7 @@ public class UpdateCaseMarkersHandler {
 
     @Handles("progression.command.update-case-markers")
     public void handle(final Envelope<UpdateCaseMarkers> envelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-case-markers {}", envelope.payload());
+        LOGGER.debug("progression.command.update-case-markers {}", "prosecutionCaseId: " + envelope.payload().getProsecutionCaseId() + " , " + "hearingId: " + envelope.payload().getHearingId());
         final UpdateCaseMarkers updateCaseMarkers = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateCaseMarkers.getProsecutionCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
@@ -49,7 +49,7 @@ public class UpdateCaseMarkersHandler {
 
     @Handles("progression.command.update-case-markers-to-hearing")
     public void handleToHearing(final Envelope<UpdateCaseMarkers> envelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-case-markers-to-hearing {}", envelope.payload());
+        LOGGER.debug("progression.command.update-case-markers-to-hearing {}", "prosecutionCaseId: " + envelope.payload().getProsecutionCaseId() + " , " + "hearingId: " + envelope.payload().getHearingId());
         final UpdateCaseMarkers updateCaseMarkers = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateCaseMarkers.getHearingId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);

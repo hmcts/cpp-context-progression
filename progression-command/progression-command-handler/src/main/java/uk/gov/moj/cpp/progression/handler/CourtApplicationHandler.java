@@ -112,7 +112,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
     @Handles("progression.command.create-court-application")
     public void handle(final Envelope<CreateCourtApplication> courtApplicationEnv) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.create-court-application {}", courtApplicationEnv.payload());
+            LOGGER.debug("progression.command.create-court-application ID: {}", courtApplicationEnv.payload().getCourtApplication().getId());
         }
 
         final CourtApplication application = courtApplicationEnv.payload().getCourtApplication();
@@ -135,7 +135,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
     @Handles("progression.command.add-court-application-to-case")
     public void courtApplicationAddedToCase(final Envelope<AddCourtApplicationToCase> addCourtApplicationToCaseEnvelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.add-court-application-to-case {}", addCourtApplicationToCaseEnvelope.payload());
+            LOGGER.debug("progression.command.add-court-application-to-case ID: {}", addCourtApplicationToCaseEnvelope.payload().getCourtApplication().getId());
         }
 
         final AddCourtApplicationToCase addCourtApplicationToCase = addCourtApplicationToCaseEnvelope.payload();
@@ -148,7 +148,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
     @Handles("progression.command.initiate-court-proceedings-for-application")
     public void initiateCourtApplicationProceedings(final Envelope<InitiateCourtApplicationProceedings> initiateCourtApplicationProceedingsEnv) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.initiate-court-proceedings-for-application {}", initiateCourtApplicationProceedingsEnv.payload());
+            LOGGER.debug("progression.command.initiate-court-proceedings-for-application ID: {}", initiateCourtApplicationProceedingsEnv.payload().getCourtApplication().getId());
         }
 
         final boolean applicationReferredToNewHearing = isApplicationReferredToNewHearing(initiateCourtApplicationProceedingsEnv.payload());
@@ -209,7 +209,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
 
     @Handles("progression.command.add-breach-application")
     public void addBreachApplication(final Envelope<AddBreachApplication> addBreachApplicationEnvelope) throws EventStreamException {
-        LOGGER.info("progression.command.add-breach-application {}", addBreachApplicationEnvelope.payload());
+        LOGGER.info("progression.command.add-breach-application {}", addBreachApplicationEnvelope.payload().getBreachedApplications());
         final AddBreachApplication command = addBreachApplicationEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(command.getHearingId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);

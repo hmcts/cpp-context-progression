@@ -46,7 +46,7 @@ public class DeleteHearingCommandHandler {
     public void handleDeleteHearing(final Envelope<DeleteHearing> deleteHearingEnvelope) throws EventStreamException {
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(RECEIVED_WITH_PAYLOAD, PROGRESSION_COMMAND_DELETE_HEARING, deleteHearingEnvelope);
+            LOGGER.debug(RECEIVED_WITH_PAYLOAD, PROGRESSION_COMMAND_DELETE_HEARING, "hearingID: " + deleteHearingEnvelope.payload().getHearingId());
         }
 
         final DeleteHearing deleteHearing = deleteHearingEnvelope.payload();
@@ -59,7 +59,7 @@ public class DeleteHearingCommandHandler {
     @Handles(PROGRESSION_COMMAND_DECREASE_LISTING_NUMBER_FOR_PROSECUTION_CASE)
     public void handleDecreaseListingNumber(final Envelope<DecreaseListingNumberForProsecutionCase> decreaseListingNumberForProsecutionCaseEnvelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(RECEIVED_WITH_PAYLOAD, PROGRESSION_COMMAND_DECREASE_LISTING_NUMBER_FOR_PROSECUTION_CASE, decreaseListingNumberForProsecutionCaseEnvelope);
+            LOGGER.debug(RECEIVED_WITH_PAYLOAD, PROGRESSION_COMMAND_DECREASE_LISTING_NUMBER_FOR_PROSECUTION_CASE, "prosecutionCaseId: " + decreaseListingNumberForProsecutionCaseEnvelope.payload().getProsecutionCaseId());
         }
         final DecreaseListingNumberForProsecutionCase decreaseListingNumberForProsecutionCase = decreaseListingNumberForProsecutionCaseEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(decreaseListingNumberForProsecutionCase.getProsecutionCaseId());
@@ -73,7 +73,7 @@ public class DeleteHearingCommandHandler {
     public void handleDeleteHearingForProsecutionCase(final Envelope<DeleteHearingForProsecutionCase> deleteHearingForCaseEnvelope) throws EventStreamException {
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(RECEIVED_WITH_PAYLOAD, PROGRESSION_COMMAND_DELETE_HEARING_FOR_PROSECUTION_CASE, deleteHearingForCaseEnvelope);
+            LOGGER.debug(RECEIVED_WITH_PAYLOAD, PROGRESSION_COMMAND_DELETE_HEARING_FOR_PROSECUTION_CASE, "prosecutionCaseId: " + deleteHearingForCaseEnvelope.payload().getProsecutionCaseId() + " , " + "hearingId: " + deleteHearingForCaseEnvelope.payload().getHearingId());
         }
         final DeleteHearingForProsecutionCase deleteHearingForProsecutionCase = deleteHearingForCaseEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(deleteHearingForProsecutionCase.getProsecutionCaseId());
@@ -86,7 +86,7 @@ public class DeleteHearingCommandHandler {
     public void handleDeleteHearingForCourtApplication(final Envelope<DeleteHearingForCourtApplication> deleteHearingForCourtApplicationEnvelope) throws EventStreamException {
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(RECEIVED_WITH_PAYLOAD, PROGRESSION_COMMAND_DELETE_HEARING_FOR_COURT_APPLICATION, deleteHearingForCourtApplicationEnvelope);
+            LOGGER.debug(RECEIVED_WITH_PAYLOAD, PROGRESSION_COMMAND_DELETE_HEARING_FOR_COURT_APPLICATION, "courtApplicationId: " + deleteHearingForCourtApplicationEnvelope.payload().getCourtApplicationId() + " , " + "hearingId: " + deleteHearingForCourtApplicationEnvelope.payload().getHearingId());
         }
         final DeleteHearingForCourtApplication deleteHearingForCourtApplication = deleteHearingForCourtApplicationEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(deleteHearingForCourtApplication.getCourtApplicationId());

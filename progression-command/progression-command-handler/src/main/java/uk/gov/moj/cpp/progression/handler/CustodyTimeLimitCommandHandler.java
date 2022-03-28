@@ -38,7 +38,7 @@ public class CustodyTimeLimitCommandHandler {
     public void handleStopCustodyTimeLimitClock(final Envelope<StopCustodyTimeLimitClock> stopCustodyTimeLimitClockEnvelope) throws EventStreamException {
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("'{}' received with payload {}", "progression.command.stop-custody-time-limit-clock", stopCustodyTimeLimitClockEnvelope);
+            LOGGER.debug("progression.command.stop-custody-time-limit-clock hearingId: {} offenceIds: {}", stopCustodyTimeLimitClockEnvelope.payload().getHearingId(), stopCustodyTimeLimitClockEnvelope.payload().getOffenceIds());
         }
 
         final StopCustodyTimeLimitClock stopCustodyTimeLimitClock = stopCustodyTimeLimitClockEnvelope.payload();
@@ -53,7 +53,7 @@ public class CustodyTimeLimitCommandHandler {
     public void handleExtendCustodyTimeLimit(final Envelope<ExtendCustodyTimeLimit> extendCustodyTimeLimitEnvelope) throws EventStreamException {
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("'{}' received with payload {}", "progression.command.extend-custody-time-limit", extendCustodyTimeLimitEnvelope);
+            LOGGER.debug("'{}' received with payload {}", "progression.command.extend-custody-time-limit", "caseId: " + extendCustodyTimeLimitEnvelope.payload().getCaseId() + " , " + "hearingId: " + extendCustodyTimeLimitEnvelope.payload().getHearingId() + " , " + "offenceId: " + extendCustodyTimeLimitEnvelope.payload().getOffenceId());
         }
 
         final ExtendCustodyTimeLimit extendCustodyTimeLimit = extendCustodyTimeLimitEnvelope.payload();

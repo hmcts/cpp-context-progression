@@ -33,7 +33,7 @@ public class PrisonCourtRegisterHandler extends AbstractCommandHandler {
 
     @Handles("progression.command.add-prison-court-register")
     public void handleAddPrisonCourtRegister(final Envelope<PrisonCourtRegisterDocumentRequest> envelope) throws EventStreamException {
-        LOGGER.info("progression.command.add-prison-court-register {}", envelope.payload());
+        LOGGER.info("progression.command.add-prison-court-register {}", "hearingId: " + envelope.payload().getHearingId());
 
         final PrisonCourtRegisterDocumentRequest prisonCourtRegisterDocumentRequest = envelope.payload();
 

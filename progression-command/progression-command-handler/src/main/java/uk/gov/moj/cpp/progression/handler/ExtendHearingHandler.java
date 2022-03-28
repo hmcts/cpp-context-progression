@@ -44,7 +44,7 @@ public class ExtendHearingHandler {
 
     @Handles("progression.command.extend-hearing")
     public void handle(final Envelope<ExtendHearing> extendHearingEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.extend-hearing {}", extendHearingEnvelope.payload());
+        LOGGER.debug("progression.command.extend-hearing {}", "hearingId: " + extendHearingEnvelope.payload().getHearingRequest().getId());
 
         final ExtendHearing extendHearing = extendHearingEnvelope.payload();
         final HearingListingNeeds hearingRequest = extendHearing.getHearingRequest();
@@ -63,7 +63,7 @@ public class ExtendHearingHandler {
 
     @Handles("progression.command.process-hearing-extended")
     public void handleProcessHearingExtended(final Envelope<ProcessHearingExtended> processHearingExtendedEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.process-hearing-extended {}", processHearingExtendedEnvelope.payload());
+        LOGGER.debug("progression.command.process-hearing-extended {}", "hearingId: " + processHearingExtendedEnvelope.payload().getHearingRequest().getId());
 
         final ProcessHearingExtended processHearingExtended = processHearingExtendedEnvelope.payload();
 

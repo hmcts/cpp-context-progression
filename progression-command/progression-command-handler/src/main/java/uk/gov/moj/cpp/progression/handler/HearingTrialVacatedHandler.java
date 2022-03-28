@@ -38,7 +38,7 @@ public class HearingTrialVacatedHandler {
     @Handles("progression.command.hearing-trial-vacated")
     public void hearingTrialVacated(final Envelope<ProgressionHearingTrialVacated> hearingEnvelope) throws EventStreamException {
 
-        LOGGER.debug("progression.command.hearing-trial-vacated {}", hearingEnvelope.payload());
+        LOGGER.debug("progression.command.hearing-trial-vacated {}", "hearingId: " + hearingEnvelope.payload().getHearingId() + " , " + "vacatedTrialReasonHearingId: " + hearingEnvelope.payload().getVacatedTrialReasonId());
 
         final ProgressionHearingTrialVacated hearingTrialVacated = hearingEnvelope.payload();
 

@@ -39,7 +39,7 @@ public class UpdateHearingForPartialAllocationHandler {
 
     @Handles("progression.command.update-hearing-for-partial-allocation")
     public void handle(final Envelope<UpdateHearingForPartialAllocation> updateHearingForPartialAllocationEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-hearing-for-partial-allocation {}", updateHearingForPartialAllocationEnvelope.payload());
+        LOGGER.debug("progression.command.update-hearing-for-partial-allocation {}", "hearingId: " + updateHearingForPartialAllocationEnvelope.payload().getHearingId());
 
         final UpdateHearingForPartialAllocation updateHearingForPartialAllocation = updateHearingForPartialAllocationEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateHearingForPartialAllocation.getHearingId());

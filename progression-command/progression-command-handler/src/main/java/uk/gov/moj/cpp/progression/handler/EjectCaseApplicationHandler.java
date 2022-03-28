@@ -40,7 +40,7 @@ public class EjectCaseApplicationHandler {
 
     @Handles("progression.command.eject-case-or-application")
     public void handle(final Envelope<EjectCaseOrApplication> envelope) throws EventStreamException {
-        LOGGER.debug("progression.command.eject-case-or-application {}", envelope);
+        LOGGER.debug("progression.command.eject-case-or-application {}", "applicationId: " + envelope.payload().getApplicationId() + " , " + " prosecutionCaseId: " + envelope.payload().getProsecutionCaseId());
         final EjectCaseOrApplication ejectCaseOrApplication = envelope.payload();
         if(nonNull(ejectCaseOrApplication.getProsecutionCaseId())) {
             final EventStream eventStream = eventSource.getStreamById(ejectCaseOrApplication.getProsecutionCaseId());

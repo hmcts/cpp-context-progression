@@ -37,7 +37,7 @@ public class ReferApplicationToCourtHandler {
 
     @Handles("progression.command.refer-application-to-court")
     public void handle(final Envelope<ReferApplicationToCourt> referApplicationToCourtEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.refer-application-to-court {}", referApplicationToCourtEnvelope.payload());
+        LOGGER.debug("progression.command.refer-application-to-court {}", "hearingId: " + referApplicationToCourtEnvelope.payload().getHearingRequest().getId());
 
         final ReferApplicationToCourt referApplicationToCourt = referApplicationToCourtEnvelope.payload();
         final HearingListingNeeds hearingRequest = referApplicationToCourt.getHearingRequest();

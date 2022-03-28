@@ -60,7 +60,7 @@ public class DefenceOrganisationHandler {
 
     @Handles("progression.command.handler.associate-defence-organisation")
     public void handleAssociation(final Envelope<AssociateDefenceOrganisation> envelope) throws EventStreamException {
-        LOGGER.debug("progression.command.handler.associate-defence-organisation {}", envelope.payload());
+        LOGGER.debug("progression.command.handler.associate-defence-organisation caseId: {} organisationId: {}", envelope.payload().getCaseId(), envelope.payload().getOrganisationId());
 
         final AssociateDefenceOrganisation associateDefenceOrganisation = envelope.payload();
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
@@ -93,7 +93,7 @@ public class DefenceOrganisationHandler {
 
     @Handles("progression.command.handler.disassociate-defence-organisation")
     public void handleDisassociation(final Envelope<DisassociateDefenceOrganisation> envelope) throws EventStreamException {
-        LOGGER.debug("progression.command.handler.disassociate-defence-organisation {}", envelope.payload());
+        LOGGER.debug("progression.command.handler.disassociate-defence-organisation {}", "caseId: " + envelope.payload().getCaseId() + " , " + "defendantId: " + envelope.payload().getDefendantId());
 
         final DisassociateDefenceOrganisation disassociateDefenceOrganisation = envelope.payload();
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);

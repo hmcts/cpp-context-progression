@@ -31,7 +31,7 @@ public class DeleteDefendantFinancialMeansHandler {
 
     @Handles("progression.command.delete-financial-means")
     public void handle(final Envelope<DeleteFinancialMeans> deleteFinancialMeansEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.delete-financial-means {}", deleteFinancialMeansEnvelope.payload());
+        LOGGER.debug("progression.command.delete-financial-means {}", "caseId: " + deleteFinancialMeansEnvelope.payload().getCaseId() + " , " + "defendantId: " + deleteFinancialMeansEnvelope.payload().getDefendantId());
 
         final DeleteFinancialMeans deleteFinancialMeans = deleteFinancialMeansEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(deleteFinancialMeans.getCaseId());

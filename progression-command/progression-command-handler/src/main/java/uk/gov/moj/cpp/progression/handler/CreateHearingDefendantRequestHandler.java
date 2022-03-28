@@ -37,7 +37,7 @@ public class CreateHearingDefendantRequestHandler {
 
     @Handles("progression.command.create-hearing-defendant-request")
     public void handle(final Envelope<CreateHearingDefendantRequest> createHearingDefendantRequestEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.create-hearing-defendant-request {}", createHearingDefendantRequestEnvelope );
+        LOGGER.debug("progression.command.create-hearing-defendant-request {}", "hearingId: " + createHearingDefendantRequestEnvelope.payload().getHearingId());
         final List<ListDefendantRequest> listDefendantRequests = createHearingDefendantRequestEnvelope.payload().getDefendantRequests();
         final EventStream eventStream = eventSource.getStreamById(createHearingDefendantRequestEnvelope.payload().getHearingId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);

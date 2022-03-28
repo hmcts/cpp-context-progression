@@ -62,7 +62,7 @@ public class ReceiveRepresentationOrderHandler {
     @Handles("progression.command.handler.receive-representationOrder-for-defendant")
     public void handle(final Envelope<ReceiveRepresentationOrderForDefendant> envelope) throws EventStreamException {
 
-        LOGGER.debug("progression.command.handler.receive-representationOrder-for-defendant {}", envelope.payload());
+        LOGGER.debug("progression.command.handler.receive-representationOrder-for-defendant {}", "prosecutionCaseId: " + envelope.payload().getProsecutionCaseId() + " , " + "defendantId: " + envelope.payload().getDefendantId());
         final ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = envelope.payload();
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
         final String statusCode = receiveRepresentationOrderForDefendant.getStatusCode();

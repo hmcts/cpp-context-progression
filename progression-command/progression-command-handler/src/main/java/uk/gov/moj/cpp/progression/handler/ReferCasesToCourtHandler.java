@@ -48,7 +48,7 @@ public class ReferCasesToCourtHandler  {
     
     @Handles("progression.command.refer-cases-to-court")
     public void handle(final Envelope<ReferCasesToCourt> referCasesToCourtEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.refer-cases-to-court {}", referCasesToCourtEnvelope.payload());
+        LOGGER.debug("progression.command.refer-cases-to-court {}", "prosecutionCases: " + referCasesToCourtEnvelope.payload().getCourtReferral().getProsecutionCases());
 
         final ReferCasesToCourt referCasesToCourt = referCasesToCourtEnvelope.payload();
         for(final ReferredProsecutionCase referredProsecutionCase : referCasesToCourt.getCourtReferral().getProsecutionCases()){

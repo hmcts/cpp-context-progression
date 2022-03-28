@@ -34,7 +34,7 @@ public class CreateProsecutionCaseInHearingCommandHandler {
         final CreateProsecutionCaseInHearing createProsecutionCaseInHearing = createProsecutionCaseInHearingEnvelope.payload();
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("'progression.command.create-prosecution-case-in-hearing' received with payload {}", createProsecutionCaseInHearing);
+            LOGGER.debug("progression.command.create-prosecution-case-in-hearing prosecutionCaseId: {}", createProsecutionCaseInHearing.getProsecutionCaseId());
         }
 
         final EventStream eventStream = eventSource.getStreamById(createProsecutionCaseInHearing.getProsecutionCaseId());

@@ -38,7 +38,7 @@ public class RemoveCourtDocumentHandler {
 
     @Handles("progression.command.remove-court-document")
     public void handle(final Envelope<RemoveCourtDocument> removeCourtDocumentEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.remove-court-document {}", removeCourtDocumentEnvelope.payload());
+        LOGGER.debug("progression.command.remove-court-document {}", "courtDocumentId: " + removeCourtDocumentEnvelope.payload().getCourtDocumentId());
         final UUID courtDocumentId = removeCourtDocumentEnvelope.payload().getCourtDocumentId();
         final UUID materialId = removeCourtDocumentEnvelope.payload().getMaterialId();
         final boolean isRemoved = removeCourtDocumentEnvelope.payload().getIsRemoved();

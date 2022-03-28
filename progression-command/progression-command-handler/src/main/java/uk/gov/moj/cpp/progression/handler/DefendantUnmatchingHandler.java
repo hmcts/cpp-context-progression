@@ -40,7 +40,7 @@ public class DefendantUnmatchingHandler {
     @Handles("progression.command.unmatch-defendant")
     public void handle(final Envelope<UnmatchDefendant> envelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.unmatch-defendant payload: {}", envelope.payload());
+            LOGGER.debug("progression.command.unmatch-defendant payload: {}", "prosecutionCaseId: " + envelope.payload().getProsecutionCaseId() + " , " + "defendantId: " + envelope.payload().getDefendantId());
         }
         final UnmatchDefendant unmatchDefendant = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(unmatchDefendant.getProsecutionCaseId());

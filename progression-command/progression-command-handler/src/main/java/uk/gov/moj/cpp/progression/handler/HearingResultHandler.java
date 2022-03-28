@@ -34,7 +34,7 @@ public class HearingResultHandler {
 
     @Handles("progression.command.hearing-result")
     public void handle(final Envelope<HearingResult> envelope) throws EventStreamException {
-        LOGGER.debug("progression.command.hearing-result {}", envelope);
+        LOGGER.debug("progression.command.hearing-result {}", "hearingId: " + envelope.payload().getHearing().getId());
         final HearingResult hearingResult = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(hearingResult.getHearing().getId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);

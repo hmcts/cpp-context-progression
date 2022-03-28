@@ -36,7 +36,7 @@ public class AuditCourtDocumentHandler {
 
     @Handles("progression.command.audit-court-document")
     public void handle(final Envelope<AuditCourtDocument> auditCourtDocumentEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.audit-court-document {}", auditCourtDocumentEnvelope);
+        LOGGER.debug("progression.command.audit-court-document {}", "courtDocumentId: " + auditCourtDocumentEnvelope.payload().getCourtDocumentId());
 
         final String userId = auditCourtDocumentEnvelope.metadata().userId()
                 .orElseThrow(() -> new IllegalArgumentException("No UserId Supplied"));

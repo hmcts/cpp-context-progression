@@ -42,7 +42,7 @@ public class BookSlotsForApplicationHandler {
 
     @Handles("progression.command.book-slots-for-application")
     public void handleBookSlotsForApplication(final Envelope<BookSlotsForApplication> bookSlotsForApplicationEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.book-slots-for-application {}", bookSlotsForApplicationEnvelope.payload());
+        LOGGER.debug("progression.command.book-slots-for-application ID: {} bookedSlots: {}", bookSlotsForApplicationEnvelope.payload().getHearingRequest().getId(), bookSlotsForApplicationEnvelope.payload().getHearingRequest().getBookedSlots());
 
         final BookSlotsForApplication bookSlotsForApplication = bookSlotsForApplicationEnvelope.payload();
         final HearingListingNeeds hearingRequest = bookSlotsForApplication.getHearingRequest();

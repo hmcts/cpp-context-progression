@@ -29,7 +29,7 @@ public class AssignDefendantRequestToExtendHearingHandler extends AbstractComman
     @Handles("progression.command.assign-defendant-request-to-extend-hearing")
     public void assignDefendantRequestToExtendHearing(final Envelope<AssignDefendantRequestToExtendHearing> envelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.assign-defendant-request-to-extend-hearing payload {}", envelope.payload());
+            LOGGER.debug("progression.command.assign-defendant-request-to-extend-hearing payload {}", envelope.payload().getDefendantRequests());
         }
 
         final AssignDefendantRequestToExtendHearing command = envelope.payload();

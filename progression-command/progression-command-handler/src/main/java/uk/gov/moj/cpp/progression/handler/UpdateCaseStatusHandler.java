@@ -38,7 +38,7 @@ public class UpdateCaseStatusHandler {
 
     @Handles("progression.command.hearing-confirmed-update-case-status")
     public void handleUpdateCaseStatus(final Envelope<HearingConfirmedUpdateCaseStatus> envelope) throws EventStreamException {
-        LOGGER.debug("progression.command.hearing-confirmed-update-case-status {}", envelope.payload());
+        LOGGER.debug("progression.command.hearing-confirmed-update-case-status {}", "prosecutionCaseId: " + envelope.payload().getProsecutionCase().getId() + " , " + "caseStatus: " + envelope.payload().getCaseStatus());
         final HearingConfirmedUpdateCaseStatus payload = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(payload.getProsecutionCase().getId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);

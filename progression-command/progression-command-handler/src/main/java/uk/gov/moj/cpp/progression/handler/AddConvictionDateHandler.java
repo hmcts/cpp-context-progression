@@ -30,11 +30,10 @@ public class AddConvictionDateHandler {
 
     @Inject
     private AggregateService aggregateService;
-
-
+    
     @Handles("progression.command.add-conviction-date")
     public void handle(final Envelope<AddConvictionDate> envelope) throws EventStreamException {
-        LOGGER.debug("progression.command.add-conviction-date {}", envelope);
+        LOGGER.debug("progression.command.add-conviction-date caseId: {} conviction-date: {}", envelope.payload().getCaseId(), envelope.payload().getConvictionDate());
         final AddConvictionDate addConvictionDate = envelope.payload();
 
         final EventStream eventStream;

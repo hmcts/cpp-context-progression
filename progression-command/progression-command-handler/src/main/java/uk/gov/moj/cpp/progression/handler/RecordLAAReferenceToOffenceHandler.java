@@ -51,7 +51,7 @@ public class RecordLAAReferenceToOffenceHandler {
 
     @Handles("progression.command.handler.record-laareference-for-offence")
     public void handle(final JsonEnvelope envelope) throws EventStreamException {
-        LOGGER.debug("progression.command.record-laareference-for-offence {}", envelope.payload());
+        LOGGER.debug("progression.command.record-laareference-for-offence {}", "caseId: " + envelope.payloadAsJsonObject().getString(CASE_ID));
         final JsonObject payload = envelope.payloadAsJsonObject();
         final UUID caseId = fromString(payload.getString(CASE_ID));
         final UUID defendantId = fromString(payload.getString(DEFENDANT_ID));

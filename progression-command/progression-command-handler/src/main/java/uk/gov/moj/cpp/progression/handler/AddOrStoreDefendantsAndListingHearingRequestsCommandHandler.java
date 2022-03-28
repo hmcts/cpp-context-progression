@@ -34,7 +34,7 @@ public class AddOrStoreDefendantsAndListingHearingRequestsCommandHandler {
         final AddOrStoreDefendantsAndListingHearingRequests addOrStoreDefendantsAndListingHearingRequests = addOrStoreDefendantsAndListingHearingRequestsEnvelope.payload();
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("'progression.command.add-or-store-defendants-and-listing-hearing-requests' received with payload {}", addOrStoreDefendantsAndListingHearingRequests);
+            LOGGER.debug("progression.command.add-or-store-defendants-and-listing-hearing-requests listOfHearingRequests: {}", addOrStoreDefendantsAndListingHearingRequests.getListHearingRequests());
         }
 
         final EventStream eventStream = eventSource.getStreamById(addOrStoreDefendantsAndListingHearingRequests.getDefendants().get(0).getProsecutionCaseId());
