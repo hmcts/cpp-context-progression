@@ -86,6 +86,29 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
         verifyPrisonCourtRegisterRequestsExists(UUID.fromString(courtCentreId), hearingId);
     }
 
+    @Test
+    public void shouldAddPrisonCourtDocumentRequestForApplication() throws IOException {
+        final UUID hearingId = randomUUID();
+        final ZonedDateTime hearingDate = ZonedDateTime.now(UTC).minusHours(1);
+        final String body = getPayload("progression.prison-court-register-document-request-with-application.json")
+                .replace("%COURT_CENTRE_ID%", courtCentreId)
+                .replaceAll("%HEARING_DATE%", ZonedDateTime.now(UTC).toString())
+                .replaceAll("%HEARING_ID%", hearingId.toString());
+
+        final Response writeResponse = postCommand(getWriteUrl("/prison-court-register"),
+                "application/vnd.progression.add-prison-court-register+json",
+                body);
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        assertThat(jsonResponse.get("courtCentreId"), is(courtCentreId));
+
+        final JsonPath jsonResponse2 = retrieveMessage(privateEventsConsumer2);
+        assertThat(jsonResponse2.get("courtCentreId"), is(courtCentreId));
+        assertThat(jsonResponse2.get("fileId"), is(notNullValue()));
+        verifyPrisonCourtRegisterRequestsExistsWithCorrectApplicationDetails(UUID.fromString(courtCentreId), hearingId);
+    }
+
     public void verifyPrisonCourtRegisterRequestsExists(final UUID courtCentreId, final UUID hearingId) {
         final String prisonCourtRegisterDocumentRequestPayload = getPrisonCourtRegisterDocumentRequests(courtCentreId, allOf(
                 withJsonPath("$.prisonCourtRegisterDocumentRequests[*].courtCentreId", hasItem(courtCentreId.toString())),
@@ -97,6 +120,24 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
         final String payload = prisonCourtRegisterDocumentRequest.getString("payload");
         final JsonObject payloadJsonObject = stringToJsonObjectConverter.convert(payload);
         assertThat(payloadJsonObject.getString("hearingId"), is(hearingId.toString()));
+    }
+
+    public void verifyPrisonCourtRegisterRequestsExistsWithCorrectApplicationDetails(final UUID courtCentreId, final UUID hearingId) {
+        final String prisonCourtRegisterDocumentRequestPayload = getPrisonCourtRegisterDocumentRequests(courtCentreId, allOf(
+                withJsonPath("$.prisonCourtRegisterDocumentRequests[*].courtCentreId", hasItem(courtCentreId.toString())),
+                withJsonPath("$.prisonCourtRegisterDocumentRequests[*].fileId", is(notNullValue()))
+        ));
+
+        final JsonObject prisonCourtRegisterDocumentRequestJsonObject = stringToJsonObjectConverter.convert(prisonCourtRegisterDocumentRequestPayload);
+        final JsonObject prisonCourtRegisterDocumentRequest = prisonCourtRegisterDocumentRequestJsonObject.getJsonArray("prisonCourtRegisterDocumentRequests").getJsonObject(0);
+        final String payload = prisonCourtRegisterDocumentRequest.getString("payload");
+        final JsonObject payloadJsonObject = stringToJsonObjectConverter.convert(payload);
+        assertThat(payloadJsonObject.getString("hearingId"), is(hearingId.toString()));
+        assertThat(payloadJsonObject.getJsonObject("defendant").getJsonArray("prosecutionCasesOrApplications").size(), is(2));
+        assertThat(payloadJsonObject.getJsonObject("defendant").getJsonArray("prosecutionCasesOrApplications").getJsonObject(1).getString("applicationType"),
+                is("Commission of a further offence during the operational period of a suspended sentence order"));
+        assertThat(payloadJsonObject.getJsonObject("defendant").getJsonArray("prosecutionCasesOrApplications").getJsonObject(1).getJsonArray("offences").size(),
+                is(2));
     }
 
     private String getPrisonCourtRegisterDocumentRequests(final UUID courtCentreId, final Matcher... matchers) {

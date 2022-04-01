@@ -158,17 +158,8 @@
           ],
           "pleaValue": "GUILTY, 29/05/2020",
           "indicatedPleaValue": "-"
-        },
-        {
-          "offenceCode": "PS90013",
-          "offenceTitle": "Public service vehicle - passenger use altered / defaced ticket",
-          "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.Contrary to section 366(8)(b) and (9) of the Communications Act 2003.",
-          "allocationDecision": "Summary-only offence",
-          "convictionDate": "29/05/2020",
-          "verdictCode": "test verdict Code",
-          "pleaValue": "GUILTY, 29/05/2020",
-          "indicatedPleaValue": "-"
         }
+
       ]
     }
   ]

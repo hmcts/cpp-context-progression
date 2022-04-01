@@ -72,7 +72,7 @@
                 }
               ],
               "verdictCode": "test verdict Code",
-              "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.####Contrary to section 366(8)(b) and (9) of the Communications Act 2003."
+              "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.Contrary to section 366(8)(b) and (9) of the Communications Act 2003."
             },
             {
               "allocationDecision": "Summary-only offence",
@@ -88,7 +88,7 @@
                 }
               ],
               "verdictCode": "test verdict Code",
-              "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.####Contrary to section 366(8)(b) and (9) of the Communications Act 2003."
+              "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.Contrary to section 366(8)(b) and (9) of the Communications Act 2003."
             }
           ],
           "prosecutionCounsels": [
@@ -137,7 +137,7 @@
                 }
               ],
               "verdictCode": "test verdict Code",
-              "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse.####Contrary to section 366(8)(b) and (9) of the Communications Act 2003."
+              "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse.Contrary to section 366(8)(b) and (9) of the Communications Act 2003."
             },
             {
               "allocationDecision": "Summary-only offence",
@@ -148,7 +148,7 @@
               "pleaDate": "2020-05-29",
               "pleaValue": "GUILTY",
               "verdictCode": "test verdict Code",
-              "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.####Contrary to section 366(8)(b) and (9) of the Communications Act 2003."
+              "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.Contrary to section 366(8)(b) and (9) of the Communications Act 2003."
             }
           ],
           "results": [
