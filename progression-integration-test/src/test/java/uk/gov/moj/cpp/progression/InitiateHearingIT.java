@@ -25,24 +25,27 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import org.hamcrest.Matcher;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.json.JsonObject;
+import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+
+import org.hamcrest.Matcher;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
 public class InitiateHearingIT extends AbstractIT {
@@ -102,6 +105,13 @@ public class InitiateHearingIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].endorsableFlag", equalTo(true)));
 
         verifyCaseHearingTypes(caseId, LocalDate.now());
+        UUID offenceId = randomUUID();
+        ProsecutionCaseUpdateOffencesHelper helper = new ProsecutionCaseUpdateOffencesHelper(caseId, defendantId, offenceId.toString());        // when
+        helper.updateOffences();
+
+        // then
+        helper.verifyInActiveMQ();
+        helper.verifyInMessagingQueueForOffencesUpdated();
     }
 
     private JsonObject getHearingJsonObject(final String caseId, final String hearingId,

@@ -45,6 +45,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
+import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DefendantPartialMatchCreated;
@@ -1532,6 +1533,85 @@ public class CaseAggregateTest {
     }
 
     @Test
+    public void shouldUpdateOffenceListOnProsecutionCaseOffencesUpdated() {
+        final UUID caseId = randomUUID();
+        final UUID defendentId1 = randomUUID();
+        final UUID defendentId2 = randomUUID();
+        final UUID offenceId = randomUUID();
+
+
+        final uk.gov.justice.core.courts.Defendant defendant1 = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(defendentId1)
+                .withOffences(
+                        Arrays.asList(uk.gov.justice.core.courts.Offence.offence()
+                                .withId(offenceId)
+                                .withListingNumber(1)
+                                .withProceedingsConcluded(true)
+                                .build()))
+                .build();
+
+
+        final uk.gov.justice.core.courts.Defendant defendant2 = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(defendentId2)
+                .withOffences(
+                        singletonList(uk.gov.justice.core.courts.Offence.offence()
+                                .withId(randomUUID())
+                                .withListingNumber(1)
+                                .withProceedingsConcluded(true)
+                                .build()))
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(Arrays.asList(defendant1, defendant2))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+        this.caseAggregate.apply(prosecutionCaseCreated);
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().size(), is(2));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(1));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(1).getOffences().size(), is(1));
+
+        ProsecutionCaseOffencesUpdated prosecutionCaseOffencesUpdated = ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()
+                .withDefendantCaseOffences(DefendantCaseOffences.defendantCaseOffences()
+                        .withDefendantId(defendentId1)
+                        .withProsecutionCaseId(caseId)
+                        .withOffences(singletonList(uk.gov.justice.core.courts.Offence.offence()
+                                .withId(randomUUID())
+                                .withProceedingsConcluded(false)
+                                .build()))
+                        .build())
+                .build();
+
+        this.caseAggregate.apply(prosecutionCaseOffencesUpdated);
+
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().size(), is(2));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(2));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(1).getOffences().size(), is(1));
+
+        ProsecutionCaseOffencesUpdated prosecutionCaseOffencesUpdated2 = ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()
+                .withDefendantCaseOffences(DefendantCaseOffences.defendantCaseOffences()
+                        .withDefendantId(defendentId1)
+                        .withProsecutionCaseId(caseId)
+                        .withOffences(singletonList(uk.gov.justice.core.courts.Offence.offence()
+                                .withId(offenceId)
+                                .withProceedingsConcluded(false)
+                                .build()))
+                        .build())
+                .build();
+
+        this.caseAggregate.apply(prosecutionCaseOffencesUpdated2);
+
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().size(), is(2));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(2));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(1).getOffences().size(), is(1));
+    }
+
+    @Test
     public void shouldKeepOriginalListingNumbersWhenProsecutionCaseUpdated() {
         final UUID caseId = randomUUID();
 
@@ -1555,7 +1635,7 @@ public class CaseAggregateTest {
                 .build();
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
 
-       final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
 
@@ -1721,7 +1801,8 @@ public class CaseAggregateTest {
         final Map<UUID, List<UUID>> defendantOffenceIds = new HashMap<>();
         defendantOffenceIds.put(defendantId, asList(offenceId));
 
-        final List<Object> eventStream = caseAggregate.createPetForm(petId, caseId, formId, defendantOffenceIds, formData, userId).collect(toList());;
+        final List<Object> eventStream = caseAggregate.createPetForm(petId, caseId, formId, defendantOffenceIds, formData, userId).collect(toList());
+        ;
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetFormCreated.class)));
@@ -1740,7 +1821,8 @@ public class CaseAggregateTest {
         final Map<UUID, List<UUID>> defendantOffenceIds = new HashMap<>();
         defendantOffenceIds.put(defendantId, asList(offenceId));
 
-        final List<Object> eventStream = caseAggregate.receivePetForm(petId, caseId, formId, defendantOffenceIds).collect(toList());;
+        final List<Object> eventStream = caseAggregate.receivePetForm(petId, caseId, formId, defendantOffenceIds).collect(toList());
+        ;
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetFormReceived.class)));
@@ -1754,11 +1836,12 @@ public class CaseAggregateTest {
         final UUID petId = randomUUID();
         final UUID userId = randomUUID();
 
-        final Map<UUID, List<UUID>> petIdOffenceIdsMap =  new HashMap<>();
+        final Map<UUID, List<UUID>> petIdOffenceIdsMap = new HashMap<>();
         petIdOffenceIdsMap.put(petId, asList(offenceId));
         setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
 
-        final List<Object> eventStream = caseAggregate.updatePetForm(caseId, formData, petId, userId).collect(toList());;
+        final List<Object> eventStream = caseAggregate.updatePetForm(caseId, formData, petId, userId).collect(toList());
+        ;
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetFormUpdated.class)));
@@ -1771,16 +1854,16 @@ public class CaseAggregateTest {
         final UUID petId = randomUUID();
         final UUID userId = randomUUID();
 
-        final Map<UUID, List<UUID>> petIdOffenceIdsMap =  new HashMap<>();
+        final Map<UUID, List<UUID>> petIdOffenceIdsMap = new HashMap<>();
         petIdOffenceIdsMap.put(petId, asList(offenceId));
         setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
         setField(caseAggregate, "prosecutionCase", prosecutionCase()
                 .withDefendants(asList(uk.gov.justice.core.courts.Defendant.defendant()
-                        .withId(randomUUID())
-                        .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
-                                .withId(offenceId)
-                                .build()))
-                        .build(),
+                                .withId(randomUUID())
+                                .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                        .withId(offenceId)
+                                        .build()))
+                                .build(),
                         uk.gov.justice.core.courts.Defendant.defendant()
                                 .withId(randomUUID())
                                 .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
@@ -1789,11 +1872,12 @@ public class CaseAggregateTest {
                                 .build()))
                 .build());
 
-        final List<Object> eventStream = caseAggregate.finalisePetForm(caseId, petId, userId).collect(toList());;
+        final List<Object> eventStream = caseAggregate.finalisePetForm(caseId, petId, userId).collect(toList());
+        ;
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetFormFinalised.class)));
-        final PetFormFinalised petFormFinalised = (PetFormFinalised)object;
+        final PetFormFinalised petFormFinalised = (PetFormFinalised) object;
         assertThat(petFormFinalised.getProsecutionCase().getDefendants().size(), is(1));
         assertThat(petFormFinalised.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(1));
         assertThat(petFormFinalised.getProsecutionCase().getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
@@ -1805,7 +1889,8 @@ public class CaseAggregateTest {
         final UUID petId = randomUUID();
         final UUID userId = randomUUID();
 
-        final List<Object> eventStream = caseAggregate.finalisePetForm(caseId, petId, userId).collect(toList());;
+        final List<Object> eventStream = caseAggregate.finalisePetForm(caseId, petId, userId).collect(toList());
+        ;
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetOperationFailed.class)));
@@ -1819,11 +1904,12 @@ public class CaseAggregateTest {
         final UUID petId = randomUUID();
         final UUID userId = randomUUID();
 
-        final Map<UUID, List<UUID>> petIdOffenceIdsMap =  new HashMap<>();
+        final Map<UUID, List<UUID>> petIdOffenceIdsMap = new HashMap<>();
         petIdOffenceIdsMap.put(petId, asList(offenceId));
         setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
 
-        final List<Object> eventStream = caseAggregate.updatePetDetail(caseId, petId, Arrays.asList(),userId).collect(toList());;
+        final List<Object> eventStream = caseAggregate.updatePetDetail(caseId, petId, Arrays.asList(), userId).collect(toList());
+        ;
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetDetailUpdated.class)));
@@ -1837,11 +1923,12 @@ public class CaseAggregateTest {
         final UUID petId = randomUUID();
         final UUID userId = randomUUID();
 
-        final Map<UUID, List<UUID>> petIdOffenceIdsMap =  new HashMap<>();
+        final Map<UUID, List<UUID>> petIdOffenceIdsMap = new HashMap<>();
         petIdOffenceIdsMap.put(petId, asList(offenceId));
         setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
 
-        final List<Object> eventStream = caseAggregate.receivePetDetail(caseId, petId, Arrays.asList(),userId).collect(toList());;
+        final List<Object> eventStream = caseAggregate.receivePetDetail(caseId, petId, Arrays.asList(), userId).collect(toList());
+        ;
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetDetailReceived.class)));
@@ -1856,19 +1943,20 @@ public class CaseAggregateTest {
         final UUID petId = randomUUID();
         final UUID userId = randomUUID();
 
-        final Map<UUID, List<UUID>> petIdOffenceIdsMap =  new HashMap<>();
+        final Map<UUID, List<UUID>> petIdOffenceIdsMap = new HashMap<>();
         petIdOffenceIdsMap.put(petId, asList(offenceId));
 
         setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, randomUUID()));
         setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
 
-        final List<Object> eventStream = caseAggregate.updatePetFormForDefendant(petId, caseId, defendantId, defendantData, userId).collect(toList());;
+        final List<Object> eventStream = caseAggregate.updatePetFormForDefendant(petId, caseId, defendantId, defendantData, userId).collect(toList());
+        ;
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetFormDefendantUpdated.class)));
     }
 
-    private ProsecutionCase createProsecutionCase(final UUID defendantId, final UUID offenceId){
+    private ProsecutionCase createProsecutionCase(final UUID defendantId, final UUID offenceId) {
         return prosecutionCase()
                 .withDefendants(asList(uk.gov.justice.core.courts.Defendant.defendant()
                         .withId(defendantId)
@@ -1878,6 +1966,7 @@ public class CaseAggregateTest {
                         .build()))
                 .build();
     }
+
     @Test
     public void shouldRaiseDefendantsAndListingHearingRequestsStoredEvent() {
 
@@ -2115,7 +2204,7 @@ public class CaseAggregateTest {
 
 
     @Test
-    public void shouldUpdateCpsOrganisationWhenEventRaised(){
+    public void shouldUpdateCpsOrganisationWhenEventRaised() {
         caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
 
         final ProsecutionCaseSubject prosecutionCaseSubject = ProsecutionCaseSubject.prosecutionCaseSubject()
@@ -2139,7 +2228,7 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldNotUpdateCpsOrganisationWhenEventRaisedWithNoCPS(){
+    public void shouldNotUpdateCpsOrganisationWhenEventRaisedWithNoCPS() {
         caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
 
         final ProsecutionCaseSubject prosecutionCaseSubject = ProsecutionCaseSubject.prosecutionCaseSubject()
@@ -2163,7 +2252,7 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldUpdateCpsDefendantIdWhenEventRaised(){
+    public void shouldUpdateCpsDefendantIdWhenEventRaised() {
         caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
 
         final UUID cpsDefendantId = randomUUID();
@@ -2191,7 +2280,7 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldUpdateCpsDefendantIdWhenEventRaisedWithCpsOrganisationDefendantDetails(){
+    public void shouldUpdateCpsDefendantIdWhenEventRaisedWithCpsOrganisationDefendantDetails() {
         caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
 
         final UUID cpsDefendantId = randomUUID();

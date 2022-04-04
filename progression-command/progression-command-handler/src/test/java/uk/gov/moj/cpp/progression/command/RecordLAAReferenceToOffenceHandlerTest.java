@@ -17,6 +17,7 @@ import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -229,7 +230,7 @@ public class RecordLAAReferenceToOffenceHandlerTest {
 
     private ProsecutionCase getProsecutionCase() {
         final List<Defendant> defendants = new ArrayList<>();
-        defendants.add(Defendant.defendant().build());
+        defendants.add(Defendant.defendant().withId(randomUUID()).withOffences(Arrays.asList(Offence.offence().withId(randomUUID()).build())).build());
         return ProsecutionCase.prosecutionCase()
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
                         .build())
