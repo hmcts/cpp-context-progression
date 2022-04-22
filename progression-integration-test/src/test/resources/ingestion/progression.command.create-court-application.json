@@ -204,7 +204,8 @@
       "isFeeExempt": true,
       "paymentReference": "a"
     },
-    "applicationStatus": "DRAFT",
+    "applicationStatus": "APPLICATION_STATUS",
+    "applicationExternalCreatorType": "PROSECUTOR",
     "outOfTimeReasons": "a",
     "judicialResults": [
       {

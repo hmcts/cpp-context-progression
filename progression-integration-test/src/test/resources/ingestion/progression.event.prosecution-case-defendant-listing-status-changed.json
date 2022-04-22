@@ -50,6 +50,7 @@
           "notificationRequired": true
         },
         "applicationStatus": "LISTED",
+        "applicationExternalCreatorType": "PROSECUTOR",
         "subject": {
           "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
           "summonsRequired": false,
@@ -92,6 +93,7 @@
           "notificationRequired": true
         },
         "applicationStatus": "LISTED",
+        "applicationExternalCreatorType": "PROSECUTOR",
         "subject": {
           "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
           "summonsRequired": false,

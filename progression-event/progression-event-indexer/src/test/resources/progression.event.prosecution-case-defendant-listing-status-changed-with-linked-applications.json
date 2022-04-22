@@ -18,6 +18,7 @@
         "applicationDecisionSoughtByDate": "2021-03-04",
         "applicationReference": "90GDAPPS304",
         "applicationStatus": "IN_PROGRESS",
+        "applicationExternalCreatorType": "PROSECUTOR",
         "commissionerOfOath": false,
         "courtApplicationCases": [
           {
@@ -101,6 +102,7 @@
         "applicationDecisionSoughtByDate": "2021-03-04",
         "applicationReference": "90GDAPPS304",
         "applicationStatus": "IN_PROGRESS",
+        "applicationExternalCreatorType": "PROSECUTOR",
         "commissionerOfOath": false,
         "courtApplicationCases": [
           {

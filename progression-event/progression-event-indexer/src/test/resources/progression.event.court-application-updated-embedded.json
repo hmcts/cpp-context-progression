@@ -1639,6 +1639,7 @@
       "paymentReference": "a"
     },
     "applicationStatus": "DRAFT",
+    "applicationExternalCreatorType": "PROSECUTOR",
     "outOfTimeReasons": "a",
     "judicialResults": [
       {

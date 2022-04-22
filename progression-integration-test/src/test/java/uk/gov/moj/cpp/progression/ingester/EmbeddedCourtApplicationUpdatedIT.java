@@ -33,6 +33,7 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.Prosecutio
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
+import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.io.IOException;
@@ -72,6 +73,7 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
     private String respondantDefendantId;
     private String applicationId;
     private String applicationReference;
+    private String applicationStatus;
 
     @Before
     public void setup() {
@@ -86,6 +88,7 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
         respondantId = randomUUID().toString();
         respondantDefendantId = randomUUID().toString();
         applicationId = randomUUID().toString();
+        applicationStatus = ApplicationStatus.DRAFT.toString();
         applicationReference = randomAlphanumeric(10).toUpperCase();
         deleteAndCreateIndex();
     }
@@ -145,7 +148,7 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
         Optional<JsonObject> addCaseResponseJsonObject = findBy(caseMatcher);
         assertThat(addCaseResponseJsonObject.isPresent(), CoreMatchers.is(true));
 
-        addCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
+        addCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationStatus,CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
                 .then().assertThat().statusCode(is(HttpStatus.SC_ACCEPTED));
 
         final Matcher[] addApplicationMatcher = {allOf(

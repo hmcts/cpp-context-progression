@@ -17,6 +17,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
+import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
 
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -54,8 +55,21 @@ public class UpdateDefendantHandler {
 
     }
 
+    @Handles("progression.command.update-cps-defendant-id")
+    public void handleUpdateCpsDefendantId(final Envelope<UpdateCpsDefendantId> updateCpsDefendantIdEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.command.update-cps-defendant-id {}", updateCpsDefendantIdEnvelope.payload());
+
+        final UpdateCpsDefendantId updateCpsDefendantId = updateCpsDefendantIdEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(updateCpsDefendantId.getCaseId());
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+        final Stream<Object> events = caseAggregate.updateCpsDefendantId(updateCpsDefendantId.getCaseId(), updateCpsDefendantId.getDefendantId(), updateCpsDefendantId.getCpsDefendantId());
+
+        appendEventsToStream(updateCpsDefendantIdEnvelope, eventStream, events);
+
+    }
+
     @Handles("progression.command.update-defendant-for-matched-defendant")
-    public void handleUpdateDefendantForMatchedDefendant(final Envelope<UpdateDefendantForMatchedDefendant> updateDefendantEnvelope) throws EventStreamException{
+    public void handleUpdateDefendantForMatchedDefendant(final Envelope<UpdateDefendantForMatchedDefendant> updateDefendantEnvelope) throws EventStreamException {
         final UpdateDefendantForMatchedDefendant defendantDetailsToUpdate = updateDefendantEnvelope.payload();
         final UUID hearingId = defendantDetailsToUpdate.getMatchedDefendantHearingId();
         final DefendantUpdate defendantUpdate = defendantDetailsToUpdate.getDefendant();

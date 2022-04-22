@@ -15,6 +15,7 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
+import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.io.IOException;
@@ -40,6 +41,7 @@ public class CourtApplicationCreatedIngesterIT extends AbstractIT {
     private String respondantId;
     private String respondantDefendantId;
     private String caseId;
+    private String applicationStatus;
 
     @AfterClass
     public static void tearDown() {
@@ -54,13 +56,14 @@ public class CourtApplicationCreatedIngesterIT extends AbstractIT {
         applicantDefendantId = randomUUID().toString();
         respondantId = randomUUID().toString();
         respondantDefendantId = randomUUID().toString();
+        applicationStatus= ApplicationStatus.DRAFT.toString();
         deleteAndCreateIndex();
     }
 
     @Test
     public void shouldIndexCreateCourtApplicationEvent() throws Exception {
 
-        addCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        addCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationStatus,CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
         final Matcher[] matchers = {withJsonPath("$.caseId", equalTo(applicationId))};
 
@@ -74,6 +77,7 @@ public class CourtApplicationCreatedIngesterIT extends AbstractIT {
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
                 .replaceAll("RANDOM_RESPONDANT_ID", respondantId)
                 .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId)
+                .replaceAll("APPLICATION_STATUS", applicationStatus)
                 .replaceAll("RANDOM_REFERENCE", UUID.randomUUID().toString());
 
 

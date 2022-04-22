@@ -47,6 +47,29 @@ public abstract class BaseCourtApplicationTransformer implements Transform {
 
     protected CaseDetailsMapper caseDetailsMapper = new CaseDetailsMapper();
 
+    protected Map<UUID, CaseDetails> transformCourtApplicationStatusChange(final CourtApplication courtApplication, final Map<UUID, CaseDetails> caseDocumentsMap) {
+        final CourtApplicationType applicationType = courtApplication.getType();
+        final LinkType linkType = applicationType.getLinkType();
+        final List<CourtApplicationCase> courtApplicationCases = courtApplication.getCourtApplicationCases();
+        final List<Application> applications = new ArrayList<>();
+        applications.add(applicationMapper.transform(courtApplication));
+        if (CollectionUtils.isNotEmpty(courtApplicationCases) && !FIRST_HEARING.equals(linkType)) {
+            //linked application
+            for (final CourtApplicationCase courtApplicationCase : courtApplicationCases) {
+                final UUID caseId = courtApplicationCase.getProsecutionCaseId();
+                final CaseDetails caseDetails = new CaseDetails();
+                caseDetails.setCaseId(caseId.toString());
+                caseDetails.setApplications(applications);
+                caseDetails.setCaseStatus(courtApplicationCase.getCaseStatus());
+                caseDetails.set_case_type(PROSECUTION);
+                caseDocumentsMap.put(caseId, caseDetails);
+            }
+        } else {
+            LOGGER.error("Unexpected state .... expecting at least linked cases or only one courtApplication");
+        }
+        return caseDocumentsMap;
+    }
+
     protected Map<UUID, CaseDetails> transformCourtApplication(final CourtApplication courtApplication, final Map<UUID, CaseDetails> caseDocumentsMap) {
         return transformCourtApplication(courtApplication, null, null, caseDocumentsMap);
     }

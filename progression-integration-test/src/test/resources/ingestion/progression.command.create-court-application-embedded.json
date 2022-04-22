@@ -207,6 +207,7 @@
       "paymentReference": "a"
     },
     "applicationStatus": "DRAFT",
+    "applicationExternalCreatorType": "PROSECUTOR",
     "outOfTimeReasons": "a",
     "subject": {
       "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",

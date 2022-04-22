@@ -87,7 +87,6 @@ public class DefendantsListingStatusChangedTransformerTest {
         hearingVerificationHelper.verifyHearingsWithoutCourtCentre(inputDC, output, 1, 0);
         hearingVerificationHelper.verifyHearingsWithoutCourtCentre(inputDC, output, 2, 0);
         hearingVerificationHelper.verifyHearingsWithoutCourtCentre(inputDC, output, 3, 0);
-
         hearingVerificationHelper.verifyCounts(4, 4, 0);
     }
 
@@ -113,13 +112,9 @@ public class DefendantsListingStatusChangedTransformerTest {
         final JsonObject output = objectToJsonObjectConverter.convert(defendantsListingStatusChangedTransformer.transform(input));
 
         hearingVerificationHelper.verifyProsecutionCase(inputDC, output, 0, "$.hearing.prosecutionCases[0]");
-
         hearingVerificationHelper.verifyApplication(inputDC, output, 0, "$.hearing.courtApplications[0]", 0);
         hearingVerificationHelper.verifyApplication(inputDC, output, 0, "$.hearing.courtApplications[1]", 1);
-
         hearingVerificationHelper.verifyHearings(inputDC, output, 0, 0);
-
-
         hearingVerificationHelper.verifyCounts(1, 1, 0);
     }
 }

@@ -12,7 +12,9 @@ import static uk.gov.moj.cpp.progression.applications.applicationHelper.Applicat
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
+import static uk.gov.justice.core.courts.ApplicationExternalCreatorType.PROSECUTOR;
 
+import uk.gov.justice.core.courts.ApplicationExternalCreatorType;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
@@ -61,7 +63,8 @@ public class GenericLinkedApplicationIT extends AbstractIT {
                 withJsonPath("$.courtApplication.subject.id", notNullValue()),
                 withJsonPath("$.courtApplication.courtApplicationCases[0].prosecutionCaseId", notNullValue()),
                 withJsonPath("$.courtApplication.courtApplicationCases[0].prosecutionCaseIdentifier.caseURN", is("TFL4359536")),
-                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test"))
+                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test")),
+                withJsonPath("$.courtApplication.applicationExternalCreatorType", is(PROSECUTOR.toString()))
         };
 
         pollForCourtApplication(applicationId, applicationMatchers);
@@ -95,7 +98,8 @@ public class GenericLinkedApplicationIT extends AbstractIT {
                 withJsonPath("$.courtApplication.subject.id", notNullValue()),
                 withJsonPath("$.courtApplication.courtOrder.id", notNullValue()),
                 withJsonPath("$.courtApplication.courtOrder.orderingCourt.code", is("B01LY00")),
-                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test"))
+                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test")),
+                withJsonPath("$.courtApplication.applicationExternalCreatorType", is(PROSECUTOR.toString()))
         };
 
         pollForCourtApplication(applicationId, applicationMatchers);

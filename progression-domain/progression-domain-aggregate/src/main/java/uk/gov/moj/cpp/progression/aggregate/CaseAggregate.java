@@ -152,6 +152,7 @@ import uk.gov.moj.cpp.progression.domain.event.link.LinkType;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
 import uk.gov.moj.cpp.progression.events.CasesUnlinked;
+import uk.gov.moj.cpp.progression.events.CpsDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationAssociatedByDefenceContext;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationDissociatedByDefenceContext;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationAssociated;
@@ -274,6 +275,13 @@ public class CaseAggregate implements Aggregate {
     private ProsecutionCase prosecutionCase;
     private boolean hasProsecutionCaseBeenCreated;
 
+    /**
+     * Even though this is a case aggregate there is specific scenario we have to make sure that the
+     * case status handler defendant related to this case. Case A - Defendant 1 - Master Defendant
+     * Id X Case B - Defendant 21 - Master Defendant Id X So due to defendants are related by master
+     * defendant id , we need to make sure that each case status depends on its own defendants
+     * rather than related cases and their defendants
+     */
 
     @Override
     public Object apply(final Object event) {
@@ -442,12 +450,24 @@ public class CaseAggregate implements Aggregate {
                         }
                 ),
                 when(CaseCpsDetailsUpdatedFromCourtDocument.class).apply(this::handleCaseCpsDetailsUpdatedFromCourtDocument),
+                when(CpsDefendantIdUpdated.class).apply(this::handleCpsDefendantIdUpdated),
                 otherwiseDoNothing());
 
     }
 
     private void setProsecutionCase(final ProsecutionCase prosecutionCase) {
         this.prosecutionCase = dedupAllReportingRestrictions(prosecutionCase);
+    }
+
+    private void handleCpsDefendantIdUpdated(final CpsDefendantIdUpdated cpsDefendantIdUpdated) {
+        this.prosecutionCase = ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
+                .withDefendants(prosecutionCase.getDefendants().stream()
+                        .map(defendant -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(defendant)
+                                .withCpsDefendantId(defendant.getId().equals(cpsDefendantIdUpdated.getDefendantId()) ?
+                                        cpsDefendantIdUpdated.getCpsDefendantId() : defendant.getCpsDefendantId())
+                                .build())
+                        .collect(toList()))
+                .build();
     }
 
     private void handleCaseCpsDetailsUpdatedFromCourtDocument(final CaseCpsDetailsUpdatedFromCourtDocument caseCpsDetailsUpdatedFromCourtDocument) {
@@ -1836,6 +1856,14 @@ public class CaseAggregate implements Aggregate {
         return apply(Stream.of(HearingUpdatedForPartialAllocation.hearingUpdatedForPartialAllocation()
                 .withHearingId(hearingId)
                 .withProsecutionCasesToRemove(prosecutionCasesToRemove)
+                .build()));
+    }
+
+    public Stream<Object> updateCpsDefendantId(final UUID caseId, final UUID defendantId, final UUID cpsDefendantId) {
+        return apply(Stream.of(CpsDefendantIdUpdated.cpsDefendantIdUpdated()
+                .withCaseId(caseId)
+                .withCpsDefendantId(cpsDefendantId)
+                .withDefendantId(defendantId)
                 .build()));
     }
 

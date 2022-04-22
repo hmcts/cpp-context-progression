@@ -1133,6 +1133,7 @@ public class PreAndPostConditionHelper {
                                                            final String respondentId,
                                                            final String respondentDefendantId,
                                                            final String applicationReference,
+                                                           final String applicationStatus,
                                                            final String fileName)
             throws IOException {
         final String body = getPayload(fileName)
@@ -1142,6 +1143,7 @@ public class PreAndPostConditionHelper {
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
                 .replaceAll("RANDOM_RESPONDANT_ID", respondentId)
                 .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondentDefendantId)
+                .replaceAll("APPLICATION_STATUS", applicationStatus)
                 .replaceAll("RANDOM_REFERENCE", applicationReference);
 
         LOGGER.info(body);
@@ -1155,9 +1157,10 @@ public class PreAndPostConditionHelper {
                                                            final String applicantDefendantId,
                                                            final String respondentId,
                                                            final String respondentDefendantId,
+                                                           final String applicationStatus,
                                                            final String fileName) throws IOException {
         return addCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId,
-                respondentId, respondentDefendantId, randomUUID().toString(), fileName);
+                respondentId, respondentDefendantId, randomUUID().toString(), applicationStatus, fileName);
     }
 
     public static Response updateCourtApplicationForIngestion(final String caseId,

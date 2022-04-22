@@ -9,6 +9,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCou
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
+import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.services.test.utils.core.messaging.DeadLetterQueueBrowser;
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
 import uk.gov.moj.cpp.progression.AbstractIT;
@@ -53,7 +54,7 @@ public class UnifiedSearchRetryIT extends AbstractIT {
         final String caseId = randomUUID().toString();
         final String applicationId = randomUUID().toString();
         addCourtApplicationForIngestion(caseId, applicationId, randomUUID().toString(), randomUUID().toString(),
-                randomUUID().toString(), randomUUID().toString(), CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+                randomUUID().toString(), randomUUID().toString(), ApplicationStatus.DRAFT.toString(), CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
         final Optional<List<String>> deadLetterQueueMessagesResult = POLLER.pollUntilFound(() -> {
 

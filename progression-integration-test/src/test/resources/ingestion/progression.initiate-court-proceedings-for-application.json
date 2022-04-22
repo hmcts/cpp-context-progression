@@ -2,6 +2,7 @@
   "courtApplication": {
     "id": "APPLICATION_ID",
     "applicationStatus": "DRAFT",
+    "applicationExternalCreatorType": "PROSECUTOR",
     "commissionerOfOath": false,
     "applicationReceivedDate": "2021-08-11",
     "type": {

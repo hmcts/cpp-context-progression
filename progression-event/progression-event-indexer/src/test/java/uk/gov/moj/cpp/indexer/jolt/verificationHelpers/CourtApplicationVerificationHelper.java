@@ -32,6 +32,11 @@ public class CourtApplicationVerificationHelper {
         assertThat("APPLICATION", is(getCaseDetails(transformedJson).getString("_case_type")));
     }
 
+    public static void verifyCourtApplication(final DocumentContext inputCourtApplication, final JsonObject transformedJson) {
+        final String applicationid = ((JsonString) inputCourtApplication.read("$.application.id")).getString();
+        assertThat(applicationid, is(getCaseDetails(transformedJson).getString("caseId")));
+    }
+
     public static void verifyEmbeddedApplication(final DocumentContext inputCourtApplication, final JsonObject transformedJson) {
         final JsonObject courtApplicationJson = inputCourtApplication.read("$.courtApplication");
         String linkedCaseId;

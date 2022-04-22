@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import javax.json.JsonObject;
 
+@SuppressWarnings("squid:S2629")
 public class CourtApplicationCreatedTransformer extends BaseCourtApplicationTransformer {
 
     @Override
@@ -26,7 +27,6 @@ public class CourtApplicationCreatedTransformer extends BaseCourtApplicationTran
         final CourtApplication courtApplication = courtApplicationCreated.getCourtApplication();
         final Map<UUID, CaseDetails> caseDocumentsMap = new HashMap<>();
         transformCourtApplication(courtApplication, caseDocumentsMap);
-
         final List<CaseDetails> caseDetailsList = caseDocumentsMap.values().stream().collect(Collectors.toList());
         final HashMap<String, List<CaseDetails>> caseDocuments = new HashMap<>();
         caseDocuments.put("caseDocuments", caseDetailsList);

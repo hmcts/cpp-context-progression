@@ -23,6 +23,7 @@
           "id": "e5f59a16-5e0c-4732-b59c-ca1092ed9f45"
         },
         "applicationStatus": "LISTED",
+        "applicationExternalCreatorType": "PROSECUTOR",
         "applicationReference": "REF 1"
       },
       {
@@ -39,6 +40,7 @@
           "id": "e5f59a16-5e0c-4732-b59c-ca1092ed9f45"
         },
         "applicationStatus": "LISTED",
+        "applicationExternalCreatorType": "PROSECUTOR",
         "dueDate": "2019-06-25",
         "applicationDecisionSoughtByDate": "2019-06-27",
         "applicationReference": "REF 2"

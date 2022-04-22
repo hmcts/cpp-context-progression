@@ -60,6 +60,7 @@ import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CreateHearingApplicationRequest;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
@@ -186,7 +187,7 @@ public class CourtApplicationProcessorTest {
     }
 
     @Test
-    public void processCourtApplicationCreated() {
+    public void processCourtApplicationCreatedWithoutCpsDefendantId() {
         //Given
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-created");
         CourtApplicationCreated courtApplicationCreated = courtApplicationCreated()
@@ -210,6 +211,52 @@ public class CourtApplicationProcessorTest {
         verify(sender, times(2)).send(captor.capture());
         assertThat(captor.getAllValues().get(0).payload(), notNullValue());
         assertThat(captor.getAllValues().get(1).payload(), notNullValue());
+    }
+
+    @Test
+    public void processCourtApplicationCreatedWithCpsDefendantId() {
+        //Given
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-created");
+        CourtApplicationCreated courtApplicationCreated = courtApplicationCreated()
+                .withCourtApplication(courtApplication()
+                        .withApplicationReference(STRING.next())
+                        .withId(randomUUID())
+                        .withRespondents(Arrays.asList(buildMasterDefendant(),buildMasterDefendant()))
+                        .build())
+                .build();
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationCreated);
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationCreated.class)).thenReturn(courtApplicationCreated);
+
+        //When
+        courtApplicationProcessor.processCourtApplicationCreated(event);
+
+        //Then
+        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(4)).send(captor.capture());
+        assertThat(captor.getAllValues().get(0).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(0).metadata().name(), is("public.progression.court-application-created"));
+        assertThat(captor.getAllValues().get(1).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(1).metadata().name(), is("progression.command.update-cps-defendant-id"));
+        assertThat(captor.getAllValues().get(2).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(2).metadata().name(), is("progression.command.update-cps-defendant-id"));
+        assertThat(captor.getAllValues().get(3).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(3).metadata().name(), is("progression.command.list-or-refer-court-application"));
+    }
+
+    private CourtApplicationParty buildMasterDefendant() {
+        return courtApplicationParty()
+                .withMasterDefendant(masterDefendant()
+                        .withCpsDefendantId(randomUUID())
+                        .withMasterDefendantId(randomUUID())
+                        .withDefendantCase(singletonList(DefendantCase.defendantCase()
+                                .withCaseId(randomUUID())
+                                .build()))
+                        .build())
+                .build();
     }
 
     @Test
@@ -647,13 +694,13 @@ public class CourtApplicationProcessorTest {
 
         when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_2.toString())))
                 .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder()
-                        .add("id", caseId_2.toString())
-                        .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId.toString())
-                                .add("offences", createArrayBuilder()
-                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
-                                        .add(createObjectBuilder().add("id", OFFENCE_ID_1))
-                                        .add(createObjectBuilder().add("id", OFFENCE_ID_2).add("proceedingsConcluded", false)))
-                        )))
+                                .add("id", caseId_2.toString())
+                                .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId.toString())
+                                        .add("offences", createArrayBuilder()
+                                                .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                                .add(createObjectBuilder().add("id", OFFENCE_ID_1))
+                                                .add(createObjectBuilder().add("id", OFFENCE_ID_2).add("proceedingsConcluded", false)))
+                                )))
                         .build()));
 
         courtApplicationProcessor.processCourtApplicationReferredToExistingHearing(event);

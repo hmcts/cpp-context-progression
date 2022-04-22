@@ -496,6 +496,7 @@
       }
     ],
     "applicationStatus": "DRAFT",
+    "applicationExternalCreatorType": "PROSECUTOR",
     "outOfTimeReasons": "a",
     "applicationParticulars": "Appeal Application Particulars"
   }

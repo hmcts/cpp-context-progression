@@ -1612,6 +1612,7 @@
     },
     "applicationDecisionSoughtByDate": "0000-01-01",
     "applicationStatus": "DRAFT",
+    "applicationExternalCreatorType": "PROSECUTOR",
     "outOfTimeReasons": "a",
     "judicialResults": [
       {

@@ -16,6 +16,7 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.services.unifiedsearch.client.domain.Alias;
+import uk.gov.justice.services.unifiedsearch.client.domain.Application;
 import uk.gov.justice.services.unifiedsearch.client.domain.LaaReference;
 import uk.gov.justice.services.unifiedsearch.client.domain.Offence;
 import uk.gov.justice.services.unifiedsearch.client.domain.Party;
@@ -337,5 +338,12 @@ public class DomainToIndexMapper {
         if (dateOfBirth != null) {
             party.setDateOfBirth(dateOfBirth.toString());
         }
+    }
+
+    public Application application(final Application courtApplication) {
+        final Application application = new Application();
+        application.setApplicationStatus(courtApplication.getApplicationStatus());
+        application.setApplicationId(courtApplication.getApplicationId());
+        return application;
     }
 }

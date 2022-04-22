@@ -65,7 +65,7 @@ public class InitialIndexerIngestionIT extends AbstractIT{
 
     @Test
     public void shouldRunIndexerCatchUpFindEventsInElasticSearchStore() throws Exception {
-        final int totalCases = 2;
+        final int totalCases = 3;
         for (int i = 0; i < totalCases; i++) {
             final String caseUrn = PreAndPostConditionHelper.generateUrn();
             addProsecutionCaseToCrownCourtForIngestion(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(),

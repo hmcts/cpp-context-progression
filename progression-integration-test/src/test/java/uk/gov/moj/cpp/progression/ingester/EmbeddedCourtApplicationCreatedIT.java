@@ -20,6 +20,7 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.Prosecutio
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
+import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.io.IOException;
@@ -51,6 +52,7 @@ public class EmbeddedCourtApplicationCreatedIT extends AbstractIT {
     private String respondantId;
     private String respondantDefendantId;
     private String applicationId;
+    private String applicationStatus;
 
     @Before
     public void setup(){
@@ -65,6 +67,7 @@ public class EmbeddedCourtApplicationCreatedIT extends AbstractIT {
         respondantId = randomUUID().toString();
         respondantDefendantId = randomUUID().toString();
         applicationId = randomUUID().toString();
+        applicationStatus= ApplicationStatus.IN_PROGRESS.toString();
         deleteAndCreateIndex();
     }
 
@@ -80,7 +83,7 @@ public class EmbeddedCourtApplicationCreatedIT extends AbstractIT {
         final String caseUrn = generateUrn();
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        addCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        addCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId,applicationStatus, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
 
         final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {

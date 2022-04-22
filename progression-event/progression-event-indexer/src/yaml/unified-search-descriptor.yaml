@@ -34,4 +34,16 @@ unified_search_descriptor:
      - name: progression.event.case-cps-prosecutor-updated
        transformer_config: progression.event.case-cps-prosecutor-updated-spec.json
        index_name: crime_case_index
+     - name: progression.event.application-referred-to-boxwork
+       transformer_config: progression.event.application-referred-to-boxwork-spec.json
+       index_name: crime_case_index
+     - name: progression.event.hearing-resulted-application-updated
+       transformer_config: progression.event.hearing-resulted-application-updated-spec.json
+       index_name: crime_case_index
+     - name: progression.event.application-referred-to-court-hearing
+       transformer_config: progression.event.application-referred-to-court-hearing-spec.json
+       index_name: crime_case_index
+     - name: progression.event.application-referral-to-existing-hearing
+       transformer_config: progression.event.application-referral-to-existing-hearing-spec.json
+       index_name: crime_case_index
 ...

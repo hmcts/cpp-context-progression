@@ -49,6 +49,7 @@
         "applicationReceivedDate": "2020-02-11",
         "applicationReference": "G7QBTS7XDH",
         "applicationStatus": "FINALISED",
+        "applicationExternalCreatorType": "PROSECUTOR",
         "applicationDecisionSoughtByDate": "2019-06-25",
         "courtApplicationPayment": {
           "isFeeExempt": false,

@@ -87,11 +87,13 @@ public class CourtApplicationVerificationHelper {
         final String id = ((JsonString) inputCourtApplication.read("$.courtApplication.id")).getString();
         final String applicationType = ((JsonString) inputCourtApplication.read("$.courtApplication.type.type")).getString();
         final String applicationReceivedDate = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationReceivedDate")).getString();
+        final String applicationStatus = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationStatus")).getString();
         final String applicationDecisionSoughtByDate = ((JsonString) inputCourtApplication.read("$.courtApplication.applicationDecisionSoughtByDate")).getString();
 
         assertEquals(id, outputApplication.getString("applicationId"));
         assertEquals(applicationType, outputApplication.getString("applicationType"));
         assertEquals(applicationReceivedDate, outputApplication.getString("receivedDate"));
+        assertEquals(applicationStatus, outputApplication.getString("applicationStatus"));
         assertEquals(applicationDecisionSoughtByDate, outputApplication.getString("decisionDate"));
 
         final JsonObject inputApplication = inputCourtApplication.read("$.courtApplication");

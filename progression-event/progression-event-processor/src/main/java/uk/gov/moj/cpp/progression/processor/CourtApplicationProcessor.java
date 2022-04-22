@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.processor;
 
 
 import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -67,6 +68,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
 import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsRejectedService;
@@ -156,10 +158,29 @@ public class CourtApplicationProcessor {
                 .build();
         sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_CREATED).build(), publicEvent));
 
+        sendUpdateCpsDefendantIdCommand(event, courtApplicationCreated);
+
         final JsonObject command = createObjectBuilder()
                 .add("id", courtApplication.getId().toString())
                 .build();
         sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(LIST_OR_REFER_COURT_APPLICATION).build(), command));
+    }
+
+    private void sendUpdateCpsDefendantIdCommand(final JsonEnvelope event, final CourtApplicationCreated courtApplicationCreated) {
+        ofNullable(courtApplicationCreated.getCourtApplication().getRespondents()).orElse(emptyList()).stream()
+                .filter(courtApplicationParty -> nonNull(courtApplicationParty.getMasterDefendant()))
+                .flatMap(courtApplicationParty -> Stream.of(courtApplicationParty.getMasterDefendant()))
+                .filter(masterDefendant -> nonNull(masterDefendant.getCpsDefendantId()))
+                .filter(masterDefendant -> nonNull(masterDefendant.getDefendantCase()))
+                .forEach(masterDefendant -> masterDefendant.getDefendantCase().stream().findFirst().ifPresent(defendantCase -> {
+                    final UpdateCpsDefendantId updateCpsDefendantId = UpdateCpsDefendantId.updateCpsDefendantId()
+                            .withCpsDefendantId(masterDefendant.getCpsDefendantId())
+                            .withCaseId(defendantCase.getCaseId())
+                            .withDefendantId(masterDefendant.getMasterDefendantId())
+                            .build();
+
+                    sender.send(envelopeFrom(metadataFrom(event.metadata()).withName("progression.command.update-cps-defendant-id").build(), updateCpsDefendantId));
+                }));
     }
 
     @Handles("progression.event.listed-court-application-changed")
@@ -195,7 +216,7 @@ public class CourtApplicationProcessor {
     @Handles("progression.event.court-application-proceedings-edited")
     public void processCourtApplicationEdited(final JsonEnvelope event) {
         final CourtApplicationProceedingsEdited courtApplicationProceedingsEdited = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class);
-        if(nonNull(courtApplicationProceedingsEdited.getCourtHearing())) {
+        if (nonNull(courtApplicationProceedingsEdited.getCourtHearing())) {
             final JsonObjectBuilder updateHearingPayload = createObjectBuilder();
             updateHearingPayload.add("courtApplication", objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited.getCourtApplication()));
             updateHearingPayload.add("hearingId", courtApplicationProceedingsEdited.getCourtHearing().getId().toString());
@@ -548,7 +569,7 @@ public class CourtApplicationProcessor {
                     if (isNotEmpty(updatedProsecutionCase.getDefendants())) {
                         prosecutionCases.add(updatedProsecutionCase);
                     }
-                } else if(LINKED.equals(application.getType().getLinkType())){
+                } else if (LINKED.equals(application.getType().getLinkType())) {
                     triggerRetryOnCaseNotFound(courtApplicationCase.getProsecutionCaseId().toString());
                 }
             });

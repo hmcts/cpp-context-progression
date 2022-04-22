@@ -67,6 +67,7 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
     private String applicationId1;
     private String applicationId2;
     private String applicationReference;
+    private String applicationStatus;
 
     @Before
     public void setup() {
@@ -153,7 +154,10 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
         try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-initiated")) {
-            addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+            addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1,
+                    respondentId1,
+                    respondentDefendantId1,
+                    applicationReference,applicationStatus, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }
 
@@ -166,7 +170,7 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
 
 
         try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-initiated")) {
-            addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+            addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, applicationReference, applicationStatus,CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
             verifyMessageReceived(messageConsumer);
         }
 

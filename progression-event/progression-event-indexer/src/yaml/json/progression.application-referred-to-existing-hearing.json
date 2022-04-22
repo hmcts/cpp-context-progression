@@ -1,0 +1,122 @@
+{
+  "application":{
+    "applicant":{
+      "id":"1112f11e-12ab-4662-91be-1f62f5b1259f",
+      "notificationRequired":true,
+      "prosecutingAuthority":{
+        "address":{
+          "address1":"Criminal Justice Department",
+          "address2":"Derbyshire Constabulary",
+          "address3":"Butterley Hall",
+          "address4":"Ripley",
+          "address5":"Derby",
+          "postcode":"DE5 3RS"
+        },
+        "contact":{
+          "primaryEmail":"CCSU@derbyshire.pnn.police.uk"
+        },
+        "majorCreditorCode":"PF30",
+        "name":"Derbyshire Police",
+        "prosecutionAuthorityCode":"DERPF",
+        "prosecutionAuthorityId":"bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+        "prosecutionAuthorityOUCode":"0300000",
+        "welshName":"Heddlu Derbyshire"
+      },
+      "summonsRequired":false
+    },
+    "applicationReceivedDate":"2022-03-10",
+    "applicationReference":"43GD4559722",
+    "applicationStatus":"LISTED",
+    "commissionerOfOath":false,
+    "courtApplicationCases":[
+      {
+        "caseStatus":"ACTIVE",
+        "isSJP":false,
+        "prosecutionCaseId":"2f55ff8a-ff6a-4d2e-99ce-c30e2f98b035",
+        "prosecutionCaseIdentifier":{
+          "address":{
+            "address1":"Criminal Justice Department",
+            "address2":"Derbyshire Constabulary",
+            "address3":"Butterley Hall",
+            "address4":"Ripley",
+            "address5":"Derby",
+            "postcode":"DE5 3RS"
+          },
+          "contact":{
+            "primaryEmail":"CCSU@derbyshire.pnn.police.uk"
+          },
+          "majorCreditorCode":"PF30",
+          "prosecutionAuthorityCode":"DERPF",
+          "prosecutionAuthorityId":"bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+          "prosecutionAuthorityName":"Derbyshire Police",
+          "prosecutionAuthorityOUCode":"0300000",
+          "caseURN":"43GD4559722"
+        }
+      }
+    ],
+    "id":"ca319797-4891-43cb-9faf-73e51441179f",
+    "subject":{
+      "id":"1112f11e-12ab-4662-91be-1f62f5b1259f",
+      "notificationRequired":true,
+      "prosecutingAuthority":{
+        "address":{
+          "address1":"Criminal Justice Department",
+          "address2":"Derbyshire Constabulary",
+          "address3":"Butterley Hall",
+          "address4":"Ripley",
+          "address5":"Derby",
+          "postcode":"DE5 3RS"
+        },
+        "contact":{
+          "primaryEmail":"CCSU@derbyshire.pnn.police.uk"
+        },
+        "majorCreditorCode":"PF30",
+        "name":"Derbyshire Police",
+        "prosecutionAuthorityCode":"DERPF",
+        "prosecutionAuthorityId":"bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+        "prosecutionAuthorityOUCode":"0300000",
+        "welshName":"Heddlu Derbyshire"
+      },
+      "summonsRequired":false
+    },
+    "type":{
+      "appealFlag":false,
+      "applicantAppellantFlag":false,
+      "boxworkNotifTemplate":"NOT_APPLICABLE",
+      "breachType":"NOT_APPLICABLE",
+      "categoryCode":"CO",
+      "code":"CJ03521",
+      "commrOfOathFlag":false,
+      "courtExtractAvlFlag":true,
+      "courtOfAppealFlag":false,
+      "hearingCode":"REV",
+      "id":"2650cec5-a28d-370e-b2fd-3070cb74592c",
+      "jurisdiction":"EITHER",
+      "legislation":"In accordance with section 178 of the Criminal Justice Act 2003.",
+      "linkType":"LINKED",
+      "listingNotifTemplate":"POSTAL_NOTIFICATION",
+      "offenceActiveOrder":"NOT_APPLICABLE",
+      "pleaApplicableFlag":false,
+      "prosecutorThirdPartyFlag":false,
+      "spiOutApplicableFlag":true,
+      "summonsTemplateType":"NOT_APPLICABLE",
+      "type":"Review of community order"
+    }
+  },
+  "courtHearing":{
+    "courtCentre":{
+      "id":"f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name":"Lavender Hill Magistrates' Court",
+      "roomId":"9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName":"Courtroom 01"
+    },
+    "earliestStartDateTime":"2022-03-12T09:01:01.001Z",
+    "estimatedMinutes":20,
+    "hearingType":{
+      "description":"First hearing",
+      "id":"4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    },
+    "id":"46327b5c-534f-493d-bf30-bf449860b11f",
+    "jurisdictionType":"MAGISTRATES"
+  }
+}

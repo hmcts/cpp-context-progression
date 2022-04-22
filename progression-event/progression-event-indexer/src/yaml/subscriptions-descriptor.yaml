@@ -25,5 +25,14 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/court-application-proceedings-edited.json
         - name: progression.event.case-cps-prosecutor-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.case-cps-prosecutor-updated.json
+        - name: progression.event.application-referred-to-boxwork
+          schema_uri: http://justice.gov.uk/core/courts/application-referred-to-boxwork.json
+        - name: progression.event.hearing-resulted-application-updated
+          schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-application-updated.json
+        - name: progression.event.application-referral-to-existing-hearing
+          schema_uri: http://justice.gov.uk/core/courts/application-referred-to-existing-hearing.json
+        - name: progression.event.application-referred-to-court-hearing
+          schema_uri: http://justice.gov.uk/core/courts/application-referred-to-court-hearing.json
+
       event_source_name: progression
 

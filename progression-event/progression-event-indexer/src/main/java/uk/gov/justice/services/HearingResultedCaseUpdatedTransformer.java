@@ -14,17 +14,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.json.JsonObject;
 
 import com.bazaarvoice.jolt.Transform;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@SuppressWarnings("squid:S2629")
 public class HearingResultedCaseUpdatedTransformer implements Transform {
 
     public static final String PROSECUTION = "PROSECUTION";
     private DomainToIndexMapper domainToIndexMapper = new DomainToIndexMapper();
 
     private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private static final Logger LOGGER = LoggerFactory.getLogger(HearingResultedCaseUpdatedTransformer.class);
 
     @Override
     public Object transform(final Object input) {
@@ -62,6 +67,8 @@ public class HearingResultedCaseUpdatedTransformer implements Transform {
             parties.add(domainToIndexMapper.party(defendant));
         }
         caseDetails.setParties(parties);
+        LOGGER.info("progression.event.hearing-resulted-case-updated, caseId: {}", prosecutionCase.getId());
+
         return caseDetails;
     }
 }

@@ -20,6 +20,7 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
+import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.io.IOException;
@@ -47,6 +48,7 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
     private String respondantId;
     private String respondantDefendantId;
     private String applicationReference;
+    private String applicationStatus;
 
     @Before
     public void setup() {
@@ -57,6 +59,7 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
         respondantId = randomUUID().toString();
         respondantDefendantId = randomUUID().toString();
         applicationReference =  randomAlphanumeric(10).toUpperCase();
+        applicationStatus = ApplicationStatus.DRAFT.toString();
         deleteAndCreateIndex();
 
     }
@@ -116,7 +119,7 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
     }
 
     private void setUpCourtApplication(final String payloadPath) throws IOException {
-        addCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, payloadPath);
+        addCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId,applicationStatus, payloadPath);
 
         final Matcher[] matchers = {withJsonPath("$.caseId", equalTo(applicationId))};
 
@@ -130,6 +133,7 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
                 .replaceAll("RANDOM_RESPONDANT_ID", respondantId)
                 .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId)
+                .replaceAll("APPLICATION_STATUS", applicationStatus)
                 .replaceAll("RANDOM_REFERENCE", applicationReference);
 
         final JsonObject inputApplication = jsonFromString(payloadStr);

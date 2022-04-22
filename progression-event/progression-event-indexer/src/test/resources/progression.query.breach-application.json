@@ -496,6 +496,7 @@
       }
     ],
     "applicationStatus": "DRAFT",
+    "applicationExternalCreatorType": "PROSECUTOR",
     "outOfTimeReasons": "a",
     "breachedOrder": "Community Order",
     "breachedOrderDate": "2019-01-12",

@@ -18,6 +18,7 @@
         "applicationDecisionSoughtByDate": "2021-03-05",
         "applicationReference": "90GDAPPS304",
         "applicationStatus": "IN_PROGRESS",
+        "applicationExternalCreatorType": "PROSECUTOR",
         "commissionerOfOath": false,
         "courtApplicationCases": [
           {
