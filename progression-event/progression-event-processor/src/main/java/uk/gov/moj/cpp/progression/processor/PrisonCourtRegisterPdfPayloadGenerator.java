@@ -1,8 +1,5 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
 
@@ -44,17 +41,17 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
         final JsonObjectBuilder payloadForPdf = Json.createObjectBuilder();
         final JsonArrayBuilder casesArray = Json.createArrayBuilder();
 
-        ofNullable(jsonObject.getJsonObject("prisonCourtRegister")).ifPresent(prisonCourtRegisterRequest -> {
+        Optional.ofNullable(jsonObject.getJsonObject("prisonCourtRegister")).ifPresent(prisonCourtRegisterRequest -> {
             payloadForPdf.add("registerDate", LocalDate.now().format(OUT_DATE_FORMATTER));
-            ofNullable(prisonCourtRegisterRequest.getJsonObject("hearingVenue")).ifPresent(hearingVenue -> {
+            Optional.ofNullable(prisonCourtRegisterRequest.getJsonObject("hearingVenue")).ifPresent(hearingVenue -> {
                 payloadForPdf.add("ljaName", hearingVenue.getString("ljaName", DASH));
                 payloadForPdf.add("courtHouse", hearingVenue.getString("courtHouse", DASH));
-                ofNullable(hearingVenue.getJsonObject("address")).ifPresent(
+                Optional.ofNullable(hearingVenue.getJsonObject("address")).ifPresent(
                         address -> payloadForPdf.add("courtHouseAddress", buildCourtHouseAddress(address))
                 );
             });
 
-            ofNullable(prisonCourtRegisterRequest.getJsonObject("custodyLocation"))
+            Optional.ofNullable(prisonCourtRegisterRequest.getJsonObject("custodyLocation"))
                     .ifPresent(custodyLocation ->
                             payloadForPdf.add("custodyLocation", custodyLocation.getString("name", DASH)));
 
@@ -100,7 +97,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
 
     private void buildDefendantResults(final JsonObject defendant, final JsonObjectBuilder caseJson) {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        ofNullable(defendant.getJsonArray("defendantResults")).ifPresent(results -> {
+        Optional.ofNullable(defendant.getJsonArray("defendantResults")).ifPresent(results -> {
             final List<JsonObject> resultList = results.stream().map(JsonObject.class::cast).collect(Collectors.toList());
             resultList.forEach(result -> {
                 final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
@@ -118,18 +115,16 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
 
     private void buildCaseResults(final JsonObject pcoa, final JsonObjectBuilder caseJson) {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        if(!isApplicationValid(pcoa)){
-            ofNullable(pcoa.getJsonArray(RESULTS)).ifPresent(results -> results.stream().map(JsonObject.class::cast).forEach(result -> {
-                final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
-                        .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
-                        .add(RESULT_TEXT, clearUndesiredCharacters(result.getString(RESULT_TEXT, "")));
-                jsonArrayBuilder.add(resultBuilder.build());
-            }));
+        Optional.ofNullable(pcoa.getJsonArray(RESULTS)).ifPresent(results -> results.stream().map(JsonObject.class::cast).forEach(result -> {
+            final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
+                    .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
+                    .add(RESULT_TEXT, clearUndesiredCharacters(result.getString(RESULT_TEXT, "")));
+            jsonArrayBuilder.add(resultBuilder.build());
+        }));
 
-            final JsonArray caseResults = jsonArrayBuilder.build();
-            if (!caseResults.isEmpty()) {
-                caseJson.add("caseResults", caseResults);
-            }
+        final JsonArray caseResults = jsonArrayBuilder.build();
+        if (!caseResults.isEmpty()) {
+            caseJson.add("caseResults", caseResults);
         }
     }
 
@@ -167,7 +162,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
 
     private void buildNameAndAddress(final JsonObject defendant, final JsonObjectBuilder caseJson) {
         caseJson.add("name", defendant.getString("name", DASH));
-        ofNullable(defendant.getJsonObject(ADDRESS)).ifPresent(addressObj -> {
+        Optional.ofNullable(defendant.getJsonObject(ADDRESS)).ifPresent(addressObj -> {
             Stream.of("1", "2", "3", "4", "5").map(a -> ADDRESS + a).forEach(a -> caseJson.add(a, addressObj.getString(a, "")));
             caseJson.add("postCode", addressObj.getString("postCode", ""));
         });
@@ -238,18 +233,16 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
     private void buildApplication(final JsonObject pcoaJson, final JsonObjectBuilder caseJson) {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
 
-        if (isApplicationValid(pcoaJson) && nonNull(pcoaJson.getJsonArray(RESULTS))) {
-            final Optional<String> optionalResultText = ofNullable(pcoaJson.getJsonArray(RESULTS))
-                    .map(results -> results.stream().map(JsonObject.class::cast).findFirst()).map(
-                            result -> clearUndesiredCharacters(result.get().getString(RESULT_TEXT, DASH)));
-            final JsonObjectBuilder applicationBuilder = Json.createObjectBuilder()
+        if (isApplicationValid(pcoaJson)) {
+            final JsonObject application = Json.createObjectBuilder()
                     .add("type", pcoaJson.getString("applicationType", DASH))
-                    .add("result", clearUndesiredCharacters(optionalResultText.orElse(DASH)));
-            ofNullable(pcoaJson.getString("applicationDecision", null)).ifPresent(decision -> applicationBuilder.add("decision", decision));
-            ofNullable(pcoaJson.getString("applicationDecisionDate", null)).ifPresent(decisionDate -> applicationBuilder.add("decisionDate", formatDate(decisionDate)));
-            ofNullable(pcoaJson.getString("applicationResponse", null)).ifPresent(response -> applicationBuilder.add("response", response));
-            ofNullable(pcoaJson.getString("applicationResponseDate", null)).ifPresent(responseDate -> applicationBuilder.add("responseDate", formatDate(responseDate)));
-            jsonArrayBuilder.add(applicationBuilder.build());
+                    .add("decision", pcoaJson.getString("applicationDecision", DASH))
+                    .add("decisionDate", formatDate(pcoaJson.getString("applicationDecisionDate", DASH)))
+                    .add("response", pcoaJson.getString("applicationResponse", DASH))
+                    .add("responseDate", formatDate(pcoaJson.getString("applicationResponseDate", DASH)))
+                    .add("result", clearUndesiredCharacters(pcoaJson.getString("applicationResult", DASH)))
+                    .build();
+            jsonArrayBuilder.add(application);
         }
 
         final JsonArray applications = jsonArrayBuilder.build();
@@ -266,11 +259,9 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
         return applicationFields.stream().anyMatch(s -> !pcoaJson.getString(s, "").isEmpty());
     }
 
-
-
     private void buildOffences(final JsonObject pcoaJson, final JsonObjectBuilder caseJson) {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        ofNullable(pcoaJson.getJsonArray("offences")).ifPresent(offences -> offences.stream().map(JsonObject.class::cast).filter(offenceJson -> nonNull(offenceJson.getJsonArray(RESULTS))).forEach(offenceJson -> {
+        Optional.ofNullable(pcoaJson.getJsonArray("offences")).ifPresent(offences -> offences.stream().map(JsonObject.class::cast).forEach(offenceJson -> {
             final String convictionDate = formatDate(offenceJson.getString(CONVICTION_DATE, DASH));
             final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder()
                     .add("offenceCode", offenceJson.getString("offenceCode", DASH))
@@ -294,7 +285,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
 
     private void setResults(final JsonArray resultsArray, final JsonObjectBuilder offenceBuilder) {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        ofNullable(resultsArray).ifPresent(results -> {
+        Optional.ofNullable(resultsArray).ifPresent(results -> {
             final List<JsonObject> resultList = results.stream().map(JsonObject.class::cast).collect(Collectors.toList());
             resultList.forEach(result -> {
                 final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()

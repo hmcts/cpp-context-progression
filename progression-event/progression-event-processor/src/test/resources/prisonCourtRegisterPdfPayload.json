@@ -44,11 +44,21 @@
           "resultText": "Def Absolute discharge 1018"
         }
       ],
+      "caseResults": [
+        {
+          "resultCode": "C1017",
+          "resultText": "Case Absolute discharge C1017"
+        },
+        {
+          "resultCode": "A1018",
+          "resultText": "App Absolute discharge A1018"
+        }
+      ],
       "offences": [
         {
           "offenceCode": "PS90010",
           "offenceTitle": "Public service vehicle - passenger use altered / defaced ticket",
-          "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.Contrary to section 366(8)(b) and (9) of the Communications Act 2003.",
+          "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.\nContrary to section 366(8)(b) and (9) of the Communications Act 2003.",
           "allocationDecision": "Summary-only offence",
           "convictionDate": "01/01/2020",
           "verdictCode": "test verdict Code",
@@ -68,7 +78,7 @@
         {
           "offenceCode": "PS90011",
           "offenceTitle": "Public service vehicle - passenger use altered / defaced ticket",
-          "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.Contrary to section 366(8)(b) and (9) of the Communications Act 2003.",
+          "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.\nContrary to section 366(8)(b) and (9) of the Communications Act 2003.",
           "allocationDecision": "Summary-only offence",
           "convictionDate": "-",
           "verdictCode": "test verdict Code",
@@ -85,11 +95,11 @@
       "applications": [
         {
           "type": "App Type",
-          "result": "Case Absolute discharge C1017",
           "decision": "Application Decision",
           "decisionDate": "30/05/2020",
           "response": "Application Response",
-          "responseDate": "31/05/2020"
+          "responseDate": "31/05/2020",
+          "result": "App result"
         }
       ]
     },
@@ -142,7 +152,7 @@
         {
           "offenceCode": "PS90012",
           "offenceTitle": "Public service vehicle - passenger use altered / defaced ticket",
-          "wording": "Has a violent past and fear that he will commit further offences and interfere with witnesse.Contrary to section 366(8)(b) and (9) of the Communications Act 2003.",
+          "wording": "Has a violent past and fear that he will commit further offences and interfere with witnesse.\nContrary to section 366(8)(b) and (9) of the Communications Act 2003.",
           "allocationDecision": "Summary-only offence",
           "convictionDate": "29/05/2020",
           "verdictCode": "test verdict Code",
@@ -162,7 +172,7 @@
         {
           "offenceCode": "PS90013",
           "offenceTitle": "Public service vehicle - passenger use altered / defaced ticket",
-          "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.Contrary to section 366(8)(b) and (9) of the Communications Act 2003.",
+          "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.\nContrary to section 366(8)(b) and (9) of the Communications Act 2003.",
           "allocationDecision": "Summary-only offence",
           "convictionDate": "29/05/2020",
           "verdictCode": "test verdict Code",

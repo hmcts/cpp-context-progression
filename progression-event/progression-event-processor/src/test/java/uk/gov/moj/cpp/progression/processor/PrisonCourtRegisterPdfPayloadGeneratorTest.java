@@ -22,43 +22,11 @@ public class PrisonCourtRegisterPdfPayloadGeneratorTest {
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Test
-    public void shouldMapPayloadFilterApplicationWithoutResults() {
+    public void shouldMapPayload() {
         final JsonObject body = getPayload("progression.add-prison-court-register-payload.json");
         final PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator = new PrisonCourtRegisterPdfPayloadGenerator();
         final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
-        assertThat(responseBody.toString(), Is.is(getPayload("prisonCourtRegisterWithoutApplicationPdfPayload.json")
-                .toString().replaceAll("%AGE%", String.valueOf(Period.between(LocalDate.of(2008,8,8),LocalDate.now()).getYears()))
-                .replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-        ));
-    }
-
-    @Test
-    public void shouldMapPayloadFilterOffenceWithoutResults() {
-        final JsonObject body = getPayload("progression.add-prison-court-register-payload.json");
-        final PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator = new PrisonCourtRegisterPdfPayloadGenerator();
-        final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
-        assertThat(responseBody.toString(), Is.is(getPayload("prisonCourtRegisterWithoutOffencePdfPayload.json")
-                .toString().replaceAll("%AGE%", String.valueOf(Period.between(LocalDate.of(2008,8,8),LocalDate.now()).getYears()))
-                .replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-        ));
-    }
-    @Test
-    public void shouldCorrectlyMapPayloadWithApplicationResults() {
-        final JsonObject body = getPayload("progression.add-prison-court-register-payload-with-application.json");
-        final PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator = new PrisonCourtRegisterPdfPayloadGenerator();
-        final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
-        assertThat(responseBody.toString(), Is.is(getPayload("prisonCourtRegisterPdfPayloadWithApplication.json")
-                .toString().replaceAll("%AGE%", String.valueOf(Period.between(LocalDate.of(2008,8,8),LocalDate.now()).getYears()))
-                .replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-        ));
-    }
-
-    @Test
-    public void shouldCorrectlyMapPayloadWithApplicationEmptyResults() {
-        final JsonObject body = getPayload("progression.add-prison-court-register-payload-with-application-no-result.json");
-        final PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator = new PrisonCourtRegisterPdfPayloadGenerator();
-        final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
-        assertThat(responseBody.toString(), Is.is(getPayload("prisonCourtRegisterPdfPayloadWithApplicationNoResult.json")
+        assertThat(responseBody.toString(), Is.is(getPayload("prisonCourtRegisterPdfPayload.json")
                 .toString().replaceAll("%AGE%", String.valueOf(Period.between(LocalDate.of(2008,8,8),LocalDate.now()).getYears()))
                 .replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
         ));
