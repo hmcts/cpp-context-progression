@@ -39,7 +39,7 @@ public class CorrectHearingDaysWithoutCourtCentreHandler {
     public void handleCorrectHearingDaysWithoutCourtCentre(final Envelope<CorrectHearingDaysWithoutCourtCentre> commandEnvelope) throws EventStreamException {
         final CorrectHearingDaysWithoutCourtCentre correctHearingDaysWithoutCourtCentre = commandEnvelope.payload();
 
-        LOGGER.debug("progression.command.correct-hearing-days-without-court-centre ID: {} hearingDays: {}", correctHearingDaysWithoutCourtCentre.getId(), correctHearingDaysWithoutCourtCentre.getHearingDays());
+        LOGGER.debug("progression.command.correct-hearing-days-without-court-centre payload {}", correctHearingDaysWithoutCourtCentre);
 
         final UUID hearingId = correctHearingDaysWithoutCourtCentre.getId();
         final EventStream eventStream = eventSource.getStreamById(hearingId);

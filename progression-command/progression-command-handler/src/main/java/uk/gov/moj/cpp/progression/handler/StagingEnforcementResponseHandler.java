@@ -36,7 +36,7 @@ public class StagingEnforcementResponseHandler extends AbstractCommandHandler {
     @Handles("progression.command.apply-enforcement-acknowledgement")
     public void applyEnforcementAcknowledgement(final JsonEnvelope envelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.apply-enforcement-acknowledgement event received {}", "");
+            LOGGER.debug("progression.command.apply-enforcement-acknowledgement event received {}", envelope.toObfuscatedDebugString());
         }
 
         final EnforceFinancialImpositionAcknowledgement command = this.jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), EnforceFinancialImpositionAcknowledgement.class);
@@ -51,7 +51,7 @@ public class StagingEnforcementResponseHandler extends AbstractCommandHandler {
     @Handles("progression.command.enforcement-acknowledgement-error")
     public void enforcementAcknowledgmentError(final JsonEnvelope envelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.enforcement-acknowledgement-error event received {}", "");
+            LOGGER.debug("progression.command.enforcement-acknowledgement-error event received {}", envelope.toObfuscatedDebugString());
         }
 
         final EnforceFinancialImpositionAcknowledgement command = this.jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), EnforceFinancialImpositionAcknowledgement.class);

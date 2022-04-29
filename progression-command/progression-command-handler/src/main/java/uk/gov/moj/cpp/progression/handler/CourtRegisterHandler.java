@@ -66,7 +66,7 @@ public class CourtRegisterHandler extends AbstractCommandHandler {
 
     @Handles("progression.command.add-court-register")
     public void handleAddCourtRegister(final Envelope<CourtRegisterDocumentRequest> courtRegisterDocumentRequestEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.add-court-register {}", "hearingId: " + courtRegisterDocumentRequestEnvelope.payload().getHearingId());
+        LOGGER.debug("progression.command.add-court-register {}", courtRegisterDocumentRequestEnvelope);
 
         final CourtRegisterDocumentRequest courtRegisterDocumentRequest = courtRegisterDocumentRequestEnvelope.payload();
 

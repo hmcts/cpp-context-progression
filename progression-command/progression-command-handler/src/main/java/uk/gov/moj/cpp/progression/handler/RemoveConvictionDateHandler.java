@@ -34,7 +34,7 @@ public class RemoveConvictionDateHandler {
 
     @Handles("progression.command.remove-conviction-date")
     public void handle(final Envelope<RemoveConvictionDate> envelope) throws EventStreamException {
-        LOGGER.debug("progression.command.remove-conviction-date {}", "caseId: " + envelope.payload().getCaseId());
+        LOGGER.debug("progression.command.remove-conviction-date {}", envelope);
         final RemoveConvictionDate removeConvictionDate = envelope.payload();
         final EventStream eventStream;
         final Stream<Object> events;

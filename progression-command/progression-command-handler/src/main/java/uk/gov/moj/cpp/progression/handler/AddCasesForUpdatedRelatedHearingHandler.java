@@ -39,7 +39,7 @@ public class AddCasesForUpdatedRelatedHearingHandler {
     @Handles("progression.command.add-cases-for-updated-related-hearing")
     public void handleAddCasesForUpdateRelatedHearing(final Envelope<AddCasesForUpdatedRelatedHearing> envelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.add-cases-for-updated-related-hearing seedingHearingId: {} hearingID: {}", envelope.payload().getSeedingHearingId(), envelope.payload().getHearingId());
+            LOGGER.debug("progression.command.add-cases-for-updated-related-hearing {}", envelope);
         }
 
         final AddCasesForUpdatedRelatedHearing addCasesForUpdatedRelatedHearing = envelope.payload();

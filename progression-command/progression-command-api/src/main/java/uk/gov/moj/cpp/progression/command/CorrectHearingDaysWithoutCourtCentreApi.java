@@ -27,7 +27,7 @@ public class CorrectHearingDaysWithoutCourtCentreApi {
     @Handles("progression.correct-hearing-days-without-court-centre")
     public void handleCorrectHearingDaysWithoutCourtCentre(final JsonEnvelope envelope) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.correct-hearing-days-without-court-centre");
+            LOGGER.debug("'progression.correct-hearing-days-without-court-centre' received with payload {}", envelope.toObfuscatedDebugString());
         }
         sender.send(envelopeFrom(metadataFrom(envelope.metadata()).withName(PROGRESSION_COMMAND_CORRECT_HEARING_DAYS_WITHOUT_COURT_CENTRE),
                 envelope.payload()));

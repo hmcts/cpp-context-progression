@@ -44,7 +44,7 @@ public class UpdateDefendantHandler {
 
     @Handles("progression.command.update-defendant-for-prosecution-case")
     public void handle(final Envelope<UpdateDefendantForProsecutionCase> updateDefendantEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-defendant-for-prosecution-case {}", "prosecutionCaseId: " + updateDefendantEnvelope.payload().getProsecutionCaseId());
+        LOGGER.debug("progression.command.update-defendant-for-prosecution-case {}", updateDefendantEnvelope.payload());
 
         final UpdateDefendantForProsecutionCase defendantDetailsToUpdate = updateDefendantEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(defendantDetailsToUpdate.getDefendant().getProsecutionCaseId());

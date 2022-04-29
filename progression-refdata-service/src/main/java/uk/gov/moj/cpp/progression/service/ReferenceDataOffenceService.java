@@ -58,7 +58,7 @@ public class ReferenceDataOffenceService {
                 .withMetadataFrom(envelope));
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.info(" '{}' by id {} received with payload {} ", REFERENCEDATAOFFENCE_GET_OFFENCE, offenceId, "");
+            LOGGER.info(" '{}' by id {} received with payload {} ", REFERENCEDATAOFFENCE_GET_OFFENCE, offenceId, response.toObfuscatedDebugString());
         }
 
         if (response.payload() == null) {
@@ -97,7 +97,7 @@ public class ReferenceDataOffenceService {
             return Optional.empty();
         }
 
-        LOGGER.info("cjsoffencecode {}  offence ref data payload {}", cjsOffenceCode, "");
+        LOGGER.info("cjsoffencecode {}  offence ref data payload {}", cjsOffenceCode, offences.toObfuscatedDebugString());
 
         final JsonObject offencePayload = (JsonObject) offences.payloadAsJsonObject().getJsonArray(OFFENCES).get(0);
         return Optional.of(generateOffenceJsonObject(offencePayload));
@@ -121,7 +121,7 @@ public class ReferenceDataOffenceService {
 
         final List<JsonObject> offencesJsonObject = new ArrayList<>();
 
-        LOGGER.info("cjsoffencecode {}  offence ref data payload {}", cjsOffenceCodes, "");
+        LOGGER.info("cjsoffencecode {}  offence ref data payload {}", cjsOffenceCodes, offences.toObfuscatedDebugString());
 
         offences.payloadAsJsonObject().getJsonArray(OFFENCES)
                 .forEach(offenceJsonValue -> {

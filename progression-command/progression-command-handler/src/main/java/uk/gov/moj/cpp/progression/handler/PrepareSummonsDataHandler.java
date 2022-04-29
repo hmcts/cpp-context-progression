@@ -44,7 +44,7 @@ public class PrepareSummonsDataHandler {
 
     @Handles("progression.command.prepare-summons-data")
     public void prepareSummonsData(final Envelope<PrepareSummonsData> prepareSummonsDataEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.prepare-summons-data {}", "hearingID: " + prepareSummonsDataEnvelope.payload().getHearingId());
+        LOGGER.debug("progression.command.prepare-summons-data {}", prepareSummonsDataEnvelope);
         final PrepareSummonsData requestSummons = prepareSummonsDataEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(requestSummons.getHearingId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
@@ -58,7 +58,7 @@ public class PrepareSummonsDataHandler {
     public void handlePrepareSummonsDataForExtendedHearingEvent(final Envelope<PrepareSummonsDataForExtendedHearing> envelope)
             throws EventStreamException {
 
-        LOGGER.debug("progression.command.prepare-summons-data-for-extended-hearing {}", "hearingId: " + envelope.payload().getConfirmedHearing().getId());
+        LOGGER.debug("progression.command.prepare-summons-data-for-extended-hearing {}", envelope);
 
         final PrepareSummonsDataForExtendedHearing prepareSummonsDataForExtendedHearing = envelope.payload();
         final ConfirmedHearing confirmedHearing = prepareSummonsDataForExtendedHearing.getConfirmedHearing();
@@ -77,7 +77,7 @@ public class PrepareSummonsDataHandler {
     public void handleExtendHearingDefendantRequestUpdateRequestedEvent(final Envelope<ExtendHearingDefendantRequestUpdateRequested> envelope)
             throws EventStreamException {
 
-        LOGGER.debug("progression.command.extend-hearing-defendant-request-update-requested {}", "hearingId: " + envelope.payload().getConfirmedHearing().getExistingHearingId());
+        LOGGER.debug("progression.command.extend-hearing-defendant-request-update-requested {}", envelope);
 
         final ExtendHearingDefendantRequestUpdateRequested extendHearingDefendantRequestUpdateRequested = envelope.payload();
 

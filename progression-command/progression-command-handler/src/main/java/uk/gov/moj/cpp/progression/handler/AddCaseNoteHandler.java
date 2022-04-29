@@ -43,7 +43,7 @@ public class AddCaseNoteHandler {
 
     @Handles("progression.command.add-case-note")
     public void handle(final Envelope<AddCaseNote> addCaseNoteEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.add-case-note caseID: {} note: {}", addCaseNoteEnvelope.payload().getCaseId(), addCaseNoteEnvelope.payload().getNote());
+        LOGGER.debug("progression.command.add-case-note {}", addCaseNoteEnvelope);
 
         final String userId = addCaseNoteEnvelope.metadata().userId()
                 .orElseThrow(() -> new IllegalStateException("No UserId Supplied"));

@@ -36,7 +36,7 @@ public class UpdateCourtApplicationStatusHandler {
 
     @Handles("progression.command.update-court-application-status")
     public void handle(final Envelope<UpdateCourtApplicationStatus> updateCourtApplicationStatusEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-court-application-status {}", "ID: " + updateCourtApplicationStatusEnvelope.payload().getId());
+        LOGGER.debug("progression.command.update-court-application-status {}", updateCourtApplicationStatusEnvelope.payload());
 
         final UpdateCourtApplicationStatus updateCourtApplicationStatus = updateCourtApplicationStatusEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateCourtApplicationStatus.getId());

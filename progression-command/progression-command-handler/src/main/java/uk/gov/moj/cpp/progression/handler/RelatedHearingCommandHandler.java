@@ -37,7 +37,7 @@ public class RelatedHearingCommandHandler extends AbstractCommandHandler {
     public void handleUpdateRelatedHearingCommand(final Envelope<UpdateRelatedHearingCommand> envelope) throws EventStreamException {
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.update-related-hearing payload: {}", "hearingId: " + envelope.payload().getHearingRequest().getId());
+            LOGGER.debug("progression.command.update-related-hearing payload: {}", envelope.payload());
         }
 
         final UpdateRelatedHearingCommand command = envelope.payload();

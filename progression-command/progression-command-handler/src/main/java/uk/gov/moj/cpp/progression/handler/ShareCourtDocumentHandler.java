@@ -43,7 +43,7 @@ public class ShareCourtDocumentHandler {
 
     @Handles("progression.command.share-court-document")
     public void handle(final Envelope<ShareCourtDocument> shareCourtDocumentEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.share-court-document {}", "hearingId: " + shareCourtDocumentEnvelope.payload().getShareCourtDocumentDetails().getHearingId() + " , " + "documentId: " + shareCourtDocumentEnvelope.payload().getShareCourtDocumentDetails().getCourtDocumentId());
+        LOGGER.debug("progression.command.share-court-document {}", shareCourtDocumentEnvelope);
 
         final SharedCourtDocument shareCourtDocumentDetails = shareCourtDocumentEnvelope.payload().getShareCourtDocumentDetails();
         final EventStream eventStream = eventSource.getStreamById(shareCourtDocumentDetails.getCourtDocumentId());

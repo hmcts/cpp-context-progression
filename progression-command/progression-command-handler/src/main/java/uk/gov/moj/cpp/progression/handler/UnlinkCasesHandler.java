@@ -37,7 +37,7 @@ public class UnlinkCasesHandler {
     @Handles("progression.command.unlink-cases")
     public void handle(final Envelope<UnlinkCases> envelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.unlink-cases payload: {}", "prosecutionCaseId: " + envelope.payload().getProsecutionCaseId());
+            LOGGER.debug("progression.command.unlink-cases payload: {}", envelope.payload());
         }
         final UnlinkCases unlinkCases = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(unlinkCases.getProsecutionCaseId());

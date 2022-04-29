@@ -29,7 +29,7 @@ public class AssignDefendantRequestFromCurrentHearingToExtendHearingHandler exte
     @Handles("progression.command.assign-defendant-request-from-current-hearing-to-extend-hearing")
     public void assignDefendantRequestFromCurrentHearingToExtendHearing(final Envelope<AssignDefendantRequestFromCurrentHearingToExtendHearing> envelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.assign-defendant-request-from-current-hearing-to-extend-hearing extendedHearingId: {}", envelope.payload().getExtendHearingId());
+            LOGGER.debug("progression.command.assign-defendant-request-from-current-hearing-to-extend-hearing payload {}", envelope.payload());
         }
 
         final AssignDefendantRequestFromCurrentHearingToExtendHearing command = envelope.payload();

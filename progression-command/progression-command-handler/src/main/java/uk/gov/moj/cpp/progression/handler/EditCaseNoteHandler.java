@@ -31,7 +31,7 @@ public class EditCaseNoteHandler extends AbstractCommandHandler {
 
     @Handles("progression.command.edit-case-note")
     public void handle(final Envelope<EditCaseNote> editCaseNoteEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.edit-case-note {}", "caseId: " + editCaseNoteEnvelope.payload().getCaseId() + " , " + "caseNoteId: " + editCaseNoteEnvelope.payload().getCaseNoteId());
+        LOGGER.debug("progression.command.edit-case-note {}", editCaseNoteEnvelope);
         final EditCaseNote editCaseNote = editCaseNoteEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(editCaseNote.getCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);

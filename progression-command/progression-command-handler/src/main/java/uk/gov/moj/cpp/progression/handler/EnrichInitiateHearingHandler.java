@@ -35,7 +35,7 @@ public class EnrichInitiateHearingHandler {
 
     @Handles("progression.command-enrich-hearing-initiate")
     public void enrichHearingInitiate(final Envelope<CommandEnrichHearingInitiate> initiateEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command-enrich-hearing-initiate {}", "hearingId: " + initiateEnvelope.payload().getHearing().getId());
+        LOGGER.debug("progression.command-enrich-hearing-initiate {}", initiateEnvelope.payload());
         final CommandEnrichHearingInitiate initiate = initiateEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(initiate.getHearing().getId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);

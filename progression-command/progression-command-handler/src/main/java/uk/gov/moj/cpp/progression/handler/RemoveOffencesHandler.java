@@ -39,7 +39,7 @@ public class RemoveOffencesHandler {
     @Handles("progression.command.remove-offences-from-existing-hearing")
     public void removeOffencesFromExistingHearing(final Envelope<RemoveOffencesFromExistingHearing> removeOffencesEnvelope) throws EventStreamException {
 
-        LOGGER.debug("progression.command.remove-offences-from-existing-hearing {}", "hearingId: " + removeOffencesEnvelope.payload().getHearingId());
+        LOGGER.debug("progression.command.remove-offences-from-existing-hearing {}", removeOffencesEnvelope.payload());
 
         final RemoveOffencesFromExistingHearing removeOffencesFromExistingHearing = removeOffencesEnvelope.payload();
 

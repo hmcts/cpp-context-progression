@@ -38,7 +38,7 @@ public class CreateProsecutionCaseHandler {
 
     @Handles("progression.command.create-prosecution-case")
     public void handle(final Envelope<CreateProsecutionCase> createProsecutionCaseEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.create-prosecution-case {}", "prosecutionCaseId: " + createProsecutionCaseEnvelope.payload().getProsecutionCase().getId());
+        LOGGER.debug("progression.command.create-prosecution-case {}", createProsecutionCaseEnvelope);
         final ProsecutionCase prosecutionCase = createProsecutionCaseEnvelope.payload().getProsecutionCase();
         final EventStream eventStream = eventSource.getStreamById(prosecutionCase.getId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);

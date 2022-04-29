@@ -42,7 +42,7 @@ public class HearingResultsCommandHandler {
     public void processHearingResults(final Envelope<HearingResult> envelope) throws EventStreamException {
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.process-hearing-results {}", "hearingId: " + envelope.payload().getHearing().getId());
+            LOGGER.debug("progression.command.process-hearing-results {}", envelope);
         }
 
         final HearingResult hearingResult = envelope.payload();
@@ -59,7 +59,7 @@ public class HearingResultsCommandHandler {
     public void processStoreBookingReferencesWithCourtScheduleIdsCommand(final Envelope<StoreBookingReferenceCourtScheduleIds> envelope) throws EventStreamException {
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.store-booking-reference-court-schedule-ids {}", "hearingId: " + envelope.payload().getHearingId() + " , " + "hearingDay" + envelope.payload().getHearingDay());
+            LOGGER.debug("progression.command.store-booking-reference-court-schedule-ids {}", envelope);
         }
 
         final StoreBookingReferenceCourtScheduleIds command = envelope.payload();

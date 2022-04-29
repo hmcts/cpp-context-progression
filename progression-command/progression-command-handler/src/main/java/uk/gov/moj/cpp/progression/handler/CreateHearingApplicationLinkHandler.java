@@ -42,7 +42,7 @@ public class CreateHearingApplicationLinkHandler {
 
     @Handles("progression.command.create-hearing-application-link")
     public void handle(final Envelope<CreateHearingApplicationLink> createHearingApplicationLinkEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.create-hearing-application-link {}", "applicationId: " + createHearingApplicationLinkEnvelope.payload().getApplicationId());
+        LOGGER.debug("progression.command.create-hearing-application-link {}", createHearingApplicationLinkEnvelope.payload());
 
         final CreateHearingApplicationLink createHearingApplicationLink = createHearingApplicationLinkEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(createHearingApplicationLink.getApplicationId());
@@ -61,7 +61,7 @@ public class CreateHearingApplicationLinkHandler {
 
     @Handles("progression.command.update-hearing-for-allocation-fields")
     public void handleForAllocationFields(final Envelope<UpdateHearingForAllocationFields> updateHearingForAllocationFieldsEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-hearing-for-allocation-fields {}", "ID: " + updateHearingForAllocationFieldsEnvelope.payload().getId());
+        LOGGER.debug("progression.command.update-hearing-for-allocation-fields {}", updateHearingForAllocationFieldsEnvelope.payload());
 
         final UpdateHearingForAllocationFields updateHearingForAllocationFields = updateHearingForAllocationFieldsEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateHearingForAllocationFields.getId());

@@ -64,10 +64,10 @@ public class UpdateOffencesHandler {
     private ReferenceDataOffenceService referenceDataOffenceService;
 
     @Handles("progression.command.update-offences-for-prosecution-case")
-    public void handle(final Envelope<UpdateOffencesForProsecutionCase> updateDefendantEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-offences-for-prosecution-case {}", "prosecutionCaseId: " + updateDefendantEnvelope.payload().getProsecutionCaseId());
+    public void handle(final Envelope<UpdateOffencesForProsecutionCase> updateDefedantEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.command.update-offences-for-prosecution-case {}", updateDefedantEnvelope.payload());
 
-        final UpdateOffencesForProsecutionCase updateDefendantCaseOffences = updateDefendantEnvelope.payload();
+        final UpdateOffencesForProsecutionCase updateDefendantCaseOffences = updateDefedantEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateDefendantCaseOffences.getDefendantCaseOffences().getProsecutionCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
         final UUID prosecutionCaseId = updateDefendantCaseOffences.getDefendantCaseOffences().getProsecutionCaseId();
@@ -76,16 +76,16 @@ public class UpdateOffencesHandler {
         final List<Offence> offences = Boolean.TRUE.equals(updateDefendantCaseOffences.getSwitchedToYouth()) ? offenceList.stream().map(this::addYouthRestrictions).collect(Collectors.toList()) : offenceList;
 
         final List<String> offenceCodes = offences.stream().map(Offence::getOffenceCode).collect(Collectors.toList());
-        final Optional<List<JsonObject>> offencesJsonObjectOptional = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelopeFrom(updateDefendantEnvelope.metadata(), JsonValue.NULL), requester);
+        final Optional<List<JsonObject>> offencesJsonObjectOptional = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelopeFrom(updateDefedantEnvelope.metadata(), JsonValue.NULL), requester);
 
         final Stream<Object> events = caseAggregate.updateOffences(dedupAllReportingRestrictions(offences),prosecutionCaseId,defendantId,offencesJsonObjectOptional);
 
-        appendEventsToStream(updateDefendantEnvelope, eventStream, events);
+        appendEventsToStream(updateDefedantEnvelope, eventStream, events);
     }
 
     @Handles("progression.command.update-offences-for-hearing")
     public void handleUpdateOffencesForHearing(final Envelope<UpdateOffencesForHearing> updateOffencesForHearingEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-offences-for-hearing {}", "hearingId: " + updateOffencesForHearingEnvelope.payload().getHearingId() + "defendantId: " + updateOffencesForHearingEnvelope.payload().getDefendantId());
+        LOGGER.debug("progression.command.update-offences-for-hearing {}", updateOffencesForHearingEnvelope.payload());
         final UpdateOffencesForHearing updateOffencesForHearing = updateOffencesForHearingEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateOffencesForHearing.getHearingId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
@@ -95,7 +95,7 @@ public class UpdateOffencesHandler {
 
     @Handles("progression.command.update-listing-number")
     public void handleUpdateListingNumberOfOffences(final Envelope<UpdateListingNumber> updateOffencesForHearingEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-offences-for-hearing {}", "hearingId: " + updateOffencesForHearingEnvelope.payload().getHearingId());
+        LOGGER.debug("progression.command.update-offences-for-hearing {}", updateOffencesForHearingEnvelope.payload());
 
         final UpdateListingNumber updateListingNumber = updateOffencesForHearingEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateListingNumber.getHearingId());

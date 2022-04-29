@@ -38,7 +38,7 @@ public class InitiateCourtProceedingsHandler {
 
     @Handles("progression.command.initiate-court-proceedings")
     public void handle(final Envelope<InitiateCourtProceedings> initiateCourtProceedingsEnvelope) throws EventStreamException {
-        LOGGER.info("progression.command.initiate-court-proceedings {}", "prosecutionCases: " + initiateCourtProceedingsEnvelope.payload().getInitiateCourtProceedings().getProsecutionCases());
+        LOGGER.info("progression.command.initiate-court-proceedings {}", initiateCourtProceedingsEnvelope.payload());
         final InitiateCourtProceedings command = initiateCourtProceedingsEnvelope.payload();
 
         for (final ProsecutionCase prosecutionCase : command.getInitiateCourtProceedings().getProsecutionCases()) {

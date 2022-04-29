@@ -72,7 +72,7 @@ public class CreateCourtDocumentHandler {
 
     @Handles("progression.command.create-court-document")
     public void handle(final Envelope<CreateCourtDocument> createCourtDocumentEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.create-court-document {}", "courtDocumentId: " + createCourtDocumentEnvelope.payload().getCourtDocument().getCourtDocumentId());
+        LOGGER.debug("progression.command.create-court-document {}", createCourtDocumentEnvelope);
         final CourtDocument courtDocument = setDefaults(createCourtDocumentEnvelope.payload().getCourtDocument());
         final EventStream eventStream = eventSource.getStreamById(courtDocument.getCourtDocumentId());
         final CourtDocumentAggregate courtDocumentAggregate = aggregateService.get(eventStream, CourtDocumentAggregate.class);

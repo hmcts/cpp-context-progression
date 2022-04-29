@@ -37,7 +37,7 @@ public class LinkCaseToHearingHandler {
 
     @Handles("progression.command-link-prosecution-cases-to-hearing")
     public void handle(final Envelope<LinkCaseToHearing> envelope) throws EventStreamException {
-        LOGGER.debug("progression.command-link-prosecution-cases-to-hearing {}", "caseId: " + envelope.payload().getCaseId() + " , " + "hearingId: " + envelope.payload().getHearingId());
+        LOGGER.debug("progression.command-link-prosecution-cases-to-hearing {}", envelope);
         final LinkCaseToHearing caseLinkedToHearing = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(caseLinkedToHearing.getCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);

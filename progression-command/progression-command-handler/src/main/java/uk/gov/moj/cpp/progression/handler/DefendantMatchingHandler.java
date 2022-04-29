@@ -39,7 +39,7 @@ public class DefendantMatchingHandler {
     @Handles("progression.command.process-matched-defendants")
     public void storeMatchedDefendants(final Envelope<ProcessMatchedDefendants> envelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.process-matched-defendants: {}", "prosecutionCaseId: " + envelope.payload().getProsecutionCaseId());
+            LOGGER.debug("progression.command.process-matched-defendants: {}", envelope.payload());
         }
         final ProcessMatchedDefendants processMatchedDefendants = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(processMatchedDefendants.getProsecutionCaseId());
@@ -51,7 +51,7 @@ public class DefendantMatchingHandler {
     @Handles("progression.command.update-matched-defendant")
     public void updateMatchedDefendant(final Envelope<UpdateMatchedDefendant> envelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.update-matched-defendant: {}", "prosecutionCaseID: " + envelope.payload().getProsecutionCaseId() + " , " + "defendantId: " + envelope.payload().getDefendantId());
+            LOGGER.debug("progression.command.update-matched-defendant: {}", envelope.payload());
         }
         final UpdateMatchedDefendant updateMatchedDefendant = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateMatchedDefendant.getProsecutionCaseId());
@@ -63,7 +63,7 @@ public class DefendantMatchingHandler {
     @Handles("progression.command.match-defendant")
     public void handle(final Envelope<MatchDefendant> envelope) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("progression.command.match-defendant payload: {}", "prosecutionCaseId: " + envelope.payload().getProsecutionCaseId() + " , " + "defendantId: " + envelope.payload().getDefendantId());
+            LOGGER.debug("progression.command.match-defendant payload: {}", envelope.payload());
         }
         final MatchDefendant matchDefendant = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(matchDefendant.getProsecutionCaseId());

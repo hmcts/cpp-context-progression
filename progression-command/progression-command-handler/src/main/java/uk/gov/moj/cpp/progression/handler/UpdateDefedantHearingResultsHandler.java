@@ -35,7 +35,7 @@ public class UpdateDefedantHearingResultsHandler {
 
     @Handles("progression.command.update-defendant-hearing-result")
     public void handle(final Envelope<UpdateDefendantHearingResult> updateDefendantHearingResultEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-defendant-hearing-results : {}", "hearingId: " + updateDefendantHearingResultEnvelope.payload().getHearingId());
+        LOGGER.debug("progression.command.update-defendant-hearing-results : {}", updateDefendantHearingResultEnvelope.payload());
 
         final UpdateDefendantHearingResult updateDefendantHearingResult = updateDefendantHearingResultEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateDefendantHearingResult.getHearingId());

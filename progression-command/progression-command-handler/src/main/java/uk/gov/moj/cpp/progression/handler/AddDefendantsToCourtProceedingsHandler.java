@@ -38,7 +38,7 @@ public class AddDefendantsToCourtProceedingsHandler {
 
     @Handles("progression.command.add-defendants-to-court-proceedings")
     public void handle(final Envelope<AddDefendantsToCourtProceedings> addDefendantEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.add-defendants-to-court-proceedings defendants: {}", addDefendantEnvelope.payload().getDefendants());
+        LOGGER.debug("progression.command.add-defendants-to-court-proceedings {}", addDefendantEnvelope.payload());
 
         final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = addDefendantEnvelope.payload();
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()

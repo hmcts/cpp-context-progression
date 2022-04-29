@@ -32,7 +32,7 @@ public class CreateDefendantRequestHandler {
 
     @Handles("progression.command.create-defendant-request")
     public void handle(final Envelope<CreateDefendantRequest> createDefendantRequestEnvelope) {
-        LOGGER.debug("progression.command.create-defendant-request {}", "defendantId: " + createDefendantRequestEnvelope.payload().getDefendantRequest().getDefendantId());
+        LOGGER.debug("progression.command.create-defendant-request {}", createDefendantRequestEnvelope);
     }
 
 

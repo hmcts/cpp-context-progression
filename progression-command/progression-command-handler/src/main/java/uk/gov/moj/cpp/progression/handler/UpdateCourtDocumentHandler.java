@@ -70,7 +70,7 @@ public class UpdateCourtDocumentHandler {
 
     @Handles("progression.command.update-court-document")
     public void handleUpdateCourtDocument(final Envelope<UpdateCourtDocument> updateCourtDocumentEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-court-document {}", "prosecutionCaseId: " + updateCourtDocumentEnvelope.payload().getProsecutionCaseId() + " , " + "documentId: " + updateCourtDocumentEnvelope.payload().getCourtDocumentId());
+        LOGGER.debug("progression.command.update-court-document {}", updateCourtDocumentEnvelope);
         final UpdateCourtDocument updateCourtDocument = updateCourtDocumentEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateCourtDocument.getCourtDocumentId());
 
@@ -110,7 +110,7 @@ public class UpdateCourtDocumentHandler {
 
     @Handles("progression.command.update-court-document-print-time")
     public void handleUpdateCourtDocumentPrintTime(final Envelope<UpdateCourtDocumentPrintTime> updateCourtDocumentPrintTimeEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-court-document-print-time {}", "documentId: " + updateCourtDocumentPrintTimeEnvelope.payload().getCourtDocumentId());
+        LOGGER.debug("progression.command.update-court-document-print-time {}", updateCourtDocumentPrintTimeEnvelope);
         final UpdateCourtDocumentPrintTime payload = updateCourtDocumentPrintTimeEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(payload.getCourtDocumentId());
         final CourtDocumentAggregate courtDocumentAggregate = aggregateService.get(eventStream, CourtDocumentAggregate.class);
