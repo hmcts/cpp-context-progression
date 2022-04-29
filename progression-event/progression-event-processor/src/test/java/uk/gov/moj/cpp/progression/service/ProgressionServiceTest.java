@@ -1613,6 +1613,38 @@ public class ProgressionServiceTest {
 
     }
 
+
+    @Test
+    public void shouldDeleteJudicialResultsFromApplicationWhenNewHearingForListingWithoutCourtOrderOffencesAndCourtApplicationCases(){
+
+        final JsonEnvelope jsonEnvelope = getEnvelope("progression.event.next-hearings-requested");;
+        final List<HearingListingNeeds> hearings = singletonList(HearingListingNeeds.hearingListingNeeds()
+                .withListedStartDateTime(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z"))
+                .withId(randomUUID())
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withJudicialResults(singletonList(JudicialResult.judicialResult().build()))
+                        .withId(randomUUID())
+                        .withCourtOrder(CourtOrder.courtOrder()
+                                .build())
+                        .build()))
+                .build());
+
+        progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, hearings, null);
+
+        verify(sender).send(envelopeArgumentCaptor.capture());
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
+                metadata().withName(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK),
+                payloadIsJson(
+                        allOf(
+                                withoutJsonPath("$.hearing.courtApplications[0].judicialResults"),
+                                withoutJsonPath("$.hearing.courtApplications[0].courtOrder.courtOrderOffences[0].offence.judicialResults")
+                        )
+                )
+                )
+        );
+
+    }
+
     @Test(expected = CourtApplicationAndCaseNotFoundException.class)
     public void transformProsecutionCaseShouldThrowExceptionIfProsecutionCaseDoesNotExist() {
 
