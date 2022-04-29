@@ -118,6 +118,7 @@ public class DefenceFlowIT extends AbstractIT {
         multipleMessageConsumerClientPublicForCaseDefendantChanged.close();
     }
 
+    @Ignore("DD-20985")
     @Test
     public void shouldSuccessfullyDisassociateDefenceOrganisationFromDefenceWhenReceiveRepresentationOrderFirst() throws Exception {
         //Create case
@@ -145,6 +146,7 @@ public class DefenceFlowIT extends AbstractIT {
 
     }
 
+    @Ignore("DD-20985")
     @Test
     public void shouldSuccessfullyReceiveRepresentationOrderWheDefenceOrganisationAssociationFromDefencePerformedFirst() throws Exception {
         //Create case

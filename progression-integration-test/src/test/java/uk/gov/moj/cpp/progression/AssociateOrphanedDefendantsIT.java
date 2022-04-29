@@ -37,6 +37,7 @@ import javax.ws.rs.core.Response;
 import org.apache.http.HttpStatus;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class AssociateOrphanedDefendantsIT extends AbstractIT {
@@ -89,6 +90,7 @@ public class AssociateOrphanedDefendantsIT extends AbstractIT {
         messageConsumerClientPublicForDefendantLegalAidStatusUpdated.close();
     }
 
+    @Ignore("DD-20985")
     @Test
     public void testReceiveRepresentationWithAssociationOfDefenceOrganisationAndDisassociationOfExistingOne () throws Exception {
         //Create prosecution case
