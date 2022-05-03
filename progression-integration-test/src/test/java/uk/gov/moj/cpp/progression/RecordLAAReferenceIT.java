@@ -8,6 +8,9 @@ import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.collection.IsMapContaining.hasKey;
+import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
@@ -16,6 +19,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.receiv
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.recordLAAReference;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.recordLAAReferenceWithUserId;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
@@ -45,8 +49,11 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
+import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -137,7 +144,6 @@ public class RecordLAAReferenceIT extends AbstractIT {
         getHearingForDefendant(hearingId, getHearingMatchers());
     }
 
-    @Ignore("DD-20985")
     @Test
     public void recordLAAReferenceWithStatusAsWithDrawn() throws Exception {
         userId = randomUUID().toString();

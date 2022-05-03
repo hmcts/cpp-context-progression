@@ -82,7 +82,6 @@ import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,7 +153,6 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         messageConsumerClientPublicForDefenceOrganisationAssociation.close();
     }
 
-    @Ignore("DD-20985")
     @Test
     public void testReceiveRepresentationWithAssociationOfDefenceOrganisationAndDisassociationOfExistingOne() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
@@ -211,7 +209,6 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                 .getString("legalAidStatus"), equalTo("Granted"));
     }
 
-    @Ignore("DD-20985")
     @Test
     public void testReceiveRepresentationWithAssociationOfDefenceOrganisationNotRegister() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", defendantId);
@@ -269,7 +266,6 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
 
     }
 
-    @Ignore("DD-20985")
     @Test
     public void testReceiveRepresentationWithAssociationOfDefenceOrganisationAndNoAssociationAlreadyExist() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", defendantId);
@@ -344,7 +340,6 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                 .getString("legalAidStatus"), equalTo("Granted"));
     }
 
-    @Ignore("DD-20985")
     @Test
     public void testReceiveRepresentationWithAssociationOfNoRegisterDefenceOrganisationAndAssociationAlreadyExist() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
@@ -402,7 +397,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                 .getString("legalAidStatus"), equalTo("Granted"));
     }
 
-    @Ignore("DD-20985")
+
     @Test
     public void testReceiveRepresentationWithAssociationOfDefenceOrganisation_SendCPSNotification() throws Exception {
         final String courtCentreId = UUID.randomUUID().toString();
@@ -493,7 +488,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         verifyEmailNotificationIsRaisedWithoutAttachment(Arrays.asList("SE14 2AB", "Legal House", "15 Sewell Street", "Hammersmith", "joe@example.com"));
     }
 
-    @Ignore("DD-20985")
+
     @Test
     public void testReceiveRepresentationWithAssociationOfDefenceOrganisation_DoNotSendCPSNotification_WhenOrganisationWithLAADoNotExists() throws Exception {
         final String courtCentreId = UUID.randomUUID().toString();
@@ -566,7 +561,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         verifyNoEmailNotificationIsRaised(Arrays.asList("SE14 2AB", "Legal House", "15 Sewell Street", "Hammersmith", "joe@example.com"));
     }
 
-    @Ignore("DD-20985")
+
     @Test
     public void testReceiveRepresentationWithAssociationOfDefenceOrganisation_DoNotSendCPSNotification_WhenProsecutorIsNotCps() throws Exception {
         final String courtCentreId = UUID.randomUUID().toString();
