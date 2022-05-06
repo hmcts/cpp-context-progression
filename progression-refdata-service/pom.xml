@@ -87,7 +87,6 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.system.documentgenerator</groupId>
             <artifactId>system-documentgenerator-client</artifactId>
-            <version>${system.documentgenerator.client.version}</version>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
