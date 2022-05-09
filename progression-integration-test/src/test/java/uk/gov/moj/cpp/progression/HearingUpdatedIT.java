@@ -45,6 +45,7 @@ import java.nio.charset.Charset;
 import java.util.UUID;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Ignore;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -220,6 +221,7 @@ public class HearingUpdatedIT extends AbstractIT {
         verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(hearingId);
     }
 
+    @Ignore("Flaky Test")
     @Test
     public void shouldHearingWithApplicationWhenLinkedApplicationToHearing() throws Exception {
         String prosecutionAuthorityReference;

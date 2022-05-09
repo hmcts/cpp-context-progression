@@ -17,8 +17,12 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupDefenceClientPermission;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupOrganisation;
 
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+
 import java.util.UUID;
 
+import javax.json.Json;
+import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import org.junit.Before;
@@ -26,12 +30,14 @@ import org.junit.Test;
 
 public class ReadCourtDocumentIT extends AbstractIT {
 
-    private final String mimeType = "application/pdf";
-    private final String MaterialContent = "Material content for uploaded material";
+    private final String mimeType = "text/uri-list";
+    private final String documentUrl = "http://documentlocation.com/myfile.pdf";
+    private final JsonObject expectedResponse = Json.createObjectBuilder().add("url", documentUrl).build();
     private String caseId;
     private UUID materialId;
     private String defendantId;
     private static final String QUERY_USERGROUPS_BY_MATERIAL_ID_JSON = "application/vnd.progression.query.usergroups-by-material-id+json";
+    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
 
     @Before
@@ -40,7 +46,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         materialId = randomUUID();
         defendantId = randomUUID().toString();
         setupMaterialStub(materialId.toString());
-        stubMaterialContent(materialId, MaterialContent.getBytes(), mimeType);
+        stubMaterialContent(materialId, documentUrl, mimeType);
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
     }
 
@@ -59,7 +65,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         );
 
         final Response documentContentResponse = getMaterialContent(materialId, randomUUID());
-        assertThat(documentContentResponse.readEntity(String.class), equalTo(MaterialContent));
+        assertThat(stringToJsonObjectConverter.convert(documentContentResponse.readEntity(String.class)), equalTo(expectedResponse));
     }
 
     @Test
@@ -92,7 +98,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
 
 
         final Response documentContentResponse = getMaterialContent(materialId, userId,fromString(defendantId));
-        assertThat(documentContentResponse.readEntity(String.class), equalTo(MaterialContent));
+        assertThat(stringToJsonObjectConverter.convert(documentContentResponse.readEntity(String.class)), equalTo(expectedResponse));
     }
 
 

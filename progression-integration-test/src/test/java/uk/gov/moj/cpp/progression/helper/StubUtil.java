@@ -56,7 +56,7 @@ public class StubUtil {
                         .withBody(getPayload("stub-data/material.query.material-metadata.json").replace("MATERIAL_ID", materialId))));
     }
 
-    public static void stubMaterialContent(final UUID materialId, final byte[] materialContent, final String mimeType) {
+    public static void stubMaterialContent(final UUID materialId, final String materialContent, final String mimeType) {
         InternalEndpointMockUtils.stubPingFor("material-service");
 
         stubFor(get(urlPathEqualTo(MATERIAL_QUERY_URL + "/material/" + materialId))

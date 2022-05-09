@@ -488,7 +488,7 @@ public class CaseAggregate implements Aggregate {
 
 
         final List<uk.gov.justice.core.courts.Defendant> defendantList = new ArrayList<>();
-        for (uk.gov.justice.core.courts.Defendant defendant : prosecutionCase.getDefendants()) {
+        for (final uk.gov.justice.core.courts.Defendant defendant : prosecutionCase.getDefendants()) {
             if (defendant.getId().equals(prosecutionCaseOffencesUpdated.getDefendantCaseOffences().getDefendantId())) {
 
                 final Set<uk.gov.justice.core.courts.Offence> offenceSet = new TreeSet<>((o1,o2)-> o1.getId().compareTo(o2.getId()));
@@ -1306,7 +1306,6 @@ public class CaseAggregate implements Aggregate {
                         .withAquittalDate(null)
                         .withCustodyTimeLimit(null)
                         .withDateOfInformation(null)
-                        .withDvlaOffenceCode(null)
                         .withEndorsableFlag(null)
                         .withIndicatedPlea(null)
                         .withIntroducedAfterInitialProceedings(null)
@@ -2505,7 +2504,7 @@ public class CaseAggregate implements Aggregate {
                 .flatMap(Collection::stream)
                 .collect(toList());
 
-        if (petDefendants.stream().flatMap(s -> s.getOffenceIds().stream()).anyMatch(s -> offenceIds.contains(s))) {
+        if (petDefendants.stream().flatMap(s -> s.getOffenceIds().stream()).anyMatch(offenceIds::contains)) {
             apply(Stream.of(PetOperationFailed.petOperationFailed()
                     .withCaseId(caseId)
                     .withPetId(petId)

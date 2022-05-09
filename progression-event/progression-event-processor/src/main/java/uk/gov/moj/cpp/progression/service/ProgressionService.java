@@ -224,7 +224,7 @@ public class ProgressionService {
                         .withCourtOrder(ofNullable(courtApplication.getCourtOrder())
                                 .map(courtOrder -> CourtOrder.courtOrder()
                                         .withValuesFrom(courtOrder)
-                                        .withCourtOrderOffences(courtOrder.getCourtOrderOffences().stream()
+                                        .withCourtOrderOffences(ofNullable(courtOrder.getCourtOrderOffences()).map(Collection ::stream).orElseGet(Stream::empty)
                                                 .map(courtOrderOffence -> CourtOrderOffence.courtOrderOffence().withValuesFrom(courtOrderOffence)
                                                         .withOffence(Offence.offence().withValuesFrom(courtOrderOffence.getOffence())
                                                                 .withJudicialResults(null)
@@ -274,7 +274,7 @@ public class ProgressionService {
 
         final List<Defendant> defendantsList = new ArrayList<>();
 
-        confirmedProsecutionCase.getDefendants().stream().forEach(confirmedDefendantConsumer -> {
+        confirmedProsecutionCase.getDefendants().forEach(confirmedDefendantConsumer -> {
 
             final Defendant matchedDefendant = prosecutionCase.getDefendants().stream()
                     .filter(pc -> pc.getId().equals(confirmedDefendantConsumer.getId()))
@@ -654,6 +654,27 @@ public class ProgressionService {
 
         }
         return result;
+    }
+
+    public JsonObject getProsecutionCaseById(final JsonEnvelope envelope, final String caseId) {
+        final JsonObject requestParameter = createObjectBuilder()
+                .add(CASE_ID, caseId)
+                .build();
+
+        LOGGER.info("caseId {} ,   get prosecution case detail request {}", caseId, requestParameter);
+
+        final JsonEnvelope prosecutionCase = requester.requestAsAdmin(enveloper
+                .withMetadataFrom(envelope, PROGRESSION_QUERY_PROSECUTION_CASES)
+                .apply(requestParameter));
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("caseId {} prosecution case detail payload {}", caseId, prosecutionCase.toObfuscatedDebugString());
+        }
+
+        if (isNull(prosecutionCase) || isNull(prosecutionCase.payloadAsJsonObject()) || isNull(prosecutionCase.payloadAsJsonObject().get("prosecutionCase"))) {
+            throw new CourtApplicationAndCaseNotFoundException(String.format("Prosecution case detail not found for case id : %s", caseId));
+        }
+        return prosecutionCase.payloadAsJsonObject();
     }
 
     public Optional<JsonObject> searchLinkedCases(final JsonEnvelope envelope, final String caseId) {
@@ -1109,10 +1130,10 @@ public class ProgressionService {
                                                           final SeedingHearing seedingHearing) {
         if (isNotEmpty(confirmedProsecutionCases)) {
             final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
-            confirmedProsecutionCases.stream().forEach(pc -> {
-                final Optional<JsonObject> prosecutionCaseJson = getProsecutionCaseDetailById(jsonEnvelope, pc.getId().toString());
-                if (prosecutionCaseJson.isPresent()) {
-                    final ProsecutionCase prosecutionCaseEntity = jsonObjectConverter.convert(prosecutionCaseJson.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
+            confirmedProsecutionCases.forEach(pc -> {
+                final JsonObject prosecutionCaseJson = getProsecutionCaseById(jsonEnvelope, pc.getId().toString());
+                if (nonNull(prosecutionCaseJson)) {
+                    final ProsecutionCase prosecutionCaseEntity = jsonObjectConverter.convert(prosecutionCaseJson.getJsonObject("prosecutionCase"), ProsecutionCase.class);
                     final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                             .withValuesFrom(prosecutionCaseEntity)
                             .withDefendants(filterDefendantsAndUpdateOffences(pc, prosecutionCaseEntity, earliestHearingDate, seedingHearing))
