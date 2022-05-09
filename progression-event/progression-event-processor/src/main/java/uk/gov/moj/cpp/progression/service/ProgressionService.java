@@ -379,6 +379,19 @@ public class ProgressionService {
                 updateCommandBuilder.build()));
     }
 
+    public void sendListingCommandToDeleteHearing(final JsonEnvelope jsonEnvelope,final UUID hearingId) {
+        final JsonObject deleteHearingPayload = createObjectBuilder()
+                .add("hearingId", hearingId.toString())
+                .build();
+
+        sender.sendAsAdmin(
+                Envelope.envelopeFrom(
+                        metadataFrom(jsonEnvelope.metadata()).withName("listing.command.delete-hearing"),
+                        deleteHearingPayload
+                )
+        );
+    }
+
     private static Defendant populateDefendant(final Defendant matchedDefendant, final List<Offence>
             matchedDefendantOffence, final LocalDate earliestHearingDate) {
         final Defendant.Builder builder = Defendant.defendant()
