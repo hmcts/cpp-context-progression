@@ -1101,8 +1101,8 @@ public class CaseAggregateTest {
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getEffectiveStartDate(), is(laaReference.getEffectiveStartDate()));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getEffectiveEndDate(), is(laaReference.getEffectiveEndDate()));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusDescription(), is(laaReference.getStatusDescription()));
-        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getLegalAidStatus(),
-                is(LegalAidStatusEnum.GRANTED.getDescription()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getLegalAidStatus(), is(LegalAidStatusEnum.GRANTED.getDescription()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getDvlaOffenceCode(), is("BA76004"));
 
         final Object object2 = eventStream.get(1);
         assertThat(object2.getClass(), is(equalTo(OffencesForDefendantChanged.class)));
@@ -1115,7 +1115,7 @@ public class CaseAggregateTest {
         assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getEffectiveStartDate(), is(laaReference.getEffectiveEndDate()));
         assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getEffectiveEndDate(), is(laaReference.getEffectiveEndDate()));
         assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getStatusDescription(), is(laaReference.getStatusDescription()));
-
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getDvlaOffenceCode(), is("BA76004"));
     }
 
     @Test
@@ -1145,6 +1145,7 @@ public class CaseAggregateTest {
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusDescription(), is(laaReference.getStatusDescription()));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getLegalAidStatus(),
                 is(LegalAidStatusEnum.REFUSED.getDescription()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getDvlaOffenceCode(), is("BA76004"));
 
         final Object object2 = eventStream.get(1);
         assertThat(object2.getClass(), is(equalTo(OffencesForDefendantChanged.class)));
@@ -1157,7 +1158,7 @@ public class CaseAggregateTest {
         assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getEffectiveStartDate(), is(laaReference.getEffectiveEndDate()));
         assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getEffectiveEndDate(), is(laaReference.getEffectiveEndDate()));
         assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getStatusDescription(), is(laaReference.getStatusDescription()));
-
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getDvlaOffenceCode(), is("BA76004"));
     }
 
     @Test
@@ -1187,6 +1188,7 @@ public class CaseAggregateTest {
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference().getStatusDescription(), is(laaReference.getStatusDescription()));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getLegalAidStatus(),
                 is(WITHDRAWN.getDescription()));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getDvlaOffenceCode(), is("BA76004"));
 
         final Object object2 = eventStream.get(1);
         assertThat(object2.getClass(), is(equalTo(OffencesForDefendantChanged.class)));
@@ -1199,7 +1201,7 @@ public class CaseAggregateTest {
         assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getEffectiveStartDate(), is(laaReference.getEffectiveEndDate()));
         assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getEffectiveEndDate(), is(laaReference.getEffectiveEndDate()));
         assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getLaaApplnReference().getStatusDescription(), is(laaReference.getStatusDescription()));
-
+        assertThat(((OffencesForDefendantChanged) object2).getUpdatedOffences().get(0).getOffences().get(0).getDvlaOffenceCode(), is("BA76004"));
     }
 
     @Test
@@ -2317,6 +2319,7 @@ public class CaseAggregateTest {
                 .withId(offenceId)
                 .withOffenceDefinitionId(UUID.randomUUID())
                 .withOffenceCode("TFL123")
+                .withDvlaOffenceCode("BA76004")
                 .withOffenceTitle("TFL Ticket Dodger")
                 .withWording("TFL ticket dodged")
                 .withStartDate(LocalDate.of(2019, 05, 01))

@@ -1306,7 +1306,6 @@ public class CaseAggregate implements Aggregate {
                         .withAquittalDate(null)
                         .withCustodyTimeLimit(null)
                         .withDateOfInformation(null)
-                        .withDvlaOffenceCode(null)
                         .withEndorsableFlag(null)
                         .withIndicatedPlea(null)
                         .withIntroducedAfterInitialProceedings(null)
