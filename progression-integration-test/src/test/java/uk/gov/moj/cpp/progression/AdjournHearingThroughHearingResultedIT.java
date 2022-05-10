@@ -351,6 +351,7 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
     }
 
 
+    @Ignore("Flaky Test")
     @Test
     public void shouldAdjournApplicationToNewHearingInMagistrate() throws Exception {
         enableAmendReshareFeature(false);
@@ -478,6 +479,7 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
     }
 
 
+    @Ignore("Flaky Test")
     @Test
     public void shouldKeepLastAdjournValuesWhenCourtApplicationHasCaseAdjourned() throws IOException {
         enableAmendReshareFeature(false);

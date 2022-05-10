@@ -10,6 +10,8 @@ import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.f
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
+
+import org.junit.Ignore;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.unifiedsearch.test.util.constant.ApplicationExternalCreatorType;
@@ -44,6 +46,7 @@ public class ApplicationReferredToBoxworkIngesterIT extends AbstractIT {
         cleanViewStoreTables();
     }
 
+    @Ignore("Flaky Test")
     @Test
     public void shouldIngestApplicationReferredToBoxworkEvent() throws IOException, InterruptedException {
 
