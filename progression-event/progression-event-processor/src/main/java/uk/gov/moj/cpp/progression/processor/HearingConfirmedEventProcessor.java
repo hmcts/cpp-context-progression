@@ -328,6 +328,10 @@ public class HearingConfirmedEventProcessor {
 
         LOGGER.info("hearing-confirmed event populate hearing to probation caseworker for hearingId '{}' ", confirmedHearing.getId());
         progressionService.populateHearingToProbationCaseworker(jsonEnvelope, confirmedHearing.getId());
+        final Boolean fullExtension = confirmedHearing.getFullExtension();
+        if(nonNull(fullExtension) && fullExtension.booleanValue()) {
+            progressionService.sendListingCommandToDeleteHearing(jsonEnvelope, confirmedHearing.getId());
+        }
     }
 
     @Handles("progression.event.defendant-request-from-current-hearing-to-extend-hearing-created")

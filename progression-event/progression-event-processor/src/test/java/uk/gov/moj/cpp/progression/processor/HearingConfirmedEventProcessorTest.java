@@ -464,6 +464,68 @@ public class HearingConfirmedEventProcessorTest {
     }
 
     @Test
+    public void shouldProcessHearingConfirmedForFullyExtendHearing() {
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID caseId = randomUUID();
+
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final UUID hearingId = randomUUID();
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(hearingId)
+                .withProsecutionCases(singletonList(confirmedProsecutionCase))
+                .withExistingHearingId(randomUUID())
+                .withFullExtension(Boolean.TRUE)
+                .build();
+
+        final Hearing hearing = Hearing.hearing()
+                .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase().withId(randomUUID()).build())).build();
+
+        hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
+                .withId(randomUUID())
+                .build();
+
+        when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingConfirmed).thenReturn(hearing);
+        when(progressionService.getHearing(any(), any())).thenReturn(Optional.of(Json.
+                createObjectBuilder().add("hearing", Json.createObjectBuilder().build())
+                .add("hearingListingStatus", "HEARING_INITIALISED")
+                .build()));
+        when(progressionService.transformConfirmedHearing(any(), any())).thenReturn(
+                Hearing.hearing()
+                        .withId(UUID.randomUUID())
+                        .withHearingDays(Arrays.asList(HearingDay.hearingDay().build()))
+                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                                .withDefendants(Arrays.asList(Defendant.defendant()
+                                        .withId(UUID.randomUUID())
+                                        .withOffences(Arrays.asList(Offence.offence()
+                                                .withId(UUID.randomUUID())
+                                                .build()))
+                                        .build()))
+                                .build()))
+                        .build());
+        when(enveloper.withMetadataFrom(envelope, "progression.command.extend-hearing")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command.prepare-summons-data-for-extended-hearing")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command.extend-hearing-defendant-request-update-requested")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "listing.command.delete-hearing")).thenReturn(enveloperFunction);
+
+        when(progressionService.transformHearingToHearingListingNeeds(any(Hearing.class), any(UUID.class))).thenReturn(hearingListingNeeds);
+        when(partialHearingConfirmService.getDifferences(any(), any())).thenReturn(new ArrayList<>());
+        when(progressionService.transformToHearingFrom(any(), any())).thenReturn(Hearing.hearing().build());
+        doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+
+        eventProcessor.processEvent(envelope);
+
+        verify(sender, times(2)).send(any(JsonEnvelope.class));
+        verify(objectToJsonObjectConverter, times(2)).convert(any());
+        verify(progressionService).transformHearingToHearingListingNeeds(any(), any());
+        verify(progressionService).transformToHearingFrom(any(), any());
+        verify(progressionService).populateHearingToProbationCaseworker(eq(envelope), eq(hearingId));
+        verify(progressionService).sendListingCommandToDeleteHearing(eq(envelope), eq(hearingId));
+    }
+
+    @Test
     public void shouldProcessExtendHearingDefendantRequestCreated() {
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();
