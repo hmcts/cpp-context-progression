@@ -70,6 +70,7 @@ import uk.gov.justice.core.courts.FormFinalised;
 import uk.gov.justice.core.courts.FormOperationFailed;
 import uk.gov.justice.core.courts.FormType;
 import uk.gov.justice.core.courts.FormUpdated;
+import uk.gov.justice.core.courts.ExactMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.HearingConfirmedCaseStatusUpdated;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingType;
@@ -117,6 +118,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.domain.MatchDefendant;
+import uk.gov.moj.cpp.progression.domain.MatchedDefendant;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.Form;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.FormLockStatus;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
@@ -138,6 +141,7 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.Offence;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Person;
 import uk.gov.moj.cpp.progression.domain.helper.JsonHelper;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated;
+import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdated;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -3236,7 +3240,61 @@ public class CaseAggregateTest {
 
     }
 
+    @Test
+    public void shouldSkipMatchedDefendentWithoutCourtProceedingsInitiatedPartiallyMatch() {
+        MatchDefendant matchDefendant = MatchDefendant.matchDefendant()
+                .withDefendantId(randomUUID())
+                .withProsecutionCaseId(randomUUID())
+                .withMatchedDefendants(asList(
+                        MatchedDefendant.matchedDefendant()
+                                .withDefendantId(randomUUID())
+                                .withProsecutionCaseId(randomUUID())
+                                .withMasterDefendantId(randomUUID())
+                                .build(),
+                        MatchedDefendant.matchedDefendant()
+                                .withCourtProceedingsInitiated(ZonedDateTime.now())
+                                .withDefendantId(randomUUID())
+                                .withProsecutionCaseId(randomUUID())
+                                .withMasterDefendantId(randomUUID())
+                                .build()))
+                .build();
+        CaseAggregate caseAggregate = new CaseAggregate();
+        Stream<Object> objectStream = caseAggregate.matchPartiallyMatchedDefendants(matchDefendant);
+        Optional<Object> obj = objectStream.filter(s->s instanceof MasterDefendantIdUpdated ).findFirst();
+        assertThat(obj.isPresent(),is(true));
+        assertThat(obj.map(s-> (MasterDefendantIdUpdated) s).get().getMatchedDefendants().size(),is(1));
 
+    }
+
+    @Test
+    public void shouldSkipMatchedDefendentWithoutCourtProceedingsInitiatedFullMatch() {
+
+        ExactMatchedDefendantSearchResultStored exactMatchedDefendantSearchResultStored=ExactMatchedDefendantSearchResultStored.exactMatchedDefendantSearchResultStored()
+                .withDefendantId(randomUUID())
+                .withCases(asList(Cases.cases()
+                        .withCaseReference("REF")
+                        .withProsecutionCaseId(randomUUID().toString())
+                        .withDefendants(asList(Defendants.defendants()
+                                .withDefendantId(randomUUID().toString())
+                                .withMasterDefendantId(randomUUID().toString())
+                                .build(),Defendants.defendants()
+                                .withCourtProceedingsInitiated(ZonedDateTime.now())
+                                .withDefendantId(randomUUID().toString())
+                                .withMasterDefendantId(randomUUID().toString())
+                                .build()))
+                        .build()))
+                .build();
+        caseAggregate.apply(exactMatchedDefendantSearchResultStored);
+
+
+
+        Stream<Object> objectStream = caseAggregate.storeMatchedDefendants(randomUUID());
+        Optional<Object> obj = objectStream.filter(s->s instanceof MasterDefendantIdUpdated ).findFirst();
+        assertThat(obj.isPresent(),is(true));
+        assertThat(obj.map(s-> (MasterDefendantIdUpdated) s).get().getMatchedDefendants().size(),is(1));
+
+
+    }
     private DefendantsAddedToCourtProceedings buildDefendantsAddedToCourtProceedings(
             final UUID caseId, final UUID defendantId, final UUID defendantId2, final UUID offenceId) {
 

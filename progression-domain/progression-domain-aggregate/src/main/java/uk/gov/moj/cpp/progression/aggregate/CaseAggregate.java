@@ -2058,7 +2058,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     private List<MatchedDefendants> transform(final List<MatchedDefendant> matchedDefendants) {
-        return matchedDefendants.stream()
+        return matchedDefendants.stream().filter(s->s.getCourtProceedingsInitiated()!=null)
                 .map(matchedDefendant -> MatchedDefendants.matchedDefendants()
                         .withDefendantId(matchedDefendant.getDefendantId())
                         .withProsecutionCaseId(matchedDefendant.getProsecutionCaseId())
@@ -2071,7 +2071,7 @@ public class CaseAggregate implements Aggregate {
     private List<MatchedDefendants> transformToExactMatchedDefendants(final List<Cases> casesList) {
         final List<MatchedDefendants> matchedDefendantsList = new ArrayList<>();
         casesList
-                .forEach(cases -> cases.getDefendants()
+                .forEach(cases -> cases.getDefendants().stream().filter(s->s.getCourtProceedingsInitiated()!=null)
                         .forEach(def -> matchedDefendantsList.add(MatchedDefendants.matchedDefendants()
                                 .withProsecutionCaseId(UUID.fromString(cases.getProsecutionCaseId()))
                                 .withDefendantId(UUID.fromString(def.getDefendantId()))
