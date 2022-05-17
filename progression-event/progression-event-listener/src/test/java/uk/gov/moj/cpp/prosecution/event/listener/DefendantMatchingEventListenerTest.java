@@ -456,6 +456,71 @@ public class DefendantMatchingEventListenerTest {
         assertThat(matchDefendantCaseHearingEntities.get(1).getMasterDefendantId(), is(matchedMasterDefendantId_2));
     }
 
+    @Test
+    public void shouldUpdateIncomingDefendantWithMasterDefendantIdWhenThereIsOneMasterDefendantWithNoCourtProceedingsInitiatedDateOnOneMatchedDefendant() {
+        final UUID incomingDefendantId = UUID.randomUUID();
+        final UUID incomingProsecutionCaseId = UUID.randomUUID();
+        final UUID matchedDefendantId_1 = UUID.randomUUID();
+        final UUID matchedProsecutionCaseId_1 = UUID.randomUUID();
+        final UUID matchedMasterDefendantId_1 = UUID.randomUUID();
+        final UUID matchedDefendantId_2 = UUID.randomUUID();
+        final UUID matchedProsecutionCaseId_2 = UUID.randomUUID();
+        final ZonedDateTime courtProceedingsInitiatedDate_2 = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z");
+
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(incomingProsecutionCaseId);
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(incomingProsecutionCaseId)
+                .withDefendants(createDefendants(incomingDefendantId))
+                .build();
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+
+        final ProsecutionCaseEntity prosecutionCaseEntityForMatchedDefendant1 = new ProsecutionCaseEntity();
+        prosecutionCaseEntityForMatchedDefendant1.setCaseId(matchedProsecutionCaseId_1);
+        final ProsecutionCase prosecutionCaseForMatchedDefendant1 = ProsecutionCase.prosecutionCase()
+                .withId(matchedProsecutionCaseId_1)
+                .withDefendants(createDefendants(matchedDefendantId_1))
+                .build();
+        prosecutionCaseEntityForMatchedDefendant1.setPayload(objectToJsonObjectConverter.convert(prosecutionCaseForMatchedDefendant1).toString());
+
+        final ProsecutionCaseEntity prosecutionCaseEntityForMatchedDefendant2 = new ProsecutionCaseEntity();
+        prosecutionCaseEntityForMatchedDefendant2.setCaseId(matchedProsecutionCaseId_2);
+        final ProsecutionCase prosecutionCaseForMatchedDefendant2 = ProsecutionCase.prosecutionCase()
+                .withId(matchedProsecutionCaseId_2)
+                .withDefendants(createDefendants(matchedDefendantId_2))
+                .build();
+        prosecutionCaseEntityForMatchedDefendant2.setPayload(objectToJsonObjectConverter.convert(prosecutionCaseForMatchedDefendant2).toString());
+
+        when(prosecutionCaseRepository.findOptionalByCaseId(incomingProsecutionCaseId)).thenReturn(prosecutionCaseEntity);
+        when(prosecutionCaseRepository.findOptionalByCaseId(matchedProsecutionCaseId_1)).thenReturn(prosecutionCaseEntityForMatchedDefendant1);
+        when(prosecutionCaseRepository.findOptionalByCaseId(matchedProsecutionCaseId_2)).thenReturn(prosecutionCaseEntityForMatchedDefendant2);
+        final MasterDefendantIdUpdated event = MasterDefendantIdUpdated.masterDefendantIdUpdated()
+                .withDefendantId(incomingDefendantId)
+                .withProsecutionCaseId(incomingProsecutionCaseId)
+                .withMatchedDefendants(Arrays.asList(
+                        MatchedDefendants.matchedDefendants()
+                                .withDefendantId(matchedDefendantId_1)
+                                .withProsecutionCaseId(matchedProsecutionCaseId_1)
+                                .withMasterDefendantId(matchedMasterDefendantId_1)
+                                .build(),
+                        MatchedDefendants.matchedDefendants()
+                                .withDefendantId(matchedDefendantId_2)
+                                .withProsecutionCaseId(matchedProsecutionCaseId_2)
+                                .withMasterDefendantId(matchedDefendantId_2)
+                                .withCourtProceedingsInitiated(courtProceedingsInitiatedDate_2)
+                                .build()))
+                .build();
+
+        listener.updateMasterDefendantId(envelopeFrom(metadataWithRandomUUID("progression.event.master-defendant-id-updated"),
+                objectToJsonObjectConverter.convert(event)));
+
+        final ArgumentCaptor<ProsecutionCaseEntity> prosecutionCaseEntityArgumentCaptor = ArgumentCaptor.forClass(ProsecutionCaseEntity.class);
+        verify(this.prosecutionCaseRepository, times(3)).save(prosecutionCaseEntityArgumentCaptor.capture());
+
+        final ArgumentCaptor<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityArgumentCaptor = ArgumentCaptor.forClass(MatchDefendantCaseHearingEntity.class);
+        verify(this.matchDefendantCaseHearingRepository, times(3)).save(matchDefendantCaseHearingEntityArgumentCaptor.capture());
+    }
+
 
     private List<Defendant> createDefendants(final UUID matchedDefendantId) {
         final List<Defendant> defendants = new ArrayList<>();
