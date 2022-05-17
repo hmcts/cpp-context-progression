@@ -198,6 +198,7 @@ public class CaseAggregateTest {
                             .build())
                     .build())
             .withCourtProceedingsInitiated(ZonedDateTime.now())
+            .withOffences(singletonList(uk.gov.justice.core.courts.Offence.offence().build()))
             .build();
 
     private static final uk.gov.justice.core.courts.Defendant legalEntityDefendant = uk.gov.justice.core.courts.Defendant.defendant()

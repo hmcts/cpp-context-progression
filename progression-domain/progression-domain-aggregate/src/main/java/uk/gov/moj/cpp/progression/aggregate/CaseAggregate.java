@@ -340,7 +340,7 @@ public class CaseAggregate implements Aggregate {
                                     }
                                     if (nonNull(e.getProsecutionCase()) && !e.getProsecutionCase().getDefendants().isEmpty()) {
                                         e.getProsecutionCase().getDefendants().forEach(defendant -> {
-                                            this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
+                                            this.defendantCaseOffences.put(defendant.getId(), getOffencesWithDefaultOrderIndex(defendant.getOffences()));
                                             this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences());
                                             this.defendantLegalAidStatus.put(defendant.getId(), NO_VALUE.getDescription());
                                             updateDefendantProceedingConcluded(defendant, false);
@@ -358,7 +358,7 @@ public class CaseAggregate implements Aggregate {
 
                 when(ProsecutionCaseOffencesUpdated.class).apply(e -> {
                             if (e.getDefendantCaseOffences().getOffences() != null && !e.getDefendantCaseOffences().getOffences().isEmpty()) {
-                                this.defendantCaseOffences.put(e.getDefendantCaseOffences().getDefendantId(), e.getDefendantCaseOffences().getOffences());
+                                this.defendantCaseOffences.put(e.getDefendantCaseOffences().getDefendantId(), getOffencesWithDefaultOrderIndex(e.getDefendantCaseOffences().getOffences()));
                                 this.offenceProceedingConcluded.put(e.getDefendantCaseOffences().getDefendantId(), e.getDefendantCaseOffences().getOffences());
                                 this.defendantLegalAidStatus.put(e.getDefendantCaseOffences().getDefendantId(), e.getDefendantCaseOffences().getLegalAidStatus());
                                 this.handleProsecutionCaseOffencesUpdated(e);
@@ -371,7 +371,7 @@ public class CaseAggregate implements Aggregate {
                             if (!e.getDefendants().isEmpty()) {
                                 e.getDefendants().forEach(
                                         defendant -> {
-                                            this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
+                                            this.defendantCaseOffences.put(defendant.getId(), getOffencesWithDefaultOrderIndex(defendant.getOffences()));
                                             this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences());
                                             updateDefendantProceedingConcluded(defendant, false);
                                         });
@@ -453,6 +453,13 @@ public class CaseAggregate implements Aggregate {
                 when(CpsDefendantIdUpdated.class).apply(this::handleCpsDefendantIdUpdated),
                 otherwiseDoNothing());
 
+    }
+
+    private List<uk.gov.justice.core.courts.Offence> getOffencesWithDefaultOrderIndex(final List<uk.gov.justice.core.courts.Offence> offences) {
+        return offences.stream().map(offence -> uk.gov.justice.core.courts.Offence.offence()
+                .withValuesFrom(offence)
+                .withOrderIndex(isNull(offence.getOrderIndex()) ? 0 : offence.getOrderIndex())
+                .build()).collect(toList());
     }
 
     private void setProsecutionCase(final ProsecutionCase prosecutionCase) {

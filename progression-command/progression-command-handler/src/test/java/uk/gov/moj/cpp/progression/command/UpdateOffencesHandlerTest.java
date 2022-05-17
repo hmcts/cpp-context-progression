@@ -308,6 +308,33 @@ public class UpdateOffencesHandlerTest {
 
     }
 
+    @Test
+    public void shouldUpdateOrderIndexWhenOrderIndexDoesNotExistInOffence() throws EventStreamException {
+        UpdateOffencesForProsecutionCase updateDefendantCaseOffences = prepareData(caseId,defendantId,offenceId, offenceCode);
+
+        aggregate = getEventStreamReadyWithoutOrderIndex(caseId,defendantId);
+        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+
+        final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
+                SEXUAL_OFFENCE_RR_DESCRIPTION,
+                "json/referencedataoffences.offences-list.json");
+
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-offences-for-prosecution-case")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<UpdateOffencesForProsecutionCase> envelope = envelopeFrom(metadata, updateDefendantCaseOffences);
+
+        updateOffencesHandler.handle(envelope);
+
+        Stream<JsonEnvelope> events =  verifyAppendAndGetArgumentFrom(eventStream);
+
+    }
+
     private List<JsonObject> prepareReferenceDataOffencesJsonObject(final UUID offenceId,
                                                                     final String offenceCode,
                                                                     final String legislation,
@@ -349,6 +376,23 @@ public class UpdateOffencesHandlerTest {
                                     .withOffences(singletonList(Offence.offence()
                                             .withId(randomUUID())
                                             .withOrderIndex(1)
+                                            .build()))
+                                    .build()))
+                            .build())
+                    .build());
+        }};
+    }
+
+    private CaseAggregate getEventStreamReadyWithoutOrderIndex(final UUID caseId, final UUID defendantId) {
+        return new CaseAggregate() {{
+            apply(ProsecutionCaseCreated.prosecutionCaseCreated()
+                    .withProsecutionCase(ProsecutionCase.prosecutionCase()
+                            .withId(caseId)
+                            .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                            .withDefendants(singletonList(Defendant.defendant()
+                                    .withId(defendantId)
+                                    .withOffences(singletonList(Offence.offence()
+                                            .withId(randomUUID())
                                             .build()))
                                     .build()))
                             .build())

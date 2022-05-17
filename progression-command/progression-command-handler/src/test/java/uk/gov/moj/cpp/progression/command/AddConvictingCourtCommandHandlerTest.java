@@ -133,6 +133,32 @@ public class AddConvictingCourtCommandHandlerTest {
     }
 
     @Test
+    public void shouldProcessCommandWhenOrderIndexDoesNotExist() throws Exception {
+
+        AddConvictingCourt addConvictingCourt = prepareData(caseId, offenceId, courtCentreId, courtCode);
+        aggregate = getEventStreamReadyWithOutOrderIndex(caseId, defendantId);
+
+        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+
+        final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
+                SEXUAL_OFFENCE_RR_DESCRIPTION,
+                "json/referencedataoffences.offences-list.json");
+
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.add-convicting-court")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<AddConvictingCourt> envelope = envelopeFrom(metadata, addConvictingCourt);
+        addConvictingCourtCommandHandler.handle(envelope);
+        verifyAppendAndGetArgumentFrom(eventStream);
+
+    }
+
+    @Test
     public void withAggregateOffenceAndWithRR() throws Exception {
 
         AddConvictingCourt addConvictingCourt = prepareDataWithMultipleConvictingCourts(caseId, offenceId, courtCentreId, courtCode);
@@ -195,6 +221,23 @@ public class AddConvictingCourtCommandHandlerTest {
                                     .withOffences(singletonList(Offence.offence()
                                             .withId(offenceId)
                                             .withOrderIndex(1)
+                                            .build()))
+                                    .build()))
+                            .build())
+                    .build());
+        }};
+    }
+
+    private CaseAggregate getEventStreamReadyWithOutOrderIndex(final UUID caseId, final UUID defendantId) {
+        return new CaseAggregate() {{
+            apply(ProsecutionCaseCreated.prosecutionCaseCreated()
+                    .withProsecutionCase(ProsecutionCase.prosecutionCase()
+                            .withId(caseId)
+                            .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                            .withDefendants(singletonList(Defendant.defendant()
+                                    .withId(defendantId)
+                                    .withOffences(singletonList(Offence.offence()
+                                            .withId(offenceId)
                                             .build()))
                                     .build()))
                             .build())
