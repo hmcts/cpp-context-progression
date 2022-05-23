@@ -41,6 +41,9 @@
       "items": {
         "$ref": "http://justice.gov.uk/core/courts/notification/email-channel.json"
       }
+    },
+    "welshTranslationRequired": {
+      "type": "boolean"
     }
   },
   "required": [

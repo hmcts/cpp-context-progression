@@ -20,6 +20,7 @@ import uk.gov.justice.core.courts.NowsRequestWithAccountNumberUpdated;
 import uk.gov.justice.core.courts.nowdocument.FinancialOrderDetails;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
+import uk.gov.justice.core.courts.nowdocument.NowNotificationSuppressed;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
@@ -29,12 +30,14 @@ import uk.gov.moj.cpp.progression.domain.event.MaterialStatusUpdateIgnored;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequestNotSent;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
+import uk.gov.moj.cpp.progression.events.NowDocumentNotificationSuppressed;
 
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SuppressWarnings("squid:S1948")
@@ -56,6 +59,9 @@ public class MaterialAggregate implements Aggregate {
                 when(NowsRequestWithAccountNumberUpdated.class).apply(e ->
                         isAccountNumberSavedBefore = true
                 ),
+                when(NowDocumentRequested.class).apply(e ->
+                        nowDocumentRequest = e.getNowDocumentRequest()
+                ),
                 otherwiseDoNothing()
         );
     }
@@ -67,8 +73,17 @@ public class MaterialAggregate implements Aggregate {
     }
 
     public Stream<Object> nowsMaterialStatusUpdated(final UUID materialId, final String status) {
-        if(checkMaterialHasValidNotification(details)) {
-            return Stream.of(new NowsMaterialStatusUpdated(this.details, status));
+        final Stream.Builder streamBuilder = Stream.builder();
+        if (checkMaterialHasValidNotification(details)) {
+
+            streamBuilder.add(new NowsMaterialStatusUpdated(this.details, status, (nonNull(nowDocumentRequest) ? nowDocumentRequest.getWelshTranslationRequired() : false)));
+
+            if (nonNull(nowDocumentRequest) && nowDocumentRequest.getWelshTranslationRequired()) {
+                final List<String> caseUrns = this.nowDocumentRequest.getNowContent().getCases().stream().map(thecase -> thecase.getReference()).collect(Collectors.toList());
+                streamBuilder.add(new NowDocumentNotificationSuppressed(new NowNotificationSuppressed(caseUrns, this.nowDocumentRequest.getNowContent().getDefendant().getName(), this.nowDocumentRequest.getMasterDefendantId(), this.details.getMaterialId(), this.nowDocumentRequest.getTemplateName())));
+            }
+
+            return streamBuilder.build();
         }
         return Stream.of(new MaterialStatusUpdateIgnored(materialId, status));
     }
@@ -146,6 +161,7 @@ public class MaterialAggregate implements Aggregate {
                 .withSubTemplateName(nowDocumentRequest.getSubTemplateName())
                 .withTemplateName(nowDocumentRequest.getTemplateName())
                 .withVisibleToUserGroups(nowDocumentRequest.getVisibleToUserGroups())
+                .withWelshTranslationRequired(nowDocumentRequest.getWelshTranslationRequired())
                 .build();
     }
 

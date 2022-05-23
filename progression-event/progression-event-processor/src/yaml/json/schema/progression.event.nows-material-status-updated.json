@@ -8,11 +8,15 @@
     },
     "status" : {
       "type": "string"
+    },
+    "welshTranslationRequired" : {
+      "type": "boolean"
     }
   },
   "required": [
     "details",
-    "status"
+    "status",
+    "welshTranslationRequired"
   ],
   "additionalProperties": false
 }

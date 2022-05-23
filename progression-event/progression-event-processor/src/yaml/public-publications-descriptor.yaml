@@ -224,4 +224,7 @@ subscriptions_descriptor:
         - name: public.progression.pet-form-finalised
           schema_uri: http://justice.gov.uk/core/courts/pet-form-finalised.json
 
+        - name: public.progression.now-notification-suppressed
+          schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.now-notification-suppressed.json
+
       event_source_name: public.event.source

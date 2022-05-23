@@ -11,6 +11,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.MaterialDetails;
+import uk.gov.justice.core.courts.NowDocumentRequested;
 import uk.gov.justice.core.courts.NowsMaterialRequestRecorded;
 import uk.gov.justice.core.courts.NowsMaterialStatusUpdated;
 import uk.gov.justice.core.courts.RecordNowsMaterialRequest;
@@ -52,7 +53,8 @@ public class MaterialHandlerTest {
     private final Enveloper enveloper = createEnveloperWithEvents(
             NowsMaterialRequestRecorded.class,
             NowsMaterialStatusUpdated.class,
-            MaterialStatusUpdateIgnored.class);
+            MaterialStatusUpdateIgnored.class,
+            NowDocumentRequested.class);
 
     @Mock
     private EventSource eventSource;
@@ -100,6 +102,7 @@ public class MaterialHandlerTest {
         final RecordNowsMaterialRequest commandObject = RecordNowsMaterialRequest.recordNowsMaterialRequest()
                 .withContext(MaterialDetails.materialDetails()
                         .withMaterialId(materialId)
+                        .withWelshTranslationRequired(true)
                         .withSecondClassLetter(true)
                         .build()
                 ).build();

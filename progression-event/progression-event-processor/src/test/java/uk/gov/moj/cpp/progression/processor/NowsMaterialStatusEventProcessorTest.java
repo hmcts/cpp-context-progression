@@ -71,6 +71,7 @@ public class NowsMaterialStatusEventProcessorTest {
                                         .build())
                                 .build())
                         .add("status", status)
+                        .add("welshTranslationRequired", false)
                         .build());
 
         eventProcessor.processStatusUpdated(event);
@@ -96,8 +97,10 @@ public class NowsMaterialStatusEventProcessorTest {
                                 .add("userId", materialId.toString())
                                 .add("firstClassLetter", true)
                                 .add("secondClassLetter", false)
-                                .add("status", status)
-                                .build()));
+                                .build())
+                        .add("status", status)
+                        .add("welshTranslationRequired", false)
+                        .build());
 
         eventProcessor.processStatusUpdated(event);
 
@@ -123,8 +126,10 @@ public class NowsMaterialStatusEventProcessorTest {
                                 .add("userId", materialId.toString())
                                 .add("firstClassLetter", false)
                                 .add("secondClassLetter", true)
-                                .add("status", status)
-                                .build()));
+                                .build())
+                            .add("status", status)
+                            .add("welshTranslationRequired", false)
+                        .build());
 
         eventProcessor.processStatusUpdated(event);
 
