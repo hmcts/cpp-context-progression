@@ -112,6 +112,7 @@ public class ProgressionService {
     private static final String PROGRESSION_QUERY_HEARING = "progression.query.hearing";
     private static final String PROGRESSION_QUERY_LINKED_CASES = "progression.query.case-lsm-info";
     private static final String PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND = "progression.command.update-defendant-listing-status";
+    private static final String PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND = "progression.command.create-hearing-for-application";
     private static final String PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING = "progression.command.record-unscheduled-hearing";
     private static final String PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND = "progression.command.list-unscheduled-hearing";
     private static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA = "progression.command.prepare-summons-data";
@@ -694,7 +695,16 @@ public class ProgressionService {
                 LOGGER.info("update hearing listing status after send case for listing with payload {}", hearingListingStatusCommand);
                 sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
             } else {
-                linkApplicationToHearing(jsonEnvelope, hearing, HearingListingStatus.SENT_FOR_LISTING);
+
+                final JsonObject hearingCreatedForApplicationCommand = Json.createObjectBuilder()
+                        .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
+                        .add(HEARING, objectToJsonObjectConverter.convert(hearing)).build();
+
+                LOGGER.info("create hearing listing status after send application for listing with payload {}", hearingCreatedForApplicationCommand);
+
+                sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND),
+                        hearingCreatedForApplicationCommand));
+
             }
         });
     }

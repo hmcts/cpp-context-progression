@@ -170,6 +170,8 @@ public class ProgressionServiceTest {
     private static final String PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION = "progression.command.update-hearing-for-partial-allocation";
     public static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
     public static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH = "progression.command.update-defendant-for-prosecution-case";
+    private static final String PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND = "progression.command.create-hearing-for-application";
+
     private static final String EMPTY = "";
     @Spy
     private final Enveloper enveloper = createEnveloper();
@@ -1564,7 +1566,7 @@ public class ProgressionServiceTest {
 
         verify(sender).send(envelopeArgumentCaptor.capture());
         assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                        metadata().withName(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK),
+                        metadata().withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND),
                         payloadIsJson(
                                 allOf(
                                         withoutJsonPath("$.hearing.courtApplications[0].judicialResults"),
@@ -1601,7 +1603,7 @@ public class ProgressionServiceTest {
 
         verify(sender).send(envelopeArgumentCaptor.capture());
         assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                metadata().withName(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK),
+                metadata().withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND),
                 payloadIsJson(
                         allOf(
                                 withoutJsonPath("$.hearing.courtApplications[0].judicialResults"),

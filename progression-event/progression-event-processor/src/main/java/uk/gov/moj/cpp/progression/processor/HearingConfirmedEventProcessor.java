@@ -145,7 +145,6 @@ public class HearingConfirmedEventProcessor {
             if (isNotEmpty(applicationIds)) {
                 LOGGER.info("Update application status to LISTED, associate Hearing with id: {} to Applications with ids {} and generate summons", hearing.getId(), applicationIds);
                 progressionService.updateCourtApplicationStatus(jsonEnvelope, applicationIds, ApplicationStatus.LISTED);
-                progressionService.linkApplicationsToHearing(jsonEnvelope, hearing, applicationIds, HearingListingStatus.HEARING_INITIALISED);
                 progressionService.updateCaseStatus(jsonEnvelope, hearing, applicationIds);
             }
 
@@ -401,6 +400,8 @@ public class HearingConfirmedEventProcessor {
         progressionService.prepareSummonsData(jsonEnvelope, confirmedHearingForSummons);
 
     }
+
+
 
     private void prepareSummonsDataForExtendHearing(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing) {
         final PrepareSummonsDataForExtendedHearing prepareSummonsDataForExtendedHearing =
