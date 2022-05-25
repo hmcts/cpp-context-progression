@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.progression.command;
 
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -11,11 +13,16 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.MaterialDetails;
+import uk.gov.justice.core.courts.NowDocumentRequestToBeAcknowledged;
 import uk.gov.justice.core.courts.NowDocumentRequested;
 import uk.gov.justice.core.courts.NowsMaterialRequestRecorded;
 import uk.gov.justice.core.courts.NowsMaterialStatusUpdated;
 import uk.gov.justice.core.courts.RecordNowsMaterialRequest;
 import uk.gov.justice.core.courts.UpdateNowsMaterialStatus;
+import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
+import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
+import uk.gov.justice.core.courts.nowdocument.Nowdefendant;
+import uk.gov.justice.core.courts.nowdocument.ProsecutionCase;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -30,6 +37,7 @@ import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
 import uk.gov.moj.cpp.progression.domain.event.MaterialStatusUpdateIgnored;
 import uk.gov.moj.cpp.progression.handler.MaterialStatusHandler;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -54,7 +62,12 @@ public class MaterialHandlerTest {
             NowsMaterialRequestRecorded.class,
             NowsMaterialStatusUpdated.class,
             MaterialStatusUpdateIgnored.class,
+            NowDocumentRequestToBeAcknowledged.class,
             NowDocumentRequested.class);
+
+    private static final String ADD_NOW_DOCUMENT_REQUEST_COMMAND_NAME = "progression.command.add-now-document-request";
+
+    private static final UUID MATERIAL_ID = randomUUID();
 
     @Mock
     private EventSource eventSource;
@@ -85,24 +98,29 @@ public class MaterialHandlerTest {
     }
 
     @Test
-    public void recordNowsMaterialAndUpdateTest() throws Throwable {
-        recordNowsMaterialAndUpdateTest(true);
+    public void recordNowsMaterialWithWelshTranslationAndUpdateTest() throws Throwable {
+        recordNowsMaterialAndUpdateTest(true, Boolean.TRUE);
+    }
+
+    @Test
+    public void recordNowsMaterialWithOutWelshTranslationAndUpdateTest() throws Throwable {
+        recordNowsMaterialAndUpdateTest(true, Boolean.FALSE);
     }
 
     @Test
     public void recordNowsMaterialAndUpdateTestUnkownUpdate() throws Throwable {
-        recordNowsMaterialAndUpdateTest(false);
+        recordNowsMaterialAndUpdateTest(false, null);
     }
 
 
-    private void recordNowsMaterialAndUpdateTest(final boolean knownUpdate) throws Throwable {
+    private void recordNowsMaterialAndUpdateTest(final boolean knownUpdate, final Boolean welshTranslationRequired) throws Throwable {
 
 
         final UUID materialId = UUID.randomUUID();
         final RecordNowsMaterialRequest commandObject = RecordNowsMaterialRequest.recordNowsMaterialRequest()
                 .withContext(MaterialDetails.materialDetails()
                         .withMaterialId(materialId)
-                        .withWelshTranslationRequired(true)
+                        .withWelshTranslationRequired(welshTranslationRequired)
                         .withSecondClassLetter(true)
                         .build()
                 ).build();
@@ -111,6 +129,30 @@ public class MaterialHandlerTest {
                 MaterialStatusHandler.PROGRESSION_COMMAND_RECORD_NOWS_MATERIAL_REQUEST), objectToJsonObjectConverter.convert(commandObject));
 
         this.materialStatusHandler.recordNowsMaterial(command);
+
+        final ProsecutionCase prosecutionCase = mock(ProsecutionCase.class);
+        when(prosecutionCase.getReference()).thenReturn("someurn");
+
+        final Nowdefendant nowdefendant = mock(Nowdefendant.class);
+        when(nowdefendant.getName()).thenReturn("somename");
+
+        final UUID hearingId = UUID.randomUUID();
+        final NowDocumentRequest nowDocumentRequest = NowDocumentRequest.nowDocumentRequest()
+                .withMaterialId(materialId)
+                .withHearingId(hearingId)
+                .withWelshTranslationRequired(welshTranslationRequired)
+                .withNowContent(NowDocumentContent.nowDocumentContent()
+                        .withCases(Arrays.asList(prosecutionCase))
+                        .withDefendant(nowdefendant)
+                        .build())
+                .build();
+
+        final NowDocumentRequested nowDocumentRequested = NowDocumentRequested.nowDocumentRequested()
+                .withMaterialId(materialId)
+                .withNowDocumentRequest(nowDocumentRequest)
+                .build();
+
+        aggregate.apply(nowDocumentRequested);
 
 
         final UUID updateMaterialId = knownUpdate ? materialId : UUID.randomUUID();
@@ -148,6 +190,7 @@ public class MaterialHandlerTest {
             final NowsMaterialStatusUpdated updated = jsonObjectToObjectConverter.convert((JsonObject) statusJsonEnvelope.payload(), NowsMaterialStatusUpdated.class);
             assertThat(updated.getDetails().getMaterialId(), is(commandObject.getContext().getMaterialId()));
             assertThat(updated.getStatus(), is(statusCommandObject.getStatus()));
+            assertThat(updated.getWelshTranslationRequired(), is(Boolean.TRUE.equals(welshTranslationRequired)));
         } else {
             assertThat(statusJsonEnvelope.metadata().name(), is("progression.events.material-status-update-ignored"));
             final MaterialStatusUpdateIgnored ignored = jsonObjectToObjectConverter.convert((JsonObject) statusJsonEnvelope.payload(), MaterialStatusUpdateIgnored.class);

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.BooleanUtils.negate;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -76,9 +77,14 @@ public class MaterialAggregate implements Aggregate {
         final Stream.Builder streamBuilder = Stream.builder();
         if (checkMaterialHasValidNotification(details)) {
 
-            streamBuilder.add(new NowsMaterialStatusUpdated(this.details, status, (nonNull(nowDocumentRequest) ? nowDocumentRequest.getWelshTranslationRequired() : false)));
+            final boolean welshTranslationRequired =
+                    ofNullable(nowDocumentRequest)
+                            .map(e -> ofNullable(e.getWelshTranslationRequired())
+                                    .orElse(false)).orElse(false);
 
-            if (nonNull(nowDocumentRequest) && nowDocumentRequest.getWelshTranslationRequired()) {
+            streamBuilder.add(new NowsMaterialStatusUpdated(this.details, status, welshTranslationRequired));
+
+            if (welshTranslationRequired) {
                 final List<String> caseUrns = this.nowDocumentRequest.getNowContent().getCases().stream().map(thecase -> thecase.getReference()).collect(Collectors.toList());
                 streamBuilder.add(new NowDocumentNotificationSuppressed(new NowNotificationSuppressed(caseUrns, this.nowDocumentRequest.getNowContent().getDefendant().getName(), this.nowDocumentRequest.getMasterDefendantId(), this.details.getMaterialId(), this.nowDocumentRequest.getTemplateName())));
             }
