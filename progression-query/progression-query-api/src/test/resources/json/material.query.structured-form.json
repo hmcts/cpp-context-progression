@@ -4,7 +4,21 @@
   "caseId": "CASE_ID",
   "defendants": [
     {
-      "defendantId": "DEFENDANT_ID",
+      "defendantId": "DEFENDANT_ID_1",
+      "offences": [
+        "OFFENCE_ID1",
+        "OFFENCE_ID2"
+      ]
+    },
+    {
+      "defendantId": "DEFENDANT_ID_2",
+      "offences": [
+        "OFFENCE_ID1",
+        "OFFENCE_ID2"
+      ]
+    },
+    {
+      "defendantId": "DEFENDANT_ID_3",
       "offences": [
         "OFFENCE_ID1",
         "OFFENCE_ID2"

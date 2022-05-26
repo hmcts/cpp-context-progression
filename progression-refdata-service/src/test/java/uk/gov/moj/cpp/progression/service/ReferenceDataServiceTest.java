@@ -6,9 +6,9 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
@@ -75,6 +75,7 @@ public class ReferenceDataServiceTest {
     public static final String PS_90010 = "PS90010";
     private static final UUID JUDICIARY_ID_1 = UUID.randomUUID();
     private static final UUID JUDICIARY_ID_2 = UUID.randomUUID();
+    private static final UUID FORM_ID = UUID.randomUUID();
     private static final String JUDICIARY_TITLE_1 = STRING.next();
     private static final String JUDICIARY_FIRST_NAME_1 = STRING.next();
     private static final String JUDICIARY_LAST_NAME_1 = STRING.next();
@@ -90,11 +91,14 @@ public class ReferenceDataServiceTest {
     private static final String FIELD_PLEA_VALUE = "pleaValue";
     private static final String GUILTY = "GUILTY";
     private static final String NOT_GUILTY = "NOT_GUILTY";
+    private static final String REFERENCE_DATA_QUERY_PET_FORM = "referencedata.query.latest-pet-form";
 
     @Spy
     Enveloper enveloper = EnveloperFactory.createEnveloper();
+
     @Mock
     private Requester requester;
+
     @InjectMocks
     private ReferenceDataService referenceDataService;
 
@@ -118,7 +122,7 @@ public class ReferenceDataServiceTest {
         //given
 
         final JsonObject payload = Json.createReader(
-                new ByteArrayInputStream(getJsonPayload().getBytes()))
+                        new ByteArrayInputStream(getJsonPayload().getBytes()))
                 .readObject();
 
         final JsonEnvelope inputEnvelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.offences"),
@@ -155,7 +159,7 @@ public class ReferenceDataServiceTest {
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.offences"),
                 JsonValue.NULL);
         final JsonObject payload = Json.createReader(
-                new ByteArrayInputStream("{\"offences\":[]}".getBytes()))
+                        new ByteArrayInputStream("{\"offences\":[]}".getBytes()))
                 .readObject();
 
         when(requester.request(any()))
@@ -184,7 +188,7 @@ public class ReferenceDataServiceTest {
 
         final UUID judgeId = randomUUID();
         final JsonObject payload = Json.createReader(
-                new ByteArrayInputStream(getJudgePayload(judgeId).getBytes()))
+                        new ByteArrayInputStream(getJudgePayload(judgeId).getBytes()))
                 .readObject();
 
         when(requester.request(any()))
@@ -216,7 +220,7 @@ public class ReferenceDataServiceTest {
 
         final UUID courtCentreId = randomUUID();
         final JsonObject payload = Json.createReader(
-                new ByteArrayInputStream(getOrganisationPayload(courtCentreId).getBytes()))
+                        new ByteArrayInputStream(getOrganisationPayload(courtCentreId).getBytes()))
                 .readObject();
         when(requester.requestAsAdmin(any(), any()))
                 .thenReturn(Envelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(ORGANISATION_UNIT), payload));
@@ -257,7 +261,7 @@ public class ReferenceDataServiceTest {
 
         final UUID documentTypeId = randomUUID();
         final JsonObject payload = Json.createReader(
-                new ByteArrayInputStream(getDocumentTypeDataById(documentTypeId).getBytes()))
+                        new ByteArrayInputStream(getDocumentTypeDataById(documentTypeId).getBytes()))
                 .readObject();
         when(requester.request(any())).thenReturn(JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_DOCUMENT_ACCESS), payload));
 
@@ -477,7 +481,7 @@ public class ReferenceDataServiceTest {
 
         when(requester.requestAsAdmin(any(), eq(JsonObject.class))).thenReturn(envelope);
 
-        final Optional<JsonObject> result = referenceDataService.getPleaType( "NOT_GUILTY", requester);
+        final Optional<JsonObject> result = referenceDataService.getPleaType("NOT_GUILTY", requester);
 
         assertThat(result.get().getString(FIELD_PLEA_TYPE_GUILTY_FLAG), is(GUILTY_FLAG_NO));
     }
@@ -488,7 +492,7 @@ public class ReferenceDataServiceTest {
         final Envelope envelope = envelopeFrom(Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("name").build(), buildPleaStatusTypesPayload());
         when(requester.requestAsAdmin(any(), eq(JsonObject.class))).thenReturn(envelope);
 
-        final Optional<JsonObject> result = referenceDataService.getPleaType( "INVALID_GUILTY", requester);
+        final Optional<JsonObject> result = referenceDataService.getPleaType("INVALID_GUILTY", requester);
 
         assertThat(result.isPresent(), is(false));
     }
@@ -683,22 +687,52 @@ public class ReferenceDataServiceTest {
                 .withName(REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS);
 
         final JsonObject payload = Json.createReader(
-                new ByteArrayInputStream(jsonString.getBytes()))
+                        new ByteArrayInputStream(jsonString.getBytes()))
                 .readObject();
 
         return envelopeFrom(metadataBuilder, payload);
 
     }
 
-    private JsonObject buildPleaStatusTypesPayload(){
+    private JsonObject buildPleaStatusTypesPayload() {
         return createObjectBuilder().add(FIELD_PLEA_STATUS_TYPES, createArrayBuilder()
-                .add(createObjectBuilder()
-                        .add(FIELD_PLEA_VALUE, GUILTY)
-                        .add(FIELD_PLEA_TYPE_GUILTY_FLAG, GUILTY_FLAG_YES)
-                )
-                .add(createObjectBuilder()
-                        .add(FIELD_PLEA_VALUE, NOT_GUILTY)
-                        .add(FIELD_PLEA_TYPE_GUILTY_FLAG, GUILTY_FLAG_NO)))
+                        .add(createObjectBuilder()
+                                .add(FIELD_PLEA_VALUE, GUILTY)
+                                .add(FIELD_PLEA_TYPE_GUILTY_FLAG, GUILTY_FLAG_YES)
+                        )
+                        .add(createObjectBuilder()
+                                .add(FIELD_PLEA_VALUE, NOT_GUILTY)
+                                .add(FIELD_PLEA_TYPE_GUILTY_FLAG, GUILTY_FLAG_NO)))
                 .build();
     }
+
+
+    @Test
+    public void shouldGetPetFormData() throws Exception {
+
+        final JsonObject payload = Json.createReader(
+                        new ByteArrayInputStream(generatePetFormData().getBytes()))
+                .readObject();
+        final JsonEnvelope inputEnvelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.latest-pet-form"),
+                payload);
+        //when
+        when(requester.request(any())).thenReturn(inputEnvelope);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.latest-pet-form"), JsonValue.NULL);
+        final Optional<JsonObject> result = referenceDataService.getPetForm(
+                envelope, requester);
+        final JsonObject petForm = result.get();
+        assertThat(petForm.getString("form_id"), is("f8254db1-1683-483e-afb3-b87fde5a0a26"));
+    }
+
+    private String generatePetFormData() {
+        return "{\n" +
+                "  \"form_id\": \"f8254db1-1683-483e-afb3-b87fde5a0a26\",\n" +
+                "  \"description\": \"Pet Form data\",\n" +
+                "  \"data\":\"{\\n  \\\"field1\\\": \\\"value1\\\",\\n  \\\"field2\\\": \\\"value2\\\"\\n}\",\n" +
+                "  \"version\": 1\n" +
+                "}";
+
+    }
+
+
 }

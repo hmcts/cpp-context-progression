@@ -15,9 +15,11 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.FormType.PET;
 import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
 import static uk.gov.justice.core.courts.JudicialResultCategory.INTERMEDIARY;
 import static uk.gov.justice.core.courts.LaaReference.laaReference;
+import static uk.gov.justice.core.courts.PetDefendants.petDefendants;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
@@ -70,6 +72,7 @@ import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.PartialMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.PetDefendants;
 import uk.gov.justice.core.courts.PetDetailReceived;
 import uk.gov.justice.core.courts.PetDetailUpdated;
 import uk.gov.justice.core.courts.PetFormCreated;
@@ -99,6 +102,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.domain.aggregate.utils.Form;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
@@ -127,6 +131,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -1798,17 +1803,44 @@ public class CaseAggregateTest {
         final String formData = "test data";
         final UUID petId = randomUUID();
         final UUID userId = randomUUID();
+        final UUID submissionId = randomUUID();
+        final String userName = "cps user name";
 
         setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
 
-        final Map<UUID, List<UUID>> defendantOffenceIds = new HashMap<>();
-        defendantOffenceIds.put(defendantId, asList(offenceId));
+        final List<UUID> defendantOffenceIds = new ArrayList<>();
+        defendantOffenceIds.add(defendantId);
 
-        final List<Object> eventStream = caseAggregate.createPetForm(petId, caseId, formId, defendantOffenceIds, formData, userId).collect(toList());
-        ;
+        final List<Object> eventStream = caseAggregate.createPetForm(petId, caseId, formId, Optional.empty(), defendantOffenceIds, formData, userId, submissionId, userName, PET).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetFormCreated.class)));
+        assertThat(((PetFormCreated) object).getIsYouth(), is(false));
+
+    }
+
+    @Test
+    public void shouldGeneratePetFormCreatedWhenDefendantAndOffenceIsValidForYouth() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID formId = randomUUID();
+        final boolean isYouth = true;
+        final UUID offenceId = randomUUID();
+        final String formData = "test data";
+        final UUID petId = randomUUID();
+        final UUID userId = randomUUID();
+        final UUID submissionId = randomUUID();
+        final String userName = "cps user name";
+
+        setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
+
+        final List<UUID> defendantOffenceIds = new ArrayList<>();
+        defendantOffenceIds.add(defendantId);
+
+        final List<Object> eventStream = caseAggregate.createPetForm(petId, caseId, formId, Optional.ofNullable(isYouth), defendantOffenceIds, formData, userId, submissionId, userName, PET).collect(toList());
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(((PetFormCreated) object).getIsYouth(), is(true));
     }
 
     @Test
@@ -1821,11 +1853,10 @@ public class CaseAggregateTest {
 
         setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
 
-        final Map<UUID, List<UUID>> defendantOffenceIds = new HashMap<>();
-        defendantOffenceIds.put(defendantId, asList(offenceId));
+        final List<UUID> defendantOffenceIds = new ArrayList<>();
+        defendantOffenceIds.add(defendantId);
 
         final List<Object> eventStream = caseAggregate.receivePetForm(petId, caseId, formId, defendantOffenceIds).collect(toList());
-        ;
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetFormReceived.class)));
@@ -1839,12 +1870,7 @@ public class CaseAggregateTest {
         final UUID petId = randomUUID();
         final UUID userId = randomUUID();
 
-        final Map<UUID, List<UUID>> petIdOffenceIdsMap = new HashMap<>();
-        petIdOffenceIdsMap.put(petId, asList(offenceId));
-        setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
-
         final List<Object> eventStream = caseAggregate.updatePetForm(caseId, formData, petId, userId).collect(toList());
-        ;
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetFormUpdated.class)));
@@ -1852,51 +1878,53 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldGeneratePetFormFinalised() {
+        final Map<UUID, Form> formMap = new HashMap<>();
         final UUID caseId = randomUUID();
-        final UUID offenceId = randomUUID();
         final UUID petId = randomUUID();
         final UUID userId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID submissionId = randomUUID();
 
-        final Map<UUID, List<UUID>> petIdOffenceIdsMap = new HashMap<>();
-        petIdOffenceIdsMap.put(petId, asList(offenceId));
-        setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
+        PetDefendants petDefendants = petDefendants().withDefendantId(defendantId).build();
+        formMap.put(petId, new Form(asList(petDefendants), petId, PET, submissionId));
+        setField(caseAggregate, "formMap", formMap);
         setField(caseAggregate, "prosecutionCase", prosecutionCase()
                 .withDefendants(asList(uk.gov.justice.core.courts.Defendant.defendant()
                                 .withId(randomUUID())
-                                .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
-                                        .withId(offenceId)
-                                        .build()))
                                 .build(),
                         uk.gov.justice.core.courts.Defendant.defendant()
                                 .withId(randomUUID())
-                                .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
-                                        .withId(randomUUID())
-                                        .build()))
                                 .build()))
                 .build());
 
-        final List<Object> eventStream = caseAggregate.finalisePetForm(caseId, petId, userId).collect(toList());
-        ;
+        final List<Object> eventStream = caseAggregate.finalisePetForm(caseId, petId, userId, asList("{}", "{}", "{}")).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetFormFinalised.class)));
         final PetFormFinalised petFormFinalised = (PetFormFinalised) object;
-        assertThat(petFormFinalised.getProsecutionCase().getDefendants().size(), is(1));
-        assertThat(petFormFinalised.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(1));
-        assertThat(petFormFinalised.getProsecutionCase().getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
+        assertThat(petFormFinalised.getProsecutionCase().getDefendants().size(), is(2));
+        assertThat(petFormFinalised.getSubmissionId(), notNullValue());
     }
 
     @Test
     public void shouldNotGeneratePetFormFinalised() {
+
+        final Map<UUID, Form> formMap = new HashMap<>();
         final UUID caseId = randomUUID();
         final UUID petId = randomUUID();
         final UUID userId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID submissionId = randomUUID();
 
-        final List<Object> eventStream = caseAggregate.finalisePetForm(caseId, petId, userId).collect(toList());
-        ;
+        PetDefendants petDefendants = petDefendants().withDefendantId(defendantId).build();
+        formMap.put(petId, new Form(asList(petDefendants), petId, PET, submissionId));
+        setField(caseAggregate, "formMap", formMap);
+
+        final List<Object> eventStream = caseAggregate.finalisePetForm(caseId, petId, userId, asList("{}", "{}", "{}")).collect(toList());
         assertThat(eventStream.size(), is(1));
-        final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(equalTo(PetOperationFailed.class)));
+        final PetOperationFailed petOperationFailed = (PetOperationFailed)eventStream.get(0);
+        assertThat(petOperationFailed.getClass(), is(equalTo(PetOperationFailed.class)));
+        assertThat(petOperationFailed.getSubmissionId(), is(submissionId));
     }
 
     @Test
@@ -1907,12 +1935,8 @@ public class CaseAggregateTest {
         final UUID petId = randomUUID();
         final UUID userId = randomUUID();
 
-        final Map<UUID, List<UUID>> petIdOffenceIdsMap = new HashMap<>();
-        petIdOffenceIdsMap.put(petId, asList(offenceId));
-        setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
 
-        final List<Object> eventStream = caseAggregate.updatePetDetail(caseId, petId, Arrays.asList(), userId).collect(toList());
-        ;
+        final List<Object> eventStream = caseAggregate.updatePetDetail(caseId, petId, Optional.empty(), Arrays.asList(), userId).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetDetailUpdated.class)));
@@ -1926,12 +1950,7 @@ public class CaseAggregateTest {
         final UUID petId = randomUUID();
         final UUID userId = randomUUID();
 
-        final Map<UUID, List<UUID>> petIdOffenceIdsMap = new HashMap<>();
-        petIdOffenceIdsMap.put(petId, asList(offenceId));
-        setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
-
         final List<Object> eventStream = caseAggregate.receivePetDetail(caseId, petId, Arrays.asList(), userId).collect(toList());
-        ;
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetDetailReceived.class)));
@@ -1950,10 +1969,9 @@ public class CaseAggregateTest {
         petIdOffenceIdsMap.put(petId, asList(offenceId));
 
         setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, randomUUID()));
-        setField(caseAggregate, "petIdOffenceIdsMap", petIdOffenceIdsMap);
+
 
         final List<Object> eventStream = caseAggregate.updatePetFormForDefendant(petId, caseId, defendantId, defendantData, userId).collect(toList());
-        ;
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetFormDefendantUpdated.class)));

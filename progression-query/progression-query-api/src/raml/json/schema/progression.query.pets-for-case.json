@@ -11,6 +11,10 @@
           "petId": {
             "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
           },
+          "isYouth": {
+            "description": "Is Youth",
+            "type": "boolean"
+          },
           "defendants": {
             "type": "array",
             "items": {
@@ -31,8 +35,7 @@
               },
               "required": [
                 "defendantId",
-                "caseId",
-                "offences"
+                "caseId"
               ],
               "additionalProperties": false
             }

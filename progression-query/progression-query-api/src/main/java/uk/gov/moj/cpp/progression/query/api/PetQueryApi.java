@@ -39,6 +39,8 @@ public class PetQueryApi {
     public static final String PROSECUTION = "prosecution";
     public static final String DEFENDANTS = "defendants";
     public static final String PETS = "pets";
+    public static final String NAME = "name";
+
 
     @Inject
     private Requester requester;
@@ -87,12 +89,7 @@ public class PetQueryApi {
                 .add(PET_ID, changeHistory.getString(STRUCTURED_FORM_ID))
                 .add(FORM_ID, changeHistory.getString(FORM_ID))
                 .add(DATE, changeHistory.getString(DATE))
-                .add(UPDATED_BY, createObjectBuilder()
-                        .add(ID,changeHistory.getJsonObject(UPDATED_BY).getString(ID))
-                        .add(FIRST_NAME,changeHistory.getJsonObject(UPDATED_BY).getString(FIRST_NAME))
-                        .add(LAST_NAME,changeHistory.getJsonObject(UPDATED_BY).getString(LAST_NAME))
-                        .build()
-                )
+                .add(UPDATED_BY, buildUpdatedResponse(changeHistory))
                 .add(DATA, changeHistory.getString(DATA))
                 .add(STATUS, changeHistory.getString(STATUS));
 
@@ -108,5 +105,18 @@ public class PetQueryApi {
         return JsonEnvelope.envelopeFrom(query.metadata(), payload);
     }
 
+    private JsonObject buildUpdatedResponse(final JsonObject changeHistoryFromMaterialQuery) {
+        final JsonObjectBuilder updatedUserBuilder = createObjectBuilder();
+        final JsonObject updatedByFromMaterial = changeHistoryFromMaterialQuery.getJsonObject(UPDATED_BY);
 
+        if (updatedByFromMaterial.containsKey(NAME)) {
+            updatedUserBuilder.add(NAME, updatedByFromMaterial.getString(NAME));
+        } else {
+            updatedUserBuilder
+                    .add(ID, updatedByFromMaterial.getString(ID))
+                    .add(FIRST_NAME, updatedByFromMaterial.getString(FIRST_NAME))
+                    .add(LAST_NAME, updatedByFromMaterial.getString(LAST_NAME));
+        }
+        return updatedUserBuilder.build();
+    }
 }

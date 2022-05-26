@@ -550,4 +550,7 @@ subscriptions_descriptor:
         - name : public.listing.vacated-trial-updated
           schema_uri: http://justice.gov.uk/listing/courts/vacated-trial-updated.json
 
+        - name: public.prosecutioncasefile.cps-serve-pet-submitted
+          schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-pet-submitted.json
+
       event_source_name: public.event.source

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/core/courts/pet-form-defendant-updated.json",
+  "id": "http://justice.gov.uk/core/courts/public-pet-form-defendant-updated.json",
   "type": "object",
   "properties": {
     "petId": {
@@ -19,9 +19,36 @@
       "description": "Defendant data to update",
       "type": "string"
     },
-    "userId": {
-      "description": "Logged In User Id",
-      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    "updatedBy": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "id",
+            "firstName",
+            "lastName"
+          ]
+        },
+        {
+          "required": [
+            "name"
+          ]
+        }
+      ]
     }
   },
   "required": [
@@ -29,7 +56,7 @@
     "caseId",
     "defendantId",
     "defendantData",
-    "userId"
+    "updatedBy"
   ],
   "additionalProperties": false
 }

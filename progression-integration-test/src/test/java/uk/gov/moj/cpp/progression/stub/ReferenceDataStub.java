@@ -7,38 +7,26 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static java.lang.ClassLoader.getSystemResourceAsStream;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.Status.fromStatusCode;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.fail;
 import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
-import static javax.ws.rs.core.Response.Status.fromStatusCode;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.moj.cpp.progression.util.Pair;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.io.IOUtils;
 
 
 public class ReferenceDataStub {
@@ -357,6 +345,23 @@ public class ReferenceDataStub {
 
         waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.get.prosecutor+json", fromStatusCode(returnStatus));
     }
+
+
+    public static void stubQueryPetFormData(final String resourceName, final UUID id, int returnStatus) {
+        InternalEndpointMockUtils.stubPingFor("referencedata.query.latest-pet-form");
+        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
+                .getResourceAsStream(resourceName)).readObject();
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/latest-pet-form";
+        stubFor(get(urlMatching(urlPath))
+                .willReturn(aResponse().withStatus(returnStatus)
+                        .withHeader("CPPID", id.toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(documentType.toString())));
+
+        waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.latest-pet-form+json", fromStatusCode(returnStatus));
+    }
+
 
     public static void stubQueryCourtOURoom() {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");

@@ -18,18 +18,10 @@
         "properties": {
           "defendantId": {
             "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-          },
-
-          "offenceIds": {
-            "type": "array",
-            "items": {
-              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-            }
           }
         },
         "required": [
-          "defendantId",
-          "offenceIds"
+          "defendantId"
         ],
         "additionalProperties": false
       }

@@ -6,10 +6,18 @@
     "caseId": {
       "description": "Case Id",
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "finalisedFormData": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [
-    "caseId"
+    "caseId",
+    "finalisedFormData"
   ],
   "additionalProperties": false
 }

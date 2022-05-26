@@ -219,10 +219,10 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/pet-operation-failed.json
 
         - name: public.progression.pet-form-defendant-updated
-          schema_uri: http://justice.gov.uk/core/courts/pet-form-defendant-updated.json
+          schema_uri: http://justice.gov.uk/core/courts/public-pet-form-defendant-updated.json
 
         - name: public.progression.pet-form-finalised
-          schema_uri: http://justice.gov.uk/core/courts/pet-form-finalised.json
+          schema_uri: http://justice.gov.uk/core/courts/public-pet-form-finalised.json
 
         - name: public.progression.now-notification-suppressed
           schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.now-notification-suppressed.json

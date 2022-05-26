@@ -6,6 +6,11 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
+import java.io.StringReader;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -13,9 +18,10 @@ import org.slf4j.LoggerFactory;
 
 public class FileUtil {
 
-    private FileUtil() {}
-
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
+
+    private FileUtil() {
+    }
 
     public static String getPayload(final String path) {
         String request = null;
@@ -28,4 +34,12 @@ public class FileUtil {
         }
         return request;
     }
+
+    public static JsonObject jsonFromString(String jsonObjectStr) {
+        JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        JsonObject object = jsonReader.readObject();
+        jsonReader.close();
+        return object;
+    }
+
 }

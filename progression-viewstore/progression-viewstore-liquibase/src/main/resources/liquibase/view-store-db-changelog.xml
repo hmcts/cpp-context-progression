@@ -93,4 +93,6 @@
     <include file="liquibase/add-pet-case-defendant-offence.xml"/>
     <include file="liquibase/add-confirmed-date-to-hearing-table.xml"/>
     <include file="liquibase/create-indexes.xml"/>
+    <include file="liquibase/alter-pet-case-add-column-youth-flag.xml"/>
+    <include file="liquibase/alter-table-pet-case-defendant-offence-drop-offence.xml"/>
 </databaseChangeLog>

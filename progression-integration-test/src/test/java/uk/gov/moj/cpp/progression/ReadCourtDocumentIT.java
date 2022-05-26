@@ -33,11 +33,13 @@ public class ReadCourtDocumentIT extends AbstractIT {
     private final String mimeType = "text/uri-list";
     private final String documentUrl = "http://documentlocation.com/myfile.pdf";
     private final JsonObject expectedResponse = Json.createObjectBuilder().add("url", documentUrl).build();
+    private static final String QUERY_USERGROUPS_BY_MATERIAL_ID_JSON = "application/vnd.progression.query.usergroups-by-material-id+json";
+    private final String MaterialContent = "Material content for uploaded material";
     private String caseId;
     private UUID materialId;
     private String defendantId;
-    private static final String QUERY_USERGROUPS_BY_MATERIAL_ID_JSON = "application/vnd.progression.query.usergroups-by-material-id+json";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+
 
 
     @Before
@@ -106,7 +108,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
     public void shouldNotGetMaterialMetadataAndContentForDefence() throws Exception {
         final UUID userOrganisationId = randomUUID();
         final UUID permittedOrganisationId = randomUUID();
-        final UUID  defendantIdPermission = randomUUID();
+        final UUID defendantIdPermission = randomUUID();
         final UUID userId = randomUUID();
 
         final String organisation = getPayload("stub-data/usersgroups.get-organisation-details.json")
@@ -133,7 +135,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         );
 
 
-        final Response documentContentResponse = getMaterialContent(materialId, userId,fromString(defendantId));
+        final Response documentContentResponse = getMaterialContent(materialId, userId, fromString(defendantId));
         assertThat(documentContentResponse.getStatus(), is(SC_FORBIDDEN));
     }
 

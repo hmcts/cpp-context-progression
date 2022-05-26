@@ -12,7 +12,6 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.PetCaseDefendantOffence;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.PetCaseDefendantOffenceKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.PetCaseDefendantOffenceRepository;
 
 import java.util.ArrayList;
@@ -39,14 +38,12 @@ public class PetFormEventListener {
     public void petFormCreated(final JsonEnvelope event) {
         final PetFormCreated petFormCreated = jsonObjectConverter.convert(event.payloadAsJsonObject(), PetFormCreated.class);
 
-        LOGGER.info("progression.event.pet-form-created event received with petId: {} for case: {}", petFormCreated.getPetId(), petFormCreated.getCaseId());
+        LOGGER.info("progression.event.pet-form-created event received with petId: {} for case: {} with isYouth flag: {}", petFormCreated.getPetId(), petFormCreated.getCaseId(), petFormCreated.getIsYouth());
 
         final List<PetCaseDefendantOffence> petCaseDefendantOffenceList = new ArrayList<>();
 
         petFormCreated.getPetDefendants().forEach(petDefendants ->
-                petDefendants.getOffenceIds().forEach(
-                        offenceId -> petCaseDefendantOffenceList.add(buildPetCaseDefendantOffenceEntity(petDefendants.getDefendantId(), offenceId, petFormCreated.getCaseId(), petFormCreated.getPetId()))
-                )
+                petCaseDefendantOffenceList.add(buildPetCaseDefendantOffenceEntity(petDefendants.getDefendantId(), petFormCreated.getCaseId(), petFormCreated.getPetId(), petFormCreated.getIsYouth()))
         );
 
         petCaseDefendantOffenceList.forEach(petCaseDefendantOffence -> petCaseDefendantOffenceRepository.save(petCaseDefendantOffence));
@@ -61,9 +58,7 @@ public class PetFormEventListener {
         final List<PetCaseDefendantOffence> petCaseDefendantOffenceList = new ArrayList<>();
 
         petFormReceived.getPetDefendants().forEach(petDefendants ->
-                petDefendants.getOffenceIds().forEach(
-                        offenceId -> petCaseDefendantOffenceList.add(buildPetCaseDefendantOffenceEntity(petDefendants.getDefendantId(), offenceId, petFormReceived.getCaseId(), petFormReceived.getPetId()))
-                )
+               petCaseDefendantOffenceList.add(buildPetCaseDefendantOffenceEntity(petDefendants.getDefendantId(), petFormReceived.getCaseId(), petFormReceived.getPetId(), false))
         );
 
         petCaseDefendantOffenceList.forEach(petCaseDefendantOffence -> petCaseDefendantOffenceRepository.save(petCaseDefendantOffence));
@@ -73,7 +68,7 @@ public class PetFormEventListener {
     public void petDetailsUpdated(final JsonEnvelope event) {
         final PetDetailUpdated petDetailUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), PetDetailUpdated.class);
 
-        LOGGER.info("progression.event.pet-detail-updated event received with petId: {} for case: {}", petDetailUpdated.getPetId(), petDetailUpdated.getCaseId());
+        LOGGER.info("progression.event.pet-detail-updated event received with petId: {} for case: {} with isYouth flag: {}", petDetailUpdated.getPetId(), petDetailUpdated.getCaseId(), petDetailUpdated.getIsYouth());
 
         List<PetCaseDefendantOffence> petCaseDefendantOffences = petCaseDefendantOffenceRepository.findByPetId(petDetailUpdated.getPetId());
         petCaseDefendantOffences.forEach(petCaseDefendantOffence -> petCaseDefendantOffenceRepository.remove(petCaseDefendantOffence));
@@ -82,9 +77,8 @@ public class PetFormEventListener {
 
 
         petDetailUpdated.getPetDefendants().forEach(petDefendants ->
-                petDefendants.getOffenceIds().forEach(
-                        offenceId -> petCaseDefendantOffenceList.add(buildPetCaseDefendantOffenceEntity(petDefendants.getDefendantId(), offenceId, petDetailUpdated.getCaseId(), petDetailUpdated.getPetId()))
-                )
+                petCaseDefendantOffenceList.add(buildPetCaseDefendantOffenceEntity(petDefendants.getDefendantId(), petDetailUpdated.getCaseId(), petDetailUpdated.getPetId(), petDetailUpdated.getIsYouth()))
+
         );
 
         petCaseDefendantOffenceList.forEach(petCaseDefendantOffence -> petCaseDefendantOffenceRepository.save(petCaseDefendantOffence));
@@ -104,20 +98,23 @@ public class PetFormEventListener {
 
 
         petDetailReceived.getPetDefendants().forEach(petDefendants ->
-                petDefendants.getOffenceIds().forEach(
-                        offenceId -> petCaseDefendantOffenceList.add(buildPetCaseDefendantOffenceEntity(petDefendants.getDefendantId(), offenceId, petDetailReceived.getCaseId(), petDetailReceived.getPetId()))
-                )
+                petCaseDefendantOffenceList.add(buildPetCaseDefendantOffenceEntity(petDefendants.getDefendantId(), petDetailReceived.getCaseId(), petDetailReceived.getPetId(), false))
         );
 
         petCaseDefendantOffenceList.forEach(petCaseDefendantOffence -> petCaseDefendantOffenceRepository.save(petCaseDefendantOffence));
 
     }
 
-    private PetCaseDefendantOffence buildPetCaseDefendantOffenceEntity(final UUID defendantId, final UUID offenceId, final UUID caseId, final UUID petId) {
+    private PetCaseDefendantOffence buildPetCaseDefendantOffenceEntity(final UUID defendantId, final UUID caseId, final UUID petId, final Boolean isYouth) {
+
+        final boolean youth = isYouth != null && isYouth;
+
         return PetCaseDefendantOffence.builder()
-                .withPetkey(new PetCaseDefendantOffenceKey(defendantId, offenceId))
+                .withPetkey(UUID.randomUUID())
+                .withDefendantId(defendantId)
                 .withCaseId(caseId)
                 .withPetId(petId)
+                .withIsYouth(youth)
                 .build();
     }
 

@@ -15,6 +15,10 @@
       "description": "Form Id",
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
+    "isYouth": {
+      "description": "Is Youth",
+      "type": "boolean"
+    },
     "petDefendants": {
       "type": "array",
       "items": {
@@ -22,18 +26,10 @@
         "properties": {
           "defendantId": {
             "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-          },
-
-          "offenceIds": {
-            "type": "array",
-            "items": {
-              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-            }
           }
         },
         "required": [
-          "defendantId",
-          "offenceIds"
+          "defendantId"
         ],
         "additionalProperties": false
       }
@@ -45,14 +41,31 @@
     "userId": {
       "description": "Logged In User Id",
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "submissionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "userName": {
+      "type": "string"
+    },
+    "formType": {
+      "description": "Form Type",
+      "$ref": "http://justice.gov.uk/core/courts/formType.json"
     }
   },
   "required": [
     "caseId",
     "petId",
     "formId",
-    "petDefendants",
-    "userId"
+    "petDefendants"
+  ],
+  "anyOf": [
+    {
+      "required": ["userId"]
+    },
+    {
+      "required": ["userName"]
+    }
   ],
   "additionalProperties": false
 }

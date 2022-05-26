@@ -1,0 +1,577 @@
+{
+  "petId": "%petId%",
+  "caseId": "%caseId%",
+  "userId": "%userId%",
+  "finalisedFormData": [
+    {
+      "id": "Jane JOHNSON, 22 May 1976 + 1",
+      "title": "Better case management",
+      "name": "Jane JOHNSON, 22 May 1976, created on 22 December 10:45 2022",
+      "sections": [
+        {
+          "title": "D1 Jane JOHNSON, 22 May 1976",
+          "label": "Crown Court - Cases sent for trial or following indication of guilty plea in indictable only cases. [Not required on committal for sentence only.]",
+          "subSections": [
+            {
+              "key": "ToBeCompletedByThePartiesBeforeTheHearing",
+              "heading": "Part 1 - To be completed by the parties before the hearing",
+              "fields": [
+                {
+                  "label": "Defendant",
+                  "value": "Jane JOHNSON, 22 May 1976"
+                },
+                {
+                  "label": "URN",
+                  "value": "URN1234567"
+                },
+                {
+                  "label": "Solicitors firm representing (if any)",
+                  "value": "Goddards Solicitors"
+                },
+                {
+                  "label": "Cjsm Email address",
+                  "value": "contact@goddards.co.uk"
+                },
+                {
+                  "label": "Legal aid status",
+                  "value": "Granted"
+                }
+              ]
+            },
+            {
+              "key": "",
+              "heading": "",
+              "heading2": "",
+              "fields": [
+                {
+                  "label": "Has the defendant been advised about credit for guilty pleas?",
+                  "value": "Yes"
+                }
+              ]
+            },
+            {
+              "key": "offences",
+              "heading": "Offences",
+              "heading2": "Pleas (either way) or indicated pleas (ind only) or alternatives offered",
+              "fields": [
+                {
+                  "value": "Warning: this information may affect credit for plea\""
+                },
+                {
+                  "label": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                },
+                {
+                  "label": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "label": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "value": "If there is a limited basis of plea insert details in \"real issues"
+                }
+              ]
+            },
+            {
+              "key": "",
+              "heading": "",
+              "heading2": "",
+              "fields": [
+                {
+                  "label": "Details of any other cases linked to this defendant",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                }
+              ]
+            },
+            {
+              "key": "pleas",
+              "heading": "Unless guilty pleas have been entered or indicated:",
+              "fields": [
+                {
+                  "label": "Real issues in the case.",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.",
+                  "hintText": "In so far as is known - concise details will be sufficient"
+                },
+                {
+                  "label": "What other areas of evidence do the prosecution anticipate serving before the PTPH?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "hintText": "[or if applicable sentence]"
+                },
+                {
+                  "label": "What other areas of evidence do the prosecution anticipate serving after the PTPH?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "label": "Other evidence defence say they need prior to PTPH to make PTPH effective",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "label": "Any other information to assist the management of the case",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "hintText": "(e.g. mental ill-health or other vulnerabilities or disabilities, including any suggestion that the defendant may be a victim of modern slavery and any reasons why the defendant should not appear by live link; reporting restrictions; likely press coverage):"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "DJ(MC) / legal advisor",
+          "subSections": [
+            {
+              "key": "ToBeCompletedByDJ(MC)",
+              "heading": "Part 2 - To be completed by DJ(MC) / legal advisor after review of parties' information",
+              "fields": [
+                {
+                  "label": "Supplemental information about real issues gathered during the hearing or whether basis of plea acceptable",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                },
+                {
+                  "label": "Child Witness Protocol - Witness under 10?",
+                  "value": "No",
+                  "hintText": "PTPH 14 days"
+                },
+                {
+                  "label": "Case qualifies for s.28 pre-recorded cross-examination (where available)",
+                  "value": "Under s.16",
+                  "hintText": "PTPH 28 days"
+                },
+                {
+                  "label": "If a guilty plea - was a PSR ordered?",
+                  "value": "Jane JOHNSON, 22 May 1976\nJohn SMITH, 16 March 2000",
+                  "hintText": "The type of report will be determined by the National Probation Service"
+                },
+                {
+                  "label": "Does the defendant require an interpreter?",
+                  "value": "Jane JOHNSON, 22 May 1976\nLanguage and dialect: Spanish\n\nJohn SMITH, 16 March 2000\nLanguage and dialect: Portuguese",
+                  "hintText": "The type of report will be determined by the National Probation Service"
+                },
+                {
+                  "label": "Other information gathered during the hearing to assist the management of the case",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "hintText": "E.g. mental ill-health or other vulnerabilities or disabilities, including any suggestion that the defendant may be a victim of modern slavery and any reasons why the defendant should not appear by live link; reporting restrictions; likely press coverage"
+                },
+                {
+                  "label": "Date of hearing in Crown Court",
+                  "value": "16 March 2000"
+                }
+              ]
+            },
+            {
+              "key": "custodyTimeLimits",
+              "heading": "Custody time limits",
+              "fields": [
+                {
+                  "label": "All defendant(s) remanded in custody",
+                  "value": "Jane JOHNSON, 22 May 1976\n CTL expiry: 01\n\nJune 2022 John SMITH, 16 March 2000\nCTL expiry: 01 June 2022",
+                  "hintText": "All unselected defendant(s) subject to bail"
+                },
+                {
+                  "label": "Has the court reminded the parties and the Defendant(s) that the Crown Court will expect before the PTPH that:",
+                  "value": ""
+                },
+                {
+                  "label": "The defendant(s) will have a conference with their legal representatives (if any)",
+                  "value": "Yes"
+                },
+                {
+                  "label": "The parties will engage to discuss pleas and outstanding issues (as necessary)",
+                  "value": "Yes"
+                },
+                {
+                  "label": "Name of DJ(MC)/ LA completing form",
+                  "value": "HHJ Smith"
+                },
+                {
+                  "label": "Date",
+                  "value": "10 January 2022"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "Joseph Stallion, 22 May 1954 + 1",
+      "title": "Better case management",
+      "name": "Joseph Stallion, 22 May 1954, created on 22 December 10:45 2022",
+      "sections": [
+        {
+          "title": "D1 Jane JOHNSON, 22 May 1976",
+          "label": "Crown Court - Cases sent for trial or following indication of guilty plea in indictable only cases. [Not required on committal for sentence only.]",
+          "subSections": [
+            {
+              "key": "ToBeCompletedByThePartiesBeforeTheHearing",
+              "heading": "Part 1 - To be completed by the parties before the hearing",
+              "fields": [
+                {
+                  "label": "Defendant",
+                  "value": "Jane JOHNSON, 22 May 1976"
+                },
+                {
+                  "label": "URN",
+                  "value": "URN1234567"
+                },
+                {
+                  "label": "Solicitors firm representing (if any)",
+                  "value": "Goddards Solicitors"
+                },
+                {
+                  "label": "Cjsm Email address",
+                  "value": "contact@goddards.co.uk"
+                },
+                {
+                  "label": "Legal aid status",
+                  "value": "Granted"
+                }
+              ]
+            },
+            {
+              "key": "",
+              "heading": "",
+              "heading2": "",
+              "fields": [
+                {
+                  "label": "Has the defendant been advised about credit for guilty pleas?",
+                  "value": "Yes"
+                }
+              ]
+            },
+            {
+              "key": "offences",
+              "heading": "Offences",
+              "heading2": "Pleas (either way) or indicated pleas (ind only) or alternatives offered",
+              "fields": [
+                {
+                  "value": "Warning: this information may affect credit for plea\""
+                },
+                {
+                  "label": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                },
+                {
+                  "label": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "label": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "value": "If there is a limited basis of plea insert details in \"real issues"
+                }
+              ]
+            },
+            {
+              "key": "",
+              "heading": "",
+              "heading2": "",
+              "fields": [
+                {
+                  "label": "Details of any other cases linked to this defendant",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                }
+              ]
+            },
+            {
+              "key": "pleas",
+              "heading": "Unless guilty pleas have been entered or indicated:",
+              "fields": [
+                {
+                  "label": "Real issues in the case.",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.",
+                  "hintText": "In so far as is known - concise details will be sufficient"
+                },
+                {
+                  "label": "What other areas of evidence do the prosecution anticipate serving before the PTPH?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "hintText": "[or if applicable sentence]"
+                },
+                {
+                  "label": "What other areas of evidence do the prosecution anticipate serving after the PTPH?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "label": "Other evidence defence say they need prior to PTPH to make PTPH effective",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "label": "Any other information to assist the management of the case",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "hintText": "(e.g. mental ill-health or other vulnerabilities or disabilities, including any suggestion that the defendant may be a victim of modern slavery and any reasons why the defendant should not appear by live link; reporting restrictions; likely press coverage):"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "DJ(MC) / legal advisor",
+          "subSections": [
+            {
+              "key": "ToBeCompletedByDJ(MC)",
+              "heading": "Part 2 - To be completed by DJ(MC) / legal advisor after review of parties' information",
+              "fields": [
+                {
+                  "label": "Supplemental information about real issues gathered during the hearing or whether basis of plea acceptable",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                },
+                {
+                  "label": "Child Witness Protocol - Witness under 10?",
+                  "value": "No",
+                  "hintText": "PTPH 14 days"
+                },
+                {
+                  "label": "Case qualifies for s.28 pre-recorded cross-examination (where available)",
+                  "value": "Under s.16",
+                  "hintText": "PTPH 28 days"
+                },
+                {
+                  "label": "If a guilty plea - was a PSR ordered?",
+                  "value": "Jane JOHNSON, 22 May 1976\nJohn SMITH, 16 March 2000",
+                  "hintText": "The type of report will be determined by the National Probation Service"
+                },
+                {
+                  "label": "Does the defendant require an interpreter?",
+                  "value": "Jane JOHNSON, 22 May 1976\nLanguage and dialect: Spanish\n\nJohn SMITH, 16 March 2000\nLanguage and dialect: Portuguese",
+                  "hintText": "The type of report will be determined by the National Probation Service"
+                },
+                {
+                  "label": "Other information gathered during the hearing to assist the management of the case",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "hintText": "E.g. mental ill-health or other vulnerabilities or disabilities, including any suggestion that the defendant may be a victim of modern slavery and any reasons why the defendant should not appear by live link; reporting restrictions; likely press coverage"
+                },
+                {
+                  "label": "Date of hearing in Crown Court",
+                  "value": "16 March 2000"
+                }
+              ]
+            },
+            {
+              "key": "custodyTimeLimits",
+              "heading": "Custody time limits",
+              "fields": [
+                {
+                  "label": "All defendant(s) remanded in custody",
+                  "value": "Jane JOHNSON, 22 May 1976\n CTL expiry: 01\n\nJune 2022 John SMITH, 16 March 2000\nCTL expiry: 01 June 2022",
+                  "hintText": "All unselected defendant(s) subject to bail"
+                },
+                {
+                  "label": "Has the court reminded the parties and the Defendant(s) that the Crown Court will expect before the PTPH that:",
+                  "value": ""
+                },
+                {
+                  "label": "The defendant(s) will have a conference with their legal representatives (if any)",
+                  "value": "Yes"
+                },
+                {
+                  "label": "The parties will engage to discuss pleas and outstanding issues (as necessary)",
+                  "value": "Yes"
+                },
+                {
+                  "label": "Name of DJ(MC)/ LA completing form",
+                  "value": "HHJ Smith"
+                },
+                {
+                  "label": "Date",
+                  "value": "10 January 2022"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "Kris kidman, 14 June 1981 + 1",
+      "title": "Better case management",
+      "name": "Kris kidman, 14 June 1981, created on 22 December 10:45 2022",
+      "sections": [
+        {
+          "title": "D1 Jane JOHNSON, 22 May 1976",
+          "label": "Crown Court - Cases sent for trial or following indication of guilty plea in indictable only cases. [Not required on committal for sentence only.]",
+          "subSections": [
+            {
+              "key": "ToBeCompletedByThePartiesBeforeTheHearing",
+              "heading": "Part 1 - To be completed by the parties before the hearing",
+              "fields": [
+                {
+                  "label": "Defendant",
+                  "value": "Jane JOHNSON, 22 May 1976"
+                },
+                {
+                  "label": "URN",
+                  "value": "URN1234567"
+                },
+                {
+                  "label": "Solicitors firm representing (if any)",
+                  "value": "Goddards Solicitors"
+                },
+                {
+                  "label": "Cjsm Email address",
+                  "value": "contact@goddards.co.uk"
+                },
+                {
+                  "label": "Legal aid status",
+                  "value": "Granted"
+                }
+              ]
+            },
+            {
+              "key": "",
+              "heading": "",
+              "heading2": "",
+              "fields": [
+                {
+                  "label": "Has the defendant been advised about credit for guilty pleas?",
+                  "value": "Yes"
+                }
+              ]
+            },
+            {
+              "key": "offences",
+              "heading": "Offences",
+              "heading2": "Pleas (either way) or indicated pleas (ind only) or alternatives offered",
+              "fields": [
+                {
+                  "value": "Warning: this information may affect credit for plea\""
+                },
+                {
+                  "label": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                },
+                {
+                  "label": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "label": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "value": "If there is a limited basis of plea insert details in \"real issues"
+                }
+              ]
+            },
+            {
+              "key": "",
+              "heading": "",
+              "heading2": "",
+              "fields": [
+                {
+                  "label": "Details of any other cases linked to this defendant",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                }
+              ]
+            },
+            {
+              "key": "pleas",
+              "heading": "Unless guilty pleas have been entered or indicated:",
+              "fields": [
+                {
+                  "label": "Real issues in the case.",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.",
+                  "hintText": "In so far as is known - concise details will be sufficient"
+                },
+                {
+                  "label": "What other areas of evidence do the prosecution anticipate serving before the PTPH?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "hintText": "[or if applicable sentence]"
+                },
+                {
+                  "label": "What other areas of evidence do the prosecution anticipate serving after the PTPH?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "label": "Other evidence defence say they need prior to PTPH to make PTPH effective",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "label": "Any other information to assist the management of the case",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "hintText": "(e.g. mental ill-health or other vulnerabilities or disabilities, including any suggestion that the defendant may be a victim of modern slavery and any reasons why the defendant should not appear by live link; reporting restrictions; likely press coverage):"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "DJ(MC) / legal advisor",
+          "subSections": [
+            {
+              "key": "ToBeCompletedByDJ(MC)",
+              "heading": "Part 2 - To be completed by DJ(MC) / legal advisor after review of parties' information",
+              "fields": [
+                {
+                  "label": "Supplemental information about real issues gathered during the hearing or whether basis of plea acceptable",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                },
+                {
+                  "label": "Child Witness Protocol - Witness under 10?",
+                  "value": "No",
+                  "hintText": "PTPH 14 days"
+                },
+                {
+                  "label": "Case qualifies for s.28 pre-recorded cross-examination (where available)",
+                  "value": "Under s.16",
+                  "hintText": "PTPH 28 days"
+                },
+                {
+                  "label": "If a guilty plea - was a PSR ordered?",
+                  "value": "Jane JOHNSON, 22 May 1976\nJohn SMITH, 16 March 2000",
+                  "hintText": "The type of report will be determined by the National Probation Service"
+                },
+                {
+                  "label": "Does the defendant require an interpreter?",
+                  "value": "Jane JOHNSON, 22 May 1976\nLanguage and dialect: Spanish\n\nJohn SMITH, 16 March 2000\nLanguage and dialect: Portuguese",
+                  "hintText": "The type of report will be determined by the National Probation Service"
+                },
+                {
+                  "label": "Other information gathered during the hearing to assist the management of the case",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet.",
+                  "hintText": "E.g. mental ill-health or other vulnerabilities or disabilities, including any suggestion that the defendant may be a victim of modern slavery and any reasons why the defendant should not appear by live link; reporting restrictions; likely press coverage"
+                },
+                {
+                  "label": "Date of hearing in Crown Court",
+                  "value": "16 March 2000"
+                }
+              ]
+            },
+            {
+              "key": "custodyTimeLimits",
+              "heading": "Custody time limits",
+              "fields": [
+                {
+                  "label": "All defendant(s) remanded in custody",
+                  "value": "Jane JOHNSON, 22 May 1976\n CTL expiry: 01\n\nJune 2022 John SMITH, 16 March 2000\nCTL expiry: 01 June 2022",
+                  "hintText": "All unselected defendant(s) subject to bail"
+                },
+                {
+                  "label": "Has the court reminded the parties and the Defendant(s) that the Crown Court will expect before the PTPH that:",
+                  "value": ""
+                },
+                {
+                  "label": "The defendant(s) will have a conference with their legal representatives (if any)",
+                  "value": "Yes"
+                },
+                {
+                  "label": "The parties will engage to discuss pleas and outstanding issues (as necessary)",
+                  "value": "Yes"
+                },
+                {
+                  "label": "Name of DJ(MC)/ LA completing form",
+                  "value": "HHJ Smith"
+                },
+                {
+                  "label": "Date",
+                  "value": "10 January 2022"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

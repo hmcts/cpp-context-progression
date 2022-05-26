@@ -1,5 +1,69 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static com.google.common.io.Resources.getResource;
+import static java.nio.charset.Charset.defaultCharset;
+import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.CASE_ID;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.DEFENDANT_DATA;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.DEFENDANT_ID;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.FINALISED_FORM_DATA;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.FIRST_NAME;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.FORM_ID;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.ID;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.IS_YOUTH;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.LAST_NAME;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PET_DEFENDANTS;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PET_FORM_DATA;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PET_ID;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PROSECUTION_CASE;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PUBLIC_PROGRESSION_PET_DETAIL_UPDATED;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PUBLIC_PROGRESSION_PET_FORM_CREATED;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PUBLIC_PROGRESSION_PET_FORM_DEFENDANT_UPDATED;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PUBLIC_PROGRESSION_PET_FORM_FINALISED;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PUBLIC_PROGRESSION_PET_FORM_UPDATED;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PUBLIC_PROGRESSION_PET_OPERATION_FAILED;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.UPDATED_BY;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.SUBMISSION_ID;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.USER_ID;
+import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.USER_NAME;
+import static uk.gov.moj.cpp.progression.utils.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.utils.FileUtil.jsonFromString;
+
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
+import uk.gov.moj.cpp.progression.service.MaterialService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.UsersGroupService;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+
+import com.google.common.io.Resources;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,48 +73,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
-import uk.gov.moj.cpp.progression.service.MaterialService;
-
-import javax.json.JsonObject;
-
-import java.util.List;
-import java.util.Optional;
-
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.CASE_DOCUMENT_TYPE_ID;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.CASE_ID;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.COURT_DOCUMENT;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.DATA;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.DEFENDANT_ID;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.MATERIAL_ID;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PET_ID;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PROGRESSION_COMMAND_ADD_COURT_DOCUMENT;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PROSECUTION_CASE;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PUBLIC_PROGRESSION_PET_DETAIL_UPDATED;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PUBLIC_PROGRESSION_PET_FORM_CREATED;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PUBLIC_PROGRESSION_PET_FORM_DEFENDANT_UPDATED;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PUBLIC_PROGRESSION_PET_FORM_FINALISED;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PUBLIC_PROGRESSION_PET_FORM_UPDATED;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.PUBLIC_PROGRESSION_PET_OPERATION_FAILED;
-import static uk.gov.moj.cpp.progression.processor.PetFormEventProcessor.USER_ID;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -69,6 +91,12 @@ public class PetFormEventProcessorTest {
     public static final String PROGRESSION_EVENT_PET_FORM_DEFENDANT_UPDATED = "progression.event.pet-form-defendant-updated";
     public static final String PROGRESSION_EVENT_PET_FORM_UPDATED = "progression.event.pet-form-updated";
     public static final String PROGRESSION_EVENT_PET_FORM_CREATED = "progression.event.pet-form-created";
+    public static final String PROGRESSION_COMMAND_ADD_COURT_DOCUMENT = "progression.command.add-court-document";
+    public static final String MATERIAL_ID = "materialId";
+    public static final String COURT_DOCUMENT = "courtDocument";
+    public static final UUID CASE_DOCUMENT_TYPE_ID = fromString("6b9df1fb-7bce-4e33-88dd-db91f75adeb8");
+    public static final String NAME = "name";
+    public static final String CPS_USER_NAME = "cps user name";
 
     @Mock
     private Sender sender;
@@ -85,11 +113,20 @@ public class PetFormEventProcessorTest {
     @Mock
     private DocumentGeneratorService documentGeneratorService;
 
+    @Mock
+    private ReferenceDataService referenceDataService;
+
+    @Mock
+    private Requester requester;
+
     @Spy
     private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Mock
+    private UsersGroupService usersGroupService;
 
 
     @Before
@@ -102,11 +139,16 @@ public class PetFormEventProcessorTest {
     public void shouldRaisePetFormCreatedPublicEvent() {
         final String petId = randomUUID().toString();
         final String caseId = randomUUID().toString();
+        final String formId = randomUUID().toString();
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PROGRESSION_EVENT_PET_FORM_CREATED).withUserId(userId),
                 createObjectBuilder()
                         .add(PET_ID, petId)
                         .add(CASE_ID, caseId)
+                        .add(FORM_ID, formId)
+                        .add(IS_YOUTH, true)
+                        .add(PET_DEFENDANTS, createArrayBuilder().build())
+                        .add(USER_NAME, "cps user name")
         );
 
         petFormEventProcessor.petFormCreated(requestEnvelope);
@@ -114,17 +156,25 @@ public class PetFormEventProcessorTest {
 
         final JsonEnvelope envelope = envelopeArgumentCaptor.getValue();
         assertThat(envelope.metadata().name(), is(PUBLIC_PROGRESSION_PET_FORM_CREATED));
+        verifyPetFormPublicEvent(petId,caseId,userId,envelope);
     }
 
     @Test
     public void shouldRaisePetFormUpdatedPublicEvent() {
+
         final String petId = randomUUID().toString();
         final String caseId = randomUUID().toString();
+        final String userId = randomUUID().toString();
+
+        when(usersGroupService.getUserById(any(), any())).thenReturn(createObjectBuilder().add(ID, userId).add(FIRST_NAME, FIRST_NAME).add(LAST_NAME, LAST_NAME).build());
+
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PROGRESSION_EVENT_PET_FORM_UPDATED).withUserId(userId),
                 createObjectBuilder()
                         .add(PET_ID, petId)
                         .add(CASE_ID, caseId)
+                        .add(PET_FORM_DATA, "")
+                        .add(USER_ID, userId)
         );
 
         petFormEventProcessor.petFormUpdated(requestEnvelope);
@@ -132,6 +182,7 @@ public class PetFormEventProcessorTest {
 
         final JsonEnvelope envelope = envelopeArgumentCaptor.getValue();
         assertThat(envelope.metadata().name(), is(PUBLIC_PROGRESSION_PET_FORM_UPDATED));
+        verifyPetFormPublicEvent(petId,caseId,userId,envelope);
     }
 
     @Test
@@ -139,12 +190,19 @@ public class PetFormEventProcessorTest {
         final String petId = randomUUID().toString();
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
+        final String userId = randomUUID().toString();
+
+        when(usersGroupService.getUserById(any(), any())).thenReturn(createObjectBuilder().add(ID, userId).add(FIRST_NAME, FIRST_NAME).add(LAST_NAME, LAST_NAME).build());
+
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PROGRESSION_EVENT_PET_FORM_DEFENDANT_UPDATED).withUserId(userId),
                 createObjectBuilder()
                         .add(PET_ID, petId)
                         .add(CASE_ID, caseId)
                         .add(DEFENDANT_ID, defendantId)
+                        .add(DEFENDANT_DATA, "defendantData")
+                        .add(USER_ID, userId)
+
         );
 
         petFormEventProcessor.petFormDefendantUpdated(requestEnvelope);
@@ -152,13 +210,25 @@ public class PetFormEventProcessorTest {
 
         final JsonEnvelope envelope = envelopeArgumentCaptor.getValue();
         assertThat(envelope.metadata().name(), is(PUBLIC_PROGRESSION_PET_FORM_DEFENDANT_UPDATED));
+        verifyPetFormPublicEvent(petId,caseId,userId,envelope);
     }
 
     @Test
-    public void shouldRaisePetFormFinalisedPublicEvent() {
+    public void shouldRaisePetFormFinalisedPublicEvent() throws IOException {
         final String petId = randomUUID().toString();
         final String caseId = randomUUID().toString();
         final String userId = randomUUID().toString();
+        final String submissionId = randomUUID().toString();
+
+        final String fileName = "Jane JOHNSON, 22 May 1976, created on 22 December 10:45 2022.pdf";
+
+        final String inputEvent = Resources.toString(getResource("pet-finalised-form-data.json"), defaultCharset())
+                .replaceAll("%caseId%", caseId)
+                .replaceAll("%petId%", petId)
+                .replaceAll("%userId%", userId);
+        final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
+        JsonArrayBuilder arrayBuilder = createArrayBuilder();
+        readData.getJsonArray("finalisedFormData").forEach(x -> arrayBuilder.add(x.toString()));
 
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PROGRESSION_EVENT_PET_FORM_FINALISED).withUserId(PetFormEventProcessorTest.userId),
@@ -167,30 +237,28 @@ public class PetFormEventProcessorTest {
                         .add(CASE_ID, caseId)
                         .add(PROSECUTION_CASE, createObjectBuilder().build())
                         .add(USER_ID, userId)
+                        .add(FINALISED_FORM_DATA, arrayBuilder.build())
+                        .add(SUBMISSION_ID, submissionId)
         );
 
-        when(materialService.getStructuredForm(any(), any())).thenReturn(Optional.of(createObjectBuilder().add(DATA, "{\"name\": \"value\"}").build()));
+        when(documentGeneratorService.generateFormDocument(any(), any(), any(), any())).thenReturn(fileName);
+        when(usersGroupService.getUserById(any(), any())).thenReturn(createObjectBuilder().add(ID, userId).add(FIRST_NAME, FIRST_NAME).add(LAST_NAME, LAST_NAME).build());
+
         petFormEventProcessor.petFormFinalised(requestEnvelope);
-        verify(sender, times(2)).send(envelopeArgumentCaptor.capture());
+        verify(sender, times(4)).send(envelopeArgumentCaptor.capture());
 
         final List<JsonEnvelope> envelopes = envelopeArgumentCaptor.getAllValues();
 
-        final JsonEnvelope envelope1 = envelopes.get(0);
+        for (int i = 0; i < 3; i++) {
+            assertAddCourtOrderCommandFromEnvelope(caseId, envelopes.get(i));
+        }
+
+        final JsonEnvelope envelope1 = envelopes.get(3);
         assertThat(envelope1.metadata().name(), is(PUBLIC_PROGRESSION_PET_FORM_FINALISED));
         final JsonObject payload1 = envelope1.payloadAsJsonObject();
-        assertThat(payload1.getString(PET_ID), is(petId));
-        assertThat(payload1.getString(CASE_ID), is(caseId));
-        assertThat(payload1.getString(USER_ID), is(userId));
         assertThat(payload1.getString(MATERIAL_ID), is(notNullValue()));
-
-        final JsonEnvelope envelope2 = envelopes.get(1);
-        assertThat(envelope2.metadata().name(), is(PROGRESSION_COMMAND_ADD_COURT_DOCUMENT));
-        final JsonObject payload2 = envelope2.payloadAsJsonObject();
-        assertThat(payload2.getString(MATERIAL_ID), is(notNullValue()));
-        final JsonObject courtDocument = payload2.getJsonObject(COURT_DOCUMENT);
-        assertThat(courtDocument.getString(COURT_DOCUMENT_ID), is(notNullValue()));
-        assertThat(courtDocument.getJsonObject(DOCUMENT_CATEGORY).getJsonObject(CASE_DOCUMENT).getString(PROSECUTION_CASE_ID), is(caseId));
-        assertThat(courtDocument.getString(DOCUMENT_TYPE_ID), is(CASE_DOCUMENT_TYPE_ID.toString()));
+        verifyPetFormPublicEvent(petId, caseId, userId, envelope1);
+        assertThat(payload1.getString(SUBMISSION_ID), is(notNullValue()));
     }
 
     @Test
@@ -202,13 +270,18 @@ public class PetFormEventProcessorTest {
                 createObjectBuilder()
                         .add(PET_ID, petId)
                         .add(CASE_ID, caseId)
+                        .add(PET_DEFENDANTS, createArrayBuilder().build())
+                        .add(USER_ID, userId)
         );
+
+        when(usersGroupService.getUserById(any(), any())).thenReturn(createObjectBuilder().add(ID, userId).add(FIRST_NAME, FIRST_NAME).add(LAST_NAME, LAST_NAME).build());
 
         petFormEventProcessor.petDetailUpdated(requestEnvelope);
         verify(sender, times(1)).send(envelopeArgumentCaptor.capture());
 
         final JsonEnvelope envelope = envelopeArgumentCaptor.getValue();
         assertThat(envelope.metadata().name(), is(PUBLIC_PROGRESSION_PET_DETAIL_UPDATED));
+        verifyPetFormPublicEvent(petId,caseId,userId,envelope);
     }
 
     @Test
@@ -225,4 +298,60 @@ public class PetFormEventProcessorTest {
         assertThat(envelope.metadata().name(), is(PUBLIC_PROGRESSION_PET_OPERATION_FAILED));
     }
 
+
+    private void assertAddCourtOrderCommandFromEnvelope(final String caseId, final JsonEnvelope envelope) {
+        assertThat(envelope.metadata().name(), Matchers.is(PROGRESSION_COMMAND_ADD_COURT_DOCUMENT));
+        final JsonObject payload2 = envelope.payloadAsJsonObject();
+        assertThat(payload2.getString(MATERIAL_ID), Matchers.is(Matchers.notNullValue()));
+        final JsonObject courtDocument1 = payload2.getJsonObject(COURT_DOCUMENT);
+        assertThat(courtDocument1.getString(COURT_DOCUMENT_ID), Matchers.is(Matchers.notNullValue()));
+        assertThat(courtDocument1.getJsonObject(DOCUMENT_CATEGORY).getJsonObject(CASE_DOCUMENT).getString(PROSECUTION_CASE_ID), Matchers.is(caseId));
+        assertThat(courtDocument1.getString(DOCUMENT_TYPE_ID), Matchers.is(CASE_DOCUMENT_TYPE_ID.toString()));
+    }
+
+    private void verifyPetFormPublicEvent(final String petId, final String caseId, final String userId, final JsonEnvelope envelope1) {
+        final JsonObject payload1 = envelope1.payloadAsJsonObject();
+        assertThat(payload1.getString(PET_ID), is(petId));
+        assertThat(payload1.getString(CASE_ID), is(caseId));
+        assertThat(payload1.getJsonObject(UPDATED_BY), notNullValue());
+        if (payload1.getJsonObject(UPDATED_BY).containsKey(NAME)) {
+            assertThat(payload1.getJsonObject(UPDATED_BY).getString(NAME), is(CPS_USER_NAME));
+        } else {
+            assertThat(payload1.getJsonObject(UPDATED_BY).getString(ID), is(userId));
+            assertThat(payload1.getJsonObject(UPDATED_BY).getString(FIRST_NAME), is(FIRST_NAME));
+            assertThat(payload1.getJsonObject(UPDATED_BY).getString(LAST_NAME), is(LAST_NAME));
+        }
+    }
+
+    @Test
+    public void shouldHandleServePetSubmittedPublicEvent() {
+
+        final String inputEvent = generatePetFormDataFromReferenceData();
+        final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
+
+        when(referenceDataService.getPetForm(any(), any())).thenReturn(Optional.ofNullable(readData));
+
+        String payload = getPayload("cps-serve-pet-submitted.json");
+        final JsonObject jsonPayload = jsonFromString(payload);
+
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-pet-submitted"),
+                jsonPayload);
+
+        petFormEventProcessor.handleServePetSubmittedPublicEvent(envelope);
+
+        verify(sender, atLeastOnce()).send(envelopeArgumentCaptor.capture());
+    }
+
+    private String generatePetFormDataFromReferenceData() {
+        return "{\n" +
+                "  \"form_id\": \"f8254db1-1683-483e-afb3-b87fde5a0a26\",\n" +
+                "  \"description\": \"Pet Form data\",\n" +
+                "  \"petDefendants\": \"[]\",\n" +
+                "  \"data\":\"{\\n  \\\"field1\\\": \\\"value1\\\",\\n  \\\"field2\\\": \\\"value2\\\"\\n}\",\n" +
+                "  \"version\": 1\n" +
+                "}";
+
+    }
 }
+
