@@ -207,16 +207,16 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/public.events.progression.custody-time-limit-extended.json
 
         - name: public.progression.pet-form-created
-          schema_uri: http://justice.gov.uk/core/courts/pet-form-created.json
+          schema_uri: http://justice.gov.uk/core/courts/public-pet-form-created.json
 
         - name: public.progression.pet-form-updated
-          schema_uri: http://justice.gov.uk/core/courts/pet-form-updated.json
+          schema_uri: http://justice.gov.uk/core/courts/public-pet-form-updated.json
 
         - name: public.progression.pet-detail-updated
-          schema_uri: http://justice.gov.uk/core/courts/pet-detail-updated.json
+          schema_uri: http://justice.gov.uk/core/courts/public-pet-detail-updated.json
 
         - name: public.progression.pet-operation-failed
-          schema_uri: http://justice.gov.uk/core/courts/pet-operation-failed.json
+          schema_uri: http://justice.gov.uk/core/courts/public-pet-operation-failed.json
 
         - name: public.progression.pet-form-defendant-updated
           schema_uri: http://justice.gov.uk/core/courts/public-pet-form-defendant-updated.json
