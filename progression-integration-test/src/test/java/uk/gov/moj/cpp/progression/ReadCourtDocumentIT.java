@@ -26,7 +26,9 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+
 
 public class ReadCourtDocumentIT extends AbstractIT {
 
@@ -52,7 +54,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
     }
 
-
+    @Ignore("DD-20992")
     @Test
     public void shouldGetMaterialMetadataAndContent() throws Exception {
         // given
@@ -70,6 +72,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         assertThat(stringToJsonObjectConverter.convert(documentContentResponse.readEntity(String.class)), equalTo(expectedResponse));
     }
 
+    @Ignore("DD-20992")
     @Test
     public void shouldGetMaterialMetadataAndContentForDefence() throws Exception {
         final UUID organisationId = randomUUID();
@@ -103,7 +106,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         assertThat(stringToJsonObjectConverter.convert(documentContentResponse.readEntity(String.class)), equalTo(expectedResponse));
     }
 
-
+    @Ignore("DD-20992")
     @Test
     public void shouldNotGetMaterialMetadataAndContentForDefence() throws Exception {
         final UUID userOrganisationId = randomUUID();
