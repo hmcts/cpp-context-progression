@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.domain.aggregate;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -24,8 +25,10 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -150,6 +153,141 @@ public class HearingAggregateTest {
         assertThat(offencesRemovedFromHearing.getHearingId(), is(hearingId));
         assertThat(offencesRemovedFromHearing.getProsecutionCaseIds().size(), is(0));
     }
+
+
+    @Test
+    public void shouldRemoveDefendantWhenAllOffencesAreRemoved() {
+
+        final UUID hearingId = UUID.randomUUID();
+        final UUID prosecutionCaseId = UUID.randomUUID();
+
+        final UUID defendantId1 = UUID.randomUUID();
+        final UUID defendantId2 = UUID.randomUUID();
+
+        final UUID offence1 = UUID.randomUUID();
+        final UUID offence2 = UUID.randomUUID();
+        final UUID offence3 = UUID.randomUUID();
+
+        //defendant to be removed
+        final Defendant defendantToBeRemoved = Defendant.defendant()
+                .withId(defendantId1)
+                .withOffences(
+                        Stream.of(Offence.offence().withId(offence1).build(),
+                                Offence.offence().withId(offence2).build())
+                                .collect(toList())).build();
+        //other defendant
+        final Defendant defendantToBeRemained = Defendant.defendant()
+                .withId(defendantId2)
+                .withOffences(new ArrayList<>(Arrays.asList(Offence.offence().withId(offence3).build()))).build();
+
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(prosecutionCaseId)
+                .withDefendants(Stream.of(defendantToBeRemoved, defendantToBeRemained).collect(toList()))
+                .build();
+
+        final Hearing hearing = Hearing
+                .hearing()
+                .withProsecutionCases(new ArrayList<>(Arrays.asList(prosecutionCase))).build();
+        setField(hearingAggregate, "hearing", hearing);
+
+        final List<Object> eventStream1 = hearingAggregate.removeOffenceFromHearing(hearingId, Arrays.asList(offence1, offence2)).collect(toList());
+
+        assertThat(eventStream1.size(), is(1));
+
+        final OffencesRemovedFromHearing offencesRemovedFromHearing = (OffencesRemovedFromHearing) eventStream1.get(0);
+        assertThat(offencesRemovedFromHearing.getHearingId(), is(hearingId));
+        assertThat(offencesRemovedFromHearing.getDefendantIds(), hasItem(defendantId1));
+        assertThat(offencesRemovedFromHearing.getProsecutionCaseIds().size(), is(0));
+    }
+
+    @Test
+    public void shouldNotRemoveDefendantWhenOneOffenceRemoved() {
+
+        final UUID hearingId = UUID.randomUUID();
+        final UUID prosecutionCaseId = UUID.randomUUID();
+
+        final UUID defendantId1 = UUID.randomUUID();
+        final UUID defendantId2 = UUID.randomUUID();
+
+        final UUID offence1 = UUID.randomUUID();
+        final UUID offence2 = UUID.randomUUID();
+        final UUID offence3 = UUID.randomUUID();
+
+        //defendant to be removed
+        final Defendant defendantToBeRemoved = Defendant.defendant()
+                .withId(defendantId1)
+                .withOffences(
+                        Stream.of(Offence.offence().withId(offence1).build(),
+                                Offence.offence().withId(offence2).build())
+                                .collect(toList())).build();
+        //other defendant
+        final Defendant defendantToBeRemained = Defendant.defendant()
+                .withId(defendantId2)
+                .withOffences(new ArrayList<>(Arrays.asList(Offence.offence().withId(offence3).build()))).build();
+
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(prosecutionCaseId)
+                .withDefendants(Stream.of(defendantToBeRemoved, defendantToBeRemained).collect(toList()))
+                .build();
+
+        final Hearing hearing = Hearing
+                .hearing()
+                .withProsecutionCases(new ArrayList<>(Arrays.asList(prosecutionCase))).build();
+        setField(hearingAggregate, "hearing", hearing);
+
+        final List<Object> eventStream1 = hearingAggregate.removeOffenceFromHearing(hearingId, Arrays.asList(offence1)).collect(toList());
+
+        assertThat(eventStream1.size(), is(1));
+
+        final OffencesRemovedFromHearing offencesRemovedFromHearing = (OffencesRemovedFromHearing) eventStream1.get(0);
+        assertThat(offencesRemovedFromHearing.getHearingId(), is(hearingId));
+        assertThat(offencesRemovedFromHearing.getDefendantIds().size(), is(0));
+        assertThat(offencesRemovedFromHearing.getProsecutionCaseIds().size(), is(0));
+    }
+
+    @Test
+    public void shouldNotRaiseEventWhenOneOffenceIsNotInHearing() {
+
+        final UUID hearingId = UUID.randomUUID();
+        final UUID prosecutionCaseId = UUID.randomUUID();
+
+        final UUID defendantId1 = UUID.randomUUID();
+        final UUID defendantId2 = UUID.randomUUID();
+
+        final UUID offence1 = UUID.randomUUID();
+        final UUID offence2 = UUID.randomUUID();
+        final UUID offence3 = UUID.randomUUID();
+
+        final Defendant defendantToBeRemoved = Defendant.defendant()
+                .withId(defendantId1)
+                .withOffences(
+                        Stream.of(Offence.offence().withId(offence1).build(),
+                                Offence.offence().withId(offence2).build())
+                                .collect(toList())).build();
+
+        final Defendant defendantToBeRemained = Defendant.defendant()
+                .withId(defendantId2)
+                .withOffences(new ArrayList<>(Arrays.asList(Offence.offence().withId(offence3).build()))).build();
+
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(prosecutionCaseId)
+                .withDefendants(Stream.of(defendantToBeRemoved, defendantToBeRemained).collect(toList()))
+                .build();
+
+        final Hearing hearing = Hearing
+                .hearing()
+                .withProsecutionCases(new ArrayList<>(Arrays.asList(prosecutionCase))).build();
+        setField(hearingAggregate, "hearing", hearing);
+
+        final List<Object> eventStream1 = hearingAggregate.removeOffenceFromHearing(hearingId, Arrays.asList(randomUUID())).collect(toList());
+
+        assertThat(eventStream1.size(), is(0));
+
+    }
+
 
     private ProsecutionCase createProsecutionCase(final UUID caseId, final UUID newDefendantID, final UUID offenceId1, final UUID offenceId2) {
         final List<Offence> offences = new ArrayList<>();

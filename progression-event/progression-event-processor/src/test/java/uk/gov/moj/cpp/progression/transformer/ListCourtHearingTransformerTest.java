@@ -4,11 +4,12 @@ import static java.time.LocalDate.parse;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -20,6 +21,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
@@ -50,6 +52,7 @@ import uk.gov.justice.core.courts.ReferringJudicialDecision;
 import uk.gov.justice.core.courts.RotaSlot;
 import uk.gov.justice.core.courts.SjpCourtReferral;
 import uk.gov.justice.core.courts.SjpReferral;
+import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -60,6 +63,7 @@ import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -174,6 +178,58 @@ public class ListCourtHearingTransformerTest {
                 .getProsecutionCaseIdentifier().getProsecutionAuthorityCode(), is(prosecutingAuth));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0)
                 .getCpsOrganisation(), is(cpsOrganisation));
+    }
+
+    @Test
+    public void shouldTransformToListCourtHearingWithReferralReason() throws IOException {
+
+        final List<CourtHearingRequest> courtHearingRequests = getCourtHearingRequest();
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        final JsonObject jsonObject = Json.createObjectBuilder().add("hearingDescription", "British").build();
+
+        when(referenceDataService.getHearingType(any(), any(UUID.class), any())).thenReturn(Optional.of(jsonObject));
+        when(referenceDataService.getCourtCentre(envelopeReferral, postcode, prosecutingAuth, requester))
+                .thenReturn(CourtCentre.courtCentre().withId(courtCenterId).build());
+        when(referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(any(), any(), any(), any()))
+                .thenReturn(Optional.of(Json.createObjectBuilder()
+                        .add("courts", createArrayBuilder()
+                                .add(Json.createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
+                                .build())
+                        .build()));
+        when(referenceDataService.getCourtCentre("Redditch", envelopeReferral,requester))
+                .thenReturn(CourtCentre.courtCentre()
+                        .withId(courtCenterId)
+                        .withName("South Western (Lavender Hill)")
+                        .withWelshName("welshName_Test").build());
+        when(referenceDataService.getReferralReasonById(any(), any(), any()))
+                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
+
+        final ListCourtHearing listCourtHearing = listCourtHearingTransformer
+                .transform(envelopeReferral, Arrays.asList(getProsecutionCase()), courtHearingRequests.get(0), UUID.randomUUID());
+
+        assertThat(listCourtHearing.getHearings().size(), is(1));
+        assertThat(listCourtHearing.getHearings().get(0).getCourtCentre().getId(), is(courtCenterId));
+        assertThat(listCourtHearing.getHearings().get(0).getEarliestStartDateTime().toString(), is(earliestStartDateTime.toString()));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
+        validateDefendant(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0)
+                .getPersonDefendant().getPersonDetails().getAddress().getPostcode(), is(postcode));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0)
+                .getProsecutionCaseIdentifier().getProsecutionAuthorityCode(), is(prosecutingAuth));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0)
+                .getCpsOrganisation(), is(cpsOrganisation));
+        assertThat(listCourtHearing.getHearings().get(0).getBookedSlots().get(0)
+                .getRoomId(), is("roomId1"));
+        assertThat(listCourtHearing.getHearings().get(0).getBookingType(), is("Video"));
+        assertThat(listCourtHearing.getHearings().get(0).getPriority(), is("High"));
+        assertThat(listCourtHearing.getHearings().get(0).getSpecialRequirements().size(), is(2));
+        assertThat(listCourtHearing.getHearings().get(0).getSpecialRequirements(), hasItems("RSZ", "CELL"));
+        assertThat(listCourtHearing.getHearings().get(0).getWeekCommencingDate().getStartDate(), is(LocalDate.now()));
+        assertThat(listCourtHearing.getHearings().get(0).getWeekCommencingDate().getDuration(), is(1));
     }
 
     @Test
@@ -500,6 +556,24 @@ public class ListCourtHearingTransformerTest {
 
     }
 
+    @Test
+    public void shouldCalculateExpectedStartDate() {
+        final LocalDate now = LocalDate.now();
+        final CourtHearingRequest courtHearingRequest = CourtHearingRequest.
+                courtHearingRequest().
+                withWeekCommencingDate(
+                        WeekCommencingDate.
+                                weekCommencingDate().
+                                withStartDate(now).
+                                build()
+                ).
+                build();
+
+        final ZonedDateTime actual = listCourtHearingTransformer.calculateExpectedStartDate(courtHearingRequest);
+
+        assertThat(actual, is(now.atStartOfDay(ZoneOffset.UTC)));
+    }
+
     private List<CourtApplication> createCourtApplications() {
         final List<CourtApplication> courtApplications = new ArrayList<>();
         courtApplications.add(CourtApplication.courtApplication()
@@ -798,6 +872,31 @@ public class ListCourtHearingTransformerTest {
                 .withListingDirections("wheelchair access required")
                 .withProsecutorDatesToAvoid("Thursdays")
                 .withReportingRestrictionReason(AUTOMATIC_ANONYMITY)
+                .build());
+    }
+
+    private List<CourtHearingRequest> getCourtHearingRequest() {
+        //Either EarliestStartDateTime or ListedStartDateTime can be present. Not both.
+        return Arrays.asList(CourtHearingRequest.courtHearingRequest()
+                .withCourtCentre(createCourtCenter())
+                .withEarliestStartDateTime( earliestStartDateTime )
+                .withHearingType(HearingType.hearingType().withId(randomUUID()).build())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withListDefendantRequests(Arrays.asList(ListDefendantRequest.listDefendantRequest()
+                        .withDefendantId(defendantId)
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .withDefendantOffences(Arrays.asList(offenceId))
+                        .build()))
+                .withListedStartDateTime(listedStartDateTime)
+                .withListingDirections("wheelchair access required")
+                .withBookedSlots(singletonList(RotaSlot.rotaSlot().withRoomId("roomId1").build()))
+                .withBookingType("Video")
+                .withPriority("High")
+                .withSpecialRequirements(Arrays.asList("RSZ", "CELL"))
+                .withWeekCommencingDate(WeekCommencingDate.weekCommencingDate()
+                        .withStartDate(LocalDate.now())
+                        .withDuration(1)
+                        .build())
                 .build());
     }
 

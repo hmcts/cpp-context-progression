@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.Filter.filter;
 import static com.jayway.jsonpath.JsonPath.compile;
@@ -18,6 +19,12 @@ import static org.junit.Assert.fail;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithDefendantAsAdult;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.matchDefendant;
@@ -51,18 +58,30 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.HearingStub;
+import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
+import com.google.common.io.Resources;
 import com.jayway.jsonpath.Filter;
+import com.jayway.jsonpath.ReadContext;
+import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
@@ -75,7 +94,9 @@ public class HearingUpdatedIT extends AbstractIT {
     private static final String PUBLIC_HEARING_DETAIL_CHANGED = "public.hearing-detail-changed";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
 
+    private static final String PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING = "public.hearing.selected-offences-removed-from-existing-hearing";
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression.prosecution-cases-referred-to-court";
+    private static final String PUBLIC_PROGRESSION_OFFENCES_REMOVED_FROM_EXISTING_ALLOCATED_HEARING = "public.progression.offences-removed-from-existing-allocated-hearing";
 
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents
@@ -84,10 +105,14 @@ public class HearingUpdatedIT extends AbstractIT {
             .createPublicConsumer(PUBLIC_HEARING_DETAIL_CHANGED);
     private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
     private static final MessageConsumer messageConsumerHearingOffenceUpdated = privateEvents.createPrivateConsumer("progression.event.hearing-offences-updated");
+    private static final MessageConsumer messageConsumerListingNumberUpdated = privateEvents.createPrivateConsumer("progression.event.prosecution-case-listing-number-updated");
     private static final MessageConsumer messageConsumerListingNumberIncreased = privateEvents.createPrivateConsumer("progression.event.prosecution-case-listing-number-increased");
     private static final String OFFENCE_ID = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
     private static final String OFFENCE_ID2 = "4789ab16-0bb7-4ef1-87ef-c936bf0364f1";
-
+    private static final MessageConsumer messageConsumerClientPublicOffenceRemovedFromHearing = publicEvents
+            .createPrivateConsumer(PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING);
+    private static final MessageConsumer messageConsumerClientProgressionPublicOffenceRemovedFromHearing = publicEvents
+            .createPrivateConsumer(PUBLIC_PROGRESSION_OFFENCES_REMOVED_FROM_EXISTING_ALLOCATED_HEARING);
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
@@ -113,6 +138,10 @@ public class HearingUpdatedIT extends AbstractIT {
         messageConsumerClientPublicForReferToCourtOnHearingInitiated.close();
         messageConsumerHearingPopulatedToProbationCaseWorker.close();
         messageConsumerHearingOffenceUpdated.close();
+        messageConsumerListingNumberUpdated.close();
+        messageConsumerClientProgressionPublicOffenceRemovedFromHearing.close();
+        messageConsumerClientPublicOffenceRemovedFromHearing.close();
+        messageConsumerHearingPopulatedToProbationCaseWorker.close();
         messageConsumerListingNumberIncreased.close();
     }
 
@@ -132,10 +161,8 @@ public class HearingUpdatedIT extends AbstractIT {
                 .and("courtCentre.id").is(courtCentreId)
                 .and("hearingListingStatus").is("HEARING_INITIALISED"));
 
-        pollProsecutionCasesProgressionFor(caseId, new Matcher[]{
-                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", hearingIdFilter))
-        });
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", hearingIdFilter)));
 
         final String updatedCourtCentreId = randomUUID().toString();
         final Metadata hearingUpdatedMetadata = createMetadata(PUBLIC_LISTING_HEARING_UPDATED);
@@ -146,10 +173,8 @@ public class HearingUpdatedIT extends AbstractIT {
                 .and("courtCentre.id").is(updatedCourtCentreId)
                 .and("hearingListingStatus").is("HEARING_INITIALISED"));
 
-        pollProsecutionCasesProgressionFor(caseId, new Matcher[]{
-                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", updatedHearingIdFilter))
-        });
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", updatedHearingIdFilter)));
         verifyInMessagingQueue(messageConsumerClientPublicForHearingDetailChanged);
     }
 
@@ -206,11 +231,9 @@ public class HearingUpdatedIT extends AbstractIT {
                 .and("courtCentre.id").is(courtCentreId)
                 .and("hearingListingStatus").is("HEARING_INITIALISED"));
 
-        pollProsecutionCasesProgressionFor(caseId, new Matcher[]{
-                withJsonPath(
-                        "$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", hearingIdFilter))
-        });
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath(
+                "$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", hearingIdFilter)));
         final String offenceId = hearingConfirmedJson.getJsonObject("confirmedHearing")
                 .getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences")
                 .getJsonObject(0).getString("id");
@@ -430,7 +453,103 @@ public class HearingUpdatedIT extends AbstractIT {
 
         Assert.assertNotNull(messageDaysMatchers);
 
+        verifyInMessagingQueue(messageConsumerClientProgressionPublicOffenceRemovedFromHearing);
     }
+
+    @Test
+    public void shouldRemoveOffenceFromHearing () throws  Exception{
+        final String offenceId1 = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
+        final String offenceId2 = "4789ab16-0bb7-4ef1-87ef-c936bf0364f1";
+
+        addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        final Metadata hearingConfirmedMetadata = createMetadata(PUBLIC_LISTING_HEARING_CONFIRMED);
+        final JsonObject hearingConfirmedJson = getHearingConfirmedWithTwoOffencesJsonObject(hearingId,offenceId1,offenceId2);
+        sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, hearingConfirmedMetadata);
+
+        verifyInMessagingQueue(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
+
+        final Filter hearingIdFilter = filter(where("id").is(hearingId)
+                .and("courtCentre.id").is(courtCentreId)
+                .and("hearingListingStatus").is("HEARING_INITIALISED"));
+        final Filter offencesFilter  = filter(where("offences").size(2)
+                .and("offence[0].id").is(offenceId1)
+                .and("offence[1].id").is(offenceId2));
+
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", hearingIdFilter)),
+                withJsonPath(compile("$.hearingsAtAGlance.hearings[0].defendants[0]", offencesFilter)));
+
+        final Metadata hearingOffenceRemovedMetadata = createMetadata(PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING);
+        final JsonObject hearingOffenceRemovedJson = getOffenceRemovedFromExistngHearingJsonObject(hearingId, offenceId1);
+        sendMessage(messageProducerClientPublic, PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING, hearingOffenceRemovedJson, hearingOffenceRemovedMetadata);
+
+        final Filter updatedHearingIdFilter = filter(where("id").is(hearingId)
+                .and("hearingListingStatus").is("HEARING_INITIALISED"));
+        final Filter updatedOffencesFilter  = filter(where("offences").size(1)
+                .and("offence[0].id").is(offenceId2));
+
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", updatedHearingIdFilter)),
+                withJsonPath(compile("$.hearingsAtAGlance.hearings[0].defendants[0]", updatedOffencesFilter)));
+        verifyInMessagingQueue(messageConsumerClientPublicOffenceRemovedFromHearing);
+    }
+
+    @Test
+    public void shouldRemoveWholeDefendant () throws Exception {
+        final String offenceId1 = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
+        final String offenceId2 = "4789ab16-0bb7-4ef1-87ef-c936bf0364f1";
+        final String defendantId1 = randomUUID().toString();
+        final String defendantId2 = randomUUID().toString();
+
+        addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1,defendantId2);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1));
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId1, getProsecutionCaseMatchers(caseId, defendantId1));
+
+        final Metadata hearingConfirmedMetadata = createMetadata(PUBLIC_LISTING_HEARING_CONFIRMED);
+        final JsonObject hearingConfirmedJson = getHearingConfirmedWithTwoDefendantsJsonObject(hearingId,defendantId1,defendantId2);
+        sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, hearingConfirmedMetadata);
+
+        verifyInMessagingQueue(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
+
+        final Filter hearingIdFilter = filter(where("id").is(hearingId)
+                .and("courtCentre.id").is(courtCentreId)
+                .and("hearingListingStatus").is("HEARING_INITIALISED"));
+        final Filter defendantsFilter  = filter(where("defendants").size(2)
+                .and("defendants[0].id").is(defendantId1)
+                .and("defendants[1].id").is(defendantId2));
+
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", hearingIdFilter)),
+                withJsonPath(compile("$.hearingsAtAGlance.hearings[0].defendants[0]", defendantsFilter)));
+
+        final Metadata hearingOffenceRemovedMetadata = createMetadata(PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING);
+        final JsonObject hearingOffenceRemovedJson = getOffenceRemovedFromExistngHearingJsonObject(hearingId, offenceId1);
+        sendMessage(messageProducerClientPublic, PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING, hearingOffenceRemovedJson, hearingOffenceRemovedMetadata);
+
+        final Filter updatedDefendantsFilter = filter(where("id").is(hearingId)
+                .and("hearingListingStatus").is("HEARING_INITIALISED"));
+        final Filter updatedOffencesFilter  = filter(where("defendants").size(1)
+                .and("defendants[0].id").is(defendantId2));
+
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", updatedDefendantsFilter)),
+                withJsonPath(compile("$.hearingsAtAGlance.hearings[0].defendants[0]", updatedOffencesFilter)));
+        verifyInMessagingQueue(messageConsumerClientPublicOffenceRemovedFromHearing);
+
+    }
+
+
+    List<Matcher<? super ReadContext>> matchers = newArrayList(
+            withJsonPath("$.prosecutionCase.id", is(caseId)),
+            withJsonPath("$.prosecutionCase.originatingOrganisation", is("G01FT01AB")),
+            withJsonPath("$.prosecutionCase.initiationCode", is("J")),
+            withJsonPath("$.prosecutionCase.statementOfFacts", is("You did it")),
+            withJsonPath("$.prosecutionCase.statementOfFactsWelsh", is("You did it in Welsh"))
+    );
+
 
     private Metadata createMetadata(final String eventName) {
         return JsonEnvelope.metadataBuilder()
@@ -447,6 +566,38 @@ public class HearingUpdatedIT extends AbstractIT {
                         .replaceAll("HEARING_ID", hearingId)
                         .replaceAll("DEFENDANT_ID", defendantId)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
+        );
+    }
+
+    private JsonObject getHearingConfirmedWithTwoOffencesJsonObject(final String hearingId,final String offenceId1,final String offenceId2) {
+        return stringToJsonObjectConverter.convert(
+                getPayload("public.listing.hearing-confirmed-with-two-offences.json")
+                        .replaceAll("CASE_ID", caseId)
+                        .replaceAll("HEARING_ID", hearingId)
+                        .replaceAll("DEFENDANT_ID", defendantId)
+                        .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                        .replaceAll("OFFENCE_ID_1",offenceId1)
+                        .replaceAll("OFFENCE_ID_2",offenceId2)
+        );
+    }
+
+    private JsonObject getHearingConfirmedWithTwoDefendantsJsonObject(final String hearingId,final String defendantId1,final String defendantId2) {
+        return stringToJsonObjectConverter.convert(
+                getPayload("public.listing.hearing-confirmed-one-case-two-defendants.json")
+                        .replaceAll("CASE_ID", caseId)
+                        .replaceAll("HEARING_ID", hearingId)
+                        .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                        .replaceAll("DEFENDANT_ID_1", defendantId1)
+                        .replaceAll("DEFENDANT_ID_2",defendantId2)
+        );
+    }
+
+
+    private JsonObject getOffenceRemovedFromExistngHearingJsonObject(final String hearingId,final String offenceIdToRemove) {
+        return stringToJsonObjectConverter.convert(
+                getPayload("public.hearing.selected-offences-removed-from-existing-hearing.json")
+                        .replaceAll("HEARING_ID", hearingId)
+                        .replaceAll("OFFENCE_ID_TO_REMOVE", offenceIdToRemove)
         );
     }
 
@@ -476,7 +627,7 @@ public class HearingUpdatedIT extends AbstractIT {
     }
 
     private static void verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(final String hearingId) {
-        final JsonPath retrieveMessage = retrieveMessage(messageConsumerHearingPopulatedToProbationCaseWorker, isJson(allOf(
+        final JsonPath retrieveMessage = QueueUtil.retrieveMessage(messageConsumerHearingPopulatedToProbationCaseWorker, isJson(allOf(
                 withJsonPath("$.hearing.id", is(hearingId)),
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].offenceCode", is("TFL123")))));
         assertThat(retrieveMessage, notNullValue());

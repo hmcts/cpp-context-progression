@@ -6,7 +6,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
@@ -254,7 +253,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         when(listingService.getFutureHearings(jsonEnvelope, "caseUrn")).thenReturn(futureHearings);
 
 
-        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(), any(), any())).thenReturn(listCourtHearing);
+        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(), any(List.class), any())).thenReturn(listCourtHearing);
 
         //When
         eventProcessor.process(jsonEnvelope);

@@ -425,7 +425,7 @@ public class ProgressionService {
         return builder.build();
     }
 
-    private static ZonedDateTime getEarliestDate(final List<HearingDay> hearingDays) {
+    public static ZonedDateTime getEarliestDate(final List<HearingDay> hearingDays) {
         return hearingDays.stream()
                 .map(HearingDay::getSittingDay)
                 .sorted()
@@ -848,6 +848,15 @@ public class ProgressionService {
         return result;
     }
 
+    public Hearing retrieveHearing(final JsonEnvelope event, final UUID hearingId) {
+        final Optional<JsonObject> hearingPayloadOptional = getHearing(event, hearingId.toString());
+        if (hearingPayloadOptional.isPresent()) {
+            return jsonObjectConverter.convert(hearingPayloadOptional.get().getJsonObject("hearing"), Hearing.class);
+        }
+        throw new IllegalStateException("Hearing not found for hearingId:" + hearingId.toString());
+    }
+
+
     private Hearing transformUpdatedHearing(final ConfirmedHearing updatedHearing, final JsonEnvelope jsonEnvelope) {
         return Hearing.hearing()
                 .withId(updatedHearing.getId())
@@ -989,7 +998,7 @@ public class ProgressionService {
         return list -> list.isEmpty() ? null : list;
     }
 
-    private CourtCentre transformCourtCentre(final CourtCentre courtCentre, final JsonEnvelope jsonEnvelope) {
+    public CourtCentre transformCourtCentre(final CourtCentre courtCentre, final JsonEnvelope jsonEnvelope) {
 
         final String ADDRESS_1 = "address1";
         final String ADDRESS_2 = "address2";

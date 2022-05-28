@@ -32,6 +32,7 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
+import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.ListingNumberUpdated;
@@ -45,11 +46,13 @@ import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.ExtendCustodyTimeLimitResulted;
 import uk.gov.justice.progression.courts.HearingDeleted;
+import uk.gov.justice.progression.courts.HearingMovedToUnallocated;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
+import uk.gov.justice.staginghmi.courts.UpdateHearingFromHmi;
 import uk.gov.moj.cpp.progression.test.CoreTestTemplates;
 
 import java.io.IOException;
@@ -820,6 +823,106 @@ public class HearingAggregateTest {
         assertThat(listingNumberUpdated.getProsecutionCaseIds().get(0), is(caseId1));
         assertThat(listingNumberUpdated.getCourtApplicationIds(), is(nullValue()));
 
+    }
+
+    @Test
+    public void shouldRaiseUnAllocatedEventWhenStartDateRemoved(){
+        final UUID hearingId = randomUUID();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now())
+                                .withCourtRoomId(randomUUID()).build()))
+                        .withType(HearingType.hearingType().withDescription("Statement").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("A001").build())
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .withJudiciary(singletonList(JudicialRole.judicialRole().build()))
+                        .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(randomUUID())
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                                .withId(randomUUID())
+                                                .withOffences(singletonList(Offence.offence().withListingNumber(1).build()))
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(randomUUID())
+                                                .withOffences(singletonList(Offence.offence().withListingNumber(1).build()))
+                                                .build()))).build()))
+                        .build()).build());
+
+        final List<Object> events = hearingAggregate.updateHearing(UpdateHearingFromHmi.updateHearingFromHmi().build()).collect(toList());
+        final HearingMovedToUnallocated hearingMovedToUnallocated = (HearingMovedToUnallocated)events.get(0);
+
+        assertThat(hearingMovedToUnallocated.getHearing().getHearingDays(), nullValue());
+        assertThat(hearingMovedToUnallocated.getHearing().getJudiciary(), nullValue());
+        assertThat(hearingMovedToUnallocated.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getListingNumber(), nullValue());
+        assertThat(hearingMovedToUnallocated.getHearing().getHearingLanguage(), is(HearingLanguage.ENGLISH));
+    }
+
+    @Test
+    public void shouldRaiseUnAllocatedEventWhenCourtRoomRemoved(){
+        final UUID hearingId = randomUUID();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now())
+                                .withCourtRoomId(randomUUID()).build()))
+                        .withType(HearingType.hearingType().withDescription("Statement").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("A001").build())
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .withJudiciary(singletonList(JudicialRole.judicialRole().build()))
+                        .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(randomUUID())
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                                .withId(randomUUID())
+                                                .withOffences(singletonList(Offence.offence().withListingNumber(1).build()))
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(randomUUID())
+                                                .withOffences(singletonList(Offence.offence().withListingNumber(1).build()))
+                                                .build()))).build()))
+                        .build()).build());
+
+        final List<Object> events = hearingAggregate.updateHearing(UpdateHearingFromHmi.updateHearingFromHmi()
+                .withStartDate(LocalDate.now().toString())
+                .build()).collect(toList());
+        final HearingMovedToUnallocated hearingMovedToUnallocated = (HearingMovedToUnallocated)events.get(0);
+
+        assertThat(hearingMovedToUnallocated.getHearing().getHearingDays().size(), is(1));
+        assertThat(hearingMovedToUnallocated.getHearing().getHearingDays().get(0).getCourtRoomId(), nullValue());
+        assertThat(hearingMovedToUnallocated.getHearing().getJudiciary(), nullValue());
+        assertThat(hearingMovedToUnallocated.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getListingNumber(), nullValue());
+        assertThat(hearingMovedToUnallocated.getHearing().getHearingLanguage(), is(HearingLanguage.ENGLISH));
+    }
+
+    @Test
+    public void shouldNotRaiseUnAllocatedEventWhenHMINotChanged(){
+        final UUID hearingId = randomUUID();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now())
+                                .withCourtRoomId(randomUUID()).build()))
+                        .withType(HearingType.hearingType().withDescription("Statement").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("A001").build())
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(randomUUID())
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                                .withId(randomUUID())
+                                                .withOffences(singletonList(Offence.offence().withListingNumber(1).build()))
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(randomUUID())
+                                                .withOffences(singletonList(Offence.offence().withListingNumber(1).build()))
+                                                .build()))).build()))
+                        .build()).build());
+
+        final List<Object> events = hearingAggregate.updateHearing(UpdateHearingFromHmi.updateHearingFromHmi()
+                .withStartDate(LocalDate.now().toString())
+                .withCourtRoomId(randomUUID())
+                .build()).collect(toList());
+
+        assertThat(events.size(), is(0));
     }
 
     private HearingDeleted createHearingDeleted(final Hearing hearing) {

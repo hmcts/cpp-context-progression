@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.transformer;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.Address;
@@ -9,6 +10,7 @@ import uk.gov.justice.core.courts.ApplicationReferredToCourt;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantListingNeeds;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -36,6 +38,7 @@ import uk.gov.moj.cpp.progression.service.ReferenceDataService;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -99,9 +102,8 @@ public class ListCourtHearingTransformer {
                             .equals(listDefendantRequest.getProsecutionCaseId())).findFirst().orElseThrow(() -> new DataValidationException("Matching caseId missing in referral"));
 
             final Defendant matchedDefendant = matchedProsecutionCase.getDefendants().stream()
-                    .filter(defendant -> listDefendantRequest.getReferralReason().getDefendantId()
+                    .filter(defendant -> ofNullable(listDefendantRequest.getReferralReason()).map(ReferralReason::getDefendantId).orElse(listDefendantRequest.getDefendantId())
                             .equals(defendant.getId())).findFirst().orElseThrow(() -> new DataValidationException("Matching defendant missing in referral"));
-
             final List<Offence> matchedDefendantOffence = matchedDefendant.getOffences().stream()
                     .filter(offence -> listDefendantRequest.getDefendantOffences()
                             .contains(offence.getId())).collect(Collectors.toList());
@@ -230,13 +232,13 @@ public class ListCourtHearingTransformer {
     }
 
     private static String getDefendantPostcode(final List<ProsecutionCase> prosecutionCases) {
-        final Optional<Defendant> defendant = Optional.ofNullable(prosecutionCases.get(0).getDefendants().get(0));
+        final Optional<Defendant> defendant = ofNullable(prosecutionCases.get(0).getDefendants().get(0));
         final Optional<PersonDefendant> personDefendant;
         final Optional<LegalEntityDefendant> legalEntityDefendant;
 
         if (defendant.isPresent()) {
-            personDefendant = Optional.ofNullable(defendant.get().getPersonDefendant());
-            legalEntityDefendant = Optional.ofNullable(defendant.get().getLegalEntityDefendant());
+            personDefendant = ofNullable(defendant.get().getPersonDefendant());
+            legalEntityDefendant = ofNullable(defendant.get().getLegalEntityDefendant());
             if (personDefendant.isPresent()) {
                 final Address address = getRequiredField(personDefendant.get().getPersonDetails().getAddress(), "Address is missing for personDefendant");
                 final String postcode = getRequiredField(address.getPostcode(), POSTCODE_IS_MISSING + " personDefendant");
@@ -329,6 +331,44 @@ public class ListCourtHearingTransformer {
         return ListCourtHearing.listCourtHearing().withHearings(hearingsList).build();
     }
 
+    public ListCourtHearing transform(final JsonEnvelope jsonEnvelope, final List<ProsecutionCase> prosecutionCases,
+                                      CourtHearingRequest courtHearingRequest, final UUID hearingId) {
+        LOGGER.info("Transforming courtHearingRequest cases to ListCourtHearing");
+        final List<HearingListingNeeds> hearingsList = new ArrayList<>();
+
+        final List<ProsecutionCase> listOfProsecutionCase = filterProsecutionCases(prosecutionCases, courtHearingRequest.getListDefendantRequests());
+        final ZonedDateTime expectedListingStartDateTime = calculateExpectedStartDate(courtHearingRequest);
+        final List<ListDefendantRequest> listDefendantRequests = updateListDefendantRequestsForYouth(expectedListingStartDateTime, listOfProsecutionCase, courtHearingRequest.getListDefendantRequests());
+        final HearingListingNeeds hearing = HearingListingNeeds.hearingListingNeeds()
+                .withEarliestStartDateTime(courtHearingRequest.getEarliestStartDateTime())
+                .withListedStartDateTime(courtHearingRequest.getListedStartDateTime())
+                .withEstimatedMinutes(courtHearingRequest.getEstimatedMinutes())
+                .withBookedSlots(courtHearingRequest.getBookedSlots())
+                .withId(hearingId)
+                .withJurisdictionType(courtHearingRequest.getJurisdictionType())
+                .withProsecutionCases(listOfProsecutionCase)
+                .withType(courtHearingRequest.getHearingType())
+                .withListingDirections(courtHearingRequest.getListingDirections())
+                .withCourtCentre(courtHearingRequest.getCourtCentre())
+                .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, listDefendantRequests))
+                .withPriority(courtHearingRequest.getPriority())
+                .withBookingType(courtHearingRequest.getBookingType())
+                .withSpecialRequirements(courtHearingRequest.getSpecialRequirements())
+                .withWeekCommencingDate(courtHearingRequest.getWeekCommencingDate())
+                .build();
+        hearingsList.add(hearing);
+
+        return ListCourtHearing.listCourtHearing().withHearings(hearingsList).build();
+    }
+
+    protected ZonedDateTime calculateExpectedStartDate(final CourtHearingRequest courtHearingRequest) {
+        ZonedDateTime expectedListingStartDateTime = nonNull(courtHearingRequest.getListedStartDateTime()) ? courtHearingRequest.getListedStartDateTime() : courtHearingRequest.getEarliestStartDateTime();
+        if (expectedListingStartDateTime == null && courtHearingRequest.getWeekCommencingDate() != null) {
+            expectedListingStartDateTime = courtHearingRequest.getWeekCommencingDate().getStartDate().atStartOfDay(ZoneOffset.UTC);
+        }
+        return expectedListingStartDateTime;
+    }
+
     private List<ListDefendantRequest> updateListDefendantRequestsForYouth(final ZonedDateTime expectedListingStartDateTime, final List<ProsecutionCase> listOfProsecutionCase, final List<ListDefendantRequest> listDefendantRequests) {
 
         return listDefendantRequests.stream().map(listDefendantRequest ->
@@ -363,7 +403,7 @@ public class ListCourtHearingTransformer {
     }
 
     private Optional<LocalDate> getDateOfBirth(final uk.gov.justice.core.courts.Defendant defendant) {
-        return Optional.ofNullable(defendant)
+        return ofNullable(defendant)
                 .map(uk.gov.justice.core.courts.Defendant::getPersonDefendant)
                 .map(PersonDefendant::getPersonDetails)
                 .map(Person::getDateOfBirth);
@@ -393,6 +433,9 @@ public class ListCourtHearingTransformer {
                 .withReportingRestrictionReason(hearingRequest.getReportingRestrictionReason())
                 .withListingDirections(hearingRequest.getListingDirections())
                 .withDefendantListingNeeds(hearingRequest.getDefendantListingNeeds())
+                .withBookingType(hearingRequest.getBookingType())
+                .withPriority(hearingRequest.getPriority())
+                .withSpecialRequirements(hearingRequest.getSpecialRequirements())
                 .withBookedSlots(hearingRequest.getBookedSlots());
 
         final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeedsList = hearingRequest.getCourtApplicationPartyListingNeeds();

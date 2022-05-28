@@ -52,7 +52,7 @@ public class ExtendHearingHandler {
 
         if (isNotEmpty(hearingRequest.getProsecutionCases())) {
             final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-            final Stream<Object> events = caseAggregate.extendHearing(hearingRequest, extendHearing.getIsAdjourned(), extendHearing.getExtendedHearingFrom(), extendHearing.getIsPartiallyAllocated(), extendHearing.getShadowListedOffences());
+            final Stream<Object> events = caseAggregate.extendHearing(hearingRequest, extendHearing);
             appendEventsToStream(extendHearingEnvelope, eventStream, events);
         } else {
             final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);

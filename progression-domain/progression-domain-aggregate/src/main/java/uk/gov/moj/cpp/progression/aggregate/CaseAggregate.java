@@ -66,6 +66,7 @@ import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
 import uk.gov.justice.core.courts.ExactMatchedDefendantSearchResultStored;
+import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.FinancialDataAdded;
 import uk.gov.justice.core.courts.FinancialMeansDeleted;
 import uk.gov.justice.core.courts.FormType;
@@ -1845,15 +1846,16 @@ public class CaseAggregate implements Aggregate {
                 .build());
     }
 
-    public Stream<Object> extendHearing(final HearingListingNeeds hearingListingNeeds, final Boolean isAdjourned, final UUID extendHearingFrom, final Boolean isPartiallyAllocated, final List<UUID> shadowListedOffences) {
+    public Stream<Object> extendHearing(final HearingListingNeeds hearingListingNeeds, final ExtendHearing extendHearing) {
         LOGGER.debug("hearing has been extended");
         return apply(Stream.of(
                 HearingExtended.hearingExtended()
-                        .withExtendedHearingFrom(extendHearingFrom)
+                        .withExtendedHearingFrom(extendHearing.getExtendedHearingFrom())
                         .withHearingRequest(hearingListingNeeds)
-                        .withIsAdjourned(isAdjourned)
-                        .withIsPartiallyAllocated(isPartiallyAllocated)
-                        .withShadowListedOffences(shadowListedOffences)
+                        .withIsAdjourned(extendHearing.getIsAdjourned())
+                        .withIsPartiallyAllocated(extendHearing.getIsPartiallyAllocated())
+                        .withShadowListedOffences(extendHearing.getShadowListedOffences())
+                        .withIsUnAllocatedHearing(extendHearing.getIsUnAllocatedHearing())
                         .build()));
     }
 

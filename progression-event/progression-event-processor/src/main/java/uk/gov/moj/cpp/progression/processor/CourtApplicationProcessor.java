@@ -321,6 +321,9 @@ public class CourtApplicationProcessor {
                 .withIsBoxHearing(false)
                 .withType(courtHearing.getHearingType())
                 .withCourtApplications(singletonList(application))
+                .withBookingType(courtHearing.getBookingType())
+                .withPriority(courtHearing.getPriority())
+                .withSpecialRequirements(courtHearing.getSpecialRequirements())
                 .build();
 
         final Initiate hearingInitiate = Initiate.initiate().withHearing(hearing).build();
@@ -410,6 +413,9 @@ public class CourtApplicationProcessor {
                 .withIsBoxHearing(false)
                 .withType(courtHearing.getHearingType())
                 .withCourtApplications(singletonList(application))
+                .withBookingType(courtHearing.getBookingType())
+                .withPriority(courtHearing.getPriority())
+                .withSpecialRequirements(courtHearing.getSpecialRequirements())
                 .build();
 
         final Initiate hearingInitiate = Initiate.initiate().withHearing(hearing).build();
@@ -764,6 +770,9 @@ public class CourtApplicationProcessor {
                 .withType(courtHearingRequest.getHearingType())
                 .withWeekCommencingDate(courtHearingRequest.getWeekCommencingDate())
                 .withJudiciary(courtHearingRequest.getJudiciary())
+                .withBookingType(courtHearingRequest.getBookingType())
+                .withPriority(courtHearingRequest.getPriority())
+                .withSpecialRequirements(courtHearingRequest.getSpecialRequirements())
                 .withListingDirections(courtHearingRequest.getListingDirections());
 
         if (isNotEmpty(prosecutionCases)) {

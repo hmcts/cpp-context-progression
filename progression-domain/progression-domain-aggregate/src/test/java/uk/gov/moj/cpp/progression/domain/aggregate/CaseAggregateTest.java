@@ -85,8 +85,8 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseCreatedInHearing;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseSubject;
 import uk.gov.justice.core.courts.ReferralReason;
@@ -1671,69 +1671,6 @@ public class CaseAggregateTest {
         assertThat(hearingResultedCaseUpdated.getProsecutionCase().getDefendants().get(0).getOffences().get(0).getListingNumber(), is(2));
 
         assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().get(0).getListingNumber(), is(2));
-    }
-
-    @Test
-    public void shouldUpdateCaseStatusAsReadyForReviewWhenOneApplicationIsResultedAndAnotherApplicationIsNotResulted() {
-        final UUID caseId = randomUUID();
-
-        final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
-                .withId(randomUUID())
-                .withProceedingsConcluded(false)
-                .withProsecutionCaseId(caseId)
-                .withOffences(
-                        singletonList(uk.gov.justice.core.courts.Offence.offence()
-                                .withProceedingsConcluded(false)
-                                .withId(UUID.randomUUID())
-                                .withJudicialResults(
-                                        singletonList(JudicialResult.judicialResult()
-                                                .withCategory(INTERMEDIARY)
-                                                .build())).build()))
-                .build();
-
-        final uk.gov.justice.core.courts.Defendant defendant1 = uk.gov.justice.core.courts.Defendant.defendant()
-                .withId(randomUUID())
-                .withProceedingsConcluded(true)
-                .withProsecutionCaseId(caseId)
-                .withOffences(
-                        singletonList(uk.gov.justice.core.courts.Offence.offence()
-                                .withId(UUID.randomUUID())
-                                .withProceedingsConcluded(true)
-                                .withJudicialResults(
-                                        singletonList(JudicialResult.judicialResult()
-                                                .withCategory(FINAL)
-                                                .build())).build()))
-                .build();
-
-        final ProsecutionCase prosecutionCase = prosecutionCase()
-                .withId(caseId)
-                .withDefendants(Arrays.asList(defendant1, defendant))
-                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
-                .build();
-
-        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
-                .withProsecutionCase(prosecutionCase)
-                .build();
-
-        this.caseAggregate.apply(prosecutionCaseCreated);
-
-        // Resulted and Shared only one defendant
-        final ProsecutionCase prosecutionCaseUpdate = prosecutionCase()
-                .withId(caseId)
-                .withCaseStatus("READY_FOR_REVIEW")
-                .withDefendants(Arrays.asList(defendant))
-                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
-                .build();
-        final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
-
-        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCaseUpdate, defendantJudicialResults).collect(toList());
-
-        assertThat(eventStream.size(), is(1));
-        final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
-        final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
-        assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(READY_FOR_REVIEW.getDescription()));
-
     }
 
     @Test

@@ -361,6 +361,12 @@ public class PreAndPostConditionHelper {
         return initiateCourtProceedingsWithoutCourtDocumentAndCpsOrganisation(caseId, defendantId, listedStartDateTime, earliestStartDateTime, defendantDOB);
     }
 
+    public static Response listNewHearing(final String caseId, final String defendantId) throws IOException {
+        final JSONObject jsonPayload = new JSONObject(getListNewHearingJsonBody(caseId, defendantId));
+        return postCommand(getWriteUrl("/listnewhearing"),
+                "application/vnd.progression.list-new-hearing+json", jsonPayload.toString());
+    }
+
     public static Response addProsecutionCaseToCrownCourtWithMinimumAttributes(final String caseId, final String defendantId) throws IOException {
         final JSONObject jsonPayload = new JSONObject(getReferProsecutionCaseToCrownCourtWithMinimumAttribute(caseId, defendantId, generateUrn()));
         jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
@@ -775,6 +781,18 @@ public class PreAndPostConditionHelper {
                 defendantId, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(),
                 listedStartDateTime, earliestStartDateTime, LocalDate.now().minusYears(15).toString(),
                 policeBailStatusId, policeBailStatusDesc, policeBailConditions);
+    }
+
+    private static String getListNewHearingJsonFromResource(final String resourceLocation, final String caseId, final String defendantId) {
+        return getPayload(resourceLocation)
+                .replaceAll("RANDOM_CASE_ID", caseId)
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId);
+
+    }
+
+    private static String getListNewHearingJsonBody(final String caseId, final String defendantId) {
+        return getListNewHearingJsonFromResource("progression.list-new-hearing.json", caseId, defendantId);
+
     }
 
     private static String getReferProsecutionCaseToCrownCourtWithMinimumAttribute(final String caseId, final String defendantId, final String caseUrn) {

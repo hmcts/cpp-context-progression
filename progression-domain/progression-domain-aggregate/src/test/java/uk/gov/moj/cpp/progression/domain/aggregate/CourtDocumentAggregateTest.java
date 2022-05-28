@@ -1,5 +1,21 @@
 package uk.gov.moj.cpp.progression.domain.aggregate;
 
+import org.hamcrest.CoreMatchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import uk.gov.justice.core.courts.*;
+import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
 import static java.time.ZonedDateTime.now;
@@ -13,7 +29,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.CaseDocument;

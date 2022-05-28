@@ -128,6 +128,9 @@ subscriptions_descriptor:
         - name: public.progression.hearing-resulted
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.hearing-resulted.json
 
+        - name: public.progression.offences-removed-from-existing-allocated-hearing
+          schema_uri: http://justice.gov.uk/progression/courts/public.progression.offences-removed-from-existing-allocated-hearing.json
+
         # ***** Deprecated API - Start ********
         # ***** Do not add any new API in this section *****
 

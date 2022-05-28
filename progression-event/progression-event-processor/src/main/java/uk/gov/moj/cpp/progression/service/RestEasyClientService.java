@@ -25,11 +25,11 @@ public class RestEasyClientService {
     public static final String OCP_APIM_TRACE = "Ocp-Apim-Trace";
     public static final String TRUE = "true";
 
-    ResteasyClient client;
-
     @Inject
     @Value(key = "restEasyClientConnectionPoolSize", defaultValue = "10")
     private String restEasyClientConnectionPoolSize;
+
+    ResteasyClient client;
 
     @PostConstruct
     public void createClient() {

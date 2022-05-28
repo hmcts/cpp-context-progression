@@ -1,0 +1,18 @@
+{
+  "hearingIdToBeUpdated": "65965f10-8275-4e69-af6e-5df832ed3130",
+  "prosecutionCases": [
+    {
+      "caseId": "eccb0e0d-b2af-4d9e-9319-89f82c264a3b",
+      "defendants": [
+        {
+          "defendantId": "86349c8a-5364-4db7-90de-f32e7b2e3730",
+          "offences": [
+            {
+              "offenceId": "ffe2dbb5-b0ee-401b-adcb-6b4f73ff7aec"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

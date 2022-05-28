@@ -111,7 +111,7 @@ public class HearingConfirmedEventProcessor {
 
         final HearingConfirmed hearingConfirmed = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingConfirmed.class);
         final ConfirmedHearing confirmedHearing = hearingConfirmed.getConfirmedHearing();
-        final Hearing hearingInProgression = retrieveHearing(jsonEnvelope, confirmedHearing.getId());
+        final Hearing hearingInProgression = progressionService.retrieveHearing(jsonEnvelope, confirmedHearing.getId());
 
         triggerRetryOnMissingCaseAndApplication(confirmedHearing.getId(), hearingInProgression);
 
@@ -427,14 +427,6 @@ public class HearingConfirmedEventProcessor {
         }
         LOGGER.info(" hearing is not found ");
         return false;
-    }
-
-    private Hearing retrieveHearing(final JsonEnvelope event, final UUID hearingId) {
-        final Optional<JsonObject> hearingPayloadOptional = progressionService.getHearing(event, hearingId.toString());
-        if (hearingPayloadOptional.isPresent()) {
-            return jsonObjectConverter.convert(hearingPayloadOptional.get().getJsonObject("hearing"), Hearing.class);
-        }
-        throw new IllegalStateException("Hearing not found for hearingId:" + hearingId.toString());
     }
 
     private void triggerRetryOnMissingCaseAndApplication(final UUID hearingId, final Hearing hearingInProgression) {

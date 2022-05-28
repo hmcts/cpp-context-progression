@@ -1,0 +1,12 @@
+{
+  "courtCentreId" : "81febed7-fb08-4c3d-8991-a7046ddf3d82",
+  "hearingId" : "2b4d7628-4290-4304-a633-4ce1f1f872a4",
+  "courtRoomId" : "2dbab383-d417-4141-a388-64cd210b3b53",
+  "type" : {
+    "id" : "1a85cc88-5fdd-413b-bc73-7b26c7adfcfb",
+    "description" : "description",
+    "code" : "code"
+  },
+  "startDate" : "2022-04-18",
+  "endDate" : "2022-04-20"
+}
