@@ -34,6 +34,12 @@
     "secondClassLetter": {
       "type": "boolean"
     },
+    "isNotificationApi": {
+      "type": "boolean"
+    },
+    "isCps": {
+      "type": "boolean"
+    },
     "emailNotifications": {
       "description": "The email notifications required to be sent for this document",
       "type": "array",

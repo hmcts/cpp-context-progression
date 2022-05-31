@@ -29,6 +29,10 @@ public class UploadMaterialContext {
 
     private  boolean secondClassLetter;
 
+    private  boolean isNotificationApi;
+
+    private  boolean isCps;
+
     private List<EmailChannel> emailNotifications;
 
     public Sender getSender() {
@@ -65,6 +69,10 @@ public class UploadMaterialContext {
 
     public boolean isFirstClassLetter() {
         return firstClassLetter;
+    }
+
+    public boolean getIsNotificationApi() {
+        return isNotificationApi;
     }
 
     public boolean isSecondClassLetter() {
@@ -117,5 +125,17 @@ public class UploadMaterialContext {
 
     public void setEmailNotifications(final List<EmailChannel> emailNotifications) {
         this.emailNotifications = emailNotifications;
+    }
+
+    public void setIsNotificationApi(boolean isNotificationApi) {
+        this.isNotificationApi = isNotificationApi;
+    }
+
+    public boolean getIsCps() {
+        return isCps;
+    }
+
+    public void setIsCps(final boolean isCps) {
+        this.isCps = isCps;
     }
 }

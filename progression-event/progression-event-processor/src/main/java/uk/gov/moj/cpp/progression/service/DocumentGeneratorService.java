@@ -18,8 +18,10 @@ import uk.gov.justice.core.courts.nces.NcesNotificationRequested;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.nowdocument.EmailRenderingVocabulary;
 import uk.gov.justice.core.courts.nowdocument.NowDistribution;
+import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
+import uk.gov.justice.core.courts.nowdocument.ProsecutionCase;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
@@ -142,14 +144,14 @@ public class DocumentGeneratorService {
             final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(updatedNowContent, getTemplateName(nowDocumentRequest), getSystemUserUuid());
             addDocumentToMaterial(sender, originatingEnvelope, getTimeStampAmendedFileName(orderName),
                     new ByteArrayInputStream(resultOrderAsByteArray), userId, nowDocumentRequest.getHearingId().toString(), nowDocumentRequest.getMaterialId(),
-                    nowDocumentRequest.getNowDistribution(), nowDocumentRequest.getNowContent().getOrderAddressee());
+                    nowDocumentRequest.getNowDistribution(), nowDocumentRequest.getNowContent().getOrderAddressee(),
+                    isCpsProsecutionCase(nowDocumentRequest.getNowContent()));
         } catch (IOException | RuntimeException e) {
             LOGGER.error(ERROR_MESSAGE, e);
             updateMaterialStatusAsFailed(sender, originatingEnvelope, nowDocumentRequest.getMaterialId());
             throw new RuntimeException("Progression : exception while generating NOWs document ", e);
         }
     }
-
 
     @Transactional(REQUIRES_NEW)
     public void generateNcesDocument(final Sender sender, final JsonEnvelope originatingEnvelope,
@@ -307,7 +309,8 @@ public class DocumentGeneratorService {
                                        final UUID userId, final String hearingId,
                                        final UUID materialId,
                                        final NowDistribution nowDistribution,
-                                       final OrderAddressee orderAddressee) {
+                                       final OrderAddressee orderAddressee,
+                                       final boolean isCps) {
         try {
 
             final UUID fileId = storeFile(fileContent, filename);
@@ -317,6 +320,7 @@ public class DocumentGeneratorService {
             final boolean isPostable = nowDocumentValidator.isPostable(orderAddressee);
             final boolean firstClassLetter = isFirstClassLetter(nowDistribution) && isPostable;
             final boolean secondClassLetter = isSecondClassLetter(nowDistribution) && isPostable;
+            final boolean isNotificationApi = isNotificationApi(nowDistribution);
 
             final List<EmailChannel> emailNotifications = buildEmailChannel(materialId, nowDistribution, orderAddressee);
 
@@ -330,7 +334,9 @@ public class DocumentGeneratorService {
                     .setCaseId(null)
                     .setApplicationId(null)
                     .setFirstClassLetter(firstClassLetter)
-                    .setSecondClassLetter(secondClassLetter);
+                    .setSecondClassLetter(secondClassLetter)
+                    .setIsNotificationApi(isNotificationApi)
+                    .setIsCps(isCps);
 
             if (!emailNotifications.isEmpty()) {
                 uploadMaterialContextBuilder.setEmailNotifications(emailNotifications);
@@ -414,6 +420,10 @@ public class DocumentGeneratorService {
         return nonNull(nowDistribution) && nonNull(nowDistribution.getFirstClassLetter()) && nowDistribution.getFirstClassLetter();
     }
 
+    private boolean isNotificationApi(NowDistribution nowDistribution) {
+        return nonNull(nowDistribution) && nonNull(nowDistribution.getIsNotificationApi()) && nowDistribution.getIsNotificationApi();
+    }
+
     private UUID storeFile(final InputStream fileContent, final String fileName) throws FileServiceException {
         final JsonObject metadata = createObjectBuilder().add("fileName", fileName).build();
         return fileStorer.store(metadata, fileContent);
@@ -468,4 +478,12 @@ public class DocumentGeneratorService {
         return object;
     }
 
+    private boolean isCpsProsecutionCase(final NowDocumentContent nowContent) {
+        return nowContent.getCases().stream()
+                .filter(pc -> nonNull(pc.getIsCps()))
+                .filter(ProsecutionCase::getIsCps)
+                .findFirst()
+                .map(ProsecutionCase::getIsCps)
+                .orElse(false);
+    }
 }

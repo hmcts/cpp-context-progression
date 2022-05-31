@@ -127,7 +127,7 @@ public class CaseAggregateUpdateProsecutorTest {
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getProsecutorCode(), is(prosecutionCaseIdentifier.getProsecutionAuthorityCode()));
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getProsecutorName(), is(prosecutionCaseIdentifier.getProsecutionAuthorityName()));
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getAddress(), is(prosecutionCaseIdentifier.getAddress()));
-
+        assertThat(caseAggregate.getProsecutionCase().getProsecutor().getIsCps(), is(true));
     }
 
     @Test
@@ -155,7 +155,7 @@ public class CaseAggregateUpdateProsecutorTest {
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getProsecutorCode(), is(prosecutionCaseIdentifier.getProsecutionAuthorityCode()));
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getProsecutorName(), is(prosecutionCaseIdentifier.getProsecutionAuthorityName()));
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getAddress(), is(prosecutionCaseIdentifier.getAddress()));
-
+        assertThat(caseAggregate.getProsecutionCase().getProsecutor().getIsCps(), is(true));
     }
 
     @Test
@@ -190,7 +190,7 @@ public class CaseAggregateUpdateProsecutorTest {
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getProsecutorCode(), is(prosecutionCaseIdentifier.getProsecutionAuthorityCode()));
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getProsecutorName(), is(prosecutionCaseIdentifier.getProsecutionAuthorityName()));
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getAddress(), is(prosecutionCaseIdentifier.getAddress()));
-
+        assertThat(caseAggregate.getProsecutionCase().getProsecutor().getIsCps(), is(true));
     }
 
     private CaseCpsProsecutorUpdated getExpectedCaseCpsProsecutorUpdatedEvent(ProsecutionCaseIdentifier prosecutionCaseIdentifier) {

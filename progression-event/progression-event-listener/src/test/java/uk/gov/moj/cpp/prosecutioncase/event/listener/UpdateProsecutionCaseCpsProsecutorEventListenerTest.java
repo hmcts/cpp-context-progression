@@ -235,6 +235,7 @@ public class UpdateProsecutionCaseCpsProsecutorEventListenerTest {
                 .withProsecutorId(caseCpsProsecutorUpdated.getProsecutionAuthorityId())
                 .withAddress(caseCpsProsecutorUpdated.getAddress())
                 .withProsecutorName(caseCpsProsecutorUpdated.getProsecutionAuthorityName())
+                .withIsCps(true)
                 .build();
     }
 }

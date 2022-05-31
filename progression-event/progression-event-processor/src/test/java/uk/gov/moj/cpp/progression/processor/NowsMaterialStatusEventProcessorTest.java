@@ -1,18 +1,22 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.MaterialService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -20,6 +24,8 @@ import javax.json.Json;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -37,6 +43,9 @@ public class NowsMaterialStatusEventProcessorTest {
 
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Captor
+    private ArgumentCaptor<MaterialDetails> materialDetailsArgumentCaptor;
 
     @InjectMocks
     private NowsMaterialStatusEventProcessor eventProcessor;
@@ -64,6 +73,8 @@ public class NowsMaterialStatusEventProcessorTest {
                                 .add("userId", materialId.toString())
                                 .add("firstClassLetter", false)
                                 .add("secondClassLetter", false)
+                                .add("isNotificationApi", false)
+                                .add("isCps", false)
                                 .add("emailNotifications", Json.createArrayBuilder()
                                         .add(createObjectBuilder()
                                                 .add("sendToAddress", "sendToAddress")
@@ -97,6 +108,8 @@ public class NowsMaterialStatusEventProcessorTest {
                                 .add("userId", materialId.toString())
                                 .add("firstClassLetter", true)
                                 .add("secondClassLetter", false)
+                                .add("isNotificationApi", false)
+                                .add("isCps", false)
                                 .build())
                         .add("status", status)
                         .add("welshTranslationRequired", false)
@@ -126,6 +139,8 @@ public class NowsMaterialStatusEventProcessorTest {
                                 .add("userId", materialId.toString())
                                 .add("firstClassLetter", false)
                                 .add("secondClassLetter", true)
+                                .add("isNotificationApi", false)
+                                .add("isCps", false)
                                 .build())
                             .add("status", status)
                             .add("welshTranslationRequired", false)
@@ -135,6 +150,43 @@ public class NowsMaterialStatusEventProcessorTest {
 
         verify(notificationService).sendLetter(Mockito.eq(event), Mockito.any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(false));
         verify(notificationService, never()).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    public void shouldProcessStatusUpdatedForNotificationApi() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID applicationId = UUID.randomUUID();
+        final UUID materialId = UUID.randomUUID();
+        final String status = "generated";
+
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("progression.event.nows-material-status-updated"),
+                createObjectBuilder()
+                        .add("details", createObjectBuilder()
+                                .add("applicationId", applicationId.toString())
+                                .add("caseId", caseId.toString())
+                                .add("materialId", materialId.toString())
+                                .add("fileId", materialId.toString())
+                                .add("hearingId", materialId.toString())
+                                .add("userId", materialId.toString())
+                                .add("firstClassLetter", false)
+                                .add("secondClassLetter", false)
+                                .add("isNotificationApi", true)
+                                .add("isCps", true)
+                                .add("status", status)
+                                .add("welshTranslationRequired", false)
+                                .build()));
+
+        eventProcessor.processStatusUpdated(event);
+
+        verify(notificationService).sendApiNotification(Mockito.eq(event), Mockito.any(UUID.class), materialDetailsArgumentCaptor.capture(), Mockito.any(String.class), Mockito.any(List.class), Mockito.any(String.class), Mockito.any(List.class));
+        verify(notificationService, never()).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+
+        final MaterialDetails materialDetails = materialDetailsArgumentCaptor.getValue();
+        assertThat(materialDetails.getIsNotificationApi(), is(true));
+        assertThat(materialDetails.getCaseId(), is(caseId));
+        assertThat(materialDetails.getApplicationId(), is(applicationId));
+        assertThat(materialDetails.getMaterialId(), is(materialId));
     }
 
     @Test

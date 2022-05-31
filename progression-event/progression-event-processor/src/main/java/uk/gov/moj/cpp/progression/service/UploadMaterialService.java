@@ -30,6 +30,8 @@ public class UploadMaterialService {
                         .withFirstClassLetter(uploadMaterialContext.isFirstClassLetter())
                         .withSecondClassLetter(uploadMaterialContext.isSecondClassLetter())
                         .withEmailNotifications(uploadMaterialContext.getEmailNotifications())
+                        .withIsNotificationApi(uploadMaterialContext.getIsNotificationApi())
+                        .withIsCps(uploadMaterialContext.getIsCps())
                         .build())
                 .build();
         final JsonObject payload = objectToJsonObjectConverter.convert(recordNowsMaterialRequest);

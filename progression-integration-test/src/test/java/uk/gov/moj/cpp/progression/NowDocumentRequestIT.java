@@ -227,6 +227,30 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     @Test
+    public void shouldSendApiNotificationNowDocumentRequest() throws IOException {
+        final String payload = prepareApiNotificationDocumentRequestPayload();
+        final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);
+        final NowDocumentRequest nowDocumentRequest = jsonToObjectConverter.convert(jsonObject, NowDocumentRequest.class);
+
+        final Response writeResponse = postCommand(getWriteUrl("/nows"),
+                "application/vnd.progression.add-now-document-request+json",
+                payload);
+
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final String nowDocumentRequestPayload = getNowDocumentRequest(hearingId,
+                anyOf(withJsonPath("$.nowDocumentRequests[0].hearingId", equalTo(hearingId))));
+
+        sendMaterialFileUploadedPublicEvent(fromString(materialId), userId);
+
+        final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
+        final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray(NOW_DOCUMENT_REQUESTS).getJsonObject(0);
+        assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
+
+        verifyInMessagingQueue(messageConsumerClientPublicForNowDocumentRequested);
+    }
+
+    @Test
     public void shouldNotSendEmailWithNoOrderAddresseeInNowDocumentRequest() throws IOException {
         final String payload = prepareNoOrderAddresseeDocumentRequestPayload();
         final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);
@@ -320,6 +344,14 @@ public class NowDocumentRequestIT extends AbstractIT {
 
     private String prepareEmailDocumentRequestPayload() {
         String body = getPayload("progression.add-email-now-document-request.json");
+        body = body.replace(HEARING_ID, hearingId)
+                .replace("%MATERIAL_ID%", materialId)
+                .replace("%DEFENDANT_ID%", defendantId);
+        return body;
+    }
+
+    private String prepareApiNotificationDocumentRequestPayload() {
+        String body = getPayload("progression.add-api-notification-now-document-request.json");
         body = body.replace(HEARING_ID, hearingId)
                 .replace("%MATERIAL_ID%", materialId)
                 .replace("%DEFENDANT_ID%", defendantId);

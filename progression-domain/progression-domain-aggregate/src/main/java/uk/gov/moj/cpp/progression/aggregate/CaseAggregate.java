@@ -2229,6 +2229,7 @@ public class CaseAggregate implements Aggregate {
                     .withProsecutorCode(caseCpsProsecutorUpdated.getProsecutionAuthorityCode())
                     .withProsecutorId(caseCpsProsecutorUpdated.getProsecutionAuthorityId())
                     .withProsecutorName(caseCpsProsecutorUpdated.getProsecutionAuthorityName())
+                    .withIsCps(true)
                     .build();
         }
 

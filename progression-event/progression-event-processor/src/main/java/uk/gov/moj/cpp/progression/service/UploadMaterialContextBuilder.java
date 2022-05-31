@@ -18,6 +18,8 @@ public class UploadMaterialContextBuilder {
     private UUID applicationId;
     private boolean firstClassLetter;
     private boolean secondClassLetter;
+    private boolean isNotificationApi;
+    private boolean isCps;
     private List<EmailChannel> emailNotifications;
 
     public UploadMaterialContextBuilder setSender(final Sender sender) {
@@ -75,6 +77,16 @@ public class UploadMaterialContextBuilder {
         return this;
     }
 
+    public UploadMaterialContextBuilder setIsNotificationApi(final boolean isNotificationApi) {
+        this.isNotificationApi = isNotificationApi;
+        return this;
+    }
+
+    public UploadMaterialContextBuilder setIsCps(final boolean isCps) {
+        this.isCps = isCps;
+        return this;
+    }
+
     public UploadMaterialContext build() {
         final UploadMaterialContext uploadMaterialContext = new UploadMaterialContext();
         uploadMaterialContext.setSender(sender);
@@ -88,6 +100,8 @@ public class UploadMaterialContextBuilder {
         uploadMaterialContext.setFirstClassLetter(firstClassLetter);
         uploadMaterialContext.setSecondClassLetter(secondClassLetter);
         uploadMaterialContext.setEmailNotifications(emailNotifications);
+        uploadMaterialContext.setIsNotificationApi(isNotificationApi);
+        uploadMaterialContext.setIsCps(isCps);
         return uploadMaterialContext;
     }
 }

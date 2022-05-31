@@ -1,15 +1,18 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloperWithEvents;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.MaterialDetails;
@@ -31,12 +34,16 @@ import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
 import uk.gov.moj.cpp.progression.domain.event.MaterialStatusUpdateIgnored;
 import uk.gov.moj.cpp.progression.handler.MaterialStatusHandler;
+import uk.gov.moj.cpp.progression.handler.NowDocumentRequestHandler;
+import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -57,15 +64,16 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class MaterialHandlerTest {
 
+    private static final String ADD_NOW_DOCUMENT_REQUEST_COMMAND_NAME = "progression.command.add-now-document-request";
+
     @Spy
     private final Enveloper enveloper = createEnveloperWithEvents(
             NowsMaterialRequestRecorded.class,
             NowsMaterialStatusUpdated.class,
             MaterialStatusUpdateIgnored.class,
-            NowDocumentRequestToBeAcknowledged.class,
-            NowDocumentRequested.class);
-
-    private static final String ADD_NOW_DOCUMENT_REQUEST_COMMAND_NAME = "progression.command.add-now-document-request";
+            NowDocumentRequested.class,
+            MaterialStatusUpdateIgnored.class,
+            NowDocumentRequestToBeAcknowledged.class);
 
     private static final UUID MATERIAL_ID = randomUUID();
 
@@ -78,6 +86,9 @@ public class MaterialHandlerTest {
     @Mock
     private AggregateService aggregateService;
 
+    @Mock
+    private ProsecutionCaseQueryService prosecutionCaseQueryService;
+
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
     @Spy
@@ -85,6 +96,9 @@ public class MaterialHandlerTest {
 
     @InjectMocks
     private MaterialStatusHandler materialStatusHandler;
+
+    @InjectMocks
+    private NowDocumentRequestHandler nowDocumentRequestHandler;
 
     private MaterialAggregate aggregate;
 
@@ -168,6 +182,7 @@ public class MaterialHandlerTest {
         if (!knownUpdate) {
             when(aggregateService.get(eventStream, MaterialAggregate.class)).thenReturn(new MaterialAggregate());
         }
+
         this.materialStatusHandler.updateStatus(statusCommand);
 
         final ArgumentCaptor<Stream> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
@@ -207,5 +222,79 @@ public class MaterialHandlerTest {
         when(this.aggregateService.get(eventStream, clz)).thenReturn(aggregate);
     }
 
+    @Test
+    public void testApiUpdateStatus() throws EventStreamException {
+        final UUID materialId = UUID.randomUUID();
+        final UUID caseId = UUID.randomUUID();
+        final RecordNowsMaterialRequest commandObject = RecordNowsMaterialRequest.recordNowsMaterialRequest()
+                .withContext(MaterialDetails.materialDetails()
+                        .withMaterialId(materialId)
+                        .withCaseId(caseId)
+                        .withIsNotificationApi(true)
+                        .withIsCps(true)
+                        .withSecondClassLetter(true)
+                        .build()
+                ).build();
 
+        final JsonEnvelope command = envelopeFrom(metadataWithRandomUUID(
+                MaterialStatusHandler.PROGRESSION_COMMAND_RECORD_NOWS_MATERIAL_REQUEST), objectToJsonObjectConverter.convert(commandObject));
+
+        this.materialStatusHandler.recordNowsMaterial(command);
+
+        final UpdateNowsMaterialStatus statusCommandObject = UpdateNowsMaterialStatus.updateNowsMaterialStatus()
+                .withMaterialId(materialId)
+                .withStatus("GENERATED")
+                .build();
+
+        final JsonEnvelope statusCommand = envelopeFrom(metadataWithRandomUUID(
+                MaterialStatusHandler.PROGRESSION_COMMAND_UPDATE_NOWS_MATERIAL_STATUS), objectToJsonObjectConverter.convert(statusCommandObject));
+
+        List<UUID> cases = new ArrayList<>();
+        cases.add(caseId);
+
+        final NowDocumentRequest nowDocumentRequest = NowDocumentRequest.nowDocumentRequest()
+                    .withMaterialId(materialId)
+                    .withCases(cases)
+                    .withNowContent(NowDocumentContent.nowDocumentContent().build())
+                    .build();
+
+        Envelope<NowDocumentRequest> buildEnvelope =  Envelope.envelopeFrom(metadataWithRandomUUID(ADD_NOW_DOCUMENT_REQUEST_COMMAND_NAME),
+                nowDocumentRequest);
+        nowDocumentRequestHandler.handleAddNowDocumentRequest(buildEnvelope);
+
+        when(aggregateService.get(eventStream, MaterialAggregate.class)).thenReturn(aggregate);
+
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
+        final JsonObject sampleJsonObject = createObjectBuilder().add("prosecutionCase", createObjectBuilder()
+                                                                                .add("id", caseId.toString())
+                                                                                .add("prosecutionCaseIdentifier", createObjectBuilder()
+                                                                                                        .add("caseURN" , "case123")
+                                                                                        .add("prosecutionAuthorityReference", "ref")
+                                                                                        .add("prosecutionAuthorityOUCode", "ouCode")
+                                                                                                        .build())
+                                                                                .build())
+                                                                 .build();
+        when(prosecutionCaseQueryService.getProsecutionCase(any(),anyString())).thenReturn(java.util.Optional.ofNullable(sampleJsonObject));
+        this.materialStatusHandler.updateStatus(statusCommand);
+
+        final ArgumentCaptor<Stream> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
+
+        (Mockito.verify(eventStream, times(3))).append(argumentCaptor.capture());
+        final List<Stream> streams = argumentCaptor.getAllValues();
+
+        final Envelope recordJsonEnvelope = (JsonEnvelope) streams.get(0).findFirst().orElse(null);
+
+        assertThat(recordJsonEnvelope.metadata().name(), is("progression.event.nows-material-request-recorded"));
+
+        final NowsMaterialRequestRecorded record = jsonObjectToObjectConverter.convert((JsonObject) recordJsonEnvelope.payload(), NowsMaterialRequestRecorded.class);
+
+        assertThat(record.getContext().getMaterialId(), is(commandObject.getContext().getMaterialId()));
+
+        final JsonEnvelope statusJsonEnvelope = (JsonEnvelope) streams.get(2).findFirst().orElse(null);
+
+            assertThat(statusJsonEnvelope.metadata().name(), is("progression.event.nows-material-status-updated"));
+            final NowsMaterialStatusUpdated updated = jsonObjectToObjectConverter.convert((JsonObject) statusJsonEnvelope.payload(), NowsMaterialStatusUpdated.class);
+            assertThat(updated.getDetails().getMaterialId(), is(commandObject.getContext().getMaterialId()));
+            assertThat(updated.getStatus(), is(statusCommandObject.getStatus()));
+    }
 }

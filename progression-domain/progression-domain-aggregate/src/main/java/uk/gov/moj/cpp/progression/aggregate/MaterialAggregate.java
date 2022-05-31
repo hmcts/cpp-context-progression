@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.BooleanUtils.negate;
@@ -34,6 +35,7 @@ import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 import uk.gov.moj.cpp.progression.events.NowDocumentNotificationSuppressed;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -41,10 +43,17 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @SuppressWarnings("squid:S1948")
 public class MaterialAggregate implements Aggregate {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MaterialAggregate.class);
+
     private static final long serialVersionUID = 101L;
     private MaterialDetails details;
+    private List<UUID> caseIds = new ArrayList<>();
     private NowDocumentRequest nowDocumentRequest;
     private boolean isAccountNumberSavedBefore = false;
 
@@ -60,9 +69,12 @@ public class MaterialAggregate implements Aggregate {
                 when(NowsRequestWithAccountNumberUpdated.class).apply(e ->
                         isAccountNumberSavedBefore = true
                 ),
-                when(NowDocumentRequested.class).apply(e ->
-                        nowDocumentRequest = e.getNowDocumentRequest()
-                ),
+                when(NowDocumentRequested.class).apply(e -> {
+                        nowDocumentRequest = e.getNowDocumentRequest();
+                        if (isNotEmpty(e.getNowDocumentRequest().getCases())) {
+                            caseIds.addAll(e.getNowDocumentRequest().getCases());
+                        }
+                 }),
                 otherwiseDoNothing()
         );
     }
@@ -73,7 +85,8 @@ public class MaterialAggregate implements Aggregate {
                 .withContext(materialDetails).build()));
     }
 
-    public Stream<Object> nowsMaterialStatusUpdated(final UUID materialId, final String status) {
+    public Stream<Object> nowsMaterialStatusUpdated(final UUID materialId, final String status, final String caseUrn, final List<String> defendantAsns,
+                                                    final String prosecutingAuthorityOUCode, final List<String> cpsDefendantIds) {
         final Stream.Builder streamBuilder = Stream.builder();
         if (checkMaterialHasValidNotification(details)) {
 
@@ -82,7 +95,7 @@ public class MaterialAggregate implements Aggregate {
                             .map(e -> ofNullable(e.getWelshTranslationRequired())
                                     .orElse(false)).orElse(false);
 
-            streamBuilder.add(new NowsMaterialStatusUpdated(this.details, status, welshTranslationRequired));
+            streamBuilder.add(new NowsMaterialStatusUpdated(caseUrn, cpsDefendantIds, defendantAsns, this.details,prosecutingAuthorityOUCode, status, welshTranslationRequired));
 
             if (welshTranslationRequired) {
                 final List<String> caseUrns = this.nowDocumentRequest.getNowContent().getCases().stream().map(thecase -> thecase.getReference()).collect(Collectors.toList());
@@ -205,12 +218,25 @@ public class MaterialAggregate implements Aggregate {
     }
 
     private boolean checkMaterialHasValidNotification(MaterialDetails details) {
-        if(isNull(details)) {
+        if (isNull(details)) {
             return false;
         }
-
         return isTrue(details.getFirstClassLetter()) ||
                 isTrue(details.getSecondClassLetter()) ||
+                isTrue(details.getIsNotificationApi()) ||
                 (nonNull(details.getEmailNotifications()) && negate(details.getEmailNotifications().isEmpty()));
+    }
+
+    public MaterialDetails getMaterialDetails(){
+        return details;
+    }
+
+    public UUID fetchCaseId(){
+       LOGGER.info("fetchCaseId : {}", caseIds);
+
+       if (isNotEmpty(caseIds)){
+           return caseIds.get(0);
+       }
+        return null;
     }
 }
