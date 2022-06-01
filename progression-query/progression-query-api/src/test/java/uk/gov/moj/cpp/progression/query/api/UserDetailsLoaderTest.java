@@ -49,7 +49,7 @@ public class UserDetailsLoaderTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION);
         final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);
         when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
-        final List<Permission> permissions = userDetailsLoader.getPermissions(metadata, requester, randomUUID().toString());
+        final List<Permission> permissions = userDetailsLoader.getPermissions(metadata, requester, randomUUID());
         assertThat(permissions.size(),is(2));
         Permission firstPermission = Permission.permission().withSource(fromString("4a18bec5-ab1a-410a-9889-885694356401"))
                 .withTarget(fromString("faee972d-f9dd-43d3-9f41-8acc3b908d09")).build();

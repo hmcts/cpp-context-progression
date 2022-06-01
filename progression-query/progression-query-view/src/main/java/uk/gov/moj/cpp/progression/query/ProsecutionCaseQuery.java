@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.query;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
@@ -13,6 +14,7 @@ import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSea
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -331,10 +333,21 @@ public class ProsecutionCaseQuery {
                 .withApplicationStatus(courtApplication.getApplicationStatus())
                 .withApplicationTitle(courtApplication.getType())
                 .withApplicantDisplayName(courtApplication.getApplicant())
+                .withApplicantId(getApplicantId(courtApplication))
                 .withRespondentDisplayNames(courtApplication.getRespondents())
+                .withRespondentIds(courtApplication.getRespondents())
                 .withIsAppeal(isAppealApplication(courtApplication))
                 .withRemovalReason(courtApplication.getRemovalReason())
+                .withSubjectId(getSubjectId(courtApplication.getSubject()))
                 .build()));
+    }
+
+    private UUID getSubjectId(final CourtApplicationParty subject) {
+        return isNull(subject) || isNull(subject.getMasterDefendant()) ? null : subject.getMasterDefendant().getMasterDefendantId();
+    }
+
+    private UUID getApplicantId(final CourtApplication courtApplication) {
+        return isNull(courtApplication.getApplicant()) || isNull(courtApplication.getApplicant().getMasterDefendant()) ? null : courtApplication.getApplicant().getMasterDefendant().getMasterDefendantId();
     }
 
     private void buildRelatedCasesForDefendant(final UUID masterDefendantId, final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList, final JsonArrayBuilder relatedCasesArrayBuilder, final String statusOfPrimaryCase) {

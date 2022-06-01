@@ -1,32 +1,46 @@
 package uk.gov.moj.cpp.progression.query.api;
 
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
-
-import uk.gov.QueryClientTestBase;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-
-import java.util.function.Function;
-
-import javax.json.JsonObject;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.QueryClientTestBase;
+import uk.gov.justice.api.resource.service.DefenceQueryService;
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import java.util.function.Function;
+
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
+import static uk.gov.moj.cpp.progression.query.api.CourtDocumentApi.MATERIAL_CONTENT_FOR_PROSECUTION;
+import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.APPLICATION_ID;
+import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.CASE_ID;
+import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.COURT_DOCUMENTS_SEARCH_NAME;
+import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.COURT_DOCUMENTS_SEARCH_PROSECUTION;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -50,6 +64,9 @@ public class CourtDocumentQueryApiTest {
     private Enveloper enveloper;
 
     @Mock
+    private DefenceQueryService defenceQueryService;
+
+    @Mock
     private Function<Object, JsonEnvelope> objectJsonEnvelopeFunction;
 
     @Spy
@@ -60,6 +77,9 @@ public class CourtDocumentQueryApiTest {
 
     @InjectMocks
     private CourtDocumentQueryApi courtDocumentQueryApi;
+
+    @Captor
+    private ArgumentCaptor<Envelope<JsonValue>> envelopeCaptor;
 
 
     @Before
@@ -100,5 +120,125 @@ public class CourtDocumentQueryApiTest {
         assertThat(courtDocumentQueryApi.getCourtDocument(envelope), equalTo(envelope));
     }
 
+    @Test(expected = BadRequestException.class)
+    public void shouldThrowBadRequestExceptionWhenNoCaseIdAndNoApplicationIdQueryParamInSearchCourtDocumentsForProsecution() {
+
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
+        final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_PROSECUTION);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+        when(requester.request(any())).thenReturn(envelope);
+
+        courtDocumentQueryApi.searchCourtDocumentsForProsecution(envelope);
+    }
+
+    @Test
+    public void shouldReturnApplicationDocumentsWhenNoCaseIdAndApplicationIdQueryParamInSearchCourtDocumentsForProsecution() {
+
+        String applicationId = randomUUID().toString();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add(APPLICATION_ID, applicationId).build();
+        final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_PROSECUTION);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+
+        when(requester.request(any())).thenReturn(envelope);
+        courtDocumentQueryApi.searchCourtDocumentsForProsecution(envelope);
+        verify(requester).request(envelopeCaptor.capture());
+
+        assertThat(envelopeCaptor.getValue().metadata().name(), equalTo(COURT_DOCUMENTS_SEARCH_NAME));
+        assertThat(((JsonObject)envelopeCaptor.getValue().payload()).getJsonObject(CASE_ID), nullValue());
+        assertThat(((JsonObject)envelopeCaptor.getValue().payload()).getJsonString(APPLICATION_ID).getString(), is(applicationId));
+    }
+
+    @Test(expected = ForbiddenRequestException.class)
+    public void shouldThrowForbiddenRequestExceptionWhenUserNotInProsecutorRoleForTheCaseId() {
+
+        String caseId = randomUUID().toString();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add(CASE_ID, caseId).build();
+        final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_PROSECUTION);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+        when(requester.request(any())).thenReturn(envelope);
+        when(defenceQueryService.isUserProsecutingCase(envelope, caseId)).thenReturn(false);
+
+        courtDocumentQueryApi.searchCourtDocumentsForProsecution(envelope);
+    }
+
+    @Test
+    public void shouldCallQueryViewWhenUserInProsecutorRoleForTheCaseId() {
+
+        String caseId = randomUUID().toString();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add(CASE_ID, caseId).build();
+        final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_PROSECUTION);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+        when(requester.request(any())).thenReturn(envelope);
+        when(defenceQueryService.isUserProsecutingCase(envelope, caseId)).thenReturn(true);
+
+        courtDocumentQueryApi.searchCourtDocumentsForProsecution(envelope);
+
+        verify(requester).request(envelopeCaptor.capture());
+
+        assertThat(envelopeCaptor.getValue().metadata().name(), equalTo(COURT_DOCUMENTS_SEARCH_NAME));
+        assertThat(((JsonObject)envelopeCaptor.getValue().payload()).getJsonString(CASE_ID).getString(), is(caseId));
+    }
+
+    @Test
+    public void shouldCallQueryViewWhenUserInProsecutorRoleForTheCaseIdAndApplicationId() {
+
+        final String caseId = randomUUID().toString();
+        final String applicationId = randomUUID().toString();
+        final JsonObject jsonObjectPayload = createObjectBuilder()
+                .add(CASE_ID, caseId)
+                .add(APPLICATION_ID, applicationId)
+                .build();
+        final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_PROSECUTION);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+        when(requester.request(any())).thenReturn(envelope);
+        when(defenceQueryService.isUserProsecutingCase(envelope, caseId)).thenReturn(true);
+
+        courtDocumentQueryApi.searchCourtDocumentsForProsecution(envelope);
+
+        verify(requester).request(envelopeCaptor.capture());
+
+        assertThat(envelopeCaptor.getValue().metadata().name(), equalTo(COURT_DOCUMENTS_SEARCH_NAME));
+        assertThat(((JsonObject)envelopeCaptor.getValue().payload()).getJsonObject(CASE_ID), nullValue());
+        assertThat(((JsonObject)envelopeCaptor.getValue().payload()).getJsonString(APPLICATION_ID).getString(), is(applicationId));
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void shouldThrowBadRequestExceptionWhenNoCaseIdQueryParamInGetMaterialByIdForProsecution() {
+
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
+        final Metadata metadata = QueryClientTestBase.metadataFor(MATERIAL_CONTENT_FOR_PROSECUTION);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+        when(requester.request(any())).thenReturn(envelope);
+
+        courtDocumentApi.getCaseDocumentDetailsForProsecution(envelope);
+    }
+
+    @Test(expected = ForbiddenRequestException.class)
+    public void shouldThrowForbiddenRequestExceptionWhenGetMaterialByIdAndUserNotInProsecutorRoleForTheCaseId() {
+
+        String caseId = randomUUID().toString();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add(CASE_ID, caseId).build();
+        final Metadata metadata = QueryClientTestBase.metadataFor(MATERIAL_CONTENT_FOR_PROSECUTION);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+        when(requester.request(any())).thenReturn(envelope);
+        when(defenceQueryService.isUserProsecutingCase(envelope, caseId)).thenReturn(false);
+
+        courtDocumentApi.getCaseDocumentDetailsForProsecution(envelope);
+    }
+
+    @Test
+    public void shouldCallQueryViewWhenGetMaterialByIdAndUserInProsecutorRoleForTheCaseId() {
+
+        String caseId = randomUUID().toString();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add(CASE_ID, caseId).build();
+        final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_PROSECUTION);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+        when(requester.request(any())).thenReturn(envelope);
+        when(defenceQueryService.isUserProsecutingCase(envelope, caseId)).thenReturn(true);
+
+        JsonEnvelope response = courtDocumentApi.getCaseDocumentDetailsForProsecution(envelope);
+
+        assertThat(response, equalTo(envelope));
+    }
 
 }

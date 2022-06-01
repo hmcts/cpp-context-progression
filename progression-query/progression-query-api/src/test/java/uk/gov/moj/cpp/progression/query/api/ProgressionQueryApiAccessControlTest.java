@@ -55,12 +55,12 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetProsecutioncase() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support","Police Admin", "NCES", "Victims & Witness Care Admin","Recorders", "Eject Case Group");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support","Police Admin", "NCES", "Victims & Witness Care Admin","Recorders", "Eject Case Group", "CPS");
     }
 
     @Test
     public void shouldNotAllowUserInAuthorisedGroupToGetProsecutioncase() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support","Police Admin", "NCES", "Victims & Witness Care Admin","Recorders", "Eject Case Group");
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support","Police Admin", "NCES", "Victims & Witness Care Admin","Recorders", "Eject Case Group", "CPS");
     }
 
     @Test
@@ -218,13 +218,13 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetQueryCaseAtAGlance() {
         assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase.caag", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS",
-                "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge","Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin");
+                "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge","Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "System Users");
     }
 
     @Test
     public void shouldNotAllowUserInUnAuthorisedGroupToGetQueryCaseAtAGlance() {
         assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase.caag", "Youth Offending Service Admin", "Probation Admin", "Judiciary", "Listing Officers", "Legal Advisers",
-                "Court Associate", "Court Clerks", "NCES", "CPS", "Court Administrators", "Crown Court Admin", "Judge","Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin");
+                "Court Associate", "Court Clerks", "NCES", "CPS", "Court Administrators", "Crown Court Admin", "Judge","Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "System Users");
     }
 
 
@@ -238,6 +238,16 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
     public void shouldNotAllowUserInUnAuthorisedGroupToGetQueryApplicationAtAGlance() {
         assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.application.aaag", "Youth Offending Service Admin", "Probation Admin", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate",
                 "Court Clerks", "NCES", "CPS", "Court Administrators", "Crown Court Admin", "Judge", "Victims & Witness Care Admin","Police Admin","Recorders","DJMC","Deputies");
+    }
+
+    @Test
+    public void shouldAllowUserInAuthorisedGroupToGetQueryApplicationAtAGlanceForDefence() {
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.application.aaag-for-defence", "Chambers Clerk", "Chambers Admin", "Defence Lawyers", "Advocates");
+    }
+
+    @Test
+    public void shouldNotAllowUserInUnAuthorisedGroupToGetQueryApplicationAtAGlanceForDefence() {
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.application.aaag-for-defence", "Chambers Clerk", "Chambers Admin", "Defence Lawyers", "Advocates");
     }
 
     @Test

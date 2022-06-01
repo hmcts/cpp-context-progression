@@ -21,6 +21,7 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.PAS
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.POST_CODE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
+import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_APPLICATION_AAAG_FOR_DEFENCE_JSON;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_APPLICATION_AAAG_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
@@ -35,6 +36,7 @@ import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocument
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAdvocateRoleInCaseByCaseId;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -114,7 +116,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
         doHearingConfirmedAndVerify();
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
-        verifyApplicationAtAGlance(courtApplicationId);
+        verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
     }
 
     @Test
@@ -124,7 +126,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         doHearingConfirmedAndVerify();
         final String firstApplicationId = courtApplicationId;
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
-        verifyApplicationAtAGlance(courtApplicationId);
+        verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
 
         setupData();
         final String linkedApplicationId = courtApplicationId;
@@ -138,7 +140,21 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
         doHearingConfirmedAndVerify();
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
-        verifyApplicationAtAGlance(courtApplicationId);
+        verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
+    }
+
+    @Test
+    public void shouldVerifyLinkedCasesInApplicationAtAGlanceForDefence() throws Exception {
+        doReferCaseToCourtAndVerify();
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+        doHearingConfirmedAndVerify();
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
+        final String userRoleInCase = getPayload("stub-data/defence.advocate.query.role-in-case-by-caseid.json")
+                .replace("%CASE_ID%", prosecutionCaseId)
+                .replace("%USER_ROLE_IN_CASE%", "prosecuting");
+
+        stubAdvocateRoleInCaseByCaseId(prosecutionCaseId, userRoleInCase);
+        verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_FOR_DEFENCE_JSON);
     }
 
     private void doReferCaseToCourtAndVerify() throws Exception {
@@ -215,9 +231,9 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         assertThat(caseResponse, is(notNullValue()));
     }
 
-    private void verifyApplicationAtAGlance(final String applicationId) {
+    private void verifyApplicationAtAGlance(final String applicationId, final String mediaType) {
 
-        poll(requestParams(getReadUrl("/applications/" + applicationId), PROGRESSION_QUERY_APPLICATION_AAAG_JSON)
+        poll(requestParams(getReadUrl("/applications/" + applicationId), mediaType)
                 .withHeader(USER_ID, randomUUID()))
                 .timeout(TIMEOUT, SECONDS)
                 .until(

@@ -1,27 +1,38 @@
 package uk.gov.moj.cpp.progression.query.api;
 
+import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
+import uk.gov.justice.api.resource.service.DefenceQueryService;
 import uk.gov.justice.core.courts.AssignedUser;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 
 @ServiceComponent(Component.QUERY_API)
 @SuppressWarnings({"squid:CallToDeprecatedMethod"})
 public class ApplicationQueryApi {
 
     public static final String ASSIGNED_USER_FIELD_NAME = "assignedUser";
+    public static final String LINKED_CASES = "linkedCases";
+
     @Inject
     private Requester requester;
 
@@ -31,6 +42,8 @@ public class ApplicationQueryApi {
     @Inject
     private Enveloper enveloper;
 
+    @Inject
+    private DefenceQueryService defenceQueryService;
 
     @Inject
     private UserDetailsLoader userDetailsLoader;
@@ -83,11 +96,32 @@ public class ApplicationQueryApi {
         return requester.request(query);
     }
 
+    @Handles("progression.query.application.aaag-for-defence")
+    public JsonEnvelope getCourtApplicationForApplicationAtAGlanceForDefence(final JsonEnvelope query) {
+        final Metadata metadata = metadataFrom(query.metadata())
+                .withName("progression.query.application.aaag").build();
+        final JsonEnvelope applicationAaagEnvelope = envelopeFrom(metadata, query.payload());
+        final JsonEnvelope jsonEnvelope = requester.request(applicationAaagEnvelope);
+        if (!jsonEnvelope.payloadAsJsonObject().containsKey(LINKED_CASES)) {
+            throw new ForbiddenRequestException("Cannot view application details, no linked cases found for the application");
+        } else {
+            final JsonArray linkedCases = jsonEnvelope.payloadAsJsonObject().getJsonArray(LINKED_CASES);
+            if (nonNull(linkedCases)) {
+                final Optional<JsonValue> linkedCase = linkedCases.stream()
+                        .filter(lc -> defenceQueryService.isUserProsecutingOrDefendingCase(query, ((JsonObject) lc).getString("prosecutionCaseId")))
+                        .findFirst();
+                if (!linkedCase.isPresent()) {
+                    throw new ForbiddenRequestException("Cannot view application details, user is not prosecuting or defending the case");
+                }
+            }
+        }
+        return jsonEnvelope;
+    }
+
     @Handles("progression.query.applicationhearings")
     public JsonEnvelope getApplicationHearings(final JsonEnvelope query) {
         return requester.request(query);
     }
-
 
     @Handles("progression.query.court-proceedings-for-application")
     public JsonEnvelope getCourtProceedingsForApplication(final JsonEnvelope query) {

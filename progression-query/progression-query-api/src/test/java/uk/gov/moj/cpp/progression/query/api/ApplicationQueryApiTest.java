@@ -1,21 +1,37 @@
 package uk.gov.moj.cpp.progression.query.api;
 
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.query.api.CourtDocumentApi.MATERIAL_CONTENT_FOR_PROSECUTION;
+import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.CASE_ID;
+import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.COURT_DOCUMENTS_SEARCH_PROSECUTION;
 
+import uk.gov.QueryClientTestBase;
+import uk.gov.justice.api.resource.service.DefenceQueryService;
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 
 import java.util.HashSet;
 import java.util.UUID;
 import java.util.function.Function;
 
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +46,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationQueryApiTest {
+
+    public static final String APPLICATION_AT_GLANCE_DEFENCE = "progression.query.application.aaag-for-defence";
+    public static final String CASE_ID = "caseId";
 
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
@@ -60,6 +79,9 @@ public class ApplicationQueryApiTest {
 
     @InjectMocks
     private ApplicationQueryApi applicationQueryApi;
+
+    @Mock
+    private DefenceQueryService defenceQueryService;
 
     @Captor
     private ArgumentCaptor<String> responsePutKeys;
@@ -134,4 +156,53 @@ public class ApplicationQueryApiTest {
         when(requester.request(query)).thenReturn(response);
         assertThat(applicationQueryApi.getApplicationHearings(query), equalTo(response));
     }
+
+    @Test(expected = ForbiddenRequestException.class)
+    public void shouldThrowForbiddenRequestExceptionWhenGetApplicationAtAGlanceForDefenceAndNoLinkedCasesFound() {
+
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
+        final Metadata metadata = QueryClientTestBase.metadataFor(APPLICATION_AT_GLANCE_DEFENCE);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+
+        when(requester.request(any())).thenReturn(envelope);
+
+        applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope);
+    }
+
+    @Test(expected = ForbiddenRequestException.class)
+    public void shouldThrowForbiddenRequestExceptionWhenGetApplicationAtAGlanceForDefenceAndUserNotInAdvocateRoleForTheCase() {
+
+        String caseId = randomUUID().toString();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("prosecutionCaseId", caseId);
+        final JsonObject jsonObjectPayload = createObjectBuilder().add("linkedCases", jsonArrayBuilder.add(jsonObjectBuilder).build()).build();
+        final Metadata metadata = QueryClientTestBase.metadataFor(APPLICATION_AT_GLANCE_DEFENCE);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+
+        when(requester.request(any())).thenReturn(envelope);
+        when(defenceQueryService.isUserProsecutingOrDefendingCase(envelope, caseId)).thenReturn(false);
+
+        applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope);
+    }
+
+    @Test
+    public void shouldReturnApplicationDetailsWhenGetApplicationAtAGlanceForDefenceAndUserInAdvocateRoleForTheCase() {
+
+        String caseId = randomUUID().toString();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("prosecutionCaseId", caseId);
+        final JsonObject jsonObjectPayload = createObjectBuilder().add("linkedCases", jsonArrayBuilder.add(jsonObjectBuilder).build()).build();
+        final Metadata metadata = QueryClientTestBase.metadataFor(APPLICATION_AT_GLANCE_DEFENCE);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+
+        when(requester.request(any())).thenReturn(envelope);
+        when(defenceQueryService.isUserProsecutingOrDefendingCase(envelope, caseId)).thenReturn(true);
+
+        JsonEnvelope response = applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope);
+
+        assertThat(response, equalTo(envelope));
+    }
+
 }

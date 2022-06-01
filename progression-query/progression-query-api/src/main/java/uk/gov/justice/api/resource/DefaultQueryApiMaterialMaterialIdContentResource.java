@@ -1,7 +1,7 @@
 package uk.gov.justice.api.resource;
 
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -44,6 +44,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 /**
  * http endpoint adapter which overrides default framework adapter. It handles transfer of files
  * binaries between material and progression context. Name of this class is after raml definition of
@@ -59,9 +61,12 @@ import javax.ws.rs.core.Response;
 public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryApiMaterialMaterialIdContentResource {
     public static final String PROGRESSION_QUERY_MATERIAL_CONTENT = "progression.query.material-content";
     public static final String PROGRESSION_QUERY_MATERIAL_CONTENT_DEFENCE = "progression.query.material-content-for-defence";
+    public static final String PROGRESSION_QUERY_MATERIAL_CONTENT_PROSECUTION = "progression.query.material-content-for-prosecution";
     private static final String MATERIAL_ID = "materialId";
     private static final String DEFENDANT_ID = "defendantId";
     private static final String JSON_MIME_TYPE = "application/json";
+    private static final String CASE_ID = "caseId";
+    public static final String APPLICATION_ID = "applicationId";
     @Inject
     RestProcessor restProcessor;
 
@@ -117,19 +122,48 @@ public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryAp
     }
 
     @Override
-    public Response getMaterialForDefenceByMaterialIdContent(final String materialId, final String defendantId, final UUID userId) {
+    public Response getMaterialForDefenceByMaterialIdContent(final String materialId, final String defendantId, final String applicationId, final UUID userId) {
+        final JsonObjectBuilder builder = createObjectBuilder();
+        builder.add(MATERIAL_ID, materialId);
+        ofNullable(defendantId).ifPresent(param -> builder.add(DEFENDANT_ID, param));
+        ofNullable(applicationId).ifPresent(param -> builder.add(APPLICATION_ID, param));
 
-        final JsonEnvelope documentQuery = getMaterialQueryEnvelope(materialId, userId, PROGRESSION_QUERY_MATERIAL_CONTENT_DEFENCE, of(defendantId));
+        final JsonEnvelope documentQuery = envelopeFrom(metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PROGRESSION_QUERY_MATERIAL_CONTENT_DEFENCE)
+                        .withUserId(userId.toString())
+                        .build(),
+                builder.build()
+        );
 
         return processInterceptor(documentQuery);
-
     }
 
-    private JsonEnvelope getMaterialQueryEnvelope(final String materialId, final UUID userId, final String actionName, final Optional<String> defendantId) {
+    @Override
+    public Response getMaterialForProsecutionByMaterialIdContent(final String materialId, final String caseId, final String applicationId, final UUID userId) {
 
         final JsonObjectBuilder builder = createObjectBuilder();
         builder.add(MATERIAL_ID, materialId);
-        defendantId.ifPresent(id -> builder.add(DEFENDANT_ID, id));
+        ofNullable(caseId).ifPresent(param -> builder.add(CASE_ID, param));
+        ofNullable(applicationId).ifPresent(param -> builder.add(APPLICATION_ID, param));
+
+        final JsonEnvelope documentQuery = envelopeFrom(metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PROGRESSION_QUERY_MATERIAL_CONTENT_PROSECUTION)
+                        .withUserId(userId.toString())
+                        .build(),
+                builder.build()
+        );
+
+        return processInterceptor(documentQuery);
+    }
+
+
+    private JsonEnvelope getMaterialQueryEnvelope(final String materialId, final UUID userId, final String actionName, final Optional<Pair<String, String>> queryParam) {
+
+        final JsonObjectBuilder builder = createObjectBuilder();
+        builder.add(MATERIAL_ID, materialId);
+        queryParam.ifPresent(param -> builder.add(param.getKey(), param.getValue()));
 
         return envelopeFrom(metadataBuilder()
                         .withId(randomUUID())

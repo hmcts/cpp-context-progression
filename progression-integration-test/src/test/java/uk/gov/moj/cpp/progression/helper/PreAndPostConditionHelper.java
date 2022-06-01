@@ -1000,14 +1000,17 @@ public class PreAndPostConditionHelper {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?defendantId={0}", defendantId), "application/vnd.progression.query.courtdocuments.for.defence+json", userId, responseStatusMatcher);
     }
 
-    public static String getCourtDocumentsByDefendantForDefenceWithNoDefendantId(final String userId, final String caseId, final ResponseStatusMatcher responseStatusMatcher) {
+    public static String getCourtDocumentsByDefendantForDefence(final String userId, final String caseId, final ResponseStatusMatcher responseStatusMatcher) {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments.for.defence+json", userId, responseStatusMatcher);
     }
 
-    public static String getCourtDocumentsByDefendantForDefence(final String userId, final String caseId, final String defendantId, final ResponseStatusMatcher responseStatusMatcher) {
-        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}&defendantId={1}", caseId, defendantId), "application/vnd.progression.query.courtdocuments.for.defence+json", userId, responseStatusMatcher);
+    public static String getCourtDocumentsByCaseIdForProsecutionWithNoCaseId(final String userId, final ResponseStatusMatcher responseStatusMatcher) {
+        return pollForResponse("/courtdocumentsearch", "application/vnd.progression.query.courtdocuments.for.prosecution+json", userId, responseStatusMatcher);
     }
 
+    public static String getCourtDocumentsByCaseIdForProsecution(final String userId, final String caseId, final ResponseStatusMatcher responseStatusMatcher) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments.for.prosecution+json", userId, responseStatusMatcher);
+    }
 
     public static String generateUrn() {
         return randomUUID().toString().replace("-", "").substring(0, 8);

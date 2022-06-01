@@ -85,8 +85,8 @@ public class UserDetailsLoader {
         return userGroupsDetails;
     }
 
-    public List<Permission> getPermissions(final Metadata metadata, final Requester requester, String defendantId) {
-        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add(ACTION, "View").add(OBJECT, "DefendantDocuments").add(TARGET, defendantId).build();
+    public List<Permission> getPermissions(final Metadata metadata, final Requester requester, final UUID defendantId) {
+        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder().add(ACTION, "View").add(OBJECT, "DefendantDocuments").add(TARGET, defendantId.toString()).build();
         final MetadataBuilder metadataWithActionName = metadataFrom(metadata).withName("usersgroups.permissions");
 
         final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, getOrganisationForUserRequest);

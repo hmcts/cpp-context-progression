@@ -1,32 +1,41 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
+import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.isPermitted;
+import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.removeProperty;
 
+import uk.gov.justice.api.resource.service.DefenceQueryService;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
+import uk.gov.justice.core.courts.CourtDocumentIndex;
+import uk.gov.justice.courts.progression.query.Courtdocuments;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 @ServiceComponent(Component.QUERY_API)
 public class CourtDocumentQueryApi {
@@ -35,11 +44,13 @@ public class CourtDocumentQueryApi {
     public static final String COURT_DOCUMENTS_SEARCH_NAME = "progression.query.courtdocuments";
     public static final String COURT_DOCUMENTS_SEARCH_WITH_PAGINATION_NAME = "progression.query.courtdocuments.with.pagination";
     public static final String COURT_DOCUMENTS_SEARCH_DEFENCE = "progression.query.courtdocuments.for.defence";
+    public static final String COURT_DOCUMENTS_SEARCH_PROSECUTION = "progression.query.courtdocuments.for.prosecution";
     public static final String COURT_DOCUMENT_PROSECUTION_NOTIFICATION_STATUS = "progression.query.prosecution.notification-status";
     public static final String COURT_DOCUMENT_APPLICATION_NOTIFICATION_STATUS = "progression.query.application.notification-status";
     private static final String HEARING_ID = "hearingId";
-    private static final String CASE_ID = "caseId";
+    static final String CASE_ID = "caseId";
     private static final String DEFENDANT_ID = "defendantId";
+    public static final String APPLICATION_ID = "applicationId";
 
     @Inject
     private Requester requester;
@@ -48,10 +59,16 @@ public class CourtDocumentQueryApi {
     private UserDetailsLoader userDetailsLoader;
 
     @Inject
+    private DefenceQueryService defenceQueryService;
+
+    @Inject
     private HearingDetailsLoader hearingDetailsLoader;
 
     @Inject
     private ReferenceDataService referenceDataService;
+
+    @Inject
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Handles(COURT_DOCUMENT_SEARCH_NAME)
     public JsonEnvelope getCourtDocument(final JsonEnvelope query) {
@@ -79,20 +96,72 @@ public class CourtDocumentQueryApi {
 
     @Handles(COURT_DOCUMENTS_SEARCH_DEFENCE)
     public JsonEnvelope searchCourtDocumentsForDefence(final JsonEnvelope query) {
-        if (!(query.payloadAsJsonObject().containsKey(CASE_ID) && query.payloadAsJsonObject().containsKey(DEFENDANT_ID))) {
+        if (!query.payloadAsJsonObject().containsKey(CASE_ID) && !query.payloadAsJsonObject().containsKey(APPLICATION_ID)) {
             throw new BadRequestException(String.format("%s no search parameter specified ", COURT_DOCUMENTS_SEARCH_DEFENCE));
-        }
-        if(!isPermitted(query, userDetailsLoader, requester, query.payloadAsJsonObject().getString(DEFENDANT_ID))) {
-            throw new ForbiddenRequestException("User has neither associated or granted permission to view");
         }
 
         final Metadata metadata = metadataFrom(query.metadata())
                 .withName(COURT_DOCUMENTS_SEARCH_NAME)
                 .build();
 
-        return requester.request(envelopeFrom(metadata, query.payloadAsJsonObject()));
+        if (query.payloadAsJsonObject().containsKey(CASE_ID)) {
+            final List<UUID> defendantList = defenceQueryService.getDefendantList(query, query.payloadAsJsonObject().getString(CASE_ID));
+            final List<CourtDocumentIndex> finalDocumentList = new ArrayList<>();
+            defendantList.forEach(defendantId -> {
+                final Courtdocuments courtdocuments = getCourtDocument(query, metadata, defendantId);
+                if (nonNull(courtdocuments) && isNotEmpty(courtdocuments.getDocumentIndices())) {
+                    final List<CourtDocumentIndex> filteredList = getFilteredList(courtdocuments.getDocumentIndices(), finalDocumentList);
+                    if (isNotEmpty(filteredList)) {
+                        finalDocumentList.addAll(filteredList);
+                    }
+
+                }
+            });
+
+            final JsonObject resultJson = objectToJsonObjectConverter.convert(Courtdocuments.courtdocuments().withDocumentIndices(finalDocumentList).build());
+            return envelopeFrom(query.metadata(), resultJson);
+        } else { // for applicationId
+            return requester.request(envelopeFrom(metadata, query.payloadAsJsonObject()));
+        }
+
     }
 
+    public List<CourtDocumentIndex> getFilteredList(final List<CourtDocumentIndex> fetchedDocumentIndices, final List<CourtDocumentIndex> existingDocumentList) {
+        return fetchedDocumentIndices.stream()
+                .filter(newCourtDocumentIndex ->
+                        !("case level".equalsIgnoreCase(newCourtDocumentIndex.getCategory()) &&
+                                existingDocumentList.stream().anyMatch(existingDocumentIndex -> existingDocumentIndex.getDocument().getCourtDocumentId().equals(newCourtDocumentIndex.getDocument().getCourtDocumentId())))
+                ).collect(toList());
+    }
+
+    private Courtdocuments getCourtDocument(final JsonEnvelope query, final Metadata metadata, final UUID defendantId) {
+        final Envelope<Courtdocuments> responseEnvelope = requester.request(envelopeFrom(metadata, getEnrichedQueryPayload(query, defendantId)), Courtdocuments.class);
+        return responseEnvelope.payload();
+    }
+
+    private JsonObject getEnrichedQueryPayload(final JsonEnvelope query, final UUID defendantId) {
+        final JsonObjectBuilder enrichedQueryDocumentBuilder = uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder(query.payloadAsJsonObject());
+        enrichedQueryDocumentBuilder.add(DEFENDANT_ID, defendantId.toString());
+        return enrichedQueryDocumentBuilder.build();
+    }
+
+
+    @Handles(COURT_DOCUMENTS_SEARCH_PROSECUTION)
+    public JsonEnvelope searchCourtDocumentsForProsecution(final JsonEnvelope query) {
+
+        if (!query.payloadAsJsonObject().containsKey(CASE_ID) && !query.payloadAsJsonObject().containsKey(APPLICATION_ID)) {
+            throw new BadRequestException(String.format("%s no search parameter specified ", COURT_DOCUMENTS_SEARCH_PROSECUTION));
+        }
+        if (!query.payloadAsJsonObject().containsKey(APPLICATION_ID) && !defenceQueryService.isUserProsecutingCase(query, query.payloadAsJsonObject().getString(CASE_ID))) {
+            throw new ForbiddenRequestException("Forbidden!! Cannot view court documents, user not prosecuting the case");
+        }
+
+        final Metadata metadata = metadataFrom(query.metadata())
+                .withName(COURT_DOCUMENTS_SEARCH_NAME)
+                .build();
+
+        return requester.request(envelopeFrom(metadata, getUpdatedQueryPayload(query.payloadAsJsonObject())));
+    }
 
 
     @Handles(COURT_DOCUMENT_PROSECUTION_NOTIFICATION_STATUS)
@@ -140,7 +209,7 @@ public class CourtDocumentQueryApi {
 
         final List<ReferenceDataService.ReferenceHearingDetails> hearingsOfTypeTrial = hearingTypes.values().stream()
                 .filter(ReferenceDataService.ReferenceHearingDetails::getTrialTypeFlag)
-                .collect(Collectors.toList());
+                .collect(toList());
 
         return hearingsOfTypeTrial.stream().anyMatch(type -> type.getHearingTypeCode().equals(referenceHearingDetails.getHearingTypeCode()));
     }
@@ -156,6 +225,13 @@ public class CourtDocumentQueryApi {
                 .withName("progression.query.shared-court-documents")
                 .build();
         return requester.request(envelopeFrom(metadata, withGroupId));
+    }
+
+    private JsonObject getUpdatedQueryPayload(final JsonObject query) {
+        if (query.containsKey(APPLICATION_ID)) {
+            return removeProperty(query, CASE_ID);
+        }
+        return query;
     }
 
 }

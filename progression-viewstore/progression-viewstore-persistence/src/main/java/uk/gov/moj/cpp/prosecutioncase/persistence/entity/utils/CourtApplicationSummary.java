@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.entity.utils;
 
+import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.defaultString;
 
@@ -10,7 +11,6 @@ import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Person;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.deltaspike.core.util.CollectionUtils;
 
-@SuppressWarnings({"squid:S2384", "pmd:BeanMembersShouldSerialize", "squid:S00107"})
+@SuppressWarnings({"squid:S2384", "PMD.BeanMembersShouldSerialize", "squid:S00107"})
 public class CourtApplicationSummary {
 
     private final String applicationId;
@@ -32,7 +32,13 @@ public class CourtApplicationSummary {
 
     private final String applicantDisplayName;
 
+    private final UUID applicantId;
+
     private final List<String> respondentDisplayNames;
+
+    private final List<UUID> respondentIds;
+
+    private final UUID subjectId;
 
     private final Boolean isAppeal;
 
@@ -42,7 +48,7 @@ public class CourtApplicationSummary {
 
     private CourtApplicationSummary(final String applicationId, final String applicationTitle, final String applicationReference,
                                     final String applicationStatus, final String applicantDisplayName, final List<String> respondentDisplayNames, final Boolean isAppeal,
-                                    final UUID assignedUserId, final String removalReason) {
+                                    final UUID assignedUserId, final String removalReason, final UUID applicantId, final List<UUID> respondentIds, final UUID subjectId) {
         this.applicationId = applicationId;
         this.applicationTitle = applicationTitle;
         this.applicationReference = applicationReference;
@@ -52,6 +58,9 @@ public class CourtApplicationSummary {
         this.isAppeal = isAppeal;
         this.assignedUserId = assignedUserId;
         this.removalReason = removalReason;
+        this.applicantId = applicantId;
+        this.respondentIds = respondentIds;
+        this.subjectId = subjectId;
     }
 
     public String getApplicationId() {
@@ -73,6 +82,12 @@ public class CourtApplicationSummary {
     public String getApplicantDisplayName() {
         return applicantDisplayName;
     }
+
+    public UUID getApplicantId() { return applicantId; }
+
+    public List<UUID> getRespondentIds() { return respondentIds; }
+
+    public UUID getSubjectId() { return subjectId; }
 
     public List<String> getRespondentDisplayNames() {
         return respondentDisplayNames;
@@ -111,12 +126,39 @@ public class CourtApplicationSummary {
 
         private String applicantDisplayName;
 
+        private UUID applicantId;
+
         private List<String> respondentDisplayNames;
+
+        private List<UUID> respondentIds;
+
+        private UUID subjectId;
 
         private Boolean isAppeal;
 
         private UUID assignedUserId;
         private String removalReason;
+
+        public Builder withApplicantId(final UUID applicantId) {
+            this.applicantId = applicantId;
+            return this;
+        }
+
+        public Builder withRespondentIds(List<CourtApplicationParty> respondents) {
+            if (!CollectionUtils.isEmpty(respondents)) {
+                this.respondentIds =
+                        respondents.stream()
+                                .filter(courtApplicationParty -> nonNull(courtApplicationParty.getMasterDefendant()))
+                                .map(courtApplicationParty -> courtApplicationParty.getMasterDefendant().getMasterDefendantId())
+                                .collect(Collectors.toList());
+            }
+            return this;
+        }
+
+        public Builder withSubjectId(final UUID subjectId) {
+            this.subjectId = subjectId;
+            return this;
+        }
 
         public Builder withApplicationId(final String applicationId) {
             this.applicationId = applicationId;
@@ -129,12 +171,12 @@ public class CourtApplicationSummary {
         }
 
         public Builder withApplicationTitle(final CourtApplicationType courtApplicationType) {
-            this.applicationTitle = Objects.nonNull(courtApplicationType) ? courtApplicationType.getType() : EMPTY;
+            this.applicationTitle = nonNull(courtApplicationType) ? courtApplicationType.getType() : EMPTY;
             return this;
         }
 
         public Builder withApplicationStatus(final ApplicationStatus status) {
-            this.applicationStatus = Objects.nonNull(status) ? status.name() : EMPTY;
+            this.applicationStatus = nonNull(status) ? status.name() : EMPTY;
             return this;
         }
 
@@ -169,29 +211,29 @@ public class CourtApplicationSummary {
         }
 
         public CourtApplicationSummary build() {
-            return new CourtApplicationSummary(applicationId, applicationTitle, applicationReference, applicationStatus, applicantDisplayName, respondentDisplayNames, isAppeal, assignedUserId, removalReason);
+            return new CourtApplicationSummary(applicationId, applicationTitle, applicationReference, applicationStatus, applicantDisplayName, respondentDisplayNames, isAppeal, assignedUserId, removalReason, applicantId, respondentIds, subjectId);
         }
 
         private String extractDisplayName(final CourtApplicationParty applicationParty) {
             Optional<String> displayName = Optional.empty();
             final MasterDefendant masterDefendant = applicationParty.getMasterDefendant();
-            if (Objects.nonNull(masterDefendant)) {
-                if (Objects.nonNull(masterDefendant.getPersonDefendant())) {
+            if (nonNull(masterDefendant)) {
+                if (nonNull(masterDefendant.getPersonDefendant())) {
                     displayName = getPersonName(masterDefendant.getPersonDefendant().getPersonDetails());
                 }
-                if (Objects.nonNull(masterDefendant.getLegalEntityDefendant())) {
+                if (nonNull(masterDefendant.getLegalEntityDefendant())) {
                     displayName = Optional.of(masterDefendant.getLegalEntityDefendant().getOrganisation().getName());
                 }
             }
 
             if (!displayName.isPresent()) {
-                if (Objects.nonNull(applicationParty.getPersonDetails())) {
+                if (nonNull(applicationParty.getPersonDetails())) {
                     displayName = getPersonName(applicationParty.getPersonDetails());
                 }
-                if (Objects.nonNull(applicationParty.getOrganisation())) {
+                if (nonNull(applicationParty.getOrganisation())) {
                     displayName = Optional.of(defaultString(applicationParty.getOrganisation().getName()));
                 }
-                if (Objects.nonNull(applicationParty.getProsecutingAuthority())) {
+                if (nonNull(applicationParty.getProsecutingAuthority())) {
                     displayName = Optional.of(defaultString(applicationParty.getProsecutingAuthority().getProsecutionAuthorityCode()));
                 }
             }
