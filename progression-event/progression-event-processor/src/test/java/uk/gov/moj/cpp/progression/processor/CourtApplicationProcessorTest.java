@@ -973,7 +973,7 @@ public class CourtApplicationProcessorTest {
     public void shouldTestInitiateCourtHearingAfterSummonsApproved(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired) {
         final UUID masterDefendantId = randomUUID();
         final InitiateCourtHearingAfterSummonsApproved eventPayload = initiateCourtHearingAfterSummonsApproved()
-                .withCourtHearing(courtHearingRequest().withId(randomUUID()).build())
+                .withCourtHearing(courtHearingRequest().withId(randomUUID()).withBookingType("Video").withPriority("High").withSpecialRequirements(Arrays.asList("RSZ", "CELL")).build())
                 .withApplication(courtApplication()
                         .withId(randomUUID())
                         .withApplicant(courtApplicationParty().withMasterDefendant(masterDefendant().withMasterDefendantId(masterDefendantId).build()).build())

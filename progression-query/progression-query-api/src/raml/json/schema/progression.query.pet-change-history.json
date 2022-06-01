@@ -34,10 +34,24 @@
               },
               "lastName": {
                 "type": "string"
+              },
+              "name": {
+                "type": "string"
               }
             },
-            "required": [
-              "id"
+            "oneOf": [
+              {
+                "required": [
+                  "id",
+                  "firstName",
+                  "lastName"
+                ]
+              },
+              {
+                "required": [
+                  "name"
+                ]
+              }
             ],
             "additionalProperties": false
           },

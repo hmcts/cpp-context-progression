@@ -5,16 +5,17 @@ import static java.lang.String.format;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
@@ -25,8 +26,6 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
-import org.hamcrest.core.Is;
-import org.mockito.Captor;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
@@ -59,10 +58,12 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -323,5 +324,33 @@ public class ProgressionEventProcessorTest {
         assertThat(envelopeCaptor.getAllValues().get(1).payload().getString("prosecutionCaseId"), Is.is(CASE_ID));
     }
 
+    @Test
+    public void publishSuppressNowDocumentNotificationEvent() {
+
+        // given
+        final UUID masterDefendantId = UUID.randomUUID();
+        final UUID materialId = UUID.randomUUID();
+        final JsonEnvelope event = createEnvelope(
+                "progression.event.now-document-notification-suppressed",
+                createObjectBuilder()
+                        .add("nowDocumentNotificationSuppressed",
+                                createObjectBuilder()
+                                        .add("defendantName", "test")
+                                        .add("caseUrns", createArrayBuilder().add("test"))
+                                        .add("masterDefendantId", masterDefendantId.toString())
+                                        .add("materialId", materialId.toString())
+                                        .add("templateName", "testTemplate")
+                                        .build())
+                        .build());
+        // when
+        progressionEventProcessor.publishSuppressNowDocumentNotificationEvent(event);
+        // then
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+
+        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), Is.is("public.progression.now-notification-suppressed"));
+        assertThat(envelopeCaptor.getAllValues().get(0).payload().getJsonObject("nowDocumentNotificationSuppressed").getString("defendantName"), Is.is("test"));
+        assertThat(envelopeCaptor.getAllValues().get(0).payload().getJsonObject("nowDocumentNotificationSuppressed").getString("templateName"), Is.is("testTemplate"));
+        assertThat(envelopeCaptor.getAllValues().get(0).payload().getJsonObject("nowDocumentNotificationSuppressed").getJsonArray("caseUrns"), notNullValue());
+    }
 
 }

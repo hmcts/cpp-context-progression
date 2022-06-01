@@ -6,7 +6,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
@@ -45,7 +44,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -214,6 +212,7 @@ public class CourtDocumentTransformerTest {
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(
                 withJsonPath("$.subjectDetails.prosecutionCaseSubject.prosecutingAuthority", is("OUCODE_123")),
                 withJsonPath("$.subjectDetails.prosecutionCaseSubject.defendantSubject.asn", is("ASN-1234")),
+                withJsonPath("$.subjectDetails.prosecutionCaseSubject.defendantSubject.cpsDefendantId", is("0c10e736-3387-4044-85ed-e962e78caf0a")),
                 withJsonPath("$.subjectDetails.prosecutionCaseSubject.defendantSubject.prosecutorDefendantId", is("ProsecutionAuthorityReference_123"))
         )));
         verify(referenceDataService, times(0)).getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class));
@@ -388,6 +387,7 @@ public class CourtDocumentTransformerTest {
         final Defendant.Builder defendantBuilder = Defendant.defendant();
         defendantBuilder.withId(prosecutionCaseDocumentId);
         defendantBuilder.withProsecutionAuthorityReference("ProsecutionAuthorityReference_123");
+        defendantBuilder.withCpsDefendantId(UUID.fromString("0c10e736-3387-4044-85ed-e962e78caf0a"));
         final PersonDefendant.Builder personDefendant = PersonDefendant.personDefendant();
         personDefendant.withArrestSummonsNumber("ASN-1234");
         defendantBuilder.withPersonDefendant(personDefendant.build());

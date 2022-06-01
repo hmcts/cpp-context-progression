@@ -79,11 +79,12 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ServiceComponent(Component.QUERY_VIEW)
 @SuppressWarnings({"squid:S1612", "squid:S2259", "squid:S00112", "squid:S3776", "squid:S1155",
@@ -732,7 +733,10 @@ public class CourtDocumentQuery {
 
     public List<DocumentTypeAccessReferenceData> getAllDocumentTypeAccess() {
 
-        return getRefDataStream(REFERENCEDATA_GET_ALL_DOCUMENT_TYPE_ACCESS_QUERY, DOCUMENT_TYPE_ACCESS, createObjectBuilder().add(DATE, LocalDate.now().toString())).map(asDocumentsMetadataRefData()).collect(Collectors.toList());
+        return getRefDataStream(REFERENCEDATA_GET_ALL_DOCUMENT_TYPE_ACCESS_QUERY,
+                DOCUMENT_TYPE_ACCESS, createObjectBuilder().add(DATE, LocalDate.now().toString()))
+                .map(asDocumentsMetadataRefData())
+                .collect(Collectors.toList());
 
     }
 

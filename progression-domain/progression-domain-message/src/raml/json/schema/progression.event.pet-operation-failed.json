@@ -11,12 +11,15 @@
       "description": "Case Id",
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
+    "submissionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
     "command": {
-      "description": "Logged In User Id",
+      "description": "Command",
       "type": "string"
     },
     "message": {
-      "description": "Logged In User Id",
+      "description": "Message",
       "type": "string"
     }
   },

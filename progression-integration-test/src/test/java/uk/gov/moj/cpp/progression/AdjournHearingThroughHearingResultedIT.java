@@ -32,7 +32,6 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
@@ -214,7 +213,7 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
     }
 
     @Test
-    @Ignore
+    @Ignore("it comes from master branch")
     public void shouldCallListingToNewHearingWithCourtOrder() throws Exception {
         enableAmendReshareFeature(false);
 

@@ -335,6 +335,7 @@ public class HearingToHearingListingNeedsTransformer {
 
         return HearingListingNeeds.hearingListingNeeds()
                 .withBookingReference(nextHearing.getBookingReference())
+                .withBookedSlots(nextHearing.getHmiSlots())
                 .withCourtCentre(nextHearing.getCourtCentre())
                 .withEstimatedMinutes(nextHearing.getEstimatedMinutes())
                 .withType(nextHearing.getType())

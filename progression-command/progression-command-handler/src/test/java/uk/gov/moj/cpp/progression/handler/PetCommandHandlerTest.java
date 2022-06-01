@@ -1,27 +1,37 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Arrays.asList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.FormType.PET;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+
 import uk.gov.justice.core.courts.CreatePetForm;
 import uk.gov.justice.core.courts.FinalisePetForm;
 import uk.gov.justice.core.courts.PetDefendants;
 import uk.gov.justice.core.courts.PetDetailReceived;
 import uk.gov.justice.core.courts.PetDetailUpdated;
 import uk.gov.justice.core.courts.PetFormCreated;
+import uk.gov.justice.core.courts.PetFormDefendantUpdated;
 import uk.gov.justice.core.courts.PetFormFinalised;
+import uk.gov.justice.core.courts.PetFormReceived;
 import uk.gov.justice.core.courts.PetFormUpdated;
 import uk.gov.justice.core.courts.ReceivePetDetail;
+import uk.gov.justice.core.courts.ReceivePetForm;
 import uk.gov.justice.core.courts.UpdatePetDetail;
 import uk.gov.justice.core.courts.UpdatePetForm;
-import uk.gov.justice.core.courts.PetFormDefendantUpdated;
-import uk.gov.justice.core.courts.PetFormReceived;
-import uk.gov.justice.core.courts.ReceivePetForm;
 import uk.gov.justice.core.courts.UpdatePetFormForDefendant;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -39,21 +49,13 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Arrays.asList;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PetCommandHandlerTest {
@@ -90,10 +92,10 @@ public class PetCommandHandlerTest {
                 .withPetId(randomUUID())
                 .withCaseId(randomUUID())
                 .withFormId(randomUUID())
+                .withIsYouth(false)
                 .withPetFormData("{}")
                 .withPetDefendants(asList(PetDefendants.petDefendants()
                         .withDefendantId(randomUUID())
-                        .withOffenceIds(asList(randomUUID()))
                         .build()))
                 .build();
 
@@ -105,11 +107,12 @@ public class PetCommandHandlerTest {
 
         final Envelope<CreatePetForm> envelope = envelopeFrom(metadata, createPetForm);
 
-        when(caseAggregate.createPetForm(any(), any(), any(), anyMap(), any(), any()))
+        when(caseAggregate.createPetForm(any(), any(), any(), anyObject(), anyList(), any(), any(), any(), any(), any()))
                 .thenReturn(Stream.of(PetFormCreated.petFormCreated()
                         .withCaseId(createPetForm.getCaseId())
                         .withFormId(createPetForm.getFormId())
                         .withPetId(createPetForm.getPetId())
+                        .withFormType(PET)
                         .build()));
 
         petCommandHandler.handleCreatePetForm(envelope);
@@ -137,7 +140,6 @@ public class PetCommandHandlerTest {
                 .withFormId(randomUUID())
                 .withPetDefendants(asList(PetDefendants.petDefendants()
                         .withDefendantId(randomUUID())
-                        .withOffenceIds(asList(randomUUID()))
                         .build()))
                 .build();
 
@@ -149,7 +151,7 @@ public class PetCommandHandlerTest {
 
         final Envelope<ReceivePetForm> envelope = envelopeFrom(metadata, receivePetForm);
 
-        when(caseAggregate.receivePetForm(any(), any(), any(), anyMap()))
+        when(caseAggregate.receivePetForm(any(), any(), any(), anyList()))
                 .thenReturn(Stream.of(PetFormReceived.petFormReceived()
                         .withCaseId(receivePetForm.getCaseId())
                         .withFormId(receivePetForm.getFormId())
@@ -221,7 +223,7 @@ public class PetCommandHandlerTest {
         final UpdatePetDetail updatePetDetail = UpdatePetDetail.updatePetDetail()
                 .withPetId(randomUUID())
                 .withCaseId(randomUUID())
-                .withPetDefendants(Arrays.asList( new PetDefendants(randomUUID(),Arrays.asList(randomUUID(),randomUUID()))))
+                .withPetDefendants(Arrays.asList(new PetDefendants(randomUUID())))
                 .build();
 
         final UUID userId = randomUUID();
@@ -234,7 +236,7 @@ public class PetCommandHandlerTest {
 
         final Envelope<UpdatePetDetail> envelope = envelopeFrom(metadata, updatePetDetail);
 
-        when(caseAggregate.updatePetDetail(any(), any(), any(), any()))
+        when(caseAggregate.updatePetDetail(any(), any(), anyObject(), any(), any()))
                 .thenReturn(Stream.of(PetDetailUpdated.petDetailUpdated()
                         .withCaseId(updatePetDetail.getCaseId())
                         .withPetId(updatePetDetail.getPetId())
@@ -262,7 +264,7 @@ public class PetCommandHandlerTest {
         final ReceivePetDetail receivePetDetail = ReceivePetDetail.receivePetDetail()
                 .withPetId(randomUUID())
                 .withCaseId(randomUUID())
-                .withPetDefendants(Arrays.asList( new PetDefendants(randomUUID(),Arrays.asList(randomUUID(),randomUUID()))))
+                .withPetDefendants(Arrays.asList(new PetDefendants(randomUUID())))
                 .build();
 
         final UUID userId = randomUUID();
@@ -315,7 +317,7 @@ public class PetCommandHandlerTest {
 
         final Envelope<FinalisePetForm> envelope = envelopeFrom(metadata, finalisePetForm);
 
-        when(caseAggregate.finalisePetForm(any(), any(), any()))
+        when(caseAggregate.finalisePetForm(any(), any(), any(), any()))
                 .thenReturn(Stream.of(PetFormFinalised.petFormFinalised()
                         .withCaseId(finalisePetForm.getCaseId())
                         .withPetId(finalisePetForm.getPetId())

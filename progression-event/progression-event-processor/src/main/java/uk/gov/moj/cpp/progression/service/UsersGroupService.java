@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.progression.service;
 import static java.lang.String.join;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
@@ -128,6 +127,12 @@ public class UsersGroupService {
         return response.payload();
     }
 
+    public JsonObject getUserById(final JsonEnvelope event, final String userId){
+        final Envelope<JsonObject> jsonObjectEnvelope = requester.requestAsAdmin(envelop(createObjectBuilder()
+                .add(USER_ID, userId).build())
+                .withName("usersgroups.get-user-details").withMetadataFrom(event), JsonObject.class);
+        return jsonObjectEnvelope.payload();
+    }
 }
 
 

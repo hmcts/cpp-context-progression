@@ -178,7 +178,7 @@ public class HearingConfirmedEventProcessorTest {
         when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
-        when(progressionService.getHearing(any(), any())).thenReturn(of(hearingInProgressionJson));
+        when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
         when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
         when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
 
@@ -240,7 +240,7 @@ public class HearingConfirmedEventProcessorTest {
         final ListCourtHearing listCourtHearing = buildListCourtHearing(randomUUID());
         when(partialHearingConfirmService.transformToUpdateHearingForPartialAllocation(hearingId, deltaProsecutionCases)).thenReturn(updateHearingForPartialAllocation);
         when(partialHearingConfirmService.transformToListCourtHearing(eq(deltaProsecutionCases), any(), any())).thenReturn(listCourtHearing);
-        when(progressionService.getHearing(envelope, hearingId.toString())).thenReturn(of(hearingJson));
+        when(progressionService.retrieveHearing(envelope, hearingId)).thenReturn(hearing);
         when(jsonObjectToObjectConverter.convert(hearingJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearing);
 
         eventProcessor.processEvent(envelope);
@@ -340,7 +340,7 @@ public class HearingConfirmedEventProcessorTest {
         when(enveloper.withMetadataFrom(envelope, "progression.command.update-related-hearing")).thenReturn(enveloperFunction);
         when(progressionService.getHearing(anyObject(), anyString())).thenReturn(Optional.empty());
         when(partialHearingConfirmService.getRelatedSeedingHearingsProsecutionCasesMap(confirmedHearing, hearing, seedingHearing)).thenReturn(relatedSeedingHearingsProsecutionCasesMap);
-        when(progressionService.getHearing(envelope, hearingId.toString())).thenReturn(of(hearingJson));
+        when(progressionService.retrieveHearing(envelope, hearingId)).thenReturn(hearing);
         when(jsonObjectToObjectConverter.convert(hearingJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearing);
 
         eventProcessor.processEvent(envelope);
@@ -376,6 +376,7 @@ public class HearingConfirmedEventProcessorTest {
         when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingConfirmed).thenReturn(hearing);
+        when(progressionService.retrieveHearing(any(), any())).thenReturn(hearing);
         when(progressionService.getHearing(any(), any())).thenReturn(Optional.of(Json.
                 createObjectBuilder().add("hearing", Json.createObjectBuilder().build())
                 .add("hearingListingStatus", "HEARING_INITIALISED")
@@ -456,7 +457,7 @@ public class HearingConfirmedEventProcessorTest {
         when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
-        when(progressionService.getHearing(any(), any())).thenReturn(of(hearingInProgressionJson));
+        when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
         when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
         when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
 
@@ -514,6 +515,8 @@ public class HearingConfirmedEventProcessorTest {
         when(partialHearingConfirmService.getDifferences(any(), any())).thenReturn(new ArrayList<>());
         when(progressionService.transformToHearingFrom(any(), any())).thenReturn(Hearing.hearing().build());
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+
+        when(progressionService.retrieveHearing(envelope, hearingId)).thenReturn(hearing);
 
         eventProcessor.processEvent(envelope);
 
@@ -620,7 +623,7 @@ public class HearingConfirmedEventProcessorTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class))
                 .thenReturn(hearingConfirmed);
-        when(progressionService.getHearing(envelope, hearingId.toString())).thenReturn(of(hearingJson));
+        when(progressionService.retrieveHearing(envelope, hearingId)).thenReturn(hearing);
         when(jsonObjectToObjectConverter.convert(hearingJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearing);
 
         eventProcessor.processEvent(envelope);
@@ -673,7 +676,7 @@ public class HearingConfirmedEventProcessorTest {
         when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court"))
                 .thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
-        when(progressionService.getHearing(envelope, hearingId.toString())).thenReturn(of(hearingJson));
+        when(progressionService.retrieveHearing(envelope, hearingId)).thenReturn(hearing);
         when(jsonObjectToObjectConverter.convert(hearingJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearing);
 
         eventProcessor.processEvent(envelope);

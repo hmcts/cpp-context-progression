@@ -365,6 +365,7 @@ public class AddCourtDocumentIT extends AbstractIT {
                 .add("postcode", "SW1H 0TL")
                 .build();
         prosecutor = JsonHelper.addProperty(prosecutor, "address", address);
+        prosecutor = JsonHelper.addProperty(prosecutor, "isCps", true);
         prosecutor = JsonHelper.addProperty(prosecutor, "prosecutorCode", "TFL");
         prosecutor = JsonHelper.addProperty(prosecutor, "prosecutorId", "2daefec3-2f76-8109-82d9-2e60544a6c02");
         prosecutor = JsonHelper.addProperty(prosecutor, "prosecutorName", "Transport for London");

@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/hearing-updated-for-partial-allocation.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "description": "Id of hearing to be updated. When an unallocated hearing is partially allocated, then remove the cases/defendants/offences combinations from the hearing which have not been confirmed. The remaining unallocated cases/defendants/offences are specified in this payload to be removed.",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prosecutionCasesToRemove": {
+      "description": "Unallocated prosecution cases to remove.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "properties": {
+          "caseId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "defendantsToRemove": {
+            "description": "Unallocated defendants to remove.",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "properties": {
+                "defendantId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "offencesToRemove": {
+                  "description": "Unallocated offences to remove.",
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "properties": {
+                      "offenceId": {
+                        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                      }
+                    },
+                    "required": [
+                      "offenceId"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "offencesToRemove",
+                "defendantId"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "defendantsToRemove",
+          "caseId"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "hearingId",
+    "prosecutionCasesToRemove"
+  ],
+  "additionalProperties": false
+}

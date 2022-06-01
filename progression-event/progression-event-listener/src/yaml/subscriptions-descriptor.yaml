@@ -257,6 +257,9 @@ subscriptions_descriptor:
 
         - name: progression.hearing-initiate-enriched
           schema_uri: http://justice.gov.uk/core/courts/progression.event-hearing-initiate-enriched.json
+
+        - name: progression.event.hearing-moved-to-unallocated
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-moved-to-unallocated.json
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

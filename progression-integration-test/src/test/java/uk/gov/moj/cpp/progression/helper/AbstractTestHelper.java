@@ -49,6 +49,7 @@ public abstract class AbstractTestHelper implements AutoCloseable {
     protected final RestClient restClient = new RestClient();
 
     protected final MessageConsumerClient publicConsumer = new MessageConsumerClient();
+    protected MessageConsumer publicEventsConsumer;
     protected MessageConsumer privateEventsConsumer;
 
     public static String getWriteUrl(final String resource) {

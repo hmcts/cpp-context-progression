@@ -24,6 +24,7 @@ import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
+
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 import java.util.UUID;
@@ -89,6 +90,38 @@ public class ListingStub {
                                             JSONObject prosecutionCase = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0);
                                             return prosecutionCase.getString("id").equals(caseId) &&
                                                     prosecutionCase.getJSONArray("defendants").getJSONObject(0).getString("id").equals(defendantId);
+                                        } else {
+                                            return false;
+                                        }
+                                    }
+                            )
+
+            );
+
+        } catch (Exception e) {
+            throw new AssertionError("ListingStub.verifyPostListCourtHearing failed with: " + e);
+        }
+    }
+
+    public static void verifyPostListCourtHearing(final String caseId, final String defendantId, final String courtScheduleId) {
+        try {
+            waitAtMost(Duration.ONE_MINUTE).until(() ->
+                    getListCourtHearingRequestsAsStream()
+                            .anyMatch(
+                                    payload -> {
+                                        if (payload.has("hearings") && payload.getJSONArray("hearings").getJSONObject(0).has("prosecutionCases") &&
+                                                payload.getJSONArray("hearings").getJSONObject(0).has("bookedSlots") &&
+                                                payload.getJSONArray("hearings").getJSONObject(0).has("bookingType") &&
+                                                payload.getJSONArray("hearings").getJSONObject(0).has("priority") &&
+                                                payload.getJSONArray("hearings").getJSONObject(0).has("specialRequirements") &&
+                                                payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("specialRequirements").getString(0).equals("RSZ") &&
+                                                payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("specialRequirements").getString(1).equals("CELL")
+                                        ) {
+                                            JSONObject prosecutionCase = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0);
+                                            String id =  payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("bookedSlots").getJSONObject(0).getString("courtScheduleId");
+                                            return prosecutionCase.getString("id").equals(caseId) &&
+                                                    prosecutionCase.getJSONArray("defendants").getJSONObject(0).getString("id").equals(defendantId) &&
+                                                    courtScheduleId.equals(id);
                                         } else {
                                             return false;
                                         }
@@ -205,7 +238,12 @@ public class ListingStub {
                                     payload -> {
                                         if (payload.has("hearings") && payload.getJSONArray("hearings").getJSONObject(0).has("courtApplications")) {
                                             JSONObject courtApplication = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("courtApplications").getJSONObject(0);
-                                            return courtApplication.getString("id").equals(applicationId);
+                                            return courtApplication.getString("id").equals(applicationId)
+                                                    && payload.getJSONArray("hearings").getJSONObject(0).has("bookingType")
+                                                    && payload.getJSONArray("hearings").getJSONObject(0).has("priority")
+                                                    && payload.getJSONArray("hearings").getJSONObject(0).has("specialRequirements")
+                                                    && payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("specialRequirements").getString(0).equals("RSZ")
+                                                    && payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("specialRequirements").getString(1).equals("CELL");
                                         } else {
                                             return false;
                                         }
@@ -236,6 +274,17 @@ public class ListingStub {
         } catch (
                 Exception e) {
             throw new AssertionError("ListingStub.verifyPostListCourtHearing failed with: " + e);
+        }
+    }
+
+    public static void verifyPostListCourtHearingV2ForHmiSlots( ) {
+        try {
+            waitAtMost(Duration.TEN_SECONDS).until(() ->
+                    getListCourtHearingRequestsAsStreamV2()
+                            .anyMatch(payload -> payload.toString().contains("bookedSlots")));
+        } catch (
+                Exception e) {
+            throw new AssertionError("ListingStub.verifyPostListCourtHearingV2ForHmiSlots failed with: " + e);
         }
     }
 
@@ -317,20 +366,6 @@ public class ListingStub {
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload(resource).replaceAll("HEARING_ID", hearingId))));
-
-        waitForStubToBeReady(urlPath, LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE);
-    }
-
-    public static void stubListingSearchHearingsQuery(final String resource) {
-
-        stubPingFor("listing-service");
-
-        final String urlPath = format("/listing-service/query/api/rest/listing/hearings/any-allocation");
-        stubFor(get(urlPathEqualTo(urlPath))
-                .willReturn(aResponse().withStatus(OK.getStatusCode())
-                        .withHeader(ID, randomUUID().toString())
-                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
-                        .withBody(getPayload(resource))));
 
         waitForStubToBeReady(urlPath, LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE);
     }

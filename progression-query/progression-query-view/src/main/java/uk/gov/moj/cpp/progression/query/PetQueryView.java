@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.query;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -8,6 +10,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import javax.inject.Inject;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +29,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 @ServiceComponent(Component.QUERY_VIEW)
 public class PetQueryView {
     public static final String PET_ID = "petId";
+    public static final String IS_YOUTH = "isYouth";
     public static final String CASE_ID = "caseId";
     public static final String DEFENDANTS = "defendants";
     public static final String PETS = "pets";
@@ -39,25 +43,25 @@ public class PetQueryView {
     public JsonEnvelope getPetsForCase(JsonEnvelope envelope) {
         final UUID caseId = fromString(envelope.asJsonObject().getString(CASE_ID));
         final List<PetCaseDefendantOffence> petCaseDefendantOffenceListForCase = petCaseDefendantOffenceRepository.findByCaseId(caseId);
-        final List<UUID> petIds = petCaseDefendantOffenceListForCase.stream().map(PetCaseDefendantOffence::getPetId)
+        final List<Pair<UUID, Boolean>> petIdPairs = petCaseDefendantOffenceListForCase.stream().map(def -> Pair.of(def.getPetId(), def.getIsYouth()))
                 .distinct()
                 .collect(Collectors.toList());
 
         final JsonArrayBuilder petsArrayBuilder = createArrayBuilder();
 
-        petIds.stream().map( petId -> {
-                    final List<PetCaseDefendantOffence> petCaseDefendantOffenceList = petCaseDefendantOffenceListForCase.stream()
-                            .filter(item -> item.getPetId().equals(petId))
-                            .collect(Collectors.toList());
+        petIdPairs.stream().map(petIdPair -> {
+            final List<PetCaseDefendantOffence> petCaseDefendantOffenceList = petCaseDefendantOffenceListForCase.stream()
+                    .filter(item -> item.getPetId().equals(petIdPair.getLeft()))
+                    .collect(Collectors.toList());
 
-                    return petsArrayBuilder.add(buildPet(petId, petCaseDefendantOffenceList));
-                }).collect(Collectors.toList());
+            return petsArrayBuilder.add(buildPet(petIdPair.getLeft(), petIdPair.getRight(), petCaseDefendantOffenceList));
+        }).collect(Collectors.toList());
 
         final JsonObject resultJson = createObjectBuilder().add(PETS, petsArrayBuilder).build();
         return envelopeFrom(envelope.metadata(), resultJson);
     }
 
-    private JsonObject buildPet(final UUID petId, final List<PetCaseDefendantOffence> petCaseDefendantOffenceList){
+    private JsonObject buildPet(final UUID petId, final boolean isYouth, final List<PetCaseDefendantOffence> petCaseDefendantOffenceList) {
         final Map<UUID, List<PetCaseDefendantOffence>> itemsGroupedByDefendant = groupByDefendantId(petCaseDefendantOffenceList);
 
         final JsonArrayBuilder defendants = createArrayBuilder();
@@ -65,6 +69,7 @@ public class PetQueryView {
 
         return createObjectBuilder()
                 .add(PET_ID, petId.toString())
+                .add(IS_YOUTH, isYouth)
                 .add(DEFENDANTS, defendants)
                 .build();
     }
@@ -74,25 +79,21 @@ public class PetQueryView {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("The PetCaseDefendantOffence list is empty."));
 
-        final JsonArrayBuilder offences = createArrayBuilder();
-        list.forEach(each -> offences.add(each.getId().getOffenceId().toString()));
-
 
         return createObjectBuilder()
-                .add(DEFENDANT_ID, first.getId().getDefendantId().toString())
+                .add(DEFENDANT_ID, first.getDefendantId().toString())
                 .add(CASE_ID, first.getCaseId().toString())
-                .add(OFFENCES, offences)
                 .build();
     }
 
     private Map<UUID, List<PetCaseDefendantOffence>> groupByDefendantId(final List<PetCaseDefendantOffence> petCaseDefendantOffenceList) {
         final Map<UUID, List<PetCaseDefendantOffence>> petCaseDefendantOffenceMapByDefendant = new HashMap<>();
         petCaseDefendantOffenceList.forEach(each -> {
-            if (!petCaseDefendantOffenceMapByDefendant.containsKey(each.getId().getDefendantId())){
-                petCaseDefendantOffenceMapByDefendant.put(each.getId().getDefendantId(), new ArrayList<>());
+            if (!petCaseDefendantOffenceMapByDefendant.containsKey(each.getDefendantId())) {
+                petCaseDefendantOffenceMapByDefendant.put(each.getDefendantId(), new ArrayList<>());
             }
 
-            petCaseDefendantOffenceMapByDefendant.get(each.getId().getDefendantId()).add(each);
+            petCaseDefendantOffenceMapByDefendant.get(each.getDefendantId()).add(each);
         });
         return petCaseDefendantOffenceMapByDefendant;
     }

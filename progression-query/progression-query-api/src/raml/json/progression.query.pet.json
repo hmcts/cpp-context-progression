@@ -4,11 +4,7 @@
   "defendants": [
     {
       "defendantId": "7494cb44-cf78-4eb3-a7f9-8c35fffad2ab",
-      "caseId": "d65f20b5-ca03-4539-bce0-849c5424ba26",
-      "offences": [
-        "0bfbcc7e-3e3a-4913-b844-01a1cfd39fe7",
-        "03287ab2-162b-45a6-b5cd-05e564531160"
-      ]
+      "caseId": "d65f20b5-ca03-4539-bce0-849c5424ba26"
     }
   ],
   "data": "{ \"firstName\": \"John\", \"lastName\": \"Doe\" }",

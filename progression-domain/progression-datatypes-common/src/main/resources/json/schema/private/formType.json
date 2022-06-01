@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/formType.json",
+  "enum": ["BCM","PET","PTPH"],
+  "additionalProperties": false
+}

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.domain.aggregate;
 
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static junit.framework.TestCase.assertNull;
@@ -9,12 +10,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+
+import java.util.Collections;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CpsProsecutorUpdated;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.InitiationCode;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
@@ -40,8 +44,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CaseAggregateUpdateProsecutorTest {
 
-    private static final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant().withId(randomUUID())
-            .withPersonDefendant(PersonDefendant.personDefendant().build()).build();
+    private static final uk.gov.justice.core.courts.Defendant defendant = Defendant.defendant().withId(randomUUID())
+            .withPersonDefendant(PersonDefendant.personDefendant().build())
+            .withOffences(singletonList(Offence.offence().build())).build();
     static final List<uk.gov.justice.core.courts.Defendant> defendants = new ArrayList<Defendant>() {{
         add(defendant);
     }};
@@ -122,7 +127,7 @@ public class CaseAggregateUpdateProsecutorTest {
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getProsecutorCode(), is(prosecutionCaseIdentifier.getProsecutionAuthorityCode()));
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getProsecutorName(), is(prosecutionCaseIdentifier.getProsecutionAuthorityName()));
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getAddress(), is(prosecutionCaseIdentifier.getAddress()));
-
+        assertThat(caseAggregate.getProsecutionCase().getProsecutor().getIsCps(), is(true));
     }
 
     @Test
@@ -150,7 +155,7 @@ public class CaseAggregateUpdateProsecutorTest {
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getProsecutorCode(), is(prosecutionCaseIdentifier.getProsecutionAuthorityCode()));
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getProsecutorName(), is(prosecutionCaseIdentifier.getProsecutionAuthorityName()));
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getAddress(), is(prosecutionCaseIdentifier.getAddress()));
-
+        assertThat(caseAggregate.getProsecutionCase().getProsecutor().getIsCps(), is(true));
     }
 
     @Test
@@ -185,7 +190,7 @@ public class CaseAggregateUpdateProsecutorTest {
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getProsecutorCode(), is(prosecutionCaseIdentifier.getProsecutionAuthorityCode()));
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getProsecutorName(), is(prosecutionCaseIdentifier.getProsecutionAuthorityName()));
         assertThat(caseAggregate.getProsecutionCase().getProsecutor().getAddress(), is(prosecutionCaseIdentifier.getAddress()));
-
+        assertThat(caseAggregate.getProsecutionCase().getProsecutor().getIsCps(), is(true));
     }
 
     private CaseCpsProsecutorUpdated getExpectedCaseCpsProsecutorUpdatedEvent(ProsecutionCaseIdentifier prosecutionCaseIdentifier) {

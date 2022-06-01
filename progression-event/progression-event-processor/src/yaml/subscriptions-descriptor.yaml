@@ -140,6 +140,9 @@ subscriptions_descriptor:
         - name: progression.event.validate-split-cases
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.validate-split-cases.json
 
+        - name: progression.event.hearing-moved-to-unallocated
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-moved-to-unallocated.json
+
         # Generate Court Register
         - name: progression.event.court-register-generated
           schema_uri: http://justice.gov.uk/progression/courts/court-register-generated.json
@@ -331,11 +334,19 @@ subscriptions_descriptor:
         - name: progression.event.new-defendant-added-to-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.new-defendant-added-to-hearing.json
 
+        - name: progression.event.hearing-updated-for-partial-allocation
+          schema_uri: http://justice.gov.uk/core/courts/hearing-updated-for-partial-allocation.json
+
         - name : progression.event.master-defendant-id-updated-into-hearings
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated-into-hearings.json
 
         - name: progression.event.prosecution-case-listing-number-increased
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-listing-number-increased.json
+
+        - name: progression.event.list-hearing-requested
+          schema_uri: http://justice.gov.uk/core/courts/list-hearing-requested.json
+
+
 
         - name: progression.event.create-hearing-for-application
           schema_uri: http://justice.gov.uk/core/progression/courts/progression.event.hearing-for-application-created.json
@@ -421,11 +432,18 @@ subscriptions_descriptor:
         - name: progression.event.hearing-updated-processed
           schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-updated-processed.json
 
+        - name: progression.event.list-hearing-requested
+          schema_uri: http://justice.gov.uk/core/courts/list-hearing-requested.json
+
         - name: progression.event.hearing-trial-vacated
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-trial-vacated.json
 
         - name: progression.event.laa-defendant-proceeding-concluded-changed
           schema_uri: http://justice.gov.uk/core/courts/progression.event.laa-defendant-proceeding-concluded-changed.json
+
+        - name: progression.event.now-document-notification-suppressed
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.now-document-notification-suppressed.json
+
           # Deprecated API  - End
       event_source_name: progression
 
@@ -477,6 +495,9 @@ subscriptions_descriptor:
 
         - name: public.hearing.trial-vacated
           schema_uri: http://justice.gov.uk/hearing/courts/public.hearing.trial-vacated.json
+
+        - name: public.hearing.selected-offences-removed-from-existing-hearing
+          schema_uri: http://justice.gov.uk/hearing/courts/public.hearing.selected-offences-removed-from-existing-hearing.json
 
         # Notification notify
         - name: public.notificationnotify.events.notification-failed
@@ -548,5 +569,20 @@ subscriptions_descriptor:
 
         - name : public.listing.vacated-trial-updated
           schema_uri: http://justice.gov.uk/listing/courts/vacated-trial-updated.json
+
+        - name: public.prosecutioncasefile.cps-serve-pet-submitted
+          schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-pet-submitted.json
+
+        - name: public.staginghmi.hearing-updated-from-hmi
+          schema_uri: http://justice.gov.uk/staginghmi/courts/public.staginghmi.hearing-updated-from-hmi.json
+
+        - name: public.listing.cases-added-to-hearing
+          schema_uri: http://justice.gov.uk/listing/events/public.listing.case-added-to-hearing.json
+
+        - name : public.listing.hearing-requested-for-listing
+          schema_uri: http://justice.gov.uk/listing/events/public.listing.hearing-requested-for-listing.json
+
+        - name: public.listing.hearing-partially-updated
+          schema_uri: http://justice.gov.uk/listing/courts/public.hearing-partially-updated.json
 
       event_source_name: public.event.source

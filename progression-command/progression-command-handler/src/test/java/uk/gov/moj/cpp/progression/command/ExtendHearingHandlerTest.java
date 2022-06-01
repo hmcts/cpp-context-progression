@@ -133,8 +133,7 @@ public class ExtendHearingHandlerTest {
     public void shouldProcessCommandForProsecutionCase() throws Exception {
 
         final ExtendHearing extendHearing = createExtendHearingForProsecutionCase();
-        caseAggregate.extendHearing(extendHearing.getHearingRequest(), true, randomUUID(), false, Collections.emptyList());
-
+        caseAggregate.extendHearing(extendHearing.getHearingRequest(), extendHearing);
         final Metadata metadata = Envelope
                 .metadataBuilder()
                 .withName("progression.command.extend-hearing")

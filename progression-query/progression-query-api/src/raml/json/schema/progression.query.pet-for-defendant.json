@@ -30,7 +30,6 @@
         "required": [
           "petId",
           "formId",
-          "offences",
           "data",
           "lastUpdated"
         ],

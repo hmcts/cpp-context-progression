@@ -37,8 +37,6 @@ public class ReferenceDataService {
     public static final String CJSOFFENCECODE = "cjsoffencecode";
     public static final String REFERENCEDATA_QUERY_OFFENCES = "referencedata.query.offences";
     public static final String OFFENCES = "offences";
-    private static final String FIELD_PLEA_STATUS_TYPES = "pleaStatusTypes";
-    private static final String PLEA_TYPE_VALUE = "pleaValue";
     public static final String REFERENCEDATA_GET_JUDGE = "referencedata.get.judge";
     public static final String REFERENCEDATA_GET_ORGANISATION = "referencedata.query.organisation-unit.v2";
     public static final String GET_ENFORCEMENT_AREA_BY_COURT_CODE = "referencedata.query.enforcement-area";
@@ -58,7 +56,6 @@ public class ReferenceDataService {
     public static final String REFERENCEDATA_QUERY_JUDICIARIES = "referencedata.query.judiciaries";
     public static final String REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS = "referencedata.query.local-justice-areas";
     public static final String REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS = "referencedata.get-all-result-definitions";
-    private static final String REFERENCEDATA_QUERY_PLEA_TYPES = "referencedata.query.plea-types";
     public static final String PROSECUTOR = "shortName";
     public static final String NATIONALITY_CODE = "isoCode";
     public static final String NATIONALITY = "nationality";
@@ -66,7 +63,6 @@ public class ReferenceDataService {
     public static final String ETHNICITY = "description";
     public static final String SHORT_NAME = "shortName";
     public static final String COUNTRY_NATIONALITY = "countryNationality";
-
     public static final String IDS = "ids";
     public static final String OUCODE = "oucode";
     public static final String CPS_FLAG = "cpsFlag";
@@ -74,9 +70,16 @@ public class ReferenceDataService {
     public static final String ETHNICITIES = "ethnicities";
     public static final String ORGANISATIONUNITS = "organisationunits";
     public static final String COURT_CODE_QUERY_PARAMETER = "localJusticeAreaNationalCourtCode";
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
     public static final String LOCAL_JUSTICE_AREA = "localJusticeArea";
+    private static final String FIELD_PLEA_STATUS_TYPES = "pleaStatusTypes";
+    private static final String PLEA_TYPE_VALUE = "pleaValue";
+    private static final String REFERENCEDATA_QUERY_PLEA_TYPES = "referencedata.query.plea-types";
+    private static final String REFERENCEDATA_QUERY_PET_FORM = "referencedata.query.latest-pet-form";
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
 
+    public static UUID extractUUID(final JsonObject object, final String key) {
+        return object.containsKey(key) && !object.getString(key).isEmpty() ? fromString(object.getString(key, null)) : null;
+    }
 
     public Optional<JsonObject> getOffenceByCjsCode(final JsonEnvelope envelope, final String cjsOffenceCode, final Requester requester) {
         Optional<JsonObject> result = Optional.empty();
@@ -139,7 +142,6 @@ public class ReferenceDataService {
         return Optional.ofNullable(response.payloadAsJsonObject());
     }
 
-
     public Optional<JsonObject> getAllDocumentsTypes(final JsonEnvelope event, final LocalDate date, final Requester requester) {
         final JsonObject payload = Json.createObjectBuilder().add("date", date.toString()).build();
 
@@ -179,7 +181,6 @@ public class ReferenceDataService {
         }
         return Optional.of(responseForLocalJusticeArea.payloadAsJsonObject());
     }
-
 
     public Optional<JsonObject> getCourtsOrganisationUnitsByOuCode(final JsonEnvelope event, final String oucode, final Requester requester) {
 
@@ -242,7 +243,6 @@ public class ReferenceDataService {
                 .filter(jsonObject -> jsonObject.getString(ID).equals(id.toString()))
                 .findFirst();
     }
-
 
     public Optional<JsonObject> getReferralReasonByReferralReasonId(final JsonEnvelope event, final UUID referralReasonId, final Requester requester) {
 
@@ -308,16 +308,16 @@ public class ReferenceDataService {
                 .getJsonArray("organisationunits")
                 .getValuesAs(JsonObject.class)
                 .stream()
-                .filter(e->courtHouseOUCode.equals(e.getString("oucode")))
+                .filter(e -> courtHouseOUCode.equals(e.getString("oucode")))
                 .findFirst();
 
-        populateCourtCenter( courtCentreBuilder, courtOptional);
+        populateCourtCenter(courtCentreBuilder, courtOptional);
         return courtCentreBuilder.build();
     }
 
     private void populateCourtCenter(final CourtCentre.Builder courtCentreBuilder,
                                      final Optional<JsonObject> courtOptional) {
-        if(courtOptional.isPresent()) {
+        if (courtOptional.isPresent()) {
             final JsonObject court = courtOptional.get();
             courtCentreBuilder
                     .withId(extractUUID(court, ID))
@@ -329,10 +329,6 @@ public class ReferenceDataService {
                         .withWelshCourtCentre(court.getBoolean("isWelsh", false));
             }
         }
-    }
-
-    public static UUID extractUUID(final JsonObject object, final String key) {
-        return object.containsKey(key) && !object.getString(key).isEmpty() ? fromString(object.getString(key, null)) : null;
     }
 
     public Optional<JsonObject> getEthinicity(final JsonEnvelope event, final UUID id, final Requester requester) {
@@ -407,7 +403,7 @@ public class ReferenceDataService {
                 .withName(REFERENCEDATA_QUERY_PROSECUTOR)
                 .withMetadataFrom(event));
 
-       final JsonEnvelope response = requester.request(request);
+        final JsonEnvelope response = requester.request(request);
 
         if (response.payload() == null) {
             return Optional.empty();
@@ -511,7 +507,7 @@ public class ReferenceDataService {
 
     public LjaDetails getLjaDetails(final JsonEnvelope jsonEnvelope, final String ljaCode, final Requester requester) {
         final JsonObject courtEnforcementArea = getEnforcementAreaByLjaCode(jsonEnvelope, ljaCode, requester);
-        if(courtEnforcementArea == null || courtEnforcementArea.isNull(LOCAL_JUSTICE_AREA)){
+        if (courtEnforcementArea == null || courtEnforcementArea.isNull(LOCAL_JUSTICE_AREA)) {
             return null;
         }
         return LjaDetails.ljaDetails()
@@ -519,5 +515,16 @@ public class ReferenceDataService {
                 .withLjaName(courtEnforcementArea.getJsonObject(LOCAL_JUSTICE_AREA).getString("name", null))
                 .withWelshLjaName(courtEnforcementArea.getJsonObject(LOCAL_JUSTICE_AREA).getString("welshName", null))
                 .build();
+    }
+
+    public Optional<JsonObject> getPetForm(final JsonEnvelope event, final Requester requester) {
+
+        LOGGER.info("Get PET FORM details with ID '{}'", event.metadata().streamId());
+        final JsonObject payload = Json.createObjectBuilder().build();
+        final JsonEnvelope response = requester.request(envelop(payload)
+                .withName(REFERENCEDATA_QUERY_PET_FORM)
+                .withMetadataFrom(event));
+
+        return Optional.ofNullable(response.payloadAsJsonObject());
     }
 }

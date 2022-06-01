@@ -9,15 +9,19 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.transaction.Transactional.TxType.REQUIRES_NEW;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.moj.cpp.progression.service.DocumentTemplateType.getDocumentTemplateNameByType;
 
+import uk.gov.justice.core.courts.FormType;
 import uk.gov.justice.core.courts.Personalisation;
 import uk.gov.justice.core.courts.UpdateNowsMaterialStatus;
 import uk.gov.justice.core.courts.nces.NcesNotificationRequested;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.nowdocument.EmailRenderingVocabulary;
 import uk.gov.justice.core.courts.nowdocument.NowDistribution;
+import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
+import uk.gov.justice.core.courts.nowdocument.ProsecutionCase;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
@@ -77,6 +81,12 @@ public class DocumentGeneratorService {
     public static final String PET_DOCUMENT_ORDER = "PetDocumentOrder";
     public static final String STORED_MATERIAL_IN_FILE_STORE = "Stored material {} in file store {}";
     public static final String ERROR_WHILE_UPLOADING_FILE = "Error while uploading file {}";
+    public static final String FORM_DOCUMENT_PDF_NAME = "name";
+    public static final String FORM_DOCUMENT_FILE_EXTENSION_AS_PDF = ".pdf";
+    public static final String IS_WELSH = "isWelsh";
+    public static final String STRING_CREATED = " created ";
+    public static final String STRING_CREATED_WITH_WELSH = " created (welsh) ";
+
 
     private final DocumentGeneratorClientProducer documentGeneratorClientProducer;
 
@@ -134,14 +144,14 @@ public class DocumentGeneratorService {
             final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(updatedNowContent, getTemplateName(nowDocumentRequest), getSystemUserUuid());
             addDocumentToMaterial(sender, originatingEnvelope, getTimeStampAmendedFileName(orderName),
                     new ByteArrayInputStream(resultOrderAsByteArray), userId, nowDocumentRequest.getHearingId().toString(), nowDocumentRequest.getMaterialId(),
-                    nowDocumentRequest.getNowDistribution(), nowDocumentRequest.getNowContent().getOrderAddressee());
+                    nowDocumentRequest.getNowDistribution(), nowDocumentRequest.getNowContent().getOrderAddressee(),
+                    isCpsProsecutionCase(nowDocumentRequest.getNowContent()));
         } catch (IOException | RuntimeException e) {
             LOGGER.error(ERROR_MESSAGE, e);
             updateMaterialStatusAsFailed(sender, originatingEnvelope, nowDocumentRequest.getMaterialId());
             throw new RuntimeException("Progression : exception while generating NOWs document ", e);
         }
     }
-
 
     @Transactional(REQUIRES_NEW)
     public void generateNcesDocument(final Sender sender, final JsonEnvelope originatingEnvelope,
@@ -161,13 +171,21 @@ public class DocumentGeneratorService {
         }
     }
 
+
     @Transactional(REQUIRES_NEW)
-    public String generatePetDocument(final JsonEnvelope originatingEnvelope, final JsonObject petForm, final UUID materialId) {
+    public String generateFormDocument(final JsonEnvelope originatingEnvelope, final FormType formType, final JsonObject formData, final UUID materialId) {
         try {
             final DocumentGeneratorClient documentGeneratorClient = documentGeneratorClientProducer.documentGeneratorClient();
-            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(petForm, PET_DOCUMENT_TEMPLATE_NAME, getSystemUserUuid());
-            final String filename = getTimeStampAmendedFileName(PET_DOCUMENT_ORDER);
-            addDocumentToMaterial(originatingEnvelope, filename , new ByteArrayInputStream(resultOrderAsByteArray), materialId);
+
+            final boolean isWelsh = formData.getBoolean(IS_WELSH, false);
+            final String templateName = getDocumentTemplateNameByType(formType, isWelsh);
+            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(formData, templateName, getSystemUserUuid());
+            String filename = formData.getString(FORM_DOCUMENT_PDF_NAME).concat(FORM_DOCUMENT_FILE_EXTENSION_AS_PDF);
+
+            if (isWelsh) {
+                filename = filename.replaceAll(STRING_CREATED, STRING_CREATED_WITH_WELSH);
+            }
+            addDocumentToMaterial(originatingEnvelope, filename, new ByteArrayInputStream(resultOrderAsByteArray), materialId);
             return filename;
         } catch (IOException | RuntimeException e) {
             throw new DocumentGenerationException(e);
@@ -291,7 +309,8 @@ public class DocumentGeneratorService {
                                        final UUID userId, final String hearingId,
                                        final UUID materialId,
                                        final NowDistribution nowDistribution,
-                                       final OrderAddressee orderAddressee) {
+                                       final OrderAddressee orderAddressee,
+                                       final boolean isCps) {
         try {
 
             final UUID fileId = storeFile(fileContent, filename);
@@ -301,6 +320,7 @@ public class DocumentGeneratorService {
             final boolean isPostable = nowDocumentValidator.isPostable(orderAddressee);
             final boolean firstClassLetter = isFirstClassLetter(nowDistribution) && isPostable;
             final boolean secondClassLetter = isSecondClassLetter(nowDistribution) && isPostable;
+            final boolean isNotificationApi = isNotificationApi(nowDistribution);
 
             final List<EmailChannel> emailNotifications = buildEmailChannel(materialId, nowDistribution, orderAddressee);
 
@@ -314,7 +334,9 @@ public class DocumentGeneratorService {
                     .setCaseId(null)
                     .setApplicationId(null)
                     .setFirstClassLetter(firstClassLetter)
-                    .setSecondClassLetter(secondClassLetter);
+                    .setSecondClassLetter(secondClassLetter)
+                    .setIsNotificationApi(isNotificationApi)
+                    .setIsCps(isCps);
 
             if (!emailNotifications.isEmpty()) {
                 uploadMaterialContextBuilder.setEmailNotifications(emailNotifications);
@@ -335,7 +357,7 @@ public class DocumentGeneratorService {
         }
 
         final List<String> emailAddresses = Stream.of(orderAddressee.getAddress().getEmailAddress1(),
-                        orderAddressee.getAddress().getEmailAddress2())
+                orderAddressee.getAddress().getEmailAddress2())
                 .filter(StringUtils::isNoneBlank)
                 .collect(Collectors.toList());
 
@@ -398,6 +420,10 @@ public class DocumentGeneratorService {
         return nonNull(nowDistribution) && nonNull(nowDistribution.getFirstClassLetter()) && nowDistribution.getFirstClassLetter();
     }
 
+    private boolean isNotificationApi(NowDistribution nowDistribution) {
+        return nonNull(nowDistribution) && nonNull(nowDistribution.getIsNotificationApi()) && nowDistribution.getIsNotificationApi();
+    }
+
     private UUID storeFile(final InputStream fileContent, final String fileName) throws FileServiceException {
         final JsonObject metadata = createObjectBuilder().add("fileName", fileName).build();
         return fileStorer.store(metadata, fileContent);
@@ -452,4 +478,12 @@ public class DocumentGeneratorService {
         return object;
     }
 
+    private boolean isCpsProsecutionCase(final NowDocumentContent nowContent) {
+        return nowContent.getCases().stream()
+                .filter(pc -> nonNull(pc.getIsCps()))
+                .filter(ProsecutionCase::getIsCps)
+                .findFirst()
+                .map(ProsecutionCase::getIsCps)
+                .orElse(false);
+    }
 }

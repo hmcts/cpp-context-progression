@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/core/courts/pet-form-created.json",
+  "id": "http://justice.gov.uk/core/courts/public-pet-form-created.json",
   "type": "object",
   "properties": {
     "petId": {
@@ -15,6 +15,10 @@
       "description": "Form Id",
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
+    "isYouth": {
+      "description": "Is Youth",
+      "type": "boolean"
+    },
     "petDefendants": {
       "type": "array",
       "items": {
@@ -22,18 +26,10 @@
         "properties": {
           "defendantId": {
             "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-          },
-
-          "offenceIds": {
-            "type": "array",
-            "items": {
-              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-            }
           }
         },
         "required": [
-          "defendantId",
-          "offenceIds"
+          "defendantId"
         ],
         "additionalProperties": false
       }
@@ -42,17 +38,51 @@
       "description": "Pet Form Data",
       "type": "string"
     },
-    "userId": {
-      "description": "Logged In User Id",
+    "updatedBy": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "id",
+            "firstName",
+            "lastName"
+          ]
+        },
+        {
+          "required": [
+            "name"
+          ]
+        }
+      ]
+    },
+    "submissionId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "formType": {
+      "description": "Form Type",
+      "$ref": "http://justice.gov.uk/core/courts/formType.json"
     }
   },
-  "required": [
-    "caseId",
-    "petId",
-    "formId",
-    "petDefendants",
-    "userId"
-  ],
-  "additionalProperties": false
-}
+    "required": [
+      "caseId",
+      "petId",
+      "formId",
+      "petDefendants",
+      "updatedBy"
+    ],
+    "additionalProperties": false
+  }

@@ -6,9 +6,10 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -41,6 +42,7 @@ import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -50,6 +52,7 @@ import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.fileservice.api.FileRetriever;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.value.object.CPSNotificationVO;
@@ -63,6 +66,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -98,19 +102,34 @@ public class NotificationServiceTest {
     private SystemIdMapperService systemIdMapperService;
 
     @Mock
-    private Requester requester;
-
-    @Mock
     private Sender sender;
 
     @Mock
     private ApplicationParameters applicationParameters;
+
+    @Mock
+    private RestApiNotificationService restApiNotificationService;
+
+    @InjectMocks
+    private MaterialService materialService;
+
+    @Mock
+    private Requester requester;
+
+    @Mock
+    private FileRetriever fileRetriever;
+
+    @Mock
+    private JsonEnvelope finalEnvelope;
 
     @InjectMocks
     private NotificationService notificationService;
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<String> apiNotificationArgumentCaptor;
 
     private final ZonedDateTime hearingDateTime = ZonedDateTime.of(LocalDate.of(2019, 06, 18), LocalTime.of(14, 45), ZoneId.of("UTC"));
 
@@ -126,6 +145,7 @@ public class NotificationServiceTest {
         this.materialId = randomUUID();
         this.notificationId = randomUUID();
         this.applicationId = randomUUID();
+        this.materialService = new MaterialService();
     }
 
     @Test
@@ -681,5 +701,16 @@ public class NotificationServiceTest {
                 withJsonPath("$.notifications[0].personalisation.address_line_3", equalTo("Hounslow")),
                 withJsonPath("$.notifications[0].personalisation.organisation_name", equalTo("OrganisationName_MOD"))
         ))));
+    }
+
+    @Test
+    public void sendApiNotificationTest() {
+        final MaterialDetails materialDetails = MaterialDetails.materialDetails()
+                .withMaterialId(materialId)
+                .build();
+        notificationService.sendApiNotification(envelope, notificationId, materialDetails, "caseUrn", Arrays.asList("defAsn"), "ouCode", null);
+        verify(restApiNotificationService, times(1)).sendApiNotification(apiNotificationArgumentCaptor.capture());
+
+        assertThat(apiNotificationArgumentCaptor.getValue(), containsString("\"businessEventType\":\"now-generated-for-cps-subscription\""));
     }
 }

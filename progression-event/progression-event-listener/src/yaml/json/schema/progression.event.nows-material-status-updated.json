@@ -8,13 +8,34 @@
     },
     "status" : {
       "type": "string"
+    },
+    "welshTranslationRequired" : {
+      "type": "boolean"
+    },
+    "caseUrn": {
+      "type": "string"
+    },
+    "prosecutingAuthorityOUCode": {
+      "type": "string"
+    },
+    "defendantAsn": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cpsDefendantIds": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [
     "details",
-    "status"
+    "status",
+    "welshTranslationRequired"
   ],
   "additionalProperties": false
 }
-
-

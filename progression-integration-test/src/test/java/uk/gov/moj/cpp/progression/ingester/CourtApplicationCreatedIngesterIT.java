@@ -30,6 +30,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+
 public class CourtApplicationCreatedIngesterIT extends AbstractIT {
 
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application.json";
@@ -89,6 +91,7 @@ public class CourtApplicationCreatedIngesterIT extends AbstractIT {
         verifyAddCourtApplication(inputCourtApplication, courApplicationCreatedResponseJsonObject.get(), applicationId);
     }
 
+    @Ignore("DD-20992")
     @Test
     public void initiateCourtProceedingsForApplicationShouldInitialiseHearingListingStatusAndIngestJurisdictionToUnifiedSearch() throws IOException {
         caseId = randomUUID().toString();

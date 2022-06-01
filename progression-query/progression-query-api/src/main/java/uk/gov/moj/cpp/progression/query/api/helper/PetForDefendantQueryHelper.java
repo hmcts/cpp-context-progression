@@ -1,22 +1,23 @@
 package uk.gov.moj.cpp.progression.query.api.helper;
 
+import static java.util.Objects.nonNull;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.api.service.MaterialService;
 import uk.gov.moj.cpp.progression.query.api.service.ProgressionService;
 
+import java.util.Optional;
+
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-
-import java.util.Optional;
-
-import static java.util.Objects.nonNull;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 
 public class PetForDefendantQueryHelper {
     public static final String DEFENDANT_ID = "defendantId";
@@ -45,9 +46,11 @@ public class PetForDefendantQueryHelper {
 
         final JsonArray petsJsonArray = progressionService.getPetsForCase(requester, query, caseId).getJsonArray(PETS);
         final JsonArrayBuilder petsArrayBuilder = createArrayBuilder();
-
+        final String defendantId = query.payloadAsJsonObject().getString(DEFENDANT_ID);
         petsJsonArray.stream()
                 .map(JsonObject.class::cast)
+                .filter(pet -> pet.getJsonArray(DEFENDANTS).getValuesAs(JsonObject.class).stream()
+                        .anyMatch(petDefendant -> petDefendant.getString(DEFENDANT_ID).equals(defendantId)))
                 .forEach(obj -> {
                     final JsonObject pet = convertToPetForDefendant(requester, obj, query);
                     if(nonNull(pet)) {
@@ -60,7 +63,7 @@ public class PetForDefendantQueryHelper {
 
     }
 
-    private JsonObject convertToPetForDefendant(final Requester requester, final JsonObject petDefendantOffence, final JsonEnvelope query){
+    private JsonObject convertToPetForDefendant(final Requester requester, final JsonObject petDefendantOffence, final JsonEnvelope query) {
         final String petId = petDefendantOffence.getString(PET_ID);
         final String defendantId = query.payloadAsJsonObject().getString(DEFENDANT_ID);
 
@@ -69,19 +72,18 @@ public class PetForDefendantQueryHelper {
         final JsonObject defendantPetData = buildDefendantPetData(petData, defendantId);
 
         final JsonArray offences = getOffencesOfDefendant(petDefendantOffence, defendantId);
-
-        if (!offences.isEmpty()) {
-            return createObjectBuilder()
+        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        if (!defendantPetData.isEmpty()) {
+            jsonObjectBuilder
                     .add(PET_ID, petId)
                     .add(FORM_ID, petFormPayload.getString(FORM_ID))
-                    .add(OFFENCES, offences)
                     .add(DATA, defendantPetData.toString())
-                    .add(LAST_UPDATED, petFormPayload.getString(LAST_UPDATED))
-                    .build();
-        } else {
-            return null;
+                    .add(LAST_UPDATED, petFormPayload.getString(LAST_UPDATED));
         }
-
+        if (!offences.isEmpty()) {
+            jsonObjectBuilder.add(OFFENCES, offences);
+        }
+        return jsonObjectBuilder.build();
     }
 
     private JsonArray getOffencesOfDefendant(final JsonObject petDefendantOffence, final String defendantId){
@@ -108,7 +110,7 @@ public class PetForDefendantQueryHelper {
                 .build();
 
         final JsonObjectBuilder builder = createObjectBuilder();
-        petData.forEach((key, value)-> {
+        petData.getJsonObject(DATA).forEach((key, value)-> {
             if (key.equals(DEFENCE)){
                 builder.add(DEFENCE, defenceSection);
             } else {
@@ -116,7 +118,7 @@ public class PetForDefendantQueryHelper {
             }
         });
 
-        return builder.build();
+        return createObjectBuilder().add(DATA, builder.build()).build();
     }
 
 }

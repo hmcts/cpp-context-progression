@@ -15,6 +15,9 @@
     "isPartiallyAllocated": {
       "type": "boolean"
     },
+    "isUnAllocatedHearing": {
+      "type": "boolean"
+    },
     "shadowListedOffences": {
       "type": "array",
       "minItems": 0,

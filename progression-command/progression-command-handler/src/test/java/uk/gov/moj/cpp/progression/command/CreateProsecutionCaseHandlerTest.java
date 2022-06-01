@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -16,8 +17,11 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+
+import java.util.Collections;
 import uk.gov.justice.core.courts.CreateProsecutionCase;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
@@ -87,7 +91,9 @@ public class CreateProsecutionCaseHandlerTest {
 
     @Test
     public void shouldProcessCommand() throws Exception {
-        final Defendant defendant = Defendant.defendant().withId(UUID.randomUUID()).withPersonDefendant(PersonDefendant.personDefendant().build()).build();
+        final Defendant defendant = Defendant.defendant().withId(UUID.randomUUID()).withPersonDefendant(PersonDefendant.personDefendant().build())
+                .withOffences(singletonList(Offence.offence().build()))
+                .build();
         final List<Defendant> defendants = new ArrayList<Defendant>() {{ add(defendant); }};
         final CreateProsecutionCase createProsecutionCase = CreateProsecutionCase.createProsecutionCase()
                 .withProsecutionCase(ProsecutionCase.prosecutionCase()

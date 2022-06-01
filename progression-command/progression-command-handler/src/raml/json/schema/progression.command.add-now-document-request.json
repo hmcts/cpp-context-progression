@@ -73,6 +73,9 @@
     "requestId": {
       "description": "Identifies the correlation Id that will be used to correlate the GOB Account Number to this NOW",
       "type": "string"
+    },
+    "welshTranslationRequired": {
+      "type": "boolean"
     }
   },
   "required": [

@@ -28,6 +28,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCaseSubject;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -51,6 +52,9 @@ public class CourtDocumentTransformer {
 
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Inject
+    StringToJsonObjectConverter jsonObjectConverter;
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -93,6 +97,7 @@ public class CourtDocumentTransformer {
         }
 
         final EventNotification eventNotification = buildEventNotification(addMaterialV2, subjectBusinessObjectId);
+
         return ofNullable(objectToJsonObjectConverter.convert(eventNotification).toString());
     }
 
@@ -164,7 +169,9 @@ public class CourtDocumentTransformer {
             defendantSubjectBuilder.withCpsOrganisationDefendantDetails(cpsOrganisationDefendant);
             defendantSubjectBuilder.withCpsPersonDefendantDetails(cpsPersonDefendantDetails);
         }
-
+        if(nonNull(defendant.getCpsDefendantId())){
+            defendantSubjectBuilder.withCpsDefendantId(defendant.getCpsDefendantId().toString());
+        }
         return defendantSubjectBuilder.build();
     }
 

@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Objects.nonNull;
+import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -36,18 +37,25 @@ public class NowsMaterialStatusEventProcessor {
     public void processStatusUpdated(final JsonEnvelope event) {
 
         final NowsMaterialStatusUpdated nowsMaterialStatusUpdated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), NowsMaterialStatusUpdated.class);
+        if (isNull(nowsMaterialStatusUpdated.getWelshTranslationRequired()) || !nowsMaterialStatusUpdated.getWelshTranslationRequired()) {
+            ofNullable(nowsMaterialStatusUpdated).map(NowsMaterialStatusUpdated::getDetails)
+                    .filter(materialDetails -> nonNull(materialDetails.getEmailNotifications()))
+                    .ifPresent(materialDetails -> notificationService.sendEmail(event, materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), materialDetails.getEmailNotifications()));
 
-        ofNullable(nowsMaterialStatusUpdated).map(NowsMaterialStatusUpdated::getDetails)
-                .filter(materialDetails -> nonNull(materialDetails.getEmailNotifications()))
-                .ifPresent(materialDetails -> notificationService.sendEmail(event, materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), materialDetails.getEmailNotifications()));
+            ofNullable(nowsMaterialStatusUpdated).map(NowsMaterialStatusUpdated::getDetails)
+                    .filter(MaterialDetails::getSecondClassLetter)
+                    .ifPresent(materialDetails -> notificationService.sendLetter(event, UUID.randomUUID(), materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), false));
 
+            ofNullable(nowsMaterialStatusUpdated).map(NowsMaterialStatusUpdated::getDetails)
+                    .filter(MaterialDetails::getFirstClassLetter)
+                    .ifPresent(materialDetails -> notificationService.sendLetter(event, UUID.randomUUID(), materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), true));
+        }
         ofNullable(nowsMaterialStatusUpdated).map(NowsMaterialStatusUpdated::getDetails)
-                .filter(MaterialDetails::getSecondClassLetter)
-                .ifPresent(materialDetails -> notificationService.sendLetter(event, UUID.randomUUID(), materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), false));
-
-        ofNullable(nowsMaterialStatusUpdated).map(NowsMaterialStatusUpdated::getDetails)
-                .filter(MaterialDetails::getFirstClassLetter)
-                .ifPresent(materialDetails -> notificationService.sendLetter(event, UUID.randomUUID(), materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), true));
+                .filter(MaterialDetails::getIsNotificationApi)
+                .filter(MaterialDetails::getIsCps)
+                .ifPresent(materialDetails -> notificationService.sendApiNotification(event, UUID.randomUUID(), materialDetails,
+                        nowsMaterialStatusUpdated.getCaseUrn(), nowsMaterialStatusUpdated.getDefendantAsn(), nowsMaterialStatusUpdated.getProsecutingAuthorityOUCode(),
+                        nowsMaterialStatusUpdated.getCpsDefendantIds()));
     }
 
     @Handles("progression.event.nows-material-request-recorded")

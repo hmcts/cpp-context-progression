@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -24,6 +25,7 @@ import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
@@ -102,6 +104,7 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
                 Defendant.defendant().withPersonDefendant(PersonDefendant.personDefendant().build())
                         .withProsecutionCaseId(UUID.randomUUID())
                         .withId(UUID.randomUUID())
+                        .withOffences(singletonList(Offence.offence().build()))
                         .build();
         ReferralReason referralReason = ReferralReason.referralReason()
                 .withId(UUID.randomUUID())
@@ -111,7 +114,7 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
 
         final ListDefendantRequest listDefendantRequest = ListDefendantRequest.listDefendantRequest()
                 .withProsecutionCaseId(defendant.getProsecutionCaseId())
-                .withDefendantOffences(Collections.singletonList(UUID.randomUUID()))
+                .withDefendantOffences(singletonList(UUID.randomUUID()))
                 .withReferralReason(referralReason)
                 .build();
 
@@ -125,8 +128,8 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
                 .build();
 
         AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = AddDefendantsToCourtProceedings.addDefendantsToCourtProceedings()
-                .withDefendants(Collections.singletonList(defendant))
-                .withListHearingRequests(Collections.singletonList(listHearingRequest))
+                .withDefendants(singletonList(defendant))
+                .withListHearingRequests(singletonList(listHearingRequest))
                 .build();
 
         final Metadata metadata = Envelope
@@ -160,7 +163,7 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
 
     private ProsecutionCase getProsecutionCase() {
         final List<Defendant> defendants = new ArrayList<>();
-        defendants.add(Defendant.defendant().build());
+        defendants.add(Defendant.defendant().withOffences(singletonList(Offence.offence().build())).build());
         return ProsecutionCase.prosecutionCase()
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
                         .build())

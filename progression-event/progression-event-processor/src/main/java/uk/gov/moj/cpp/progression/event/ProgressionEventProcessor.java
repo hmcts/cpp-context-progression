@@ -53,6 +53,7 @@ public class ProgressionEventProcessor {
     private static final String PUBLIC_PROGRESSION_EVENTS_SENDING_SHEET_INVALIDATED = "public.progression.events.sending-sheet-invalidated";
     private static final String PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE = "progression.command.create-prosecution-case";
     private static final String PUBLIC_PROGRESSION_EVENTS_PROSECUTION_CASE_CREATED = "public.progression.prosecution-case-created";
+    private static final String PUBLIC_PROGRESSION_EVENTS_NOW_NOTIFICATION_SUPPRESSED = "public.progression.now-notification-suppressed";
     @Inject
     private Enveloper enveloper;
 
@@ -179,6 +180,13 @@ public class ProgressionEventProcessor {
 
         sender.send(Enveloper.envelop(jsonObject)
                 .withName("progression.command.process-matched-defendants")
+                .withMetadataFrom(event));
+    }
+
+    @Handles("progression.event.now-document-notification-suppressed")
+    public void publishSuppressNowDocumentNotificationEvent(final JsonEnvelope event) {
+        sender.send(Enveloper.envelop(event.payloadAsJsonObject())
+                .withName(PUBLIC_PROGRESSION_EVENTS_NOW_NOTIFICATION_SUPPRESSED)
                 .withMetadataFrom(event));
     }
 
