@@ -162,7 +162,7 @@ public class DefendantMatchingEventListener {
 
         if (nonNull(masterDefendant)) {
             associateMasterDefendantToDefendant(masterDefendantIdUpdated.getDefendant().getId(), masterDefendant.getMasterDefendantId(), masterDefendantIdUpdated.getProsecutionCaseId(), masterDefendantIdUpdated.getHearingId());
-            masterDefendantIdUpdated.getMatchedDefendants()
+            masterDefendantIdUpdated.getMatchedDefendants().stream().filter(matchedDefendants -> nonNull(masterDefendant.getCourtProceedingsInitiated()))
                     .forEach(matchedDefendant ->
                             associateMasterDefendantToDefendant(matchedDefendant.getDefendantId(), masterDefendant.getMasterDefendantId(), matchedDefendant.getProsecutionCaseId(), null)
                     );

@@ -113,6 +113,7 @@ public class ProgressionService {
     private static final String PROGRESSION_QUERY_HEARING = "progression.query.hearing";
     private static final String PROGRESSION_QUERY_LINKED_CASES = "progression.query.case-lsm-info";
     private static final String PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND = "progression.command.update-defendant-listing-status";
+    private static final String PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND = "progression.command.create-hearing-for-application";
     private static final String PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING = "progression.command.record-unscheduled-hearing";
     private static final String PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND = "progression.command.list-unscheduled-hearing";
     private static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA = "progression.command.prepare-summons-data";
@@ -274,7 +275,7 @@ public class ProgressionService {
 
         final List<Defendant> defendantsList = new ArrayList<>();
 
-        confirmedProsecutionCase.getDefendants().stream().forEach(confirmedDefendantConsumer -> {
+        confirmedProsecutionCase.getDefendants().forEach(confirmedDefendantConsumer -> {
 
             final Defendant matchedDefendant = prosecutionCase.getDefendants().stream()
                     .filter(pc -> pc.getId().equals(confirmedDefendantConsumer.getId()))
@@ -656,6 +657,27 @@ public class ProgressionService {
         return result;
     }
 
+    public JsonObject getProsecutionCaseById(final JsonEnvelope envelope, final String caseId) {
+        final JsonObject requestParameter = createObjectBuilder()
+                .add(CASE_ID, caseId)
+                .build();
+
+        LOGGER.info("caseId {} ,   get prosecution case detail request {}", caseId, requestParameter);
+
+        final JsonEnvelope prosecutionCase = requester.requestAsAdmin(enveloper
+                .withMetadataFrom(envelope, PROGRESSION_QUERY_PROSECUTION_CASES)
+                .apply(requestParameter));
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("caseId {} prosecution case detail payload {}", caseId, prosecutionCase.toObfuscatedDebugString());
+        }
+
+        if (isNull(prosecutionCase) || isNull(prosecutionCase.payloadAsJsonObject()) || isNull(prosecutionCase.payloadAsJsonObject().get("prosecutionCase"))) {
+            throw new CourtApplicationAndCaseNotFoundException(String.format("Prosecution case detail not found for case id : %s", caseId));
+        }
+        return prosecutionCase.payloadAsJsonObject();
+    }
+
     public Optional<JsonObject> searchLinkedCases(final JsonEnvelope envelope, final String caseId) {
 
         final JsonObject requestParameter = createObjectBuilder().add("caseId", caseId).build();
@@ -695,7 +717,16 @@ public class ProgressionService {
                 LOGGER.info("update hearing listing status after send case for listing with payload {}", hearingListingStatusCommand);
                 sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
             } else {
-                linkApplicationToHearing(jsonEnvelope, hearing, HearingListingStatus.SENT_FOR_LISTING);
+
+                final JsonObject hearingCreatedForApplicationCommand = Json.createObjectBuilder()
+                        .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
+                        .add(HEARING, objectToJsonObjectConverter.convert(hearing)).build();
+
+                LOGGER.info("create hearing listing status after send application for listing with payload {}", hearingCreatedForApplicationCommand);
+
+                sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND),
+                        hearingCreatedForApplicationCommand));
+
             }
         });
     }
@@ -1109,10 +1140,10 @@ public class ProgressionService {
                                                           final SeedingHearing seedingHearing) {
         if (isNotEmpty(confirmedProsecutionCases)) {
             final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
-            confirmedProsecutionCases.stream().forEach(pc -> {
-                final Optional<JsonObject> prosecutionCaseJson = getProsecutionCaseDetailById(jsonEnvelope, pc.getId().toString());
-                if (prosecutionCaseJson.isPresent()) {
-                    final ProsecutionCase prosecutionCaseEntity = jsonObjectConverter.convert(prosecutionCaseJson.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
+            confirmedProsecutionCases.forEach(pc -> {
+                final JsonObject prosecutionCaseJson = getProsecutionCaseById(jsonEnvelope, pc.getId().toString());
+                if (nonNull(prosecutionCaseJson)) {
+                    final ProsecutionCase prosecutionCaseEntity = jsonObjectConverter.convert(prosecutionCaseJson.getJsonObject("prosecutionCase"), ProsecutionCase.class);
                     final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                             .withValuesFrom(prosecutionCaseEntity)
                             .withDefendants(filterDefendantsAndUpdateOffences(pc, prosecutionCaseEntity, earliestHearingDate, seedingHearing))

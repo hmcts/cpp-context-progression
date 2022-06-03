@@ -348,6 +348,9 @@ subscriptions_descriptor:
 
 
 
+        - name: progression.event.create-hearing-for-application
+          schema_uri: http://justice.gov.uk/core/progression/courts/progression.event.hearing-for-application-created.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

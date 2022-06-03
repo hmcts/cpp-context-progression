@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/progression/courts/progression.event.hearing-for-application-created.json",
+  "type": "object",
+  "description": "Create hearing for application",
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json#"
+    },
+    "hearingListingStatus": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/hearingListingStatus"
+    }
+  },
+  "required": [
+    "hearing",
+    "hearingListingStatus"
+  ],
+  "additionalProperties": false
+}
