@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-domain-transformations</artifactId>
-        <version>8.0.25-DLQ-FIX-SNAPSHOT</version>
+        <version>8.0.26-DLQ-FIX-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
