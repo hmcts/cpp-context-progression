@@ -46,7 +46,7 @@
         <listing.version>8.0.13</listing.version>
         <hearing.version>8.0.19</hearing.version>
         <usersgroups.version>7.0.45</usersgroups.version>
-        <defence.version>8.0.3</defence.version>
+        <defence.version>8.0.4</defence.version>
         <referencedata.offence.version>7.0.10</referencedata.offence.version>
         <coredomain.version>1.0.185</coredomain.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>

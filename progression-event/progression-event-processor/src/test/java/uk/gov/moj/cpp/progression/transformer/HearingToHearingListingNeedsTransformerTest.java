@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.transformer;
 
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -18,6 +19,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReportingRestriction;
@@ -376,6 +378,26 @@ public class HearingToHearingListingNeedsTransformerTest {
         assertThat(defendant1.getOffences().get(0).getSeedingHearing().getSeedingHearingId(), equalTo(seedingHearingId));
         assertThat(defendant2.getOffences().get(0).getSeedingHearing().getSeedingHearingId(), equalTo(seedingHearingId));
     }
+
+    @Test
+    public void shouldReturnHearingNeedsWithOneApplicationWhenMoreThanOneJudicialResultsPresentForSameApplication() {
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final ZonedDateTime listedStartDateTime = ZonedDateTime.now();
+        final NextHearingsRequested nextHearingsRequested = jsonObjectConverter.convert(getHearing("progression.event.next-hearings-requested.json"), NextHearingsRequested.class);
+        final Hearing hearing = nextHearingsRequested.getHearing();
+        final List<UUID> shadowListedOffences = nextHearingsRequested.getShadowListedOffences();
+        final Optional<CommittingCourt> committingCourt = ofNullable(nextHearingsRequested.getCommittingCourt());
+
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transformWithSeedHearing(hearing, committingCourt, hearing.getSeedingHearing()
+                , null);
+        assertThat(hearingListingNeedsList.size(), is(1));
+        assertThat(hearingListingNeedsList.get(0).getCourtApplications().size(), is(1));
+    }
+
+
 
     @Test
     public void shouldReturnNoHearingNeedsWithSeededHearingIdsOnOffencesWhenListingStartDateOutsideOfMultiDaysHearing() {
