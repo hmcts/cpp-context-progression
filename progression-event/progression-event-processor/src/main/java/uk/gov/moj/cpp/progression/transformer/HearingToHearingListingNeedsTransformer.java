@@ -235,8 +235,10 @@ public class HearingToHearingListingNeedsTransformer {
 
         final HearingListingNeeds hearingListingNeeds = addCourtApplication(createHearingListingNeeds(nextHearing, judiciaries), courtApplication, prosecutionCases);
 
-        if (hearingListingNeedsMap.containsKey(key) && nonNull(hearingListingNeedsMap.get(key).getCourtApplications()) && isNewApplication(hearingListingNeedsMap.get(key), courtApplication)) {
-            hearingListingNeedsMap.get(key).getCourtApplications().add(courtApplication);
+        if (hearingListingNeedsMap.containsKey(key) && nonNull(hearingListingNeedsMap.get(key).getCourtApplications())) {
+            if(isNewApplication(hearingListingNeedsMap.get(key), courtApplication)) {
+                hearingListingNeedsMap.get(key).getCourtApplications().add(courtApplication);
+            }
         } else {
              hearingListingNeedsMap.put(key, hearingListingNeeds);
         }
