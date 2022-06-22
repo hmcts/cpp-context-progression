@@ -382,6 +382,7 @@ public class CaseAggregate implements Aggregate {
                                             this.defendantCaseOffences.put(defendant.getId(), getOffencesWithDefaultOrderIndex(defendant.getOffences()));
                                             this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences());
                                             updateDefendantProceedingConcluded(defendant, false);
+                                            this.defendantsMap.putIfAbsent(defendant.getId(), defendant);
                                         });
                             }
                             this.prosecutionCase.getDefendants().add(e.getDefendants().get(0));
