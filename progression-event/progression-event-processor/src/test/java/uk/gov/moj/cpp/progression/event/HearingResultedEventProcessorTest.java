@@ -16,7 +16,6 @@ import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
-import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
 import uk.gov.justice.core.courts.ListUnscheduledNextHearings;
 import uk.gov.justice.core.courts.NextHearingsRequested;
@@ -24,7 +23,6 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCasesResultedV2;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
-import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.listing.courts.ListNextHearings;
 import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.progression.courts.StoreBookingReferenceCourtScheduleIds;
@@ -133,9 +131,6 @@ public class HearingResultedEventProcessorTest {
 
     @Captor
     private ArgumentCaptor<Set<UUID>> hearingUnscheduledListingNeedsCaptor;
-
-    @Captor
-    private ArgumentCaptor<Hearing> hearingCaptor;
 
     @Test
     public void shouldIssueCommandToProcessHearingResultsWhenHearingResultedReceived() {
@@ -271,36 +266,6 @@ public class HearingResultedEventProcessorTest {
         verify(progressionService).recordUnlistedHearing(Mockito.eq(event), Mockito.eq(hearingId), hearingArgumentCaptor.capture());
         assertThat(hearingArgumentCaptor.getValue().get(0).getId(), is(hearingId));
     }
-
-
-    @Test
-    public void shouldProcessCreateHearingForApplication() {
-        final UUID hearingId = randomUUID();
-        final UUID courtApplicationId = randomUUID();
-        final Hearing hearing = Hearing.hearing()
-                .withId(hearingId)
-                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
-                        .withId(courtApplicationId)
-                        .build()))
-                .build();
-
-        final HearingForApplicationCreated hearingForApplicationCreated = HearingForApplicationCreated.hearingForApplicationCreated()
-                .withHearing(hearing)
-                .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
-                .build();
-        final JsonEnvelope event = envelopeFrom(
-                metadataWithRandomUUID("progression.event.hearing-for-application-created"),
-                objectToJsonObjectConverter.convert(hearingForApplicationCreated));
-
-        this.eventProcessor.processCreateHearingForApplication(event);
-
-        verify(progressionService).linkApplicationToHearing(Mockito.eq(event), hearingCaptor.capture() , Mockito.eq(HearingListingStatus.SENT_FOR_LISTING));
-        assertThat(hearingCaptor.getValue().getId(), is(hearingId));
-        assertThat(hearingCaptor.getValue().getCourtApplications().get(0).getId(), is(courtApplicationId));
-
-    }
-
-
 
     private UnscheduledNextHearingsRequested mockConverterAndTransformerResponses(final UUID hearingId, final UUID caseId, final SeedingHearing seedingHearing) {
         final ArrayList<HearingDay> hearingDays = new ArrayList<>();

@@ -24,13 +24,6 @@ Feature: CaseAggregate
     When you updateDefendantListingStatus on a HearingAggregate with a update defendant listing status
     Then prosecution case defendant listing status changed
 
-  Scenario: Hearing for Application Created whenever the new hearing is requested for application
-
-    Given no previous events
-    When you createHearingForApplication on a HearingAggregate with a create hearing for application
-    Then hearing for application created
-
-
   Scenario: Update Defendant hearing results updated whenever the hearing confirmed
 
     Given no previous events

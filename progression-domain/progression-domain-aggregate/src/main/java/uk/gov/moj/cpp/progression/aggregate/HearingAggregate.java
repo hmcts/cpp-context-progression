@@ -93,7 +93,6 @@ import uk.gov.justice.core.courts.UnscheduledHearingListingRequested;
 import uk.gov.justice.core.courts.UnscheduledHearingRecorded;
 import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
 import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
-import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
@@ -164,9 +163,6 @@ public class HearingAggregate implements Aggregate {
     public Object apply(final Object event) {
         return match(event).with(
                 when(HearingInitiateEnriched.class).apply(e ->
-                        setHearing(e.getHearing())
-                ),
-                when(HearingForApplicationCreated.class).apply(e->
                         setHearing(e.getHearing())
                 ),
                 when(ProsecutionCaseDefendantListingStatusChanged.class).apply(e -> {
@@ -328,17 +324,6 @@ public class HearingAggregate implements Aggregate {
         }
 
         return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build()));
-    }
-
-    public Stream<Object> createHearingForApplication(final Hearing hearing, final HearingListingStatus hearingListingStatus) {
-        final HearingForApplicationCreated.Builder hearingForApplicationCreated = HearingForApplicationCreated.hearingForApplicationCreated();
-        LOGGER.info("Hearing with id {} and the status: {}", hearing.getId(), hearingListingStatus);
-
-        hearingForApplicationCreated.withHearing(hearing)
-                .withHearingListingStatus(hearingListingStatus);
-
-
-        return Stream.of(hearingForApplicationCreated.build());
     }
 
     public Stream<Object> updateDefendantListingStatus(final Hearing hearing, final HearingListingStatus hearingListingStatus, final Boolean notifyNCES) {

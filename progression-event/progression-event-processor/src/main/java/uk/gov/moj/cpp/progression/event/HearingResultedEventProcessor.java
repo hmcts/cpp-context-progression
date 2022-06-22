@@ -16,7 +16,6 @@ import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.ProsecutionCasesResultedV2;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
-import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.listing.courts.ListNextHearings;
 import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.progression.courts.StoreBookingReferenceCourtScheduleIds;
@@ -154,18 +153,6 @@ public class HearingResultedEventProcessor {
 
         }
         progressionService.populateHearingToProbationCaseworker(event, hearing.getId());
-
-    }
-
-    @Handles("progression.event.hearing-for-application-created")
-    public void processCreateHearingForApplication(final JsonEnvelope jsonEnvelope) {
-
-        final HearingForApplicationCreated hearingForApplicationCreated = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingForApplicationCreated.class);
-
-        final Hearing hearing = hearingForApplicationCreated.getHearing();
-
-        progressionService.linkApplicationToHearing(jsonEnvelope, hearing, hearingForApplicationCreated.getHearingListingStatus());
-
 
     }
 
