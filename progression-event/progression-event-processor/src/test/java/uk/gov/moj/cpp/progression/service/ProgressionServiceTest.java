@@ -74,6 +74,7 @@ import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
@@ -191,6 +192,8 @@ public class ProgressionServiceTest {
     private ListToJsonArrayConverter listToJsonArrayConverter;
     @Spy
     private ListToJsonArrayConverter resultListToJsonArrayConverter;
+    @Spy
+    private ListToJsonArrayConverter<ListHearingRequest> hearingRequestListToJsonArrayConverter;
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
     @Captor
@@ -218,6 +221,8 @@ public class ProgressionServiceTest {
         setField(this.listToJsonArrayConverter, "stringToJsonObjectConverter", new StringToJsonObjectConverter());
         setField(this.resultListToJsonArrayConverter, "mapper", objectMapper);
         setField(this.resultListToJsonArrayConverter, "stringToJsonObjectConverter", new StringToJsonObjectConverter());
+        setField(this.hearingRequestListToJsonArrayConverter, "mapper", objectMapper);
+        setField(this.hearingRequestListToJsonArrayConverter, "stringToJsonObjectConverter", new StringToJsonObjectConverter());
     }
 
 

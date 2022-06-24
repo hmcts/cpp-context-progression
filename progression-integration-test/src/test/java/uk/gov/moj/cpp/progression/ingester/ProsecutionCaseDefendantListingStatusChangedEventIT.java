@@ -62,7 +62,7 @@ import org.junit.Test;
 @SuppressWarnings("squid:S1607")
 public class ProsecutionCaseDefendantListingStatusChangedEventIT extends AbstractIT {
 
-    private final static String DEFENDANT_LISTING_STATUS_CHANGED_EVENT = "progression.event.prosecutionCase-defendant-listing-status-changed";
+    private final static String DEFENDANT_LISTING_STATUS_CHANGED_EVENT = "progression.event.prosecutionCase-defendant-listing-status-changed-v2";
     private static final String EVENT_LOCATION_WITHOUT_COURT_CENTRE_IN_HEARING_DAYS = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed-without-court-centre-in-hearing-days.json";
     private static final String EVENT_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed.json";
     private static final String EVENT_WITH_LINKED_APPLICATION_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed-with-linked-applications.json";

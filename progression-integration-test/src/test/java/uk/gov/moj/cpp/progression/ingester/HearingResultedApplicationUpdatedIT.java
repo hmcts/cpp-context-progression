@@ -47,7 +47,7 @@ public class HearingResultedApplicationUpdatedIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED_TO_NEXT_HEARING_V2 = "ingestion/public.hearing.resulted.application-adjourned-to-next-hearing-with-application-case-V2.json";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged =
-            privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+            privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
 
 
     private String applicationId;

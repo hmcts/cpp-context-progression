@@ -54,7 +54,7 @@ public class CustodyTimeLimitIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED_WITH_CTL_EXTENSION = "public.events.hearing.hearing-resulted-with-ctl-extension";
 
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer prosecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+    private static final MessageConsumer prosecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
     private static final MessageConsumer extendCustodyTimeLimitResulted = privateEvents.createPrivateConsumer("progression.events.extend-custody-time-limit-resulted");
     private static final MessageConsumer custodyTimeLimitExtended = privateEvents.createPrivateConsumer("progression.events.custody-time-limit-extended");
     private static final MessageConsumer custodyTimeLimitExtendedPublicEvent = publicEvents.createPublicConsumer("public.events.progression.custody-time-limit-extended");

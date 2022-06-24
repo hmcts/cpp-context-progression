@@ -54,7 +54,7 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
     private MessageConsumer publicEventConsumerForProsecutionCaseCreated = publicEvents
             .createPublicConsumer("public.progression.prosecution-case-created");
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-            .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+            .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
 
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";

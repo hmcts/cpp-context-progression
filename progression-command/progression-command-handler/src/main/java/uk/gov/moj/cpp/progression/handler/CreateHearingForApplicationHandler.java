@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.handler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.core.courts.CreateHearingForApplication;
+import uk.gov.justice.core.courts.CreateHearingForApplicationV2;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -33,14 +33,14 @@ public class CreateHearingForApplicationHandler {
     private AggregateService aggregateService;
 
     @Handles("progression.command.create-hearing-for-application")
-    public void handle(final Envelope<CreateHearingForApplication> createHearingForApplicationEnvelope) throws EventStreamException {
+    public void handle(final Envelope<CreateHearingForApplicationV2> createHearingForApplicationEnvelope) throws EventStreamException {
 
         LOGGER.debug("progression.command.create-hearing-for-application {}", createHearingForApplicationEnvelope.payload());
 
-        final CreateHearingForApplication createHearingForApplication = createHearingForApplicationEnvelope.payload();
+        final CreateHearingForApplicationV2 createHearingForApplication = createHearingForApplicationEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(createHearingForApplication.getHearing().getId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
-        final Stream<Object> events = hearingAggregate.createHearingForApplication(createHearingForApplication.getHearing(), createHearingForApplication.getHearingListingStatus());
+        final Stream<Object> events = hearingAggregate.createHearingForApplication(createHearingForApplication.getHearing(), createHearingForApplication.getHearingListingStatus(), createHearingForApplication.getListHearingRequests());
         appendEventsToStream(createHearingForApplicationEnvelope, eventStream, events);
 
 

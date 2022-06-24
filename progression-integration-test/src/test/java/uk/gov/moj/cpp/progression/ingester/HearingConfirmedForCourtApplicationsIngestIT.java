@@ -136,7 +136,7 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
         courtCentreName = "Lavender Hill Magistrate's Court";
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
 
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
             addProsecutionCaseToCrownCourt(caseId, defendantId, initialCaseUrn);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
             hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);

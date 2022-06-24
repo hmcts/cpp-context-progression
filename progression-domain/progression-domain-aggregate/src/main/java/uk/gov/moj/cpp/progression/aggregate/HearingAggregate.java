@@ -73,16 +73,18 @@ import uk.gov.justice.core.courts.HearingUpdatedProcessed;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ListDefendantRequest;
+import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.ListHearingRequested;
 import uk.gov.justice.core.courts.ListingNumberUpdated;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.MasterDefendant;
-import uk.gov.justice.core.courts.ListHearingRequested;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantHearingResultUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2;
 import uk.gov.justice.core.courts.ProsecutionCasesResultedV2;
 import uk.gov.justice.core.courts.ReferralReason;
@@ -94,6 +96,7 @@ import uk.gov.justice.core.courts.UnscheduledHearingRecorded;
 import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
 import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
+import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
@@ -140,7 +143,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 9128521802762667384L;
+    private static final long serialVersionUID = 3690994163923267197L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -169,7 +172,16 @@ public class HearingAggregate implements Aggregate {
                 when(HearingForApplicationCreated.class).apply(e->
                         setHearing(e.getHearing())
                 ),
+                when(HearingForApplicationCreatedV2.class).apply(e->
+                        setHearing(e.getHearing())
+                ),
                 when(ProsecutionCaseDefendantListingStatusChanged.class).apply(e -> {
+                    setHearing(e.getHearing());
+                    this.committingCourt = findCommittingCourt(e.getHearing());
+                    this.hearingListingStatus = e.getHearingListingStatus();
+                    this.notifyNCES = nonNull(e.getNotifyNCES()) ? e.getNotifyNCES() : Boolean.FALSE;
+                }),
+                when(ProsecutionCaseDefendantListingStatusChangedV2.class).apply(e -> {
                     setHearing(e.getHearing());
                     this.committingCourt = findCommittingCourt(e.getHearing());
                     this.hearingListingStatus = e.getHearingListingStatus();
@@ -330,21 +342,21 @@ public class HearingAggregate implements Aggregate {
         return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build()));
     }
 
-    public Stream<Object> createHearingForApplication(final Hearing hearing, final HearingListingStatus hearingListingStatus) {
-        final HearingForApplicationCreated.Builder hearingForApplicationCreated = HearingForApplicationCreated.hearingForApplicationCreated();
+    public Stream<Object> createHearingForApplication(final Hearing hearing, final HearingListingStatus hearingListingStatus, final List<ListHearingRequest> listHearingRequests) {
+        final HearingForApplicationCreatedV2.Builder hearingForApplicationCreated = HearingForApplicationCreatedV2.hearingForApplicationCreatedV2();
         LOGGER.info("Hearing with id {} and the status: {}", hearing.getId(), hearingListingStatus);
 
         hearingForApplicationCreated.withHearing(hearing)
                 .withHearingListingStatus(hearingListingStatus);
-
+        hearingForApplicationCreated.withListHearingRequests(listHearingRequests);
 
         return Stream.of(hearingForApplicationCreated.build());
     }
 
-    public Stream<Object> updateDefendantListingStatus(final Hearing hearing, final HearingListingStatus hearingListingStatus, final Boolean notifyNCES) {
+    public Stream<Object> updateDefendantListingStatus(final Hearing hearing, final HearingListingStatus hearingListingStatus, final Boolean notifyNCES, final List<ListHearingRequest> listHearingRequests) {
         final Hearing hearingWithOriginalListingNumbers = getHearingWithOriginalListingNumbers(hearing);
         LOGGER.info("Hearing with id {} and the status: {} notifyNCES: {}", hearingWithOriginalListingNumbers.getId(), hearingListingStatus, notifyNCES);
-        final ProsecutionCaseDefendantListingStatusChanged.Builder prosecutionCaseDefendantListingStatusChanged = ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged();
+        final ProsecutionCaseDefendantListingStatusChangedV2.Builder prosecutionCaseDefendantListingStatusChanged = ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2();
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         if (hearingListingStatus == HearingListingStatus.HEARING_INITIALISED && Boolean.TRUE.equals(this.notifyNCES)) {
@@ -357,6 +369,7 @@ public class HearingAggregate implements Aggregate {
         }
 
         prosecutionCaseDefendantListingStatusChanged.withNotifyNCES(notifyNCES);
+        prosecutionCaseDefendantListingStatusChanged.withListHearingRequests(listHearingRequests);
 
         if (HearingListingStatus.HEARING_RESULTED == this.hearingListingStatus) {
             prosecutionCaseDefendantListingStatusChanged.withHearingListingStatus(HearingListingStatus.HEARING_RESULTED);
@@ -504,7 +517,7 @@ public class HearingAggregate implements Aggregate {
     }
 
     public ProsecutionCaseDefendantListingStatusChanged getSavedListingStatusChanged() {
-        return new ProsecutionCaseDefendantListingStatusChanged(hearing, hearingListingStatus, notifyNCES);
+        return ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged().withHearing(hearing).withHearingListingStatus(hearingListingStatus).withNotifyNCES(notifyNCES).build();
     }
 
     public Stream<Object> updateListDefendantRequest(final List<ListDefendantRequest> listDefendantRequests, ConfirmedHearing confirmedHearing) {
@@ -1380,7 +1393,7 @@ public class HearingAggregate implements Aggregate {
     }
 
     private ProsecutionCaseDefendantListingStatusChanged createListingStatusResultedEvent(final Hearing hearing) {
-        return new ProsecutionCaseDefendantListingStatusChanged(getHearingWithOriginalListingNumbers(hearing), HearingListingStatus.HEARING_RESULTED, notifyNCES);
+        return ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged().withHearing(hearing).withHearingListingStatus(hearingListingStatus).withNotifyNCES(notifyNCES).build();
     }
 
     private HearingResulted createHearingResultedEvent(final Hearing hearing, final ZonedDateTime sharedTime, final LocalDate hearingDay) {

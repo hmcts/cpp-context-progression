@@ -64,7 +64,7 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged =
-            privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+            privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
     private static final MessageConsumer consumerForCourtApplicationCreated =
             publicEvents.createPublicConsumer("public.progression.court-application-created");
     private static final MessageConsumer consumerForCourtApplicationResulted =

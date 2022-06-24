@@ -10,6 +10,7 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -51,21 +52,24 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
     public void process(final JsonEnvelope event) {
         final ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = dedupAllReportingRestrictions(jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseDefendantListingStatusChanged.class));
         final HearingEntity hearingEntity = transformHearing(prosecutionCaseDefendantListingStatusChanged.getHearing(), prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus());
-        if (isNotEmpty(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases())) {
-            prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().forEach(pc ->
-                    pc.getDefendants().forEach(d ->
-                            caseDefendantHearingRepository.save(transformCaseDefendantHearingEntity(d, pc, hearingEntity))
-                    )
-            );
-        }
+        final List<ProsecutionCase> prosecutionCases = prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases();
 
-        updateHearingForMatchedDefendants(prosecutionCaseDefendantListingStatusChanged);
+        saveCaseDefendantHearing(prosecutionCases, hearingEntity);
+        updateHearingForMatchedDefendants(prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus(), prosecutionCases, prosecutionCaseDefendantListingStatusChanged.getHearing().getId());
     }
 
-    private void updateHearingForMatchedDefendants(final ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged) {
-        final UUID hearingId = prosecutionCaseDefendantListingStatusChanged.getHearing().getId();
+    @Handles("progression.event.prosecutionCase-defendant-listing-status-changed-v2")
+    public void processV2(final JsonEnvelope event) {
+        final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChanged = dedupAllReportingRestrictions(jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseDefendantListingStatusChangedV2.class));
+        final HearingEntity hearingEntity = transformHearing(prosecutionCaseDefendantListingStatusChanged.getHearing(), prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus());
         final List<ProsecutionCase> prosecutionCases = prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases();
-        if (Objects.nonNull(prosecutionCases) && prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus() == HearingListingStatus.HEARING_INITIALISED) {
+
+        saveCaseDefendantHearing(prosecutionCases, hearingEntity);
+        updateHearingForMatchedDefendants(prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus(), prosecutionCases, prosecutionCaseDefendantListingStatusChanged.getHearing().getId());
+    }
+
+    private void updateHearingForMatchedDefendants(final HearingListingStatus hearingListingStatus, final List<ProsecutionCase> prosecutionCases, final UUID hearingId) {
+        if (Objects.nonNull(prosecutionCases) && hearingListingStatus == HearingListingStatus.HEARING_INITIALISED) {
             prosecutionCases.forEach(
                     prosecutionCase -> prosecutionCase.getDefendants().forEach(
                             defendant -> {
@@ -105,5 +109,15 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
         hearingEntity.setListingStatus(hearingListingStatus);
         hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
         return hearingEntity;
+    }
+
+    private void saveCaseDefendantHearing(List<ProsecutionCase> prosecutionCases, final HearingEntity hearingEntity) {
+        if (isNotEmpty(prosecutionCases)) {
+            prosecutionCases.forEach(pc ->
+                    pc.getDefendants().forEach(d ->
+                            caseDefendantHearingRepository.save(transformCaseDefendantHearingEntity(d, pc, hearingEntity))
+                    )
+            );
+        }
     }
 }

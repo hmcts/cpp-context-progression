@@ -1,7 +1,4 @@
 {
-  "_metadata": {
-    "name": "progression.event.prosecutionCase-defendant-listing-status-changed-v2"
-  },
   "hearing": {
     "courtCentre": {
       "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
@@ -25,12 +22,7 @@
         "defendants": [
           {
             "id": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
-            "prosecutionCaseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f",
-            "offences" : [
-              {
-                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
-              }
-            ]
+            "prosecutionCaseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f"
           }
         ],
         "id": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f",
@@ -47,7 +39,8 @@
       "id": "9623a7ac-25bb-43f8-b219-2ae4cd8b05db"
     }
   },
-  "hearingListingStatus": "HEARING_RESULTED",
+  "hearingListingStatus": "SENT_FOR_LISTING",
+  "notifyNCES": "false",
   "listHearingRequests": [
     {
       "hearingType": {
@@ -68,7 +61,7 @@
           "defendantOffences": [
             "fe261841-4f77-49a3-b916-ff403cc40a77"
           ],
-          "prosecutionCaseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f"
+          "prosecutionCaseId": "CASE_ID"
         },
         {
           "referralReason": {
@@ -79,9 +72,10 @@
           "defendantOffences": [
             "fe261841-4f77-49a3-b916-ff403cc40a77"
           ],
-          "prosecutionCaseId": "cf73207f-3ced-488a-82a0-3fba79c2ce85"
+          "prosecutionCaseId": "CASE_ID"
         }
       ]
     }
   ]
 }
+

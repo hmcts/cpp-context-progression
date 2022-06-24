@@ -67,7 +67,7 @@ public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
     public void shouldUpdateCaseAtAGlance() throws Exception {
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged =
-                     privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                     privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
             addProsecutionCaseToCrownCourt(caseId, defendantId);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
             hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);

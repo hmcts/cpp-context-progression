@@ -28,7 +28,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
-import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
@@ -83,9 +82,6 @@ public class CourtProceedingsInitiatedProcessor {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Inject
-    private ListingService listingService;
-
-    @Inject
     private ProgressionService progressionService;
 
     @Inject
@@ -115,9 +111,7 @@ public class CourtProceedingsInitiatedProcessor {
         final ListCourtHearing listCourtHearing = prepareListCourtHearing(jsonEnvelope, courtReferral, hearingId);
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST).apply(hearingDefendantRequestJson));
         progressionService.createProsecutionCases(jsonEnvelope, getProsecutionCasesList(jsonEnvelope, courtReferral.getProsecutionCases()));
-        progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
-        listingService.listCourtHearing(jsonEnvelope,
-                listCourtHearingTransformer.transform(jsonEnvelope, courtReferral.getProsecutionCases(), courtReferral.getListHearingRequests(), hearingId));
+        progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing, courtReferral.getListHearingRequests());
     }
 
     private void enrichOffencesWithReportingRestriction(final JsonEnvelope jsonEnvelope, final CourtReferral courtReferral) {
