@@ -64,7 +64,7 @@ public class ProsecutorCaseCpsProsecutorUpdatedEventProcessor {
                     convert(prosecutionCaseJsonObject.getJsonObject("hearingsAtAGlance"),
                             GetHearingsAtAGlance.class);
             if (isNotEmpty(hearingsAtAGlance.getHearings())) {
-                hearingsAtAGlance.getHearings().stream().forEach(hearing -> hearingIdsBuilder.add(hearing.getId().toString()));
+                hearingsAtAGlance.getHearings().forEach(hearing -> hearingIdsBuilder.add(hearing.getId().toString()));
             }
         });
         return hearingIdsBuilder.build();
