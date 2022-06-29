@@ -11,7 +11,7 @@
     },
     "offenceListingNumbers": {
       "type": "array",
-      "minItems": 1,
+      "minItems": 0,
       "items": {
         "type": "object",
         "properties": {
@@ -31,8 +31,7 @@
   },
   "required": [
     "prosecutionCaseId",
-    "hearingId",
-    "offenceListingNumbers"
+    "hearingId"
   ],
   "additionalProperties": false
 }

@@ -56,7 +56,10 @@ public class HearingListingNumberUpdatedEventProcessor {
         final ProsecutionCaseListingNumberIncreased prosecutionCaseListingNumberIncreased = event.payload();
         final JsonObject jsonPayload= objectToJsonObjectConverter.convert(prosecutionCaseListingNumberIncreased);
 
-        callHearingCommandHandler(event, prosecutionCaseListingNumberIncreased.getProsecutionCaseId(), prosecutionCaseListingNumberIncreased.getHearingId(), jsonPayload.getJsonArray(OFFENCE_LISTING_NUMBERS));
+        if (jsonPayload.containsKey(OFFENCE_LISTING_NUMBERS) && !jsonPayload.getJsonArray(OFFENCE_LISTING_NUMBERS).isEmpty()) {
+            callHearingCommandHandler(event, prosecutionCaseListingNumberIncreased.getProsecutionCaseId(), prosecutionCaseListingNumberIncreased.getHearingId(), jsonPayload.getJsonArray(OFFENCE_LISTING_NUMBERS));
+        }
+
     }
 
     @Handles("progression.event.hearing-listing-number-updated")

@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.commons.collections.CollectionUtils;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
@@ -233,10 +234,13 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     @Handles("progression.event.prosecution-case-listing-number-increased")
     public void processProsecutionCaseListingNumberIncreased(final JsonEnvelope event) {
         final ProsecutionCaseListingNumberIncreased prosecutionCaseListingNumberIncreased = jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseListingNumberIncreased.class);
-        final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(prosecutionCaseListingNumberIncreased.getProsecutionCaseId());
-        final Set<UUID> listingSet = prosecutionCaseListingNumberIncreased.getOffenceListingNumbers().stream().map(OffenceListingNumbers::getOffenceId).collect(Collectors.toSet());
+        if (CollectionUtils.isNotEmpty(prosecutionCaseListingNumberIncreased.getOffenceListingNumbers())) {
+            final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(prosecutionCaseListingNumberIncreased.getProsecutionCaseId());
+            final Set<UUID> listingSet = prosecutionCaseListingNumberIncreased.getOffenceListingNumbers().stream().map(OffenceListingNumbers::getOffenceId).collect(Collectors.toSet());
 
-        saveListingNumber(prosecutionCaseEntity, listingSet, 1);
+            saveListingNumber(prosecutionCaseEntity, listingSet, 1);
+        }
+
     }
 
     private void saveListingNumber(final ProsecutionCaseEntity prosecutionCaseEntity, final Set<UUID> listingSet, int accumulator){
