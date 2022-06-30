@@ -211,7 +211,7 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188"})
 public class CaseAggregate implements Aggregate {
-    private static final long serialVersionUID = -4933049804196421465L;
+    private static final long serialVersionUID = -4933049804196421466L;
 
     //Static
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
