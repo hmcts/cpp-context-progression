@@ -892,7 +892,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         }
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_EVENTS_HEARING_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted-defendant-proceeding-concluded-with-defendant-results-added.json", caseId,
@@ -907,7 +907,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     @Test
     public void shouldHaveBothOffencesWhenProceedingConcludedIsTriggeredOffenceByOffence() throws Exception{
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
             addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId, defendantId);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -915,7 +915,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         }
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_EVENTS_HEARING_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted-defendant-proceeding-concluded-for-offence2-multioffence.json", caseId,
@@ -927,7 +927,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         }
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_EVENTS_HEARING_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted-defendant-proceeding-concluded-for-offence1-multioffence.json", caseId,
@@ -942,7 +942,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     @Test
     public void shouldHaveOffencesWhenProceedingConcludedIsTriggeredOffenceByOffence() throws Exception{
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
             addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId, defendantId);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -950,7 +950,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         }
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_EVENTS_HEARING_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted-defendant-proceeding-concluded-for-laa-offence-multioffence.json", caseId,
@@ -962,7 +962,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         }
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_EVENTS_HEARING_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted-defendant-proceeding-concluded-for-non-laaoffence-multioffence.json", caseId,
@@ -978,7 +978,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     @Test
     public void shouldMakeCaseStatusInactiveWhenResultsAreAddedAtHearingLevel() throws Exception{
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
             addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId, defendantId);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -1011,7 +1011,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         final String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
             addProsecutionCaseToCrownCourt(caseId, defendantId);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -1025,7 +1025,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
                 .build();
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_EVENTS_HEARING_HEARING_RESULTED, getHearingJsonObject( "public.events.hearing.hearing-resulted-without-laa.json", caseId,
@@ -1056,7 +1056,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         }
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_EVENTS_HEARING_HEARING_RESULTED, getHearingJsonObject( "public.events.hearing.hearing-resulted-without-laa-adjourned.json", caseId,
