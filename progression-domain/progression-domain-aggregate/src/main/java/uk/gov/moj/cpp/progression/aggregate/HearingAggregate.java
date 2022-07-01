@@ -143,7 +143,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 1590374374437771368L;
+    private static final long serialVersionUID = -4751709070629870158L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -516,8 +516,8 @@ public class HearingAggregate implements Aggregate {
         return apply(streamBuilder.build());
     }
 
-    public ProsecutionCaseDefendantListingStatusChanged getSavedListingStatusChanged() {
-        return ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged().withHearing(hearing).withHearingListingStatus(hearingListingStatus).withNotifyNCES(notifyNCES).build();
+    public ProsecutionCaseDefendantListingStatusChangedV2 getSavedListingStatusChanged() {
+        return ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2().withHearing(hearing).withHearingListingStatus(hearingListingStatus).withNotifyNCES(notifyNCES).build();
     }
 
     public Stream<Object> updateListDefendantRequest(final List<ListDefendantRequest> listDefendantRequests, ConfirmedHearing confirmedHearing) {
@@ -1392,8 +1392,8 @@ public class HearingAggregate implements Aggregate {
                 .build();
     }
 
-    private ProsecutionCaseDefendantListingStatusChanged createListingStatusResultedEvent(final Hearing hearing) {
-        return ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged().withHearing(hearing).withHearingListingStatus(hearingListingStatus).withNotifyNCES(notifyNCES).build();
+    private ProsecutionCaseDefendantListingStatusChangedV2 createListingStatusResultedEvent(final Hearing hearing) {
+        return ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2().withHearing(hearing).withHearingListingStatus(hearingListingStatus).withNotifyNCES(notifyNCES).build();
     }
 
     private HearingResulted createHearingResultedEvent(final Hearing hearing, final ZonedDateTime sharedTime, final LocalDate hearingDay) {
