@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/edit-form-requested.json",
+  "type": "object",
+  "properties": {
+    "courtFormId": {
+      "description": "Court Form Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "Case Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "lockStatus": {
+      "description": "Lock Status",
+      "type": "object",
+      "properties": {
+        "isLocked": {
+          "description": " Form Locked Boolean",
+          "type": "boolean"
+        },
+        "isLockAcquirable": {
+          "description": " Can Lock be acquired",
+          "type": "boolean"
+        },
+        "lockedBy": {
+          "description": "locked by user Id",
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "lockRequestedBy": {
+          "description": "lock requested by user Id",
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "expiryTime": {
+          "description": "Expiry time of the Locked form",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "isLocked"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "lockStatus",
+    "courtFormId"
+  ],
+  "additionalProperties": false
+}

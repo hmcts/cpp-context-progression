@@ -54,6 +54,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
+@Ignore
 public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
 
     private final String DOCUMENT_TEXT = STRING.next();

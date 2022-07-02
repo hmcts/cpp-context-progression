@@ -4,7 +4,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.notMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
@@ -13,7 +12,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.jayway.awaitility.Awaitility.await;
-import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
@@ -55,8 +53,33 @@ public class NotificationServiceStub {
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("Ocp-Apim-Subscription-Key", "3674a16507104b749a76b29b6c837352")
                         .withHeader("Ocp-Apim-Trace", "true")));
+
+        stubFor(post(urlPathEqualTo("/CPS/v1/notification/bcm-notification"))
+                .withRequestBody(equalToJson("Optional[{\"notificationDate\":\"2022-06-27T14:52:36.101Z\",\"notificationType\":\"bcm-form-updated\",\"bcmNotification\":{\"prosecutionCaseSubject\":{\"caseURN\":\"caseUrn123\",\"prosecutingAuthority\":\"ouCode123\"},\"defendantSubject\":{\"cpsDefendantId\":\"41725716-97ee-4a2b-acb8-52c1d12363ad\",\"asn\":\"arrestSummonsNo1\"},\"pleas\":[{\"cjsOffenceCode\":\"\",\"offenceSequenceNo\":1,\"offenceTitle\":\"Offence Title 1\",\"pleaValue\":\"Guilty\"},{\"cjsOffenceCode\":\"\",\"offenceSequenceNo\":2,\"offenceTitle\":\"Offence Title 2\",\"pleaValue\":\"\"},{\"cjsOffenceCode\":\"\",\"offenceSequenceNo\":3,\"offenceTitle\":\"Offence Title 3\",\"pleaValue\":\"Not Guilty\"},{\"cjsOffenceCode\":\"\",\"offenceSequenceNo\":4,\"offenceTitle\":\"Offence Title 4\",\"pleaValue\":\"If there is a lim\"}],\"realIssuesInCase\":\"realIssue1\",\"evidenceNeededForEffectivePTPH\":\"otherEvidencePriorPtph1\",\"otherInformation\":\"anyOther1\"}}]"))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("Ocp-Apim-Subscription-Key", "3674a16507104b749a76b29b6c837352")
+                        .withHeader("Ocp-Apim-Trace", "true")));
     }
 
+    public static void verifyBcmNotificationApi(final List<String> expectedValues) {
+        await().atMost(90, SECONDS).pollInterval(5, SECONDS).until(() -> {
+            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching("/CPS/v1/notification/bcm-notification"));
+            expectedValues.forEach(
+                    expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
+            );
+            verify(requestPatternBuilder);
+        });
+    }
+
+    public static void verifyBcmNotificationApiNotInvoked(final List<String> expectedValues) {
+        await().atMost(90, SECONDS).pollInterval(5, SECONDS).until(() -> {
+            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching("/CPS/v1/notification/bcm-notification"));
+            expectedValues.forEach(
+                    expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
+            );
+            verify(0, requestPatternBuilder);
+        });
+    }
 
     public static void verifyEmailNotificationIsRaisedWithoutAttachment(final List<String> expectedValues) {
         await().atMost(30, SECONDS).pollInterval(5, SECONDS).until(() -> {

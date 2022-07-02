@@ -9,7 +9,6 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.Originator.assembleEnvelopeWithPayloadAndMetaDetails;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
 

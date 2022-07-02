@@ -8,8 +8,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-
-import java.util.Collections;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Defendant;
@@ -173,7 +171,7 @@ public class HearingAggregateTest {
                 .withId(defendantId1)
                 .withOffences(
                         Stream.of(Offence.offence().withId(offence1).build(),
-                                Offence.offence().withId(offence2).build())
+                                        Offence.offence().withId(offence2).build())
                                 .collect(toList())).build();
         //other defendant
         final Defendant defendantToBeRemained = Defendant.defendant()
@@ -219,7 +217,7 @@ public class HearingAggregateTest {
                 .withId(defendantId1)
                 .withOffences(
                         Stream.of(Offence.offence().withId(offence1).build(),
-                                Offence.offence().withId(offence2).build())
+                                        Offence.offence().withId(offence2).build())
                                 .collect(toList())).build();
         //other defendant
         final Defendant defendantToBeRemained = Defendant.defendant()
@@ -264,7 +262,7 @@ public class HearingAggregateTest {
                 .withId(defendantId1)
                 .withOffences(
                         Stream.of(Offence.offence().withId(offence1).build(),
-                                Offence.offence().withId(offence2).build())
+                                        Offence.offence().withId(offence2).build())
                                 .collect(toList())).build();
 
         final Defendant defendantToBeRemained = Defendant.defendant()

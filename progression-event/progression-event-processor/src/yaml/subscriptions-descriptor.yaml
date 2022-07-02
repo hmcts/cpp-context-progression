@@ -337,6 +337,9 @@ subscriptions_descriptor:
         - name: progression.event.hearing-updated-for-partial-allocation
           schema_uri: http://justice.gov.uk/core/courts/hearing-updated-for-partial-allocation.json
 
+        - name: progression.event.form-defendants-updated
+          schema_uri: http://justice.gov.uk/core/courts/form-defendants-updated.json
+
         - name : progression.event.master-defendant-id-updated-into-hearings
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated-into-hearings.json
 
@@ -440,6 +443,22 @@ subscriptions_descriptor:
 
         - name: progression.event.laa-defendant-proceeding-concluded-changed
           schema_uri: http://justice.gov.uk/core/courts/progression.event.laa-defendant-proceeding-concluded-changed.json
+
+        - name: progression.event.form-created
+          schema_uri: http://justice.gov.uk/core/courts/form-created.json
+
+        - name: progression.event.form-operation-failed
+          schema_uri: http://justice.gov.uk/core/courts/form-operation-failed.json
+
+        - name: progression.event.form-finalised
+          schema_uri: http://justice.gov.uk/core/courts/form-finalised.json
+
+        - name: progression.event.form-updated
+          schema_uri: http://justice.gov.uk/core/courts/form-updated.json
+
+        - name: progression.event.edit-form-requested
+          schema_uri: http://justice.gov.uk/core/courts/edit-form-requested.json
+
 
         - name: progression.event.now-document-notification-suppressed
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.now-document-notification-suppressed.json
@@ -572,6 +591,9 @@ subscriptions_descriptor:
 
         - name: public.prosecutioncasefile.cps-serve-pet-submitted
           schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-pet-submitted.json
+
+        - name: public.prosecutioncasefile.cps-serve-bcm-submitted
+          schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-bcm-submitted.json
 
         - name: public.staginghmi.hearing-updated-from-hmi
           schema_uri: http://justice.gov.uk/staginghmi/courts/public.staginghmi.hearing-updated-from-hmi.json

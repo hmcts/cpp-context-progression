@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/update-form-defendants.json",
+  "type": "object",
+  "properties": {
+    "formDefendants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "defendantId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          }
+        },
+        "required": [
+          "defendantId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "formType": {
+      "description": "Form Type",
+      "$ref": "http://justice.gov.uk/core/courts/formType.json"
+    }
+  },
+  "required": [
+    "formDefendants",
+    "formType"
+  ],
+  "additionalProperties": false
+}

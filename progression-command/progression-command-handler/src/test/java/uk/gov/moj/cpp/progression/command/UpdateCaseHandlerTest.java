@@ -23,11 +23,8 @@ import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.FundingType;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingResultedUpdateCase;
-import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
@@ -36,7 +33,6 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.hearing.courts.HearingResult;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -49,7 +45,6 @@ import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.handler.UpdateCaseHandler;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -106,7 +101,7 @@ public class UpdateCaseHandlerTest {
 
         final Envelope<HearingResultedUpdateCase> envelope =
                 envelopeFrom(metadataFor("progression.command.hearing-resulted-update-case",
-                        randomUUID()),
+                                randomUUID()),
                         handlerTestHelper.convertFromFile("json/hearing-resulted-update-case.json", HearingResultedUpdateCase.class));
 
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
@@ -176,7 +171,7 @@ public class UpdateCaseHandlerTest {
 
         final Envelope<HearingResultedUpdateCase> envelope =
                 envelopeFrom(metadataFor("progression.command.hearing-resulted-update-case",
-                        randomUUID()),
+                                randomUUID()),
                         hearingResultedUpdateCase);
 
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
@@ -213,7 +208,7 @@ public class UpdateCaseHandlerTest {
 
         final Envelope<HearingResultedUpdateCase> envelope =
                 envelopeFrom(metadataFor("progression.command.hearing-resulted-update-case",
-                        randomUUID()),
+                                randomUUID()),
                         createCommandPayloadWithHearingResultedUpdateCase());
 
         updateCaseHandler.handle(envelope);
@@ -281,7 +276,7 @@ public class UpdateCaseHandlerTest {
 
         final Envelope<HearingResultedUpdateCase> envelope =
                 envelopeFrom(metadataFor("progression.command.hearing-resulted-update-case",
-                        randomUUID()),
+                                randomUUID()),
                         hearingResultedUpdateCase);
 
         updateCaseHandler.handle(envelope);
@@ -307,46 +302,45 @@ public class UpdateCaseHandlerTest {
     }
 
 
-
     private HearingResultedUpdateCase createCommandPayloadWithThreeOffencesAndOneNextHearingIsWithInMultiDaysHearingAndAnotherOutside(final UUID caseId) {
         return HearingResultedUpdateCase.hearingResultedUpdateCase()
-                    .withProsecutionCase(ProsecutionCase.prosecutionCase()
-                                .withId(caseId)
-                                .withDefendants(Arrays.asList(Defendant.defendant()
-                                        .withId(randomUUID())
-                                        .withOffences(Arrays.asList(Offence.offence()
-                                                        .withId(randomUUID())
-                                                        .withLaaApplnReference(LaaReference.laaReference()
-                                                                .withStatusId(UUID.randomUUID())
-                                                                .withApplicationReference("appln")
-                                                                .build())
-                                                        .build(),
-                                                Offence.offence()
-                                                        .withId(randomUUID())
-                                                        .withLaaApplnReference(LaaReference.laaReference()
-                                                                .withStatusId(UUID.randomUUID())
-                                                                .withApplicationReference("appln")
-                                                                .build())
-                                                        .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                                                                .withCategory(JudicialResultCategory.FINAL)
-                                                                .withOrderedDate(LocalDate.now().plusDays(3))
-                                                                .withIsUnscheduled(true)
-                                                                .withIsAdjournmentResult(false)
-                                                                .build()))
-                                                        .build(),
-                                                Offence.offence()
-                                                        .withId(randomUUID())
-                                                        .withLaaApplnReference(LaaReference.laaReference()
-                                                                .withStatusId(UUID.randomUUID())
-                                                                .withApplicationReference("appln")
-                                                                .build())
-                                                        .build() ))
-                                        .build()))
-                                .build())
+                .withProsecutionCase(ProsecutionCase.prosecutionCase()
+                        .withId(caseId)
+                        .withDefendants(Arrays.asList(Defendant.defendant()
+                                .withId(randomUUID())
+                                .withOffences(Arrays.asList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .withLaaApplnReference(LaaReference.laaReference()
+                                                        .withStatusId(UUID.randomUUID())
+                                                        .withApplicationReference("appln")
+                                                        .build())
+                                                .build(),
+                                        Offence.offence()
+                                                .withId(randomUUID())
+                                                .withLaaApplnReference(LaaReference.laaReference()
+                                                        .withStatusId(UUID.randomUUID())
+                                                        .withApplicationReference("appln")
+                                                        .build())
+                                                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                                        .withCategory(JudicialResultCategory.FINAL)
+                                                        .withOrderedDate(LocalDate.now().plusDays(3))
+                                                        .withIsUnscheduled(true)
+                                                        .withIsAdjournmentResult(false)
+                                                        .build()))
+                                                .build(),
+                                        Offence.offence()
+                                                .withId(randomUUID())
+                                                .withLaaApplnReference(LaaReference.laaReference()
+                                                        .withStatusId(UUID.randomUUID())
+                                                        .withApplicationReference("appln")
+                                                        .build())
+                                                .build()))
+                                .build()))
+                        .build())
                 .build();
     }
 
-    private HearingResultedUpdateCase createCommandPayloadWithHearingResultedUpdateCase(){
+    private HearingResultedUpdateCase createCommandPayloadWithHearingResultedUpdateCase() {
         Offence offence1 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()

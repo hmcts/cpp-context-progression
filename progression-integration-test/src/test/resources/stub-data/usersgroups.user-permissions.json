@@ -5,6 +5,22 @@
       "action": "GrantAccess"
     },
     {
+      "object": "BCM",
+      "action": "View"
+    },
+    {
+      "object": "BCM",
+      "action": "Create"
+    },
+    {
+      "object": "BCM",
+      "action": "Edit"
+    },
+    {
+      "object": "BCM",
+      "action": "Finalise"
+    },
+    {
       "object": "AdhocHearing",
       "action": "Create"
     }

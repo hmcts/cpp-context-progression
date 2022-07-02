@@ -255,8 +255,12 @@ subscriptions_descriptor:
         - name: progression.event.pet-form-received
           schema_uri: http://justice.gov.uk/core/courts/pet-form-received.json
 
+        - name: progression.event.form-defendants-updated
+          schema_uri: http://justice.gov.uk/core/courts/form-defendants-updated.json
+
         - name: progression.hearing-initiate-enriched
           schema_uri: http://justice.gov.uk/core/courts/progression.event-hearing-initiate-enriched.json
+
 
         - name: progression.event.hearing-moved-to-unallocated
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-moved-to-unallocated.json
@@ -325,6 +329,9 @@ subscriptions_descriptor:
 
         - name: progression.events.offences-removed-from-hearing
           schema_uri: http://justice.gov.uk/progression/courts/progression.events.offences-removed-from-hearing.json
+
+        - name: progression.event.form-created
+          schema_uri: http://justice.gov.uk/core/courts/form-created.json
           # Deprecated API  - End
 
       event_source_name: progression

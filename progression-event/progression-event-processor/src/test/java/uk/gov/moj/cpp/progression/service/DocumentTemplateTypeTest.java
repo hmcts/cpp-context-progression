@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.service;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsNull.nullValue;
 import static uk.gov.justice.core.courts.FormType.BCM;
 import static uk.gov.justice.core.courts.FormType.PET;
 import static uk.gov.justice.core.courts.FormType.PTPH;

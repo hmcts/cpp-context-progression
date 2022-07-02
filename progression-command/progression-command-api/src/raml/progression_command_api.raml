@@ -685,6 +685,71 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
+/prosecutioncases/{caseId}/form:
+  uriParameters:
+    caseId:
+      description: case id
+      type: string
+  post:
+    description: |
+      Create form
+      ...
+      (mapping):
+        requestType: application/vnd.progression.create-form+json
+        name: progression.create-form
+      ...
+    body:
+      application/vnd.progression.create-form+json:
+        example: !include json/progression.create-form.json
+        schema: !include json/schema/progression.create-form.json
+    responses:
+      202:
+        description: OK
+
+
+/prosecutioncases/{caseId}/form/{courtFormId}:
+  uriParameters:
+    caseId:
+      description: case id
+      type: string
+    courtFormId:
+      description:  court form id
+      type: string
+  post:
+    description: |
+      Update and finalise form
+      ...
+      (mapping):
+        requestType: application/vnd.progression.update-form+json
+        name: progression.update-form
+      (mapping):
+        requestType: application/vnd.progression.finalise-form+json
+        name: progression.finalise-form
+      (mapping):
+        requestType: application/vnd.progression.update-form-defendants+json
+        name: progression.update-form-defendants
+
+      (mapping):
+        requestType: application/vnd.progression.request-edit-form+json
+        name: progression.request-edit-form
+      ...
+    body:
+      application/vnd.progression.update-form+json:
+        example: !include json/progression.update-form.json
+        schema: !include json/schema/progression.update-form.json
+      application/vnd.progression.finalise-form+json:
+        example: !include json/progression.finalise-form.json
+        schema: !include json/schema/progression.finalise-form.json
+      application/vnd.progression.update-form-defendants+json:
+        example: !include json/progression.update-form-defendants.json
+        schema: !include json/schema/progression.update-form-defendants.json
+      application/vnd.progression.request-edit-form+json:
+        example: !include json/progression.request-edit-form.json
+        schema: !include json/schema/progression.request-edit-form.json
+    responses:
+      202:
+        description: OK
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
 /cases/{caseId} :

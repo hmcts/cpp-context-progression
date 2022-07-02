@@ -41,7 +41,6 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.handler.ExtendHearingHandler;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -117,13 +116,13 @@ public class ExtendHearingHandlerTest {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
         assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.event.hearing-extended"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.hearingRequest", notNullValue()),
-                                withJsonPath("$.hearingRequest.courtApplications", notNullValue()))
-                        ))
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.hearing-extended"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                        withJsonPath("$.hearingRequest", notNullValue()),
+                                        withJsonPath("$.hearingRequest.courtApplications", notNullValue()))
+                                ))
 
                 )
         );
@@ -145,13 +144,13 @@ public class ExtendHearingHandlerTest {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
         assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.event.hearing-extended"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.hearingRequest", notNullValue()),
-                                withJsonPath("$.hearingRequest.prosecutionCases", notNullValue()))
-                        ))
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.hearing-extended"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                        withJsonPath("$.hearingRequest", notNullValue()),
+                                        withJsonPath("$.hearingRequest.prosecutionCases", notNullValue()))
+                                ))
                 )
         );
     }
@@ -179,13 +178,13 @@ public class ExtendHearingHandlerTest {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
         assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.event.hearing-extended-processed"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.hearingRequest.id", is(hearingId.toString())),
-                                withJsonPath("$.hearing.id", is(hearingId.toString())))
-                        ))
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.hearing-extended-processed"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                        withJsonPath("$.hearingRequest.id", is(hearingId.toString())),
+                                        withJsonPath("$.hearing.id", is(hearingId.toString())))
+                                ))
                 )
         );
     }

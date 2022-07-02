@@ -18,6 +18,7 @@ import javax.json.JsonObject;
 public class DefenceService {
 
     private static final String CASE_DEFENDANTS_ORGANISATIONS =  "defence.query.case-defendants-organisation";
+    private static final String ROLE_IN_CASE_BY_CASEID = "advocate.query.role-in-case-by-caseid";
 
     @ServiceComponent(Component.EVENT_PROCESSOR)
     @Inject
@@ -33,5 +34,11 @@ public class DefenceService {
 
     }
 
-
+    public JsonObject getRoleInCaseByCaseId(final JsonEnvelope envelope, final String caseId){
+        final Metadata metadata = metadataWithNewActionName(envelope.metadata(), ROLE_IN_CASE_BY_CASEID);
+        final JsonObject jsonPayLoad = Json.createObjectBuilder()
+                .add("caseId", caseId)
+                .build();
+        return requester.request(envelopeFrom(metadata, jsonPayLoad), JsonObject.class).payload();
+    }
 }

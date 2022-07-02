@@ -1,20 +1,26 @@
 package uk.gov.moj.cpp.progression.domain.aggregate;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.FormCreated.formCreated;
+import static uk.gov.justice.core.courts.FormDefendants.formDefendants;
 import static uk.gov.justice.core.courts.FormType.PET;
 import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
 import static uk.gov.justice.core.courts.JudicialResultCategory.INTERMEDIARY;
@@ -56,6 +62,14 @@ import uk.gov.justice.core.courts.Defendants;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
+import uk.gov.justice.core.courts.EditFormRequested;
+import uk.gov.justice.core.courts.FormCreated;
+import uk.gov.justice.core.courts.FormDefendants;
+import uk.gov.justice.core.courts.FormDefendantsUpdated;
+import uk.gov.justice.core.courts.FormFinalised;
+import uk.gov.justice.core.courts.FormOperationFailed;
+import uk.gov.justice.core.courts.FormType;
+import uk.gov.justice.core.courts.FormUpdated;
 import uk.gov.justice.core.courts.HearingConfirmedCaseStatusUpdated;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingType;
@@ -67,6 +81,7 @@ import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.LockStatus;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.Organisation;
@@ -85,8 +100,8 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseCreatedInHearing;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
-import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseSubject;
 import uk.gov.justice.core.courts.ReferralReason;
@@ -103,6 +118,7 @@ import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.Form;
+import uk.gov.moj.cpp.progression.domain.aggregate.utils.FormLockStatus;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt;
@@ -192,6 +208,14 @@ public class CaseAggregateTest {
     private static final String INDICATED_PLEA_ID = randomUUID().toString();
     private static final String INDICATED_PLEA_VALUE = "NO_INDICATION";
     private static final String ALLOCATION_DECISION = "COURT_DECLINED";
+
+    private static final String FORM_CREATION_COMMAND_NAME = "form-created";
+    private static final String FORM_FINALISATION_COMMAND_NAME = "finalise-form";
+    private static final String FORM_EDIT_COMMAND_NAME = "edit-form";
+    private static final String MESSAGE_FOR_DUPLICATE_COURT_FORM_ID = "courtFormId already exists";
+    private final String MESSAGE_FOR_PROSECUTION_NULL = "ProsecutionCase(%s) does not exists.";
+    private final String MESSAGE_FOR_COURT_FORM_ID_NOT_PRESENT = "courtFormId (%s) does not exists.";
+
     private static final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
             .withId(randomUUID())
             .withMasterDefendantId(randomUUID())
@@ -232,10 +256,17 @@ public class CaseAggregateTest {
     @Mock
 
     JsonObject jsonObj;
+
     @Spy
     ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
     @InjectMocks
     private CaseAggregate caseAggregate;
+
+    private static final Map<FormType, Integer> lockDurationMapByFormType = new HashMap<FormType, Integer>() {{
+        put(FormType.BCM, 1);
+        put(FormType.PTPH, 2);
+    }};
 
     private static LaaReference generateRecordLAAReferenceForOffence(final String statusCode, final String defendantLevelStatus) {
         return laaReference()
@@ -1013,7 +1044,7 @@ public class CaseAggregateTest {
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(equalTo(ProsecutionCaseCreated.class)));
+        assertThat(object, instanceOf(ProsecutionCaseCreated.class));
     }
 
     @Test
@@ -1674,6 +1705,69 @@ public class CaseAggregateTest {
     }
 
     @Test
+    public void shouldUpdateCaseStatusAsReadyForReviewWhenOneApplicationIsResultedAndAnotherApplicationIsNotResulted() {
+        final UUID caseId = randomUUID();
+
+        final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(randomUUID())
+                .withProceedingsConcluded(false)
+                .withProsecutionCaseId(caseId)
+                .withOffences(
+                        singletonList(uk.gov.justice.core.courts.Offence.offence()
+                                .withProceedingsConcluded(false)
+                                .withId(UUID.randomUUID())
+                                .withJudicialResults(
+                                        singletonList(JudicialResult.judicialResult()
+                                                .withCategory(INTERMEDIARY)
+                                                .build())).build()))
+                .build();
+
+        final uk.gov.justice.core.courts.Defendant defendant1 = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(randomUUID())
+                .withProceedingsConcluded(true)
+                .withProsecutionCaseId(caseId)
+                .withOffences(
+                        singletonList(uk.gov.justice.core.courts.Offence.offence()
+                                .withId(UUID.randomUUID())
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(
+                                        singletonList(JudicialResult.judicialResult()
+                                                .withCategory(FINAL)
+                                                .build())).build()))
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(asList(defendant1, defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+        this.caseAggregate.apply(prosecutionCaseCreated);
+
+        // Resulted and Shared only one defendant
+        final ProsecutionCase prosecutionCaseUpdate = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus("READY_FOR_REVIEW")
+                .withDefendants(asList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
+                .build();
+        final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
+
+        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCaseUpdate, defendantJudicialResults).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
+        final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
+        assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(READY_FOR_REVIEW.getDescription()));
+
+    }
+
+    @Test
     public void shouldEditCaseNote() {
         final List<Object> eventStream = caseAggregate.editNote(randomUUID(), randomUUID(), false).collect(toList());
         assertThat(eventStream.size(), is(1));
@@ -1684,7 +1778,7 @@ public class CaseAggregateTest {
     public void shouldMarkHearingsDuplicate() {
         final UUID caseId = randomUUID();
         final UUID hearingId = randomUUID();
-        final List<UUID> defendantIds = Arrays.asList(randomUUID(), randomUUID());
+        final List<UUID> defendantIds = asList(randomUUID(), randomUUID());
 
         final List<Object> eventStream = caseAggregate.markHearingAsDuplicate(hearingId, caseId, defendantIds).collect(toList());
 
@@ -1823,7 +1917,7 @@ public class CaseAggregateTest {
         final UUID submissionId = randomUUID();
 
         PetDefendants petDefendants = petDefendants().withDefendantId(defendantId).build();
-        formMap.put(petId, new Form(asList(petDefendants), petId, PET, submissionId));
+        formMap.put(petId, new Form(asList(petDefendants), petId, PET, new FormLockStatus(), submissionId));
         setField(caseAggregate, "formMap", formMap);
         setField(caseAggregate, "prosecutionCase", prosecutionCase()
                 .withDefendants(asList(uk.gov.justice.core.courts.Defendant.defendant()
@@ -1854,12 +1948,12 @@ public class CaseAggregateTest {
         final UUID submissionId = randomUUID();
 
         PetDefendants petDefendants = petDefendants().withDefendantId(defendantId).build();
-        formMap.put(petId, new Form(asList(petDefendants), petId, PET, submissionId));
+        formMap.put(petId, new Form(asList(petDefendants), petId, PET, new FormLockStatus(), submissionId));
         setField(caseAggregate, "formMap", formMap);
 
         final List<Object> eventStream = caseAggregate.finalisePetForm(caseId, petId, userId, asList("{}", "{}", "{}")).collect(toList());
         assertThat(eventStream.size(), is(1));
-        final PetOperationFailed petOperationFailed = (PetOperationFailed)eventStream.get(0);
+        final PetOperationFailed petOperationFailed = (PetOperationFailed) eventStream.get(0);
         assertThat(petOperationFailed.getClass(), is(equalTo(PetOperationFailed.class)));
         assertThat(petOperationFailed.getSubmissionId(), is(submissionId));
     }
@@ -1873,7 +1967,7 @@ public class CaseAggregateTest {
         final UUID userId = randomUUID();
 
 
-        final List<Object> eventStream = caseAggregate.updatePetDetail(caseId, petId, Optional.empty(), Arrays.asList(), userId).collect(toList());
+        final List<Object> eventStream = caseAggregate.updatePetDetail(caseId, petId, Optional.empty(), null, userId).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetDetailUpdated.class)));
@@ -1886,8 +1980,7 @@ public class CaseAggregateTest {
         final UUID offenceId = randomUUID();
         final UUID petId = randomUUID();
         final UUID userId = randomUUID();
-
-        final List<Object> eventStream = caseAggregate.receivePetDetail(caseId, petId, Arrays.asList(), userId).collect(toList());
+        final List<Object> eventStream = caseAggregate.receivePetDetail(caseId, petId, null, userId).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(PetDetailReceived.class)));
@@ -1943,7 +2036,7 @@ public class CaseAggregateTest {
                         .build()))
                 .build();
 
-        final List<Object> eventStream = caseAggregate.addOrStoreDefendantsAndListingHearingRequests(Arrays.asList(defendant), Arrays.asList(listHearingRequest)).collect(toList());
+        final List<Object> eventStream = caseAggregate.addOrStoreDefendantsAndListingHearingRequests(asList(defendant), asList(listHearingRequest)).collect(toList());
 
         assertThat(eventStream.size(), is(1));
 
@@ -1978,7 +2071,7 @@ public class CaseAggregateTest {
                         .build()))
                 .build();
 
-        final List<Object> eventStream = caseAggregate.addOrStoreDefendantsAndListingHearingRequests(Arrays.asList(defendant), Arrays.asList(listHearingRequest)).collect(toList());
+        final List<Object> eventStream = caseAggregate.addOrStoreDefendantsAndListingHearingRequests(asList(defendant), asList(listHearingRequest)).collect(toList());
 
         assertThat(eventStream.size(), is(1));
 
@@ -2026,7 +2119,7 @@ public class CaseAggregateTest {
                         .build()))
                 .build();
 
-        caseAggregate.apply(new DefendantsAndListingHearingRequestsStored(Arrays.asList(defendant), Arrays.asList(listHearingRequest)));
+        caseAggregate.apply(new DefendantsAndListingHearingRequestsStored(asList(defendant), asList(listHearingRequest)));
 
         final List<Object> eventStream = caseAggregate.createProsecutionCaseInHearing(prosecutionCaseId).collect(toList());
 
@@ -2065,7 +2158,7 @@ public class CaseAggregateTest {
                 .build();
 
         // Store defendants and list hearing requests
-        caseAggregate.apply(new DefendantsAndListingHearingRequestsStored(Arrays.asList(defendant), Arrays.asList(listHearingRequest)));
+        caseAggregate.apply(new DefendantsAndListingHearingRequestsStored(asList(defendant), asList(listHearingRequest)));
 
         final List<Object> eventStream = caseAggregate.createProsecutionCaseInHearing(prosecutionCaseId).collect(toList());
 
@@ -2160,6 +2253,882 @@ public class CaseAggregateTest {
 
     }
 
+
+    @Test
+    public void shouldGenerateFormCreated_WhenDefendantAndOffenceIsValid() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID formId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String formData = "test data";
+        final UUID courtFormId = randomUUID();
+        final UUID userId = randomUUID();
+        final UUID submissionId = randomUUID();
+
+        setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
+
+        final List<UUID> defendantOffenceIds = new ArrayList<>();
+        defendantOffenceIds.add(defendantId);
+
+        final List<Object> eventStream = caseAggregate.createForm(courtFormId, caseId, formId, defendantOffenceIds, formData, userId, FormType.BCM, submissionId, null).collect(toList());
+
+        assertThat(eventStream, hasSize(1));
+        assertFormCreatedFromEventStream(caseId, courtFormId, formId, formData, FormType.BCM, eventStream);
+    }
+
+
+    @Test
+    public void shouldGenerateFormCreatedForMultipleForms_WhenDefendantAndOffenceIsValid() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID formId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String formData = "test data";
+        final UUID courtFormId = randomUUID();
+        final UUID userId = randomUUID();
+        final UUID submissionId = randomUUID();
+
+        setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
+
+        final List<UUID> defendantOffenceIds = new ArrayList<>();
+        defendantOffenceIds.add(defendantId);
+
+        final List<Object> eventStream = caseAggregate.createForm(courtFormId, caseId, formId, defendantOffenceIds, formData, userId, FormType.BCM, submissionId, null).collect(toList());
+
+        assertThat(eventStream, hasSize(1));
+        assertFormCreatedFromEventStream(caseId, courtFormId, formId, formData, FormType.BCM, eventStream);
+
+        final UUID defendantId2 = randomUUID();
+        final UUID formId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final String formData2 = "test data2";
+        final UUID courtFormId2 = randomUUID();
+        final UUID userId2 = randomUUID();
+        final UUID submissionId2 = randomUUID();
+
+        final List<UUID> defendantOffenceIds2 = new ArrayList<>();
+        defendantOffenceIds2.add(defendantId2);
+
+        final List<Object> eventStream2 = caseAggregate.createForm(courtFormId2, caseId, formId2, defendantOffenceIds2, formData2, userId2, FormType.BCM, submissionId2, null).collect(toList());
+
+        assertThat(eventStream2, hasSize(1));
+        assertFormCreatedFromEventStream(caseId, courtFormId2, formId2, formData2, FormType.BCM, eventStream2);
+        assertThat(caseAggregate.getFormMap().size(), is(2));
+        assertThat(caseAggregate.getFormMap().get(courtFormId), notNullValue());
+        assertThat(caseAggregate.getFormMap().get(courtFormId2), notNullValue());
+    }
+
+
+    @Test
+    public void shouldGenerateFormCreatedForMultipleForms_WithDifferentFormType_EvenWhenDefendantIsDuplicate() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID formId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String formData = "test data";
+        final UUID courtFormId = randomUUID();
+        final UUID userId = randomUUID();
+        final UUID submissionid = randomUUID();
+
+        setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
+
+        final List<UUID> defendantOffenceIds = new ArrayList<>();
+        defendantOffenceIds.add(defendantId);
+
+        final List<Object> eventStream = caseAggregate.createForm(courtFormId, caseId, formId, defendantOffenceIds, formData, userId, FormType.PTPH, submissionid, null).collect(toList());
+
+        assertThat(eventStream, hasSize(1));
+        assertFormCreatedFromEventStream(caseId, courtFormId, formId, formData, FormType.PTPH, eventStream);
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID formId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final String formData2 = "test data2";
+        final UUID userId2 = randomUUID();
+        final UUID submissionId2 = randomUUID();
+        final List<UUID> defendantOffenceIds2 = new ArrayList<>();
+        defendantOffenceIds2.add(defendantId);
+
+        final List<Object> eventStream2 = caseAggregate.createForm(courtFormId2, caseId, formId2, defendantOffenceIds2, formData2, userId2, FormType.BCM, submissionId2, null).collect(toList());
+        assertThat(eventStream2, hasSize(1));
+        assertFormCreatedFromEventStream(caseId, courtFormId2, formId2, formData2, FormType.BCM, eventStream2);
+        assertThat(caseAggregate.getFormMap().size(), is(2));
+        assertThat(caseAggregate.getFormMap().get(courtFormId), notNullValue());
+        assertThat(caseAggregate.getFormMap().get(courtFormId2), notNullValue());
+    }
+
+
+    @Test
+    public void shouldNotGenerateFormCreated_WhenFormIdPresentAlready() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID formId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String formData = "test data";
+        final UUID courtFormId = randomUUID();
+        final UUID userId = randomUUID();
+
+        setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
+
+        final Map<UUID, List<UUID>> defendantOffenceIds = new HashMap<>();
+        defendantOffenceIds.put(defendantId, asList(offenceId));
+        final FormCreated formCreated = formCreated()
+                .withFormType(FormType.BCM)
+                .withCaseId(caseId)
+                .withFormDefendants(asList(formDefendants()
+                        .withDefendantId(defendantId)
+                        .build()))
+                .withFormId(formId)
+                .withFormData(formData)
+                .withCourtFormId(courtFormId)
+                .withUserId(userId)
+                .build();
+
+        final Object object = caseAggregate.apply(formCreated);
+        assertFormCreatedFromObject(caseId, courtFormId, formId, formData, FormType.BCM, object);
+
+        final UUID defendantId2 = randomUUID();
+        final UUID formId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final String formData2 = "test data2";
+        final UUID userId2 = randomUUID();
+        final UUID submissionId2 = randomUUID();
+        final List<UUID> defendantOffenceIds2 = new ArrayList<>();
+        defendantOffenceIds2.add(defendantId2);
+
+        List<Object> eventStream = caseAggregate.createForm(courtFormId, caseId, formId2, defendantOffenceIds2, formData2, userId2, FormType.BCM, submissionId2, null).collect(toList());
+        assertThat(eventStream, hasSize(1));
+        assertFormOperationFailedFromEventStream(caseId, courtFormId, FORM_CREATION_COMMAND_NAME, MESSAGE_FOR_DUPLICATE_COURT_FORM_ID, FormType.BCM, eventStream);
+    }
+
+
+    @Test
+    public void shouldNotGenerateFormCreated_WhenFormIdPresentAlready_EvenFormTypeIsDifferent() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID formId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String formData = "test data";
+        final UUID courtFormId = randomUUID();
+        final UUID userId = randomUUID();
+
+        setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
+
+        final Map<UUID, List<UUID>> defendantOffenceIds = new HashMap<>();
+        defendantOffenceIds.put(defendantId, asList(offenceId));
+        final FormCreated formCreated = formCreated()
+                .withFormType(FormType.PTPH)
+                .withCaseId(caseId)
+                .withFormDefendants(asList(formDefendants()
+                        .withDefendantId(defendantId)
+                        .build()))
+                .withFormId(formId)
+                .withFormData(formData)
+                .withCourtFormId(courtFormId)
+                .withUserId(userId)
+                .build();
+
+        final Object object = caseAggregate.apply(formCreated);
+        assertFormCreatedFromObject(caseId, courtFormId, formId, formData, FormType.PTPH, object);
+
+        final UUID defendantId2 = randomUUID();
+        final UUID formId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final String formData2 = "test data2";
+        final UUID userId2 = randomUUID();
+        final UUID submissionId2 = randomUUID();
+        final List<UUID> defendantOffenceIds2 = new ArrayList<>();
+        defendantOffenceIds2.add(defendantId2);
+
+        final List<Object> eventStream = caseAggregate.createForm(courtFormId, caseId, formId2, defendantOffenceIds2, formData2, userId2, FormType.BCM, submissionId2, null).collect(toList());
+        assertThat(eventStream, hasSize(1));
+        assertFormOperationFailedFromEventStream(caseId, courtFormId, FORM_CREATION_COMMAND_NAME, MESSAGE_FOR_DUPLICATE_COURT_FORM_ID, FormType.BCM, eventStream);
+    }
+
+
+    @Test
+    public void shouldGenerateFormCreated_WhenDefendantPresentAlreadyForBcmForm() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID formId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String formData = "test data";
+        final UUID courtFormId = randomUUID();
+        final UUID userId = randomUUID();
+
+        setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
+
+        final List<UUID> defendantOffenceIds = new ArrayList<>();
+        defendantOffenceIds.add(defendantId);
+        final FormCreated formCreated = formCreated()
+                .withFormType(FormType.BCM)
+                .withCaseId(caseId)
+                .withFormDefendants(asList(formDefendants()
+                        .withDefendantId(defendantId)
+                        .build()))
+                .withFormId(formId)
+                .withFormData(formData)
+                .withCourtFormId(courtFormId)
+                .withUserId(userId)
+                .build();
+
+        final Object object = caseAggregate.apply(formCreated);
+        assertFormCreatedFromObject(caseId, courtFormId, formId, formData, FormType.BCM, object);
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID formId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final String formData2 = "test data2";
+        final UUID userId2 = randomUUID();
+        final UUID submissionId2 = randomUUID();
+        final List<UUID> defendantOffenceIds2 = new ArrayList<>();
+        defendantOffenceIds2.add(defendantId);
+
+        final List<Object> eventStream = caseAggregate.createForm(courtFormId2, caseId, formId2, defendantOffenceIds2, formData2, userId2, FormType.BCM, submissionId2, null).collect(toList());
+        assertThat(eventStream, hasSize(1));
+        assertFormCreatedFromObject(caseId, courtFormId2, formId2, formData2, FormType.BCM, eventStream.get(0));
+    }
+
+    @Test
+    public void shouldGenerateFormFinalised() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        setField(caseAggregate, "formMap", formMap);
+
+        ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus(SJP_REFERRAL.getDescription())
+                .withDefendants(singletonList(defendant))
+                .withCpsOrganisation("A01")
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
+                .withDefendants(asList(uk.gov.justice.core.courts.Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                        .withId(offenceId)
+                                        .build()))
+                                .build(),
+                        uk.gov.justice.core.courts.Defendant.defendant()
+                                .withId(defendantId2)
+                                .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                        .withId(offenceId2)
+                                        .build()))
+                                .build()))
+                .build();
+
+        setField(caseAggregate, "prosecutionCase", prosecutionCase);
+
+        final List<Object> eventStream = caseAggregate.finaliseForm(caseId, courtFormId, userId, asList("{}", "{}", "{}")).collect(toList());
+        assertFormFinalisedFromEventStream(caseId, courtFormId, userId, defendantId, offenceId, FormType.BCM, eventStream);
+    }
+
+
+    @Test
+    public void shouldNotGenerateFormFinalised_WhenIdDoesNotExist_VerifyFormOperationFailedEvent() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        setField(caseAggregate, "formMap", formMap);
+
+        ProsecutionCase prosecutionCase = prosecutionCase()
+                .withDefendants(asList(uk.gov.justice.core.courts.Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                        .withId(offenceId)
+                                        .build()))
+                                .build(),
+                        uk.gov.justice.core.courts.Defendant.defendant()
+                                .withId(defendantId2)
+                                .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                        .withId(offenceId2)
+                                        .build()))
+                                .build()))
+                .build();
+        setField(caseAggregate, "prosecutionCase", prosecutionCase);
+
+        final UUID courtFormId3 = randomUUID();
+        final List<Object> eventStream = caseAggregate.finaliseForm(caseId, courtFormId3, userId, asList("{}", "{}", "{}")).collect(toList());
+        assertFormOperationFailedFromEventStream(caseId, courtFormId3, FORM_FINALISATION_COMMAND_NAME,
+                format(MESSAGE_FOR_COURT_FORM_ID_NOT_PRESENT, courtFormId3), null, eventStream);
+    }
+
+
+    @Test
+    public void shouldNotGenerateFormFinalised_WhenProsecutionCaseIsNull_VerifyFormOperationFailedEvent() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        setField(caseAggregate, "formMap", formMap);
+
+        ProsecutionCase prosecutionCase = null;
+        setField(caseAggregate, "prosecutionCase", prosecutionCase);
+
+        final List<Object> eventStream = caseAggregate.finaliseForm(caseId, courtFormId, userId, asList("{}", "{}", "{}")).collect(toList());
+        assertFormOperationFailedFromEventStream(caseId, courtFormId, FORM_FINALISATION_COMMAND_NAME,
+                format(MESSAGE_FOR_PROSECUTION_NULL, caseId), null, eventStream);
+    }
+
+
+    @Test
+    public void shouldGenerateEditFormRequested_WhenFormIsNotLockedAtAll() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        setField(caseAggregate, "formMap", formMap);
+
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId, false, expiryTime, eventStream);
+    }
+
+    @Test
+    public void shouldGenerateFormOperationFailed_WhenFormIsNotPresent() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        setField(caseAggregate, "formMap", formMap);
+
+        final UUID courtFormId3 = randomUUID();
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId3, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        assertFormOperationFailedFromEventStream(caseId, courtFormId3, FORM_EDIT_COMMAND_NAME,
+                format(MESSAGE_FOR_COURT_FORM_ID_NOT_PRESENT, courtFormId3), null, eventStream);
+
+    }
+
+
+    @Test
+    public void shouldGenerateEditFormRequested_WhenFormIsLocked_WithExpiryTimeInFuture() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        setField(caseAggregate, "formMap", formMap);
+
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId, false, expiryTime, eventStream);
+
+        final UUID userId1 = randomUUID();
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, expiryTime, eventStream2);
+
+    }
+
+
+    @Test
+    public void shouldGenerateEditFormRequested_WhenFormIsLocked_WithExpiryTimeInPast() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, FormType.BCM, new FormLockStatus(false, null, null, null)));
+        setField(caseAggregate, "formMap", formMap);
+
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId, false, expiryTime, eventStream);
+
+        final UUID userId1 = randomUUID();
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime(), eventStream2);
+
+        caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().setLockExpiryTime(ZonedDateTime.now().minusHours(2));
+
+        final UUID userId2 = randomUUID();
+        final List<Object> eventStream3 = caseAggregate.requestEditForm(caseId, courtFormId, userId2, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        ZonedDateTime nextExpiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId2, false, nextExpiryTime, eventStream3);
+
+    }
+
+
+    @Test
+    public void shouldGenerateEditFormRequested_WhenFormIsLocked_WithExpiryTimeInFuture_EditRequestSentBySameUser() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        setField(caseAggregate, "formMap", formMap);
+
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId, false, expiryTime, eventStream);
+
+        final UUID userId1 = randomUUID();
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime(), eventStream2);
+
+        caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().setLockExpiryTime(ZonedDateTime.now().minusHours(2));
+
+        final UUID userId2 = randomUUID();
+        final List<Object> eventStream3 = caseAggregate.requestEditForm(caseId, courtFormId, userId2, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final ZonedDateTime nextExpiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId2, false, nextExpiryTime, eventStream3);
+        assertThat(nextExpiryTime, notNullValue());
+        assertThat(nextExpiryTime, greaterThanOrEqualTo(ZonedDateTime.now().minusMinutes(10L)));
+
+        //same user is editing again so should get form unlocked for same user.
+        final List<Object> eventStream4 = caseAggregate.requestEditForm(caseId, courtFormId, userId2, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final ZonedDateTime nextExpiryTime2 = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        final Object object = eventStream4.get(0);
+        final EditFormRequested editFormRequested = (EditFormRequested) object;
+        final LockStatus lockStatus = editFormRequested.getLockStatus();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId2, false, lockStatus.getExpiryTime(), eventStream4);
+        assertThat(nextExpiryTime, is(nextExpiryTime2));
+    }
+
+    @Test
+    public void shouldGenerateEditFormRequested_WhenFormIsLocked_WithExpiryTimeInPast_EditRequestSentBySameUser() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        setField(caseAggregate, "formMap", formMap);
+
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId, false, expiryTime, eventStream);
+
+        final UUID userId1 = randomUUID();
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, expiryTime, eventStream2);
+
+        caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().setLockExpiryTime(ZonedDateTime.now().minusHours(2));
+
+        final List<Object> eventStream3 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final ZonedDateTime expiryTime2 = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId1, false, expiryTime2, eventStream3);
+        assertThat(expiryTime2, notNullValue());
+        assertThat(expiryTime2, greaterThanOrEqualTo(ZonedDateTime.now().minusMinutes(10L)));
+    }
+
+    @Test
+    public void shouldUpdateFormMap_WhenFormDataUpdated() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, FormType.BCM, new FormLockStatus(false, null, null, null)));
+
+        setField(caseAggregate, "formMap", formMap);
+
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId, false, expiryTime, eventStream);
+
+        final UUID userId1 = randomUUID();
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, expiryTime, eventStream2);
+
+        //form updated by same userId which got the lock earlier
+        final List<Object> eventStream3 = caseAggregate.updateForm(caseId, "{}", courtFormId, userId).collect(toList());
+        final Object formUpdatedObject = eventStream3.get(0);
+        assertThat(formUpdatedObject, instanceOf(FormUpdated.class));
+        Form form = caseAggregate.getFormMap().get(courtFormId);
+        assertThat(form.getFormLockStatus().getLockedBy(), nullValue());
+        assertThat(form.getFormLockStatus().getLockExpiryTime(), nullValue());
+        assertThat(form.getFormLockStatus().getLockRequestedBy(), nullValue());
+        assertThat(form.getFormLockStatus().getLocked(), is(false));
+
+    }
+
+    private void assertEditFormRequestedFromEventStream(final UUID caseId, final UUID courtFormId, final UUID lockedBy, final UUID lockRequestedBy, final boolean isLocked, final ZonedDateTime expiryTime, final List<Object> eventStream) {
+        final Object object = eventStream.get(0);
+        assertThat(object, instanceOf(EditFormRequested.class));
+        final EditFormRequested editFormRequested = (EditFormRequested) object;
+        assertThat(caseId, is(editFormRequested.getCaseId()));
+        assertThat(courtFormId, is(editFormRequested.getCourtFormId()));
+        assertThat(editFormRequested.getLockStatus(), notNullValue());
+        final LockStatus lockStatus = editFormRequested.getLockStatus();
+        assertThat(lockStatus.getIsLocked(), is(isLocked));
+        assertThat(lockStatus.getExpiryTime(), is(expiryTime));
+        assertThat(lockStatus.getLockedBy(), is(lockedBy));
+        assertThat(lockStatus.getLockRequestedBy(), is(lockRequestedBy));
+    }
+
+
+    private void assertFormFinalisedFromEventStream(final UUID caseId, final UUID courtFormId, final UUID userId, final UUID defendantId, final UUID offenceId, final FormType formType, final List<Object> eventStream) {
+        final Object object = eventStream.get(0);
+        assertThat(object, instanceOf(FormFinalised.class));
+        final FormFinalised formFinalised = (FormFinalised) object;
+        assertThat(caseId, is(formFinalised.getCaseId()));
+        assertThat(courtFormId, is(formFinalised.getCourtFormId()));
+        assertThat(userId, is(formFinalised.getUserId()));
+        assertThat(formFinalised.getFormType(), is(formType));
+    }
+
+
+    private void assertFormOperationFailedFromEventStream(final UUID caseId, final UUID courtFormId, final String operation, final String message, final FormType formType, final List<Object> eventStream) {
+        final Object object = eventStream.get(0);
+        assertThat(object, instanceOf(FormOperationFailed.class));
+        final FormOperationFailed form = (FormOperationFailed) object;
+        assertThat(caseId, is(form.getCaseId()));
+        assertThat(courtFormId, is(form.getCourtFormId()));
+        assertThat(formType, is(form.getFormType()));
+        assertThat(operation, is(form.getOperation()));
+        assertThat(message, is(form.getMessage()));
+        if (nonNull(formType)) {
+            assertThat(formType, is(form.getFormType()));
+        }
+    }
+
+    @Test
+    public void shouldReturnTwoDefendants_WhenAddingNewDefendantExistingDefendants_VerifyFormDefendantsUpdated() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID formId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final String formData = "test data";
+        final UUID courtFormId = randomUUID();
+        final UUID userId = randomUUID();
+
+        setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
+
+        final Map<UUID, List<UUID>> defendantOffenceIds = new HashMap<>();
+        defendantOffenceIds.put(defendantId, asList(offenceId));
+        final FormCreated formCreated = formCreated()
+                .withFormType(FormType.BCM)
+                .withCaseId(caseId)
+                .withFormDefendants(asList(formDefendants()
+                        .withDefendantId(defendantId)
+                        .build()))
+                .withFormId(formId)
+                .withFormData(formData)
+                .withCourtFormId(courtFormId)
+                .withUserId(userId)
+                .build();
+
+        final Object object = caseAggregate.apply(formCreated);
+        assertThat(object, instanceOf(FormCreated.class));
+        final FormCreated form = (FormCreated) object;
+        assertThat(caseId, is(form.getCaseId()));
+        assertThat(FormType.BCM, is(form.getFormType()));
+        assertThat(formId, is(form.getFormId()));
+        assertThat(formData, is(form.getFormData()));
+
+        final UUID defendantId2 = randomUUID();
+        final UUID userId2 = randomUUID();
+        final List<UUID> defendantOffenceIds2 = new ArrayList<>();
+        defendantOffenceIds2.add(defendantId);
+        defendantOffenceIds2.add(defendantId2);
+
+        final List<Object> eventStream = caseAggregate.updateFormDefendants(courtFormId, caseId, defendantOffenceIds2, userId2, FormType.BCM).collect(toList());
+        assertThat(eventStream, hasSize(1));
+        final Object result = eventStream.get(0);
+        assertThat(result, instanceOf(FormDefendantsUpdated.class));
+        final FormDefendantsUpdated formDefendantsUpdated = (FormDefendantsUpdated) result;
+        assertThat(caseId, is(form.getCaseId()));
+        assertThat(courtFormId, is(formDefendantsUpdated.getCourtFormId()));
+        assertThat(FormType.BCM, is(formDefendantsUpdated.getFormType()));
+
+        final List<FormDefendants> formDefendants = caseAggregate.getFormMap().get(courtFormId).getFormDefendants();
+
+        assertThat(formDefendants, hasSize(2));
+        verifyDefendants(defendantId, asList(offenceId, offenceId2), formDefendants);
+        verifyDefendants(defendantId2, asList(), formDefendants);
+    }
+
+    @Test
+    public void shouldReturnThreeDefendants_WhenAddingNewDefendantUpdatingExistingOneDefendants_VerifyFormDefendantsUpdated1() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID formId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final String formData = "test data";
+        final UUID courtFormId = randomUUID();
+        final UUID userId = randomUUID();
+
+        setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
+
+        final Map<UUID, List<UUID>> defendantOffenceIds = new HashMap<>();
+        defendantOffenceIds.put(defendantId, asList(offenceId));
+        final FormCreated formCreated = formCreated()
+                .withFormType(FormType.BCM)
+                .withCaseId(caseId)
+                .withFormDefendants(asList(
+                        formDefendants()
+                                .withDefendantId(defendantId)
+                                .build(),
+                        formDefendants()
+                                .withDefendantId(defendantId2)
+                                .build()))
+                .withFormId(formId)
+                .withFormData(formData)
+                .withCourtFormId(courtFormId)
+                .withUserId(userId)
+                .build();
+
+        final Object object = caseAggregate.apply(formCreated);
+        assertThat(object, instanceOf(FormCreated.class));
+        final FormCreated form = (FormCreated) object;
+        assertThat(caseId, is(form.getCaseId()));
+        assertThat(FormType.BCM, is(form.getFormType()));
+        assertThat(formId, is(form.getFormId()));
+        assertThat(formData, is(form.getFormData()));
+
+        final UUID defendantId3 = randomUUID();
+        final UUID userId2 = randomUUID();
+        final List<UUID> defendantOffenceIds2 = new ArrayList<>();
+        defendantOffenceIds2.add(defendantId);
+        defendantOffenceIds2.add(defendantId2);
+        defendantOffenceIds2.add(defendantId3);
+
+        final List<Object> eventStream = caseAggregate.updateFormDefendants(courtFormId, caseId, defendantOffenceIds2, userId2, FormType.BCM).collect(toList());
+        assertThat(eventStream, hasSize(1));
+        final Object result = eventStream.get(0);
+        assertThat(result, instanceOf(FormDefendantsUpdated.class));
+        final FormDefendantsUpdated formDefendantsUpdated = (FormDefendantsUpdated) result;
+        assertThat(caseId, is(form.getCaseId()));
+        assertThat(courtFormId, is(formDefendantsUpdated.getCourtFormId()));
+        assertThat(FormType.BCM, is(formDefendantsUpdated.getFormType()));
+
+        final List<FormDefendants> formDefendants = caseAggregate.getFormMap().get(courtFormId).getFormDefendants();
+
+        assertThat(formDefendants, hasSize(3));
+        verifyDefendants(defendantId, asList(offenceId), formDefendants);
+        verifyDefendants(defendantId2, asList(offenceId2), formDefendants);
+        verifyDefendants(defendantId3, asList(), formDefendants);
+
+    }
+
+    @Test
+    public void shouldReturnTwoDefendants_WhenRemovingFirstDefendantFromExistingOneDefendants_VerifyFormDefendantsUpdated1() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+        final UUID formId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final String formData = "test data";
+        final UUID courtFormId = randomUUID();
+        final UUID userId = randomUUID();
+
+        setField(caseAggregate, "prosecutionCase", createProsecutionCase(defendantId, offenceId));
+
+        final Map<UUID, List<UUID>> defendantOffenceIds = new HashMap<>();
+        defendantOffenceIds.put(defendantId, asList(offenceId));
+        final FormCreated formCreated = formCreated()
+                .withFormType(FormType.BCM)
+                .withCaseId(caseId)
+                .withFormDefendants(asList(
+                        formDefendants()
+                                .withDefendantId(defendantId)
+                                .build(),
+                        formDefendants()
+                                .withDefendantId(defendantId2)
+                                .build(),
+                        formDefendants()
+                                .withDefendantId(defendantId3)
+                                .build()))
+                .withFormId(formId)
+                .withFormData(formData)
+                .withCourtFormId(courtFormId)
+                .withUserId(userId)
+                .build();
+
+        final Object object = caseAggregate.apply(formCreated);
+        assertThat(object, instanceOf(FormCreated.class));
+        final FormCreated form = (FormCreated) object;
+        assertThat(caseId, is(form.getCaseId()));
+        assertThat(FormType.BCM, is(form.getFormType()));
+        assertThat(formId, is(form.getFormId()));
+        assertThat(formData, is(form.getFormData()));
+
+
+        final UUID userId2 = randomUUID();
+        final List<UUID> defendantOffenceIds2 = new ArrayList<>();
+        defendantOffenceIds2.add(defendantId2);
+        defendantOffenceIds2.add(defendantId3);
+
+        final List<Object> eventStream = caseAggregate.updateFormDefendants(courtFormId, caseId, defendantOffenceIds2, userId2, FormType.BCM).collect(toList());
+        assertThat(eventStream, hasSize(1));
+        final Object result = eventStream.get(0);
+        assertThat(result, instanceOf(FormDefendantsUpdated.class));
+        final FormDefendantsUpdated formDefendantsUpdated = (FormDefendantsUpdated) result;
+        assertThat(caseId, is(form.getCaseId()));
+        assertThat(courtFormId, is(formDefendantsUpdated.getCourtFormId()));
+        assertThat(FormType.BCM, is(formDefendantsUpdated.getFormType()));
+
+        final List<FormDefendants> formDefendants = caseAggregate.getFormMap().get(courtFormId).getFormDefendants();
+
+        assertThat(formDefendants, hasSize(2));
+        verifyDefendants(defendantId2, asList(offenceId2), formDefendants);
+        verifyDefendants(defendantId3, asList(), formDefendants);
+
+    }
+
+    private void verifyDefendants(final UUID defendantId, final List<UUID> offenceIds, final List<FormDefendants> formDefendantsList) {
+        final FormDefendants formDefendants = formDefendantsList.stream().filter(a -> a.getDefendantId().equals(defendantId)).findFirst().get();
+        assertThat(formDefendants.getDefendantId(), is(defendantId));
+    }
+
+
+    @Test
+    public void shouldNotFormDefendantUpdated_WhenBcmFormNotPresent() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID courtFormId = randomUUID();
+        final UUID userId = randomUUID();
+        final List<UUID> defendantOffenceIds2 = new ArrayList<>();
+        defendantOffenceIds2.add(defendantId);
+
+        final List<Object> eventStream = caseAggregate.updateFormDefendants(courtFormId, caseId, defendantOffenceIds2, userId, FormType.BCM).collect(toList());
+        assertThat(eventStream, hasSize(1));
+        final Object result = eventStream.get(0);
+        assertThat(result, instanceOf(FormOperationFailed.class));
+        final FormOperationFailed formOperationFailed = (FormOperationFailed) result;
+        assertThat(courtFormId, is(formOperationFailed.getCourtFormId()));
+        assertThat(FormType.BCM, is(formOperationFailed.getFormType()));
+
+    }
+
+
+    private void assertFormCreatedFromEventStream(final UUID caseId, final UUID courtFormId, final UUID formId, final String formData, final FormType formType, final List<Object> eventStream) {
+        final Object object = eventStream.get(0);
+        assertThat(object, instanceOf(FormCreated.class));
+        final FormCreated form = (FormCreated) object;
+        assertThat(caseId, is(form.getCaseId()));
+        assertThat(courtFormId, is(form.getCourtFormId()));
+        assertThat(formType, is(form.getFormType()));
+        assertThat(formId, is(form.getFormId()));
+        assertThat(formData, is(form.getFormData()));
+    }
+
+    private void assertFormCreatedFromObject(final UUID caseId, final UUID courtFormId, final UUID formId, final String formData, final FormType formType, final Object object) {
+        assertThat(object, instanceOf(FormCreated.class));
+        final FormCreated form = (FormCreated) object;
+        assertThat(caseId, is(form.getCaseId()));
+        assertThat(courtFormId, is(form.getCourtFormId()));
+        assertThat(formType, is(form.getFormType()));
+        assertThat(formId, is(form.getFormId()));
+        assertThat(formData, is(form.getFormData()));
+    }
 
     @Test
     public void shouldUpdateCpsOrganisationWhenEventRaised() {

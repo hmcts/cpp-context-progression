@@ -715,6 +715,57 @@ protocols: [ HTTP, HTTPS ]
                    schema: !include json/schema/progression.query.defendant-offences.json
                    example: !include json/progression.query.defendant-offences.json
 
+/prosecutioncases/{caseId}/form:
+  uriParameters:
+        caseId:
+          description: ID of case to retrieve forms
+          type: string
+  get:
+    description: |
+      Gets the forms by caseId
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.forms-for-case+json
+        name: progression.query.forms-for-case
+      ...
+    queryParameters:
+      formType:
+        description: Type of the form
+        type: string
+        required: false
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.forms-for-case+json:
+              example: !include json/progression.query.forms-for-case.json
+              schema:  !include json/schema/progression.query.forms-for-case.json
+
+/prosecutioncases/{caseId}/form/{courtFormId}:
+  uriParameters:
+        caseId:
+          description: Retrieves form for given specified formId
+          type: string
+        courtFormId:
+          description: ID of form
+          type: string
+  get:
+    description: |
+      Retrieves the form by courtFormId for the specified case
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.form+json
+        name: progression.query.form
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.form+json:
+              example: !include json/progression.query.form.json
+              schema:  !include json/schema/progression.query.form.json
+
+
 # Deprecated API  - End
 
 /partial-match-defendants:

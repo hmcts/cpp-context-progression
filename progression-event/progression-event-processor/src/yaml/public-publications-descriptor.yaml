@@ -128,6 +128,10 @@ subscriptions_descriptor:
         - name: public.progression.hearing-resulted
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.hearing-resulted.json
 
+        - name: public.progression.event.form-defendants-updated
+          schema_uri: http://justice.gov.uk/core/courts/public.progression.event.form-defendants-updated.json
+
+
         - name: public.progression.offences-removed-from-existing-allocated-hearing
           schema_uri: http://justice.gov.uk/progression/courts/public.progression.offences-removed-from-existing-allocated-hearing.json
 
@@ -226,6 +230,21 @@ subscriptions_descriptor:
 
         - name: public.progression.pet-form-finalised
           schema_uri: http://justice.gov.uk/core/courts/public-pet-form-finalised.json
+
+        - name: public.progression.form-created
+          schema_uri: http://justice.gov.uk/core/courts/form-created.json
+
+        - name: public.progression.form-operation-failed
+          schema_uri: http://justice.gov.uk/core/courts/form-operation-failed.json
+
+        - name: public.progression.form-updated
+          schema_uri: http://justice.gov.uk/core/courts/form-updated.json
+
+        - name: public.progression.form-finalised
+          schema_uri: http://justice.gov.uk/core/courts/form-finalised.json
+
+        - name: public.progression.edit-form-requested
+          schema_uri: http://justice.gov.uk/core/courts/public-edit-form-requested.json
 
         - name: public.progression.now-notification-suppressed
           schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.now-notification-suppressed.json

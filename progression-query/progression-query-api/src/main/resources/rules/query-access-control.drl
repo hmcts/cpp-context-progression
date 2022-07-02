@@ -9,6 +9,7 @@ global uk.gov.moj.cpp.accesscontrol.progression.providers.ProgressionProvider pr
 global uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider rbacProvider;
 global uk.gov.justice.api.resource.service.CourtDocumentProvider courtDocumentProvider;
 import uk.gov.moj.cpp.progression.query.api.helper.RuleConstants;
+import uk.gov.moj.cpp.progression.query.api.helper.PermissionRuleConstants;
 
 rule "Query - Access control for progression.query.shared-court-documents"
   when
@@ -33,7 +34,7 @@ rule "Query - Access control for  progression.query.courtdocuments"
     $outcome: Outcome();
     $action: Action(name == "progression.query.courtdocuments");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers",
-     "Prison Admin", "Court Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin", "Youth Offending Service Admin", "Magistrates", "Court Associate", "District Judge", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Second Line Support", "NCES", "Recorders"))
+     "Prison Admin", "Court Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin", "Youth Offending Service Admin", "Magistrates", "Court Associate", "District Judge", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Second Line Support", "NCES", "Recorders", "Defence Lawyers", "Advocates"))
   then
     $outcome.setSuccess(true);
 end
@@ -80,7 +81,7 @@ rule "Query - Access control for  progression.query.prosecutioncase"
     $outcome: Outcome();
     $action: Action(name == "progression.query.prosecutioncase");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
-    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "CPS"))
+    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group","Defence Lawyers", "Advocates", "CPS"))
   then
     $outcome.setSuccess(true);
 end
@@ -98,7 +99,7 @@ rule "Query - Access control for  progression.query.casehearings"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.casehearings");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "Magistrates","Second Line Support","Defence Lawyers", "Eject Case Group", "Recorders"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "Magistrates","Second Line Support","Defence Lawyers", "Eject Case Group", "Recorders", "Advocates"))
   then
     $outcome.setSuccess(true);
 end
@@ -226,7 +227,7 @@ rule "progression - Query - API - material-content"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.material-content");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ,"Court Clerks",  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Legal Advisers", "District Judge", "Court Associate", "Defence Users", "Probation Admin", "Youth Offending Service Admin", "Magistrates","Court Administrators", "Probation Admin", "Second Line Support", "Deputies", "DJMC", "NCES", "Police Admin", "Victims & Witness Care Admin", "Judge", "Recorders"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ,"Court Clerks",  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Legal Advisers", "District Judge", "Court Associate", "Defence Users", "Probation Admin", "Youth Offending Service Admin", "Magistrates","Court Administrators", "Probation Admin", "Second Line Support", "Deputies", "DJMC", "NCES", "Police Admin", "Victims & Witness Care Admin", "Judge", "Recorders", "Defence Lawyers" , "Advocates"))
   then
     $outcome.setSuccess(true);
 end
@@ -504,7 +505,7 @@ rule "Command - Rule for query pet"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.pet");
-    eval(userAndGroupProvider.hasPermission($action, RuleConstants.petFormGrantAccessPermission()));
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.petFormGrantAccessPermission()));
   then
     $outcome.setSuccess(true);
 end
@@ -513,7 +514,7 @@ rule "Command - Rule for query pets-for-case"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.pets-for-case");
-    eval(userAndGroupProvider.hasPermission($action, RuleConstants.petFormGrantAccessPermission()));
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.petFormGrantAccessPermission()));
   then
     $outcome.setSuccess(true);
 end
@@ -522,7 +523,7 @@ rule "Command - Rule for query pet-change-history"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.pet-change-history");
-    eval(userAndGroupProvider.hasPermission($action, RuleConstants.petFormGrantAccessPermission()));
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.petFormGrantAccessPermission()));
   then
     $outcome.setSuccess(true);
 end
@@ -531,7 +532,35 @@ rule "Command - Rule for query pet-for-defendant"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.pet-for-defendant");
-    eval(userAndGroupProvider.hasPermission($action, RuleConstants.petFormGrantAccessPermission()));
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.petFormGrantAccessPermission()));
+  then
+    $outcome.setSuccess(true);
+end
+
+
+rule "Command - Rule for query forms-for-case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.forms-for-case");
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.bcmViewPermission()) || userAndGroupProvider.hasPermission($action, PermissionRuleConstants.ptphViewPermission()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for query form"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.form");
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.bcmViewPermission()) || userAndGroupProvider.hasPermission($action, PermissionRuleConstants.ptphViewPermission()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for query form-change-history"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.form-change-history");
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.bcmViewPermission()) || userAndGroupProvider.hasPermission($action, PermissionRuleConstants.ptphViewPermission()));
   then
     $outcome.setSuccess(true);
 end

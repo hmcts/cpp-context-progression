@@ -23,7 +23,6 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReportingRestriction;
-
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;

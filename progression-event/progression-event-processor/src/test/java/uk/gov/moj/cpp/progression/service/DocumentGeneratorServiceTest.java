@@ -1,12 +1,16 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static com.google.common.io.Resources.getResource;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.nio.charset.Charset.defaultCharset;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -16,12 +20,14 @@ import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.FINANC
 import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.NCES_DOCUMENT_TEMPLATE_NAME;
 import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentRequestTemplate;
 
+import uk.gov.justice.core.courts.FormType;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.nces.DocumentContent;
 import uk.gov.justice.core.courts.nces.NcesNotificationRequested;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
@@ -39,10 +45,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Resources;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -108,6 +116,19 @@ public class DocumentGeneratorServiceTest {
 
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+
+    @Mock
+    private MaterialService materialService;
+
+    @Captor
+    ArgumentCaptor<UUID> fileIdmaterialServiceCaptor;
+
+    @Captor
+    ArgumentCaptor<UUID> materialIdmaterialServiceCaptor;
+
+    @Spy
+    private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
 
     @Test
@@ -222,6 +243,54 @@ public class DocumentGeneratorServiceTest {
                         .add("emailAddress1", "emailAddress1@test.com").build()).build())
                 .add(ACCOUNTING_DIVISION_CODE, "77")
                 .build();
+    }
+
+    @Test
+    public void shouldGenerateFormDocument() throws Exception {
+        final byte[] documentData = {34, 56, 78, 90};
+        final UUID systemUserId = randomUUID();
+        final UUID materialId = randomUUID();
+        final UUID fileId = randomUUID();
+        when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
+
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
+        when(fileStorer.store(any(), any())).thenReturn(fileId);
+        doNothing().when(materialService).uploadMaterial(any(), any(), any());
+
+        final String inputEvent = Resources.toString(getResource("finalised-form-data-with-welsh-data.json"), defaultCharset());
+        final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
+        JsonArray formDataArray = readData.getJsonArray("finalisedFormData");
+
+        final JsonObject formData = formDataArray.getJsonObject(0);
+        when(documentGeneratorClient.generatePdfDocument(formData, DocumentTemplateType.BETTER_CASE_MANAGEMENT.getTemplateName(), systemUserId))
+                .thenReturn(documentData);
+
+        final String fileName = documentGeneratorService.generateFormDocument(originatingEnvelope, FormType.BCM, formData, materialId);
+        assertThat(fileName, anyOf(is("Jane JOHNSON, 22 May 1976, created on 22 December 10:45 2022.pdf"),
+                is("Kris kidman, 14 June 1981, created on 22 December 10:45 2022.pdf")));
+        verify(materialService, times(1)).uploadMaterial(fileIdmaterialServiceCaptor.capture(), materialIdmaterialServiceCaptor.capture(), any());
+        final UUID capturedFileId = fileIdmaterialServiceCaptor.getValue();
+        final UUID capturedMaterialId = materialIdmaterialServiceCaptor.getValue();
+        assertThat(capturedFileId, is(fileId));
+        assertThat(capturedMaterialId, is(materialId));
+
+
+        final JsonObject formDataWelsh = formDataArray.getJsonObject(1);
+        when(documentGeneratorClient.generatePdfDocument(formDataWelsh, DocumentTemplateType.BETTER_CASE_MANAGEMENT_WELSH.getTemplateName(), systemUserId))
+                .thenReturn(documentData);
+
+        final String fileNameWithWelsh = documentGeneratorService.generateFormDocument(originatingEnvelope, FormType.BCM, formDataWelsh, materialId);
+        assertThat(fileNameWithWelsh, anyOf(is("Joseph Stallion, 22 May 1954, created (welsh) on 22 December 10:45 2022.pdf")));
+
+
+        final JsonObject formDataLast = formDataArray.getJsonObject(2);
+        when(documentGeneratorClient.generatePdfDocument(formDataLast, DocumentTemplateType.BETTER_CASE_MANAGEMENT.getTemplateName(), systemUserId))
+                .thenReturn(documentData);
+
+        final String fileNameLast = documentGeneratorService.generateFormDocument(originatingEnvelope, FormType.BCM, formDataLast, materialId);
+        assertThat(fileNameLast, anyOf(is("Jane JOHNSON, 22 May 1976, created on 22 December 10:45 2022.pdf"),
+                is("Kris kidman, 14 June 1981, created on 22 December 10:45 2022.pdf")));
+
     }
 
 }

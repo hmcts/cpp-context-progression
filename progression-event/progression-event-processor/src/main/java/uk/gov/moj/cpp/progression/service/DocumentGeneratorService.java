@@ -173,6 +173,19 @@ public class DocumentGeneratorService {
 
 
     @Transactional(REQUIRES_NEW)
+    public String generatePetDocument(final JsonEnvelope originatingEnvelope, final JsonObject petForm, final UUID materialId) {
+        try {
+            final DocumentGeneratorClient documentGeneratorClient = documentGeneratorClientProducer.documentGeneratorClient();
+            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(petForm, PET_DOCUMENT_TEMPLATE_NAME, getSystemUserUuid());
+            final String filename = getTimeStampAmendedFileName(PET_DOCUMENT_ORDER);
+            addDocumentToMaterial(originatingEnvelope, filename, new ByteArrayInputStream(resultOrderAsByteArray), materialId);
+            return filename;
+        } catch (IOException | RuntimeException e) {
+            throw new DocumentGenerationException(e);
+        }
+    }
+
+    @Transactional(REQUIRES_NEW)
     public String generateFormDocument(final JsonEnvelope originatingEnvelope, final FormType formType, final JsonObject formData, final UUID materialId) {
         try {
             final DocumentGeneratorClient documentGeneratorClient = documentGeneratorClientProducer.documentGeneratorClient();
