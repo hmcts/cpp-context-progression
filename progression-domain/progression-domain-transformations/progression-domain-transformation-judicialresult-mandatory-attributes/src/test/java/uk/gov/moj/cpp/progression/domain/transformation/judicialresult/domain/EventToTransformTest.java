@@ -16,6 +16,7 @@ import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.do
 import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.HEARING_RESULTED_CASE_UPDATED;
 import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.LISTED_COURT_APPLICATION_CHANGED;
 import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED;
+import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED_V2;
 import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.PROSECUTION_CASE_DEFENDANT_UPDATED;
 import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.PROSECUTION_CASE_OFFENCES_UPDATED;
 import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.isEventToTransform;
@@ -46,6 +47,7 @@ public class EventToTransformTest {
                 {APPLICATION_REFERRED_TO_COURT.getEventName()},
                 {HEARING_APPLICATION_LINK_CREATED.getEventName()},
                 {PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED.getEventName()},
+                {PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED_V2.getEventName()},
                 {HEARING_CONFIRMED_CASE_STATUS_UPDATED.getEventName()}
         };
     }
