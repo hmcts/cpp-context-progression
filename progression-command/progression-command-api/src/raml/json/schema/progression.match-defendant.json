@@ -27,8 +27,7 @@
         "required": [
           "prosecutionCaseId",
           "defendantId",
-          "masterDefendantId",
-          "courtProceedingsInitiated"
+          "masterDefendantId"
         ],
         "additionalProperties": false
       }
