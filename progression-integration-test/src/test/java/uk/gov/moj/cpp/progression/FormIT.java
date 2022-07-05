@@ -46,7 +46,6 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialStructuredFormQuery;
-import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyBcmNotificationApi;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyBcmNotificationApiNotInvoked;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -612,9 +611,6 @@ public class FormIT extends AbstractIT {
         final Response responseForUpdateForm = postCommand(getWriteUrl(updateFormEndpointUrl), UPDATE_FORM_MEDIA_TYPE, payloadForUpdate.toString());
 
         assertThat(responseForUpdateForm.getStatusCode(), is(ACCEPTED.getStatusCode()));
-
-        final List<String> expectedDetails = newArrayList("notificationType", "bcm-form-updated", "Test Plea", "Offence Title 4");
-        verifyBcmNotificationApi(expectedDetails);
     }
 
     @Test
