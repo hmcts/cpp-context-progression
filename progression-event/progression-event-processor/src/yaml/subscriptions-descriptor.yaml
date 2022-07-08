@@ -595,6 +595,9 @@ subscriptions_descriptor:
         - name: public.prosecutioncasefile.cps-serve-bcm-submitted
           schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-bcm-submitted.json
 
+        - name: public.prosecutioncasefile.cps-serve-ptph-submitted
+          schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-ptph-submitted.json
+
         - name: public.staginghmi.hearing-updated-from-hmi
           schema_uri: http://justice.gov.uk/staginghmi/courts/public.staginghmi.hearing-updated-from-hmi.json
 

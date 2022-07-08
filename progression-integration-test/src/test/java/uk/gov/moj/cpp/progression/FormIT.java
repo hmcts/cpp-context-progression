@@ -28,12 +28,15 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.core.courts.FormType.BCM;
+import static uk.gov.justice.core.courts.FormType.PTPH;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.PetFormIT.DATA;
+import static uk.gov.moj.cpp.progression.PetFormIT.NAME;
+import static uk.gov.moj.cpp.progression.PetFormIT.UPDATED_BY;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences;
@@ -91,6 +94,7 @@ public class FormIT extends AbstractIT {
     private static final String FINALISE_FORM_MEDIA_TYPE = "application/vnd.progression.finalise-form+json";
     private static final String UPDATE_BCM_DEFENDANTS_MEDIA_TYPE = "application/vnd.progression.update-form-defendants+json";
     private static final String PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_BCM_SUBMITTED = "public.prosecutioncasefile.cps-serve-bcm-submitted";
+    private static final String PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_PTPH_SUBMITTED = "public.prosecutioncasefile.cps-serve-ptph-submitted";
 
     private static final String FORM_EDIT_COMMAND_NAME = "edit-form";
     private static final String FORM_CREATION_COMMAND_NAME = "form-created";
@@ -101,11 +105,13 @@ public class FormIT extends AbstractIT {
     private static final String DOCUMENT_TEXT = STRING.next();
     private static final MessageProducer PUBLIC_MESSAGE_CONSUMER = publicEvents.createPublicProducer();
     public static final String FORM_DATA = "formData";
-    public static final String USER_NAME = "userName";
+    public static final String SUBMISSION_ID = "submissionId";
     public static final String CASE_ID = "caseId";
     public static final String FORM_DEFENDANTS = "formDefendants";
     public static final String COURT_FORM_ID = "courtFormId";
     public static final String FORM_TYPE = "formType";
+    public static final String USER_NAME_VALUE = "ptph user name";
+
 
     private static final String UPDATED_FORM_DATA = createObjectBuilder()
             .add("name", "updated name")
@@ -113,6 +119,7 @@ public class FormIT extends AbstractIT {
             .build().toString();
 
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    public static final String SUBMISSION_ID_VALUE = "e85d2c62-af1f-4674-863a-0891e67e325b";
 
     private static MessageConsumer consumerForFormCreated = publicEvents
             .createPublicConsumer("public.progression.form-created");
@@ -366,6 +373,35 @@ public class FormIT extends AbstractIT {
 
     }
 
+    @Test
+    public void shouldSubmitCpsPTPHForm() throws IOException {
+
+        final CpsServeMaterialHelper cpsServeMaterialHelper = new CpsServeMaterialHelper();
+
+        final Metadata metadata = JsonEnvelope.metadataBuilder()
+                .withId(randomUUID())
+                .withUserId(String.valueOf(randomUUID()))
+                .withName(PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_PTPH_SUBMITTED)
+                .build();
+        final JsonObject cpsServePtphSubmittedPublicEvent = buildPayloadFor("public.prosecutioncasefile.cps-serve-ptph-submitted.json");
+
+        sendMessage(PUBLIC_MESSAGE_CONSUMER,
+                PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_PTPH_SUBMITTED, cpsServePtphSubmittedPublicEvent, metadata);
+
+        assertThat(cpsServeMaterialHelper.getPrivateEvents(), is(notNullValue()));
+        final JsonEnvelope publicEvent = cpsServeMaterialHelper.getPublicEvents();
+        assertThat(publicEvent, is(notNullValue()));
+        final JsonObject eventPayload = publicEvent.payloadAsJsonObject();
+        assertThat(eventPayload.getString(CASE_ID), is(notNullValue()));
+        assertThat(eventPayload.getJsonArray(FORM_DEFENDANTS), is(notNullValue()));
+        assertTrue(eventPayload.getString(FORM_DATA).contains(DATA));
+        assertTrue(eventPayload.getString(SUBMISSION_ID).contains(SUBMISSION_ID_VALUE));
+        assertThat(eventPayload.getString("formType"), is(PTPH.name()));
+
+        JsonObject updatedBy = eventPayload.getJsonObject(UPDATED_BY);
+        assertThat(updatedBy.getString(NAME), is(USER_NAME_VALUE));
+    }
+
     private JsonObject buildPayloadForFinaliseFormApi() throws IOException {
         final String inputEvent = Resources.toString(getResource("progression.finalise-form.json"), defaultCharset());
         final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
@@ -552,6 +588,11 @@ public class FormIT extends AbstractIT {
         final String inputEvent = Resources.toString(getResource("public.prosecutioncasefile.cps-serve-bcm-submitted.json"), defaultCharset());
         final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
         return readData;
+    }
+
+    private JsonObject buildPayloadFor(String jsonFileName) throws IOException {
+        final String inputEvent = Resources.toString(getResource(jsonFileName), defaultCharset());
+        return stringToJsonObjectConverter.convert(inputEvent);
     }
 
     @Test

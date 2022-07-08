@@ -107,6 +107,7 @@ public class FormEventProcessor {
     public static final String DOCUMENT_TYPE_DESCRIPTION = "Case Management";
 
     public static final String BCM = "BCM";
+    public static final String PTPH = "PTPH";
     public static final String OTHER_LINKED_CASES = "otherLinkedCases";
     public static final String DEFENDING = "defending";
     private static final String PROSECUTION_CASE = "prosecutionCase";
@@ -275,7 +276,7 @@ public class FormEventProcessor {
                 defendantSubjectBuilder.add(ASN, asn);
             }
 
-            final JsonObject defendantFromData = matchedFormDefendantFromData.isPresent() ? matchedFormDefendantFromData.get() : null;
+            final JsonObject defendantFromData = matchedFormDefendantFromData.orElse(null);
             final JsonArray formOffences = nonNull(defendantFromData)? defendantFromData.getJsonArray("formOffences"):null;
 
             buildPleasFromFormData(formOffences,pleasBuilder);
@@ -650,6 +651,30 @@ public class FormEventProcessor {
                 .build(), createPetFormPayload));
 
         LOGGER.info("prosecutioncasefile.event.cps-serve-bcm-submitted");
+
+    }
+
+    @Handles("public.prosecutioncasefile.cps-serve-ptph-submitted")
+    public void handleServePtphFormSubmittedPublicEvent(final JsonEnvelope envelope) {
+
+        LOGGER.info("prosecutioncasefile.event.cps-serve-ptph-submitted");
+
+        final JsonObject payload = envelope.payloadAsJsonObject();
+
+        final JsonObject createPetFormPayload = Json.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
+                .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
+                .add(COURT_FORM_ID, String.valueOf(randomUUID()))
+                .add(FORM_DEFENDANTS, payload.getJsonArray(FORM_DEFENDANTS))
+                .add(FORM_DATA, appendDataElement(payload.getString(FORM_DATA)))
+                .add(FORM_TYPE, PTPH)
+                .add(USER_NAME, payload.getString(USER_NAME))
+                .add(FORM_ID, String.valueOf(randomUUID()))
+                .build();
+        this.sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
+                .withName("progression.command.create-form")
+                .build(), createPetFormPayload));
+
+        LOGGER.info("prosecutioncasefile.event.cps-serve-ptph-submitted");
 
     }
 

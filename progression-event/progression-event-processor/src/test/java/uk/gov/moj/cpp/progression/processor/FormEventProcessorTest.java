@@ -838,4 +838,19 @@ public class FormEventProcessorTest {
         formEventProcessor.formUpdated(requestEnvelope);
         verify(restEasyClientService, times(1)).post(any(),any(), any());
     }
+
+    @Test
+    public void shouldHandleServePtphSubmittedPublicEvent() {
+
+        String payload = getPayload("cps-serve-ptph-submitted.json");
+        final JsonObject jsonPayload = jsonFromString(payload);
+
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-ptph-submitted"),
+                jsonPayload);
+        formEventProcessor.handleServePtphFormSubmittedPublicEvent(envelope);
+        verify(sender, atLeastOnce()).send(envelopeArgumentCaptor.capture());
+        final Envelope publicEvent = envelopeArgumentCaptor.getAllValues().get(0);
+        assertThat(publicEvent.metadata().name(), is("progression.command.create-form"));
+    }
 }
