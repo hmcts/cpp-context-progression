@@ -83,6 +83,7 @@ import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.UpdateCourtApplicationToHearing;
 import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
+import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -139,7 +140,8 @@ public class CourtApplicationHandlerTest {
             InitiateCourtHearingAfterSummonsApproved.class,
             HearingResultedApplicationUpdated.class,
             HearingUpdatedWithCourtApplication.class,
-            HearingPopulatedToProbationCaseworker.class
+            HearingPopulatedToProbationCaseworker.class,
+            VejHearingPopulatedToProbationCaseworker.class
     );
     @Mock
     private EventSource eventSource;
@@ -1788,6 +1790,14 @@ public class CourtApplicationHandlerTest {
                 jsonEnvelope(
                         metadata()
                                 .withName("progression.events.hearing-populated-to-probation-caseworker"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.hearing.courtApplications[0].id", is(applicationId.toString())),
+                                withJsonPath("$.hearing.courtApplications[0].applicationReference", is("B")),
+                                withJsonPath("$.hearing.id", is(hearingId.toString()))
+                        ))),
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.events.vej-hearing-populated-to-probation-caseworker"),
                         payload().isJson(allOf(
                                 withJsonPath("$.hearing.courtApplications[0].id", is(applicationId.toString())),
                                 withJsonPath("$.hearing.courtApplications[0].applicationReference", is("B")),

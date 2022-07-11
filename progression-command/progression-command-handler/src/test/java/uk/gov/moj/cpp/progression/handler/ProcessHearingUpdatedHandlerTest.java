@@ -1,29 +1,14 @@
 package uk.gov.moj.cpp.progression.handler;
 
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
-
-
-import java.util.Arrays;
-import java.util.Collections;
-import uk.gov.justice.core.courts.ConfirmedHearing;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.HearingUpdatedProcessed;
-import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.ProcessHearingUpdated;
-import uk.gov.justice.core.courts.ProsecutionCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.core.courts.*;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -37,17 +22,23 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
-
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProcessHearingUpdatedHandlerTest {
@@ -82,8 +73,12 @@ public class ProcessHearingUpdatedHandlerTest {
     public void shouldHandProcessHearingUpdated() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final ProcessHearingUpdated processHearingUpdated = ProcessHearingUpdated.processHearingUpdated()
-                .withConfirmedHearing(ConfirmedHearing.confirmedHearing().withId(hearingId).build())
-                .withUpdatedHearing(Hearing.hearing().withId(hearingId).build())
+                .withConfirmedHearing(ConfirmedHearing.confirmedHearing().withId(hearingId)
+                        .build())
+                .withUpdatedHearing(Hearing.hearing().withId(hearingId)
+                        .withIsBoxHearing(true)
+                        .withCourtApplications(Collections.singletonList(CourtApplication.courtApplication().build()))
+                        .build())
                 .build();
 
         final Metadata metadata = Envelope
@@ -98,13 +93,13 @@ public class ProcessHearingUpdatedHandlerTest {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
         assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.event.hearing-updated-processed"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.confirmedHearing.id", is(hearingId.toString())),
-                                withJsonPath("$.hearing.id", is(hearingId.toString())))
-                        ))
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.hearing-updated-processed"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                        withJsonPath("$.confirmedHearing.id", is(hearingId.toString())),
+                                        withJsonPath("$.hearing.id", is(hearingId.toString())))
+                                ))
                 )
         );
     }
@@ -119,15 +114,17 @@ public class ProcessHearingUpdatedHandlerTest {
                 .withProsecutionCases(Collections.singletonList(ProsecutionCase.prosecutionCase()
                         .withDefendants(Collections.singletonList(Defendant.defendant()
                                 .withOffences(Arrays.asList(Offence.offence()
-                                        .withId(offenceId1)
-                                        .withListingNumber(2)
-                                        .build(),
+                                                .withId(offenceId1)
+                                                .withListingNumber(2)
+                                                .build(),
                                         Offence.offence()
                                                 .withId(offenceId2)
                                                 .withListingNumber(2)
                                                 .build()))
                                 .build()))
                         .build()))
+                .withIsBoxHearing(true)
+                .withCourtApplications(Collections.singletonList(CourtApplication.courtApplication().build()))
                 .build();
 
         final Hearing updatedHearing = Hearing.hearing().withId(hearingId)
@@ -143,6 +140,8 @@ public class ProcessHearingUpdatedHandlerTest {
                                                 .build()))
                                 .build()))
                         .build()))
+                .withIsBoxHearing(true)
+                .withCourtApplications(Collections.singletonList(CourtApplication.courtApplication().build()))
                 .build();
 
         final ProcessHearingUpdated processHearingUpdated = ProcessHearingUpdated.processHearingUpdated()

@@ -47,9 +47,6 @@ public class ProbationCaseworkerProcessorTest {
     @InjectMocks
     private ProbationCaseworkerProcessor probationCaseworkerProcessor;
 
-    @Spy
-    private HearingHelper hearingHelper;
-
     @Before
     public void setUp(){
         setField(probationCaseworkerProcessor, "probationHearingDetailsUrl", HEARING_DETAILS_URL);

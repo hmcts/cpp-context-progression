@@ -17,6 +17,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithDefendantAsAdult;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
@@ -243,10 +244,6 @@ public class ACourtHearingDaysIT extends AbstractIT {
                 .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
                 .replace("RANDOM_REFERRAL_ID", referralId)
                 .replace("RR_ORDERED_DATE", reportingRestrictionOrderedDate);
-    }
-
-    public static String generateUrn() {
-        return randomUUID().toString().replace("-", "").substring(0, 8);
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,

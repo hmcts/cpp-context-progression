@@ -50,6 +50,8 @@ import uk.gov.justice.progression.courts.HearingMovedToUnallocated;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
+import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
+import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.staginghmi.courts.UpdateHearingFromHmi;
@@ -213,6 +215,36 @@ public class HearingAggregateTest {
         assertThat(events.get(0).getHearing().getCourtApplications(), is(notNullValue()));
     }
 
+    @Test
+    public void shouldRaiseHearingPopulateVejEventWhenProsecutionCaseAllDefendantsAreYouth() {
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withIsBoxHearing(null)
+                .withCourtApplications(null)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
+                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withIsYouth(true)
+                                        .build(),
+                                Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withIsYouth(true)
+                                        .build()
+                        )))
+                        .build()
+                )))
+                .build();
+
+        hearingAggregate.apply(createHearingResulted(hearing));
+
+        final List<VejHearingPopulatedToProbationCaseworker> events = hearingAggregate.populateHearingToVEP()
+                .map(VejHearingPopulatedToProbationCaseworker.class::cast).collect(toList());
+
+        assertThat(events.get(0).getHearing().getProsecutionCases(), is(notNullValue()));
+        assertThat(events.get(0).getHearing().getCourtApplications(), is(nullValue()));
+    }
 
     @Test
     public void shouldRaiseHearingResultedEventWhenHearingResultsAreSaved() {
@@ -276,6 +308,37 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldRaiseHearingPopulateVejEventWhenCourtApplicationAllDefendantsAreYouth() {
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withIsBoxHearing(null)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
+                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withIsYouth(true)
+                                        .build(),
+                                Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withIsYouth(true)
+                                        .build()
+                        )))
+                        .build()
+                )))
+                .build();
+
+        hearingAggregate.apply(createHearingResulted(hearing));
+
+        final List<VejHearingPopulatedToProbationCaseworker> events = hearingAggregate.populateHearingToVEP()
+                .map(VejHearingPopulatedToProbationCaseworker.class::cast).collect(toList());
+
+        assertThat(events.get(0).getHearing().getProsecutionCases(), is(notNullValue()));
+        assertThat(events.get(0).getHearing().getCourtApplications(), is(nullValue()));
+    }
+
+
+    @Test
     public void shouldNotRaiseHearingPopulateEventWhenBoxWork() {
 
         final Hearing hearing = Hearing.hearing()
@@ -302,6 +365,31 @@ public class HearingAggregateTest {
         assertThat(events.findFirst().isPresent(), is(false));
     }
 
+    @Test
+    public void shouldNotRaiseHearingPopulateVejEventWhenBoxWork() {
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withIsBoxHearing(true)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
+                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withIsYouth(false)
+                                        .build(),
+                                Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withIsYouth(false)
+                                        .build()
+                        )))
+                        .build()
+                )))
+                .build();
+
+        hearingAggregate.apply(createHearingResulted(hearing));
+
+        final Stream<Object> events = hearingAggregate.populateHearingToVEP();
+        assertThat(events.findFirst().isPresent(), is(false));
+    }
     @Test
     public void shouldNotRaiseHearingPopulateEventWhenResulted() {
 
@@ -415,6 +503,54 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldRaiseHearingPopulateVejEventWithYouth() {
+        final UUID case1Id = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(randomUUID())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
+                        .withId(case1Id)
+                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                        .withId(defendantId)
+                                        .withIsYouth(true)
+                                        .build(),
+                                Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withIsYouth(true)
+                                        .build()
+                        )))
+                        .build(), ProsecutionCase.prosecutionCase()
+                        .withId(case1Id)
+                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withIsYouth(true)
+                                        .build(),
+                                Defendant.defendant()
+                                        .withId(defendantId)
+                                        .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .build())))
+                                        .build()
+                        )))
+                        .build()
+                )))
+                .build();
+
+        hearingAggregate.apply(createHearingResulted(hearing));
+
+        final Stream<Object> events = hearingAggregate.populateHearingToVEP();
+        final VejHearingPopulatedToProbationCaseworker event = (VejHearingPopulatedToProbationCaseworker) events.findFirst().get();
+        assertThat(event.getHearing().getProsecutionCases().size(), is(2));
+        final ProsecutionCase prosecutionCase = event.getHearing().getProsecutionCases().get(0);
+        assertThat(prosecutionCase.getId(), is(case1Id));
+        assertThat(prosecutionCase.getDefendants().size(), is(2));
+        assertThat(prosecutionCase.getDefendants().get(0).getId(), is(defendantId));
+
+    }
+
+    @Test
     public void shouldRaiseDeletedProbationEventWhenHearingDeleted() {
 
         final UUID case1Id = randomUUID();
@@ -453,6 +589,43 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldRaiseDeletedProbationVejEventWhenHearingDeleted() {
+
+        final UUID case1Id = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
+                        .withId(case1Id)
+                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(new ArrayList<>(asList(Offence.offence()
+                                        .withLaaApplnReference(LaaReference.laaReference().build())
+                                        .build())))
+                                .build()
+                        )))
+                        .build()
+                )))
+                .build();
+
+        hearingAggregate.apply(createHearingResulted(hearing));
+        hearingAggregate.apply(createHearingDeleted(hearing));
+
+        final Stream<Object> events = hearingAggregate.populateHearingToVEP();
+        final VejDeletedHearingPopulatedToProbationCaseworker event = (VejDeletedHearingPopulatedToProbationCaseworker) events.findFirst().get();
+
+        assertThat(event.getHearing().getId(), is(hearingId));
+        assertThat(event.getHearing().getProsecutionCases().size(), is(1));
+        final ProsecutionCase prosecutionCase = event.getHearing().getProsecutionCases().get(0);
+        assertThat(prosecutionCase.getId(), is(case1Id));
+        assertThat(prosecutionCase.getDefendants().size(), is(1));
+        assertThat(prosecutionCase.getDefendants().get(0).getId(), is(defendantId));
+
+    }
+    @Test
     public void shouldUpdateHearingWithCaseMarkers(){
         final UUID case1Id = randomUUID();
         final UUID hearingId = randomUUID();
@@ -482,6 +655,35 @@ public class HearingAggregateTest {
         assertThat(event.getHearing().getProsecutionCases().get(0).getCaseMarkers().get(0).getId(), is(marker.getId()));
     }
 
+    @Test
+    public void shouldUpdateVejHearingWithCaseMarkers(){
+        final UUID case1Id = randomUUID();
+        final UUID hearingId = randomUUID();
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
+                        .withId(case1Id)
+                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                .withId(randomUUID())
+                                .withOffences(new ArrayList<>(asList(Offence.offence()
+                                        .withLaaApplnReference(LaaReference.laaReference().build())
+                                        .build())))
+                                .build()
+                        )))
+                        .build()
+                )))
+                .build();
+        final Marker marker = Marker.marker().withId(randomUUID()).build();
+
+        hearingAggregate.apply(createHearingResulted(hearing));
+        hearingAggregate.updateCaseMarkers(singletonList(marker),case1Id, hearingId);
+
+        final Stream<Object> events = hearingAggregate.populateHearingToVEP();
+        final VejHearingPopulatedToProbationCaseworker event = (VejHearingPopulatedToProbationCaseworker) events.findFirst().get();
+
+        assertThat(event.getHearing().getProsecutionCases().get(0).getCaseMarkers().get(0).getId(), is(marker.getId()));
+    }
     @Test
     public void shouldUpdateApplicationInHearingAndRaiseProbationEvent() throws EventStreamException {
         final UUID hearingId = randomUUID();
@@ -706,6 +908,45 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldUpdateVejHearingWithNewProsecutionCaseWhenHearingIsExtended() {
+        final UUID hearingId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+        final UUID caseId1 = randomUUID();
+        final UUID caseId2 = randomUUID();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                        .withType(HearingType.hearingType().withDescription("Statement").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("A001").build())
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(caseId1)
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                                .withId(defendantId1)
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(defendantId2)
+                                                .build()))).build()))
+                        .build()).build());
+        final HearingExtendedProcessed hearingExtendedProcessed = HearingExtendedProcessed.hearingExtendedProcessed()
+                .withHearingRequest(HearingListingNeeds.hearingListingNeeds()
+                        .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(caseId2).withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                .withId(defendantId3)
+                                .build()))).build()))
+                        .build())
+                .build();
+        hearingAggregate.apply(hearingExtendedProcessed);
+        final List<Object> objectStream = hearingAggregate.populateHearingToVEP().collect(toList());
+        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().size(), is(2));
+        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getId(), is(caseId1));
+        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().size(), is(2));
+        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(1).getId(), is(caseId2));
+        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(1).getDefendants().size(), is(1));
+    }
+
+    @Test
     public void shouldUpdateHearingWithNewDefendantWhenHearingIsExtended() {
         final UUID hearingId = randomUUID();
         final UUID defendantId1 = randomUUID();
@@ -739,6 +980,42 @@ public class HearingAggregateTest {
         assertThat(((HearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().size(), is(1));
         assertThat(((HearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getId(), is(caseId1));
         assertThat(((HearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().size(), is(3));
+    }
+
+    @Test
+    public void shouldUpdateVejHearingWithNewDefendantWhenHearingIsExtended() {
+        final UUID hearingId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+        final UUID caseId1 = randomUUID();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build()))
+                        .withType(HearingType.hearingType().withDescription("Statement").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("A001").build())
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(caseId1)
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                                .withId(defendantId1)
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(defendantId2)
+                                                .build()))).build()))
+                        .build()).build());
+        final HearingExtendedProcessed hearingExtendedProcessed = HearingExtendedProcessed.hearingExtendedProcessed()
+                .withHearingRequest(HearingListingNeeds.hearingListingNeeds()
+                        .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(caseId1).withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                .withId(defendantId3)
+                                .build()))).build()))
+                        .build())
+                .build();
+        hearingAggregate.apply(hearingExtendedProcessed);
+        final List<Object> objectStream = hearingAggregate.populateHearingToVEP().collect(toList());
+        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().size(), is(1));
+        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getId(), is(caseId1));
+        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().size(), is(3));
     }
 
     @Test

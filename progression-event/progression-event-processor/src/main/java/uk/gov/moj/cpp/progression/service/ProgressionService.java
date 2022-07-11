@@ -120,7 +120,8 @@ public class ProgressionService {
     private static final String PUBLIC_EVENT_HEARING_DETAIL_CHANGED = "public.hearing-detail-changed";
     private static final String HEARING_LISTING_STATUS = "hearingListingStatus";
     private static final String UNSCHEDULED = "isUnscheduled";
-    private static final String HEARING = "hearing";
+    public static final String HEARING = "hearing";
+    public static final String HEARING_POLICE_CASE_PROSECUTORS = "policeCases";
     private static final String HEARING_INITIALISED = "HEARING_INITIALISED";
     private static final String SENT_FOR_LISTING = "SENT_FOR_LISTING";
     private static final String EMPTY_STRING = "";

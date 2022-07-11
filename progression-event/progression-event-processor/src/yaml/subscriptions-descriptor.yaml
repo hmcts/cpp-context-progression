@@ -319,8 +319,14 @@ subscriptions_descriptor:
         - name: progression.events.hearing-populated-to-probation-caseworker
           schema_uri: http://justice.gov.uk/progression/courts/progression.events.hearing-populated-to-probation-caseworker.json
 
+        - name: progression.events.vej-hearing-populated-to-probation-caseworker
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.vej-hearing-populated-to-probation-caseworker.json
+
         - name: progression.events.deleted-hearing-populated-to-probation-caseworker
           schema_uri: http://justice.gov.uk/progression/courts/progression.events.deleted-hearing-populated-to-probation-caseworker.json
+
+        - name: progression.events.vej-deleted-hearing-populated-to-probation-caseworker
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.vej-deleted-hearing-populated-to-probation-caseworker.json
 
         - name: progression.event.hearing-defendant-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-defendant-updated.json

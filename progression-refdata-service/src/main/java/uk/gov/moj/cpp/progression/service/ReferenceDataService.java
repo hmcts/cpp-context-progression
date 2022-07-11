@@ -1,35 +1,38 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static java.lang.Boolean.TRUE;
-import static java.util.UUID.fromString;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.common.converter.LocalDates.to;
-import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static uk.gov.justice.services.common.converter.LocalDates.to;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 @SuppressWarnings({"squid:S00112", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class ReferenceDataService {
@@ -66,6 +69,8 @@ public class ReferenceDataService {
     public static final String IDS = "ids";
     public static final String OUCODE = "oucode";
     public static final String CPS_FLAG = "cpsFlag";
+    public static final String POLICE_FLAG = "policeFlag";
+    private static final String PROSECUTOR_CODE = "prosecutorCode";
     public static final String HEARING_TYPES = "hearingTypes";
     public static final String ETHNICITIES = "ethnicities";
     public static final String ORGANISATIONUNITS = "organisationunits";
@@ -75,6 +80,9 @@ public class ReferenceDataService {
     private static final String PLEA_TYPE_VALUE = "pleaValue";
     private static final String REFERENCEDATA_QUERY_PLEA_TYPES = "referencedata.query.plea-types";
     private static final String REFERENCEDATA_QUERY_PET_FORM = "referencedata.query.latest-pet-form";
+    private static final String REFERENCE_DATA_QUERY_GET_PROSECUTOR_BY_OUCODE = "referencedata.query.get.prosecutor.by.oucode";
+    private static final String REFERENCE_DATA_QUERY_GET_PROSECUTORS = "referencedata.query.prosecutors";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
 
     public static UUID extractUUID(final JsonObject object, final String key) {
@@ -526,5 +534,50 @@ public class ReferenceDataService {
                 .withMetadataFrom(event));
 
         return Optional.ofNullable(response.payloadAsJsonObject());
+    }
+
+    public boolean getPoliceFlag(final String originatingOrganisation, final String prosecutionAuthority, final Requester requester) {
+        Optional<JsonObject> optionalJsonObject;
+
+        if (isNotEmpty(originatingOrganisation)) {
+            optionalJsonObject = getProsecutorByOriginatingOrganisation(originatingOrganisation, requester);
+        } else if (isNotEmpty(prosecutionAuthority)) {
+            optionalJsonObject = getProsecutorByProsecutionAuthority(prosecutionAuthority, requester);
+        } else {
+            return FALSE;
+        }
+
+        if (optionalJsonObject.isPresent()) {
+            final JsonObject jsonObject = optionalJsonObject.get();
+            return jsonObject.containsKey(POLICE_FLAG) ? jsonObject.getBoolean(POLICE_FLAG) : FALSE;
+        }
+
+        return FALSE;
+    }
+
+    public Optional<JsonObject> getProsecutorByOriginatingOrganisation(final String originatingOrganisation, final Requester requester) {
+        final JsonObject payload = createObjectBuilder().add(OUCODE, originatingOrganisation).build();
+        final Metadata metadata = JsonEnvelope.metadataBuilder()
+                .withId(randomUUID())
+                .withName(REFERENCE_DATA_QUERY_GET_PROSECUTOR_BY_OUCODE)
+                .build();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
+        final Envelope<JsonObject> response = requester.requestAsAdmin(jsonEnvelope, JsonObject.class);
+        return nonNull(response) ? Optional.of(response.payload()) : Optional.empty();
+    }
+
+    public Optional<JsonObject> getProsecutorByProsecutionAuthority(final String prosecutionAuthority, final Requester requester) {
+        final JsonObject payload = createObjectBuilder().add(PROSECUTOR_CODE, prosecutionAuthority).build();
+        final Metadata metadata = JsonEnvelope.metadataBuilder()
+                .withId(randomUUID())
+                .withName(REFERENCE_DATA_QUERY_GET_PROSECUTORS)
+                .build();
+
+        final Envelope<JsonObject> response = requester.requestAsAdmin(envelopeFrom(metadata, payload), JsonObject.class);
+        if (response.payload().getJsonArray("prosecutors").isEmpty()) {
+            return Optional.empty();
+        }
+        return ofNullable(response.payload().getJsonArray("prosecutors").getJsonObject(0));
     }
 }

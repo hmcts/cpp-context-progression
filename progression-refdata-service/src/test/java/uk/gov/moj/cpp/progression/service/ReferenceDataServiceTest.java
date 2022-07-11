@@ -1,32 +1,13 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static com.jayway.jsonassert.JsonAssert.with;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_COURTCENTER;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_DOCUMENT_ACCESS;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_OUCODE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_REFERRAL_REASONS;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_QUERY_JUDICIARIES;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS;
-
+import com.google.common.io.Resources;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.*;
+import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -38,6 +19,7 @@ import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonMetadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
+import javax.json.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -48,25 +30,24 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
-import javax.json.JsonValue;
-
-import com.google.common.io.Resources;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static com.jayway.jsonassert.JsonAssert.with;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataService.*;
 
 @SuppressWarnings("unused")
 @RunWith(MockitoJUnitRunner.class)
@@ -475,7 +456,7 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void shouldGetPleaTypeByValue() throws Exception {
+    public void shouldGetPleaTypeByValue() {
         final JsonObject payload = buildPleaStatusTypesPayload();
         final Envelope envelope = envelopeFrom(Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("name").build(), buildPleaStatusTypesPayload());
 
@@ -487,7 +468,7 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void shouldGetEmptyPleaTypeByValue() throws Exception {
+    public void shouldGetEmptyPleaTypeByValue() {
         final JsonObject payload = buildPleaStatusTypesPayload();
         final Envelope envelope = envelopeFrom(Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("name").build(), buildPleaStatusTypesPayload());
         when(requester.requestAsAdmin(any(), eq(JsonObject.class))).thenReturn(envelope);
@@ -496,6 +477,44 @@ public class ReferenceDataServiceTest {
 
         assertThat(result.isPresent(), is(false));
     }
+
+    @Test
+    public void shouldGetPetFormData() {
+
+        final JsonObject payload = Json.createReader(
+                        new ByteArrayInputStream(generatePetFormData().getBytes()))
+                .readObject();
+        final JsonEnvelope inputEnvelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.latest-pet-form"),
+                payload);
+        //when
+        when(requester.request(any())).thenReturn(inputEnvelope);
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.latest-pet-form"), JsonValue.NULL);
+        final Optional<JsonObject> result = referenceDataService.getPetForm(
+                envelope, requester);
+        final JsonObject petForm = result.get();
+        assertThat(petForm.getString("form_id"), is("f8254db1-1683-483e-afb3-b87fde5a0a26"));
+    }
+
+//    TODO Fix It Peter Raj Michael
+//    @Test
+//    public void shouldGetPoliceFlagFalse() {
+//        final JsonObject payload = buildPleaStatusTypesPayload();
+//        final Envelope envelope = envelopeFrom(Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("name").build(), buildPleaStatusTypesPayload());
+//
+//        when(referenceDataService.getPoliceFlag(null, null, requester)).thenReturn(false);
+//        final boolean result = referenceDataService.getPoliceFlag(null, null, requester);
+//        assertThat(result, is(false));
+//    }
+//
+//    @Test
+//    public void shouldGetPoliceFlagTrue() {
+//        final JsonObject payload = buildPleaStatusTypesPayload();
+//        final Envelope envelope = envelopeFrom(Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("name").build(), buildPleaStatusTypesPayload());
+//
+//        when(referenceDataService.getPoliceFlag("0300000", "bdc190e7-c939-37ca-be4b-9f615d6ef40e", requester)).thenReturn(true);
+//        final boolean result = referenceDataService.getPoliceFlag("0300000", "bdc190e7-c939-37ca-be4b-9f615d6ef40e", requester);
+//        assertThat(result, is(true));
+//    }
 
     private JsonObject generateJudiciariesJson() throws IOException {
         final String jsonString = Resources.toString(Resources.getResource("referenceData.getJudiciariesByIdList.json"), Charset.defaultCharset())
@@ -706,23 +725,6 @@ public class ReferenceDataServiceTest {
                 .build();
     }
 
-
-    @Test
-    public void shouldGetPetFormData() throws Exception {
-
-        final JsonObject payload = Json.createReader(
-                        new ByteArrayInputStream(generatePetFormData().getBytes()))
-                .readObject();
-        final JsonEnvelope inputEnvelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.latest-pet-form"),
-                payload);
-        //when
-        when(requester.request(any())).thenReturn(inputEnvelope);
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.latest-pet-form"), JsonValue.NULL);
-        final Optional<JsonObject> result = referenceDataService.getPetForm(
-                envelope, requester);
-        final JsonObject petForm = result.get();
-        assertThat(petForm.getString("form_id"), is("f8254db1-1683-483e-afb3-b87fde5a0a26"));
-    }
 
     private String generatePetFormData() {
         return "{\n" +
