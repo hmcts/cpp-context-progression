@@ -57,6 +57,7 @@ import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CreateHearingApplicationRequest;
 import uk.gov.justice.core.courts.Defendant;
@@ -68,6 +69,7 @@ import uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
 import uk.gov.justice.core.courts.SummonsTemplateType;
@@ -925,18 +927,26 @@ public class CourtApplicationProcessorTest {
     @Test
     public void shouldProcessHearingBreachedApplicationAdded() {
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.breach-application-creation-requested");
-        final UUID hearingId = randomUUID();
-        final UUID masterDefendantId = randomUUID();
+        final UUID hearingId = UUID.fromString("d89679d9-4179-4783-9646-5036a420caca");
+        final UUID masterDefendantId = UUID.fromString("af2d2a3f-949b-4625-aaff-18c32dd7f7ee");
         final UUID caseId = randomUUID();
+        final UUID offenceId = randomUUID();
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
                 .withProsecutionCases(singletonList(prosecutionCase()
+                        .withId(caseId)
                         .withDefendants(Arrays.asList(Defendant.defendant()
                                 .withId(masterDefendantId)
                                 .withProsecutionCaseId(caseId)
                                 .withMasterDefendantId(masterDefendantId)
+                                .withOffences(Arrays.asList(Offence.offence()
+                                        .withId(offenceId)
+                                        .build()))
                                 .build(), Defendant.defendant()
                                 .withMasterDefendantId(randomUUID())
+                                .withOffences(Arrays.asList(Offence.offence()
+                                        .withId(randomUUID())
+                                        .build()))
                                 .build()))
                         .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
                                 .withProsecutionAuthorityCode(STRING.next())
@@ -947,7 +957,8 @@ public class CourtApplicationProcessorTest {
                 .build();
         final BreachApplicationCreationRequested breachApplicationCreationRequested = BreachApplicationCreationRequested.breachApplicationCreationRequested()
                 .withHearingId(hearingId)
-                .withBreachedApplications(BreachedApplications.breachedApplications().build())
+                .withBreachedApplications(BreachedApplications.breachedApplications().withApplicationType(CourtApplicationType.courtApplicationType()
+                        .withBreachType(BreachType.COMMISSION_OF_NEW_OFFENCE_BREACH).build()).build())
                 .withMasterDefendantId(masterDefendantId)
                 .build();
         final JsonObject payload = objectToJsonObjectConverter.convert(breachApplicationCreationRequested);
@@ -966,6 +977,10 @@ public class CourtApplicationProcessorTest {
         assertThat(actual.getJsonObject("courtApplication"), Matchers.notNullValue());
         assertThat(actual.getJsonObject("courtApplication").getJsonArray("respondents").getJsonObject(0).getJsonObject("masterDefendant").getJsonArray("defendantCase").getJsonObject(0), Matchers.notNullValue());
         assertThat(actual.getJsonObject("courtHearing"), Matchers.notNullValue());
+        assertThat(actual.getJsonObject("courtApplication").getJsonArray("courtApplicationCases"), Matchers.notNullValue());
+        assertThat(actual.getJsonObject("courtApplication").getJsonArray("courtApplicationCases").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("id"), is(offenceId.toString()));
+        assertThat(actual.getJsonObject("courtApplication").getJsonArray("courtApplicationCases").getJsonObject(0).getString("prosecutionCaseId"), is(caseId.toString()));
+
     }
 
     @UseDataProvider("applicationSummonsSpecification")
