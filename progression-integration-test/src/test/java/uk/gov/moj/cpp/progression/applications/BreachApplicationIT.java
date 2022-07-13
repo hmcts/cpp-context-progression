@@ -91,6 +91,7 @@ public class BreachApplicationIT extends AbstractIT {
         final String caseId = randomUUID().toString();
         final String masterDefendantId = randomUUID().toString();
 
+
         addProsecutionCaseToCrownCourt(caseId, masterDefendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, masterDefendantId));
 
@@ -154,7 +155,7 @@ public class BreachApplicationIT extends AbstractIT {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationProceedingsInitiated);
         assertTrue(message.isPresent());
         final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
-        assertThat(applicationReference.length(), is(11));
+        assertThat(applicationReference.length(), is(8));
         return message.get().getJsonObject("courtApplication").getString("id");
     }
 }

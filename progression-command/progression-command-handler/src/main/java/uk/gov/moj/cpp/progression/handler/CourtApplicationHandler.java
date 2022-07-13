@@ -476,10 +476,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
     }
 
     private boolean validateInitiateCourtApplicationProceedings(final InitiateCourtApplicationProceedings initiateCourtProceedingsForApplication) {
-        if (isNotEmpty(initiateCourtProceedingsForApplication.getCourtApplication().getCourtApplicationCases()) &&
-                nonNull(initiateCourtProceedingsForApplication.getCourtApplication().getCourtOrder())) {
-            return false;
-        }
+
 
         if (isNotEmpty(initiateCourtProceedingsForApplication.getCourtApplication().getCourtApplicationCases())) {
             final Predicate<CourtApplicationCase> isSjpCourtApplication = CourtApplicationCase::getIsSJP;
