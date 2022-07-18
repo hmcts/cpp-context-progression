@@ -49,6 +49,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationPartyAttendance;
 import uk.gov.justice.core.courts.CourtApplicationPartyCounsel;
+import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
@@ -74,6 +75,7 @@ import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
@@ -756,6 +758,56 @@ public class ProgressionServiceTest {
         progressionService.linkApplicationsToHearing(envelope, hearing, applicationId, HearingListingStatus.HEARING_INITIALISED);
         verify(sender).send(finalEnvelope);
     }
+
+    @Test
+    public void testCreateHearingApplicationLinkWithDuplicateApplicationIds() {
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final List<UUID> applicationIds = asList(applicationId, applicationId,applicationId);
+        final Hearing hearing = Hearing.hearing().withId(hearingId).build();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("hearing", objectToJsonObjectConverter.convert(hearing))
+                .add("hearingListingStatus", "HEARING_INITIALISED")
+                .add("applicationId", applicationId.toString())
+                .build();
+        when(enveloper.withMetadataFrom
+                (envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
+        progressionService.linkApplicationsToHearing(envelope, hearing, applicationIds, HearingListingStatus.HEARING_INITIALISED);
+        verify(sender).send(finalEnvelope);
+    }
+
+    @Test
+    public void testlinkApplicationToHearingWithDuplicateApplicationsInHearing() {
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final Hearing hearing = Hearing.hearing().withId(hearingId)
+                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withType(CourtApplicationType.courtApplicationType()
+                                .withLinkType(LinkType.LINKED)
+                                .build())
+                        .build(),CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withType(CourtApplicationType.courtApplicationType()
+                                .withLinkType(LinkType.LINKED)
+                                .build())
+                        .build()))
+                .build();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("hearing", objectToJsonObjectConverter.convert(hearing))
+                .add("hearingListingStatus", "HEARING_INITIALISED")
+                .add("applicationId", applicationId.toString())
+                .build();
+        when(enveloper.withMetadataFrom
+                (envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
+        progressionService.linkApplicationToHearing(envelope, hearing, HearingListingStatus.HEARING_INITIALISED);
+        verify(sender).send(finalEnvelope);
+    }
+
 
 
     @Test

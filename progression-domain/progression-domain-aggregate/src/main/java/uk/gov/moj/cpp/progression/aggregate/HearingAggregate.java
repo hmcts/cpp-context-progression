@@ -1,41 +1,9 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
-import static java.util.Collections.emptyList;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Stream.empty;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated.extendHearingDefendantRequestCreated;
-import static uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated.extendHearingDefendantRequestUpdated;
-import static uk.gov.justice.core.courts.Hearing.hearing;
-import static uk.gov.justice.core.courts.HearingApplicationRequestCreated.hearingApplicationRequestCreated;
-import static uk.gov.justice.core.courts.HearingDefendantRequestCreated.hearingDefendantRequestCreated;
-import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
-import static uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged;
-import static uk.gov.justice.core.courts.ProsecutionCasesResulted.prosecutionCasesResulted;
-import static uk.gov.justice.core.courts.SummonsData.summonsData;
-import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
-import static uk.gov.justice.progression.courts.ApplicationsResulted.applicationsResulted;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isAllDefendantProceedingConcluded;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingHelper.isEligibleForNextHearings;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.checkResultLinesForCommittingCourt;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.createRelatedHearings;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.doHearingContainNewOrAmendedNextHearingResults;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.hasHearingContainsRelatedNextHearings;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.hasNewNextHearingsAndNextHearingOutsideOfMultiDaysHearing;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.isNextHearingDeleted;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.unscheduledNextHearingsRequiredFor;
-import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
-import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
-
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
 import uk.gov.justice.core.courts.CaseMarkersUpdatedInHearing;
@@ -73,10 +41,10 @@ import uk.gov.justice.core.courts.HearingUpdatedProcessed;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ListDefendantRequest;
+import uk.gov.justice.core.courts.ListHearingRequested;
 import uk.gov.justice.core.courts.ListingNumberUpdated;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.MasterDefendant;
-import uk.gov.justice.core.courts.ListHearingRequested;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
@@ -132,15 +100,47 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Collections.emptyList;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Stream.empty;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated.extendHearingDefendantRequestCreated;
+import static uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated.extendHearingDefendantRequestUpdated;
+import static uk.gov.justice.core.courts.Hearing.hearing;
+import static uk.gov.justice.core.courts.HearingApplicationRequestCreated.hearingApplicationRequestCreated;
+import static uk.gov.justice.core.courts.HearingDefendantRequestCreated.hearingDefendantRequestCreated;
+import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
+import static uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged;
+import static uk.gov.justice.core.courts.ProsecutionCasesResulted.prosecutionCasesResulted;
+import static uk.gov.justice.core.courts.SummonsData.summonsData;
+import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import static uk.gov.justice.progression.courts.ApplicationsResulted.applicationsResulted;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isAllDefendantProceedingConcluded;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DuplicateApplicationsHelper.deDupAllApplications;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingHelper.isEligibleForNextHearings;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.checkResultLinesForCommittingCourt;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.createRelatedHearings;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.doHearingContainNewOrAmendedNextHearingResults;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.hasHearingContainsRelatedNextHearings;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.hasNewNextHearingsAndNextHearingOutsideOfMultiDaysHearing;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.isNextHearingDeleted;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.unscheduledNextHearingsRequiredFor;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 9128521802762667384L;
+    private static final long serialVersionUID = 9128521802762667388L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -664,6 +664,7 @@ public class HearingAggregate implements Aggregate {
 
     private void setHearing(final Hearing hearing) {
         this.hearing = dedupAllReportingRestrictions(hearing);
+        this.hearing = deDupAllApplications(this.hearing);
     }
 
     private void updateHearingExtended(final HearingExtendedProcessed hearingExtendedProcessed) {
