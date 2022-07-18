@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.FormCreated.formCreated;
@@ -170,6 +171,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseAggregateTest {
@@ -1117,6 +1119,30 @@ public class CaseAggregateTest {
         assertThat(eventStream.size(), is(0));
     }
 
+
+    @Test
+    public void shouldDefendantMasterDefendantIdUpdatedEvent_whenDefendantAddToCourtProceedings_expectMandatoryAttributes() {
+        final UUID caseId = fromString(CASE_ID);
+        final UUID defendantId = fromString(DEFENDANT_ID);
+        final UUID offenceId = fromString(OFFENCE_ID);
+        final UUID defendantId2 = randomUUID();
+        final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings(
+                caseId, defendantId, defendantId2, offenceId);
+        final UUID masterDefendantId = defendantsAddedToCourtProceedings.getDefendants().get(0).getMasterDefendantId();
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+        final List<Object> defendantStream = caseAggregate.defendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(),
+                defendantsAddedToCourtProceedings.getListHearingRequests()).collect(toList());
+        caseAggregate.apply(defendantStream);
+        final Stream<Object> eventStream = caseAggregate.updateMatchedDefendant(caseId, defendantId, masterDefendantId);
+        final DefendantsMasterDefendantIdUpdated defendantsMasterDefendantIdUpdated =(DefendantsMasterDefendantIdUpdated)eventStream.collect(toList()).get(0);
+        assertThat(defendantsMasterDefendantIdUpdated.getProsecutionCaseId(), is(caseId));
+        assertThat(defendantsMasterDefendantIdUpdated.getDefendant().getId(), is(defendantId));
+        assertThat(defendantsMasterDefendantIdUpdated.getDefendant().getOffences().size(), is(1));
+        assertNotNull(defendantsMasterDefendantIdUpdated.getDefendant().getCourtProceedingsInitiated());
+
+
+    }
     @Test
     public void shouldLAAReferenceUpdatedForOffence_whenOneOfTheOffenceIsGranted_expectGrantedInDefendantLevelLegalAidStatus() {
         final UUID caseId = fromString(CASE_ID);
@@ -3317,12 +3343,16 @@ public class CaseAggregateTest {
         //Add duplicate defendant
         final uk.gov.justice.core.courts.Defendant defendant1 = uk.gov.justice.core.courts.Defendant.defendant()
                 .withId(defendantId)
+                .withMasterDefendantId(randomUUID())
+                .withCourtProceedingsInitiated(ZonedDateTime.now())
                 .withProsecutionCaseId(caseId)
                 .withOffences(singletonList(offence))
                 .build();
 
         final uk.gov.justice.core.courts.Defendant defendant2 = uk.gov.justice.core.courts.Defendant.defendant()
                 .withId(defendantId2)
+                .withMasterDefendantId(randomUUID())
+                .withCourtProceedingsInitiated(ZonedDateTime.now())
                 .withProsecutionCaseId(caseId)
                 .withOffences(singletonList(offence))
                 .build();
