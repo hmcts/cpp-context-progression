@@ -50,7 +50,7 @@ public class VejCaseworkerProcessor {
     private String subscriptionKey;
 
     @Inject
-    @Value(key = "vejEnabled", defaultValue = "false")
+    @Value(key = "vejEnabled", defaultValue = "true")
     private String vejEnabled;
 
     @Inject
