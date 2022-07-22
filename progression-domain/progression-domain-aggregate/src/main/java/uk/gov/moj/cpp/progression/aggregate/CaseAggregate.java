@@ -5,6 +5,7 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static java.time.ZonedDateTime.now;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -83,6 +84,7 @@ import uk.gov.justice.core.courts.FinancialMeansDeleted;
 import uk.gov.justice.core.courts.FormCreated;
 import uk.gov.justice.core.courts.FormDefendants;
 import uk.gov.justice.core.courts.FormDefendantsUpdated;
+import uk.gov.justice.core.courts.FormFinalised;
 import uk.gov.justice.core.courts.FormType;
 import uk.gov.justice.core.courts.FormUpdated;
 import uk.gov.justice.core.courts.FundingType;
@@ -293,6 +295,9 @@ public class CaseAggregate implements Aggregate {
     private UUID latestHearingId;
     private ProsecutionCase prosecutionCase;
     private boolean hasProsecutionCaseBeenCreated;
+    private final List<UUID> petFormFinalisedDocuments = new ArrayList<>();
+    private final List<UUID> bcmFormFinalisedDocuments = new ArrayList<>();
+    private final List<UUID> ptphFormFinalisedDocuments = new ArrayList<>();
     private static final String FORM_CREATION_COMMAND_NAME = "form-created";
     private static final String FORM_FINALISATION_COMMAND_NAME = "finalise-form";
     private static final String FORM_EDIT_COMMAND_NAME = "edit-form";
@@ -489,6 +494,8 @@ public class CaseAggregate implements Aggregate {
                 when(EditFormRequested.class).apply(this::editFormRequest),
                 when(FormUpdated.class).apply(this::updateFormOnFormUpdate),
                 when(PetFormCreated.class).apply(this::onPetFormCreated),
+                when(PetFormFinalised.class).apply(this::addPetFormFinalisedDocument),
+                when(FormFinalised.class).apply(this::addFormFinalisedDocument),
                 otherwiseDoNothing());
 
     }
@@ -653,6 +660,18 @@ public class CaseAggregate implements Aggregate {
         return defendantFinancialDocs;
     }
 
+    public List<UUID> getPetFormFinalisedDocuments() {
+        return petFormFinalisedDocuments;
+    }
+
+    public List<UUID> getBcmFormFinalisedDocuments() {
+        return bcmFormFinalisedDocuments;
+    }
+
+    public List<UUID> getPtphFormFinalisedDocuments() {
+        return ptphFormFinalisedDocuments;
+    }
+
     public Map<UUID, List<uk.gov.justice.core.courts.Offence>> getDefendantCaseOffences() {
         return defendantCaseOffences;
     }
@@ -688,6 +707,21 @@ public class CaseAggregate implements Aggregate {
             this.applicationFinancialDocs.put(financialDataAdded.getApplicationId(), financialDataAdded.getMaterialIds());
         } else if (financialDataAdded.getDefendantId() != null) {
             this.defendantFinancialDocs.put(financialDataAdded.getDefendantId(), financialDataAdded.getMaterialIds());
+        }
+    }
+    private void addPetFormFinalisedDocument(final PetFormFinalised petFormFinalised) {
+        if (petFormFinalised.getMaterialId() != null) {
+            this.petFormFinalisedDocuments.add(petFormFinalised.getMaterialId());
+        }
+    }
+    private void addFormFinalisedDocument(final FormFinalised formFinalised) {
+        if (formFinalised.getMaterialId() != null) {
+            if(FormType.BCM.equals(formFinalised.getFormType())) {
+                this.bcmFormFinalisedDocuments.add(formFinalised.getMaterialId());
+            }
+            if(FormType.PTPH.equals(formFinalised.getFormType())) {
+                this.ptphFormFinalisedDocuments.add(formFinalised.getMaterialId());
+            }
         }
     }
 
@@ -2450,6 +2484,7 @@ public class CaseAggregate implements Aggregate {
                 .withUserId(userId)
                 .withFinalisedFormData(finalisedFormData)
                 .withSubmissionId(submissionId)
+                .withMaterialId(UUID.randomUUID())
                 .build()));
     }
 
@@ -2598,15 +2633,21 @@ public class CaseAggregate implements Aggregate {
         final ProsecutionCaseIdentifier caseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
         final String caseURN = isBlank(caseIdentifier.getCaseURN()) ? caseIdentifier.getProsecutionAuthorityReference() : caseIdentifier.getCaseURN();
 
-        return apply(Stream.of(formFinalised()
-                .withCaseId(caseId)
-                .withFormType(formMap.get(courtFormId).getFormType())
-                .withCourtFormId(courtFormId)
-                .withUserId(userId)
-                .withFinalisedFormData(finalisedFormData)
-                .withCaseURN(caseURN)
-                .withSubmissionId(submissionId)
-                .build()));
+
+        final List<FormFinalised> formFinalisedList = finalisedFormData.stream()
+                .map(finalisedDataString -> formFinalised()
+                        .withCaseId(caseId)
+                        .withFormType(formMap.get(courtFormId).getFormType())
+                        .withCourtFormId(courtFormId)
+                        .withUserId(userId)
+                        .withFinalisedFormData(singletonList(finalisedDataString))
+                        .withCaseURN(caseURN)
+                        .withSubmissionId(submissionId)
+                        .withMaterialId(UUID.randomUUID())
+                        .build())
+                .collect(toList());
+
+        return apply(formFinalisedList.stream().map(formFinalised -> formFinalised));
     }
 
     public Stream<Object> requestEditForm(final UUID caseId, final UUID courtFormId, final UUID userId, final Map<FormType, Integer> durationMapByFormType, final ZonedDateTime requestEditTime) {

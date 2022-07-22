@@ -56,7 +56,7 @@ public class StatDecLetterService {
     private static final String POSTCODE = "postcode";
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private DocumentGeneratorService documentGeneratorService;

@@ -72,7 +72,7 @@ import uk.gov.moj.cpp.progression.handler.courts.document.CourtDocumentEnricher;
 import uk.gov.moj.cpp.progression.handler.courts.document.DefaultCourtDocumentFactory;
 import uk.gov.moj.cpp.progression.handler.courts.document.DocumentTypeAccessProvider;
 import uk.gov.moj.cpp.progression.helper.EnvelopeHelper;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.referencedata.json.schemas.DocumentTypeAccess;
 
 import java.time.ZoneOffset;
@@ -102,7 +102,7 @@ public class AddCourtDocumentHandlerTest {
     private AggregateService aggregateService;
 
     @Mock
-    private ReferenceDataService refDataService;
+    private RefDataService refDataService;
 
     @Mock
     private CourtDocumentEnricher courtDocumentEnricher;

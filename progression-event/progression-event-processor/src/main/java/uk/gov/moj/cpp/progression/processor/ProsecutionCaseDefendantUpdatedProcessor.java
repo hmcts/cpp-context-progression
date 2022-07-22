@@ -27,7 +27,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.value.object.CPSNotificationVO;
 import uk.gov.moj.cpp.progression.value.object.CaseVO;
 import uk.gov.moj.cpp.progression.value.object.DefenceOrganisationVO;
@@ -79,7 +79,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     private ProgressionService progressionService;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private Requester requester;

@@ -29,13 +29,19 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
+import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.stubForApiNotification;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoLetterRequested;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -50,6 +56,8 @@ import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -89,6 +97,8 @@ public class NowDocumentRequestIT extends AbstractIT {
 
     private String materialId;
     private String hearingId;
+    private String caseId1;
+    private String caseId2;
     private String defendantId;
     private String requestId;
     private UUID userId;
@@ -112,6 +122,8 @@ public class NowDocumentRequestIT extends AbstractIT {
     public void setup() {
         messageProducerClientPublic = publicEvents.createPublicProducer();
         hearingId = randomUUID().toString();
+        caseId1 = randomUUID().toString();
+        caseId2 = randomUUID().toString();
         defendantId = randomUUID().toString();
         materialId = randomUUID().toString();
         requestId = randomUUID().toString();
@@ -227,7 +239,11 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSendApiNotificationNowDocumentRequest() throws IOException {
+    public void shouldSendApiNotificationNowDocumentRequest() throws IOException, JMSException {
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
+        stubForApiNotification();
+        List<String> caseUrns = createCaseAndFetchCaseUrn(1);
+
         final String payload = prepareApiNotificationDocumentRequestPayload();
         final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);
         final NowDocumentRequest nowDocumentRequest = jsonToObjectConverter.convert(jsonObject, NowDocumentRequest.class);
@@ -248,6 +264,57 @@ public class NowDocumentRequestIT extends AbstractIT {
         assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
 
         verifyInMessagingQueue(messageConsumerClientPublicForNowDocumentRequested);
+    }
+
+    @Test
+    public void shouldSendApiNotificationNowDocumentRequest_multipleCases() throws IOException, JMSException {
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
+        stubForApiNotification();
+        List<String> caseUrns = createCaseAndFetchCaseUrn(2);
+
+        final String payload = prepareApiNotificationDocumentRequestPayloadForMultipleCases();
+        final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);
+        final NowDocumentRequest nowDocumentRequest = jsonToObjectConverter.convert(jsonObject, NowDocumentRequest.class);
+
+        final Response writeResponse = postCommand(getWriteUrl("/nows"),
+                "application/vnd.progression.add-now-document-request+json",
+                payload);
+
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final String nowDocumentRequestPayload = getNowDocumentRequest(hearingId,
+                anyOf(withJsonPath("$.nowDocumentRequests[0].hearingId", equalTo(hearingId))));
+
+        sendMaterialFileUploadedPublicEvent(fromString(materialId), userId);
+
+        final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
+        final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray(NOW_DOCUMENT_REQUESTS).getJsonObject(0);
+        assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
+
+        verifyInMessagingQueue(messageConsumerClientPublicForNowDocumentRequested);
+    }
+
+    private List<String> createCaseAndFetchCaseUrn(int noOfCases) throws IOException, JMSException {
+        List<String> caseUrns = new ArrayList<>();
+        int i = 0;
+        String caseId = caseId1;
+        while (i < noOfCases) {
+            try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
+                    .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                addProsecutionCaseToCrownCourt(caseId, defendantId);
+                String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+                JsonObject jsonObject = jsonToObjectConverter.convert(stringToJsonObjectConverter.convert(response), JsonObject.class);
+                JsonObject prosecutionCase = jsonObject.getJsonObject("prosecutionCase");
+                JsonObject pcIdentifier = prosecutionCase.getJsonObject("prosecutionCaseIdentifier");
+                caseUrns.add(pcIdentifier.getJsonString("prosecutionAuthorityReference").getString());
+            }
+
+            i++;
+            caseId = caseId2;
+        }
+
+        return caseUrns;
     }
 
     @Test
@@ -354,7 +421,18 @@ public class NowDocumentRequestIT extends AbstractIT {
         String body = getPayload("progression.add-api-notification-now-document-request.json");
         body = body.replace(HEARING_ID, hearingId)
                 .replace("%MATERIAL_ID%", materialId)
-                .replace("%DEFENDANT_ID%", defendantId);
+                .replace("%DEFENDANT_ID%", defendantId)
+                .replace("%CASE_ID%", caseId1);
+        return body;
+    }
+
+    private String prepareApiNotificationDocumentRequestPayloadForMultipleCases() {
+        String body = getPayload("progression.add-api-notification-now-document-request-multiple.json");
+        body = body.replace(HEARING_ID, hearingId)
+                .replace("%MATERIAL_ID%", materialId)
+                .replace("%DEFENDANT_ID%", defendantId)
+                .replace("%CASE_ID1%", caseId1)
+                .replace("%CASE_ID2%", caseId2);
         return body;
     }
 

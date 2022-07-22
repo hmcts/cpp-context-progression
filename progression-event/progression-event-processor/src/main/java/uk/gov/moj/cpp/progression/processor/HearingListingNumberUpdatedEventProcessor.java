@@ -7,14 +7,6 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
-import java.util.Collection;
-import java.util.UUID;
-import java.util.stream.Stream;
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
 import uk.gov.justice.core.courts.ListingNumberUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberIncreased;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -24,6 +16,15 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+
+import java.util.Collection;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 
 @ServiceComponent(EVENT_PROCESSOR)

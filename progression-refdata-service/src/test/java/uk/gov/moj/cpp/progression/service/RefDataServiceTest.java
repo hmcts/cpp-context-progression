@@ -1,35 +1,5 @@
 package uk.gov.moj.cpp.progression.service;
 
-import com.google.common.io.Resources;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
-import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.MetadataBuilder;
-import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
-import uk.gov.justice.services.messaging.spi.DefaultJsonMetadata;
-import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-
-import javax.json.*;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.nio.charset.Charset;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
-
 import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
@@ -41,17 +11,66 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.*;
+import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS;
+import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_GET_COURTCENTER;
+import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_GET_DOCUMENT_ACCESS;
+import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_GET_OUCODE;
+import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_GET_REFERRAL_REASONS;
+import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_QUERY_JUDICIARIES;
+import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS;
+
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
+import uk.gov.justice.services.messaging.spi.DefaultJsonMetadata;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.JsonValue;
+
+import com.google.common.io.Resources;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @SuppressWarnings("unused")
 @RunWith(MockitoJUnitRunner.class)
-public class ReferenceDataServiceTest {
+public class RefDataServiceTest {
 
     public static final String PS_90010 = "PS90010";
     private static final UUID JUDICIARY_ID_1 = UUID.randomUUID();
@@ -81,7 +100,7 @@ public class ReferenceDataServiceTest {
     private Requester requester;
 
     @InjectMocks
-    private ReferenceDataService referenceDataService;
+    private RefDataService refDataService;
 
     @Captor
     private ArgumentCaptor<DefaultEnvelope> envelopeArgumentCaptor;
@@ -113,7 +132,7 @@ public class ReferenceDataServiceTest {
 
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.offences"), JsonValue.NULL);
 
-        final Optional<JsonObject> result = referenceDataService.getOffenceByCjsCode(
+        final Optional<JsonObject> result = refDataService.getOffenceByCjsCode(
                 envelope, PS_90010, requester);
 
         //then
@@ -148,7 +167,7 @@ public class ReferenceDataServiceTest {
 
 
         //when
-        final Optional<JsonObject> result = referenceDataService.getOffenceByCjsCode(envelope, PS_90010, requester);
+        final Optional<JsonObject> result = refDataService.getOffenceByCjsCode(envelope, PS_90010, requester);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
@@ -176,7 +195,7 @@ public class ReferenceDataServiceTest {
                 .thenReturn(JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.get.judge"), payload));
 
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.get.judge"), JsonValue.NULL);
-        final Optional<JsonObject> result = referenceDataService.getJudgeById(judgeId, envelope, requester);
+        final Optional<JsonObject> result = refDataService.getJudgeById(judgeId, envelope, requester);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
@@ -211,7 +230,7 @@ public class ReferenceDataServiceTest {
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(ORGANISATION_UNIT), JsonValue.NULL);
 
 
-        final Optional<JsonObject> result = referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester);
+        final Optional<JsonObject> result = refDataService.getOrganisationUnitById(courtCentreId, envelope, requester);
 
         //then
         verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture(), any());
@@ -249,7 +268,7 @@ public class ReferenceDataServiceTest {
 
         //when
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_DOCUMENT_ACCESS), JsonValue.NULL);
-        final Optional<JsonObject> result = referenceDataService.getDocumentTypeAccessData(documentTypeId, envelope, requester);
+        final Optional<JsonObject> result = refDataService.getDocumentTypeAccessData(documentTypeId, envelope, requester);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
@@ -284,7 +303,7 @@ public class ReferenceDataServiceTest {
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_OUCODE).build(),
                 payload);
 
-        final Optional<JsonObject> result = referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(envelope, postCode, prosecutingAuth, requester);
+        final Optional<JsonObject> result = refDataService.getCourtsByPostCodeAndProsecutingAuthority(envelope, postCode, prosecutingAuth, requester);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
@@ -310,7 +329,7 @@ public class ReferenceDataServiceTest {
         when(requester.request(any()))
                 .thenReturn(responseEnvelope);
 
-        final Optional<JsonObject> result = referenceDataService.getLocalJusticeArea(responseEnvelope, NATIONAL_COURT_CODE, requester);
+        final Optional<JsonObject> result = refDataService.getLocalJusticeArea(responseEnvelope, NATIONAL_COURT_CODE, requester);
 
         verify(requester).request(welshEnvelopeArgumentCaptor.capture());
 
@@ -325,7 +344,7 @@ public class ReferenceDataServiceTest {
         when(requester.request(any())).thenReturn(jsonEnvelope);
 
         final JsonEnvelope envelope = getEnvelope(REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS);
-        final JsonObject responseJson = referenceDataService.getAllResultDefinitions(envelope, LocalDate.now(), requester).payloadAsJsonObject();
+        final JsonObject responseJson = refDataService.getAllResultDefinitions(envelope, LocalDate.now(), requester).payloadAsJsonObject();
 
         final JsonArray resultDefinitionsArray = responseJson.getJsonArray("resultDefinitions");
 
@@ -352,7 +371,7 @@ public class ReferenceDataServiceTest {
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_COURTCENTER).build(),
                 payload);
 
-        final Optional<JsonObject> result = referenceDataService.getCourtsOrganisationUnitsByOuCode(envelope, oucode, requester);
+        final Optional<JsonObject> result = refDataService.getCourtsOrganisationUnitsByOuCode(envelope, oucode, requester);
 
         //then
         verify(requester).request(envelopeArgumentCaptor.capture());
@@ -386,7 +405,7 @@ public class ReferenceDataServiceTest {
                 .thenReturn(getEnvelope(REFERENCEDATA_GET_OUCODE, payloadForCourts), getEnvelope(REFERENCEDATA_GET_OUCODE, payloadForOrgUnits));
 
 
-        final CourtCentre result = referenceDataService.getCourtCentre(envelope, postcode, prosecutingAuth, requester);
+        final CourtCentre result = refDataService.getCourtCentre(envelope, postcode, prosecutingAuth, requester);
 
         assertThat(result.getId(), is(id));
     }
@@ -407,7 +426,7 @@ public class ReferenceDataServiceTest {
                 .thenReturn(getEnvelope(REFERENCEDATA_GET_COURTCENTER, payloadForOrgUnits), getEnvelope(REFERENCEDATA_GET_OUCODE, payloadForOrgUnits));
 
         //when
-        final CourtCentre result = referenceDataService.getCourtCentre(oucode, envelope, requester);
+        final CourtCentre result = refDataService.getCourtCentre(oucode, envelope, requester);
         //then
         assertThat(result.getId(), is(id));
     }
@@ -419,7 +438,7 @@ public class ReferenceDataServiceTest {
         when(requester.request(any())).thenReturn(getEnvelope(REFERENCEDATA_GET_REFERRAL_REASONS, payload));
 
         final JsonEnvelope envelope = getEnvelope(REFERENCEDATA_GET_REFERRAL_REASONS);
-        final Optional<JsonObject> result = referenceDataService.getReferralReasons(envelope, requester);
+        final Optional<JsonObject> result = refDataService.getReferralReasons(envelope, requester);
 
         final JsonObject referralReasonsJson = result.get().getJsonArray("referralReasons").getJsonObject(0);
         final JsonObject payloadReferralReasonJson = payload.getJsonArray("referralReasons").getJsonObject(0);
@@ -437,7 +456,7 @@ public class ReferenceDataServiceTest {
         when(requester.request(any())).thenReturn(getEnvelope(REFERENCEDATA_QUERY_JUDICIARIES, payload));
 
         final JsonEnvelope envelope = getEnvelope(REFERENCEDATA_QUERY_JUDICIARIES);
-        final Optional<JsonObject> result = referenceDataService.getJudiciariesByJudiciaryIdList(Arrays.asList(JUDICIARY_ID_1, JUDICIARY_ID_2), envelope, requester);
+        final Optional<JsonObject> result = refDataService.getJudiciariesByJudiciaryIdList(Arrays.asList(JUDICIARY_ID_1, JUDICIARY_ID_2), envelope, requester);
         final JsonObject judiciariesJson = result.get();
 
         final JsonObject judiciaryJson = judiciariesJson.getJsonArray("judiciaries").getJsonObject(0);
@@ -456,24 +475,24 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void shouldGetPleaTypeByValue() {
+    public void shouldGetPleaTypeByValue() throws Exception {
         final JsonObject payload = buildPleaStatusTypesPayload();
         final Envelope envelope = envelopeFrom(Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("name").build(), buildPleaStatusTypesPayload());
 
         when(requester.requestAsAdmin(any(), eq(JsonObject.class))).thenReturn(envelope);
 
-        final Optional<JsonObject> result = referenceDataService.getPleaType("NOT_GUILTY", requester);
+        final Optional<JsonObject> result = refDataService.getPleaType("NOT_GUILTY", requester);
 
         assertThat(result.get().getString(FIELD_PLEA_TYPE_GUILTY_FLAG), is(GUILTY_FLAG_NO));
     }
 
     @Test
-    public void shouldGetEmptyPleaTypeByValue() {
+    public void shouldGetEmptyPleaTypeByValue() throws Exception {
         final JsonObject payload = buildPleaStatusTypesPayload();
         final Envelope envelope = envelopeFrom(Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("name").build(), buildPleaStatusTypesPayload());
         when(requester.requestAsAdmin(any(), eq(JsonObject.class))).thenReturn(envelope);
 
-        final Optional<JsonObject> result = referenceDataService.getPleaType("INVALID_GUILTY", requester);
+        final Optional<JsonObject> result = refDataService.getPleaType("INVALID_GUILTY", requester);
 
         assertThat(result.isPresent(), is(false));
     }
@@ -489,7 +508,7 @@ public class ReferenceDataServiceTest {
         //when
         when(requester.request(any())).thenReturn(inputEnvelope);
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.latest-pet-form"), JsonValue.NULL);
-        final Optional<JsonObject> result = referenceDataService.getPetForm(
+        final Optional<JsonObject> result = refDataService.getPetForm(
                 envelope, requester);
         final JsonObject petForm = result.get();
         assertThat(petForm.getString("form_id"), is("f8254db1-1683-483e-afb3-b87fde5a0a26"));

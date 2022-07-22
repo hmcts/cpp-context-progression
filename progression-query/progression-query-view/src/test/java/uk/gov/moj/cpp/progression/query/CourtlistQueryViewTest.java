@@ -9,6 +9,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -69,28 +70,6 @@ public class CourtlistQueryViewTest {
     }
 
     @Test
-    public void shouldEnrichCourtlistDocumentPayloadForProsecutionCases_ReadCaseFromProgressionViewstore() throws IOException {
-        final Optional<JsonObject> listingResponse = Optional.of(getJsonPayload("listing-hearing-with-prosecution-case.json"));
-        final List<Hearing> hearingList = getHearingsWithoutCase();
-        when(listingService.searchCourtlist(any(JsonEnvelope.class))).thenReturn(listingResponse);
-        when(hearingQueryView.getHearings(any(List.class))).thenReturn(hearingList);
-        final ProsecutionCase prosecutionCase = getHearings("courtlists.hearings.repository.all.json").get(0).getProsecutionCases().get(0);
-        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
-        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
-        when(prosecutionCaseRepository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
-
-        final JsonEnvelope query = JsonEnvelope.envelopeFrom(
-                JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName("progression.search.court.list").build(),
-                Json.createObjectBuilder().build());
-
-        final JsonObject expected = getJsonPayload("courtlist-expected-with-prosecution-cases.json");
-        final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
-        assertThat(actual, is(expected));
-    }
-
-    @Test
     public void shouldEnrichCourtlistDocumentPayloadForProsecutionCases_ReadCaseFromProgressionViewStoreWithDifferentListingNumber() throws IOException {
         final Optional<JsonObject> listingResponse = Optional.of(getJsonPayload("listing-hearing-with-prosecution-case.json"));
         final List<Hearing> hearingList = getHearings("courtlists.hearings.repository.all.json");
@@ -111,6 +90,7 @@ public class CourtlistQueryViewTest {
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
         assertThat(actual, is(expected));
     }
+
 
     @Test
     public void shouldEnrichCourtlistDocumentPayloadForProsecutionCasesWhenListingNumberIsNull() throws IOException {

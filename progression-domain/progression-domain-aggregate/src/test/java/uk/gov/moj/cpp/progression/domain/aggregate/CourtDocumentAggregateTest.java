@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.domain.aggregate;
 
+import com.google.common.collect.Lists;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +17,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
 import static java.time.ZonedDateTime.now;
@@ -271,7 +273,7 @@ public class CourtDocumentAggregateTest {
 
         target.apply(target.addCourtDocument(CourtDocument.courtDocument().withIsRemoved(FALSE).withCourtDocumentId(courtDocumentId).build()).collect(toList()));
         target.removeCourtDocument(randomUUID(), randomUUID(), true);
-        final List<Object> returnedEventStream = target.updateCourtDocument(null, null, null).collect(toList());
+        final List<Object> returnedEventStream = target.updateCourtDocument(null, null, null,newArrayList(),newArrayList(),newArrayList()).collect(toList());
 
         assertThat(returnedEventStream.size(), is(1));
         final Object returnedObject = returnedEventStream.get(0);
@@ -346,7 +348,7 @@ public class CourtDocumentAggregateTest {
                 .withSendToCps(true)
                 .build();
 
-        final List<Object> eventStream = target.updateCourtDocument(updatedCourtDocument, now(), null).collect(toList());
+        final List<Object> eventStream = target.updateCourtDocument(updatedCourtDocument, now(), null, newArrayList(),newArrayList(),newArrayList()).collect(toList());
 
         assertThat(eventStream.size(), is(2));
         final Object object = eventStream.get(0);

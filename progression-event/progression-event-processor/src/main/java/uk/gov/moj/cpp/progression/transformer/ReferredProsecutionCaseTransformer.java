@@ -12,11 +12,11 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEG
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MODEOFTRIAL_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.ETHNICITY;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.ETHNICITY_CODE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY_CODE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.SHORT_NAME;
+import static uk.gov.moj.cpp.progression.service.RefDataService.ETHNICITY;
+import static uk.gov.moj.cpp.progression.service.RefDataService.ETHNICITY_CODE;
+import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY;
+import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY_CODE;
+import static uk.gov.moj.cpp.progression.service.RefDataService.SHORT_NAME;
 
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.Defendant;
@@ -41,7 +41,7 @@ import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -61,7 +61,7 @@ public class ReferredProsecutionCaseTransformer {
     private Requester requester;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private ReferenceDataOffenceService referenceDataOffenceService;

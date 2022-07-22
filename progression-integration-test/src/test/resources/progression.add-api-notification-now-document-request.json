@@ -104,5 +104,8 @@
   "materialId": "%MATERIAL_ID%",
   "storageRequired": false,
   "templateName": "OPE_Layout16",
-  "subscriberName": "Defendant"
-}
+  "subscriberName": "Defendant",
+  "cases": [
+      "%CASE_ID%"
+  ]
+  }

@@ -1,29 +1,48 @@
 package uk.gov.moj.cpp.progression.processor;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.moj.cpp.progression.service.ProgressionService.HEARING;
+import static uk.gov.moj.cpp.progression.transformer.HearingHelper.transformedHearing;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.COURT_APPLICATIONS;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.COURT_APPLICATION_CASES;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.COURT_ORDER;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.COURT_ORDER_OFFENCES;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.DEFENDANTS;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.ID;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.LAA_APPLN_REFERENCE;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.OFFENCE;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.OFFENCES;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.OU_CODE;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.PROSECUTION_CASES;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.PROSECUTION_CASE_ID;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.PROSECUTION_CASE_IDENTIFIER;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.PROSECUTOR_CODE;
+
 import uk.gov.justice.services.common.configuration.Value;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.RestEasyClientService;
 
-import javax.inject.Inject;
-import javax.json.*;
-import javax.ws.rs.core.Response;
 import java.util.Map;
 
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.justice.services.messaging.JsonEnvelopeWriter.writeJsonObject;
-import static uk.gov.moj.cpp.progression.service.ProgressionService.HEARING;
-import static uk.gov.moj.cpp.progression.transformer.HearingHelper.transformedHearing;
-import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.*;
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+import javax.ws.rs.core.Response;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class VejCaseworkerProcessor {
@@ -35,7 +54,7 @@ public class VejCaseworkerProcessor {
     private Requester requester;
 
     @Inject
-    ReferenceDataService referenceDataService;
+    RefDataService referenceDataService;
 
     @Inject
     @Value(key = "vejHearingDetailsUrl", defaultValue = "http://localhost:8080/vep/api/v1/hearing/details")
@@ -106,7 +125,7 @@ public class VejCaseworkerProcessor {
         }
     }
 
-    private JsonObject extractPoliceCases(JsonObject hearingParent) {
+    private JsonObject extractPoliceCases(final JsonObject hearingParent) {
         final JsonObject hearingObj = ((JsonObject) hearingParent.get(HEARING));
         LOGGER.info("Starting extractPoliceCases prosecution cases from hearingParent {}", hearingParent);
         final JsonArray prosecutionCases = (JsonArray) hearingObj.get(PROSECUTION_CASES);
@@ -287,7 +306,7 @@ public class VejCaseworkerProcessor {
         }
     }
 
-    public JsonObject removeProperty(JsonObject origin, String key) {
+    public JsonObject removeProperty(final JsonObject origin, final String key) {
         final JsonObjectBuilder builder = getJsonObjectBuilder();
 
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()) {
@@ -298,7 +317,7 @@ public class VejCaseworkerProcessor {
         return builder.build();
     }
 
-    public static JsonObject addProperty(JsonObject origin, String key, JsonValue value) {
+    public static JsonObject addProperty(final JsonObject origin, final String key, final JsonValue value) {
         final JsonObjectBuilder builder = getJsonObjectBuilder();
 
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()) {

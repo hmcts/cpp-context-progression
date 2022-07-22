@@ -21,7 +21,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 
 import java.time.ZonedDateTime;
@@ -58,7 +58,7 @@ public class NowsRequestedEventProcessor {
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter;
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter;
     private final DocumentGeneratorService documentGeneratorService;
-    private final ReferenceDataService refDataService;
+    private final RefDataService refDataService;
     private final UsersGroupService usersGroupService;
 
     @Inject
@@ -69,7 +69,7 @@ public class NowsRequestedEventProcessor {
                                        final DocumentGeneratorService documentGeneratorService,
                                        final JsonObjectToObjectConverter jsonObjectToObjectConverter,
                                        final ObjectToJsonObjectConverter objectToJsonObjectConverter,
-                                       final ReferenceDataService refDataService,
+                                       final RefDataService refDataService,
                                        final UsersGroupService usersGroupService) {
         this.sender = sender;
         this.jsonObjectToObjectConverter = jsonObjectToObjectConverter;

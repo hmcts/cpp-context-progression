@@ -21,7 +21,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.value.object.CPSNotificationVO;
 import uk.gov.moj.cpp.progression.value.object.CaseVO;
@@ -81,7 +81,7 @@ public class CPSEmailNotificationProcessorTest {
     private UsersGroupService usersGroupService;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Mock
     private NotificationService notificationService;

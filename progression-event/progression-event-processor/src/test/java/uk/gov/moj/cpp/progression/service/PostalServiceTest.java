@@ -90,7 +90,7 @@ public class PostalServiceTest {
     @Mock
     private Requester requester;
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Mock
     private DocumentGeneratorService documentGeneratorService;

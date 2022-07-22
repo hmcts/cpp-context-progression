@@ -33,7 +33,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
 import uk.gov.moj.cpp.progression.handler.CreateCourtDocumentHandler;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -67,7 +67,7 @@ public class CreateCourtDocumentHandlerTest {
     private AggregateService aggregateService;
 
     @Mock
-    private ReferenceDataService refDataService;
+    private RefDataService refDataService;
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(

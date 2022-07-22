@@ -48,4 +48,29 @@ public class UpdateOffencesCommandApiTest {
         verify(sender, times(1)).send(commandEnvelope);
     }
 
+    @Test
+    public void shouldUpdatePlea()
+    {
+        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(command, "progression.command.update-hearing-offence-plea"))
+                .thenReturn(function);
+        when(function.apply(any())).thenReturn(commandEnvelope);
+
+        updateOffencesCommand.handleUpdatePlea(command);
+
+        verify(sender, times(1)).send(commandEnvelope);
+    }
+
+    @Test
+    public void shouldUpdateVerdict()
+    {
+        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(command, "progression.command.update-hearing-offence-verdict"))
+                .thenReturn(function);
+        when(function.apply(any())).thenReturn(commandEnvelope);
+
+        updateOffencesCommand.handleUpdateVerdict(command);
+
+        verify(sender, times(1)).send(commandEnvelope);
+    }
 }

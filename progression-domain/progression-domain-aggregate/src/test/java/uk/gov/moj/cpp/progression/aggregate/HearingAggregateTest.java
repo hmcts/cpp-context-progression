@@ -17,13 +17,19 @@ import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
 import uk.gov.justice.core.courts.BreachedApplications;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.CourtOrderOffence;
+import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingDefenceCounselAdded;
+import uk.gov.justice.core.courts.HearingDefenceCounselRemoved;
+import uk.gov.justice.core.courts.HearingDefenceCounselUpdated;
 import uk.gov.justice.core.courts.HearingExtendedProcessed;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingLanguage;
@@ -40,9 +46,13 @@ import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
+import uk.gov.justice.core.courts.Plea;
+import uk.gov.justice.core.courts.PleaModel;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
+import uk.gov.justice.core.courts.Verdict;
+import uk.gov.justice.core.courts.VerdictType;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.ExtendCustodyTimeLimitResulted;
 import uk.gov.justice.progression.courts.HearingDeleted;
@@ -76,6 +86,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class HearingAggregateTest {
 
+    private static final String GUILTY = "GUILTY";
     @InjectMocks
     private HearingAggregate hearingAggregate;
 
@@ -1200,6 +1211,444 @@ public class HearingAggregateTest {
                 .build()).collect(toList());
 
         assertThat(events.size(), is(0));
+    }
+
+    @Test
+    public void shouldUpdateVerdictOfOffencesOfProsecutionCase() {
+        final UUID hearingId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+        final UUID offenceId4 = randomUUID();
+        final UUID caseId1 = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
+                                .withId(caseId1)
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                                .withId(randomUUID())
+                                                .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                                .withId(offenceId1)
+                                                                .withVerdict(Verdict.verdict().withOffenceId(offenceId1).build())
+                                                                .build(),
+                                                        Offence.offence()
+                                                                .withId(offenceId2)
+                                                                .withListingNumber(11)
+                                                                .build())))
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(randomUUID())
+                                                .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                                .withId(offenceId3)
+                                                                .build(),
+                                                        Offence.offence()
+                                                                .withId(offenceId4)
+                                                                .withListingNumber(13)
+                                                                .build())))
+                                                .build()
+                                )))
+                                .build()
+                )))
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+        final List<Object> events = hearingAggregate.updateHearingWithVerdict(Verdict.verdict()
+                .withOffenceId(offenceId3)
+                .withVerdictType(VerdictType.verdictType().withCategoryType("categoryType").build())
+                .build()).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getVerdict().getOffenceId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(1).getId(), is(offenceId2));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(1).getVerdict(), is(nullValue()));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(1).getOffences().get(0).getId(), is(offenceId3));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(1).getOffences().get(0).getVerdict().getOffenceId(), is(offenceId3));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(1).getOffences().get(0).getVerdict().getVerdictType().getCategoryType(), is("categoryType"));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(1).getOffences().get(1).getId(), is(offenceId4));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(1).getOffences().get(1).getVerdict(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldUpdateVerdictOfOffencesOfCourtApplicationCase() {
+        final UUID hearingId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                                .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                .withId(offenceId1)
+                                                .withVerdict(Verdict.verdict().withOffenceId(offenceId1).build())
+                                                .build(),
+                                        Offence.offence()
+                                                .withId(offenceId2)
+                                                .withListingNumber(11)
+                                                .build())))
+                                .build()))
+                        .build()))
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+        final List<Object> events = hearingAggregate.updateHearingWithVerdict(Verdict.verdict()
+                .withOffenceId(offenceId2)
+                .withVerdictType(VerdictType.verdictType().withCategoryType("categoryType").build())
+                .build()).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getVerdict().getOffenceId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getVerdict().getVerdictType(), is(nullValue()));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(1).getId(), is(offenceId2));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(1).getVerdict().getOffenceId(), is(offenceId2));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(1).getVerdict().getVerdictType().getCategoryType(), is("categoryType"));
+    }
+
+    @Test
+    public void shouldUpdateVerdictOfOffencesOfCourtOrderofCourtApplication() {
+        final UUID hearingId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withCourtOrder(CourtOrder.courtOrder()
+                                .withCourtOrderOffences(asList(CourtOrderOffence.courtOrderOffence()
+                                        .withOffence(Offence.offence()
+                                                .withId(offenceId1)
+                                                .withVerdict(Verdict.verdict().withOffenceId(offenceId1).build())
+                                                .build())
+                                        .build(),
+                                        CourtOrderOffence.courtOrderOffence()
+                                                .withOffence(Offence.offence()
+                                                        .withId(offenceId2)
+                                                        .withListingNumber(11)
+                                                        .build())
+                                                .build()))
+                                .build())
+                        .build()))
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+        final List<Object> events = hearingAggregate.updateHearingWithVerdict(Verdict.verdict()
+                .withOffenceId(offenceId2)
+                .withVerdictType(VerdictType.verdictType().withCategoryType("categoryType").build())
+                .build()).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(0).getOffence().getId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(0).getOffence().getVerdict().getOffenceId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(0).getOffence().getVerdict().getVerdictType(), is(nullValue()));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(1).getOffence().getId(), is(offenceId2));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(1).getOffence().getVerdict().getOffenceId(), is(offenceId2));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(1).getOffence().getVerdict().getVerdictType().getCategoryType(), is("categoryType"));
+    }
+
+    @Test
+    public void shouldUpdateVerdictOfCourtApplication() {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .build()))
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+        final List<Object> events = hearingAggregate.updateHearingWithVerdict(Verdict.verdict()
+                .withApplicationId(applicationId)
+                .withVerdictType(VerdictType.verdictType().withCategoryType("categoryType").build())
+                .build()).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases(), is(nullValue()));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getVerdict().getVerdictType().getCategoryType(), is("categoryType"));
+
+    }
+
+    @Test
+    public void shouldUpdatePleaOfCourtApplication() {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .build()))
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+        final List<Object> events = hearingAggregate.updateHearingWithPlea(PleaModel.pleaModel()
+                .withApplicationId(applicationId)
+                .withPlea(Plea.plea().withApplicationId(applicationId)
+                        .withPleaValue(GUILTY)
+                        .build())
+                .build()).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases(), is(nullValue()));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getPlea().getPleaValue(), is(GUILTY));
+
+    }
+
+    @Test
+    public void shouldUpdatePleaOfOffencesOfProsecutionCase() {
+        final UUID hearingId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+        final UUID offenceId4 = randomUUID();
+        final UUID caseId1 = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
+                        .withId(caseId1)
+                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                        .withId(offenceId1)
+                                                        .withPlea(Plea.plea().withOffenceId(offenceId1).build())
+                                                        .build(),
+                                                Offence.offence()
+                                                        .withId(offenceId2)
+                                                        .withListingNumber(11)
+                                                        .build())))
+                                        .build(),
+                                Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                        .withId(offenceId3)
+                                                        .build(),
+                                                Offence.offence()
+                                                        .withId(offenceId4)
+                                                        .withListingNumber(13)
+                                                        .build())))
+                                        .build()
+                        )))
+                        .build()
+                )))
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+        final List<Object> events = hearingAggregate.updateHearingWithPlea(PleaModel.pleaModel()
+                .withOffenceId(offenceId3)
+                .withPlea(Plea.plea().withPleaValue(GUILTY).withOffenceId(offenceId3).build())
+                .build()).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getPlea().getOffenceId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(1).getId(), is(offenceId2));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(1).getPlea(), is(nullValue()));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(1).getOffences().get(0).getId(), is(offenceId3));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(1).getOffences().get(0).getPlea().getOffenceId(), is(offenceId3));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(1).getOffences().get(0).getPlea().getPleaValue(), is(GUILTY));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(1).getOffences().get(1).getId(), is(offenceId4));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(1).getOffences().get(1).getPlea(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldUpdatePleaOfOffencesOfCourtApplicationCase() {
+        final UUID hearingId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                                .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                .withId(offenceId1)
+                                                .withPlea(Plea.plea().withOffenceId(offenceId1).build())
+                                                .build(),
+                                        Offence.offence()
+                                                .withId(offenceId2)
+                                                .withListingNumber(11)
+                                                .build())))
+                                .build()))
+                        .build()))
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+        final List<Object> events = hearingAggregate.updateHearingWithPlea(PleaModel.pleaModel()
+                .withOffenceId(offenceId2)
+                .withPlea(Plea.plea().withOffenceId(offenceId2).withPleaValue(GUILTY).build())
+                .build()).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getPlea().getOffenceId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getPlea().getPleaValue(), is(nullValue()));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(1).getId(), is(offenceId2));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(1).getPlea().getOffenceId(), is(offenceId2));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(1).getPlea().getPleaValue(), is(GUILTY));
+    }
+
+    @Test
+    public void shouldUpdatePleaOfOffencesOfCourtOrderOfCourtApplication() {
+        final UUID hearingId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withCourtOrder(CourtOrder.courtOrder()
+                                .withCourtOrderOffences(asList(CourtOrderOffence.courtOrderOffence()
+                                                .withOffence(Offence.offence()
+                                                        .withId(offenceId1)
+                                                        .withPlea(Plea.plea().withOffenceId(offenceId1).build())
+                                                        .build())
+                                                .build(),
+                                        CourtOrderOffence.courtOrderOffence()
+                                                .withOffence(Offence.offence()
+                                                        .withId(offenceId2)
+                                                        .withListingNumber(11)
+                                                        .build())
+                                                .build()))
+                                .build())
+                        .build()))
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+        final List<Object> events = hearingAggregate.updateHearingWithPlea(PleaModel.pleaModel()
+                .withOffenceId(offenceId2)
+                .withPlea(Plea.plea().withOffenceId(offenceId2).withPleaValue(GUILTY).build())
+                .build()).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(0).getOffence().getId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(0).getOffence().getPlea().getOffenceId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(0).getOffence().getPlea().getPleaValue(), is(nullValue()));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(1).getOffence().getId(), is(offenceId2));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(1).getOffence().getPlea().getOffenceId(), is(offenceId2));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(1).getOffence().getPlea().getPleaValue(), is(GUILTY));
+    }
+
+    @Test
+    public void shouldAddNewDefenceCounsel(){
+        final UUID defenceCounselId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .build();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+
+        final List<Object> events = hearingAggregate.addDefenceCounselToHearing(DefenceCounsel.defenceCounsel()
+                .withId(defenceCounselId)
+                .build()).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
+        HearingDefenceCounselAdded hearingDefenceCounselAdded = (HearingDefenceCounselAdded) events.get(0);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getDefenceCounsels().get(0).getId(), is(defenceCounselId));
+
+        assertThat(hearingDefenceCounselAdded.getHearingId(), is(hearingId));
+        assertThat(hearingDefenceCounselAdded.getDefenceCounsel().getId(), is(defenceCounselId));
+
+    }
+
+    @Test
+    public void shouldUpdateNewDefenceCounsel(){
+        final UUID defenceCounselId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withDefenceCounsels(singletonList(DefenceCounsel.defenceCounsel()
+                        .withId(defenceCounselId)
+                        .build()))
+                .build();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+
+        final List<Object> events = hearingAggregate.updateHearingWithDefenceCounsel(DefenceCounsel.defenceCounsel()
+                .withId(defenceCounselId)
+                .withFirstName("FirstName")
+                .build()).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getDefenceCounsels().get(0).getId(), is(defenceCounselId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getDefenceCounsels().get(0).getFirstName(), is("FirstName"));
+
+        HearingDefenceCounselUpdated hearingDefenceCounselUpdated = (HearingDefenceCounselUpdated) events.get(0);
+        assertThat(hearingDefenceCounselUpdated.getHearingId(), is(hearingId));
+        assertThat(hearingDefenceCounselUpdated.getDefenceCounsel().getId(), is(defenceCounselId));
+        assertThat(hearingDefenceCounselUpdated.getDefenceCounsel().getFirstName(), is("FirstName"));
+    }
+
+    @Test
+    public void shouldRemoveNewDefenceCounsel(){
+        final UUID defenceCounselId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withDefenceCounsels(singletonList(DefenceCounsel.defenceCounsel()
+                        .withId(defenceCounselId)
+                        .build()))
+                .build();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+
+        final List<Object> events = hearingAggregate.removeDefenceCounselFromHearing(defenceCounselId).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getDefenceCounsels(), is(nullValue()));
+
+        HearingDefenceCounselRemoved hearingDefenceCounselRemoved = (HearingDefenceCounselRemoved) events.get(0);
+
+        assertThat(hearingDefenceCounselRemoved.getHearingId(), is(hearingId));
+        assertThat(hearingDefenceCounselRemoved.getId(), is(defenceCounselId));
     }
 
     private HearingDeleted createHearingDeleted(final Hearing hearing) {

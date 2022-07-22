@@ -81,6 +81,17 @@ public class NotificationServiceStub {
         });
     }
 
+    public static void verifyNotificationApi(final List<String> expectedValues) {
+        await().atMost(90, SECONDS).pollInterval(5, SECONDS).until(() -> {
+            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching("/notification-cms/v1/transformAndSendCms"));
+            expectedValues.forEach(
+                    expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
+            );
+            verify(requestPatternBuilder);
+        });
+    }
+
+
     public static void verifyEmailNotificationIsRaisedWithoutAttachment(final List<String> expectedValues) {
         await().atMost(30, SECONDS).pollInterval(5, SECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT));
@@ -135,5 +146,13 @@ public class NotificationServiceStub {
             requestPatternBuilder.withRequestBody(containing("templateId"));
             verify(0, requestPatternBuilder);
         });
+    }
+
+    public static void stubForApiNotification(){
+        stubFor(post(urlPathEqualTo("/notification-cms/v1/transformAndSendCms"))
+                .withRequestBody(equalToJson("Optional[{\"businessEventType\":\"now-generated-for-cps-subscription\",\"notificationDate\":\"2022-07-01T08:59:21.067Z\",\"notificationType\":\"court-now-created\",\"subjectBusinessObjectId\":\"7325fcd3-fb0a-4dbb-a876-848f6893aa09\",\"subjectDetails\":{\"material\":\"5e1cc18c-76dc-47dd-99c1-d6f87385edf1\",\"materialContentType\":\"pdf\",\"materialType\":\"SJP Notice\",\"prosecutionCaseSubject\":{\"caseUrn\":\"3cdbf809\",\"defendantSubject\":{\"asn\":\"arrest123\",\"prosecutorDefendantId\":\"TFL12345-ABC\"},\"prosecutingAuthority\":\"GB10056\"}}}]"))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("Ocp-Apim-Subscription-Key", "3674a16507104b749a76b29b6c837352")
+                        .withHeader("Ocp-Apim-Trace", "true")));
     }
 }

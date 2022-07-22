@@ -31,7 +31,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.value.object.CPSNotificationVO;
 
 import java.util.Arrays;
@@ -70,7 +70,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
     private ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Mock
     private ProgressionService progressionService;

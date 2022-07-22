@@ -1,10 +1,12 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import com.google.common.base.Strings;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
 
-import javax.json.*;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
@@ -15,9 +17,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
+import com.google.common.base.Strings;
 
 public class PrisonCourtRegisterPdfPayloadGenerator {
 

@@ -35,6 +35,10 @@
     },
     "submissionId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "materialId": {
+      "description": "Materail id associated with bcm/ptph form when it gets finalised",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     }
   },
   "required": [

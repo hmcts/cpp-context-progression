@@ -27,11 +27,6 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-
-import com.jayway.restassured.path.json.JsonPath;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
-import org.junit.Assert;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -57,8 +52,12 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.google.common.io.Resources;
+import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -195,7 +194,8 @@ public class ACourtHearingDaysIT extends AbstractIT {
                 withJsonPath("$.hearing.hearingDays[0].courtCentreId", CoreMatchers.is(courtCentreId)),
                 withJsonPath("$.hearing.hearingDays[0].courtRoomId", is(courtRoomId)),
                 withJsonPath("$.hearing.hearingDays[0].listedDurationMinutes", CoreMatchers.is(0)),
-                withJsonPath("$.hearing.hearingDays[0].sittingDay", CoreMatchers.is("2018-09-28T12:13:00.000Z"))
+                withJsonPath("$.hearing.hearingDays[0].sittingDay", CoreMatchers.is("2018-09-28T12:13:00.000Z")),
+                withJsonPath("$.hearing.hearingDays[0].hasSharedResults", CoreMatchers.is(true))
         };
 
         pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, hearingDaysMatchers);
@@ -264,7 +264,9 @@ public class ACourtHearingDaysIT extends AbstractIT {
                 .add("listingSequence", listingSequence)
                 .add("courtCentreId", courtCentreId)
                 .add("courtRoomId", courtRoomId)
-                .add("sittingDay", ZONE_DATETIME_FORMATTER.format(ZonedDateTime.now()));
+                .add("sittingDay", ZONE_DATETIME_FORMATTER.format(ZonedDateTime.now()))
+                .add("hasSharedResults", true);
+
     }
 
     private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged) {

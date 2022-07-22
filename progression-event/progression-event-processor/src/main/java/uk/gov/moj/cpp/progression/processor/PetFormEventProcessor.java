@@ -26,7 +26,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.MaterialService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 
 import java.time.ZonedDateTime;
@@ -92,7 +92,7 @@ public class PetFormEventProcessor {
     private DocumentGeneratorService documentGeneratorService;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private Requester requester;
@@ -138,9 +138,9 @@ public class PetFormEventProcessor {
         final JsonObject publicEventPayload = event.payloadAsJsonObject();
         final UUID petId = fromString(publicEventPayload.getString(PET_ID));
         final UUID caseId = fromString(publicEventPayload.getString(CASE_ID));
-        final UUID materialId = randomUUID();
         final JsonArray formArray = publicEventPayload.getJsonArray(FINALISED_FORM_DATA);
         final String submissionId = publicEventPayload.getString(SUBMISSION_ID, null);
+        final UUID materialId = fromString(publicEventPayload.getString(MATERIAL_ID));
 
         LOGGER.info("Generating Pet Document PetId: {}, MaterialId: {}", petId, materialId);
 

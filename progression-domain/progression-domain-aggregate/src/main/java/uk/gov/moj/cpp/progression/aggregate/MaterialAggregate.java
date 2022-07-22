@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.BooleanUtils.negate;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -11,6 +11,7 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 
+import uk.gov.justice.core.courts.CaseSubjects;
 import uk.gov.justice.core.courts.EnforcementAcknowledgmentError;
 import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.core.courts.NowDocumentRequestToBeAcknowledged;
@@ -53,7 +54,7 @@ public class MaterialAggregate implements Aggregate {
 
     private static final long serialVersionUID = 101L;
     private MaterialDetails details;
-    private List<UUID> caseIds = new ArrayList<>();
+    private final List<UUID> caseIds = new ArrayList<>();
     private NowDocumentRequest nowDocumentRequest;
     private boolean isAccountNumberSavedBefore = false;
 
@@ -85,8 +86,8 @@ public class MaterialAggregate implements Aggregate {
                 .withContext(materialDetails).build()));
     }
 
-    public Stream<Object> nowsMaterialStatusUpdated(final UUID materialId, final String status, final String caseUrn, final List<String> defendantAsns,
-                                                    final String prosecutingAuthorityOUCode, final List<String> cpsDefendantIds) {
+    public Stream<Object> nowsMaterialStatusUpdated(final UUID materialId, final String status, final List<CaseSubjects> caseSubjects,
+                                                     final List<String> cpsDefendantIds) {
         final Stream.Builder streamBuilder = Stream.builder();
         if (checkMaterialHasValidNotification(details)) {
 
@@ -94,10 +95,14 @@ public class MaterialAggregate implements Aggregate {
                     ofNullable(nowDocumentRequest)
                             .map(e -> ofNullable(e.getWelshTranslationRequired())
                                     .orElse(false)).orElse(false);
+            final List<String> defendantAsn = new ArrayList<>();
+            if (nonNull(nowDocumentRequest) && nonNull(nowDocumentRequest.getNowContent().getDefendant().getProsecutingAuthorityReference())) {
+                defendantAsn.add(nowDocumentRequest.getNowContent().getDefendant().getProsecutingAuthorityReference());
+            }
 
-            streamBuilder.add(new NowsMaterialStatusUpdated(caseUrn, cpsDefendantIds, defendantAsns, this.details,prosecutingAuthorityOUCode, status, welshTranslationRequired));
+            streamBuilder.add(new NowsMaterialStatusUpdated(caseSubjects, cpsDefendantIds, defendantAsn, this.details, status, welshTranslationRequired));
 
-            if (welshTranslationRequired) {
+            if (nonNull(nowDocumentRequest) && welshTranslationRequired) {
                 final List<String> caseUrns = this.nowDocumentRequest.getNowContent().getCases().stream().map(thecase -> thecase.getReference()).collect(Collectors.toList());
                 streamBuilder.add(new NowDocumentNotificationSuppressed(new NowNotificationSuppressed(caseUrns, this.nowDocumentRequest.getNowContent().getDefendant().getName(), this.nowDocumentRequest.getMasterDefendantId(), this.details.getMaterialId(), this.nowDocumentRequest.getTemplateName())));
             }
@@ -114,19 +119,19 @@ public class MaterialAggregate implements Aggregate {
         return apply(Stream.of(new NowDocumentRequestToBeAcknowledged(materialId, nowDocumentRequest)));
     }
 
-    public Stream<Object> saveAccountNumber(UUID materialId, final UUID requestId, final String accountNumber) {
-        if(isAccountNumberSavedBefore){
+    public Stream<Object> saveAccountNumber(final UUID materialId, final UUID requestId, final String accountNumber) {
+        if (isAccountNumberSavedBefore) {
             return Stream.of(new NowsRequestWithAccountNumberIgnored(accountNumber, requestId));
         }
         final NowDocumentRequest updatedNowDocumentRequest = updateFinancialOrderDetails(nowDocumentRequest, accountNumber);
         return Stream.of(new NowsRequestWithAccountNumberUpdated(accountNumber, requestId), new NowDocumentRequested(materialId, updatedNowDocumentRequest));
     }
 
-    public Stream<Object> recordPrintRequest(UUID materialId, UUID notificationId, boolean postage) {
+    public Stream<Object> recordPrintRequest(final UUID materialId, final UUID notificationId, final boolean postage) {
         return apply(Stream.of(new PrintRequested(notificationId, null, null, materialId, postage)));
     }
 
-    private NowDocumentRequest updateFinancialOrderDetails(NowDocumentRequest nowDocumentRequest, String accountNumber) {
+    private NowDocumentRequest updateFinancialOrderDetails(final NowDocumentRequest nowDocumentRequest, final String accountNumber) {
         final NowDocumentContent nowDocumentContent = nowDocumentRequest.getNowContent();
         final FinancialOrderDetails financialOrderDetails = nowDocumentContent.getFinancialOrderDetails();
         return uk.gov.justice.core.courts.nowdocument.NowDocumentRequest.nowDocumentRequest()
@@ -217,7 +222,7 @@ public class MaterialAggregate implements Aggregate {
         return apply(streamBuilder.build());
     }
 
-    private boolean checkMaterialHasValidNotification(MaterialDetails details) {
+    private boolean checkMaterialHasValidNotification(final MaterialDetails details) {
         if (isNull(details)) {
             return false;
         }
@@ -231,12 +236,8 @@ public class MaterialAggregate implements Aggregate {
         return details;
     }
 
-    public UUID fetchCaseId(){
-       LOGGER.info("fetchCaseId : {}", caseIds);
-
-       if (isNotEmpty(caseIds)){
-           return caseIds.get(0);
-       }
-        return null;
+    public List<UUID> fetchCases(){
+       LOGGER.info("fetchCases : {}", caseIds);
+       return caseIds;
     }
 }

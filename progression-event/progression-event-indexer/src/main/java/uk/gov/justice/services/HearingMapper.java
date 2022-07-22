@@ -1,7 +1,13 @@
 package uk.gov.justice.services;
 
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
+
+import java.time.LocalDate;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JudicialRole;
@@ -9,13 +15,13 @@ import uk.gov.justice.core.courts.JudicialRoleType;
 
 import java.util.ArrayList;
 import java.util.List;
+import uk.gov.justice.services.unifiedsearch.client.domain.DefenceCounsel;
 
 public class HearingMapper {
 
-
     private HearingDatesMapper hearingDatesMapper = new HearingDatesMapper();
 
-    private HearingDaysMapper hearingDaysMapper = new HearingDaysMapper();
+    private HearingDaysMapper hearingDaysMapper = new HearingDaysMapper(new HearingDaySharedResultsMapper());
 
     public uk.gov.justice.services.unifiedsearch.client.domain.Hearing hearing(final Hearing hearing,
                                                                                final List<String> defendantIds) {
@@ -37,9 +43,7 @@ public class HearingMapper {
         hearingIndex.setHearingDays(hearingDaysMapper.extractHearingDays(hearing));
         hearingIndex.setHearingDates(hearingDatesMapper.extractHearingDates(hearing));
         hearingIndex.setJudiciaryTypes(judiciaryTypes(hearing));
-        if (hearing.getId() != null) {
-            hearingIndex.setHearingId(hearing.getId().toString());
-        }
+        ofNullable(hearing.getId()).ifPresent(id -> hearingIndex.setHearingId(id.toString()));
 
         if (hearing.getType() != null && hearing.getType().getId() != null) {
             hearingIndex.setHearingTypeId(hearing.getType().getId().toString());
@@ -49,10 +53,28 @@ public class HearingMapper {
             hearingIndex.setHearingTypeLabel(hearing.getType().getDescription());
         }
 
-        if (hearing.getJurisdictionType() != null) {
-            hearingIndex.setJurisdictionType(hearing.getJurisdictionType().toString());
+        ofNullable(hearing.getJurisdictionType()).ifPresent(type -> hearingIndex.setJurisdictionType(type.toString()));
+
+        ofNullable(hearing.getEstimatedDuration()).ifPresent(hearingIndex::setEstimatedDuration);
+
+        if(isNotEmpty(hearing.getDefenceCounsels())) {
+            hearingIndex.setDefenceCounsels(hearing.getDefenceCounsels().stream().map(this::createDefenceCounsel).collect(Collectors.toList()));
         }
     }
+
+    private DefenceCounsel createDefenceCounsel(uk.gov.justice.core.courts.DefenceCounsel defenceCounsel){
+        final DefenceCounsel defenceCounselIndex = new DefenceCounsel();
+        defenceCounselIndex.setDefendants(defenceCounsel.getDefendants().stream().map(UUID::toString).collect(Collectors.toList()));
+        defenceCounselIndex.setAttendanceDays(defenceCounsel.getAttendanceDays().stream().map(LocalDate::toString).collect(Collectors.toList()));
+        defenceCounselIndex.setFirstName(defenceCounsel.getFirstName());
+        defenceCounselIndex.setId(defenceCounsel.getId().toString());
+        defenceCounselIndex.setLastName(defenceCounsel.getLastName());
+        defenceCounselIndex.setMiddleName(defenceCounsel.getMiddleName());
+        defenceCounselIndex.setStatus(defenceCounsel.getStatus());
+        defenceCounselIndex.setTitle(defenceCounsel.getTitle());
+        return defenceCounselIndex;
+    }
+
 
     private List<String> judiciaryTypes(final Hearing hearing) {
         final List<String> judiciaryTypes = new ArrayList<>();

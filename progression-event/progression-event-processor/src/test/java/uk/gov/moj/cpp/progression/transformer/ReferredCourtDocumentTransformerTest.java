@@ -16,7 +16,7 @@ import uk.gov.justice.core.courts.ReferredCourtDocument;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -40,7 +40,7 @@ public class ReferredCourtDocumentTransformerTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
     @InjectMocks
     private ReferredCourtDocumentTransformer referredCourtDocumentTransformer;
 

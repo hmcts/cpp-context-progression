@@ -159,7 +159,7 @@ public class ProgressionService {
     private ListToJsonArrayConverter<CourtApplication> listToJsonArrayConverter;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private AzureFunctionService azureFunctionService;
@@ -938,6 +938,7 @@ public class ProgressionService {
                 .withProsecutionCases(transformProsecutionCase(confirmedHearing.getProsecutionCases(), earliestHearingDate, jsonEnvelope, seedingHearing))
                 .withCourtApplications(extractCourtApplications(confirmedHearing, jsonEnvelope))
                 .withShadowListedOffences(listingService.getShadowListedOffenceIds(jsonEnvelope, confirmedHearing.getId()))
+                .withEstimatedDuration(confirmedHearing.getEstimatedDuration())
                 .build();
     }
 
@@ -1167,6 +1168,7 @@ public class ProgressionService {
                 .withId(existingHearingId)
                 .withJurisdictionType(incomingHearing.getJurisdictionType())
                 .withEstimatedMinutes(30)
+                .withEstimatedDuration(incomingHearing.getEstimatedDuration())
                 .withType(incomingHearing.getType())
                 .build();
     }

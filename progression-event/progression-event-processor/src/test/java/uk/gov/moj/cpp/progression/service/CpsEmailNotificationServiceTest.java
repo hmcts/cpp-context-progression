@@ -85,7 +85,7 @@ public class CpsEmailNotificationServiceTest {
     private CPSNotificationVO cpsNotificationVO;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Mock
     private ProgressionService progressionService;

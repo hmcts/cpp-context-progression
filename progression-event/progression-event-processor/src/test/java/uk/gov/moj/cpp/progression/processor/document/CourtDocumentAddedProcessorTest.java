@@ -30,7 +30,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.service.DefenceNotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.service.payloads.UserGroupDetails;
 
@@ -78,7 +78,7 @@ public class CourtDocumentAddedProcessorTest {
     @Mock
     private ProgressionService progressionService;
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
 

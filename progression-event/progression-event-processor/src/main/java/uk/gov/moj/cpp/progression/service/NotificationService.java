@@ -1,27 +1,39 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.AddMaterialV2.addMaterialV2;
+import static uk.gov.justice.core.courts.DefendantSubject.defendantSubject;
+import static uk.gov.justice.core.courts.EventNotification.eventNotification;
+import static uk.gov.justice.core.courts.ProsecutionCaseSubject.prosecutionCaseSubject;
 import static uk.gov.justice.core.courts.SummonsTemplateType.NOT_APPLICABLE;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getCourtTime;
 
+import uk.gov.justice.core.courts.AddMaterialV2;
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.CaseSubjects;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.DefendantSubject;
+import uk.gov.justice.core.courts.EventNotification;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.MaterialDetails;
+import uk.gov.justice.core.courts.MaterialTag;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.Personalisation;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.ProsecutionCaseSubject;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -29,13 +41,12 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileRetriever;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.domain.FileReference;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.email.PartyType;
 import uk.gov.moj.cpp.progression.nows.InvalidNotificationException;
 import uk.gov.moj.cpp.progression.nows.Notification;
+import uk.gov.moj.cpp.progression.service.utils.FileUtil;
 import uk.gov.moj.cpp.progression.value.object.CPSNotificationVO;
 import uk.gov.moj.cpp.progression.value.object.EmailTemplateType;
 
@@ -104,7 +115,8 @@ public class NotificationService {
     private static final String PHONE = "phone";
     private static final String EMPTY = "";
     private static final String CONTENT_TYPE = "application/pdf";
-    private static final String MATERIAL_TYPE = "Court Final Orders";
+    private static final String MATERIAL_TYPE = "Court Final orders";
+    public static final String COMMA = ",";
     @Inject
     private Enveloper enveloper;
     @Inject
@@ -120,20 +132,21 @@ public class NotificationService {
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
     @Inject
     private DocumentGeneratorService documentGeneratorService;
-    @Inject
-    private RestApiNotificationService restApiNotificationService;
 
     @Inject
     private PostalService postalService;
 
     @Inject
-    private FileRetriever fileRetriever;
+    private FileUtil fileUtil;
 
     @Inject
     private MaterialService materialService;
+
+    @Inject
+    private CpsRestNotificationService cpsRestNotificationService;
 
     public void sendEmail(final JsonEnvelope sourceEnvelope, final UUID notificationId, final UUID caseId, final UUID applicationId, final UUID materialId, final List<EmailChannel> emailNotifications) {
 
@@ -239,76 +252,80 @@ public class NotificationService {
     }
 
     public void sendApiNotification(final JsonEnvelope sourceEnvelope, final UUID notificationId, final MaterialDetails materialDetails,
-                                    final String caseUrn, final List<String> defendantAsns, final String prosecutingAuthorityOUCode, final List<String> cpsDefendantIds) {
+                                    final List<CaseSubjects> caseSubjects, final List<String> defendantAsns, final List<String> cpsDefendantIds) {
         final UUID materialId = materialDetails.getMaterialId();
-        String materialName = "";
-        try {
+        if (isNull(materialId)) {
+            LOGGER.error("Unable to transform the payload. subjectBusinessObjectId is null.");
+            return;
+        }
 
+        String materialName = StringUtils.EMPTY;
+        String fileName = StringUtils.EMPTY;
+
+        try {
             materialName = materialService.getMaterialMetadataV2(sourceEnvelope, materialId);
+            fileName = fileUtil.retrieveFileName(materialDetails.getFileId());
+        } catch (FileServiceException e) {
+            LOGGER.warn("Failed to retrieve file details.", e);
         } catch(Exception e) {
             LOGGER.info("Exception while fetching materialName",e);
         }
 
-        final JsonObjectBuilder payloadBuilder = createObjectBuilder();
-        final JsonObject jsonObject = payloadBuilder
-                .add("subjectBusinessObjectId", materialId.toString())
-                .add("businessEventType", "now-generated-for-cps-subscription")
-                .add("notificationDate", ZONE_DATETIME_FORMATTER.format(ZonedDateTime.now()))
-                .add("notificationType", "court-now-created")
-                .add("subjectDetails", createSubjectDetails(materialDetails, materialName, caseUrn, defendantAsns, prosecutingAuthorityOUCode, cpsDefendantIds))
-                .build();
-        LOGGER.info("sendApiNotification : {}", jsonObject);
+        final DefendantSubject.Builder defendantSubjectBuilder = defendantSubject();
+        if(isNotEmpty(defendantAsns)) {
+            defendantSubjectBuilder.withAsn(StringUtils.join(defendantAsns, COMMA));
+        }
+        if(isNotEmpty(cpsDefendantIds)) {
+            defendantSubjectBuilder.withCpsDefendantId(StringUtils.join(cpsDefendantIds, COMMA));
+        }
 
+        final ProsecutionCaseSubject.Builder prosecutionCaseSubjectBuilder = prosecutionCaseSubject();
+        if(nonNull(caseSubjects) && caseSubjects.size()==1) {
+            prosecutionCaseSubjectBuilder.withDefendantSubject(defendantSubjectBuilder.build())
+                    .withCaseUrn(caseSubjects.get(0).getUrn())
+                    .withProsecutingAuthority(caseSubjects.get(0).getProsecutingAuthorityOUCode())
+                    .withOuCode(caseSubjects.get(0).getProsecutingAuthorityOUCode());
+        }
 
-        restApiNotificationService.sendApiNotification(jsonObject.toString());
+        final AddMaterialV2.Builder addMaterialV2 = addMaterialV2();
+        addMaterialV2.withMaterial(materialDetails.getMaterialId())
+                .withMaterialContentType(CONTENT_TYPE)
+                .withMaterialName(materialName)
+                .withMaterialType(MATERIAL_TYPE)
+                .withFileName(fileName)
+                .withTag(new ArrayList<MaterialTag>())
+                .withProsecutionCaseSubject(prosecutionCaseSubjectBuilder.build());
+
+        final EventNotification eventNotification = buildEventNotification(addMaterialV2, materialId, caseSubjects);
+
+        final Optional<String> transformedJsonPayload = ofNullable(objectToJsonObjectConverter.convert(eventNotification).toString());
+        if (transformedJsonPayload.isPresent()) {
+            LOGGER.info("Notification triggered");
+            cpsRestNotificationService.sendMaterial(transformedJsonPayload.get());
+        } else {
+            LOGGER.info("No payload available");
+        }
     }
 
-    private JsonObjectBuilder createSubjectDetails(final MaterialDetails materialDetails, final String materialName, final String caseUrn, final List<String> defendantAsns, final String prosecutingAuthorityOUCode, final List<String> cpsDefendantIds) {
-        String fileName = StringUtils.EMPTY;
-        try {
-            final Optional<FileReference> fileReference = fileRetriever.retrieve(materialDetails.getFileId());
-            fileName = nonNull(fileReference) && fileReference.isPresent()? fileReference.get().getMetadata().getString("fileName"):StringUtils.EMPTY;
-        } catch (FileServiceException e) {
-            LOGGER.warn("Failed to retrieve file details.", e);
+    private EventNotification buildEventNotification(final AddMaterialV2.Builder addMaterialV2, final UUID materialId, final List<CaseSubjects> caseSubjects) {
+        final EventNotification.Builder eventNotificationBuilder = eventNotification();
+        eventNotificationBuilder.withSubjectBusinessObjectId(materialId);
+        eventNotificationBuilder.withSubjectDetails(addMaterialV2.build());
+        eventNotificationBuilder.withBusinessEventType("now-generated-for-cps-subscription");
+        eventNotificationBuilder.withAdditionalProperty("notificationDate", ZONE_DATETIME_FORMATTER.format(ZonedDateTime.now()));
+        eventNotificationBuilder.withAdditionalProperty("notificationType", "court-now-created");
+
+        if (nonNull(caseSubjects) && caseSubjects.size() > 1) {
+            final JsonArrayBuilder casesBuilder = createArrayBuilder();
+            caseSubjects.forEach(caseSubjects1 -> {
+                final JsonObjectBuilder object = createObjectBuilder();
+                object.add("caseUrn", caseSubjects1.getUrn())
+                        .add("prosecutingAuthority", caseSubjects1.getProsecutingAuthorityOUCode());
+                casesBuilder.add(object.build());
+            });
+            eventNotificationBuilder.withAdditionalProperty("cases", casesBuilder.build());
         }
-
-        final JsonObjectBuilder defendantObjectBuilder = createObjectBuilder();
-
-        final JsonArrayBuilder cpsDefendantIdsBuilder = createArrayBuilder();
-        if (nonNull(cpsDefendantIds)) {
-            cpsDefendantIds.forEach(id ->
-                cpsDefendantIdsBuilder.add(id)
-            );
-        }
-
-        final JsonArrayBuilder defendentAsnBuilder = createArrayBuilder();
-        if (nonNull(defendantAsns)) {
-            defendantAsns.forEach(defendantAsn ->
-                    defendentAsnBuilder.add(defendantAsn)
-            );
-        }
-
-        defendantObjectBuilder.add("cpsDefendantId", cpsDefendantIdsBuilder.build());
-        defendantObjectBuilder.add("asn",defendentAsnBuilder.build());
-
-        return createObjectBuilder()
-                .add("materialNotification", createObjectBuilder()
-                        .add(MATERIAL_ID, materialDetails.getMaterialId().toString())
-                        .add("materialContentType", CONTENT_TYPE)
-                        .add("materialName", materialName)
-                        .add("materialType", MATERIAL_TYPE)
-                        .add("fileName", fileName)
-                        .add("tag",  createObjectBuilder()
-                                .add("name", StringUtils.EMPTY)
-                        )
-                        .add("prosecutionCaseSubject",  createObjectBuilder()
-                                .add("case",  createArrayBuilder().add(
-                                        createObjectBuilder()
-                                        .add("caseUrn", caseUrn)
-                                        .add("prosecutingAuthority", prosecutingAuthorityOUCode).build()))
-                                .add("defendantSubject", defendantObjectBuilder.build())
-                        )
-                );
+        return eventNotificationBuilder.build();
     }
 
     public void sendLetter(final JsonEnvelope sourceEnvelope, final UUID notificationId, final UUID caseId, final UUID applicationId, final UUID materialId, final boolean postage) {

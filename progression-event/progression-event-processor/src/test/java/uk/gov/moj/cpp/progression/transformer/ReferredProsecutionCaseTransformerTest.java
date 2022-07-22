@@ -21,11 +21,11 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEG
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MODEOFTRIAL_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.ETHNICITY;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.ETHNICITY_CODE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY_CODE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.PROSECUTOR;
+import static uk.gov.moj.cpp.progression.service.RefDataService.ETHNICITY;
+import static uk.gov.moj.cpp.progression.service.RefDataService.ETHNICITY_CODE;
+import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY;
+import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY_CODE;
+import static uk.gov.moj.cpp.progression.service.RefDataService.PROSECUTOR;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Defendant;
@@ -50,7 +50,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public class ReferredProsecutionCaseTransformerTest {
     @Mock
     private ReferenceDataOffenceService referenceDataOffenceService;
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
     @InjectMocks
     private ReferredProsecutionCaseTransformer referredProsecutionCaseTransformer;
     @Mock

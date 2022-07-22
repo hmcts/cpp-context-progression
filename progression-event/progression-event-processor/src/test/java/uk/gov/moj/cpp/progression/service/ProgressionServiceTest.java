@@ -176,6 +176,7 @@ public class ProgressionServiceTest {
     private static final String PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND = "progression.command.create-hearing-for-application";
 
     private static final String EMPTY = "";
+    private static final String ESTIMATED_DURATION = "1 week";
     public static final String PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED = "progression.event.next-hearings-requested";
     @Spy
     private final Enveloper enveloper = createEnveloper();
@@ -202,7 +203,7 @@ public class ProgressionServiceTest {
     @Mock
     private Requester requester;
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
     @Mock
     private ListingService listingService;
     @Spy
@@ -1482,6 +1483,7 @@ public class ProgressionServiceTest {
                 .withLjaName("name").withWelshLjaName("welshName").build());
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(randomUUID())
+                .withEstimatedDuration(ESTIMATED_DURATION)
                 .withHearingDays(asList(HearingDay.hearingDay()
                         .withSittingDay(ZonedDateTime.now()).build()))
                 .withCourtCentre(CourtCentre.courtCentre()
@@ -1499,6 +1501,7 @@ public class ProgressionServiceTest {
         assertThat(hearing.getCourtCentre().getLja().getLjaCode(), is("nationalCourtCode"));
         assertThat(hearing.getCourtCentre().getLja().getLjaName(), is("name"));
         assertThat(hearing.getCourtCentre().getLja().getWelshLjaName(), is("welshName"));
+        assertThat(hearing.getEstimatedDuration(), is (ESTIMATED_DURATION));
     }
 
     @Test

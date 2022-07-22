@@ -15,7 +15,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.Map;
 import java.util.Optional;
@@ -46,7 +46,7 @@ public class ReferCasesToCourtCommandApi {
     @Inject
     private Requester requester;
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
     @Inject

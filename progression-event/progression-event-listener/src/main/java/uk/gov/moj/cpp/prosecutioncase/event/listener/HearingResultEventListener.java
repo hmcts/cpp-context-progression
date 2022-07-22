@@ -216,6 +216,7 @@ public class HearingResultEventListener {
             final Defendant resultedDefendant = optionalResultedDefendant.get();
             return Defendant.defendant()
                     .withOffences(getUpdatedOffencesForNonResultedHearing(originDefendant.getOffences(), resultedDefendant))
+                    .withCpsDefendantId(originDefendant.getCpsDefendantId())
                     .withPersonDefendant(originDefendant.getPersonDefendant())
                     .withLegalEntityDefendant(originDefendant.getLegalEntityDefendant())
                     .withAssociatedPersons(originDefendant.getAssociatedPersons())
@@ -333,6 +334,7 @@ public class HearingResultEventListener {
         final Defendant defendantFromDatabase = defendantFromDatabaseOptional.get();
         return Defendant.defendant()
                 .withOffences(getUpdatedOffences(defendantFromPayload, defendantFromDatabase, hearingDay))
+                .withCpsDefendantId(defendantFromPayload.getCpsDefendantId())
                 .withPersonDefendant(defendantFromPayload.getPersonDefendant())
                 .withLegalEntityDefendant(defendantFromPayload.getLegalEntityDefendant())
                 .withAssociatedPersons(defendantFromPayload.getAssociatedPersons())

@@ -74,6 +74,7 @@ public class AdjournHearingEventProcessor {
                     .withCourtCentre(nextHearing.getCourtCentre())
                     .withEarliestStartDateTime(nextHearing.getListedStartDateTime())
                     .withEstimatedMinutes(nextHearing.getEstimatedMinutes())
+                    .withEstimatedDuration(nextHearing.getEstimatedDuration())
                     .withId(UUID.randomUUID())
                     .withJurisdictionType(JurisdictionType.valueOf(nextHearing.getJurisdictionType().name()))
                     .withJudiciary(nextHearing.getJudiciary())

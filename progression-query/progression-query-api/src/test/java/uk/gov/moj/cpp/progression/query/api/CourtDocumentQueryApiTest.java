@@ -135,7 +135,10 @@ public class CourtDocumentQueryApiTest {
     public void shouldReturnApplicationDocumentsWhenNoCaseIdAndApplicationIdQueryParamInSearchCourtDocumentsForProsecution() {
 
         String applicationId = randomUUID().toString();
-        final JsonObject jsonObjectPayload = createObjectBuilder().add(APPLICATION_ID, applicationId).build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add(APPLICATION_ID, applicationId)
+                .add("isProsecuting",true)
+                .add("caseId",randomUUID().toString())
+                .build();
         final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_PROSECUTION);
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
 

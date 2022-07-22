@@ -9,9 +9,9 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEG
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.ID;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY_CODE;
+import static uk.gov.moj.cpp.progression.service.RefDataService.ID;
+import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY;
+import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY_CODE;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllocationDecision;
@@ -38,7 +38,7 @@ import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Hearing;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -68,7 +68,7 @@ public class SendingSheetCompleteTransformer {
     @Inject
     private ReferenceDataOffenceService referenceDataOffenceService;
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     private SendingSheetCompleteTransformer() {
 

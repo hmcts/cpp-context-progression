@@ -524,6 +524,16 @@ subscriptions_descriptor:
         - name: public.hearing.selected-offences-removed-from-existing-hearing
           schema_uri: http://justice.gov.uk/hearing/courts/public.hearing.selected-offences-removed-from-existing-hearing.json
 
+        - name: public.hearing.defence-counsel-added
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/defence-counsel-added.json
+
+        - name: public.hearing.defence-counsel-updated
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/defence-counsel-updated.json
+
+        - name: public.hearing.defence-counsel-removed
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/defence-counsel-removed.json
+
+
         # Notification notify
         - name: public.notificationnotify.events.notification-failed
           schema_uri: http://justice.gov.uk/core/courts/public.notificationnotify.events.notification-failed.json
@@ -615,5 +625,11 @@ subscriptions_descriptor:
 
         - name: public.listing.hearing-partially-updated
           schema_uri: http://justice.gov.uk/listing/courts/public.hearing-partially-updated.json
+
+        - name: public.hearing.hearing-offence-verdict-updated
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/public.hearing.hearing-offence-verdict-updated.json
+
+        - name: public.hearing.hearing-offence-plea-updated
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/public.hearing-offence-plea-updated.json
 
       event_source_name: public.event.source

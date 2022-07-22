@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.handler;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
+import uk.gov.justice.core.courts.CaseSubjects;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -26,6 +27,7 @@ import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -79,42 +81,59 @@ public class MaterialStatusHandler {
 
        final  MaterialDetails materialDetails = nowsAggregate.getMaterialDetails();
         if(nonNull(materialDetails)&& nonNull(materialDetails.getIsNotificationApi()) && nonNull(materialDetails.getIsCps()) && materialDetails.getIsNotificationApi() && materialDetails.getIsCps()){
-            if(nonNull(nowsAggregate.fetchCaseId())) {
-                final Optional<JsonObject> optionalProsecutionCase = prosecutionCaseQueryService.getProsecutionCase(envelope, nowsAggregate.fetchCaseId().toString());
+            final List<UUID> cases = nowsAggregate.fetchCases();
+            if(nonNull(cases)) {
+                final Optional<JsonObject> optionalProsecutionCase = prosecutionCaseQueryService.getProsecutionCase(envelope, cases.get(0).toString());
                 if (!optionalProsecutionCase.isPresent()) {
-                    throw new IllegalStateException(String.format("Unable to find the case %s", nowsAggregate.fetchCaseId()));
+                    throw new IllegalStateException(String.format("Unable to find the case %s", cases.get(0)));
                 }
+
+                final List<CaseSubjects> caseSubjects = fetchCaseUrns(envelope,cases);
 
                 final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(optionalProsecutionCase.get().getJsonObject(PROSECUTION_CASE), ProsecutionCase.class);
                 if(nonNull(prosecutionCase)) {
-                    final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
-
                     final List<Defendant> defendants = prosecutionCase.getDefendants();
                     final List<String> cpsDefendantIds = new ArrayList<>();
-                    final List<String> defendantAsns = new ArrayList<>();
                     if(nonNull(defendants)) {
                         defendants.forEach(defendant -> {
                             if (nonNull(defendant.getCpsDefendantId())) {
                                 cpsDefendantIds.add(defendant.getCpsDefendantId().toString());
                             }
-                            if (nonNull(defendant.getPersonDefendant())) {
-                                defendantAsns.add(defendant.getPersonDefendant().getArrestSummonsNumber());
-                            }
                         });
                     }
 
                     final Stream<Object> events = nowsAggregate.nowsMaterialStatusUpdated(update.getMaterialId(), update.getStatus(),
-                            prosecutionCaseIdentifier.getCaseURN(), defendantAsns,
-                            prosecutionCaseIdentifier.getProsecutionAuthorityOUCode(), isNotEmpty(cpsDefendantIds)?cpsDefendantIds:null);
+                            caseSubjects, isNotEmpty(cpsDefendantIds)?cpsDefendantIds:null);
                     appendEventsToStream(envelope, eventStream, events);
                 }
             }
         }
         else {
             final Stream<Object> events = nowsAggregate.nowsMaterialStatusUpdated(update.getMaterialId(), update.getStatus(),
-                    null, null,null, null);
+                    null, null);
             appendEventsToStream(envelope, eventStream, events);
         }
+    }
+
+    private List<CaseSubjects> fetchCaseUrns(final JsonEnvelope envelope, final List<UUID> cases) {
+        final List<CaseSubjects> caseSubjects = new ArrayList<>();
+        if (isNotEmpty(cases)) {
+            cases.forEach(c -> {
+                final Optional<JsonObject> optionalProsecutionCase = prosecutionCaseQueryService.getProsecutionCase(envelope, c.toString());
+                if (optionalProsecutionCase.isPresent()) {
+                    final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(optionalProsecutionCase.get().getJsonObject(PROSECUTION_CASE), ProsecutionCase.class);
+                    if (nonNull(prosecutionCase)) {
+                        final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+                        final CaseSubjects caseSubject = CaseSubjects.caseSubjects()
+                                .withUrn(nonNull(prosecutionCaseIdentifier.getCaseURN()) ? prosecutionCaseIdentifier.getCaseURN():prosecutionCaseIdentifier.getProsecutionAuthorityReference())
+                                .withProsecutingAuthorityOUCode(prosecutionCaseIdentifier.getProsecutionAuthorityOUCode())
+                                .build();
+                        caseSubjects.add(caseSubject);
+                    }
+                }
+            });
+        }
+        return caseSubjects;
     }
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {

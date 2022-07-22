@@ -117,4 +117,30 @@ public class DefendantsListingStatusChangedTransformerTest {
         hearingVerificationHelper.verifyHearings(inputDC, output, 0, 0);
         hearingVerificationHelper.verifyCounts(1, 1, 0);
     }
+
+    @Test
+    public void shouldTransformDefendantsListingStatusChangedWithNextHearingEstimatedDuration() throws IOException {
+
+        final JsonObject inputJson = readJson("/progression.event.prosecution-case-defendant-listing-status-changed-with-next-hearing-estimated-duration.json");
+        final DocumentContext inputDC = JsonPath.parse(inputJson);
+        final Map<String, Object> input = JsonUtils.jsonToMap(new ByteArrayInputStream(inputJson.toString().getBytes()));
+        final JsonObject output = objectToJsonObjectConverter.convert(defendantsListingStatusChangedTransformer.transform(input));
+
+        hearingVerificationHelper.verifyProsecutionCase(inputDC, output, 0, "$.hearing.prosecutionCases[0]");
+
+        hearingVerificationHelper.verifyHearingsWithEstimatedDuration(inputDC, output, 0, 0);
+
+
+        hearingVerificationHelper.verifyCounts(1, 1, 0);
+    }
+
+    @Test
+    public void shouldTransformDefendantsListingStatusChangedWithOffences() {
+        final JsonObject inputJson = readJson("/progression.event.prosecution-case-defendant-listing-status-changed-with-offence.json");
+        final DocumentContext inputDC = JsonPath.parse(inputJson);
+        final Map<String, Object> input = JsonUtils.jsonToMap(new ByteArrayInputStream(inputJson.toString().getBytes()));
+        final JsonObject output = objectToJsonObjectConverter.convert(defendantsListingStatusChangedTransformer.transform(input));
+
+        hearingVerificationHelper.verifyDefendant(inputDC, output, 0, 0, 0);
+    }
 }

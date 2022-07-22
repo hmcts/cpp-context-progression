@@ -1,0 +1,145 @@
+{
+  "boxWorkTaskStatus": "COMPLETE",
+  "boxWorkAssignedUserId": "207f6f5e-7a47-4a78-83aa-871182501be6",
+  "hearing": {
+    "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+    "jurisdictionType": "CROWN",
+    "hearingListingStatus": "SENT_FOR_LISTING",
+    "isBoxHearing": true,
+    "estimatedDuration": "20 Minutes",
+    "courtApplications": [
+      {
+        "id": "bc55f521-cafc-4ab3-8a73-a51f6c93f153",
+        "type": {
+          "id": "edbeaf31-2129-48e5-b372-3a592bbacc13",
+          "type": "THE APPLICATION TYPE",
+          "categoryCode": "THE APPLICATION TYPE CATEGORY",
+          "linkType": "LINKED",
+          "applicationJurisdictionType": "MAGISTRATES"
+        },
+        "applicationReceivedDate": "2019-06-23",
+        "dueDate": "2019-06-24",
+        "applicationDecisionSoughtByDate": "2019-06-25",
+        "applicant": {
+          "id": "e5f59a16-5e0c-4732-b59c-ca1092ed9f45"
+        },
+        "applicationStatus": "LISTED",
+        "applicationReference": "REF 1"
+      },
+      {
+        "id": "864696dc-d5aa-4437-86a9-dd3eff3b3257",
+        "type": {
+          "id": "50c2e2c8-5c56-4d29-bb67-686511059a69",
+          "type": "THE APPLICATION TYPE",
+          "categoryCode": "THE APPLICATION TYPE CATEGORY",
+          "linkType": "LINKED",
+          "applicationJurisdictionType": "CROWN"
+        },
+        "applicationReceivedDate": "2019-06-28",
+        "applicant": {
+          "id": "e5f59a16-5e0c-4732-b59c-ca1092ed9f45"
+        },
+        "applicationStatus": "LISTED",
+        "dueDate": "2019-06-25",
+        "applicationDecisionSoughtByDate": "2019-06-27",
+        "applicationReference": "REF 2"
+      }
+    ],
+    "courtCentre": {
+      "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+      "name": "00ObpXuu51",
+      "roomId": "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a",
+      "roomName": "JK2Y7hu0Tc",
+      "welshName": "3IpJDfdfhS",
+      "welshRoomName": "hm60SAXokc"
+    },
+    "judiciary": [
+      {
+        "judicialId": "66e93f60-5a48-40d5-b406-37a53ed6d5c2",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+          "judiciaryType": "Recorder1"
+        }
+      },
+      {
+        "judicialId": "79a91058-2235-42ec-a339-860d8f46ab58",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+          "judiciaryType": "Recorder"
+        }
+      }
+    ],
+    "hearingDays": [
+      {
+        "courtCentreId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "courtRoomId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "listedDurationMinutes": 1531791578,
+        "listingSequence": 810249414,
+        "sittingDay": "2015-01-12T05:27:17.210Z"
+      },
+      {
+        "courtCentreId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "courtRoomId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "listedDurationMinutes": 15317889,
+        "listingSequence": 810249419,
+        "sittingDay": "2015-02-23T08:27:17.210Z"
+      }
+    ],
+    "prosecutionCases": [
+      {
+        "defendants": [
+          {
+            "id": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
+            "prosecutionCaseId": "57ab0671-407c-4f9a-9e9f-1f5bd01778fb",
+            "offences": [
+              {
+                "count": 0,
+                "id": "2a142c22-574e-409c-8f75-7871328fe69d",
+                "offenceCode": "CA03012",
+                "offenceDefinitionId": "3ebe41c9-666d-4964-aa80-a005d89927a3",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Possess /    control TV set with intent another use install without a licence",
+                "orderIndex": 2,
+                "startDate": "2020-06-19",
+                "endDate": "2019-06-29",
+                "wording": "OK",
+                "proceedingsConcluded": false,
+                "dateOfInformation": "2019-09-02",
+                "wordingWelsh": "No Travel Card In Welsh",
+                "statementOfFacts": "You did it",
+                "statementOfFactsWelsh": "You did it in Welsh",
+                "arrestDate": "2018-01-01",
+                "chargeDate": "2018-01-01",
+                "modeOfTrial": "CROWN",
+                "laaApplnReference": {
+                  "applicationReference": "LAA REF OFF 1",
+                  "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+                  "statusCode": "LAA STATUS CODE OFF 1",
+                  "statusDescription": "LAA STATUS DESC OFF 1",
+                  "effectiveStartDate": "2019-08-12",
+                  "effectiveEndDate": "2019-10-12"
+                },
+                "plea": {
+                  "originatingHearingId": "3ebe41c9-2f6d-a9a9-4f10-66ae0845a06d",
+                  "pleaDate": "2019-08-12",
+                  "pleaValue": "GUILTY"
+                }
+              }
+            ]
+          }
+        ],
+        "id": "57ab0671-407c-4f9a-9e9f-1f5bd01778fb",
+        "initiationCode": "S",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "4ZKOPhuyh5",
+          "prosecutionAuthorityId": "e677b61a-3360-48b0-8eee-649911475106",
+          "caseURN": "caseURN"
+        }
+      }
+    ],
+    "type": {
+      "description": "qm1rJUZb0f",
+      "id": "9623a7ac-25bb-43f8-b219-2ae4cd8b05db"
+    }
+  }
+}

@@ -347,6 +347,7 @@ public class HearingToHearingListingNeedsTransformer {
                 .withBookedSlots(nextHearing.getHmiSlots())
                 .withCourtCentre(nextHearing.getCourtCentre())
                 .withEstimatedMinutes(nextHearing.getEstimatedMinutes())
+                .withEstimatedDuration(nextHearing.getEstimatedDuration())
                 .withType(nextHearing.getType())
                 .withJudiciary((nonNull(nextHearing.getReservedJudiciary()) && nextHearing.getReservedJudiciary()) ? judiciaries : nextHearing.getJudiciary())
                 .withJurisdictionType(nextHearing.getJurisdictionType())

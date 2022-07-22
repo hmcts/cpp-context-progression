@@ -10,6 +10,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.removeProperty;
 
 import uk.gov.justice.api.resource.service.DefenceQueryService;
@@ -36,6 +37,9 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(Component.QUERY_API)
 public class CourtDocumentQueryApi {
@@ -69,6 +73,8 @@ public class CourtDocumentQueryApi {
 
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentQueryApi.class);
 
     @Handles(COURT_DOCUMENT_SEARCH_NAME)
     public JsonEnvelope getCourtDocument(final JsonEnvelope query) {
@@ -152,7 +158,9 @@ public class CourtDocumentQueryApi {
         if (!query.payloadAsJsonObject().containsKey(CASE_ID) && !query.payloadAsJsonObject().containsKey(APPLICATION_ID)) {
             throw new BadRequestException(String.format("%s no search parameter specified ", COURT_DOCUMENTS_SEARCH_PROSECUTION));
         }
-        if (!query.payloadAsJsonObject().containsKey(APPLICATION_ID) && !defenceQueryService.isUserProsecutingCase(query, query.payloadAsJsonObject().getString(CASE_ID))) {
+        final boolean isProsecutingCase = defenceQueryService.isUserProsecutingCase(query, query.payloadAsJsonObject().getString(CASE_ID));
+
+        if (!query.payloadAsJsonObject().containsKey(APPLICATION_ID) && !isProsecutingCase) {
             throw new ForbiddenRequestException("Forbidden!! Cannot view court documents, user not prosecuting the case");
         }
 
@@ -160,7 +168,8 @@ public class CourtDocumentQueryApi {
                 .withName(COURT_DOCUMENTS_SEARCH_NAME)
                 .build();
 
-        return requester.request(envelopeFrom(metadata, getUpdatedQueryPayload(query.payloadAsJsonObject())));
+        return requester.request(envelopeFrom(metadata, getUpdatedQueryPayload(query.payloadAsJsonObject(), isProsecutingCase)));
+
     }
 
 
@@ -227,11 +236,15 @@ public class CourtDocumentQueryApi {
         return requester.request(envelopeFrom(metadata, withGroupId));
     }
 
-    private JsonObject getUpdatedQueryPayload(final JsonObject query) {
-        if (query.containsKey(APPLICATION_ID)) {
-            return removeProperty(query, CASE_ID);
+    private JsonObject getUpdatedQueryPayload(JsonObject payload, final boolean isProsecutingCase) {
+
+        if (payload.containsKey(APPLICATION_ID)) {
+            payload = removeProperty(payload, CASE_ID);
         }
-        return query;
+        payload = addProperty(payload, "prosecutingCase", isProsecutingCase);
+
+        LOGGER.info("payload is {}", payload);
+        return payload;
     }
 
 }

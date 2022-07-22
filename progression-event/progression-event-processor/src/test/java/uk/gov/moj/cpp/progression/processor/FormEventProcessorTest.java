@@ -67,10 +67,10 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.CpsApiService;
 import uk.gov.moj.cpp.progression.service.DefenceService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.RestEasyClientService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 
 import java.io.IOException;
@@ -106,6 +106,7 @@ public class FormEventProcessorTest {
     public static final String DOCUMENT_CATEGORY = "documentCategory";
     public static final String DOCUMENT_TYPE_ID = "documentTypeId";
     public static final String CASE_DOCUMENT = "caseDocument";
+    public static final String DEFENDANT_DOCUMENT = "defendantDocument";
     public static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
     public static final String USER_NAME = "userName";
 
@@ -117,6 +118,7 @@ public class FormEventProcessorTest {
     public static final String PROGRESSION_EVENT_EDIT_FORM_REQUESTED = "progression.event.edit-form-requested";
 
     private static final JsonObject USER_DETAILS = createObjectBuilder().add(FIRST_NAME, "firstName").add(LAST_NAME, "lastName").build();
+    private static final String GROUP_ADVOCATES_USER = "Advocates";
 
     public static final String BCM_URL="https://spnl-apim-int-gw.cpp.nonlive/CPS/v1/notification/bcm-notification";
 
@@ -136,7 +138,7 @@ public class FormEventProcessorTest {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Spy
-    private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @Mock
     private DocumentGeneratorService documentGeneratorService;
@@ -160,7 +162,7 @@ public class FormEventProcessorTest {
     private Response response;
 
     @Mock
-    private RestEasyClientService restEasyClientService;
+    private CpsApiService cpsApiService;
 
     @Mock
     private JsonObject payload;
@@ -179,7 +181,7 @@ public class FormEventProcessorTest {
     public void shouldRaiseFormCreatedPublicEvent() {
         final String courtFormId = randomUUID().toString();
         final String caseId = randomUUID().toString();
-        String userId = randomUUID().toString();
+        final String userId = randomUUID().toString();
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PROGRESSION_EVENT_FORM_FORM_CREATED).withUserId(FormEventProcessorTest.userId),
                 createObjectBuilder()
@@ -192,6 +194,7 @@ public class FormEventProcessorTest {
                         .add(USER_ID, userId)
         );
         when(usersGroupService.getUserById(any(), any())).thenReturn(USER_DETAILS);
+        when(usersGroupService.isUserPartOfGroup(any(), any())).thenReturn(true);
 
         formEventProcessor.formCreated(requestEnvelope);
         verify(sender, times(1)).send(envelopeArgumentCaptor.capture());
@@ -199,13 +202,14 @@ public class FormEventProcessorTest {
         final JsonEnvelope envelope = envelopeArgumentCaptor.getValue();
         assertThat(envelope.metadata().name(), is(PUBLIC_PROGRESSION_FORM_CREATED));
         verify(usersGroupService).getUserById(any(), eq(userId));
+        verify(usersGroupService).isUserPartOfGroup(any(), eq(GROUP_ADVOCATES_USER));
     }
 
     @Test
     public void shouldRaiseCpsFormCreatedPublicEvent() {
         final String courtFormId = randomUUID().toString();
         final String caseId = randomUUID().toString();
-        String userId = randomUUID().toString();
+        final String userId = randomUUID().toString();
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PROGRESSION_EVENT_FORM_FORM_CREATED).withUserId(FormEventProcessorTest.userId),
                 createObjectBuilder()
@@ -241,12 +245,12 @@ public class FormEventProcessorTest {
                         .add(USER_NAME, "userName")
         );
 
+        when(usersGroupService.getUserById(any(), any())).thenReturn(USER_DETAILS);
         formEventProcessor.formCreated(requestEnvelope);
         verify(sender, times(1)).send(envelopeArgumentCaptor.capture());
 
         final JsonEnvelope envelope = envelopeArgumentCaptor.getValue();
         assertThat(envelope.metadata().name(), is(PUBLIC_PROGRESSION_FORM_CREATED));
-        verifyZeroInteractions(usersGroupService);
     }
 
     @Test
@@ -277,14 +281,15 @@ public class FormEventProcessorTest {
                 .replaceAll("%formType%", FormType.BCM.name())
                 .replaceAll("%userId%", userId);
         final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
-        JsonObjectBuilder payloadBuilder = createObjectBuilder();
-        JsonArrayBuilder arrayBuilder = createArrayBuilder();
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder();
+        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
         readData.getJsonArray("finalisedFormData").forEach(x -> arrayBuilder.add(x.toString()));
         payloadBuilder.add("finalisedFormData", arrayBuilder.build())
                 .add("caseId", caseId)
                 .add("courtFormId", courtFormId)
                 .add("formType", FormType.BCM.name())
-                .add("userId", userId);
+                .add("userId", userId)
+                .add(MATERIAL_ID, UUID.randomUUID().toString());
 
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PROGRESSION_EVENT_FORM_FINALISED)
@@ -313,6 +318,49 @@ public class FormEventProcessorTest {
 
 
     @Test
+    public void shouldRaiseFormFinalisedPublicEvent_PTPH() throws IOException {
+        final String courtFormId = randomUUID().toString();
+        final String caseId = randomUUID().toString();
+        final String userId = randomUUID().toString();
+        final String fileName = "Jane JOHNSON, 22 May 1976, created on 22 December 10:45 2022.pdf";
+
+        final String inputEvent = Resources.toString(getResource("ptph-finalised-form-data.json"), defaultCharset())
+                .replaceAll("%caseId%", caseId)
+                .replaceAll("%courtFormId%", courtFormId)
+                .replaceAll("%formType%", FormType.PTPH.name())
+                .replaceAll("%userId%", userId);
+        final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder();
+        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
+        readData.getJsonArray("finalisedFormData").forEach(x -> arrayBuilder.add(x.toString()));
+        payloadBuilder.add("finalisedFormData", arrayBuilder.build())
+                .add("caseId", caseId)
+                .add("courtFormId", courtFormId)
+                .add("formType", FormType.PTPH.name())
+                .add("userId", userId)
+                .add(MATERIAL_ID, UUID.randomUUID().toString());
+
+        final JsonEnvelope requestEnvelope = envelopeFrom(
+                metadataWithRandomUUID(PROGRESSION_EVENT_FORM_FINALISED)
+                        .withUserId(FormEventProcessorTest.userId)
+                , payloadBuilder.build());
+
+        when(documentGeneratorService.generateFormDocument(any(), any(), any(), any())).thenReturn(fileName);
+        when(usersGroupService.getUserById(any(), any())).thenReturn(USER_DETAILS);
+        formEventProcessor.formFinalised(requestEnvelope);
+        verify(sender, times(2)).send(envelopeArgumentCaptor.capture());
+
+        final List<JsonEnvelope> envelopes = envelopeArgumentCaptor.getAllValues();
+
+        final JsonEnvelope envelope1 = envelopes.get(0);
+        assertAddCourtOrderCommandFromEnvelope(caseId, envelope1);
+
+        final JsonEnvelope envelope4 = envelopes.get(1);
+        assertPublicEventCreationFromCapturedEnvelope(courtFormId, caseId, userId, FormType.PTPH, 1, false, envelope4, USER_DETAILS);
+    }
+
+
+    @Test
     public void shouldRaiseFormFinalisedPublicEvent_WhenWelshLanguageIsPresent() throws IOException {
         final String courtFormId = randomUUID().toString();
         final String caseId = randomUUID().toString();
@@ -325,14 +373,16 @@ public class FormEventProcessorTest {
                 .replaceAll("%formType%", FormType.BCM.name())
                 .replaceAll("%userId%", userId);
         final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
-        JsonObjectBuilder payloadBuilder = createObjectBuilder();
-        JsonArrayBuilder arrayBuilder = createArrayBuilder();
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder();
+        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
         readData.getJsonArray("finalisedFormData").forEach(x -> arrayBuilder.add(x.toString()));
         payloadBuilder.add("finalisedFormData", arrayBuilder.build())
                 .add("caseId", caseId)
                 .add("courtFormId", courtFormId)
                 .add("formType", FormType.BCM.name())
-                .add("userId", userId);
+                .add("userId", userId)
+                .add(MATERIAL_ID, UUID.randomUUID().toString())
+        ;
 
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PROGRESSION_EVENT_FORM_FINALISED)
@@ -377,6 +427,7 @@ public class FormEventProcessorTest {
                         .add(FORM_TYPE, FormType.BCM.name())
                         .add(CASE_ID, caseId)
                         .add(USER_ID, userId)
+                        .add(MATERIAL_ID,UUID.randomUUID().toString())
         );
 
         formEventProcessor.formFinalised(requestEnvelope);
@@ -397,6 +448,7 @@ public class FormEventProcessorTest {
                         .add(CASE_ID, caseId)
                         .add(FINALISED_FORM_DATA, createArrayBuilder().build())
                         .add(USER_ID, userId)
+                        .add(MATERIAL_ID,UUID.randomUUID().toString())
         );
 
         formEventProcessor.formFinalised(requestEnvelope);
@@ -410,11 +462,11 @@ public class FormEventProcessorTest {
         assertThat(payload2.getString(MATERIAL_ID), is(notNullValue()));
         final JsonObject courtDocument1 = payload2.getJsonObject(COURT_DOCUMENT);
         assertThat(courtDocument1.getString(COURT_DOCUMENT_ID), is(notNullValue()));
-        assertThat(courtDocument1.getJsonObject(DOCUMENT_CATEGORY).getJsonObject(CASE_DOCUMENT).getString(PROSECUTION_CASE_ID), is(caseId));
+        assertThat(courtDocument1.getJsonObject(DOCUMENT_CATEGORY).getJsonObject(DEFENDANT_DOCUMENT).getString(PROSECUTION_CASE_ID), is(caseId));
         assertThat(courtDocument1.getString(DOCUMENT_TYPE_ID), is(CASE_DOCUMENT_TYPE_ID.toString()));
     }
 
-    private void assertPublicEventCreationFromCapturedEnvelope(final String courtFormId, final String caseId, final String userId, final FormType formType, final int documentListSize, final boolean isWelsh, final JsonEnvelope envelope, JsonObject userDetails) {
+    private void assertPublicEventCreationFromCapturedEnvelope(final String courtFormId, final String caseId, final String userId, final FormType formType, final int documentListSize, final boolean isWelsh, final JsonEnvelope envelope, final JsonObject userDetails) {
         assertThat(envelope.metadata().name(), is(PUBLIC_PROGRESSION_FORM_FINALISED));
         final JsonObject payload1 = envelope.payloadAsJsonObject();
         assertThat(payload1.getString(COURT_FORM_ID), is(courtFormId));
@@ -422,7 +474,7 @@ public class FormEventProcessorTest {
         assertThat(payload1.getString(CASE_ID), is(caseId));
         assertThat(payload1.getJsonArray(DOCUMENT_META_DATA), is(notNullValue()));
         assertThat(payload1.getJsonArray(DOCUMENT_META_DATA), hasSize(documentListSize));
-        List<Boolean> isWelshList = payload1.getJsonArray(DOCUMENT_META_DATA).getValuesAs(JsonObject.class).stream().map(item -> item.getBoolean(IS_WELSH)).collect(Collectors.toList());
+        final List<Boolean> isWelshList = payload1.getJsonArray(DOCUMENT_META_DATA).getValuesAs(JsonObject.class).stream().map(item -> item.getBoolean(IS_WELSH)).collect(Collectors.toList());
         assertThat(isWelshList.contains(isWelsh), is(true));
         final JsonObject updatedBy = payload1.getJsonObject(UPDATED_BY);
         assertThat(updatedBy.getString(FIRST_NAME), is(userDetails.getString(FIRST_NAME)));
@@ -502,7 +554,7 @@ public class FormEventProcessorTest {
 
         when(requester.requestAsAdmin(any(JsonEnvelope.class), any())).thenAnswer(invocationOnMock -> {
             final Envelope envelope = (Envelope) invocationOnMock.getArguments()[0];
-            JsonObject responsePayload = createObjectBuilder()
+            final JsonObject responsePayload = createObjectBuilder()
                     .add(FIRST_NAME, "firstName")
                     .add(LAST_NAME, "lastName")
                     .add(EMAIL, "email@email.com")
@@ -616,7 +668,6 @@ public class FormEventProcessorTest {
                 .build();
 
         when(defenceService.getRoleInCaseByCaseId(any(),any())).thenReturn(defenceJsonObject);
-        when(restEasyClientService.post(any(), any(), any())).thenReturn(response);
         when(response.getStatus()).thenReturn(200);
 
         final JsonObject prosecutionCaseJsonObject = createObjectBuilder().add("prosecutionCase", createObjectBuilder()
@@ -631,8 +682,8 @@ public class FormEventProcessorTest {
         when(progressionService.getProsecutionCaseDetailById(any(),any())).thenReturn(java.util.Optional.ofNullable(prosecutionCaseJsonObject));
         when(payload.getJsonObject(any())).thenReturn(prosecutionCaseJsonObject);
 
-        List<Offence> offences = new ArrayList<>();
-        Offence offence1 = Offence.offence()
+        final List<Offence> offences = new ArrayList<>();
+        final Offence offence1 = Offence.offence()
                 .withOffenceCode("offenceCode1")
                 .withOffenceTitle("OffenceTitle1")
                 .withPlea(Plea.plea()
@@ -641,7 +692,7 @@ public class FormEventProcessorTest {
                 .build();
         offences.add(offence1);
 
-        Offence offence2 = Offence.offence()
+        final Offence offence2 = Offence.offence()
                 .withOffenceCode("offenceCode2")
                 .withOffenceTitle("OffenceTitle2")
                 .withPlea(Plea.plea()
@@ -650,8 +701,8 @@ public class FormEventProcessorTest {
                 .build();
         offences.add(offence2);
 
-        List<Defendant> defendants = new ArrayList<>();
-        Defendant def1 = Defendant.defendant()
+        final List<Defendant> defendants = new ArrayList<>();
+        final Defendant def1 = Defendant.defendant()
                 .withId(DEF_ID1)
                 .withCpsDefendantId(cpsDefendantId1)
                 .withPersonDefendant(PersonDefendant.personDefendant()
@@ -673,7 +724,7 @@ public class FormEventProcessorTest {
         when(jsonObjectToObjectConverter.convert(any(), any())).thenReturn(prosecutionCase1);
 
         formEventProcessor.formCreated(requestEnvelope);
-        verify(restEasyClientService, times(1)).post(any(),any(), any());
+        verify(cpsApiService, times(1)).sendNotification(any());
     }
 
     @Test
@@ -709,7 +760,6 @@ public class FormEventProcessorTest {
                 .build();
 
         when(defenceService.getRoleInCaseByCaseId(any(),any())).thenReturn(defenceJsonObject);
-        when(restEasyClientService.post(any(), any(), any())).thenReturn(response);
         when(response.getStatus()).thenReturn(200);
 
         final JsonObject prosecutionCaseJsonObject = createObjectBuilder().add("prosecutionCase", createObjectBuilder()
@@ -724,8 +774,8 @@ public class FormEventProcessorTest {
         when(progressionService.getProsecutionCaseDetailById(any(),any())).thenReturn(java.util.Optional.ofNullable(prosecutionCaseJsonObject));
         when(payload.getJsonObject(any())).thenReturn(prosecutionCaseJsonObject);
 
-        List<Offence> offences = new ArrayList<>();
-        Offence offence1 = Offence.offence()
+        final List<Offence> offences = new ArrayList<>();
+        final Offence offence1 = Offence.offence()
                 .withOffenceCode("offenceCode1")
                 .withOffenceTitle("OffenceTitle1")
                 .withPlea(Plea.plea()
@@ -734,8 +784,8 @@ public class FormEventProcessorTest {
                 .build();
         offences.add(offence1);
 
-        List<Defendant> defendants = new ArrayList<>();
-        Defendant def1 = Defendant.defendant()
+        final List<Defendant> defendants = new ArrayList<>();
+        final Defendant def1 = Defendant.defendant()
                 .withOffences(offences)
                 .build();
         defendants.add(def1);
@@ -752,13 +802,13 @@ public class FormEventProcessorTest {
         when(jsonObjectToObjectConverter.convert(any(), any())).thenReturn(prosecutionCase1);
 
         formEventProcessor.formCreated(requestEnvelope);
-        verify(restEasyClientService, times(0)).post(any(),any(), any());
+        verify(cpsApiService, times(0)).sendNotification(any());
     }
 
     @Test
     public void shouldHandleServeBcmSubmittedPublicEvent() {
 
-        String payload = getPayload("cps-serve-bcm-submitted.json");
+        final String payload = getPayload("cps-serve-bcm-submitted.json");
         final JsonObject jsonPayload = jsonFromString(payload);
 
         final JsonEnvelope envelope = envelopeFrom(
@@ -783,6 +833,7 @@ public class FormEventProcessorTest {
                 .replace("DEF_ID2",DEF_ID2.toString());
 
         when(usersGroupService.getUserById(any(), any())).thenReturn(USER_DETAILS);
+        when(usersGroupService.isUserPartOfGroup(any(), any())).thenReturn(true);
 
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PROGRESSION_EVENT_FORM_UPDATED).withUserId(userId),
@@ -800,7 +851,6 @@ public class FormEventProcessorTest {
                 .build();
 
         when(defenceService.getRoleInCaseByCaseId(any(),any())).thenReturn(defenceJsonObject);
-        when(restEasyClientService.post(any(), any(), any())).thenReturn(response);
         when(response.getStatus()).thenReturn(200);
 
         final JsonObject prosecutionCaseJsonObject = createObjectBuilder().add("prosecutionCase", createObjectBuilder()
@@ -815,8 +865,8 @@ public class FormEventProcessorTest {
         when(progressionService.getProsecutionCaseDetailById(any(),any())).thenReturn(java.util.Optional.ofNullable(prosecutionCaseJsonObject));
         when(payload.getJsonObject(any())).thenReturn(prosecutionCaseJsonObject);
 
-        List<Defendant> defendants = new ArrayList<>();
-        Defendant def1 = Defendant.defendant()
+        final List<Defendant> defendants = new ArrayList<>();
+        final Defendant def1 = Defendant.defendant()
                 .withId(DEF_ID1)
                 .withPersonDefendant(PersonDefendant.personDefendant()
                         .withArrestSummonsNumber("arrestSummonsNo1")
@@ -836,13 +886,15 @@ public class FormEventProcessorTest {
         when(jsonObjectToObjectConverter.convert(any(), any())).thenReturn(prosecutionCase1);
 
         formEventProcessor.formUpdated(requestEnvelope);
-        verify(restEasyClientService, times(1)).post(any(),any(), any());
+        final ArgumentCaptor<JsonObject> payload = ArgumentCaptor.forClass(JsonObject.class);
+        verify(cpsApiService, times(1)).sendNotification(payload.capture());
+        System.out.println(payload.getValue().toString());
     }
 
     @Test
     public void shouldHandleServePtphSubmittedPublicEvent() {
 
-        String payload = getPayload("cps-serve-ptph-submitted.json");
+        final String payload = getPayload("cps-serve-ptph-submitted.json");
         final JsonObject jsonPayload = jsonFromString(payload);
 
         final JsonEnvelope envelope = envelopeFrom(

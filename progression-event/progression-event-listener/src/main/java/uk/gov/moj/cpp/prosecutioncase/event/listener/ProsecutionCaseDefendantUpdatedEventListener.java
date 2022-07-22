@@ -9,11 +9,6 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictionsForDefendants;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import org.apache.commons.collections.CollectionUtils;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
@@ -22,22 +17,21 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDefendantUpdated;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
-import uk.gov.justice.core.courts.ProsecutionCaseListingNumberIncreased;
-import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberIncreased;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
@@ -46,9 +40,13 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProse
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -56,6 +54,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -284,6 +283,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 .withMasterDefendantId(defendant.getMasterDefendantId())
                 .withCourtProceedingsInitiated(defendant.getCourtProceedingsInitiated())
                 .withOffences(offences)
+                .withCpsDefendantId(originalDefendant.getCpsDefendantId())
                 .withPersonDefendant(updatedPersonDefendant)
                 .withLegalAidStatus(defendant.getLegalAidStatus())
                 .withProceedingsConcluded(defendant.getProceedingsConcluded())

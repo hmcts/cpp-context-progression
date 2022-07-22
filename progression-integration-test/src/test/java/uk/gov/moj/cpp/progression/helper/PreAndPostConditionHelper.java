@@ -29,9 +29,6 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-
-import com.jayway.restassured.path.json.JsonPath;
-import javax.jms.MessageConsumer;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher;
@@ -43,10 +40,12 @@ import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import javax.jms.MessageConsumer;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -54,7 +53,9 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import com.google.common.io.Resources;
 import com.jayway.jsonpath.ReadContext;
+import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
@@ -156,6 +157,27 @@ public class PreAndPostConditionHelper {
         jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
         return postCommand(getWriteUrl("/refertocourt"),
                 "application/vnd.progression.refer-cases-to-court+json",
+                jsonPayload.toString());
+    }
+
+    public static Response addDefenceCounsel(final String hearingId, final String defenceCounselId, final List<String> defendants, final List<String> attendanceDays, final String filePath) throws IOException {
+        final JSONObject jsonPayload = new JSONObject(createDefenseCounselRequestJsonBody(hearingId, defenceCounselId, defendants, attendanceDays, filePath));
+        return postCommand(getWriteUrl(format("/hearing/%s/defence-counsel", hearingId)),
+                "application/vnd.progression.add-hearing-defence-counsel+json",
+                jsonPayload.toString());
+    }
+
+    public static Response updateDefenceCounsel(final String hearingId, final String defenceCounselId, final List<String> defendants, final List<String> attendanceDays, final String filePath) throws IOException {
+        final JSONObject jsonPayload = new JSONObject(createDefenseCounselRequestJsonBody(hearingId, defenceCounselId, defendants, attendanceDays, filePath));
+        return postCommand(getWriteUrl(format("/hearing/%s/defence-counsel", hearingId)),
+                "application/vnd.progression.update-hearing-defence-counsel+json",
+                jsonPayload.toString());
+    }
+
+    public static Response removeDefenceCounsel(final String hearingId, final String defenceCounselId, final List<String> defendants, final List<String> attendanceDays, final String filePath) throws IOException {
+        final JSONObject jsonPayload = new JSONObject(createDefenseCounselRequestJsonBody(hearingId, defenceCounselId, defendants, attendanceDays, filePath));
+        return postCommand(getWriteUrl(format("/hearing/%s/defence-counsel", hearingId)),
+                "application/vnd.progression.remove-hearing-defence-counsel+json",
                 jsonPayload.toString());
     }
 
@@ -265,7 +287,7 @@ public class PreAndPostConditionHelper {
     }
 
     public static Response initiateCourtProceedings(String commandPayload) throws IOException {
-        return postCommand(getWriteUrl("/initiatecourtproceedings"),"application/vnd.progression.initiate-court-proceedings+json", commandPayload);
+        return postCommand(getWriteUrl("/initiatecourtproceedings"), "application/vnd.progression.initiate-court-proceedings+json", commandPayload);
 
     }
 
@@ -562,6 +584,20 @@ public class PreAndPostConditionHelper {
                 materialIdTwo, courtDocumentId, referralId, caseUrn, "progression.command.prosecution-case-refer-to-court.json");
     }
 
+    public static String createDefenseCounselRequestJsonBody(final String hearingId, final String defenseCounselId, final List<String> defendants, final List<String> attendanceDays, final String filePath) {
+        return getPayload(filePath)
+                .replace("HEARING_ID", hearingId)
+                .replace("DEFENSE_COUNSEL_ID", defenseCounselId)
+                .replace("\"DEFENDANT_LIST\"", convertToJsonList(defendants))
+                .replace("\"ATTENDANCE_DAYS\"", convertToJsonList(attendanceDays));
+    }
+
+    private static String convertToJsonList(List<String> stringList) {
+        final String join = StringUtils.join(stringList, "\",\"");
+        return StringUtils.wrap(join, "\"");
+    }
+
+
     private static String createReferProsecutionCaseToCrownCourtJsonBodyNullPostCode(
             final String caseId,
             final String defendantId,
@@ -842,20 +878,20 @@ public class PreAndPostConditionHelper {
     }
 
 
-    public static void verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(final String hearingId, final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker){
+    public static void verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(final String hearingId, final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker) {
         final JsonPath message = QueueUtil.retrieveMessage(messageConsumerHearingPopulatedToProbationCaseWorker, allOf(isJson(withJsonPath("$.hearing.id", CoreMatchers.is(hearingId)))));
         assertNotNull(message);
     }
 
     public static void verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(final String hearingId, final boolean isYouth, final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker) {
-        if(isYouth){
+        if (isYouth) {
             Optional<JsonPath> message;
             do {
                 message = QueueUtil.retrieveMessage(messageConsumerHearingPopulatedToProbationCaseWorker, 1000L);
-            } while (message.isPresent() && ! message.get().getString("hearing.id").equals(hearingId));
+            } while (message.isPresent() && !message.get().getString("hearing.id").equals(hearingId));
 
             assertFalse("defendant is youth but event raised : " + hearingId, message.isPresent());
-        }else {
+        } else {
             final JsonPath message = QueueUtil.retrieveMessage(messageConsumerHearingPopulatedToProbationCaseWorker, allOf(isJson(withJsonPath("$.hearing.id", CoreMatchers.is(hearingId)))));
             assertNotNull(message);
         }

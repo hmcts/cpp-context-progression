@@ -1,14 +1,19 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.slf4j.LoggerFactory.getLogger;
+import static uk.gov.justice.core.courts.CaseDocument.caseDocument;
+import static uk.gov.justice.core.courts.DefendantDocument.defendantDocument;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -32,6 +37,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.CpsApiService;
 import uk.gov.moj.cpp.progression.service.DefenceService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -60,7 +66,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
-@SuppressWarnings({"squid:S134", "squid:S3776", "squid:S1188"})
+@SuppressWarnings({"squid:S134", "squid:S3776", "squid:S1188", "squid:S3655"})
 @ServiceComponent(EVENT_PROCESSOR)
 public class FormEventProcessor {
 
@@ -103,6 +109,7 @@ public class FormEventProcessor {
     public static final String COURT_DOCUMENT = "courtDocument";
     public static final String PUBLIC_PROGRESSION_BCM_DEFENDANTS_UPDATED = "public.progression.event.form-defendants-updated";
     public static final String DEFENDANT_ID = "defendantId";
+    public static final String DEFENDANT_IDS = "defendantIds";
     public static final String APPLICATION_PDF = "application/pdf";
     public static final String DOCUMENT_TYPE_DESCRIPTION = "Case Management";
 
@@ -123,6 +130,7 @@ public class FormEventProcessor {
     public static final String CMS_USER = "CMS user";
     public static final String SUBMISSION_ID = "submissionId";
     private static final String IS_ADVOCATE_DEFENDING = "isAdvocateDefendingOrProsecuting";
+    private static final String GROUP_ADVOCATES_USER = "Advocates";
 
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
@@ -142,15 +150,7 @@ public class FormEventProcessor {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Inject
-    private RestEasyClientService restEasyClientService;
-
-    @Inject
-    @Value(key = "bcmNotificationUrl", defaultValue = "http://localhost:8080/CPS/v1/notification/bcm-notification")
-    private String bcmNotificationUrl;
-
-    @Inject
-    @Value(key = "subscription.key", defaultValue = "3674a16507104b749a76b29b6c837352")
-    private String subscriptionKey;
+    private CpsApiService cpsApiService;
 
     @Inject
     private UsersGroupService usersGroupService;
@@ -170,25 +170,33 @@ public class FormEventProcessor {
 
         final JsonObject publicEventPayload = buildFormCreatedPublicEventPayload(event);
 
+        sender.send(envelopeFrom(
+                metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_FORM_CREATED),
+                publicEventPayload
+        ));
+
         final String caseId = publicEventPayload.getString(CASE_ID);
         final String formType = publicEventPayload.getString(FORM_TYPE);
 
         LOGGER.info("Case Id: {}, Form Type: {}", caseId, formType);
 
         if (BCM.equalsIgnoreCase(formType) && isNotEmpty(caseId) && nonNull(event.metadata()) && event.metadata().userId().isPresent()) {
-            final JsonObject roleObject = defenceService.getRoleInCaseByCaseId(event, caseId);
-            if (nonNull(roleObject) && roleObject.containsKey(IS_ADVOCATE_DEFENDING) && DEFENDING.equalsIgnoreCase(roleObject.getString(IS_ADVOCATE_DEFENDING))) {
-                LOGGER.info("Notifying CPS for Form Creation for Case Id: {}, Form Type: {}, Advocate Role {}", caseId, formType, roleObject.getString(IS_ADVOCATE_DEFENDING));
+            final boolean isUserPartOfAdvocatesGroup = usersGroupService.isUserPartOfGroup(event, GROUP_ADVOCATES_USER);
+            LOGGER.info("Is User part of Advocates group : {}", isUserPartOfAdvocatesGroup);
+            if (isUserPartOfAdvocatesGroup) {
+                final JsonObject roleObject = defenceService.getRoleInCaseByCaseId(event, caseId);
+                if (nonNull(roleObject) && roleObject.containsKey(IS_ADVOCATE_DEFENDING) && DEFENDING.equalsIgnoreCase(roleObject.getString(IS_ADVOCATE_DEFENDING))) {
+                    LOGGER.info("Notifying CPS for Form Creation for Case Id: {}, Form Type: {}, Advocate Role {}", caseId, formType, roleObject.getString(IS_ADVOCATE_DEFENDING));
 
-                final ProsecutionCase prosecutionCase = fetchProsecutionCase(event, caseId);
-                notifyCPS(publicEventPayload, prosecutionCase);
+                    final ProsecutionCase prosecutionCase = fetchProsecutionCase(event, caseId);
+                    try {
+                        notifyCPS(publicEventPayload, prosecutionCase);
+                    } catch (final RuntimeException e) {
+                        LOGGER.error("bcm-form-updated notification to CPS failed on bcm creation", e);
+                    }
+                }
             }
         }
-
-        sender.send(envelopeFrom(
-                metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_FORM_CREATED),
-                publicEventPayload
-        ));
     }
 
     private JsonObject buildFormCreatedPublicEventPayload(final JsonEnvelope event) {
@@ -231,7 +239,7 @@ public class FormEventProcessor {
 
             final JsonObject formDataObject = stringToJsonObjectConverter.convert(creationPayload.getString(FORM_DATA));
             final JsonObject data = formDataObject.getJsonObject("data");
-            final JsonArray formDataDefendantsArray = nonNull(data)? data.getJsonArray("defendants"): null;
+            final JsonArray formDataDefendantsArray = nonNull(data) ? data.getJsonArray("defendants") : null;
 
             final JsonArrayBuilder pleasBuilder = createArrayBuilder();
             final JsonObjectBuilder defendantSubjectBuilder = createObjectBuilder();
@@ -242,7 +250,7 @@ public class FormEventProcessor {
                     LOGGER.info("otherLinkedCases: {}", finalOtherLinkedCases);
 
                     Optional<JsonObject> anyDefendantData = Optional.empty();
-                    if (CollectionUtils.isNotEmpty(formDataDefendantsArray)) {
+                    if (isNotEmpty(formDataDefendantsArray)) {
                         anyDefendantData = formDataDefendantsArray.getValuesAs(JsonObject.class).stream()
                                 .filter(defendant -> formDefendant.getString(DEFENDANT_ID).contentEquals(defendant.getString("id")))
                                 .findAny();
@@ -268,28 +276,24 @@ public class FormEventProcessor {
             final UUID cpsDefendantId = caseDefendant.getCpsDefendantId();
             LOGGER.info("cpsDefendantid {} for defendantId {}", cpsDefendantId, defendantId);
 
-            if (nonNull(cpsDefendantId)) {
-                defendantSubjectBuilder.add(CPS_DEFENDANT_ID, cpsDefendantId.toString());
-            }
-
             if (nonNull(asn)) {
                 defendantSubjectBuilder.add(ASN, asn);
+            } else if (nonNull(cpsDefendantId)) {
+                defendantSubjectBuilder.add(CPS_DEFENDANT_ID, cpsDefendantId.toString());
+            } else {
+                LOGGER.error("asn or cpsDefendantId not found for defendant {}", defendantId);
             }
 
             final JsonObject defendantFromData = matchedFormDefendantFromData.orElse(null);
-            final JsonArray formOffences = nonNull(defendantFromData)? defendantFromData.getJsonArray("formOffences"):null;
-
-            buildPleasFromFormData(formOffences,pleasBuilder);
+            final JsonArray formOffences = nonNull(defendantFromData) ? defendantFromData.getJsonArray("formOffences") : null;
+            final JsonArray prosecutorOffences = formDefendant.getJsonArray("prosecutorOffences");
+            buildPleasFromFormData(formOffences, prosecutorOffences, pleasBuilder);
 
             final JsonArray pleas = pleasBuilder.build();
 
-            if(!pleas.isEmpty()) {
-
+            if (!pleas.isEmpty()) {
                 final JsonObject jsonObject = buildBcmNotificationPayload(prosecutionCaseIdentifier, defendantSubjectBuilder, pleas, finalOtherLinkedCases, defendantFromData);
-                LOGGER.info("Azure Function {} invoked with Request: {}", bcmNotificationUrl, jsonObject);
-
-                final Response response = restEasyClientService.post(bcmNotificationUrl, jsonObject.toString(), subscriptionKey);
-                LOGGER.info("Received response with status: {}", response.getStatus());
+                cpsApiService.sendNotification(jsonObject);
             }
         }
     }
@@ -301,7 +305,7 @@ public class FormEventProcessor {
                 .add("notificationDate", ZONE_DATETIME_FORMATTER.format(ZonedDateTime.now()))
                 .add("notificationType", "bcm-form-updated");
 
-        final String caseUrn = nonNull(prosecutionCaseIdentifier.getCaseURN())? prosecutionCaseIdentifier.getCaseURN():prosecutionCaseIdentifier.getProsecutionAuthorityReference();
+        final String caseUrn = nonNull(prosecutionCaseIdentifier.getCaseURN()) ? prosecutionCaseIdentifier.getCaseURN() : prosecutionCaseIdentifier.getProsecutionAuthorityReference();
 
         final JsonObjectBuilder bcmPayloadBuilder = createObjectBuilder()
                 .add("prosecutionCaseSubject", createObjectBuilder()
@@ -347,23 +351,31 @@ public class FormEventProcessor {
 
         final JsonObject publicEventPayload = buildFormUpdatedPublicEventPayload(event);
 
+        sender.send(envelopeFrom(
+                metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_FORM_UPDATED),
+                publicEventPayload
+        ));
+
         final JsonObject formUpdated = event.payloadAsJsonObject();
         final String caseId = formUpdated.getString(CASE_ID);
         final String formType = formUpdated.getString(FORM_TYPE);
 
         if (BCM.equalsIgnoreCase(formType) && isNotEmpty(caseId) && nonNull(event.metadata()) && event.metadata().userId().isPresent()) {
-            final JsonObject roleObject = defenceService.getRoleInCaseByCaseId(event, caseId);
+            final boolean isUserPartOfAdvocatesGroup = usersGroupService.isUserPartOfGroup(event, GROUP_ADVOCATES_USER);
+            LOGGER.info("Is User part of Advocates group : {}", isUserPartOfAdvocatesGroup);
+            if (isUserPartOfAdvocatesGroup) {
+                final JsonObject roleObject = defenceService.getRoleInCaseByCaseId(event, caseId);
 
-            if (nonNull(roleObject) && roleObject.containsKey(IS_ADVOCATE_DEFENDING) && DEFENDING.equalsIgnoreCase(roleObject.getString(IS_ADVOCATE_DEFENDING))) {
-                LOGGER.info("Notifying CPS on Form updation for Case Id: {}, Form Type: {}, Advocate Role {}", caseId, formType, roleObject.getString(IS_ADVOCATE_DEFENDING));
-                notifyCPSOnUpdateBcm(event,caseId);
+                if (nonNull(roleObject) && roleObject.containsKey(IS_ADVOCATE_DEFENDING) && DEFENDING.equalsIgnoreCase(roleObject.getString(IS_ADVOCATE_DEFENDING))) {
+                    LOGGER.info("Notifying CPS on Form updation for Case Id: {}, Form Type: {}, Advocate Role {}", caseId, formType, roleObject.getString(IS_ADVOCATE_DEFENDING));
+                    try {
+                        notifyCPSOnUpdateBcm(event, caseId);
+                    } catch (final RuntimeException e) {
+                        LOGGER.error("bcm-form-updated notification to CPS failed on bcm update", e);
+                    }
+                }
             }
         }
-
-        sender.send(envelopeFrom(
-                metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_FORM_UPDATED),
-                publicEventPayload
-        ));
     }
 
     private JsonObject buildFormUpdatedPublicEventPayload(final JsonEnvelope event) {
@@ -382,7 +394,7 @@ public class FormEventProcessor {
         return publicEventBuilder.build();
     }
 
-    private ProsecutionCase fetchProsecutionCase(final JsonEnvelope event, final String caseId){
+    private ProsecutionCase fetchProsecutionCase(final JsonEnvelope event, final String caseId) {
         final Optional<JsonObject> optionalProsecutionCase = progressionService.getProsecutionCaseDetailById(event, caseId);
         if (!optionalProsecutionCase.isPresent()) {
             throw new IllegalStateException(String.format("Unable to find the case %s", caseId));
@@ -391,9 +403,9 @@ public class FormEventProcessor {
         return jsonObjectToObjectConverter.convert(optionalProsecutionCase.get().getJsonObject(PROSECUTION_CASE), ProsecutionCase.class);
     }
 
-    private void buildPleasFromFormData(final JsonArray formOffences, final JsonArrayBuilder pleasBuilder){
-        if(nonNull(formOffences)) {
-            final AtomicInteger seqNo = new AtomicInteger(1);
+    private void buildPleasFromFormData(final JsonArray formOffences, final JsonArray prosecutorOffences, final JsonArrayBuilder pleasBuilder) {
+        final AtomicInteger seqNo = new AtomicInteger(1);
+        if (isNotEmpty(formOffences)) {
             for (final JsonObject formOffence : formOffences.getValuesAs(JsonObject.class)) {
                 final JsonObjectBuilder pleaObjectBuilder = createObjectBuilder();
 
@@ -405,9 +417,22 @@ public class FormEventProcessor {
                 pleasBuilder.add(pleaObjectBuilder.build());
             }
         }
+
+        if (isNotEmpty(prosecutorOffences)) {
+            for (final JsonObject prosecutorOffence : prosecutorOffences.getValuesAs(JsonObject.class)) {
+                final JsonObjectBuilder pleaObjectBuilder = createObjectBuilder();
+
+                pleaObjectBuilder.add(CJS_OFFENCE_CODE, prosecutorOffence.getString("offenceCode", ""))
+                        .add(OFFENCE_SEQUENCE_NO, seqNo.getAndIncrement())
+                        .add(OFFENCE_TITLE, prosecutorOffence.getString("wording", ""))
+                        .add(PLEA_VALUE, StringUtils.EMPTY);
+
+                pleasBuilder.add(pleaObjectBuilder.build());
+            }
+        }
     }
 
-    private void notifyCPSOnUpdateBcm(final JsonEnvelope event, final String caseId){
+    private void notifyCPSOnUpdateBcm(final JsonEnvelope event, final String caseId) {
         LOGGER.info("notifyCPSOnUpdateBcm()");
 
         final ProsecutionCase prosecutionCase = fetchProsecutionCase(event, caseId);
@@ -438,26 +463,30 @@ public class FormEventProcessor {
                         final String asn = nonNull(defendant.getPersonDefendant()) ? defendant.getPersonDefendant().getArrestSummonsNumber() : null;
                         LOGGER.info("Defendant ASN: {}", asn);
 
+                        final UUID cpsDefendantId = defendant.getCpsDefendantId();
+                        LOGGER.info("cpsDefendantid {} for defendantId {}", cpsDefendantId, defendantId);
+
                         if (nonNull(defendantId) && nonNull(formDefendant) && (formDefendant.size() > 0) && defendantId.equals(formDefendant.getString(ID))) {
                             LOGGER.info("defendantId and formDefendant matched {}", defendantId);
-                            defendantSubjectBuilder.add(CPS_DEFENDANT_ID, defendantId);
                             if (nonNull(asn)) {
                                 defendantSubjectBuilder.add(ASN, asn);
+                            } else if (nonNull(cpsDefendantId)) {
+                                defendantSubjectBuilder.add(CPS_DEFENDANT_ID, cpsDefendantId.toString());
+                            } else {
+                                LOGGER.error("asn or cpsDefendantId not found for defendant {}", defendantId);
                             }
 
                             final JsonArray formOffences = formDefendant.getJsonArray("formOffences");
-                            if (nonNull(formOffences)) {
-                                buildPleasFromFormData(formOffences,pleasBuilder);
+                            final JsonArray prosecutorOffences = formDefendant.getJsonArray("prosecutorOffences");
+                            if (nonNull(formOffences) || nonNull(prosecutorOffences)) {
+                                buildPleasFromFormData(formOffences, prosecutorOffences, pleasBuilder);
                                 final JsonArray pleas = pleasBuilder.build();
 
-                                if(!pleas.isEmpty()) {
+                                if (!pleas.isEmpty()) {
                                     final JsonObject jsonObject = buildBcmNotificationPayload(prosecutionCaseIdentifier, defendantSubjectBuilder, pleas,
                                             finalOtherLinkedCases, formDefendant);
 
-                                    LOGGER.info("Azure Function {} invoked with Request: {}", bcmNotificationUrl, jsonObject);
-
-                                    final Response response = restEasyClientService.post(bcmNotificationUrl, jsonObject.toString(), subscriptionKey);
-                                    LOGGER.info("Received response with status: {}", response.getStatus());
+                                    cpsApiService.sendNotification(jsonObject);
                                 }
                             } else {
                                 LOGGER.info("BCM Notification not send due to absence of offence information");
@@ -499,6 +528,7 @@ public class FormEventProcessor {
         final String caseURN = formFinalised.getString(CASE_URN, null);
         final FormType formType = FormType.valueOf(formFinalised.getString(FORM_TYPE));
         final String submissionId = formFinalised.getString(SUBMISSION_ID, null);
+        final UUID materialId = fromString(formFinalised.getString(MATERIAL_ID));
 
         final JsonArray formArray = formFinalised.getJsonArray(FINALISED_FORM_DATA);
 
@@ -510,7 +540,7 @@ public class FormEventProcessor {
 
         final JsonArrayBuilder documentMetadataArrayBuilder = createArrayBuilder();
         formArray.forEach(formDataPerDefendant ->
-                documentMetadataArrayBuilder.add(processFinalisedFormData(event, formType, formDataPerDefendant, courtFormId, caseId)));
+                documentMetadataArrayBuilder.add(processFinalisedFormData(event, formType, formDataPerDefendant, courtFormId, caseId, materialId)));
 
         final JsonObjectBuilder payload = createObjectBuilder()
                 .add(COURT_FORM_ID, courtFormId.toString())
@@ -557,8 +587,7 @@ public class FormEventProcessor {
         return response.payload();
     }
 
-    private JsonObject processFinalisedFormData(final JsonEnvelope event, final FormType formType, final JsonValue formDataPerDefendant, final UUID courtFormId, final UUID caseId) {
-        final UUID materialId = randomUUID();
+    private JsonObject processFinalisedFormData(final JsonEnvelope event, final FormType formType, final JsonValue formDataPerDefendant, final UUID courtFormId, final UUID caseId, final UUID materialId) {
         final JsonObjectBuilder documentMetaDataBuilder = createObjectBuilder();
         final JsonObject documentData = stringToJsonObjectConverter.convert(((JsonString) formDataPerDefendant).getString());
         LOGGER.info("Generating Form Document courtFormId: {}, MaterialId: {}", courtFormId, materialId);
@@ -569,7 +598,7 @@ public class FormEventProcessor {
         final JsonObject jsonObject = createObjectBuilder()
                 .add(MATERIAL_ID, materialId.toString())
                 .add(COURT_DOCUMENT, objectToJsonObjectConverter
-                        .convert(buildCourtDocument(caseId, materialId, filename))).build();
+                        .convert(buildCourtDocument(caseId, materialId, filename, formType, documentData))).build();
 
         LOGGER.info("court document is being created '{}' ", jsonObject);
 
@@ -581,13 +610,36 @@ public class FormEventProcessor {
     }
 
 
-    private CourtDocument buildCourtDocument(final UUID caseId, final UUID materialId, final String filename) {
+    private CourtDocument buildCourtDocument(final UUID caseId, final UUID materialId, final String filename, final FormType formType, final JsonObject documentData) {
 
-        final DocumentCategory documentCategory = DocumentCategory.documentCategory()
-                .withCaseDocument(CaseDocument.caseDocument()
+        final DocumentCategory.Builder categoryBuilder = DocumentCategory.documentCategory();
+
+        if (FormType.BCM.equals(formType)) {
+            if (nonNull(documentData.getString(DEFENDANT_ID, null))) {
+                categoryBuilder.withDefendantDocument(defendantDocument()
+                        .withDefendants(singletonList(fromString(documentData.getString(DEFENDANT_ID))))
                         .withProsecutionCaseId(caseId)
-                        .build())
-                .build();
+                        .build());
+            } else {
+                LOGGER.error("defendantId is not present for BCM form finalised, caseId {}", caseId);
+            }
+        } else if (FormType.PTPH.equals(formType)) {
+            if (isNotEmpty(documentData.getJsonArray(DEFENDANT_IDS))) {
+                final List<UUID> defendantIdList = documentData.getJsonArray(DEFENDANT_IDS).getValuesAs(JsonString.class).stream()
+                        .map(x -> UUID.fromString(x.getString()))
+                        .collect(toList());
+                categoryBuilder.withDefendantDocument(defendantDocument()
+                        .withDefendants(defendantIdList)
+                        .withProsecutionCaseId(caseId)
+                        .build());
+            } else {
+                LOGGER.error("defendantId is not present for PTPH form finalised, caseId {}", caseId);
+            }
+        } else {
+            categoryBuilder.withCaseDocument(caseDocument()
+                    .withProsecutionCaseId(caseId)
+                    .build());
+        }
 
         final Material material = Material.material().withId(materialId)
                 .withUploadDateTime(ZonedDateTime.now())
@@ -595,15 +647,14 @@ public class FormEventProcessor {
 
         return CourtDocument.courtDocument()
                 .withCourtDocumentId(randomUUID())
-                .withDocumentCategory(documentCategory)
+                .withDocumentCategory(categoryBuilder.build())
                 .withDocumentTypeDescription(DOCUMENT_TYPE_DESCRIPTION)
                 .withDocumentTypeId(CASE_DOCUMENT_TYPE_ID)
                 .withMimeType(APPLICATION_PDF)
                 .withName(filename)
-                .withMaterials(Collections.singletonList(material))
+                .withMaterials(singletonList(material))
                 .build();
     }
-
 
     @Handles("progression.event.form-defendants-updated")
     public void bcmDefendantsUpdated(final JsonEnvelope event) {

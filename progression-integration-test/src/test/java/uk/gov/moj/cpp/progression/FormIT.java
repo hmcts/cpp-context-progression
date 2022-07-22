@@ -50,6 +50,7 @@ import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermi
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialStructuredFormQuery;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyBcmNotificationApiNotInvoked;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubEndpoint;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAdvocateRoleInCaseByCaseId;
@@ -117,6 +118,13 @@ public class FormIT extends AbstractIT {
             .add("name", "updated name")
             .add("offence", "burglary")
             .build().toString();
+
+    public static final String USERS_GROUPS_SERVICE_NAME = "usergroups-service";
+    private static final String GROUPS_FOR_LOGGED_IN_USER_MEDIA_TYPE =
+            "application/vnd.usersgroups.get-logged-in-user-groups+json";
+    public static final String BASE_QUERY = "/usersgroups-service/query/api/rest/usersgroups";
+    public static final String GROUPS_BY_LOGGEDIN_USER = "/users/logged-in-user/groups";
+    public static final String GET_GROUPS_BY_LOGGEDIN_USER_QUERY = BASE_QUERY + GROUPS_BY_LOGGEDIN_USER;
 
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     public static final String SUBMISSION_ID_VALUE = "e85d2c62-af1f-4674-863a-0891e67e325b";
@@ -253,7 +261,7 @@ public class FormIT extends AbstractIT {
         assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId2, true, editRequestedEvent2);
 
         //finalise form
-        final JsonObject finalisePayload = buildPayloadForFinaliseFormApi();
+        final JsonObject finalisePayload = buildPayloadForFinaliseFormApi(defendant1.toString());
         final String finaliseFormEndpointUrl = FINALISE_FORM_ENDPOINT
                 .replaceAll("%caseId%", caseId.toString())
                 .replaceAll("%courtFormId%", courtFormId.toString());
@@ -335,7 +343,7 @@ public class FormIT extends AbstractIT {
         assertFormOperationFailedEvent(updateCourtFormId, formUpdateFailureEvent, UPDATE_BCM_DEFENDANT_OPERATION_IS_FAILED, FORM_UPDATE_COMMAND_NAME, BCM);
 
         //Form operation failed event when form finalise failed
-        final JsonObject finalisePayload = buildPayloadForFinaliseFormApi();
+        final JsonObject finalisePayload = buildPayloadForFinaliseFormApi(defendantId.toString());
         final String finaliseFormEndpointUrl = FINALISE_FORM_ENDPOINT
                 .replaceAll("%caseId%", randomUUID().toString())
                 .replaceAll("%courtFormId%", courtFormId.toString());
@@ -402,9 +410,9 @@ public class FormIT extends AbstractIT {
         assertThat(updatedBy.getString(NAME), is(USER_NAME_VALUE));
     }
 
-    private JsonObject buildPayloadForFinaliseFormApi() throws IOException {
+    private JsonObject buildPayloadForFinaliseFormApi(final String defendantId) throws IOException {
         final String inputEvent = Resources.toString(getResource("progression.finalise-form.json"), defaultCharset());
-        final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
+        final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent.replaceAll("RANDOM_DEFENDANT_ID", defendantId));
         JsonObjectBuilder payloadBuilder = createObjectBuilder();
         JsonArrayBuilder arrayBuilder = createArrayBuilder();
         readData.getJsonArray("finalisedFormData").forEach(x -> arrayBuilder.add(x.toString()));
@@ -602,6 +610,9 @@ public class FormIT extends AbstractIT {
         final UUID defendant1 = randomUUID();
         final UUID defendant2 = randomUUID();
         final UUID formId = randomUUID();
+        final UUID userId = randomUUID();
+
+        stubGetAdvocatesGroupsForLoggedInQuery(userId.toString());
 
         addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId.toString(), defendant1.toString());
         final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId.toString(), defendant1.toString(),
@@ -697,6 +708,14 @@ public class FormIT extends AbstractIT {
 
         final List<String> expectedDetails = newArrayList("notificationType", "bcm-form-updated");
         verifyBcmNotificationApiNotInvoked(expectedDetails);
+    }
+
+    public static void stubGetAdvocatesGroupsForLoggedInQuery(final String userId) {
+        stubEndpoint(USERS_GROUPS_SERVICE_NAME,
+                GET_GROUPS_BY_LOGGEDIN_USER_QUERY,
+                GROUPS_FOR_LOGGED_IN_USER_MEDIA_TYPE,
+                userId,
+                "stub-data/usersGroups.get-Advocates-Groups-by-loggedIn-user.json");
     }
 }
 

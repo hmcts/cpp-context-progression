@@ -58,6 +58,14 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
                     .assertThat(outputCaseDocumentsPath + ".caseReference", equalTo(caseUrn))
                     .assertThat(outputCaseDocumentsPath + ".prosecutingAuthority", equalTo(prosecutingAuthority));
 
+            if(caseIndex == 0){
+                with(outputCase.toString())
+                        .assertThat(outputCaseDocumentsPath + ".parties[0].offences[0].verdict.verdictType.verdictTypeId", equalTo(((JsonString) inputProsecutionCase.read(inputDefendantPath + ".defendants[0].offences[0].verdict.verdictType.id")).getString()));
+            }else{
+                with(outputCase.toString())
+                        .assertNotDefined(outputCaseDocumentsPath + ".defendants[0].offences[0].verdict.verdictType.verdictTypeId");
+            }
+
             incrementCaseDocumentsCount();
         } catch (final Exception e) {
             incrementExceptionCount();

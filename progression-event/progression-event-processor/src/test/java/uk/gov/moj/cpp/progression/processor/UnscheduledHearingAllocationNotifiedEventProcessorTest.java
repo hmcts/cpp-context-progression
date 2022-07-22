@@ -17,7 +17,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.NotificationService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import javax.json.JsonObject;
 import java.nio.charset.Charset;
@@ -50,7 +50,7 @@ public class UnscheduledHearingAllocationNotifiedEventProcessorTest {
     private NotificationService notificationService;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Spy
     private JsonObjectToObjectConverter jsonObjectConverter;

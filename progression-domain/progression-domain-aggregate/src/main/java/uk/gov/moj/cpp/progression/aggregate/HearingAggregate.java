@@ -19,6 +19,7 @@ import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.CustodyTimeLimit;
+import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
@@ -28,6 +29,9 @@ import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationRequestCreated;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingDefenceCounselAdded;
+import uk.gov.justice.core.courts.HearingDefenceCounselRemoved;
+import uk.gov.justice.core.courts.HearingDefenceCounselUpdated;
 import uk.gov.justice.core.courts.HearingDefendantRequestCreated;
 import uk.gov.justice.core.courts.HearingDefendantUpdated;
 import uk.gov.justice.core.courts.HearingExtendedProcessed;
@@ -36,9 +40,11 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingNumberUpdated;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingOffencesUpdated;
+import uk.gov.justice.core.courts.HearingPleaUpdated;
 import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
 import uk.gov.justice.core.courts.HearingUpdatedProcessed;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
+import uk.gov.justice.core.courts.HearingVerdictUpdated;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequested;
@@ -48,6 +54,8 @@ import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
+import uk.gov.justice.core.courts.Plea;
+import uk.gov.justice.core.courts.PleaModel;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantHearingResultUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
@@ -61,6 +69,7 @@ import uk.gov.justice.core.courts.UnscheduledHearingListingRequested;
 import uk.gov.justice.core.courts.UnscheduledHearingRecorded;
 import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
 import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
+import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
 import uk.gov.justice.domain.aggregate.Aggregate;
@@ -298,6 +307,7 @@ public class HearingAggregate implements Aggregate {
                     .withHearingCaseNotes(hearing.getHearingCaseNotes())
                     .withHearingDays(hearing.getHearingDays())
                     .withHearingLanguage(hearing.getHearingLanguage())
+                    .withEstimatedDuration(hearing.getEstimatedDuration())
                     .withId(hearing.getId())
                     .withJudiciary(hearing.getJudiciary())
                     .withJurisdictionType(hearing.getJurisdictionType())
@@ -355,6 +365,64 @@ public class HearingAggregate implements Aggregate {
         return Stream.concat(Stream.concat(events, populateHearingToProbationCaseWorker()), populateHearingToVEP());
 
     }
+
+    public Stream<Object> addDefenceCounselToHearing(final DefenceCounsel defenceCounsel) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        final List<DefenceCounsel> newList = ofNullable(hearing.getDefenceCounsels()).map(Collection::stream).orElseGet(Stream::empty).collect(toList());
+        newList.add(defenceCounsel);
+        final Hearing hearingWithDefenceCounsel = Hearing.hearing().withValuesFrom(hearing)
+                .withDefenceCounsels(newList.stream().distinct().collect(toList()))
+                .build();
+        streamBuilder.add(HearingDefenceCounselAdded.hearingDefenceCounselAdded().withHearingId(this.hearing.getId()).withDefenceCounsel(defenceCounsel).build());
+
+        streamBuilder.add(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
+                .withHearingListingStatus(this.hearingListingStatus)
+                .withNotifyNCES(this.notifyNCES)
+                .withHearing(hearingWithDefenceCounsel)
+                .build());
+
+        return apply(streamBuilder.build());
+    }
+
+    public Stream<Object> updateHearingWithDefenceCounsel(final DefenceCounsel defenceCounsel) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+
+        final Hearing hearingWithDefenceCounsel = Hearing.hearing().withValuesFrom(hearing)
+                .withDefenceCounsels(hearing.getDefenceCounsels().stream()
+                        .map(defenceCounselFromAggregate -> defenceCounselFromAggregate.getId().equals(defenceCounsel.getId()) ? defenceCounsel : defenceCounselFromAggregate)
+                        .collect(toList()))
+                .build();
+        streamBuilder.add(HearingDefenceCounselUpdated.hearingDefenceCounselUpdated().withHearingId(this.hearing.getId()).withDefenceCounsel(defenceCounsel).build());
+
+        streamBuilder.add(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
+                .withHearingListingStatus(this.hearingListingStatus)
+                .withNotifyNCES(this.notifyNCES)
+                .withHearing(hearingWithDefenceCounsel)
+                .build());
+
+        return apply(streamBuilder.build());
+    }
+
+    public Stream<Object> removeDefenceCounselFromHearing(final UUID defenceCounselId) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        final Hearing hearingWithOutDefenceCounsel = Hearing.hearing().withValuesFrom(hearing)
+                .withDefenceCounsels(hearing.getDefenceCounsels().stream()
+                        .filter(defenceCounselFromAggregate -> !defenceCounselFromAggregate.getId().equals(defenceCounselId))
+                        .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
+                .build();
+        streamBuilder.add(HearingDefenceCounselRemoved.hearingDefenceCounselRemoved().withHearingId(this.hearing.getId()).withId(defenceCounselId).build());
+
+        streamBuilder.add(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
+                .withHearingListingStatus(this.hearingListingStatus)
+                .withNotifyNCES(this.notifyNCES)
+                .withHearing(hearingWithOutDefenceCounsel)
+                .build());
+        return apply(streamBuilder.build());
+    }
+
 
     public Stream<Object> boxworkComplete() {
         LOGGER.debug("Boxwork Complete when hearing resulted");
@@ -453,6 +521,7 @@ public class HearingAggregate implements Aggregate {
                 .withIsEffectiveTrial(hearingWithOriginalListingNumber.getIsEffectiveTrial())
                 .withYouthCourtDefendantIds(hearingWithOriginalListingNumber.getYouthCourtDefendantIds())
                 .withYouthCourt(hearingWithOriginalListingNumber.getYouthCourt())
+                .withEstimatedDuration(hearingWithOriginalListingNumber.getEstimatedDuration())
                 .build();
 
         streamBuilder.add(HearingResulted.hearingResulted()
@@ -1269,6 +1338,175 @@ public class HearingAggregate implements Aggregate {
                 .build()));
 
     }
+
+    public Stream<Object> updateHearingWithVerdict(final Verdict verdict) {
+
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        final Hearing hearingWithNewVerdict = ofNullable(verdict.getApplicationId()).map(applicationId -> getHearingWithNewVerdictForApplication(applicationId, verdict)).orElseGet(() -> getHearingWithNewVerdictForOffences(verdict));
+
+        streamBuilder.add(HearingVerdictUpdated.hearingVerdictUpdated().withHearingId(hearingWithNewVerdict.getId()).withVerdict(verdict).build());
+
+        streamBuilder.add(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
+                .withHearingListingStatus(this.hearingListingStatus)
+                .withNotifyNCES(this.notifyNCES)
+                .withHearing(hearingWithNewVerdict)
+                .build());
+
+        return apply(streamBuilder.build());
+    }
+
+    private Hearing getHearingWithNewVerdictForApplication(final UUID applicationId, final Verdict verdict) {
+        return Hearing.hearing().withValuesFrom(hearing)
+                .withCourtApplications(hearing.getCourtApplications().stream()
+                        .map(courtApplication -> ! courtApplication.getId().equals(applicationId) ? courtApplication : CourtApplication.courtApplication()
+                                .withValuesFrom(courtApplication)
+                                .withVerdict(verdict)
+                                .build()).collect(toList()))
+                .build();
+    }
+    private Hearing getHearingWithNewVerdictForOffences(final Verdict verdict) {
+        return Hearing.hearing().withValuesFrom(hearing)
+                .withProsecutionCases(getProsecutionCasesWithNewVerdict(verdict))
+                .withCourtApplications(ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                        .map(courtApplication -> CourtApplication.courtApplication().withValuesFrom(courtApplication)
+                                .withCourtApplicationCases(getCourtApplicationCasesWithNewVerdict(verdict, courtApplication))
+                                .withCourtOrder(getCourtOrderWithNewVerdict(verdict, courtApplication))
+                                .build())
+                        .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
+                .build();
+    }
+
+    private CourtOrder getCourtOrderWithNewVerdict(final Verdict verdict, final CourtApplication courtApplication) {
+        return ofNullable(courtApplication.getCourtOrder())
+                .map(courtOrder -> CourtOrder.courtOrder().withValuesFrom(courtOrder)
+                        .withCourtOrderOffences(courtOrder.getCourtOrderOffences().stream()
+                                .map(courtOrderOffence -> CourtOrderOffence.courtOrderOffence().withValuesFrom(courtOrderOffence)
+                                        .withOffence(getOffenceWithNewVerdict(courtOrderOffence.getOffence(), verdict))
+                                        .build())
+                                .collect(toList()))
+                        .build())
+                .orElse(courtApplication.getCourtOrder());
+    }
+
+    private List<CourtApplicationCase> getCourtApplicationCasesWithNewVerdict(final Verdict verdict, final CourtApplication courtApplication) {
+        return ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase().withValuesFrom(courtApplicationCase)
+                        .withOffences(courtApplicationCase.getOffences().stream()
+                                .map(offence -> getOffenceWithNewVerdict(offence, verdict))
+                                .collect(toList()))
+                        .build())
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+    }
+
+    private List<ProsecutionCase> getProsecutionCasesWithNewVerdict(final Verdict verdict) {
+        return ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(prosecutionCase -> ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
+                        .withDefendants(prosecutionCase.getDefendants().stream()
+                                .map(defendant -> Defendant.defendant().withValuesFrom(defendant)
+                                        .withOffences(defendant.getOffences().stream()
+                                                .map(offence -> getOffenceWithNewVerdict(offence, verdict))
+                                                .collect(toList()))
+                                        .build())
+                                .collect(toList()))
+                        .build())
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+    }
+
+    private Offence getOffenceWithNewVerdict(final Offence offence, final Verdict verdict) {
+        if(verdict.getOffenceId().equals(offence.getId())){
+            return Offence.offence().withValuesFrom(offence)
+                    .withVerdict(verdict)
+                    .build();
+        }else{
+            return offence;
+        }
+    }
+
+    public Stream<Object> updateHearingWithPlea(final PleaModel pleaModel) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        final Hearing hearingWithNewPlea = ofNullable(pleaModel.getApplicationId()).map(applicationId -> getHearingWithNewPleaForApplication(applicationId, pleaModel.getPlea())).orElseGet(() -> getHearingWithNewPleaForOffences(pleaModel));
+
+        streamBuilder.add(HearingPleaUpdated.hearingPleaUpdated().withHearingId(this.hearing.getId()).withPleaModel(pleaModel).build());
+
+        streamBuilder.add(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
+                .withHearingListingStatus(this.hearingListingStatus)
+                .withNotifyNCES(this.notifyNCES)
+                .withHearing(hearingWithNewPlea)
+                .build());
+
+        return apply(streamBuilder.build());
+    }
+
+    private Hearing getHearingWithNewPleaForApplication(final UUID applicationId, final Plea plea) {
+        return Hearing.hearing().withValuesFrom(hearing)
+                .withCourtApplications(hearing.getCourtApplications().stream()
+                        .map(courtApplication -> ! courtApplication.getId().equals(applicationId) ? courtApplication : CourtApplication.courtApplication()
+                                .withValuesFrom(courtApplication)
+                                .withPlea(plea)
+                                .build()).collect(toList()))
+                .build();
+    }
+
+    private Hearing getHearingWithNewPleaForOffences(final PleaModel pleaModel) {
+        return Hearing.hearing().withValuesFrom(hearing)
+                .withProsecutionCases(getProsecutionCasesWithNewPlea(pleaModel))
+                .withCourtApplications(ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                        .map(courtApplication -> CourtApplication.courtApplication().withValuesFrom(courtApplication)
+                                .withCourtApplicationCases(getCourtApplicationCasesWithNewPlea(pleaModel, courtApplication))
+                                .withCourtOrder(getCourtOrderWithNewPlea(pleaModel, courtApplication))
+                                .build())
+                        .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
+                .build();
+    }
+
+    private CourtOrder getCourtOrderWithNewPlea(final PleaModel pleaModel, final CourtApplication courtApplication) {
+        return ofNullable(courtApplication.getCourtOrder())
+                .map(courtOrder -> CourtOrder.courtOrder().withValuesFrom(courtOrder)
+                        .withCourtOrderOffences(courtOrder.getCourtOrderOffences().stream()
+                                .map(courtOrderOffence -> CourtOrderOffence.courtOrderOffence().withValuesFrom(courtOrderOffence)
+                                        .withOffence(getOffenceWithNewPlea(courtOrderOffence.getOffence(), pleaModel))
+                                        .build())
+                                .collect(toList()))
+                        .build())
+                .orElse(courtApplication.getCourtOrder());
+    }
+
+    private List<CourtApplicationCase> getCourtApplicationCasesWithNewPlea(final PleaModel pleaModel, final CourtApplication courtApplication) {
+        return ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase().withValuesFrom(courtApplicationCase)
+                        .withOffences(courtApplicationCase.getOffences().stream()
+                                .map(offence -> getOffenceWithNewPlea(offence, pleaModel))
+                                .collect(toList()))
+                        .build())
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+    }
+
+    private List<ProsecutionCase> getProsecutionCasesWithNewPlea(final PleaModel pleaModel) {
+        return ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(prosecutionCase -> ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
+                        .withDefendants(prosecutionCase.getDefendants().stream()
+                                .map(defendant -> Defendant.defendant().withValuesFrom(defendant)
+                                        .withOffences(defendant.getOffences().stream()
+                                                .map(offence -> getOffenceWithNewPlea(offence, pleaModel))
+                                                .collect(toList()))
+                                        .build())
+                                .collect(toList()))
+                        .build())
+                .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
+    }
+
+    private Offence getOffenceWithNewPlea(final Offence offence, final PleaModel pleaModel) {
+        if(pleaModel.getOffenceId().equals(offence.getId())){
+            return Offence.offence().withValuesFrom(offence)
+                    .withPlea(ofNullable(pleaModel.getPlea()).orElse(offence.getPlea()))
+                    .withIndicatedPlea(ofNullable(pleaModel.getIndicatedPlea()).orElse(offence.getIndicatedPlea()))
+                    .withAllocationDecision(ofNullable(pleaModel.getAllocationDecision()).orElse(offence.getAllocationDecision()))
+                    .build();
+        }else{
+            return offence;
+        }
+    }
+
 
     private void updateOffenceInHearing(final HearingOffencesUpdated hearingOffencesUpdated) {
         if (isNotEmpty(this.hearing.getProsecutionCases())) {

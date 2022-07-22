@@ -15,6 +15,7 @@ import java.util.Collections;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -26,6 +27,7 @@ import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
@@ -39,6 +41,7 @@ import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCa
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,13 +52,59 @@ import java.util.stream.Stream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HearingAggregateTest {
 
+    @Mock
+    private Hearing hearing;
+
+    @Mock
+    private DefenceCounsel defenceCounsel;
+
     @InjectMocks
     private HearingAggregate hearingAggregate;
+
+    @Test
+    public void shouldIgnoreDuplicateDefenceCounselsAdded() {
+        final UUID userId1 = randomUUID();
+        final UUID userId2 = randomUUID();
+
+        final UUID id1 = randomUUID();
+        final UUID id2 = randomUUID();
+        final String firstName = "firstName";
+        final String lastName = "lastName";
+        final String title = "title";
+        final String middleName = "middleName";
+        final List<UUID> defendantList = new ArrayList();
+        defendantList.add(randomUUID());
+        final List<LocalDate> attendanceDays = new ArrayList();
+        attendanceDays.add(LocalDate.now());
+
+        final DefenceCounsel defenceCounsel1 = getDefenceCounsel(id1, userId1, firstName, lastName, title, middleName, defendantList,attendanceDays);
+        final DefenceCounsel defenceCounselDuplicate = getDefenceCounsel(id1, userId1, firstName, lastName, title, middleName, defendantList,attendanceDays);
+        final DefenceCounsel defenceCounsel2 = getDefenceCounsel(id2, userId2, firstName, lastName, title, middleName, defendantList,attendanceDays);
+
+        final List<Object> eventStream1 = hearingAggregate.addDefenceCounselToHearing(defenceCounsel1).collect(toList());
+        assertThat(eventStream1.size(), is(2));
+        final ProsecutionCaseDefendantListingStatusChanged event1  = (ProsecutionCaseDefendantListingStatusChanged) eventStream1.get(1);
+        assertThat(event1.getHearing().getDefenceCounsels().size(),is(1));
+
+        //Duplicate
+        final List<Object> eventStream2 = hearingAggregate.addDefenceCounselToHearing(defenceCounselDuplicate).collect(toList());
+        assertThat(eventStream2.size(), is(2));
+        final ProsecutionCaseDefendantListingStatusChanged event2 = (ProsecutionCaseDefendantListingStatusChanged) eventStream2.get(1);
+        assertThat(event2.getHearing().getDefenceCounsels().size(),is(1));
+
+        final List<Object> eventStream3 = hearingAggregate.addDefenceCounselToHearing(defenceCounsel2).collect(toList());
+        assertThat(eventStream3.size(), is(2));
+        final ProsecutionCaseDefendantListingStatusChanged event3 = (ProsecutionCaseDefendantListingStatusChanged) eventStream3.get(1);
+        assertThat(event3.getHearing().getDefenceCounsels().size(),is(2));
+    }
+
+
 
     @Test
     public void shouldMarkHearingDuplicate() {
@@ -611,5 +660,21 @@ public class HearingAggregateTest {
                 .withId(caseId)
                 .withDefendants(defendants)
                 .build();
+    }
+
+    private DefenceCounsel getDefenceCounsel(final UUID id, final UUID userId,
+                                             final String firstName, final String lastName,
+                                             final String title, final String middleName,
+                                             final List<UUID> defendantList, final List<LocalDate> attendanceDays) {
+        final DefenceCounsel defenceCounsel =  DefenceCounsel.defenceCounsel()
+                .withId(id)
+                .withDefendants(defendantList)
+                .withAttendanceDays(attendanceDays)
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .withTitle(title)
+                .withMiddleName(middleName)
+                .withUserId(userId).build();
+        return defenceCounsel;
     }
 }

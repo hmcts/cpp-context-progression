@@ -1,10 +1,13 @@
 package uk.gov.moj.cpp.progression.utils;
 
 import static java.nio.charset.Charset.defaultCharset;
+import static javax.json.Json.createReader;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.fail;
 
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 
@@ -12,6 +15,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,4 +47,14 @@ public class FileUtil {
         return object;
     }
 
+
+    public static JsonObject givenPayload(final String filePath) {
+        try (final InputStream inputStream = FileUtil.class.getResourceAsStream(filePath)) {
+            assertThat(inputStream, notNullValue());
+            final JsonReader jsonReader = createReader(inputStream);
+            return jsonReader.readObject();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

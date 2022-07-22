@@ -2,6 +2,7 @@
   "isReshare": true,
   "hearingDay": "2015-01-12",
   "hearing": {
+    "estimatedDuration": "1 week",
     "courtApplications": [
       {
         "applicant": {
@@ -10,7 +11,7 @@
             "prosecutionAuthorityCode": "TVL",
             "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962"
           },
-          "summonsRequired" : false,
+          "summonsRequired": false,
           "notificationRequired": false
         },
         "subject": {
@@ -26,8 +27,8 @@
           "categoryCode": "VP",
           "linkType": "LINKED",
           "jurisdiction": "MAGISTRATES",
-          "summonsTemplateType" : "GENERIC_APPLICATION",
-          "breachType" : "NOT_APPLICABLE",
+          "summonsTemplateType": "GENERIC_APPLICATION",
+          "breachType": "NOT_APPLICABLE",
           "appealFlag": true,
           "applicantAppellantFlag": false,
           "pleaApplicableFlag": false,
@@ -36,7 +37,7 @@
           "courtExtractAvlFlag": false,
           "prosecutorThirdPartyFlag": false,
           "spiOutApplicableFlag": false,
-          "offenceActiveOrder" : "NOT_APPLICABLE"
+          "offenceActiveOrder": "NOT_APPLICABLE"
         },
         "applicationReceivedDate": "2020-06-01",
         "applicationReference": "APPLICATION_REF",
@@ -203,7 +204,7 @@
           {
             "id": "00000000-0000-0000-0000-000000000000",
             "synonym": "a",
-            "summonsRequired" : false,
+            "summonsRequired": false,
             "notificationRequired": false,
             "personDetails": {
               "title": "MR",
@@ -444,6 +445,7 @@
                     "isConvictedResult": false,
                     "isDeleted": false,
                     "isFinancialResult": false,
+                    "isNewAmendment" : true,
                     "judicialResultId": "a3dde5d1-04bc-4fbe-b677-67dc5c62727b",
                     "judicialResultPrompts": [
                       {
@@ -572,6 +574,7 @@
                     "lastSharedDateTime": "2020-06-27",
                     "lifeDuration": false,
                     "nextHearing": {
+                      "estimatedDuration": "1 week",
                       "adjournmentReason": "adjournmentReason",
                       "courtCentre": {
                         "address": {
@@ -643,7 +646,6 @@
           ]
         }
       }
-
     ],
     "id": "HEARING_ID",
     "type": {
@@ -803,6 +805,7 @@
                     "isFinancialResult": true,
                     "isConvictedResult": true,
                     "isAvailableForCourtExtract": true,
+                    "isNewAmendment" : true,
                     "amendmentDate": "0000-01-01",
                     "amendmentReason": "a",
                     "cjsCode": "a",
@@ -830,15 +833,15 @@
                     ],
                     "category": "FINAL",
                     "terminatesOffenceProceedings": false,
-                    "lifeDuration" : false,
-                    "publishedAsAPrompt" : false,
+                    "lifeDuration": false,
+                    "publishedAsAPrompt": false,
                     "publishedForNows": false,
                     "rollUpPrompts": false,
-                    "excludedFromResults" : false,
-                    "alwaysPublished" : false,
-                    "urgent" : false,
-                    "d20" : false,
-                    "resultText" : "resultText",
+                    "excludedFromResults": false,
+                    "alwaysPublished": false,
+                    "urgent": false,
+                    "d20": false,
+                    "resultText": "resultText",
                     "judicialResultPrompts": [
                       {
                         "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
@@ -851,6 +854,7 @@
                       }
                     ],
                     "nextHearing": {
+                      "estimatedDuration": "1 week",
                       "adjournmentReason": "adjournmentReason",
                       "courtCentre": {
                         "address": {

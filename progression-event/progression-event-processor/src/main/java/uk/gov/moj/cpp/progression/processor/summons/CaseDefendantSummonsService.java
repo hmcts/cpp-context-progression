@@ -47,7 +47,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -63,7 +63,7 @@ public class CaseDefendantSummonsService {
     private static final JsonObject EMPTY_JSON_OBJECT = createObjectBuilder().build();
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private ReferenceDataOffenceService referenceDataOffenceService;

@@ -58,7 +58,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -95,6 +95,7 @@ public class ListCourtHearingTransformerTest {
     final private UUID courtCenterId = UUID.randomUUID();
     final private ZonedDateTime courtProceedingsInitiated = ZonedDateTime.now(ZoneId.of("UTC"));
     final private int estimateMinutes = 15;
+    final private String estimateDuration = "1 week";
     final private String referralDate = "2018-02-15";
     final private String expectedDate = "2018-03-01";
     final private ZonedDateTime listedStartDateTime = ZonedDateTime.parse("2019-06-30T18:32:04.238Z");
@@ -118,7 +119,7 @@ public class ListCourtHearingTransformerTest {
     @InjectMocks
     private ListCourtHearingTransformer listCourtHearingTransformer;
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
     @Mock
@@ -449,6 +450,7 @@ public class ListCourtHearingTransformerTest {
                         .withId(UUID.randomUUID())
                         .withCourtCentre(createCourtCenter())
                         .withCourtApplications(createCourtApplications())
+                        .withEstimatedDuration(estimateDuration)
                         .withEstimatedMinutes(estimateMinutes)
                         .withJudiciary(Arrays.asList(JudicialRole.judicialRole()
                                 .withJudicialId(UUID.randomUUID())
@@ -739,6 +741,7 @@ public class ListCourtHearingTransformerTest {
         final ReferredListHearingRequest listHearingRequest = ReferredListHearingRequest.referredListHearingRequest()
                 .withHearingType(ReferredHearingType.referredHearingType().withId(UUID.randomUUID()).build())
                 .withEstimateMinutes(Integer.valueOf(15))
+                .withEstimatedDuration("1 week")
                 .withListDefendantRequests(Arrays.asList(ListDefendantRequest.listDefendantRequest()
                         .withProsecutionCaseId(prosecutionCaseId)
                         .withDefendantOffences(Arrays.asList(offenceId))
@@ -783,6 +786,7 @@ public class ListCourtHearingTransformerTest {
         final ReferredListHearingRequest listHearingRequest = ReferredListHearingRequest.referredListHearingRequest()
                 .withHearingType(ReferredHearingType.referredHearingType().withId(UUID.randomUUID()).build())
                 .withEstimateMinutes(Integer.valueOf(15))
+                .withEstimatedDuration("1 week")
                 .withListDefendantRequests(Arrays.asList(ListDefendantRequest.listDefendantRequest()
                         .withProsecutionCaseId(prosecutionCaseId)
                         .withDefendantOffences(Arrays.asList(offenceId))
@@ -822,6 +826,7 @@ public class ListCourtHearingTransformerTest {
         final ReferredListHearingRequest listHearingRequest = ReferredListHearingRequest.referredListHearingRequest()
                 .withHearingType(ReferredHearingType.referredHearingType().withId(UUID.randomUUID()).build())
                 .withEstimateMinutes(Integer.valueOf(15))
+                .withEstimatedDuration("1 week")
                 .withListDefendantRequests(Arrays.asList(ListDefendantRequest.listDefendantRequest()
                         .withProsecutionCaseId(prosecutionCaseId)
                         .withDefendantOffences(Arrays.asList(offenceId))

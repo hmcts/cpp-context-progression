@@ -28,7 +28,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.helper.JsonHelper;
 import uk.gov.moj.cpp.progression.service.DefenceNotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.service.payloads.UserGroupDetails;
 
@@ -70,7 +70,7 @@ public class CourtDocumentAddedProcessor {
     private ProgressionService progressionService;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private Requester requester;

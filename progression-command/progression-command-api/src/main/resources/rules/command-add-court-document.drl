@@ -15,6 +15,16 @@ rule "Command - add court document"
     $outcome.setSuccess(true);
 end
 
+rule "Command - add court document for prosecutor"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.add-court-document-for-prosecutor");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Defence Lawyers", "Advocates"))
+    and eval(rbacProvider.isLoggedInUserAllowedToUploadDocument($action))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Command - add court document-v2"
   when
     $outcome: Outcome();

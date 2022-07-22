@@ -16,7 +16,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -57,7 +57,7 @@ public class ConvictingCourtUpdateEventProcessor {
     private Requester requester;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Handles("public.sjp.events.conviction-court-resolved")
     public void handleConvictingCourt(final JsonEnvelope envelope) {

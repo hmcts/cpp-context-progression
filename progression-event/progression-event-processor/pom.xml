@@ -10,6 +10,7 @@
 
     <properties>
         <cpp.service-component>EVENT_PROCESSOR</cpp.service-component>
+        <pdfbox.version>2.0.19</pdfbox.version>
     </properties>
 
     <dependencies>
@@ -98,6 +99,11 @@
             <version>${cpp.platform-libraries.version}</version>
         </dependency>
         <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>${pdfbox.version}</version>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -200,6 +206,18 @@
         <dependency>
             <groupId>com.jayway.awaitility</groupId>
             <artifactId>awaitility</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>${httpmime.version}</version>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

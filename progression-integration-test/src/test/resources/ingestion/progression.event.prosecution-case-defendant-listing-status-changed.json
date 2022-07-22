@@ -155,6 +155,15 @@
                   "vehicleRegistration": "AA12345",
                   "alcoholReadingAmount": 111,
                   "alcoholReadingMethodCode": "2222"
+                },
+                "verdict" : {
+                  "offenceId" : "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "verdictDate" : "2019-01-01",
+                  "verdictType" : {
+                    "id" : "3789ab16-0bb7-4ef1-87ef-c936bf0364f2",
+                    "category" : "category",
+                    "categoryType" : "categoryType"
+                  }
                 }
               }
             ]
@@ -174,7 +183,23 @@
       "id": "9623a7ac-25bb-43f8-b219-2ae4cd8b05db"
     },
     "isBoxHearing": true,
-    "isVirtualBoxHearing": true
+    "isVirtualBoxHearing": true,
+    "defenceCounsels" : [
+      {
+        "attendanceDays": [
+          "2020-01-02"
+        ],
+        "defendants": [
+          "9c52f847-4125-4438-b855-9c264695ad33"
+        ],
+        "firstName": "acsc",
+        "id": "dba138e9-4ba9-4ff5-82e8-c646e8916d44",
+        "lastName": "CZCXz",
+        "middleName": "",
+        "status": "zczc",
+        "title": ""
+      }
+    ]
   },
   "hearingListingStatus": "SENT_FOR_LISTING"
 }

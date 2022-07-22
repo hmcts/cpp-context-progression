@@ -15,7 +15,7 @@ import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -42,7 +42,7 @@ public class CourtDocumentObjectServiceTest {
     private static final String SUMMONS = "Summons";
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Mock
     private Requester requester;

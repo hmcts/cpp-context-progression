@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.query;
 
+import static java.lang.Boolean.TRUE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -88,8 +89,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ServiceComponent(Component.QUERY_VIEW)
 @SuppressWarnings({"squid:S1612", "squid:S2259", "squid:S00112", "squid:S3776", "squid:S1155",
-                "squid:S1166", "squid:S2221", "squid:MethodCyclomaticComplexity"})
-public class CourtDocumentQuery {
+        "squid:S1166", "squid:S2221", "squid:MethodCyclomaticComplexity", "pmd:LocalVariableCouldBeFinal"})
+public class CourtDocumentQueryView {
 
     private static final String GROUPS = "groups";
     private static final String GROUP_NAME = "groupName";
@@ -102,6 +103,7 @@ public class CourtDocumentQuery {
     public static final String COURT_DOCUMENTS_NOW_SEARCH_NAME = "progression.query.courtdocuments.now";
     public static final String COURT_DOCUMENT_RESULT_FIELD = "courtDocument";
     public static final String CASE_ID_SEARCH_PARAM = "caseId";
+    private static final String IS_PROSECUTING_CASE = "prosecutingCase";
     public static final String DEFENDANT_ID_SEARCH_PARAM = "defendantId";
     public static final String APPLICATION_ID_SEARCH_PARAM = "applicationId";
     private static final String ID = "id";
@@ -110,15 +112,15 @@ public class CourtDocumentQuery {
     private static final String NOTIFICATION_STATUS = "notificationStatus";
     public static final String APPLICATION_ID = "applicationId";
     public static final String PROSECUTION_NOTIFICATION_STATUS =
-                    "progression.query.prosecution.notification-status";
+            "progression.query.prosecution.notification-status";
     private static final String REFERENCEDATA_GET_ALL_DOCUMENT_TYPE_ACCESS_QUERY =
-                    "referencedata.get-all-document-type-access";
+            "referencedata.get-all-document-type-access";
     private static final String DOCUMENT_TYPE_ACCESS = "documentsTypeAccess";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperProducer().objectMapper();
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentQuery.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentQueryView.class);
     public static final String DOCUMENT_USER_GROUP_LOGGER =
-                    "search for case %s for documents userGroupsInDocument=%s permittedGroups=%s";
+            "search for case %s for documents userGroupsInDocument=%s permittedGroups=%s";
     public static final String READ_USER_ACTION = "readUserGroups";
     private static final String COURT_DOCUMENT_TYPE_RBAC = "courtDocumentTypeRBAC";
     private static final String SECTION = "sectionId";
@@ -163,6 +165,7 @@ public class CourtDocumentQuery {
     @Inject
     private Requester requester;
 
+
     @Handles(COURT_DOCUMENT_SEARCH_NAME)
     public JsonEnvelope getCourtDocument(final JsonEnvelope envelope) {
         final Optional<UUID> id = JsonObjects.getUUID(envelope.payloadAsJsonObject(), ID_PARAMETER);
@@ -175,11 +178,11 @@ public class CourtDocumentQuery {
             courtDocumentEntity = courtDocumentRepository.findBy(id.get());
             if (nonNull(courtDocumentEntity) && !courtDocumentEntity.isRemoved()) {
                 jsonEnvelope = envelopeFrom(envelope.metadata(),
-                                jsonObjectBuilder
-                                                .add(COURT_DOCUMENT_RESULT_FIELD,
-                                                                jsonFromString(courtDocumentEntity
-                                                                                .getPayload()))
-                                                .build());
+                        jsonObjectBuilder
+                                .add(COURT_DOCUMENT_RESULT_FIELD,
+                                        jsonFromString(courtDocumentEntity
+                                                .getPayload()))
+                                .build());
             }
         }
 
@@ -195,14 +198,20 @@ public class CourtDocumentQuery {
     @Handles(COURT_DOCUMENTS_SEARCH_NAME)
     public JsonEnvelope searchCourtDocuments(final JsonEnvelope envelope) {
         final String strCaseIds =
-                        JsonObjects.getString(envelope.payloadAsJsonObject(), CASE_ID_SEARCH_PARAM)
-                                        .orElse(null);
+                JsonObjects.getString(envelope.payloadAsJsonObject(), CASE_ID_SEARCH_PARAM)
+                        .orElse(null);
         final String defendantId = JsonObjects
-                        .getString(envelope.payloadAsJsonObject(), DEFENDANT_ID_SEARCH_PARAM)
-                        .orElse(null);
+                .getString(envelope.payloadAsJsonObject(), DEFENDANT_ID_SEARCH_PARAM)
+                .orElse(null);
         final String strApplicationIds = JsonObjects
-                        .getString(envelope.payloadAsJsonObject(), APPLICATION_ID_SEARCH_PARAM)
-                        .orElse(null);
+                .getString(envelope.payloadAsJsonObject(), APPLICATION_ID_SEARCH_PARAM)
+                .orElse(null);
+
+        final Boolean isProsecuting = JsonObjects
+                .getBoolean(envelope.payloadAsJsonObject(), IS_PROSECUTING_CASE)
+                .orElse(null);
+
+        LOGGER.info("Prosecuting value from the envelope is {}", isProsecuting);
 
         final List<CourtDocumentEntity> courtDocumentEntities = new ArrayList<>();
         boolean foundSearchParameter = false;
@@ -217,11 +226,11 @@ public class CourtDocumentQuery {
             final List<UUID> allDefendantIDs = commaSeparatedUuidParam2UUIDs(defendantId);
             if (caseIdList.size() == 1) {
                 final List<UUID> masterDefendantList = retrieveMasterDefendantIdList(
-                                caseIdList.get(0),
-                                allDefendantIDs.size() > 0 ? allDefendantIDs.get(0) : null);
+                        caseIdList.get(0),
+                        allDefendantIDs.size() > 0 ? allDefendantIDs.get(0) : null);
                 if (masterDefendantList.size() == 1) {
                     LOGGER.info("CourtDocumentQueryCourtDocumentQueryCourtDocumentQuery3 {}",
-                                    masterDefendantList.get(0));
+                            masterDefendantList.get(0));
                     masterDefendantIds.addAll(masterDefendantList);
                 }
             }
@@ -230,14 +239,14 @@ public class CourtDocumentQuery {
 
             foundSearchParameter = true;
             final List<CourtDocumentEntity> byProsecutionCaseIdsAndDefendantIds =
-                            courtDocumentRepository.findByProsecutionCaseIdAndDefendantId(
-                                            commaSeparatedUuidParam2UUIDs(strCaseIds),
-                                            allDefendantIDs);
+                    courtDocumentRepository.findByProsecutionCaseIdAndDefendantId(
+                            commaSeparatedUuidParam2UUIDs(strCaseIds),
+                            allDefendantIDs);
 
             // find by case ids only
             final List<CourtDocumentEntity> byProsecutionCaseIds =
-                            courtDocumentRepository.findByProsecutionCaseIdsAndDefendantIsNull(
-                                            commaSeparatedUuidParam2UUIDs(strCaseIds));
+                    courtDocumentRepository.findByProsecutionCaseIdsAndDefendantIsNull(
+                            commaSeparatedUuidParam2UUIDs(strCaseIds));
 
             byProsecutionCaseIdsAndDefendantIds.addAll(byProsecutionCaseIds);
 
@@ -248,20 +257,20 @@ public class CourtDocumentQuery {
         } else if (isNotEmpty(strCaseIds)) {
             foundSearchParameter = true;
             final List<CourtDocumentEntity> byProsecutionCaseIds = courtDocumentRepository
-                            .findByProsecutionCaseIds(commaSeparatedUuidParam2UUIDs(strCaseIds));
+                    .findByProsecutionCaseIds(commaSeparatedUuidParam2UUIDs(strCaseIds));
             if (!byProsecutionCaseIds.isEmpty()) {
                 courtDocumentEntities.addAll(byProsecutionCaseIds);
             }
         } else if (isNotEmpty(defendantId)) {
             foundSearchParameter = true;
             courtDocumentEntities.addAll(courtDocumentRepository
-                            .findByDefendantId(UUID.fromString(defendantId)));
+                    .findByDefendantId(UUID.fromString(defendantId)));
         }
 
         if (isNotEmpty(strApplicationIds)) {
             foundSearchParameter = true;
             final List<CourtDocumentEntity> byApplicationIds = courtDocumentRepository
-                            .findByApplicationIds(commaSeparatedUuidParam2UUIDs(strApplicationIds));
+                    .findByApplicationIds(commaSeparatedUuidParam2UUIDs(strApplicationIds));
 
             if (!byApplicationIds.isEmpty()) {
                 courtDocumentEntities.addAll(byApplicationIds);
@@ -269,13 +278,14 @@ public class CourtDocumentQuery {
         }
         if (!foundSearchParameter) {
             throw new RuntimeException(String.format("%s no search parameter specified ",
-                            COURT_DOCUMENTS_SEARCH_NAME));
+                    COURT_DOCUMENTS_SEARCH_NAME));
         }
 
         final CourtDocumentsSearchResult result = new CourtDocumentsSearchResult();
         final Map<UUID, CourtDocument> id2CourtDocument = new HashMap<>();
 
         final List<DocumentTypeAccessReferenceData> documentTypeAccessReferenceDataList = getAllDocumentTypeAccess();
+
         final List<String> userGroupsByUserId = getUserGroupsByUserId(envelope);
 
 
@@ -286,40 +296,60 @@ public class CourtDocumentQuery {
                 .forEach(courtDocument -> id2CourtDocument.put(courtDocument.getCourtDocumentId(), courtDocument));
 
         final Set<String> usergroupsInDocuments = id2CourtDocument.values().stream()
-                        .flatMap(cd -> cd.getMaterials() == null ? Stream.empty()
-                                        : cd.getMaterials().stream())
-                        .flatMap(m -> m.getUserGroups() == null ? Stream.empty()
-                                        : m.getUserGroups().stream())
-                        .collect(Collectors.toSet());
+                .flatMap(cd -> cd.getMaterials() == null ? Stream.empty()
+                        : cd.getMaterials().stream())
+                .flatMap(m -> m.getUserGroups() == null ? Stream.empty()
+                        : m.getUserGroups().stream())
+                .collect(Collectors.toSet());
 
         final Set<String> permittedGroups = getPermittedGroups(usergroupsInDocuments, envelope);
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format(DOCUMENT_USER_GROUP_LOGGER, strCaseIds, usergroupsInDocuments,
-                            permittedGroups));
+                    permittedGroups));
         }
 
         final List<CourtDocument> filteredMaterialCourtDocuments =
-                        id2CourtDocument.values().stream()
-                                        .map(courtDocument -> filterPermittedMaterial(courtDocument,
-                                                        permittedGroups))
-                                        .filter(courtDocument2 -> CollectionUtils
-                                                        .isNotEmpty(courtDocument2.getMaterials()))
-                                        .collect(Collectors.toList());
-
-        final List<CourtDocumentIndex> courtDocumentIndices = filteredMaterialCourtDocuments
-                        .stream().sorted(Comparator.comparing(CourtDocument::getSeqNum))
-                        .map(courtDocumentFiltered -> courtDocumentTransform
-                                        .transform(courtDocumentFiltered).build())
-                        .filter(courtDocumentIndex -> isEmpty(defendantId)
-                                        || courtDocumentIndex.getDefendantIds().isEmpty()
-                                        || courtDocumentIndex.getDefendantIds()
-                                                        .contains(UUID.fromString(defendantId))
-                                        || (masterDefendantIds.size() == 1
-                                                        && courtDocumentIndex.getDefendantIds()
-                                                                        .contains(masterDefendantIds
-                                                                                        .get(0))))
+                id2CourtDocument.values().stream()
+                        .map(courtDocument -> filterPermittedMaterial(courtDocument,
+                                permittedGroups))
+                        .filter(courtDocument2 -> CollectionUtils
+                                .isNotEmpty(courtDocument2.getMaterials()))
                         .collect(Collectors.toList());
+
+        List<CourtDocumentIndex> courtDocumentIndices = filteredMaterialCourtDocuments
+                .stream().sorted(Comparator.comparing(CourtDocument::getSeqNum))
+                .map(courtDocumentFiltered -> courtDocumentTransform
+                        .transform(courtDocumentFiltered).build())
+                .filter(courtDocumentIndex -> isEmpty(defendantId)
+                        || courtDocumentIndex.getDefendantIds().isEmpty()
+                        || courtDocumentIndex.getDefendantIds()
+                        .contains(UUID.fromString(defendantId))
+                        || (masterDefendantIds.size() == 1
+                        && courtDocumentIndex.getDefendantIds()
+                        .contains(masterDefendantIds
+                                .get(0))))
+                .collect(Collectors.toList());
+
+        if (TRUE.equals(isProsecuting)) {
+            final List<UUID> defenceOnlyTrueList = documentTypeAccessReferenceDataList.stream()
+                    .filter(documentTypeAccessReferenceData ->
+                            documentTypeAccessReferenceData.getDefenceOnly().equals(true))
+                    .map(DocumentTypeAccessReferenceData::getId)
+                    .collect(toList());
+            LOGGER.info("defence only true list {}",defenceOnlyTrueList);
+
+            if (!defenceOnlyTrueList.isEmpty()) {
+                final List<CourtDocumentIndex> listToRemove = courtDocumentIndices.stream()
+                        .filter(cdi -> defenceOnlyTrueList.stream()
+                                .anyMatch(d -> d.equals(cdi.getDocument().getDocumentTypeId())))
+                        .collect(toList());
+
+                LOGGER.info("The removed list {}", listToRemove);
+
+                courtDocumentIndices.removeAll(listToRemove);
+            }
+        }
 
         result.setDocumentIndices(courtDocumentIndices);
 
@@ -329,7 +359,7 @@ public class CourtDocumentQuery {
     }
 
     private boolean isFilterByCaseIdAndDefedantId(final String strCaseIds,
-                    final String defendantId) {
+                                                  final String defendantId) {
         return isNotEmpty(strCaseIds) && isNotEmpty(defendantId);
     }
 
@@ -401,7 +431,7 @@ public class CourtDocumentQuery {
 
     @SuppressWarnings("squid:S3655")
     private boolean isSearchCriteriaMatching(final CourtDocument courtDocument, final SearchCriteria searchCriteria) {
-        if(searchCriteria.getDocumentName().isPresent()){
+        if (searchCriteria.getDocumentName().isPresent()) {
             return courtDocument.getName().toLowerCase().startsWith(searchCriteria.getDocumentName().get().toLowerCase());
         }
         return true;
@@ -466,61 +496,61 @@ public class CourtDocumentQuery {
     }
 
     private boolean isAllowedToAccessDocumentForGivenAction(
-                    final List<DocumentTypeAccessReferenceData> documentTypeAccessReferenceDataList,
-                    final CourtDocument courtDocument, final List<String> userGroupsByUserId) {
+            final List<DocumentTypeAccessReferenceData> documentTypeAccessReferenceDataList,
+            final CourtDocument courtDocument, final List<String> userGroupsByUserId) {
 
 
         final Optional<DocumentTypeAccessReferenceData> documentTypeAccess =
-                        documentTypeAccessReferenceDataList.stream().filter(
-                                        documentTypeAccessReferenceData -> documentTypeAccessReferenceData
-                                                        .getId()
-                                                        .equals(courtDocument.getDocumentTypeId()))
-                                        .findFirst();
+                documentTypeAccessReferenceDataList.stream().filter(
+                                documentTypeAccessReferenceData -> documentTypeAccessReferenceData
+                                        .getId()
+                                        .equals(courtDocument.getDocumentTypeId()))
+                        .findFirst();
 
         if (!documentTypeAccess.isPresent()) {
             return false;
         }
 
         final JsonObject documentTypeAccessObject =
-                        objectToJsonObjectConverter.convert(documentTypeAccess);
+                objectToJsonObjectConverter.convert(documentTypeAccess);
 
         if (isNull(courtDocument.getDocumentTypeId())) {
             return false;
         }
 
         final Optional<List<String>> listOfValidUserGroup =
-                        getListOfValidUserGroup(documentTypeAccessObject, READ_USER_ACTION);
+                getListOfValidUserGroup(documentTypeAccessObject, READ_USER_ACTION);
 
         return listOfValidUserGroup.filter(documentTypeAccessGroup -> isUserGroupsMatchesWithRBAC(
-                        documentTypeAccessGroup, userGroupsByUserId)).isPresent();
+                documentTypeAccessGroup, userGroupsByUserId)).isPresent();
 
     }
 
 
     private boolean isUserGroupsMatchesWithRBAC(final List<String> groupsWithCreateAccess,
-                    final List<String> userGroupsByUserId) {
+                                                final List<String> userGroupsByUserId) {
         return groupsWithCreateAccess.stream().anyMatch(userGroupsByUserId::contains);
     }
 
     private Optional<List<String>> getListOfValidUserGroup(final JsonObject documentTypeData,
-                    final String userAction) {
+                                                           final String userAction) {
         if (documentTypeData == null || !documentTypeData.containsKey(COURT_DOCUMENT_TYPE_RBAC)
-                        || !documentTypeData.getJsonObject(COURT_DOCUMENT_TYPE_RBAC)
-                                        .containsKey(userAction)
-                        || documentTypeData.getJsonObject(COURT_DOCUMENT_TYPE_RBAC)
-                                        .getJsonArray(userAction).isEmpty()) {
+                || !documentTypeData.getJsonObject(COURT_DOCUMENT_TYPE_RBAC)
+                .containsKey(userAction)
+                || documentTypeData.getJsonObject(COURT_DOCUMENT_TYPE_RBAC)
+                .getJsonArray(userAction).isEmpty()) {
             return Optional.empty();
         }
         final JsonArray courtDocumentTypeRBAC = documentTypeData
-                        .getJsonObject(COURT_DOCUMENT_TYPE_RBAC).getJsonArray(userAction);
+                .getJsonObject(COURT_DOCUMENT_TYPE_RBAC).getJsonArray(userAction);
 
 
         final List<String> result = IntStream.range(0, courtDocumentTypeRBAC.size())
-                        .mapToObj(courtDocumentTypeRBAC::getJsonObject)
-                        .filter(group -> group.getJsonObject("cppGroup") != null)
-                        .map(group -> group.getJsonObject("cppGroup"))
-                        .filter(group -> isNoneBlank(group.getString(GROUP_NAME)))
-                        .map(group -> group.getString(GROUP_NAME)).collect(toList());
+                .mapToObj(courtDocumentTypeRBAC::getJsonObject)
+                .filter(group -> group.getJsonObject("cppGroup") != null)
+                .map(group -> group.getJsonObject("cppGroup"))
+                .filter(group -> isNoneBlank(group.getString(GROUP_NAME)))
+                .map(group -> group.getString(GROUP_NAME)).collect(toList());
 
         return Optional.of(result);
 
@@ -529,12 +559,12 @@ public class CourtDocumentQuery {
     @Handles(COURT_DOCUMENTS_NOW_SEARCH_NAME)
     public JsonEnvelope searchCourtDocumentsByHearingId(final JsonEnvelope envelope) {
         final String hearingIds = JsonObjects
-                        .getString(envelope.payloadAsJsonObject(), HEARING_ID_PARAMETER).orElse("");
+                .getString(envelope.payloadAsJsonObject(), HEARING_ID_PARAMETER).orElse("");
         final String defendantId = JsonObjects
-                        .getString(envelope.payloadAsJsonObject(), DEFENDANT_ID_PARAMETER)
-                        .orElse("");
+                .getString(envelope.payloadAsJsonObject(), DEFENDANT_ID_PARAMETER)
+                .orElse("");
         final String documentCategory = JsonObjects
-                        .getString(envelope.payloadAsJsonObject(), "document_category").orElse("");
+                .getString(envelope.payloadAsJsonObject(), "document_category").orElse("");
         // assume comma separated
         final List<UUID> caseIds = new ArrayList<>();
         for (final String hearingId : hearingIds.trim().split(",")) {
@@ -551,31 +581,31 @@ public class CourtDocumentQuery {
                 .forEach(courtDocument -> id2CourtDocument.put(courtDocument.getCourtDocumentId(), courtDocument));
 
         final Set<String> usergroupsInDocuments = id2CourtDocument.values().stream()
-                        .flatMap(cd -> cd.getMaterials() == null ? Stream.empty()
-                                        : cd.getMaterials().stream())
-                        .flatMap(m -> m.getUserGroups() == null ? Stream.empty()
-                                        : m.getUserGroups().stream())
-                        .collect(Collectors.toSet());
+                .flatMap(cd -> cd.getMaterials() == null ? Stream.empty()
+                        : cd.getMaterials().stream())
+                .flatMap(m -> m.getUserGroups() == null ? Stream.empty()
+                        : m.getUserGroups().stream())
+                .collect(Collectors.toSet());
         final Set<String> permittedGroups = getPermittedGroups(usergroupsInDocuments, envelope);
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format(DOCUMENT_USER_GROUP_LOGGER, hearingIds, usergroupsInDocuments,
-                            permittedGroups));
+                    permittedGroups));
         }
 
         final List<CourtDocument> filteredMaterialCourtDocuments = id2CourtDocument.values()
-                        .stream()
-                        .map(courtDocument -> filterPermittedMaterial(courtDocument,
-                                        permittedGroups))
-                        .filter(courtDocument2 -> courtDocument2.getMaterials() != null
-                                        && !courtDocument2.getMaterials().isEmpty())
-                        .collect(Collectors.toList());
+                .stream()
+                .map(courtDocument -> filterPermittedMaterial(courtDocument,
+                        permittedGroups))
+                .filter(courtDocument2 -> courtDocument2.getMaterials() != null
+                        && !courtDocument2.getMaterials().isEmpty())
+                .collect(Collectors.toList());
 
         final List<CourtDocumentIndex> courtDocumentIndices =
-                        filteredMaterialCourtDocuments.stream()
-                                        .map(courtDocumentFiltered -> courtDocumentTransform
-                                                        .transform(courtDocumentFiltered).build())
-                                        .collect(Collectors.toList());
+                filteredMaterialCourtDocuments.stream()
+                        .map(courtDocumentFiltered -> courtDocumentTransform
+                                .transform(courtDocumentFiltered).build())
+                        .collect(Collectors.toList());
 
         result.setDocumentIndices(courtDocumentIndices);
 
@@ -588,16 +618,16 @@ public class CourtDocumentQuery {
     public JsonEnvelope getCaseNotifications(final JsonEnvelope envelope) {
 
         final String strCaseIds = JsonObjects
-                        .getString(envelope.payloadAsJsonObject(), CASE_ID_SEARCH_PARAM).orElse("");
+                .getString(envelope.payloadAsJsonObject(), CASE_ID_SEARCH_PARAM).orElse("");
 
         final List<UUID> caseIds = Arrays.stream(strCaseIds.trim().split(",")).map(UUID::fromString)
-                        .collect(Collectors.toList());
+                .collect(Collectors.toList());
 
         final Map<UUID, List<NotificationStatusEntity>> caseNotificationMap = caseIds.stream()
-                        .map(caseId -> notificationStatusRepository.findByCaseId(caseId))
-                        .flatMap(Collection::stream)
-                        .collect(Collectors.groupingBy(NotificationStatusEntity::getCaseId,
-                                        HashMap::new, Collectors.toCollection(ArrayList::new)));
+                .map(caseId -> notificationStatusRepository.findByCaseId(caseId))
+                .flatMap(Collection::stream)
+                .collect(Collectors.groupingBy(NotificationStatusEntity::getCaseId,
+                        HashMap::new, Collectors.toCollection(ArrayList::new)));
 
         return createJsonEnvelope(envelope, caseNotificationMap);
     }
@@ -610,47 +640,47 @@ public class CourtDocumentQuery {
 
     private CourtDocument courtDocument(final CourtDocumentEntity courtDocumentEntity) {
         final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(
-                        jsonFromString(courtDocumentEntity.getPayload()), CourtDocument.class);
+                jsonFromString(courtDocumentEntity.getPayload()), CourtDocument.class);
 
         return CourtDocument.courtDocument().withName(courtDocument.getName())
-                        .withDocumentCategory(courtDocument.getDocumentCategory())
-                        .withCourtDocumentId(courtDocument.getCourtDocumentId())
-                        .withDocumentTypeId(courtDocument.getDocumentTypeId())
-                        .withMimeType(courtDocument.getMimeType())
-                        .withDocumentTypeDescription(courtDocument.getDocumentTypeDescription())
-                        .withMaterials(courtDocument.getMaterials())
-                        .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
-                        .withDocumentTypeRBAC(courtDocument.getDocumentTypeRBAC())
-                        .withSeqNum(courtDocumentEntity.getSeqNum()).build();
+                .withDocumentCategory(courtDocument.getDocumentCategory())
+                .withCourtDocumentId(courtDocument.getCourtDocumentId())
+                .withDocumentTypeId(courtDocument.getDocumentTypeId())
+                .withMimeType(courtDocument.getMimeType())
+                .withDocumentTypeDescription(courtDocument.getDocumentTypeDescription())
+                .withMaterials(courtDocument.getMaterials())
+                .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
+                .withDocumentTypeRBAC(courtDocument.getDocumentTypeRBAC())
+                .withSeqNum(courtDocumentEntity.getSeqNum()).build();
     }
 
     private CourtDocument filterPermittedMaterial(final CourtDocument courtDocument,
-                    final Set<String> permittedGroups) {
+                                                  final Set<String> permittedGroups) {
         final List<Material> filteredMaterials = courtDocument.getMaterials().stream()
-                        .filter(m -> CollectionUtils.isEmpty(m.getUserGroups()) || m.getUserGroups()
-                                        .stream().anyMatch(ug -> permittedGroups.contains(ug)))
-                        .collect(Collectors.toList());
+                .filter(m -> CollectionUtils.isEmpty(m.getUserGroups()) || m.getUserGroups()
+                        .stream().anyMatch(ug -> permittedGroups.contains(ug)))
+                .collect(Collectors.toList());
 
         return CourtDocument.courtDocument().withName(courtDocument.getName())
-                        .withDocumentCategory(courtDocument.getDocumentCategory())
-                        .withCourtDocumentId(courtDocument.getCourtDocumentId())
-                        .withDocumentTypeId(courtDocument.getDocumentTypeId())
-                        .withMimeType(courtDocument.getMimeType())
-                        .withDocumentTypeDescription(courtDocument.getDocumentTypeDescription())
-                        .withMaterials(filteredMaterials)
-                        .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
-                        .withDocumentTypeRBAC(courtDocument.getDocumentTypeRBAC())
-                        .withSeqNum(courtDocument.getSeqNum()).build();
+                .withDocumentCategory(courtDocument.getDocumentCategory())
+                .withCourtDocumentId(courtDocument.getCourtDocumentId())
+                .withDocumentTypeId(courtDocument.getDocumentTypeId())
+                .withMimeType(courtDocument.getMimeType())
+                .withDocumentTypeDescription(courtDocument.getDocumentTypeDescription())
+                .withMaterials(filteredMaterials)
+                .withContainsFinancialMeans(courtDocument.getContainsFinancialMeans())
+                .withDocumentTypeRBAC(courtDocument.getDocumentTypeRBAC())
+                .withSeqNum(courtDocument.getSeqNum()).build();
     }
 
     private JsonEnvelope createJsonEnvelope(final JsonEnvelope envelope,
-                    final Map<UUID, List<NotificationStatusEntity>> applicationNotificationMap) {
+                                            final Map<UUID, List<NotificationStatusEntity>> applicationNotificationMap) {
 
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
 
         applicationNotificationMap.forEach((k, v) -> applicationNotificationMap.get(k).forEach(
-                        notificationStatusEntity -> prepareResponse(notificationStatusEntity,
-                                        jsonArrayBuilder)));
+                notificationStatusEntity -> prepareResponse(notificationStatusEntity,
+                        jsonArrayBuilder)));
 
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
 
@@ -660,52 +690,52 @@ public class CourtDocumentQuery {
     }
 
     private void prepareResponse(final NotificationStatusEntity notificationStatusEntity,
-                    final JsonArrayBuilder jsonArrayBuilder) {
+                                 final JsonArrayBuilder jsonArrayBuilder) {
 
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
 
         jsonObjectBuilder.add(ID, notificationStatusEntity.getId().toString())
-                        .add(NOTIFICATION_ID,
-                                        notificationStatusEntity.getNotificationId().toString())
-                        .add(CASE_ID, notificationStatusEntity.getCaseId().toString());
+                .add(NOTIFICATION_ID,
+                        notificationStatusEntity.getNotificationId().toString())
+                .add(CASE_ID, notificationStatusEntity.getCaseId().toString());
 
         ofNullable(notificationStatusEntity.getApplicationId())
-                        .ifPresent(applicationId -> jsonObjectBuilder.add(APPLICATION_ID,
-                                        applicationId.toString()));
+                .ifPresent(applicationId -> jsonObjectBuilder.add(APPLICATION_ID,
+                        applicationId.toString()));
         ofNullable(notificationStatusEntity.getMaterialId()).ifPresent(
-                        materialId -> jsonObjectBuilder.add("materialId", materialId.toString()));
+                materialId -> jsonObjectBuilder.add("materialId", materialId.toString()));
         ofNullable(notificationStatusEntity.getNotificationStatus())
-                        .ifPresent(notificationStatus -> jsonObjectBuilder.add(NOTIFICATION_STATUS,
-                                        notificationStatus.toString()));
+                .ifPresent(notificationStatus -> jsonObjectBuilder.add(NOTIFICATION_STATUS,
+                        notificationStatus.toString()));
         ofNullable(notificationStatusEntity.getNotificationType())
-                        .ifPresent(notificationType -> jsonObjectBuilder.add("notificationType",
-                                        notificationType.toString()));
+                .ifPresent(notificationType -> jsonObjectBuilder.add("notificationType",
+                        notificationType.toString()));
         ofNullable(notificationStatusEntity.getErrorMessage()).ifPresent(
-                        errorMessage -> jsonObjectBuilder.add("errorMessage", errorMessage));
+                errorMessage -> jsonObjectBuilder.add("errorMessage", errorMessage));
         ofNullable(notificationStatusEntity.getStatusCode())
-                        .ifPresent(statusCode -> jsonObjectBuilder.add("statusCode", statusCode));
+                .ifPresent(statusCode -> jsonObjectBuilder.add("statusCode", statusCode));
         ofNullable(notificationStatusEntity.getUpdated())
-                        .ifPresent(updated -> jsonObjectBuilder.add("updated", updated.toString()));
+                .ifPresent(updated -> jsonObjectBuilder.add("updated", updated.toString()));
 
         jsonArrayBuilder.add(jsonObjectBuilder);
     }
 
     private Set<String> getPermittedGroups(final Set<String> userGroupsInDocuments,
-                    final JsonEnvelope envelope) {
+                                           final JsonEnvelope envelope) {
         final JsonObject userGroupsByUserId = getUserGroupsByUserId(new Action(envelope));
         return userGroupsInDocuments.stream()
-                        .filter(userGroup -> isMemberInGroups(userGroupsByUserId, userGroup))
-                        .collect(Collectors.toSet());
+                .filter(userGroup -> isMemberInGroups(userGroupsByUserId, userGroup))
+                .collect(Collectors.toSet());
     }
 
     private boolean isMemberInGroups(JsonObject userGroupsJson, final String userGroup) {
         boolean isMember = false;
         if (StringUtils.isNotEmpty(userGroup) && userGroupsJson != null
-                        && !userGroupsJson.getJsonArray(GROUPS).isEmpty()) {
+                && !userGroupsJson.getJsonArray(GROUPS).isEmpty()) {
             isMember = userGroupsJson.getJsonArray(GROUPS).stream()
-                            .map(groupJson -> (JsonObject) groupJson)
-                            .anyMatch(groupJsonObj -> userGroup.equalsIgnoreCase(
-                                            groupJsonObj.getString(GROUP_NAME, null)));
+                    .map(groupJson -> (JsonObject) groupJson)
+                    .anyMatch(groupJsonObj -> userGroup.equalsIgnoreCase(
+                            groupJsonObj.getString(GROUP_NAME, null)));
         }
         return isMember;
     }
@@ -715,13 +745,13 @@ public class CourtDocumentQuery {
         final Optional<String> userId = action.userId();
         if (userId.isPresent()) {
             final Metadata metadata = metadataFrom(action.envelope().metadata())
-                            .withName("usersgroups.get-groups-by-user").build();
+                    .withName("usersgroups.get-groups-by-user").build();
             final JsonObject payload =
-                            Json.createObjectBuilder().add("userId", userId.get()).build();
+                    Json.createObjectBuilder().add("userId", userId.get()).build();
             final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
 
             final Envelope<JsonObject> response =
-                            requester.requestAsAdmin(jsonEnvelope, JsonObject.class);
+                    requester.requestAsAdmin(jsonEnvelope, JsonObject.class);
             if (response.payload().getValueType() != JsonValue.ValueType.NULL) {
                 userGroups = response.payload();
             }
@@ -742,12 +772,12 @@ public class CourtDocumentQuery {
 
 
     private Stream<JsonValue> getRefDataStream(final String queryName, final String fieldName,
-                    final JsonObjectBuilder jsonObjectBuilder) {
+                                               final JsonObjectBuilder jsonObjectBuilder) {
         final JsonEnvelope envelope =
-                        envelopeFrom(metadataBuilder().withId(randomUUID()).withName(queryName),
-                                        jsonObjectBuilder);
+                envelopeFrom(metadataBuilder().withId(randomUUID()).withName(queryName),
+                        jsonObjectBuilder);
         return requester.requestAsAdmin(envelope, JsonObject.class).payload()
-                        .getJsonArray(fieldName).stream();
+                .getJsonArray(fieldName).stream();
     }
 
     @SuppressWarnings({"squid:S2139"})
@@ -755,10 +785,10 @@ public class CourtDocumentQuery {
         return jsonValue -> {
             try {
                 return OBJECT_MAPPER.readValue(jsonValue.toString(),
-                                DocumentTypeAccessReferenceData.class);
+                        DocumentTypeAccessReferenceData.class);
             } catch (IOException e) {
                 LOGGER.error("Unable to unmarshal DocumentTypeAccessReferenceData. Payload :{}",
-                                jsonValue.toString(), e);
+                        jsonValue, e);
                 throw new UncheckedIOException(e);
             }
         };
@@ -767,15 +797,15 @@ public class CourtDocumentQuery {
     private List<UUID> retrieveMasterDefendantIdList(final UUID caseId, final UUID defendantId) {
         try {
             final ProsecutionCaseEntity prosecutionCaseEntity =
-                            prosecutionCaseRepository.findByCaseId(caseId);
+                    prosecutionCaseRepository.findByCaseId(caseId);
 
             final JsonObject prosecutionCasePayload =
-                            stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
+                    stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
             final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter
-                            .convert(prosecutionCasePayload, ProsecutionCase.class);
+                    .convert(prosecutionCasePayload, ProsecutionCase.class);
             return prosecutionCase.getDefendants().stream()
-                            .filter(d -> d.getId().equals(defendantId))
-                            .map(Defendant::getMasterDefendantId).collect(Collectors.toList());
+                    .filter(d -> d.getId().equals(defendantId))
+                    .map(Defendant::getMasterDefendantId).collect(Collectors.toList());
         } catch (Exception ex) {
             return new ArrayList<>();
         }

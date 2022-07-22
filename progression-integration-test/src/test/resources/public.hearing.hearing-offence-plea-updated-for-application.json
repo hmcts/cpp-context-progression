@@ -1,0 +1,13 @@
+{
+  "hearingId": "HEARING_ID",
+  "pleaModel": {
+    "applicationId": "APPLICATION_ID",
+    "plea": {
+      "applicationId": "APPLICATION_ID",
+      "originatingHearingId": "HEARING_ID",
+      "pleaDate": "2017-05-06",
+      "pleaValue": "GUILTY"
+    }
+
+  }
+}

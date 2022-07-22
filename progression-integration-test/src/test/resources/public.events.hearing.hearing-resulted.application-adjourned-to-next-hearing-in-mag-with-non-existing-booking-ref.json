@@ -1,5 +1,6 @@
 {
   "hearing": {
+    "estimatedDuration": "1 week",
     "courtApplications": [
       {
         "applicant": {
@@ -164,6 +165,7 @@
             "lastSharedDateTime": "2020-06-27",
             "lifeDuration": false,
             "nextHearing": {
+              "estimatedDuration": "1 week",
               "adjournmentReason": "",
               "bookingReference": "fbed768b-ee95-4434-87c8-e81cbc8d24c7",
               "courtCentre": {

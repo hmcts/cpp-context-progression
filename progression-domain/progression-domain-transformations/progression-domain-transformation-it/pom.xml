@@ -5,13 +5,13 @@
     <parent>
         <artifactId>progression-domain-transformations</artifactId>
         <groupId>uk.gov.moj.cpp.progression</groupId>
-        <version>7.0.206-SNAPSHOT</version>
+        <version>8.0.14-cct1139-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <properties>
-        <framework.version>7.0.4</framework.version>
-        <event-store.version>7.0.2</event-store.version>
-        <stream-transformation.version>7.0.1-SNAPSHOT</stream-transformation.version>
+        <framework.version>8.0.4</framework.version>
+        <event-store.version>8.0.2</event-store.version>
+        <stream-transformation.version>8.0.1-SNAPSHOT</stream-transformation.version>
         <json-schema-catalog.version>1.7.6</json-schema-catalog.version>
     </properties>
 

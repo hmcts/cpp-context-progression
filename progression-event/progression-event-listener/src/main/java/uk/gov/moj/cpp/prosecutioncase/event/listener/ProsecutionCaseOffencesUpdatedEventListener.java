@@ -166,6 +166,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                     .withMitigationWelsh(defendant.getMitigationWelsh())
                     .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
                     .withOffences(filterOffences(defendant.getOffences()))
+                    .withCpsDefendantId(defendant.getCpsDefendantId())
                     .withPersonDefendant(defendant.getPersonDefendant())
                     .withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference())
                     .withWitnessStatement(defendant.getWitnessStatement())

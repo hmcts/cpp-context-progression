@@ -1,26 +1,5 @@
 package uk.gov.moj.cpp.progression.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.LjaDetails;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.justice.services.messaging.MetadataBuilder;
-
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Objects.nonNull;
@@ -34,8 +13,39 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.LjaDetails;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @SuppressWarnings({"squid:S00112", "squid:S1192", "squid:CallToDeprecatedMethod"})
-public class ReferenceDataService {
+public class RefDataService {
 
     public static final String CJSOFFENCECODE = "cjsoffencecode";
     public static final String REFERENCEDATA_QUERY_OFFENCES = "referencedata.query.offences";
@@ -83,7 +93,50 @@ public class ReferenceDataService {
     private static final String REFERENCE_DATA_QUERY_GET_PROSECUTOR_BY_OUCODE = "referencedata.query.get.prosecutor.by.oucode";
     private static final String REFERENCE_DATA_QUERY_GET_PROSECUTORS = "referencedata.query.prosecutors";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RefDataService.class);
+    private static final String REFERENCEDATA_GET_ALL_DOCUMENT_TYPE_ACCESS_QUERY = "referencedata.get-all-document-type-access";
+    private static final String DOCUMENT_TYPE_ACCESS = "documentsTypeAccess";
+    private static final String DATE = "date";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperProducer().objectMapper();
+
+
+
+
+    public Optional<DocumentTypeAccessReferenceData> getDocumentTypeAccessReferenceData(final Requester requester, final UUID documentTypeId) {
+        final List<DocumentTypeAccessReferenceData> documentTypeAccessReferenceDatas =  getAllDocumentTypeAccess(requester);
+        return documentTypeAccessReferenceDatas.stream()
+                .filter(documentTypeAccessReferenceData -> documentTypeAccessReferenceData.getId().equals(documentTypeId))
+                .findAny();
+    }
+
+    public List<DocumentTypeAccessReferenceData> getAllDocumentTypeAccess(final Requester requester) {
+        return getRefDataStream(REFERENCEDATA_GET_ALL_DOCUMENT_TYPE_ACCESS_QUERY,
+                DOCUMENT_TYPE_ACCESS, createObjectBuilder().add(DATE, LocalDate.now().toString()), requester)
+                .map(asDocumentsMetadataRefData())
+                .collect(Collectors.toList());
+    }
+
+    @SuppressWarnings({"squid:S2139"})
+    private Function<JsonValue, DocumentTypeAccessReferenceData> asDocumentsMetadataRefData() {
+        return jsonValue -> {
+            try {
+                return OBJECT_MAPPER.readValue(jsonValue.toString(), DocumentTypeAccessReferenceData.class);
+            } catch (final IOException e) {
+                LOGGER.error("Unable to unmarshal DocumentTypeAccessReferenceData. Payload :{}", jsonValue, e);
+                throw new UncheckedIOException(e);
+            }
+        };
+    }
+
+    private Stream<JsonValue> getRefDataStream(final String queryName, final String fieldName,
+                                                      final JsonObjectBuilder jsonObjectBuilder, final Requester requester) {
+        final JsonEnvelope envelope =
+                envelopeFrom(metadataBuilder().withId(randomUUID()).withName(queryName),
+                        jsonObjectBuilder);
+        return requester.requestAsAdmin(envelope, JsonObject.class).payload()
+                .getJsonArray(fieldName).stream();
+    }
+
 
     public static UUID extractUUID(final JsonObject object, final String key) {
         return object.containsKey(key) && !object.getString(key).isEmpty() ? fromString(object.getString(key, null)) : null;
@@ -310,7 +363,7 @@ public class ReferenceDataService {
 
         final JsonEnvelope organisationUnitsResponse = requester.requestAsAdmin(response);
 
-        JsonObject jsonObject = organisationUnitsResponse.payloadAsJsonObject();
+        final JsonObject jsonObject = organisationUnitsResponse.payloadAsJsonObject();
 
         final Optional<JsonObject> courtOptional = jsonObject
                 .getJsonArray("organisationunits")
@@ -537,7 +590,7 @@ public class ReferenceDataService {
     }
 
     public boolean getPoliceFlag(final String originatingOrganisation, final String prosecutionAuthority, final Requester requester) {
-        Optional<JsonObject> optionalJsonObject;
+        final Optional<JsonObject> optionalJsonObject;
 
         if (isNotEmpty(originatingOrganisation)) {
             optionalJsonObject = getProsecutorByOriginatingOrganisation(originatingOrganisation, requester);

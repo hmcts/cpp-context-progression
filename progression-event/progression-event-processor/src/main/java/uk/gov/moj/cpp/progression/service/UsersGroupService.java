@@ -5,6 +5,7 @@ import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -132,6 +133,16 @@ public class UsersGroupService {
                 .add(USER_ID, userId).build())
                 .withName("usersgroups.get-user-details").withMetadataFrom(event), JsonObject.class);
         return jsonObjectEnvelope.payload();
+    }
+
+    public boolean isUserPartOfGroup(final JsonEnvelope envelope, final String group) {
+        boolean isUserPartOfGroup = false;
+        final List<UserGroupDetails> userGroupDetailsList = getUserGroupsForUser(envelope);
+        if (isNotEmpty(userGroupDetailsList)) {
+            isUserPartOfGroup = userGroupDetailsList.stream()
+                    .anyMatch(userGroupDetails -> group.contentEquals(userGroupDetails.getGroupName()));
+        }
+        return isUserPartOfGroup;
     }
 }
 

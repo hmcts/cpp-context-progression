@@ -170,6 +170,11 @@ protocols: [ HTTP, HTTPS ]
                 example: 20
                 type: integer
                 required: false
+              prosecutingCase:
+                description: only applicable for standard courtlist. Set true to get restricted standard court list
+                type: boolean
+                required: false
+                default: false
       responses:
             200:
                 description: OK
@@ -195,12 +200,20 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.usergroups-by-material-id+json
             name: progression.query.usergroups-by-material-id
+        (mapping):
+            responseType: application/vnd.progression.query.search-prosecution-authority-id+json
+            name: progression.query.prosecutionauthorityid-by-case-id
         ...
       queryParameters:
         q:
           description: space separated list of search parameters
           type: string
           example: first name last name
+          required: false
+        caseIds:
+          description: caseId(s) - comma separated to be searched
+          type: string
+          example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
           required: false
 
       responses:
@@ -216,6 +229,10 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.usergroups-by-material-id+json:
                     example:  !include json/progression.query.usergroups-by-material-id.json
                     schema:  !include  json/schema/progression.query.usergroups-by-material-id.json
+                  application/vnd.progression.query.search-prosecution-authority-id+json:
+                    example: !include json/progression.query.prosecution-authority-id.json
+                    schema:  !include json/schema/progression.query.prosecution-authority-id.json
+
 
 
 /applications/{applicationId}:

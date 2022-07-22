@@ -6,6 +6,7 @@
   "finalisedFormData": [
     {
       "id": "Jane JOHNSON, 22 May 1976 + 1",
+      "defendantId" : "4367efff-8cac-430d-8da9-1ca34f3a131a",
       "title": "Better case management",
       "name": "Jane JOHNSON, 22 May 1976, created on 22 December 10:45 2022",
       "sections": [
@@ -196,6 +197,7 @@
     },
     {
       "id": "Joseph Stallion, 22 May 1954 + 1",
+      "defendantId" : "4367efff-8cac-430d-8da9-1ca34f3a131a",
       "title": "Better case management",
       "name": "Joseph Stallion, 22 May 1954, created on 22 December 10:45 2022",
       "sections": [
@@ -386,6 +388,7 @@
     },
     {
       "id": "Kris kidman, 14 June 1981 + 1",
+      "defendantId" : "4367efff-8cac-430d-8da9-1ca34f3a131a",
       "title": "Better case management",
       "name": "Kris kidman, 14 June 1981, created on 22 December 10:45 2022",
       "sections": [

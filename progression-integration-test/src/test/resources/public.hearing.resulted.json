@@ -1,6 +1,7 @@
 {
   "hearing": {
     "id": "HEARING_ID",
+    "estimatedDuration": "1 week",
     "type": {
       "id": "01234567-1234-1234-1234-123456789123",
       "description": "Sentence"

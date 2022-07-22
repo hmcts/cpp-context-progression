@@ -379,6 +379,27 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.add-convicting-court+json:
             schema: !include json/schema/progression.command.add-convicting-court.json
             example: !include json/progression.command.add-convicting-court.json
+        application/vnd.progression.command.update-hearing-offence-verdict+json:
+            example: !include json/progression.command.update-hearing-offence-verdict.json
+            schema:  !include json/schema/progression.command.update-hearing-offence-verdict.json
+
+        application/vnd.progression.command.update-hearing-offence-plea+json:
+            example: !include json/progression.command.update-hearing-offence-plea.json
+            schema:  !include json/schema/progression.command.update-hearing-offence-plea.json
+
+
+        application/vnd.progression.command.handler.add-hearing-defence-counsel+json:
+            schema: !include json/schema/progression.command.handler.add-hearing-defence-counsel.json
+            example: !include json/progression.command.handler.add-hearing-defence-counsel.json
+
+        application/vnd.progression.command.handler.update-hearing-defence-counsel+json:
+            schema: !include json/schema/progression.command.handler.update-hearing-defence-counsel.json
+            example: !include json/progression.command.handler.update-hearing-defence-counsel.json
+
+        application/vnd.progression.command.handler.remove-hearing-defence-counsel+json:
+            schema: !include json/schema/progression.command.handler.remove-hearing-defence-counsel.json
+            example: !include json/progression.command.handler.remove-hearing-defence-counsel.json
+
         application/vnd.progression.command.create-form+json:
             example: !include json/progression.command.create-form.json
             schema:  !include json/schema/progression.command.create-form.json

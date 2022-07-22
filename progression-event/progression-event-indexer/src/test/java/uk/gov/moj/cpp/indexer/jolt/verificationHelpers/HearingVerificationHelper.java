@@ -35,6 +35,7 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
         verifyHearing(inputHearing, outputCases, caseIndex, outputHearingIndex);
         validateHearingDaysAndDates(inputHearing, outputCases, caseIndex, outputHearingIndex);
         validateJudiciaryTypes(inputHearing, outputCases, caseIndex, outputHearingIndex);
+        verifyHearingWithDefenceCounsels(inputHearing, outputCases, caseIndex, outputHearingIndex);
     }
 
     public void verifyHearingsWithoutCourtCentre(final DocumentContext inputHearing,
@@ -43,6 +44,15 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
                                                  final int outputHearingIndex) {
         verifyHearing(inputHearing, outputCases, caseIndex, outputHearingIndex);
         validateHearingDaysAndDatesWithoutCourtCentre(inputHearing, outputCases, caseIndex, outputHearingIndex);
+        validateJudiciaryTypes(inputHearing, outputCases, caseIndex, outputHearingIndex);
+    }
+
+    public void verifyHearingsWithEstimatedDuration(final DocumentContext inputHearing,
+                                                    final JsonObject outputCases,
+                                                    final int caseIndex,
+                                                    final int outputHearingIndex) {
+        verifyHearingWithEstimatedDuration(inputHearing, outputCases, caseIndex, outputHearingIndex);
+        validateHearingDaysAndDates(inputHearing, outputCases, caseIndex, outputHearingIndex);
         validateJudiciaryTypes(inputHearing, outputCases, caseIndex, outputHearingIndex);
     }
 
@@ -166,6 +176,52 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
         } catch (Exception e) {
             incrementExceptionCount();
             logger.log(WARNING, format("Exception validating Hearing", e.getMessage()));
+        }
+    }
+
+    private void verifyHearingWithEstimatedDuration(final DocumentContext inputParties,
+                              final JsonObject outputCases,
+                              final int caseIndex,
+                              final int outputHearingIndex) {
+        try {
+            final String hearingOutputIndexPath = format(OUTPUT_HEARINGS_JSON_PATH, caseIndex, outputHearingIndex);
+
+            with(outputCases.toString())
+                    .assertThat(hearingOutputIndexPath + ".hearingId", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".id")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".jurisdictionType", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".jurisdictionType")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".courtId", is(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".courtCentre.id")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".courtCentreName", equalTo(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".courtCentre.name")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".hearingTypeId", equalTo(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".type.id")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".hearingTypeLabel", equalTo(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".type.description")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".isBoxHearing", equalTo(valueOf(inputParties.read(INPUT_HEARING_JSON_PATH + ".isBoxHearing").toString()).booleanValue()))
+                    .assertThat(hearingOutputIndexPath + ".estimatedDuration", equalTo(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".estimatedDuration")).getString()));
+            incrementHearingsCount();
+        } catch (Exception e) {
+            incrementExceptionCount();
+            logger.log(WARNING, format("Exception validating Hearing", e.getMessage()));
+        }
+    }
+
+    private void verifyHearingWithDefenceCounsels(final DocumentContext inputParties,
+                                                  final JsonObject outputCases,
+                                                  final int caseIndex,
+                                                  final int outputHearingIndex){
+        try {
+            final String hearingOutputIndexPath = format(OUTPUT_HEARINGS_JSON_PATH, caseIndex, outputHearingIndex);
+
+            with(outputCases.toString())
+                    .assertThat(hearingOutputIndexPath + ".defenceCounsels[0].defendants[0]", equalTo(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".defenceCounsels[0].defendants[0]")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".defenceCounsels[0].attendanceDays[0]", equalTo(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".defenceCounsels[0].attendanceDays[0]")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".defenceCounsels[0].firstName", equalTo(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".defenceCounsels[0].firstName")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".defenceCounsels[0].id",equalTo(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".defenceCounsels[0].id")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".defenceCounsels[0].lastName", equalTo(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".defenceCounsels[0].lastName")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".defenceCounsels[0].middleName", equalTo(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".defenceCounsels[0].middleName")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".defenceCounsels[0].status", equalTo(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".defenceCounsels[0].status")).getString()))
+                    .assertThat(hearingOutputIndexPath + ".defenceCounsels[0].title", equalTo(((JsonString) inputParties.read(INPUT_HEARING_JSON_PATH + ".defenceCounsels[0].title")).getString()))
+            ;
+        } catch (Exception e) {
+            incrementExceptionCount();
+            logger.log(WARNING, format("Exception validating Defence Counsels Hearing %s", e.getMessage()));
         }
     }
 }

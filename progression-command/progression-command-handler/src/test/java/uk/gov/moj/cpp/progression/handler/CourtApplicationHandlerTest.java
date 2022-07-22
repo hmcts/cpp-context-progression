@@ -98,7 +98,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -156,7 +156,7 @@ public class CourtApplicationHandlerTest {
     private CourtApplicationHandler courtApplicationHandler;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;

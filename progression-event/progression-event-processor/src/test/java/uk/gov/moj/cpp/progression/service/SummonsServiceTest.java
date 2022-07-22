@@ -29,7 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class SummonsServiceTest {
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @InjectMocks
     private SummonsService summonsService;
