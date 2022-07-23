@@ -80,12 +80,11 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ServiceComponent(Component.QUERY_VIEW)
 @SuppressWarnings({"squid:S1612", "squid:S2259", "squid:S00112", "squid:S3776", "squid:S1155",
@@ -317,7 +316,7 @@ public class CourtDocumentQueryView {
                                 .isNotEmpty(courtDocument2.getMaterials()))
                         .collect(Collectors.toList());
 
-        List<CourtDocumentIndex> courtDocumentIndices = filteredMaterialCourtDocuments
+        final List<CourtDocumentIndex> courtDocumentIndices = filteredMaterialCourtDocuments
                 .stream().sorted(Comparator.comparing(CourtDocument::getSeqNum))
                 .map(courtDocumentFiltered -> courtDocumentTransform
                         .transform(courtDocumentFiltered).build())
@@ -334,7 +333,7 @@ public class CourtDocumentQueryView {
         if (TRUE.equals(isProsecuting)) {
             final List<UUID> defenceOnlyTrueList = documentTypeAccessReferenceDataList.stream()
                     .filter(documentTypeAccessReferenceData ->
-                            documentTypeAccessReferenceData.getDefenceOnly().equals(true))
+                            TRUE.equals(documentTypeAccessReferenceData.getDefenceOnly()))
                     .map(DocumentTypeAccessReferenceData::getId)
                     .collect(toList());
             LOGGER.info("defence only true list {}",defenceOnlyTrueList);
@@ -465,7 +464,7 @@ public class CourtDocumentQueryView {
 
     private List<CourtDocumentSummary> getSortedCourtDocumentSummary(final List<CourtDocumentSummary> courtDocumentSummaries, final PaginationData paginationData) {
 
-        List<CourtDocumentSummary> sortedCourtDocumentSummaries;
+        final List<CourtDocumentSummary> sortedCourtDocumentSummaries;
         if (SortField.SECTION == paginationData.getSortField()) {
             if (SortOrder.ASC == paginationData.getSortOrder()) {
                 sortedCourtDocumentSummaries = courtDocumentSummaries.stream()
@@ -728,7 +727,7 @@ public class CourtDocumentQueryView {
                 .collect(Collectors.toSet());
     }
 
-    private boolean isMemberInGroups(JsonObject userGroupsJson, final String userGroup) {
+    private boolean isMemberInGroups(final JsonObject userGroupsJson, final String userGroup) {
         boolean isMember = false;
         if (StringUtils.isNotEmpty(userGroup) && userGroupsJson != null
                 && !userGroupsJson.getJsonArray(GROUPS).isEmpty()) {
@@ -786,7 +785,7 @@ public class CourtDocumentQueryView {
             try {
                 return OBJECT_MAPPER.readValue(jsonValue.toString(),
                         DocumentTypeAccessReferenceData.class);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOGGER.error("Unable to unmarshal DocumentTypeAccessReferenceData. Payload :{}",
                         jsonValue, e);
                 throw new UncheckedIOException(e);
@@ -806,7 +805,7 @@ public class CourtDocumentQueryView {
             return prosecutionCase.getDefendants().stream()
                     .filter(d -> d.getId().equals(defendantId))
                     .map(Defendant::getMasterDefendantId).collect(Collectors.toList());
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             return new ArrayList<>();
         }
     }
