@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
@@ -56,12 +55,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -275,9 +272,8 @@ public class NotificationService {
         }
 
         final DefendantSubject.Builder defendantSubjectBuilder = defendantSubject();
-        final Set<String> uniqueAsn = Optional.ofNullable(defendantAsns).map(v-> new HashSet<>(defendantAsns)).orElse(newHashSet());
-        if(isNotEmpty(uniqueAsn)) {
-            defendantSubjectBuilder.withAsn(StringUtils.join(new HashSet<>(uniqueAsn), COMMA));
+        if(isNotEmpty(defendantAsns)) {
+            defendantSubjectBuilder.withAsn(StringUtils.join(defendantAsns, COMMA));
         }
         if(isNotEmpty(cpsDefendantIds)) {
             defendantSubjectBuilder.withCpsDefendantId(StringUtils.join(cpsDefendantIds, COMMA));
@@ -289,8 +285,6 @@ public class NotificationService {
                     .withCaseUrn(caseSubjects.get(0).getUrn())
                     .withProsecutingAuthority(caseSubjects.get(0).getProsecutingAuthorityOUCode())
                     .withOuCode(caseSubjects.get(0).getProsecutingAuthorityOUCode());
-        }else if(!uniqueAsn.isEmpty()){
-            prosecutionCaseSubjectBuilder.withDefendantSubject(defendantSubjectBuilder.build());
         }
 
         final AddMaterialV2.Builder addMaterialV2 = addMaterialV2();
