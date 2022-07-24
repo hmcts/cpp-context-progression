@@ -255,7 +255,7 @@ public class DocumentGeneratorServiceTest {
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(fileStorer.store(any(), any())).thenReturn(fileId);
-        doNothing().when(materialService).uploadMaterial(any(), any(), any());
+        doNothing().when(materialService).uploadMaterial(any(), any(), (UUID) any());
 
         final String inputEvent = Resources.toString(getResource("finalised-form-data-with-welsh-data.json"), defaultCharset());
         final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
@@ -268,7 +268,7 @@ public class DocumentGeneratorServiceTest {
         final String fileName = documentGeneratorService.generateFormDocument(originatingEnvelope, FormType.BCM, formData, materialId);
         assertThat(fileName, anyOf(is("Jane JOHNSON, 22 May 1976, created on 22 December 10:45 2022.pdf"),
                 is("Kris kidman, 14 June 1981, created on 22 December 10:45 2022.pdf")));
-        verify(materialService, times(1)).uploadMaterial(fileIdmaterialServiceCaptor.capture(), materialIdmaterialServiceCaptor.capture(), any());
+        verify(materialService, times(1)).uploadMaterial(fileIdmaterialServiceCaptor.capture(), materialIdmaterialServiceCaptor.capture(), (JsonEnvelope) any());
         final UUID capturedFileId = fileIdmaterialServiceCaptor.getValue();
         final UUID capturedMaterialId = materialIdmaterialServiceCaptor.getValue();
         assertThat(capturedFileId, is(fileId));

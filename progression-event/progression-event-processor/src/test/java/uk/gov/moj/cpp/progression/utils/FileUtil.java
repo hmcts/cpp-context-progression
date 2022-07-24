@@ -6,7 +6,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.fail;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -15,8 +14,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

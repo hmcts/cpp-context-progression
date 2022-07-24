@@ -360,6 +360,21 @@ subscriptions_descriptor:
         - name: progression.event.hearing-for-application-created
           schema_uri: http://justice.gov.uk/core/progression/courts/progression.event.hearing-for-application-created.json
 
+        - name : progression.event.online-plea-document-uploaded-as-case-material
+          schema_uri: http://moj.gov.uk/cpp/progression/events/online-plea-document-uploaded-as-case-material.json
+
+        - name: progression.event.notification-sent-for-plea-document
+          schema_uri: http://moj.gov.uk/cpp/progression/events/notification-sent-for-plea-document.json
+
+        - name: progression.event.notification-sent-for-defendant-document
+          schema_uri: http://moj.gov.uk/cpp/progression/events/notification-sent-for-defendant-document.json
+
+        - name: progression.event.plea-document-for-online-plea-submitted
+          schema_uri: http://moj.gov.uk/cpp/progression/events/plea-document-for-online-plea-submitted.json
+
+        - name: progression.event.finance-document-for-online-plea-submitted
+          schema_uri: http://moj.gov.uk/cpp/progression/events/finance-document-for-online-plea-submitted.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

@@ -103,7 +103,11 @@
             ],
             "legalEntityDefendant" : {
               "organisation" : {
-                "name" : "Organisation Name"
+                "name" : "Organisation Name",
+                "address": {
+                  "address1": "address1",
+                  "postcode": "MK8 1EY"
+                }
               }
             }
           }

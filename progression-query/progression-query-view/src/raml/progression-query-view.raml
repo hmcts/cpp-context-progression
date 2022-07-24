@@ -68,6 +68,30 @@ protocols: [ HTTP, HTTPS ]
                     example:  !include json/progression.query.case.hearingtypes.json
                     schema:  !include json/schema/progression.query.case.hearingtypes.json
 
+/prosecutioncases/{caseId}/defendants/{defendantId}/:
+  uriParameters:
+        caseId:
+          description: ID of prosecution case to get
+          type: string
+        defendantId:
+          description: ID of defendant
+          type: string
+  get:
+      description: |
+        Return the case progression details for the case Id and defendant Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.case-defendant-hearings+json
+            name: progression.query.case-defendant-hearings
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.case-defendant-hearings+json:
+                    example:  !include json/progression.query.case-defendant-hearings.json
+                    schema:  !include json/schema/progression.query.case-defendant-hearings.json
+
 /defendant-requests/{defendantId}:
   uriParameters:
         defendantId:

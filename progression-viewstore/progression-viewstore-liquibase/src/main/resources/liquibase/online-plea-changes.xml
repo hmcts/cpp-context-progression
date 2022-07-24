@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="online-plea-changes" author="salsa">
+
+        <createTable tableName="online_plea">
+            <column name="case_id" type="UUID">
+                <constraints foreignKeyName="fk_online_plea_case" referencedTableName="prosecution_case" referencedColumnNames="id"/>
+            </column>
+            <column name="defendant_id" type="UUID"/>
+            <!-- Personal details Section -->
+            <column name="personal_details_first_name" type="TEXT"/>
+            <column name="personal_details_last_name" type="TEXT"/>
+            <column name="personal_details_address1" type="TEXT"/>
+            <column name="personal_details_address2" type="TEXT"/>
+            <column name="personal_details_address3" type="TEXT"/>
+            <column name="personal_details_address4" type="TEXT"/>
+            <column name="personal_details_address5" type="text" />
+            <column name="personal_details_postcode" type="TEXT"/>
+            <column name="personal_details_telephone_number_home" type="TEXT"/>
+            <column name="personal_details_telephone_number_mobile" type="TEXT"/>
+            <column name="personal_details_email" type="TEXT"/>
+            <column name="personal_details_date_of_birth" type="date"/>
+            <column name="personal_details_national_insurance_number" type="TEXT"/>
+
+            <!-- Plea section -->
+            <column name="interpreter_language" type="TEXT"/>
+            <column name="speak_welsh" type="boolean"/>
+            <column name="witness_dispute" type="TEXT"/>
+            <column name="witness_details" type="TEXT"/>
+            <column name="unavailability" type="TEXT"/>
+            <!--  Employment section -->
+            <column name="income_payment_amount" type="decimal(11,2)"/>
+            <column name="income_payment_frequency" type="TEXT"/>
+            <column name="employment_status" type="TEXT"/>
+            <column name="employment_status_details" type="TEXT"/>
+
+            <column name="benefits_claimed" type="boolean"/>
+            <column name="benefits_type" type="TEXT"/>
+            <column name="benefits_deduct_penalty_preference" type="boolean"/>
+
+            <column name="employee_reference" type="TEXT"/>
+            <column name="employer_name" type="TEXT"/>
+            <column name="employer_phone" type="TEXT"/>
+            <column name="employer_address_1" type="TEXT"/>
+            <column name="employer_address_2" type="TEXT"/>
+            <column name="employer_address_3" type="TEXT"/>
+            <column name="employer_address_4" type="TEXT"/>
+            <column name="employer_address_5" type="text"/>
+            <column name="employer_postcode" type="TEXT"/>
+            <!-- Outgoings section -->
+            <column name="outgoing_accommodation_amount" type="decimal(11,2)"/>
+            <column name="outgoing_council_tax_amount" type="decimal(11,2)"/>
+            <column name="outgoing_household_bills_amount" type="decimal(11,2)"/>
+            <column name="outgoing_travel_expenses_amount" type="decimal(11,2)"/>
+            <column name="outgoing_child_maintenance_amount" type="decimal(11,2)"/>
+            <column name="outgoing_other_description" type="TEXT"/>
+            <column name="outgoing_other_amount" type="decimal(11,2)"/>
+            <column name="submitted_on" type="DATETIME"/>
+            <column name="come_to_court" type="TEXT"/>
+            <column name="outstanding_fines" type="BOOLEAN"/>
+            <column name="mitigation" type="TEXT"/>
+            <column name="not_guilty_because" type="TEXT"/>
+            <column name="personal_details_driver_number" type="text"/>
+            <column name="personal_details_driver_licence_details" type="text"/>
+            <column name="disability_needs" type="text"/>
+        </createTable>
+
+        <addPrimaryKey columnNames="case_id, defendant_id" constraintName="online_plea_composite_primary_key"
+                       tableName="online_plea"/>
+
+    </changeSet>
+
+</databaseChangeLog>

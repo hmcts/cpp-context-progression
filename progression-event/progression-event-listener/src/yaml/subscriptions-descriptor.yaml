@@ -264,6 +264,10 @@ subscriptions_descriptor:
 
         - name: progression.event.hearing-moved-to-unallocated
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-moved-to-unallocated.json
+
+        - name: progression.event.online-plea-recorded
+          schema_uri: http://justice.gov.uk/core/courts/online-plea-recorded.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

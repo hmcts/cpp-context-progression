@@ -86,12 +86,12 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToSearchCases() {
-        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.search-cases", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin","Court Associate", "Magistrates");
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.search-cases", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin","Court Associate", "Magistrates", "Online Plea System Users");
     }
 
     @Test
     public void shouldNotAllowUserInAuthorisedGroupToSearchCases() {
-        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.search-cases", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin","Court Associate", "Magistrates");
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.search-cases", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin","Court Associate", "Magistrates", "Online Plea System Users");
     }
 
     @Test

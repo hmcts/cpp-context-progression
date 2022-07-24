@@ -111,7 +111,8 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         ReceiveRepresentationOrder("progression.command.receive-representationorder-for-defendant", "System Users"),
         UpdateDefendantListingStatus("progression.update-defendant-listing-status", "System Users"),
         EditCaseNote("progression.edit-case-note", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "Court Associate"),
-        UpdateCpsProsecutor("progression.update-cps-prosecutor-details", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Court Associate");
+        UpdateCpsProsecutor("progression.update-cps-prosecutor-details", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Court Associate"),
+        PleadOnline("progression.plead-online", "Online Plea System Users");
 
         private final String actionName;
         private final String[] allowedUserGroups;
