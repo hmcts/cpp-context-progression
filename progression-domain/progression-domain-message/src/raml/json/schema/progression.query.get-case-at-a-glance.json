@@ -253,6 +253,13 @@
             "$ref": "#/definitions/caagResultPrompt"
           }
         },
+        "usergroups": {
+          "description": "The user groups that are not authorised to view the result",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "orderedDate": {
           "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
         },
@@ -283,6 +290,13 @@
         },
         "value": {
           "type": "string"
+        },
+        "usergroups": {
+          "description": "The user groups that are not authorised to view the result",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [
