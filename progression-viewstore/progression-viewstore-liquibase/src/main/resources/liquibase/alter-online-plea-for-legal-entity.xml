@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="alter-online-plea-for-legal-entity" author="salsa">
+        <addColumn tableName="online_plea">
+            <column name="urn" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_name" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_address1" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_address2" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_address3" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_address4" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_address5" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_postcode" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_telephone_number_home" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_telephone_number_work" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_telephone_number_mobile" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_email" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_incorporation_number" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_position" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_outstanding_fines" type="boolean"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_trading_more_than_12_months" type="boolean"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_number_of_employees" type="integer"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_gross_turnover" type="decimal(11,2)"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_net_turnover" type="decimal(11,2)"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

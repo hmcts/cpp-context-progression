@@ -99,6 +99,12 @@ public class HearingAtAGlanceService {
         return createHearings(hearingEntities, caseId);
     }
 
+    public List<Hearings> getCaseDefendantHearings(final UUID caseId, final UUID defendantId) {
+        LOGGER.info("Get case hearings for case={} and defendant={}", caseId, defendantId);
+        final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByCaseIdAndDefendantId(caseId, defendantId);
+        return toHearings(getHearingEntities(caseDefendantHearingEntities));
+    }
+
     public GetHearingsAtAGlance getHearingAtAGlance(final UUID caseId) {
         LOGGER.info("Get hearings for case {}", caseId);
         final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByCaseId(caseId);
@@ -228,6 +234,23 @@ public class HearingAtAGlanceService {
                     .withDefendants(createDefendants(caseId, hearing.getProsecutionCases(), hearing.getCourtApplications(), hearing))
                     .withYouthCourt(hearing.getYouthCourt())
                     .withYouthCourtDefendantIds(hearing.getYouthCourtDefendantIds())
+                    .build();
+            hearingsList.add(hearingsView);
+        });
+        return hearingsList;
+    }
+
+    private List<Hearings> toHearings(List<HearingEntity> hearingEntities) {
+        final List<Hearings> hearingsList = new ArrayList<>();
+        hearingEntities.forEach(hearingEntity -> {
+            final JsonObject hearingJson = stringToJsonObjectConverter.convert(hearingEntity.getPayload());
+            final uk.gov.justice.core.courts.Hearing hearing = jsonObjectToObjectConverter.convert(hearingJson, uk.gov.justice.core.courts.Hearing.class);
+
+            final Hearings hearingsView = Hearings.hearings()
+                    .withId(hearing.getId())
+                    .withHearingDays(hearing.getHearingDays())
+                    .withCourtCentre(hearing.getCourtCentre())
+                    .withHearingListingStatus(getHearingListingStatus(hearingEntity))
                     .build();
             hearingsList.add(hearingsView);
         });

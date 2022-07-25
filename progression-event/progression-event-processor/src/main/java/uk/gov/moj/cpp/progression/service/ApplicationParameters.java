@@ -122,6 +122,58 @@ public class ApplicationParameters {
     @Value(key = "statdec_send_appointment_letter_template_id")
     private String statDecSendAppointmentLetterTemplateId;
 
+    @Inject
+    @Value(key = "onlineGuiltyPleaCourtHearingEnglishTemplateId", defaultValue = "9a9d3078-9b52-4081-a183-22b3540e0edb")
+    private String onlineGuiltyPleaCourtHearingEnglishTemplateId;
+
+    @Inject
+    @Value(key = "onlineGuiltyPleaCourtHearingWelshTemplateId", defaultValue = "dd91efcc-620f-453b-afc5-e8d97eebc4a3")
+    private String onlineGuiltyPleaCourtHearingWelshTemplateId;
+
+    @Inject
+    @Value(key = "onlineGuiltyPleaNoCourtHearingEnglishTemplateId", defaultValue = "c6a5fe5e-fcf9-4a69-8305-58476dd38a89")
+    private String onlineGuiltyPleaNoCourtHearingEnglishTemplateId;
+
+    @Inject
+    @Value(key = "onlineGuiltyPleaNoCourtHearingWelshTemplateId", defaultValue = "2d350aae-f3d7-40d9-a35b-102a246a4e4e")
+    private String onlineGuiltyPleaNoCourtHearingWelshTemplateId;
+
+    @Inject
+    @Value(key = "onlineNotGuiltyPleaEnglishTemplateId", defaultValue = "40cc2acc-66a5-4779-ad6a-b529f8f8a76d")
+    private String onlineNotGuiltyPleaEnglishTemplateId;
+
+    @Inject
+    @Value(key = "onlineNotGuiltyPleaWelshTemplateId", defaultValue = "cee11f72-fb64-46a2-9d7a-b9cc9a549993")
+    private String onlineNotGuiltyPleaWelshTemplateId;
+
+    @Inject
+    @Value(key = "onlinePleaProsecutorTemplateId", defaultValue = "fae48a1e-612a-4e98-9a95-e650754e9f6c")
+    public String onlinePleaProsecutorTemplateId;
+
+    public String getOnlineGuiltyPleaCourtHearingEnglishTemplateId() {
+        return onlineGuiltyPleaCourtHearingEnglishTemplateId;
+    }
+
+    public String getOnlineGuiltyPleaCourtHearingWelshTemplateId() {
+        return onlineGuiltyPleaCourtHearingWelshTemplateId;
+    }
+
+    public String getOnlineGuiltyPleaNoCourtHearingEnglishTemplateId() {
+        return onlineGuiltyPleaNoCourtHearingEnglishTemplateId;
+    }
+
+    public String getOnlineGuiltyPleaNoCourtHearingWelshTemplateId() {
+        return onlineGuiltyPleaNoCourtHearingWelshTemplateId;
+    }
+
+    public String getOnlineNotGuiltyPleaEnglishTemplateId() {
+        return onlineNotGuiltyPleaEnglishTemplateId;
+    }
+
+    public String getOnlineNotGuiltyPleaWelshTemplateId() {
+        return onlineNotGuiltyPleaWelshTemplateId;
+    }
+
     public String getDefenceAssociationTemplateId() {
         return defenceAssociationTemplateId;
     }
@@ -208,6 +260,10 @@ public class ApplicationParameters {
 
     public String getStatDecSendAppointmentLetterTemplateId() {
         return statDecSendAppointmentLetterTemplateId;
+    }
+
+    public String getOnlinePleaProsecutorTemplateId() {
+        return onlinePleaProsecutorTemplateId;
     }
 
     public String getEmailTemplateId(final String templateName) {

@@ -97,4 +97,7 @@
     <include file="liquibase/alter-pet-case-add-column-youth-flag.xml"/>
     <include file="liquibase/alter-table-pet-case-defendant-offence-drop-offence.xml"/>
     <include file="liquibase/remove-column-form-case-defendant-offence.xml"/>
+    <include file="liquibase/online-plea-changes.xml"/>
+    <include file="liquibase/create-online-plea-detail-table.xml"/>
+    <include file="liquibase/alter-online-plea-for-legal-entity.xml"/>
 </databaseChangeLog>

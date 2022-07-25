@@ -37,6 +37,7 @@ import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRAN
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.NO_VALUE;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
+import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.COMPANYONLINEPLEA;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
@@ -54,6 +55,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
@@ -64,6 +66,7 @@ import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
 import uk.gov.justice.core.courts.EditFormRequested;
+import uk.gov.justice.core.courts.ExactMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.FormCreated;
 import uk.gov.justice.core.courts.FormDefendants;
 import uk.gov.justice.core.courts.FormDefendantsUpdated;
@@ -71,7 +74,6 @@ import uk.gov.justice.core.courts.FormFinalised;
 import uk.gov.justice.core.courts.FormOperationFailed;
 import uk.gov.justice.core.courts.FormType;
 import uk.gov.justice.core.courts.FormUpdated;
-import uk.gov.justice.core.courts.ExactMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.HearingConfirmedCaseStatusUpdated;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingType;
@@ -119,6 +121,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.command.handler.HandleOnlinePleaDocumentCreation;
 import uk.gov.moj.cpp.progression.domain.MatchDefendant;
 import uk.gov.moj.cpp.progression.domain.MatchedDefendant;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.Form;
@@ -141,8 +144,21 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Offence;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Person;
 import uk.gov.moj.cpp.progression.domain.helper.JsonHelper;
+import uk.gov.moj.cpp.progression.events.CaseNotFound;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated;
+import uk.gov.moj.cpp.progression.events.DefendantNotFound;
+import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
+import uk.gov.moj.cpp.progression.events.FinanceDocumentForOnlinePleaSubmitted;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdated;
+import uk.gov.moj.cpp.progression.events.NotificationSentForDefendantDocument;
+import uk.gov.moj.cpp.progression.events.NotificationSentForPleaDocument;
+import uk.gov.moj.cpp.progression.events.NotificationSentForPleaDocumentFailed;
+import uk.gov.moj.cpp.progression.events.OnlinePleaDocumentUploadedAsCaseMaterial;
+import uk.gov.moj.cpp.progression.events.OnlinePleaRecorded;
+import uk.gov.moj.cpp.progression.events.PleaDocumentForOnlinePleaSubmitted;
+import uk.gov.moj.cpp.progression.plea.json.schemas.ContactDetails;
+import uk.gov.moj.cpp.progression.plea.json.schemas.PleaType;
+import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -171,7 +187,6 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseAggregateTest {
@@ -222,6 +237,9 @@ public class CaseAggregateTest {
     private final String MESSAGE_FOR_PROSECUTION_NULL = "ProsecutionCase(%s) does not exists.";
     private final String MESSAGE_FOR_COURT_FORM_ID_NOT_PRESENT = "courtFormId (%s) does not exists.";
 
+    private static final uk.gov.justice.core.courts.Offence offence = uk.gov.justice.core.courts.Offence.offence()
+            .withId(randomUUID())
+            .build();
     private static final uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
             .withId(randomUUID())
             .withMasterDefendantId(randomUUID())
@@ -233,7 +251,7 @@ public class CaseAggregateTest {
                             .build())
                     .build())
             .withCourtProceedingsInitiated(ZonedDateTime.now())
-            .withOffences(singletonList(uk.gov.justice.core.courts.Offence.offence().build()))
+            .withOffences(singletonList(uk.gov.justice.core.courts.Offence.offence().withId(randomUUID()).build()))
             .build();
 
     private static final uk.gov.justice.core.courts.Defendant legalEntityDefendant = uk.gov.justice.core.courts.Defendant.defendant()
@@ -1135,7 +1153,7 @@ public class CaseAggregateTest {
                 defendantsAddedToCourtProceedings.getListHearingRequests()).collect(toList());
         caseAggregate.apply(defendantStream);
         final Stream<Object> eventStream = caseAggregate.updateMatchedDefendant(caseId, defendantId, masterDefendantId);
-        final DefendantsMasterDefendantIdUpdated defendantsMasterDefendantIdUpdated =(DefendantsMasterDefendantIdUpdated)eventStream.collect(toList()).get(0);
+        final DefendantsMasterDefendantIdUpdated defendantsMasterDefendantIdUpdated = (DefendantsMasterDefendantIdUpdated) eventStream.collect(toList()).get(0);
         assertThat(defendantsMasterDefendantIdUpdated.getProsecutionCaseId(), is(caseId));
         assertThat(defendantsMasterDefendantIdUpdated.getDefendant().getId(), is(defendantId));
         assertThat(defendantsMasterDefendantIdUpdated.getDefendant().getOffences().size(), is(1));
@@ -3286,16 +3304,16 @@ public class CaseAggregateTest {
                 .build();
         CaseAggregate caseAggregate = new CaseAggregate();
         Stream<Object> objectStream = caseAggregate.matchPartiallyMatchedDefendants(matchDefendant);
-        Optional<Object> obj = objectStream.filter(s->s instanceof MasterDefendantIdUpdated ).findFirst();
-        assertThat(obj.isPresent(),is(true));
-        assertThat(obj.map(s-> (MasterDefendantIdUpdated) s).get().getMatchedDefendants().size(),is(1));
+        Optional<Object> obj = objectStream.filter(s -> s instanceof MasterDefendantIdUpdated).findFirst();
+        assertThat(obj.isPresent(), is(true));
+        assertThat(obj.map(s -> (MasterDefendantIdUpdated) s).get().getMatchedDefendants().size(), is(1));
 
     }
 
     @Test
     public void shouldSkipMatchedDefendentWithoutCourtProceedingsInitiatedFullMatch() {
 
-        ExactMatchedDefendantSearchResultStored exactMatchedDefendantSearchResultStored=ExactMatchedDefendantSearchResultStored.exactMatchedDefendantSearchResultStored()
+        ExactMatchedDefendantSearchResultStored exactMatchedDefendantSearchResultStored = ExactMatchedDefendantSearchResultStored.exactMatchedDefendantSearchResultStored()
                 .withDefendantId(randomUUID())
                 .withCases(asList(Cases.cases()
                         .withCaseReference("REF")
@@ -3303,7 +3321,7 @@ public class CaseAggregateTest {
                         .withDefendants(asList(Defendants.defendants()
                                 .withDefendantId(randomUUID().toString())
                                 .withMasterDefendantId(randomUUID().toString())
-                                .build(),Defendants.defendants()
+                                .build(), Defendants.defendants()
                                 .withCourtProceedingsInitiated(ZonedDateTime.now())
                                 .withDefendantId(randomUUID().toString())
                                 .withMasterDefendantId(randomUUID().toString())
@@ -3313,12 +3331,128 @@ public class CaseAggregateTest {
         caseAggregate.apply(exactMatchedDefendantSearchResultStored);
 
 
-
         Stream<Object> objectStream = caseAggregate.storeMatchedDefendants(randomUUID());
-        Optional<Object> obj = objectStream.filter(s->s instanceof MasterDefendantIdUpdated ).findFirst();
-        assertThat(obj.isPresent(),is(true));
-        assertThat(obj.map(s-> (MasterDefendantIdUpdated) s).get().getMatchedDefendants().size(),is(1));
+        Optional<Object> obj = objectStream.filter(s -> s instanceof MasterDefendantIdUpdated).findFirst();
+        assertThat(obj.isPresent(), is(true));
+        assertThat(obj.map(s -> (MasterDefendantIdUpdated) s).get().getMatchedDefendants().size(), is(1));
 
+    }
+
+    @Test
+    public void shouldRecordOnlinePlea() {
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+        List<Object> eventStream = caseAggregate.recordOnlinePlea(PleadOnline.pleadOnline()
+                .withCaseId(prosecutionCase.getId())
+                .withDefendantId(defendant.getId())
+                .withComeToCourt(true)
+                .withLegalEntityDefendant(uk.gov.moj.cpp.progression.plea.json.schemas.LegalEntityDefendant.legalEntityDefendant().withAddress(Address.address().withPostcode("CR0 5QT").build()).withContactDetails(ContactDetails.contactDetails().withEmail("dummy@gmail.com").build()).build())
+                .withOffences(singletonList(uk.gov.moj.cpp.progression.plea.json.schemas.Offence.offence().withId(offence.getId().toString()).withPlea(PleaType.NOT_GUILTY).build()))
+                .build()).collect(toList());
+
+        assertThat(eventStream.size(), is(4));
+        assertThat(eventStream.get(0).getClass(), is(equalTo(OnlinePleaRecorded.class)));
+        assertThat(eventStream.get(1).getClass(), is(equalTo(FinanceDocumentForOnlinePleaSubmitted.class)));
+        assertThat(eventStream.get(2).getClass(), is(equalTo(PleaDocumentForOnlinePleaSubmitted.class)));
+        assertThat(eventStream.get(3).getClass(), is(equalTo(NotificationSentForDefendantDocument.class)));
+    }
+
+    @Test
+    public void shouldRaiseDefendantNotFoundForOnlinePlea() {
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        List<Object> eventStream = caseAggregate.recordOnlinePlea(PleadOnline.pleadOnline()
+                .withCaseId(prosecutionCase.getId())
+                .withDefendantId(randomUUID())
+                .withOffences(singletonList(uk.gov.moj.cpp.progression.plea.json.schemas.Offence.offence().withId(offence.getId().toString()).build()))
+                .build()).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0).getClass(), is(equalTo(DefendantNotFound.class)));
+
+    }
+
+    @Test
+    public void shouldRaiseCaseNotFoundForOnlinePlea() {
+
+        List<Object> eventStream = caseAggregate.recordOnlinePlea(PleadOnline.pleadOnline()
+                .withCaseId(prosecutionCase.getId())
+                .withDefendantId(randomUUID())
+                .withOffences(singletonList(uk.gov.moj.cpp.progression.plea.json.schemas.Offence.offence().withId(offence.getId().toString()).build()))
+                .build()).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0).getClass(), is(equalTo(CaseNotFound.class)));
+
+    }
+
+    @Test
+    public void shouldReturnTrueWhenAnyOffenceHasAlreadyPleaSubmittedFlagTrue() {
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final ProsecutionCase prosecutionCase = createProsecutionCase(asList(Defendant.defendant()
+                        .withId(randomUUID())
+                        .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                        .withId(randomUUID())
+                                        .build(),
+                                uk.gov.justice.core.courts.Offence.offence()
+                                        .withId(randomUUID())
+                                        .build()))
+                        .build(),
+                Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                        .withId(randomUUID())
+                                        .build(),
+                                uk.gov.justice.core.courts.Offence.offence()
+                                        .withId(offenceId)
+                                        .withOnlinePleaReceived(true)
+                                        .build()))
+                        .build()));
+
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final boolean isOffenceAlreadyPlead = caseAggregate.isOffenceAlreadyPlead(asList(uk.gov.moj.cpp.progression.plea.json.schemas.Offence.offence()
+                .withId(offenceId.toString())
+                .build()), defendantId);
+
+        assertThat(isOffenceAlreadyPlead, is(true));
+
+    }
+
+    @Test
+    public void shouldReturnFalseWhenNoneOfTheOffencesHasPleaSubmittedFlagTrue() {
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final ProsecutionCase prosecutionCase = createProsecutionCase(asList(Defendant.defendant()
+                        .withId(randomUUID())
+                        .withOffences(singletonList(uk.gov.justice.core.courts.Offence.offence()
+                                .withId(randomUUID())
+                                .build()))
+                        .build(),
+                Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                        .withId(randomUUID())
+                                        .build(),
+                                uk.gov.justice.core.courts.Offence.offence()
+                                        .withId(randomUUID())
+                                        .withOnlinePleaReceived(true)
+                                        .build(),
+                                uk.gov.justice.core.courts.Offence.offence()
+                                        .withId(offenceId)
+                                        .withOnlinePleaReceived(false)
+                                        .build()))
+                        .build()));
+
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final boolean isOffenceAlreadyPlead = caseAggregate.isOffenceAlreadyPlead(singletonList(uk.gov.moj.cpp.progression.plea.json.schemas.Offence.offence()
+                .withId(offenceId.toString())
+                .build()), defendantId);
+
+        assertThat(isOffenceAlreadyPlead, is(false));
 
     }
     private DefendantsAddedToCourtProceedings buildDefendantsAddedToCourtProceedings(
@@ -3544,6 +3678,160 @@ public class CaseAggregateTest {
                 .build();
     }
 
+    @Test
+    public void shouldHandleOnlinePleaDocumentCreationWithPrimaryEmail() {
+        final UUID caseId = randomUUID();
+        final UUID fileId = randomUUID();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(defendants)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withContact(ContactNumber.contactNumber()
+                                .withPrimaryEmail("primary-email@hmcts.net")
+                                .withSecondaryEmail("secondary-email@hmcts.net")
+                                .build())
+                        .build())
+                .build();
+
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final HandleOnlinePleaDocumentCreation handleOnlinePleaDocumentCreation = HandleOnlinePleaDocumentCreation.handleOnlinePleaDocumentCreation()
+                .withCaseId(caseId)
+                .withPleaNotificationType(COMPANYONLINEPLEA)
+                .withSystemDocGeneratorId(fileId)
+                .build();
+
+        final List<Object> eventStream = this.caseAggregate.handleOnlinePleaDocumentCreation(handleOnlinePleaDocumentCreation).collect(toList());
+
+        assertThat(eventStream.size(), is(2));
+        assertThat(eventStream.get(0).getClass(), is(equalTo(NotificationSentForPleaDocument.class)));
+        final NotificationSentForPleaDocument notificationSentForPleaDocument = (NotificationSentForPleaDocument) eventStream.get(0);
+        assertThat(notificationSentForPleaDocument.getCaseId(), is(caseId));
+        assertThat(notificationSentForPleaDocument.getEmail(), is(prosecutionCase.getProsecutionCaseIdentifier().getContact().getPrimaryEmail()));
+
+        assertThat(eventStream.get(1).getClass(), is(equalTo(OnlinePleaDocumentUploadedAsCaseMaterial.class)));
+        final OnlinePleaDocumentUploadedAsCaseMaterial uploadedAsCaseMaterial = (OnlinePleaDocumentUploadedAsCaseMaterial) eventStream.get(1);
+        assertThat(uploadedAsCaseMaterial.getFileId(), is(fileId));
+    }
+
+    @Test
+    public void shouldHandleOnlinePleaDocumentCreationWithSecondaryEmail() {
+        final UUID caseId = randomUUID();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(defendants)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withContact(ContactNumber.contactNumber()
+                                .withSecondaryEmail("secondary-email@hmcts.net")
+                                .build())
+                        .build())
+                .build();
+
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final HandleOnlinePleaDocumentCreation handleOnlinePleaDocumentCreation = HandleOnlinePleaDocumentCreation.handleOnlinePleaDocumentCreation()
+                .withCaseId(caseId)
+                .withPleaNotificationType(COMPANYONLINEPLEA)
+                .withSystemDocGeneratorId(randomUUID())
+                .build();
+
+        final List<Object> eventStream = this.caseAggregate.handleOnlinePleaDocumentCreation(handleOnlinePleaDocumentCreation).collect(toList());
+
+        assertThat(eventStream.size(), is(2));
+        assertThat(eventStream.get(0).getClass(), is(equalTo(NotificationSentForPleaDocument.class)));
+        final NotificationSentForPleaDocument notificationSentForPleaDocument = (NotificationSentForPleaDocument) eventStream.get(0);
+        assertThat(notificationSentForPleaDocument.getCaseId(), is(caseId));
+        assertThat(notificationSentForPleaDocument.getEmail(), is(prosecutionCase.getProsecutionCaseIdentifier().getContact().getSecondaryEmail()));
+
+    }
+
+    @Test
+    public void shouldHandleOnlinePleaDocumentCreationWithNoProsecutorContact() {
+        final UUID caseId = randomUUID();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(defendants)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .build())
+                .build();
+
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final HandleOnlinePleaDocumentCreation handleOnlinePleaDocumentCreation = HandleOnlinePleaDocumentCreation.handleOnlinePleaDocumentCreation()
+                .withCaseId(caseId)
+                .withPleaNotificationType(COMPANYONLINEPLEA)
+                .withSystemDocGeneratorId(randomUUID())
+                .build();
+
+        final List<Object> eventStream = this.caseAggregate.handleOnlinePleaDocumentCreation(handleOnlinePleaDocumentCreation).collect(toList());
+
+        assertThat(eventStream.size(), is(2));
+        assertThat(eventStream.get(0).getClass(), is(equalTo(NotificationSentForPleaDocumentFailed.class)));
+        final NotificationSentForPleaDocumentFailed notificationSentForPleaDocumentFailed = (NotificationSentForPleaDocumentFailed) eventStream.get(0);
+        assertThat(notificationSentForPleaDocumentFailed.getCaseId(), is(caseId));
+
+    }
+
+    @Test
+    public void shouldSendEmailToDefendantForOnlineGuiltyPleaCourtHearing() {
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        List<Object> eventStream = caseAggregate.recordOnlinePlea(PleadOnline.pleadOnline()
+                .withCaseId(prosecutionCase.getId())
+                .withDefendantId(defendant.getId())
+                .withComeToCourt(true)
+                .withLegalEntityDefendant(uk.gov.moj.cpp.progression.plea.json.schemas.LegalEntityDefendant.legalEntityDefendant().withAddress(Address.address().withPostcode("CR0 5QT").build()).withContactDetails(ContactDetails.contactDetails().withEmail("dummy@gmail.com").build()).build())
+                .withOffences(singletonList(uk.gov.moj.cpp.progression.plea.json.schemas.Offence.offence().withId(offence.getId().toString()).withPlea(PleaType.GUILTY).build()))
+                .build()).collect(toList());
+
+        assertThat(eventStream.size(), is(4));
+        assertThat(eventStream.get(0).getClass(), is(equalTo(OnlinePleaRecorded.class)));
+        assertThat(eventStream.get(1).getClass(), is(equalTo(FinanceDocumentForOnlinePleaSubmitted.class)));
+        assertThat(eventStream.get(2).getClass(), is(equalTo(PleaDocumentForOnlinePleaSubmitted.class)));
+        assertThat(eventStream.get(3).getClass(), is(equalTo(NotificationSentForDefendantDocument.class)));
+    }
+
+    @Test
+    public void shouldSendEmailToDefendantForOnlineGuiltyPleaNoCourtHearing() {
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        List<Object> eventStream = caseAggregate.recordOnlinePlea(PleadOnline.pleadOnline()
+                .withCaseId(prosecutionCase.getId())
+                .withDefendantId(defendant.getId())
+                .withComeToCourt(false)
+                .withLegalEntityDefendant(uk.gov.moj.cpp.progression.plea.json.schemas.LegalEntityDefendant.legalEntityDefendant().withAddress(Address.address().withPostcode("CR0 5QT").build()).withContactDetails(ContactDetails.contactDetails().withEmail("dummy@gmail.com").build()).build())
+                .withOffences(singletonList(uk.gov.moj.cpp.progression.plea.json.schemas.Offence.offence().withId(offence.getId().toString()).withPlea(PleaType.GUILTY).build()))
+                .build()).collect(toList());
+
+        assertThat(eventStream.size(), is(4));
+        assertThat(eventStream.get(0).getClass(), is(equalTo(OnlinePleaRecorded.class)));
+        assertThat(eventStream.get(1).getClass(), is(equalTo(FinanceDocumentForOnlinePleaSubmitted.class)));
+        assertThat(eventStream.get(2).getClass(), is(equalTo(PleaDocumentForOnlinePleaSubmitted.class)));
+        assertThat(eventStream.get(3).getClass(), is(equalTo(NotificationSentForDefendantDocument.class)));
+    }
+
+    @Test
+    public void shouldSendEmailToDefendantForOnlineNotGuiltyPlea() {
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        List<Object> eventStream = caseAggregate.recordOnlinePlea(PleadOnline.pleadOnline()
+                .withCaseId(prosecutionCase.getId())
+                .withDefendantId(defendant.getId())
+                .withComeToCourt(false)
+                .withLegalEntityDefendant(uk.gov.moj.cpp.progression.plea.json.schemas.LegalEntityDefendant.legalEntityDefendant().withAddress(Address.address().withPostcode("CR0 5QT").build()).withContactDetails(ContactDetails.contactDetails().withEmail("dummy@gmail.com").build()).build())
+                .withOffences(singletonList(uk.gov.moj.cpp.progression.plea.json.schemas.Offence.offence().withId(offence.getId().toString()).withPlea(PleaType.NOT_GUILTY).build()))
+                .build()).collect(toList());
+
+        assertThat(eventStream.size(), is(4));
+        assertThat(eventStream.get(0).getClass(), is(equalTo(OnlinePleaRecorded.class)));
+        assertThat(eventStream.get(1).getClass(), is(equalTo(FinanceDocumentForOnlinePleaSubmitted.class)));
+        assertThat(eventStream.get(2).getClass(), is(equalTo(PleaDocumentForOnlinePleaSubmitted.class)));
+        assertThat(eventStream.get(3).getClass(), is(equalTo(NotificationSentForDefendantDocument.class)));
+    }
 }
+
 
 

@@ -10,9 +10,11 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.empty;
+import static java.util.stream.Stream.of;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.core.courts.Address.address;
@@ -34,11 +36,15 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createCaseAddedToCrownCourt;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createPsrForDefendantsRequested;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createSendingCommittalHearingInformationAdded;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantEmail;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantPostcode;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendants;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendantsForOnlinePlea;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hearingCaseDefendantsProceedingsConcluded;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isAllDefendantProceedingConcluded;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isProceedingConcludedEventTriggered;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.offenceWithSexualOffenceReportingRestriction;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.sendEmailNotificationToDefendant;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updateOrderIndex;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updatedDefendantsWithProceedingConcludedState;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
@@ -49,6 +55,9 @@ import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PEND
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
 import static uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated.defendantDefenceOrganisationDisassociated;
+import static uk.gov.moj.cpp.progression.events.Reason.PLEA_ALREADY_SUBMITTED;
+import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.COMPANYONLINEPLEA;
+import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.INDIVIDUALONLINEPLEA;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 
 import uk.gov.justice.core.courts.Address;
@@ -63,6 +72,7 @@ import uk.gov.justice.core.courts.CaseMarkersUpdated;
 import uk.gov.justice.core.courts.CaseNoteAddedV2;
 import uk.gov.justice.core.courts.CaseNoteEditedV2;
 import uk.gov.justice.core.courts.Cases;
+import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
 import uk.gov.justice.core.courts.CpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CustodyTimeLimit;
@@ -137,6 +147,7 @@ import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.defendant.AddDefendant;
 import uk.gov.moj.cpp.progression.command.defendant.UpdateDefendantCommand;
+import uk.gov.moj.cpp.progression.command.handler.HandleOnlinePleaDocumentCreation;
 import uk.gov.moj.cpp.progression.domain.CaseToUnlink;
 import uk.gov.moj.cpp.progression.domain.CasesToLink;
 import uk.gov.moj.cpp.progression.domain.MatchDefendant;
@@ -173,6 +184,7 @@ import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.link.LinkType;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
+import uk.gov.moj.cpp.progression.events.CaseNotFound;
 import uk.gov.moj.cpp.progression.events.CasesUnlinked;
 import uk.gov.moj.cpp.progression.events.CpsDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationAssociatedByDefenceContext;
@@ -181,23 +193,36 @@ import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationAssociated;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated;
 import uk.gov.moj.cpp.progression.events.DefendantLaaAssociated;
 import uk.gov.moj.cpp.progression.events.DefendantMatched;
+import uk.gov.moj.cpp.progression.events.DefendantNotFound;
 import uk.gov.moj.cpp.progression.events.DefendantUnmatched;
 import uk.gov.moj.cpp.progression.events.DefendantUnmatchedV2;
 import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
+import uk.gov.moj.cpp.progression.events.FinanceDocumentForOnlinePleaSubmitted;
 import uk.gov.moj.cpp.progression.events.LinkCases;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdatedIntoHearings;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdatedV2;
 import uk.gov.moj.cpp.progression.events.MatchedDefendants;
 import uk.gov.moj.cpp.progression.events.MergeCases;
+import uk.gov.moj.cpp.progression.events.NotificationSentForDefendantDocument;
+import uk.gov.moj.cpp.progression.events.NotificationSentForPleaDocument;
+import uk.gov.moj.cpp.progression.events.NotificationSentForPleaDocumentFailed;
+import uk.gov.moj.cpp.progression.events.OnlinePleaCaseUpdateRejected;
+import uk.gov.moj.cpp.progression.events.OnlinePleaDocumentUploadedAsCaseMaterial;
+import uk.gov.moj.cpp.progression.events.OnlinePleaRecorded;
+import uk.gov.moj.cpp.progression.events.PleaDocumentForOnlinePleaSubmitted;
 import uk.gov.moj.cpp.progression.events.RepresentationType;
 import uk.gov.moj.cpp.progression.events.SplitCases;
 import uk.gov.moj.cpp.progression.events.UnlinkedCases;
 import uk.gov.moj.cpp.progression.events.ValidateLinkCases;
 import uk.gov.moj.cpp.progression.events.ValidateMergeCases;
 import uk.gov.moj.cpp.progression.events.ValidateSplitCases;
+import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
+import uk.gov.moj.cpp.progression.plea.json.schemas.TemplateType;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -232,9 +257,9 @@ import org.slf4j.LoggerFactory;
 public class CaseAggregate implements Aggregate {
     private static final long serialVersionUID = -33049804196421400L;
 
-    //Static
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm a");
     private static final String HEARING_PAYLOAD_PROPERTY = "hearing";
     private static final String CROWN_COURT_HEARING_PROPERTY = "crownCourtHearing";
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
@@ -242,6 +267,7 @@ public class CaseAggregate implements Aggregate {
     private static final String SENDING_SHEET_ALREADY_COMPLETED_MSG = "Sending sheet already completed, not allowed to perform add sentence hearing date  for case Id %s ";
     private static final String CASE_STATUS_EJECTED = "EJECTED";
     private static final String LAA_WITHDRAW_STATUS_CODE = "WD";
+    public static final String EMAIL_NOT_FOUND = "Email for the prosecutor not found!";
 
     //Case collections
     private final Set<UUID> caseIdsWithCompletedSendingSheet = new HashSet<>();
@@ -306,6 +332,8 @@ public class CaseAggregate implements Aggregate {
     private static final String MESSAGE_FOR_PROSECUTION_NULL = "ProsecutionCase(%s) does not exists.";
     private static final String MESSAGE_FOR_COURT_FORM_ID_NOT_PRESENT = "courtFormId (%s) does not exists.";
     private static final String UPDATE_BCM_DEFENDANT_OPERATION_IS_FAILED = "update BCM defendant operation is failed";
+    public static final String GUILTY = "GUILTY";
+    public static final String NOT_GUILTY = "NOT_GUILTY";
 
     private static boolean isConcludedAtDefendantLevel(uk.gov.justice.core.courts.Defendant defendant) {
         final boolean isNotConcluded = isNotEmpty(defendant.getOffences()) && defendant.getOffences().stream()
@@ -496,6 +524,7 @@ public class CaseAggregate implements Aggregate {
                 when(PetFormCreated.class).apply(this::onPetFormCreated),
                 when(PetFormFinalised.class).apply(this::addPetFormFinalisedDocument),
                 when(FormFinalised.class).apply(this::addFormFinalisedDocument),
+                when(OnlinePleaRecorded.class).apply(this::updateOffenceForOnlinePlea),
                 otherwiseDoNothing());
 
     }
@@ -520,6 +549,13 @@ public class CaseAggregate implements Aggregate {
                                         cpsDefendantIdUpdated.getCpsDefendantId() : defendant.getCpsDefendantId())
                                 .build())
                         .collect(toList()))
+                .build();
+    }
+
+    private void updateOffenceForOnlinePlea(final OnlinePleaRecorded onlinePleaRecorded) {
+        this.prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withValuesFrom(prosecutionCase)
+                .withDefendants(getUpdatedDefendantsForOnlinePlea(prosecutionCase.getDefendants(), onlinePleaRecorded.getPleadOnline().getDefendantId(), onlinePleaRecorded.getPleadOnline().getOffences()))
                 .build();
     }
 
@@ -927,7 +963,7 @@ public class CaseAggregate implements Aggregate {
         } else {
             final BailDocument bailDocument = (updateDefendantCommandCommand.getDocumentId() == null
                     ? null
-                    : new BailDocument(UUID.randomUUID(),
+                    : new BailDocument(randomUUID(),
                     updateDefendantCommandCommand.getDocumentId()));
             streamBuilder.add(new DefendantUpdated(updateDefendantCommandCommand.getCaseId(),
                     updateDefendantCommandCommand.getDefendantId(),
@@ -1727,7 +1763,7 @@ public class CaseAggregate implements Aggregate {
         addToJsonObjectNullSafe(jsonObjectBuilder, "middleName", personDetails.getMiddleName());
         jsonObjectBuilder.add("lastName", personDetails.getLastName());
         if (nonNull(personDetails.getDateOfBirth())) {
-            addToJsonObjectNullSafe(jsonObjectBuilder, "dateOfBirth", FORMATTER.format(personDetails.getDateOfBirth()));
+            addToJsonObjectNullSafe(jsonObjectBuilder, "dateOfBirth", DATE_FORMATTER.format(personDetails.getDateOfBirth()));
         }
         addToJsonObjectNullSafe(jsonObjectBuilder, "pncId", defendant.getPncId());
         addToJsonObjectNullSafe(jsonObjectBuilder, "croNumber", defendant.getCroNumber());
@@ -2522,6 +2558,96 @@ public class CaseAggregate implements Aggregate {
                 .collect(toList());
     }
 
+
+    public Stream<Object> recordOnlinePlea(final PleadOnline pleadOnline) {
+        final Stream<Object> failureEvents = createRejectionEventsForOnlinePlea(pleadOnline);
+
+        if (nonNull(failureEvents)) {
+            return failureEvents;
+        }
+
+        return createSuccessEventsForOnlinePlea(pleadOnline);
+    }
+
+    public Stream<Object> createRejectionEventsForOnlinePlea(final PleadOnline pleadOnline) {
+        if (isNull(this.prosecutionCase)) {
+            LOGGER.warn("Case not found. CaseId: {}", pleadOnline.getCaseId());
+            return of(CaseNotFound.caseNotFound()
+                    .withCaseId(pleadOnline.getCaseId())
+                    .build());
+        } else if (isDefendantNotFound(pleadOnline.getDefendantId())) {
+            LOGGER.warn("Defendant not found. DefendantId: {}", pleadOnline.getDefendantId());
+            return of(DefendantNotFound.defendantNotFound()
+                    .withCaseId(pleadOnline.getCaseId())
+                    .withDefendantId(pleadOnline.getDefendantId())
+                    .build());
+        } else if (isOffenceAlreadyPlead(pleadOnline.getOffences(), pleadOnline.getDefendantId())) {
+            LOGGER.warn("offence already plead. CaseId: {}", pleadOnline.getCaseId());
+            return of(OnlinePleaCaseUpdateRejected.onlinePleaCaseUpdateRejected()
+                    .withCaseId(pleadOnline.getCaseId())
+                    .withReason(PLEA_ALREADY_SUBMITTED)
+                    .build());
+        }
+
+        return null;
+    }
+
+    public boolean isOffenceAlreadyPlead(final List<uk.gov.moj.cpp.progression.plea.json.schemas.Offence> offences, final UUID defendantId) {
+        return ofNullable(offences).orElse(emptyList()).stream()
+                .anyMatch(offence -> isOffencePlead(offence.getId(), getExistingOffencesOfTheDefendant(defendantId)));
+    }
+
+    private boolean isOffencePlead(final String offenceId, final List<uk.gov.justice.core.courts.Offence> existingOffencesOfTheDefendant) {
+        return existingOffencesOfTheDefendant.stream()
+                .filter(offence -> offence.getId().toString().equals(offenceId))
+                .findAny().map(uk.gov.justice.core.courts.Offence::getOnlinePleaReceived).orElse(false);
+    }
+
+    private List<uk.gov.justice.core.courts.Offence> getExistingOffencesOfTheDefendant(final UUID defendantId) {
+        return prosecutionCase.getDefendants().stream()
+                .filter(defendant -> defendant.getId().equals(defendantId))
+                .findAny().map(uk.gov.justice.core.courts.Defendant::getOffences).orElse(emptyList());
+
+    }
+
+    private boolean isDefendantNotFound(final UUID defendantId) {
+        return this.prosecutionCase.getDefendants().stream().noneMatch(defendant -> defendant.getId().equals(defendantId));
+    }
+
+    private Stream<Object> createSuccessEventsForOnlinePlea(final PleadOnline pleadOnline) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        streamBuilder.add(OnlinePleaRecorded.onlinePleaRecorded()
+                .withCaseId(pleadOnline.getCaseId())
+                .withPleadOnline(pleadOnline)
+                .build());
+        streamBuilder.add(FinanceDocumentForOnlinePleaSubmitted.financeDocumentForOnlinePleaSubmitted()
+                .withCaseId(pleadOnline.getCaseId())
+                .withPleadOnline(pleadOnline)
+                .withDateOfPlea(DATE_FORMATTER.format(LocalDate.now()))
+                .withTimeOfPlea(TIME_FORMATTER.format(ZonedDateTime.of(LocalDate.now(), LocalTime.now().plusHours(1), ZoneId.of("Europe/London"))))
+                .build());
+        streamBuilder.add(PleaDocumentForOnlinePleaSubmitted.pleaDocumentForOnlinePleaSubmitted()
+                .withCaseId(pleadOnline.getCaseId())
+                .withPleadOnline(pleadOnline)
+                .withDateOfPlea(DATE_FORMATTER.format(LocalDate.now()))
+                .withTimeOfPlea(TIME_FORMATTER.format(ZonedDateTime.of(LocalDate.now(), LocalTime.now().plusHours(1), ZoneId.of("Europe/London"))))
+                .build());
+        final Optional<TemplateType> templateType = sendEmailNotificationToDefendant(pleadOnline);
+        if (templateType.isPresent()) {
+            streamBuilder.add(NotificationSentForDefendantDocument.notificationSentForDefendantDocument()
+                    .withCaseId(pleadOnline.getCaseId())
+                    .withUrn(pleadOnline.getUrn())
+                    .withEmail(getDefendantEmail(pleadOnline))
+                    .withPostcode(getDefendantPostcode(pleadOnline))
+                    .withTemplateType(templateType.get())
+                    .withNotificationId(randomUUID())
+                    .build());
+        }
+
+        return apply(streamBuilder.build());
+    }
+
     private Optional<uk.gov.justice.core.courts.Defendant> buildDefendantForPet(final uk.gov.justice.core.courts.Defendant defendant) {
 
         return Optional.of(uk.gov.justice.core.courts.Defendant.defendant()
@@ -2735,6 +2861,49 @@ public class CaseAggregate implements Aggregate {
 
         final Form form = formMap.get(formDefendantsUpdated.getCourtFormId());
         form.setFormDefendants(formDefendantsUpdated.getFormDefendants());
+    }
+
+    public Stream<Object> handleOnlinePleaDocumentCreation(final HandleOnlinePleaDocumentCreation handleOnlinePleaDocumentCreation) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (COMPANYONLINEPLEA == handleOnlinePleaDocumentCreation.getPleaNotificationType() || INDIVIDUALONLINEPLEA == handleOnlinePleaDocumentCreation.getPleaNotificationType()) {
+            final Optional<String> prosecutorEmail = getProsecutorEmail();
+            if (prosecutorEmail.isPresent()) {
+                streamBuilder.add(NotificationSentForPleaDocument.notificationSentForPleaDocument()
+                        .withCaseId(handleOnlinePleaDocumentCreation.getCaseId())
+                        .withEmail(prosecutorEmail.get())
+                        .withPleaNotificationType(handleOnlinePleaDocumentCreation.getPleaNotificationType())
+                        .withSystemDocGeneratorId(handleOnlinePleaDocumentCreation.getSystemDocGeneratorId())
+                        .withUrn(this.prosecutionCase.getProsecutionCaseIdentifier().getCaseURN())
+                        .withNotificationId(randomUUID())
+                        .build());
+            } else {
+                streamBuilder.add(NotificationSentForPleaDocumentFailed.notificationSentForPleaDocumentFailed()
+                        .withCaseId(handleOnlinePleaDocumentCreation.getCaseId())
+                        .withErrorMessage(EMAIL_NOT_FOUND)
+                        .withPleaNotificationType(handleOnlinePleaDocumentCreation.getPleaNotificationType())
+                        .withSystemDocGeneratorId(handleOnlinePleaDocumentCreation.getSystemDocGeneratorId())
+                        .build());
+            }
+        }
+
+        streamBuilder.add(OnlinePleaDocumentUploadedAsCaseMaterial.onlinePleaDocumentUploadedAsCaseMaterial()
+                .withCaseId(this.prosecutionCase.getId())
+                .withFileId(handleOnlinePleaDocumentCreation.getSystemDocGeneratorId())
+                .withMaterialId(randomUUID())
+                .withDefendantId(handleOnlinePleaDocumentCreation.getDefendantId())
+                .withPleaNotificationType(handleOnlinePleaDocumentCreation.getPleaNotificationType())
+                .build());
+
+        return apply(streamBuilder.build());
+    }
+
+    private Optional<String> getProsecutorEmail() {
+        final ContactNumber contactNumber = this.prosecutionCase.getProsecutionCaseIdentifier().getContact();
+        if (isNull(contactNumber)) {
+            return Optional.empty();
+        }
+        return ofNullable(ofNullable(contactNumber.getPrimaryEmail()).orElse(contactNumber.getSecondaryEmail()));
     }
 
     private void updateFormState(final UUID courtFormId, final List<FormDefendants> formDefendants, final FormType formType) {

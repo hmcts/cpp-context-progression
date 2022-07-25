@@ -24,6 +24,8 @@ import uk.gov.justice.progression.courts.AddedOffences;
 import uk.gov.justice.progression.courts.DeletedOffences;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.progression.courts.UpdatedOffences;
+import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
+import uk.gov.moj.cpp.progression.plea.json.schemas.TemplateType;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -49,6 +51,8 @@ public class DefendantHelper {
 
     public static final String SEXUAL_OFFENCE_REPORTING_RESTRICTION_LABEL = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
     public static final String SEXUAL_OFFENCE_REPORTING_RESTRICTION_CODE = "YES";
+    public static final String GUILTY = "GUILTY";
+    public static final String NOT_GUILTY = "NOT_GUILTY";
 
     DefendantHelper() {
     }
@@ -178,7 +182,7 @@ public class DefendantHelper {
             } else {
                 defendant.getOffences().stream()
                         .filter(inputOffence -> inputOffence.getId().equals(previousOffenceState.getId()))
-                        .map(inputOffence -> updatedOffences.add(inputOffence))
+                        .map(updatedOffences::add)
                         .collect(toList());
 
             }
@@ -232,7 +236,7 @@ public class DefendantHelper {
         return defendant.getOffences().stream()
                 .map(offence -> getUpdatedOffence(updatedOffences, offence, true))
                 .map(Offence::getProceedingsConcluded)
-                .collect(toList()).stream().allMatch(finalCategory -> (Boolean.TRUE).equals(finalCategory));
+                .collect(toList()).stream().allMatch((TRUE)::equals);
     }
 
     private static boolean isDefendantConcluded(final List<DefendantJudicialResult> defendantJudicialResults) {
@@ -425,6 +429,100 @@ public class DefendantHelper {
                 .withProsecutionCaseId(prosecutionCaseId)
                 .withOffences(offencesModifiedList)
                 .build();
+    }
+
+
+    public static List<uk.gov.justice.core.courts.Defendant> getUpdatedDefendantsForOnlinePlea(final List<uk.gov.justice.core.courts.Defendant> allDefendants, final UUID defendantId, final List<uk.gov.moj.cpp.progression.plea.json.schemas.Offence> pleadOffences) {
+        return allDefendants.stream()
+                .map(defendant -> defendant.getId().equals(defendantId) ? getUpdatedDefendantForOnlinePlea(defendant, pleadOffences) : defendant)
+                .collect(Collectors.toList());
+    }
+
+    private static uk.gov.justice.core.courts.Defendant getUpdatedDefendantForOnlinePlea(final uk.gov.justice.core.courts.Defendant defendant, final List<uk.gov.moj.cpp.progression.plea.json.schemas.Offence> pleadOffences) {
+        return uk.gov.justice.core.courts.Defendant.defendant()
+                .withValuesFrom(defendant)
+                .withOffences(getUpdatedOffencesForOnlinePlea(defendant.getOffences(), pleadOffences))
+                .build();
+    }
+
+    private static List<uk.gov.justice.core.courts.Offence> getUpdatedOffencesForOnlinePlea(List<uk.gov.justice.core.courts.Offence> existingOffences, final List<uk.gov.moj.cpp.progression.plea.json.schemas.Offence> pleadOffences) {
+        return existingOffences.stream()
+                .map(existingOffence -> isOffencePlead(existingOffence, pleadOffences) ? getUpdatedOffenceForOnlinePlea(existingOffence) : existingOffence)
+                .collect(Collectors.toList());
+    }
+
+    private static uk.gov.justice.core.courts.Offence getUpdatedOffenceForOnlinePlea(final uk.gov.justice.core.courts.Offence existingOffence) {
+        return uk.gov.justice.core.courts.Offence.offence()
+                .withValuesFrom(existingOffence)
+                .withOnlinePleaReceived(true)
+                .build();
+    }
+
+    private static boolean isOffencePlead(final uk.gov.justice.core.courts.Offence existingOffence, final List<uk.gov.moj.cpp.progression.plea.json.schemas.Offence> pleadOffences) {
+        return pleadOffences.stream().anyMatch(offence -> offence.getId().equals(existingOffence.getId().toString()));
+    }
+
+    public static Optional<TemplateType> sendEmailNotificationToDefendant(final PleadOnline pleadOnline) {
+        boolean soleOffence = false;
+        if (nonNull(pleadOnline)) {
+            final List<uk.gov.moj.cpp.progression.plea.json.schemas.Offence> offences = pleadOnline.getOffences();
+            if (nonNull(offences)) {
+                if (offences.size() == 1) {
+                    soleOffence = true;
+                }
+                return getTemplateType(pleadOnline, soleOffence, offences);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<TemplateType> getTemplateType(final PleadOnline pleadOnline, final boolean soleOffence, final List<uk.gov.moj.cpp.progression.plea.json.schemas.Offence> offences) {
+        if (isOnlineGuiltyPleaCourtHearing(pleadOnline, soleOffence, offences)) {
+            return Optional.of(TemplateType.ONLINEGUILTYPLEACOURTHEARING);
+        }
+        if (isOnlineNotGuiltyPlea(soleOffence, offences)) {
+            return Optional.of(TemplateType.ONLINENOTGUILTYPLEA);
+        }
+        if (isOnlineGuiltyPleaNoCourtHearing(pleadOnline, soleOffence, offences)) {
+            return Optional.of(TemplateType.ONLINEGUILTYPLEANOCOURTHEARING);
+        }
+        return Optional.empty();
+    }
+
+    private static boolean isOnlineGuiltyPleaNoCourtHearing(PleadOnline pleadOnline, boolean soleOffence, List<uk.gov.moj.cpp.progression.plea.json.schemas.Offence> offences) {
+        return (nonNull(pleadOnline.getComeToCourt()) && !(pleadOnline.getComeToCourt())) && ((soleOffence && offences.get(0).getPlea().toString().equals(GUILTY)) || (!soleOffence && offences.stream().map(e -> (e.getPlea().toString())).allMatch(e -> e.equals(GUILTY))));
+    }
+
+    private static boolean isOnlineNotGuiltyPlea(boolean soleOffence, List<uk.gov.moj.cpp.progression.plea.json.schemas.Offence> offences) {
+        return soleOffence && offences.get(0).getPlea().toString().equals(NOT_GUILTY) || !soleOffence && offences.stream().map(e -> (e.getPlea().toString())).allMatch(e -> e.equals(NOT_GUILTY));
+    }
+
+    private static boolean isOnlineGuiltyPleaCourtHearing(PleadOnline pleadOnline, boolean soleOffence, List<uk.gov.moj.cpp.progression.plea.json.schemas.Offence> offences) {
+        return (nonNull(pleadOnline.getComeToCourt()) && pleadOnline.getComeToCourt()) && ((soleOffence && (offences.get(0).getPlea().toString().equals(GUILTY))) || (!soleOffence && offences.stream().map(e -> (e.getPlea().toString())).anyMatch(e -> e.equals(GUILTY))));
+    }
+
+    public static String getDefendantEmail(final PleadOnline pleadOnline) {
+        if (nonNull(pleadOnline.getLegalEntityDefendant())
+                && nonNull(pleadOnline.getLegalEntityDefendant().getContactDetails().getEmail())) {
+            return pleadOnline.getLegalEntityDefendant().getContactDetails().getEmail();
+        }
+
+        if (nonNull(pleadOnline.getPersonalDetails()) && nonNull(pleadOnline.getPersonalDetails().getContactDetails().getEmail())) {
+            return pleadOnline.getPersonalDetails().getContactDetails().getEmail();
+        }
+        return null;
+    }
+
+    public static String getDefendantPostcode(final PleadOnline pleadOnline) {
+        if (nonNull(pleadOnline.getLegalEntityDefendant())
+                && nonNull(pleadOnline.getLegalEntityDefendant().getAddress().getPostcode())) {
+            return pleadOnline.getLegalEntityDefendant().getAddress().getPostcode();
+        }
+
+        if (nonNull(pleadOnline.getPersonalDetails()) && nonNull(pleadOnline.getPersonalDetails().getAddress().getPostcode())) {
+            return pleadOnline.getPersonalDetails().getAddress().getPostcode();
+        }
+        return null;
     }
 
 }

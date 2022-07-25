@@ -1,5 +1,17 @@
 package uk.gov.moj.cpp.progression;
 
+import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.junit.Test;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.moj.cpp.progression.helper.RestHelper;
+import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.emptyList;
@@ -27,25 +39,13 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.moj.cpp.progression.helper.RestHelper;
-import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
-
 @SuppressWarnings("squid:S1607")
 public class CaseAtAGlanceIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS = "progression.command.initiate-court-proceedings.json";
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_NON_STD_ORGANISATION_PROSECUTOR = "progression.command.initiate-court-proceedings-non-std-organisation.json";
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_WITHOUT_BAIL_CONDITION = "progression.command.initiate-court-proceedings-without-bail-condition.json";
     public static final String PROGRESSION_QUERY_GET_CASE_HEARINGS = "application/vnd.progression.query.casehearings+json";
+    public static final String PROGRESSION_QUERY_GET_CASE_DEFENDANT_HEARINGS = "application/vnd.progression.query.case-defendant-hearings+json";
     public static final String PROGRESSION_QUERY_GET_CASE_HEARING_TYPES = "application/vnd.progression.query.case.hearingtypes+json";
 
     private String caseId;
@@ -183,12 +183,39 @@ public class CaseAtAGlanceIT extends AbstractIT {
                         )));
     }
 
+
     @Test
     public void shouldReturnProsecutionCaseWithCourtOrders() throws Exception {
         //given
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
         verifyProsecutionCaseCourtOrders(caseId);
+    }
+
+    @Test
+    public void shouldVerifyCaseDefendantHearings() throws Exception {
+        //given
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+
+        verifyCaseDefendantHearings(caseId, defendantId);
+
+    }
+
+    private static void verifyCaseDefendantHearings(final String caseId, final String defendantId) {
+        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), PROGRESSION_QUERY_GET_CASE_DEFENDANT_HEARINGS)
+                .withHeader(USER_ID, randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.hearings.length()", is(1)),
+                                withJsonPath("$.hearings[0].hearingId", is(notNullValue())),
+                                withJsonPath("$.hearings[0].courtCentre.id", is("88cdf36e-93e4-41b0-8277-17d9dba7f06f")),
+                                withJsonPath("$.hearings[0].courtCentre.name", is("Lavender Hill Magistrate's Court")),
+                                withJsonPath("$.hearings[0].courtCentre.roomId", is("9e4932f7-97b2-3010-b942-ddd2624e4dd8")),
+                                withJsonPath("$.hearings[0].courtCentre.roomName", is("Courtroom 01")),
+                                withJsonPath("$.hearings[0].hearingDays[0].sittingDay", is("2019-05-30T18:32:04.238Z"))
+                        )));
     }
 
     private static void verifyCaseAtAGlance(final String caseId, final String defendantDOB, final Matcher bailConditionMatcher) {

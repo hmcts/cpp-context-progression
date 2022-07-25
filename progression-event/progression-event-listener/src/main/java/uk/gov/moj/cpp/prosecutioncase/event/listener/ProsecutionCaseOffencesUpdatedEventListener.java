@@ -191,7 +191,6 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
     }
 
 
-
     private static List<Offence> getAddedOffences(
             final List<Offence> commandOffences,
             final List<Offence> existingOffences) {

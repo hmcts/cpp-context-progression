@@ -62,8 +62,15 @@ public class MaterialService {
     private MaterialClient materialClient;
 
     public void uploadMaterial(final UUID fileServiceId, final UUID materialId, final JsonEnvelope envelope) {
-        LOGGER.info("material being uploaded '{}' file service id '{}'", materialId, fileServiceId);
         final UUID userId = fromString(envelope.metadata().userId().orElseThrow(() -> new RuntimeException("UserId missing from event.")));
+        uploadMaterial(fileServiceId, materialId, userId);
+    }
+
+    public void uploadMaterial(final UUID fileServiceId, final UUID materialId, final UUID userId) {
+        if(isNull(userId)){
+            throw new RuntimeException("UserId missing from event.");
+        }
+        LOGGER.info("material being uploaded '{}' file service id '{}'", materialId, fileServiceId);
         final JsonObject uploadMaterialPayload = Json.createObjectBuilder()
                 .add(FIELD_MATERIAL_ID, materialId.toString())
                 .add("fileServiceId", fileServiceId.toString())

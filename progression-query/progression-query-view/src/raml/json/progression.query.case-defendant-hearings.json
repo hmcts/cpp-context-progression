@@ -1,0 +1,21 @@
+{
+  "caseId": "468ca4d6-25a4-4bbd-b006-430059aca974",
+  "defendantId": "6b5d5802-cbfa-4c4c-9055-a97ff117795c",
+  "hearings": [
+    {
+      "hearingId": "a84d54ab-320c-4d95-a596-02fddcc919d5",
+      "hearingListingStatus": "SENT_FOR_LISTING",
+      "courtCentre": {
+        "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "name": "Lavender Hill Magistrate's Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "hearingDays": [
+        {
+          "sittingDay": "2019-05-30T18:32:04.238Z"
+        }
+      ]
+    }
+  ]
+}

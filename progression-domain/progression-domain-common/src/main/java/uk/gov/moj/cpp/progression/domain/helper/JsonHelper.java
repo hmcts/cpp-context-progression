@@ -29,7 +29,7 @@ public class JsonHelper {
         return builder.build();
     }
 
-    private static JsonObjectBuilder createBuilder(final JsonObject origin) {
+    public static JsonObjectBuilder createBuilder(final JsonObject origin) {
         final JsonObjectBuilder builder = Json.createObjectBuilder();
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()){
             builder.add(entry.getKey(), entry.getValue());

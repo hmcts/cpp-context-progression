@@ -336,7 +336,7 @@ public class CourtDocumentQueryView {
                             TRUE.equals(documentTypeAccessReferenceData.getDefenceOnly()))
                     .map(DocumentTypeAccessReferenceData::getId)
                     .collect(toList());
-            LOGGER.info("defence only true list {}",defenceOnlyTrueList);
+            LOGGER.info("defence only true list {}", defenceOnlyTrueList);
 
             if (!defenceOnlyTrueList.isEmpty()) {
                 final List<CourtDocumentIndex> listToRemove = courtDocumentIndices.stream()

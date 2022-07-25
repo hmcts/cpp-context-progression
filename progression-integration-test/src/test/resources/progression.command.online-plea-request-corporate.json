@@ -1,0 +1,57 @@
+{
+  "legalEntityDefendant": {
+    "name": "Testy-corp",
+    "address": {
+      "address1": "14 Tottenham Court Road",
+      "address2": "London",
+      "address3": "England",
+      "address4": "UK",
+      "address5": "Greater London",
+      "postcode": "W1T 1JY"
+    },
+    "contactDetails": {
+      "home": "0208000888",
+      "mobile": "07890123123",
+      "business": "07890123123",
+      "email": "criminal@gmail.com"
+    },
+    "incorporationNumber": "111222333",
+    "position": "DIRECTOR"
+  },
+  "offences": [
+    {
+      "id": "ecf30a03-8a17-4fc5-81d2-b72ac0a13d17",
+      "plea": "NOT_GUILTY",
+      "notGuiltyBecause": "I was forced to do it"
+    }
+  ],
+  "legalEntityFinancialMeans": {
+    "outstandingFines": false,
+    "tradingMoreThan12Months": false,
+    "numberOfEmployees": 4,
+    "grossTurnover": 200.25,
+    "netTurnover": 203.25
+  },
+  "outgoings": [
+    {
+      "description": "Accommodation",
+      "amount": 50
+    },
+    {
+      "description": "Council Tax",
+      "amount": 50
+    },
+    {
+      "description": "Household bills",
+      "amount": 50
+    },
+    {
+      "description": "Travel expenses",
+      "amount": 50
+    },
+    {
+      "description": "Child maintenance",
+      "amount": 50
+    }
+  ]
+}

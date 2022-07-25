@@ -8,8 +8,10 @@ import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -32,6 +34,11 @@ public class NotificationNotifyService {
     private static final String FIELD_NOTIFICATION_ID = "notificationId";
     private static final String FIELD_POSTAGE = "postage";
     private static final String POSTAGE_TYPE = "first";
+    private static final String FIELD_TEMPLATE_ID = "templateId";
+    private static final String SEND_TO_ADDRESS = "sendToAddress";
+    private static final String MATERIAL_URL = "materialUrl";
+    private static final String PERSONALISATION = "personalisation";
+    public static final String URN = "URN";
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -77,5 +84,33 @@ public class NotificationNotifyService {
                         emailNotification
                 )
         );
+    }
+
+    public void sendEmailNotification(final Metadata metadata, final String urn, final String email, final UUID notificationId, final String emailTemplateId, final Optional<UUID> attachmentMaterialId) {
+
+        final JsonObject notificationJsonObject = buildNotifyJsonObject(urn, email, notificationId, emailTemplateId, attachmentMaterialId);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("sending email notification with attachment url - {} ", notificationJsonObject);
+        }
+
+        sender.sendAsAdmin(
+                envelopeFrom(
+                        metadataFrom(metadata).withName(NOTIFICATION_NOTIFY_EMAIL_METADATA_TYPE),
+                        notificationJsonObject
+                )
+        );
+
+    }
+
+    private JsonObject buildNotifyJsonObject(final String urn, final String email, final UUID notificationId, final String emailTemplateId, final Optional<UUID> attachmentMaterialId) {
+        final JsonObjectBuilder notifyObjectBuilder = createObjectBuilder();
+        notifyObjectBuilder.add(FIELD_NOTIFICATION_ID, notificationId.toString());
+        notifyObjectBuilder.add(FIELD_TEMPLATE_ID, emailTemplateId);
+        notifyObjectBuilder.add(SEND_TO_ADDRESS, email);
+        notifyObjectBuilder.add(PERSONALISATION, createObjectBuilder()
+                .add(URN, urn)
+                .build());
+        attachmentMaterialId.ifPresent(uuid -> notifyObjectBuilder.add(MATERIAL_URL, materialUrlGenerator.fileStreamUrlFor(uuid, true)));
+        return notifyObjectBuilder.build();
     }
 }

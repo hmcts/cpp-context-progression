@@ -69,6 +69,8 @@ public class RefDataService {
     public static final String REFERENCEDATA_QUERY_JUDICIARIES = "referencedata.query.judiciaries";
     public static final String REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS = "referencedata.query.local-justice-areas";
     public static final String REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS = "referencedata.get-all-result-definitions";
+    private static final String REFERENCEDATA_QUERY_COUNTRY_BY_POSTCODE = "referencedata.query.country-by-postcode";
+
     public static final String PROSECUTOR = "shortName";
     public static final String NATIONALITY_CODE = "isoCode";
     public static final String NATIONALITY = "nationality";
@@ -100,10 +102,8 @@ public class RefDataService {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperProducer().objectMapper();
 
 
-
-
     public Optional<DocumentTypeAccessReferenceData> getDocumentTypeAccessReferenceData(final Requester requester, final UUID documentTypeId) {
-        final List<DocumentTypeAccessReferenceData> documentTypeAccessReferenceDatas =  getAllDocumentTypeAccess(requester);
+        final List<DocumentTypeAccessReferenceData> documentTypeAccessReferenceDatas = getAllDocumentTypeAccess(requester);
         return documentTypeAccessReferenceDatas.stream()
                 .filter(documentTypeAccessReferenceData -> documentTypeAccessReferenceData.getId().equals(documentTypeId))
                 .findAny();
@@ -129,7 +129,7 @@ public class RefDataService {
     }
 
     private Stream<JsonValue> getRefDataStream(final String queryName, final String fieldName,
-                                                      final JsonObjectBuilder jsonObjectBuilder, final Requester requester) {
+                                               final JsonObjectBuilder jsonObjectBuilder, final Requester requester) {
         final JsonEnvelope envelope =
                 envelopeFrom(metadataBuilder().withId(randomUUID()).withName(queryName),
                         jsonObjectBuilder);
@@ -632,5 +632,14 @@ public class RefDataService {
             return Optional.empty();
         }
         return ofNullable(response.payload().getJsonArray("prosecutors").getJsonObject(0));
+    }
+
+    public String getCountryByPostcode(final JsonEnvelope envelope, final String postCode, final Requester requester) {
+        final JsonObject payload = createObjectBuilder().add("postCode", postCode).build();
+        final JsonEnvelope response = requester.request(envelop(payload)
+                .withName(REFERENCEDATA_QUERY_COUNTRY_BY_POSTCODE)
+                .withMetadataFrom(envelope));
+
+        return response.payloadAsJsonObject().getString("country");
     }
 }
