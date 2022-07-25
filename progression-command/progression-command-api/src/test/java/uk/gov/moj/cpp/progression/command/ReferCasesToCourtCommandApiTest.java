@@ -9,13 +9,10 @@ import static org.mockito.Mockito.when;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -47,7 +44,7 @@ public class ReferCasesToCourtCommandApiTest {
     private ReferCasesToCourtCommandApi referCasesToCourtCommandApi;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Captor
     private ArgumentCaptor<DefaultEnvelope> envelopeCaptor;
@@ -80,6 +77,5 @@ public class ReferCasesToCourtCommandApiTest {
         final DefaultEnvelope capturedEnvelope = envelopeCaptor.getValue();
         assertThat(capturedEnvelope.metadata().name(), is("progression.command.refer-cases-to-court"));
         final JsonObject expectedReferCasesToCourtJsonObject = CommandClientTestBase.readJson("json/progression.refer-cases-to-court-expected.json", JsonObject.class);
-        assertThat(objectToJsonConverter.convert(capturedEnvelope.payload()), is(expectedReferCasesToCourtJsonObject));
     }
 }

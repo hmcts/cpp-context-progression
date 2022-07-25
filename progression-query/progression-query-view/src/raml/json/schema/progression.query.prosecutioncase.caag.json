@@ -259,6 +259,13 @@
             "$ref": "#/definitions/caagResultPrompt"
           }
         },
+        "usergroups": {
+          "description": "The user groups that are not authorised to view the result",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "orderedDate": {
           "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
         },
@@ -289,6 +296,13 @@
         },
         "value": {
           "type": "string"
+        },
+        "usergroups": {
+          "description": "The user groups that are not authorised to view the result",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [
@@ -321,12 +335,25 @@
         "applicantDisplayName": {
           "type": "string"
         },
+        "applicantId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
         "respondentDisplayNames": {
           "type": "array",
           "minItems": 0,
           "items": {
             "type": "string"
           }
+        },
+        "respondentIds": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          }
+        },
+        "subjectId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "isAppeal": {
           "type": "boolean"

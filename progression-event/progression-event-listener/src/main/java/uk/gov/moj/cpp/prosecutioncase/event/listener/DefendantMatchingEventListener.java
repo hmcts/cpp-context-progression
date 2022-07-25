@@ -224,6 +224,7 @@ public class DefendantMatchingEventListener {
     private Defendant updateDefendant(final Defendant defendant, final UUID masterDefendantId) {
         return Defendant.defendant()
                 .withOffences(defendant.getOffences())
+                .withCpsDefendantId(defendant.getCpsDefendantId())
                 .withPersonDefendant(defendant.getPersonDefendant())
                 .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
                 .withAssociatedPersons(defendant.getAssociatedPersons())

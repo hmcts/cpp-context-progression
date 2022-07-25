@@ -136,6 +136,11 @@ public class ProsecutionCaseQueryApi {
         return requester.request(query);
     }
 
+    @Handles("progression.query.prosecutionauthorityid-by-case-id")
+    public JsonEnvelope searchProsecutionAuthorityIdByCaseId(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
 
     /**
      * Handler returns document details and not document content. This is consequence of non

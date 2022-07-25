@@ -1,12 +1,8 @@
 package uk.gov.moj.cpp.progression.event;
 
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toMap;
-import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -38,6 +34,9 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,13 +46,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toMap;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingResultedEventProcessor {

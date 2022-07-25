@@ -32,7 +32,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.Collections;
 import java.util.UUID;
@@ -85,7 +85,7 @@ public class UpdateCpsProsecutorHandlerTest {
     private Stream<Object> events;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     private final UUID caseId = randomUUID();
 

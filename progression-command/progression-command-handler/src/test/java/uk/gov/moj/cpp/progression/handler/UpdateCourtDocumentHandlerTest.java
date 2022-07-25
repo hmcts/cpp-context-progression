@@ -43,7 +43,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
 import uk.gov.moj.cpp.progression.helper.EnvelopeHelper;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -88,7 +88,7 @@ public class UpdateCourtDocumentHandlerTest {
     @Mock
     private EnvelopeHelper envelopeHelper;
     @Mock
-    private ReferenceDataService refDataService;
+    private RefDataService refDataService;
     @Mock
     private JsonEnvelope envelope;
     @InjectMocks

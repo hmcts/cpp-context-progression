@@ -31,7 +31,7 @@ import static uk.gov.justice.progression.courts.ApplicationsResulted.application
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS;
+import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AttendanceDay;
@@ -75,7 +75,7 @@ import uk.gov.moj.cpp.progression.helper.TestHelper;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
 import uk.gov.moj.cpp.progression.transformer.HearingListingNeedsTransformer;
@@ -174,7 +174,7 @@ public class HearingResultEventProcessorTest {
     private ListingService listingService;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Mock
     private NextHearingService nextHearingService;

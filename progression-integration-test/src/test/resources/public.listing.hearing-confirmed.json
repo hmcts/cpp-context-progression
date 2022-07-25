@@ -7,6 +7,7 @@
     },
     "jurisdictionType": "MAGISTRATES",
     "hearingLanguage": "ENGLISH",
+    "estimatedDuration": "1 week",
     "judiciary": [
       {
         "isBenchChairman": false,
@@ -41,19 +42,23 @@
     "hearingDays": [
       {
         "sittingDay": "2018-09-28T12:13:00.000Z",
-        "listedDurationMinutes": 0
+        "listedDurationMinutes": 0,
+        "hasSharedResults": true
       },
       {
         "sittingDay": "2018-09-30T09:30:00.000Z",
-        "listedDurationMinutes": 0
+        "listedDurationMinutes": 0,
+        "hasSharedResults": true
       },
       {
         "sittingDay": "2019-05-23T09:30:00.000Z",
-        "listedDurationMinutes": 0
+        "listedDurationMinutes": 0,
+        "hasSharedResults": true
       },
       {
         "sittingDay": "2022-05-23T09:30:00.000Z",
-        "listedDurationMinutes": 0
+        "listedDurationMinutes": 0,
+        "hasSharedResults": true
       }
     ]
   }

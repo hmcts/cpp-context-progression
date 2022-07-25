@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/progression.events.vej-hearing-populated-to-probation-caseworker.json",
+  "type": "object",
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json"
+    }
+  },
+  "required": [
+    "hearing"
+  ],
+  "additionalProperties": false
+}

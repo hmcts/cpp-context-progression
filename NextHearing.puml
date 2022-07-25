@@ -1,0 +1,24 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+'@Handles("public.hearing.resulted")
+HearingResultedEventProcessorPublicEventsHearingResulted -> HearingResultedEventProcessorPublicHearingResulted:
+HearingResultedEventProcessorPublicHearingResulted -> HearingResultHandler: handleProcessHearingResults
+HearingResultsCommandHandler -> HearingResultsCommandHandler: processHearingResults
+HearingResultsCommandHandler -> HearingAggregate: processHearingResults
+HearingAggregate -> HearingAggregate: isEligibleForNextHearings
+HearingAggregate <-- HearingAggregate: createNextHearingEvents
+HearingResultedEventProcessor -> HearingResultedEventProcessor: handleNextHearingsRequested
+HearingResultedEventProcessor --> ListingService: listNextHearingsV2
+
+@enduml
+uk.gov.moj.cpp.progression.HearingResultedUnscheduledListingIT#shouldKeepsCpsOrganisationAndListUnscheduledHearings
+uk.gov.moj.cpp.progression.HearingResultedUnscheduledListingIT#shouldKeepsCpsOrganisationAndListUnscheduledHearings
+uk.gov.moj.cpp.progression.HearingResultedUnscheduledListingIT#shouldKeepsCpsOrganisationAndListUnscheduledHearingsV2 - un
+
+UnscheduledNextHearingsRequested-->listing.list-unscheduled-next-hearing
+RelatedHearingRequested
+NextHearingsRequested
+
+uk.gov.moj.cpp.progression.AdjournHearingThroughHearingResultedIT#shouldCallListingToNewHearingWithCourtOrderV2

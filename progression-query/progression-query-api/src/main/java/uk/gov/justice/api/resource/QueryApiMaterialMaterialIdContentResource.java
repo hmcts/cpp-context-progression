@@ -26,6 +26,16 @@ public interface QueryApiMaterialMaterialIdContentResource {
     Response getMaterialForDefenceByMaterialIdContent(
             @PathParam("materialId") String materialId,
             @QueryParam("defendantId") String defendantId,
+            @QueryParam("applicationId") String applicationId,
+            @HeaderParam(HeaderConstants.USER_ID) UUID userId
+    );
+
+    @GET
+    @Produces("application/vnd.progression.query.material-content-for-prosecution+json")
+    Response getMaterialForProsecutionByMaterialIdContent(
+            @PathParam("materialId") String materialId,
+            @QueryParam("caseId") String caseId,
+            @QueryParam("applicationId") String applicationId,
             @HeaderParam(HeaderConstants.USER_ID) UUID userId
     );
 }

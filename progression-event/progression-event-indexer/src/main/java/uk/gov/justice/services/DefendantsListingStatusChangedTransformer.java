@@ -22,10 +22,12 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import org.apache.commons.collections.CollectionUtils;
+import uk.gov.justice.services.unifiedsearch.client.domain.Party;
 
 public class DefendantsListingStatusChangedTransformer extends BaseCourtApplicationTransformer {
 
     private HearingMapper hearingMapper = new HearingMapper();
+    private DomainToIndexMapper domainToIndexMapper = new DomainToIndexMapper();
 
     @Override
     public Object transform(final Object input) {
@@ -60,6 +62,7 @@ public class DefendantsListingStatusChangedTransformer extends BaseCourtApplicat
             for (final ProsecutionCase prosecutionCase : prosecutionCases) {
                 final List<String> defendantIds = new ArrayList<>();
                 final List<Defendant> defendants = prosecutionCase.getDefendants();
+                final List<Party> parties = new ArrayList<>();
                 for (final Defendant defendant : defendants) {
                     defendantIds.add(defendant.getId().toString());
                     final UUID prosecutionCaseId = prosecutionCase.getId();
@@ -67,6 +70,8 @@ public class DefendantsListingStatusChangedTransformer extends BaseCourtApplicat
                     caseDetailsExisting = caseDetails(PROSECUTION, hearing, prosecutionCaseId, caseDetailsExisting);
                     caseDetailsExisting.setHearings(hearings(listingStatusChanged.getHearing(), defendantIds));
                     populateProsecutingAuthorityDetails(prosecutionCase, caseDetailsExisting);
+                    parties.add(domainToIndexMapper.party(defendant));
+                    caseDetailsExisting.setParties(parties);
                     caseDocumentsMap.put(prosecutionCaseId, caseDetailsExisting);
                 }
             }

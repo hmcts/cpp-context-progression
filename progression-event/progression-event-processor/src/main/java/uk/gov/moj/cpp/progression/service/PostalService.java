@@ -80,7 +80,7 @@ public class PostalService {
     private Enveloper enveloper;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;

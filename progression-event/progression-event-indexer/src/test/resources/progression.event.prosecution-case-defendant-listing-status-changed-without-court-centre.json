@@ -87,7 +87,20 @@
         "defendants": [
           {
             "id": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
-            "prosecutionCaseId": "57ab0671-407c-4f9a-9e9f-1f5bd01778fb"
+            "prosecutionCaseId": "57ab0671-407c-4f9a-9e9f-1f5bd01778fb",
+            "offences": [
+              {
+                "id": "baa0552e-82b0-479b-bf4e-3314b163933c",
+                "verdict": {
+                  "offenceId": "baa0552e-82b0-479b-bf4e-3314b163933c",
+                  "verdictType": {
+                    "id": "baa0552e-82b0-479b-bf4e-3314b163933d",
+                    "category": "category",
+                    "categoryType": "categoryType"
+                  }
+                }
+              }
+            ]
           }
         ],
         "id": "57ab0671-407c-4f9a-9e9f-1f5bd01778fb",

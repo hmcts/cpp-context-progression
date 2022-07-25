@@ -38,6 +38,7 @@ import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
+import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.listing.courts.ListNextHearings;
 import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.progression.courts.StoreBookingReferenceCourtScheduleIds;

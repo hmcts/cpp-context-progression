@@ -23,7 +23,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -58,7 +58,7 @@ public class ConvictingCourtUpdateEventProcessorTest {
     private Sender sender;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Mock
     private Requester requester;

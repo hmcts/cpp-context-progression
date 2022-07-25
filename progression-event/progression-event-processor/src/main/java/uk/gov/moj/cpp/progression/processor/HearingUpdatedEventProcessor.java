@@ -151,6 +151,15 @@ public class HearingUpdatedEventProcessor {
         progressionService.populateHearingToProbationCaseworker(event, fromString(privateEventPayload.getString(HEARING_ID)));
     }
 
+    @Handles("public.hearing.hearing-offence-verdict-updated")
+    public void hearingOffenceVerdictUpdated(final JsonEnvelope event){
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("public.hearing.hearing-offence-verdict-updated with  {}", event.toObfuscatedDebugString());
+        }
+        final JsonObject privateEventPayload = event.payloadAsJsonObject();
+        sender.send(envelop(privateEventPayload).withName("progression.command.update-hearing-offence-verdict").withMetadataFrom(event));
+    }
+
     private List<ProsecutionCase> removeJudicialResults(List<ProsecutionCase> prosecutionCases){
         if(Objects.isNull(prosecutionCases)){
             return prosecutionCases;

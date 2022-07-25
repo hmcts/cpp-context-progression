@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.progression.query;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
@@ -13,6 +15,7 @@ import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSea
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -28,6 +31,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
+import uk.gov.moj.cpp.progression.domain.pojo.Prosecutor;
 import uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
@@ -58,6 +62,7 @@ import java.util.Optional;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -86,6 +91,7 @@ public class ProsecutionCaseQuery {
     public static final String CASE_STATUS = "caseStatus";
     public static final String CASE_STATUS_ACTIVE = "ACTIVE";
     private static final String ORDER_DATE = "orderDate";
+    public static final String CASE_IDS_SEARCH_PARAM = "caseIds";
     public static final String NO_CASE_FOUND_YET_FOR_CASE_ID = "# No case found yet for caseId '{}'";
 
     @Inject
@@ -137,7 +143,7 @@ public class ProsecutionCaseQuery {
         try {
             final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseId.get());
             JsonObject prosecutionCase = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
-            if(!prosecutionCase.containsKey(CASE_STATUS)){
+            if (!prosecutionCase.containsKey(CASE_STATUS)) {
                 prosecutionCase = addProperty(prosecutionCase, CASE_STATUS, CASE_STATUS_ACTIVE);
             }
             jsonObjectBuilder.add(PROSECUTION_CASE, prosecutionCase);
@@ -321,6 +327,33 @@ public class ProsecutionCaseQuery {
                 jsonObjectBuilder.build());
     }
 
+    @Handles("progression.query.prosecutionauthorityid-by-case-id")
+    public JsonEnvelope searchProsecutionAuthorityId(final JsonEnvelope envelope) {
+        JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
+        final String strCaseIds =
+                JsonObjects.getString(envelope.payloadAsJsonObject(), CASE_IDS_SEARCH_PARAM)
+                        .orElse(null);
+        if (StringUtils.isNotEmpty(strCaseIds)) {
+            final List<UUID> caseIdList = commaSeparatedUuidParam2UUIDs(strCaseIds);
+            List<ProsecutionCaseEntity> prosecutionCaseEntities = prosecutionCaseRepository.findByProsecutionCaseIds(caseIdList);
+            prosecutionCaseEntities.forEach(prosecutionCaseEntity -> {
+                final JsonObject payloadEntity = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
+                final JsonObject prosecutionCaseIdentifier = payloadEntity.getJsonObject(PROSECUTION_CASE_IDENTIFIER);
+                final Prosecutor prosecutor = new Prosecutor();
+                prosecutor.setCaseId(prosecutionCaseEntity.getCaseId());
+                prosecutor.setProsecutionAuthorityId(UUID.fromString(prosecutionCaseIdentifier.getString("prosecutionAuthorityId")));
+                final JsonObjectBuilder prosecutorObject = createObjectBuilder();
+                prosecutorObject.add("prosecutor", objectToJsonObjectConverter.convert(prosecutor));
+                jsonArrayBuilder.add(prosecutorObject);
+            });
+        }
+        jsonObjectBuilder.add("prosecutors", jsonArrayBuilder);
+        return JsonEnvelope.envelopeFrom(
+                envelope.metadata(),
+                jsonObjectBuilder.build());
+    }
+
     private void buildApplicationSummary(final String applicationPayload, final JsonArrayBuilder jsonApplicationBuilder) {
         final CourtApplication courtApplication = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert
                 (applicationPayload), CourtApplication.class);
@@ -331,10 +364,21 @@ public class ProsecutionCaseQuery {
                 .withApplicationStatus(courtApplication.getApplicationStatus())
                 .withApplicationTitle(courtApplication.getType())
                 .withApplicantDisplayName(courtApplication.getApplicant())
+                .withApplicantId(getApplicantId(courtApplication))
                 .withRespondentDisplayNames(courtApplication.getRespondents())
+                .withRespondentIds(courtApplication.getRespondents())
                 .withIsAppeal(isAppealApplication(courtApplication))
                 .withRemovalReason(courtApplication.getRemovalReason())
+                .withSubjectId(getSubjectId(courtApplication.getSubject()))
                 .build()));
+    }
+
+    private UUID getSubjectId(final CourtApplicationParty subject) {
+        return isNull(subject) || isNull(subject.getMasterDefendant()) ? null : subject.getMasterDefendant().getMasterDefendantId();
+    }
+
+    private UUID getApplicantId(final CourtApplication courtApplication) {
+        return isNull(courtApplication.getApplicant()) || isNull(courtApplication.getApplicant().getMasterDefendant()) ? null : courtApplication.getApplicant().getMasterDefendant().getMasterDefendantId();
     }
 
     private void buildRelatedCasesForDefendant(final UUID masterDefendantId, final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList, final JsonArrayBuilder relatedCasesArrayBuilder, final String statusOfPrimaryCase) {
@@ -346,7 +390,7 @@ public class ProsecutionCaseQuery {
         uniqueMatchDefendantCaseHearingEntityList.forEach(matchDefendantCaseHearingEntity -> buildCases(matchDefendantCaseHearingEntity, casesArrayBuilder, statusOfPrimaryCase));
 
         final JsonArray cases = casesArrayBuilder.build();
-        if(isNotEmpty(cases)) {
+        if (isNotEmpty(cases)) {
             relatedCaseObjectBuilder.add("masterDefendantId", masterDefendantId.toString());
             relatedCaseObjectBuilder.add("cases", cases);
         }
@@ -359,8 +403,8 @@ public class ProsecutionCaseQuery {
         final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
         final String prosecutionCaseStatus = Optional.ofNullable(prosecutionCase.getCaseStatus()).orElse(CASE_STATUS_ACTIVE);
 
-        if((statusOfPrimaryCase.equals(CASE_STATUS_ACTIVE) && ! statusOfPrimaryCase.equals(prosecutionCaseStatus)) ||
-                (! statusOfPrimaryCase.equals(CASE_STATUS_ACTIVE) && prosecutionCaseStatus.equals(CASE_STATUS_ACTIVE)) ){
+        if ((statusOfPrimaryCase.equals(CASE_STATUS_ACTIVE) && !statusOfPrimaryCase.equals(prosecutionCaseStatus)) ||
+                (!statusOfPrimaryCase.equals(CASE_STATUS_ACTIVE) && prosecutionCaseStatus.equals(CASE_STATUS_ACTIVE))) {
             return;
         }
 
@@ -428,5 +472,11 @@ public class ProsecutionCaseQuery {
 
     private static boolean hasHearingOnDate(final HearingEntity hearing, final LocalDate orderDate) {
         return Objects.nonNull(hearing.getConfirmedDate()) && hearing.getConfirmedDate().isEqual(orderDate);
+    }
+
+    private List<UUID> commaSeparatedUuidParam2UUIDs(final String strUuids) {
+        return Stream.of(strUuids.split(","))
+                .map(UUID::fromString)
+                .collect(Collectors.toList());
     }
 }

@@ -6,10 +6,11 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -24,6 +25,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.CASE;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithLegalEntity;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithPersonDefendant;
@@ -35,6 +37,7 @@ import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyPersonAddress;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyPersonEmail;
 
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.CaseSubjects;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
@@ -47,7 +50,10 @@ import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -66,10 +72,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.json.JsonObject;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -108,7 +117,7 @@ public class NotificationServiceTest {
     private ApplicationParameters applicationParameters;
 
     @Mock
-    private RestApiNotificationService restApiNotificationService;
+    private CpsRestNotificationService cpsRestNotificationService;
 
     @InjectMocks
     private MaterialService materialService;
@@ -121,6 +130,9 @@ public class NotificationServiceTest {
 
     @Mock
     private JsonEnvelope finalEnvelope;
+
+    @Spy
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @InjectMocks
     private NotificationService notificationService;
@@ -146,6 +158,7 @@ public class NotificationServiceTest {
         this.notificationId = randomUUID();
         this.applicationId = randomUUID();
         this.materialService = new MaterialService();
+        setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
 
     @Test
@@ -708,9 +721,40 @@ public class NotificationServiceTest {
         final MaterialDetails materialDetails = MaterialDetails.materialDetails()
                 .withMaterialId(materialId)
                 .build();
-        notificationService.sendApiNotification(envelope, notificationId, materialDetails, "caseUrn", Arrays.asList("defAsn"), "ouCode", null);
-        verify(restApiNotificationService, times(1)).sendApiNotification(apiNotificationArgumentCaptor.capture());
+        List<CaseSubjects> caseSubjects = new ArrayList<>();
+        caseSubjects.add(CaseSubjects.caseSubjects()
+                .withUrn("caseURN123")
+                .withProsecutingAuthorityOUCode("ouCode123")
+                .build());
+        caseSubjects.add(CaseSubjects.caseSubjects()
+                .withUrn("caseURN456")
+                .withProsecutingAuthorityOUCode("ouCode456")
+                .build());
 
-        assertThat(apiNotificationArgumentCaptor.getValue(), containsString("\"businessEventType\":\"now-generated-for-cps-subscription\""));
+        notificationService.sendApiNotification(envelope, notificationId, materialDetails, caseSubjects, Arrays.asList("defAsn"),  null);
+        verify(cpsRestNotificationService, times(1)).sendMaterial(apiNotificationArgumentCaptor.capture());
+
+        JsonObject jsonObject = new StringToJsonObjectConverter().convert(apiNotificationArgumentCaptor.getValue());
+        assertThat(jsonObject.getString("businessEventType"), is("now-generated-for-cps-subscription"));
+        assertThat(jsonObject.getJsonArray("cases").size(), is(2));
+    }
+
+    @Test
+    public void sendApiNotificationTest_singleCase() {
+        final MaterialDetails materialDetails = MaterialDetails.materialDetails()
+                .withMaterialId(materialId)
+                .build();
+        List<CaseSubjects> caseSubjects = new ArrayList<>();
+        caseSubjects.add(CaseSubjects.caseSubjects()
+                .withUrn("caseURN123")
+                .withProsecutingAuthorityOUCode("ouCode123")
+                .build());
+
+        notificationService.sendApiNotification(envelope, notificationId, materialDetails, caseSubjects, Arrays.asList("defAsn"),  null);
+        verify(cpsRestNotificationService, times(1)).sendMaterial(apiNotificationArgumentCaptor.capture());
+
+        JsonObject jsonObject = new StringToJsonObjectConverter().convert(apiNotificationArgumentCaptor.getValue());
+        assertThat(jsonObject.getJsonObject("subjectDetails").getJsonObject("prosecutionCaseSubject").getJsonString("prosecutingAuthority").getString(), is("ouCode123"));
+        assertThat(jsonObject.getJsonArray("cases"), is(nullValue()));
     }
 }

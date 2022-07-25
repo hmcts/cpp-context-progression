@@ -774,6 +774,7 @@ public class CourtApplicationProcessor {
                 .withEarliestStartDateTime(courtHearingRequest.getEarliestStartDateTime())
                 .withEndDate(courtHearingRequest.getEndDate())
                 .withEstimatedMinutes(courtHearingRequest.getEstimatedMinutes())
+                .withEstimatedDuration(courtHearingRequest.getEstimatedDuration())
                 .withId(courtHearingRequest.getId())
                 .withJurisdictionType(courtHearingRequest.getJurisdictionType())
                 .withListedStartDateTime(courtHearingRequest.getListedStartDateTime())
@@ -790,6 +791,10 @@ public class CourtApplicationProcessor {
         }
         if (isNull(courtHearingRequest.getEstimatedMinutes())) {
             hearingListingNeedsBuilder.withEstimatedMinutes(0);
+        }
+
+        if (nonNull(courtHearingRequest.getEstimatedDuration())) {
+            hearingListingNeedsBuilder.withEstimatedDuration(courtHearingRequest.getEstimatedDuration());
         }
 
         final HearingListingNeeds hearingListingNeeds = hearingListingNeedsBuilder.build();

@@ -148,6 +148,7 @@ public class NextHearingService {
                 .withId(hearingId)
                 .withJurisdictionType(nextHearing.getJurisdictionType())
                 .withEstimatedMinutes(30)
+                .withEstimatedDuration(nextHearing.getEstimatedDuration())
                 .withType(nextHearing.getType())
                 .build());
     }
@@ -161,6 +162,7 @@ public class NextHearingService {
                 .withId(hearingId)
                 .withJurisdictionType(nextHearing.getJurisdictionType())
                 .withEstimatedMinutes(30)
+                .withEstimatedDuration(nextHearing.getEstimatedDuration())
                 .withType(nextHearing.getType())
                 .build());
     }

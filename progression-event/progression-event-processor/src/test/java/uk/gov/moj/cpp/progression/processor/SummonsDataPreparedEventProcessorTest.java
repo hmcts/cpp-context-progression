@@ -81,7 +81,7 @@ import uk.gov.moj.cpp.progression.processor.summons.SummonsNotificationEmailPayl
 import uk.gov.moj.cpp.progression.processor.summons.SummonsService;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsTemplateNameService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -126,7 +126,7 @@ public class SummonsDataPreparedEventProcessorTest {
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Mock
     private Requester requester;

@@ -1,28 +1,5 @@
 package uk.gov.moj.cpp.progression;
 
-import com.jayway.restassured.path.json.JsonPath;
-import org.hamcrest.Matcher;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-import uk.gov.moj.cpp.progression.stub.ListingStub;
-import uk.gov.moj.cpp.progression.util.Utilities;
-
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.json.JsonObject;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
@@ -41,10 +18,37 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyListUnscheduledHearingRequestsAsStream;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyListUnscheduledHearingRequestsAsStreamV2;
 import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.Utilities.listenForPrivateEvent;
+
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
+import uk.gov.moj.cpp.progression.stub.HearingStub;
+import uk.gov.moj.cpp.progression.stub.ListingStub;
+import uk.gov.moj.cpp.progression.util.Utilities;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+
+import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.Matcher;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 public class HearingResultedUnscheduledListingIT extends AbstractIT {
     private static final String DOCUMENT_TEXT = STRING.next();
@@ -79,6 +83,10 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
     private String courtCentreName;
     private String newCourtCentreId;
     private String newCourtCentreName;
+    private static final String LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING = "listing.command.list-unscheduled-court-hearing";
+
+    private static final MessageConsumer listingListUnscheduledNextHearings = QueueUtil.privateEvents.createPrivateConsumer(
+            LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING);
 
     @AfterClass
     public static void tearDown() throws JMSException {
@@ -122,7 +130,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
         final JsonPath defendantListingStatusChangedPayload = eventListenerForDefendantListinStatusChanged.waitFor();
         doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload, existingHearingId);
-        final String unscheduledHearingId =  defendantListingStatusChangedPayload.getString("hearing.id");
+        final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
         assertThat(defendantListingStatusChangedPayload.getString("notifyNCES").toLowerCase(), is("true"));
         eventListenerForDefendantListinStatusChanged.close();
 
@@ -158,6 +166,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
         sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
         eventListenerForNotificationEvent.waitFor();
         eventListenerForNotificationEvent.close();
+        verifyListUnscheduledHearingRequestsAsStream(unscheduledHearingId,"1 week");
     }
 
     @SuppressWarnings("squid:S1607")
@@ -183,7 +192,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
         final JsonPath defendantListingStatusChangedPayload = eventListenerForDefendantListinStatusChanged.waitFor();
         doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload, existingHearingId);
-        final String unscheduledHearingId =  defendantListingStatusChangedPayload.getString("hearing.id");
+        final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
 
 
         final JsonPath recordedEventPayload = eventListenerForHearingRecorded.waitFor();
@@ -203,10 +212,11 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
         final JsonPath defendantListingStatusChangedPayload2 = eventListenerForDefendantListinStatusChanged.waitFor();
         doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2, existingHearingId);
-        final String unscheduledHearingIdNew =  defendantListingStatusChangedPayload2.getString("hearing.id");
+        final String unscheduledHearingIdNew = defendantListingStatusChangedPayload2.getString("hearing.id");
         eventListenerForDefendantListinStatusChanged.close();
 
         doVerifyEventIsNotRaised(messageConsumer, existingHearingId, unscheduledHearingIdNew);
+        verifyListUnscheduledHearingRequestsAsStream(unscheduledHearingId, "1 week");
 
 
     }
@@ -232,7 +242,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
         final JsonPath defendantListingStatusChangedPayload = eventListenerForDefendantListinStatusChanged.waitFor();
         doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload, existingHearingId);
-        final String unscheduledHearingId =  defendantListingStatusChangedPayload.getString("hearing.id");
+        final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
 
         eventListenerForDefendantListinStatusChanged.close();
 
@@ -255,6 +265,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, getMatcherForCpsOrganisation());
 
+        verifyListUnscheduledHearingRequestsAsStream(unscheduledHearingId, "1 week");
     }
 
     @Test
@@ -278,7 +289,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
         final JsonPath defendantListingStatusChangedPayload = eventListenerForDefendantListinStatusChanged.waitFor();
         doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload, existingHearingId);
-        final String unscheduledHearingId =  defendantListingStatusChangedPayload.getString("hearing.id");
+        final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
 
         final JsonPath recordedEventPayload = eventListenerForHearingRecorded.waitFor();
         doVerifyRecordedEventPayload(recordedEventPayload, existingHearingId, unscheduledHearingId);
@@ -297,14 +308,16 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
         final JsonPath defendantListingStatusChangedPayload2 = eventListenerForDefendantListinStatusChanged.waitFor();
         doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2, existingHearingId);
-        final String unscheduledHearingIdNew =  defendantListingStatusChangedPayload2.getString("hearing.id");
+        final String unscheduledHearingIdNew = defendantListingStatusChangedPayload2.getString("hearing.id");
         eventListenerForDefendantListinStatusChanged.close();
 
         doVerifyEventIsNotRaised(messageConsumer, existingHearingId, unscheduledHearingIdNew);
 
         pollProsecutionCasesProgressionFor(caseId, getMatcherForCpsOrganisation());
 
+        verifyListUnscheduledHearingRequestsAsStreamV2(unscheduledHearingId, "1 week");
     }
+
 
     private Matcher[] getMatcherForCpsOrganisation() {
         return new Matcher[]{
@@ -313,7 +326,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
     }
 
     private void doVerifyDefendantListingStatusChangedPayload(final JsonPath defendantListingStatusChangedPayload, final String existingHearingId) {
-        final String unscheduledHearingId =  defendantListingStatusChangedPayload.getString("hearing.id");
+        final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
         assertThat(unscheduledHearingId, is(not(nullValue())));
 
         final List<HashMap> prosecutionCases = defendantListingStatusChangedPayload.getJsonObject("hearing.prosecutionCases");
@@ -341,7 +354,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
         assertThat(unscheduledHearingIds.get(0), is(unscheduledHearingId));
     }
 
-    private String prepareHearingForTest() throws Exception{
+    private String prepareHearingForTest() throws Exception {
         final MessageConsumer messageConsumer = privateEvents
                 .createPrivateConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
 
@@ -365,7 +378,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
         return hearingIdInResponse;
     }
 
-    private String prepareHearingForTestWithInitiate() throws Exception{
+    private String prepareHearingForTestWithInitiate() throws Exception {
         final MessageConsumer messageConsumer = privateEvents
                 .createPrivateConsumer(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED);
 
@@ -390,7 +403,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
         return hearingIdInResponse;
     }
 
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumer){
+    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumer) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumer);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
         return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
@@ -423,7 +436,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
         assertFalse(message.isPresent());
     }
 
-    private static boolean hearingIdIsOneOf(JsonPath jsonPath, String h1, String h2){
+    private static boolean hearingIdIsOneOf(JsonPath jsonPath, String h1, String h2) {
         final String s = jsonPath.getString("hearing.id");
         return h1.equals(s) || h2.equals(s);
     }

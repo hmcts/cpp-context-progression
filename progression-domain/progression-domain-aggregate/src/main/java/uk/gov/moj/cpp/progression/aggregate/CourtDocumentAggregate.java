@@ -20,8 +20,6 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.AddCourtDocumentV2;
 import uk.gov.justice.core.courts.AddMaterialV2;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -41,7 +39,6 @@ import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.SharedCourtDocument;
 import uk.gov.justice.domain.aggregate.Aggregate;
 
-import javax.json.JsonObject;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,11 +47,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.json.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CourtDocumentAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 101L;
+    private static final long serialVersionUID = 8488391302284572349L;
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentAggregate.class);
 
     private final List<SharedCourtDocument> sharedCourtDocumentList = new ArrayList<>();
@@ -94,34 +97,53 @@ public class CourtDocumentAggregate implements Aggregate {
         return apply(builder.build());
     }
 
-    public Stream<Object> updateCourtDocument(final CourtDocument inputCourtDocumentDetails, final ZonedDateTime receivedDateTime,
-                                              final DocumentTypeRBAC documentTypeRBAC) {
+    public Stream<Object> updateCourtDocument(final CourtDocument inputCourtDocumentDetails,
+                                              final ZonedDateTime receivedDateTime,
+                                              final DocumentTypeRBAC documentTypeRBAC,
+                                              final List<UUID> petFormFinalisedDocuments,
+                                              final List<UUID> bcmFormFinalisedDocuments,
+                                              final List<UUID> ptphFormFinalisedDocuments) {
 
         if (this.isRemoved) {
             return updateCourtDocumentFailed(this.courtDocument.getCourtDocumentId(), format("Document is deleted. Could not update the given court document id: %s", courtDocument.getCourtDocumentId()));
         }
 
         LOGGER.debug("court document is being updated .");
-
+        final List<Material> storedMaterials = buildMaterials(receivedDateTime, documentTypeRBAC);
+        final UUID materialId  = Optional.ofNullable(storedMaterials)
+                .map(materials-> materials.stream().filter(Objects::nonNull).map(v->v.getId()).filter(Objects::nonNull).collect(Collectors.toList()).stream().findFirst().orElse(null))
+                .orElse(null);
+        LOGGER.info("CourtDocument update request for materialId {}, petFormFinalisedDocuments {}, bcmFormFinalisedDocuments {}, ptphFormFinalisedDocuments{}",
+                materialId,petFormFinalisedDocuments,bcmFormFinalisedDocuments,ptphFormFinalisedDocuments);
         final CourtDocument updatedCourtDocument = CourtDocument.courtDocument()
                 .withCourtDocumentId(this.courtDocument.getCourtDocumentId())
                 .withName(inputCourtDocumentDetails.getName())
                 .withMimeType(this.courtDocument.getMimeType())
                 .withDocumentTypeId(inputCourtDocumentDetails.getDocumentTypeId())
                 .withDocumentTypeDescription(inputCourtDocumentDetails.getDocumentTypeDescription())
-                .withDocumentCategory(inputCourtDocumentDetails.getDocumentCategory())
+                .withDocumentCategory(Stream.concat(bcmFormFinalisedDocuments.stream(), ptphFormFinalisedDocuments.stream()).collect(Collectors.toList())
+                        .contains(materialId) ? courtDocument.getDocumentCategory() :inputCourtDocumentDetails.getDocumentCategory())
                 .withContainsFinancialMeans(inputCourtDocumentDetails.getContainsFinancialMeans())
                 .withAmendmentDate(this.courtDocument.getAmendmentDate())
                 .withDocumentTypeRBAC(documentTypeRBAC)
                 .withSeqNum(inputCourtDocumentDetails.getSeqNum())
-                .withMaterials(buildMaterials(receivedDateTime, documentTypeRBAC))
+                .withMaterials(storedMaterials)
                 .withSendToCps(inputCourtDocumentDetails.getSendToCps())
                 .build();
         final Stream.Builder<Object> builder = builder();
+
         builder.add(courtDocumentUpdated().withCourtDocument(updatedCourtDocument).build());
 
         if (inputCourtDocumentDetails.getSendToCps()) {
-            builder.add(CourtDocumentSendToCps.courtDocumentSendToCps().withCourtDocument(updatedCourtDocument).build());
+            String notificationType = "defence-disclosure";
+            if(petFormFinalisedDocuments.contains(materialId)){
+                notificationType = "pet-form-finalised";
+            }else if(bcmFormFinalisedDocuments.contains(materialId)){
+                notificationType = "bcm-form-finalised";
+            }else if(ptphFormFinalisedDocuments.contains(materialId)){
+                notificationType = "ptph-form-finalised";
+            }
+            builder.add(CourtDocumentSendToCps.courtDocumentSendToCps().withCourtDocument(updatedCourtDocument).withNotificationType(notificationType).build());
         }
 
         return apply(builder.build());
@@ -289,7 +311,7 @@ public class CourtDocumentAggregate implements Aggregate {
                         .withMaterialType(addCourtDocumentV2.getMaterialSubmittedV2().getMaterialType())
                         .withSectionOrderSequence(addCourtDocumentV2.getMaterialSubmittedV2().getSectionOrderSequence())
                         .withWitnessStatement(addCourtDocumentV2.getMaterialSubmittedV2().getWitnessStatement())
-                        .withTags(addCourtDocumentV2.getMaterialSubmittedV2().getTags())
+                        .withTag(addCourtDocumentV2.getMaterialSubmittedV2().getTag())
                         .build())
                 .build());
 

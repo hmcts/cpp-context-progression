@@ -120,11 +120,11 @@ public class CourtDocumentNotifiedProcessorTest {
     @Test
     public void shouldProcessCourtDocumentSendToCPS_WhenFeatureToggleIsOnForDefenceDisclosure() {
         final String transformedPayload = Json.createObjectBuilder().add("a", "b").build().toString();
-        when(courtDocumentTransformer.transform(any(CourtDocument.class), any(Optional.class), any(JsonEnvelope.class))).thenReturn(of(transformedPayload));
+        when(courtDocumentTransformer.transform(any(CourtDocument.class), any(Optional.class), any(JsonEnvelope.class), any(String.class))).thenReturn(of(transformedPayload));
         when(featureControlGuard.isFeatureEnabled("defenceDisclosure")).thenReturn(true);
 
         courtDocumentNotifiedProcessor.processCourtDocumentSendToCPS(jsonEnvelope);
-        verify(courtDocumentTransformer).transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope);
+        verify(courtDocumentTransformer).transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
         verify(cpsEmailNotificationService, never()).sendEmailToCps(jsonEnvelope, courtDocument, fromString(prosecutionCaseId), prosecutionCaseJsonOptional.get());
         verify(cpsRestNotificationService).sendMaterial(transformedPayload);
     }

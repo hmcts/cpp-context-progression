@@ -7,7 +7,6 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.RestEasyClientService;
 
-
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
@@ -36,18 +35,13 @@ public class ProbationCaseworkerProcessor {
     @Inject
     private RestEasyClientService restEasyClientService;
 
-    @Inject
-    private HearingHelper hearingHelper;
-
-
-
     @Handles("progression.events.hearing-populated-to-probation-caseworker")
-    public void processHearingPopulatedToProbationCaseworker(final JsonEnvelope jsonEnvelope){
+    public void processHearingPopulatedToProbationCaseworker(final JsonEnvelope jsonEnvelope) {
         final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
         LOGGER.info("progression.events.hearing-populated-to-probation-caseworker event received with metadata {} and payload {}",
                 jsonEnvelope.metadata(), payload);
 
-        final JsonObject externalPayload = hearingHelper.transformedHearing(payload);
+        final JsonObject externalPayload = HearingHelper.transformedHearing(payload);
 
         final Response response = restEasyClientService.post(probationHearingDetailsUrl, externalPayload.toString(), subscriptionKey);
         LOGGER.info("Azure Function {} invoked with Request: {} Received response: {}",
@@ -56,12 +50,12 @@ public class ProbationCaseworkerProcessor {
     }
 
     @Handles("progression.events.deleted-hearing-populated-to-probation-caseworker")
-    public void processDeletedHearingPopulatedToProbationCaseworker(final JsonEnvelope jsonEnvelope){
+    public void processDeletedHearingPopulatedToProbationCaseworker(final JsonEnvelope jsonEnvelope) {
         final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
         LOGGER.info("progression.events.deleted-hearing-populated-to-probation-caseworker event received with metadata {} and payload {}",
                 jsonEnvelope.metadata(), payload);
 
-        final JsonObject externalPayload = hearingHelper.transformedHearing(payload);
+        final JsonObject externalPayload = HearingHelper.transformedHearing(payload);
 
         final Response response = restEasyClientService.post(probationHearingDeleteUrl, externalPayload.toString(), subscriptionKey);
         LOGGER.info("Azure Function {} invoked with Request: {} Received response: {}",

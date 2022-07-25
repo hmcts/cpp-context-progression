@@ -1,0 +1,11 @@
+{
+  "courtFormId": "279c4f0d-0def-4630-8023-720841ea0ff1",
+  "caseId": "8f8fe782-a287-11eb-bcbc-0242ac130002",
+  "defendants": [
+    {
+      "defendantId": "7f8fe782-a287-11eb-bcbc-0242ac130002"
+    }
+  ],
+  "formType": "BCM",
+  "userId": "a4c9ac8c-a287-11eb-bcbc-0242ac130002"
+}

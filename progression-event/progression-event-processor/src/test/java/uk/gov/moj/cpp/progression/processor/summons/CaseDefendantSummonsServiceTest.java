@@ -48,7 +48,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -91,7 +91,7 @@ public class CaseDefendantSummonsServiceTest {
     private final Enveloper enveloper = createEnveloper();
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Mock
     private ReferenceDataOffenceService referenceDataOffenceService;

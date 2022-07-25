@@ -41,7 +41,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.helper.CpsServeMaterialHelper;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -106,7 +106,7 @@ public class PetFormIT extends AbstractIT {
     final UUID petId = randomUUID();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
     private String caseId;
 
     @AfterClass

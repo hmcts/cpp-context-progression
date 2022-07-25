@@ -54,7 +54,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -104,7 +104,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
     private Requester requester;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;

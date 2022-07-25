@@ -22,7 +22,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +62,7 @@ public class CreateCourtDocumentHandler {
     @Inject
     private Enveloper enveloper;
     @Inject
-    private ReferenceDataService refDataService;
+    private RefDataService refDataService;
     @Inject
     private Requester requester;
     @Inject

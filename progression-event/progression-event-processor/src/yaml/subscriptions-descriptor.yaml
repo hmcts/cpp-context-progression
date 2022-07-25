@@ -319,8 +319,14 @@ subscriptions_descriptor:
         - name: progression.events.hearing-populated-to-probation-caseworker
           schema_uri: http://justice.gov.uk/progression/courts/progression.events.hearing-populated-to-probation-caseworker.json
 
+        - name: progression.events.vej-hearing-populated-to-probation-caseworker
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.vej-hearing-populated-to-probation-caseworker.json
+
         - name: progression.events.deleted-hearing-populated-to-probation-caseworker
           schema_uri: http://justice.gov.uk/progression/courts/progression.events.deleted-hearing-populated-to-probation-caseworker.json
+
+        - name: progression.events.vej-deleted-hearing-populated-to-probation-caseworker
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.vej-deleted-hearing-populated-to-probation-caseworker.json
 
         - name: progression.event.hearing-defendant-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-defendant-updated.json
@@ -336,6 +342,9 @@ subscriptions_descriptor:
 
         - name: progression.event.hearing-updated-for-partial-allocation
           schema_uri: http://justice.gov.uk/core/courts/hearing-updated-for-partial-allocation.json
+
+        - name: progression.event.form-defendants-updated
+          schema_uri: http://justice.gov.uk/core/courts/form-defendants-updated.json
 
         - name : progression.event.master-defendant-id-updated-into-hearings
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated-into-hearings.json
@@ -444,6 +453,22 @@ subscriptions_descriptor:
         - name: progression.event.laa-defendant-proceeding-concluded-changed
           schema_uri: http://justice.gov.uk/core/courts/progression.event.laa-defendant-proceeding-concluded-changed.json
 
+        - name: progression.event.form-created
+          schema_uri: http://justice.gov.uk/core/courts/form-created.json
+
+        - name: progression.event.form-operation-failed
+          schema_uri: http://justice.gov.uk/core/courts/form-operation-failed.json
+
+        - name: progression.event.form-finalised
+          schema_uri: http://justice.gov.uk/core/courts/form-finalised.json
+
+        - name: progression.event.form-updated
+          schema_uri: http://justice.gov.uk/core/courts/form-updated.json
+
+        - name: progression.event.edit-form-requested
+          schema_uri: http://justice.gov.uk/core/courts/edit-form-requested.json
+
+
         - name: progression.event.now-document-notification-suppressed
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.now-document-notification-suppressed.json
 
@@ -504,6 +529,16 @@ subscriptions_descriptor:
 
         - name: public.hearing.selected-offences-removed-from-existing-hearing
           schema_uri: http://justice.gov.uk/hearing/courts/public.hearing.selected-offences-removed-from-existing-hearing.json
+
+        - name: public.hearing.defence-counsel-added
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/defence-counsel-added.json
+
+        - name: public.hearing.defence-counsel-updated
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/defence-counsel-updated.json
+
+        - name: public.hearing.defence-counsel-removed
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/defence-counsel-removed.json
+
 
         # Notification notify
         - name: public.notificationnotify.events.notification-failed
@@ -579,6 +614,12 @@ subscriptions_descriptor:
         - name: public.prosecutioncasefile.cps-serve-pet-submitted
           schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-pet-submitted.json
 
+        - name: public.prosecutioncasefile.cps-serve-bcm-submitted
+          schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-bcm-submitted.json
+
+        - name: public.prosecutioncasefile.cps-serve-ptph-submitted
+          schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-ptph-submitted.json
+
         - name: public.staginghmi.hearing-updated-from-hmi
           schema_uri: http://justice.gov.uk/staginghmi/courts/public.staginghmi.hearing-updated-from-hmi.json
 
@@ -590,5 +631,11 @@ subscriptions_descriptor:
 
         - name: public.listing.hearing-partially-updated
           schema_uri: http://justice.gov.uk/listing/courts/public.hearing-partially-updated.json
+
+        - name: public.hearing.hearing-offence-verdict-updated
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/public.hearing.hearing-offence-verdict-updated.json
+
+        - name: public.hearing.hearing-offence-plea-updated
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/public.hearing-offence-plea-updated.json
 
       event_source_name: public.event.source

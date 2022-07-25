@@ -12,7 +12,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -37,7 +37,7 @@ public class ReferredCourtDocumentTransformer {
     private Requester requester;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     public CourtDocument transform(final ReferredCourtDocument referredCourtDocument, final JsonEnvelope jsonEnvelope) {
         final JsonObject documentTypeDataJson = referenceDataService

@@ -4,6 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -21,18 +22,23 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.CasesReferredToCourt;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingOffencesUpdated;
+import uk.gov.justice.core.courts.HearingVerdictUpdated;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.justice.core.courts.UpdateHearingOffenceVerdict;
 import uk.gov.justice.core.courts.UpdateOffencesForHearing;
 import uk.gov.justice.core.courts.UpdateOffencesForProsecutionCase;
+import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -75,7 +81,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class UpdateOffencesHandlerTest {
 
     @Spy
-    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CasesReferredToCourt.class, HearingOffencesUpdated.class);
+    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CasesReferredToCourt.class, HearingOffencesUpdated.class, ProsecutionCaseDefendantListingStatusChanged.class, HearingVerdictUpdated.class);
     @Mock
     private EventSource eventSource;
     @Mock
@@ -335,6 +341,65 @@ public class UpdateOffencesHandlerTest {
 
     }
 
+    @Test
+    public void shouldhandleUpdateHearingOffenceVerdict() throws EventStreamException {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        hearingAggregate = getEventStreamReadyForApplication(hearingId, applicationId);
+        when(this.aggregateService.get(this.eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
+        UpdateHearingOffenceVerdict updateHearingOffenceVerdict = UpdateHearingOffenceVerdict.updateHearingOffenceVerdict()
+                .withHearingId(hearingId)
+                .withVerdict(Verdict.verdict()
+                        .withApplicationId(applicationId)
+                        .build())
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-hearing-offence-verdict")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<UpdateHearingOffenceVerdict> envelope = envelopeFrom(metadata, updateHearingOffenceVerdict);
+
+        updateOffencesHandler.handleUpdateHearingOffenceVerdict(envelope);
+
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope defendantListingStatusChangedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.prosecutionCase-defendant-listing-status-changed")).findFirst().get();
+        verifyDefendantListingStatusChanged(hearingId, applicationId, defendantListingStatusChangedEnvelope, "progression.event.prosecutionCase-defendant-listing-status-changed");
+
+        final JsonEnvelope hearingVerdictUpdatedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-verdict-updated")).findFirst().get();
+        verifyHearingVerdictUpdated(hearingId, applicationId, hearingVerdictUpdatedEnvelope, "progression.event.hearing-verdict-updated");
+
+    }
+
+    private void verifyDefendantListingStatusChanged(final UUID hearingId, final UUID applicationId, final JsonEnvelope defendantListingStatusChangedEnvelope, final String eventName) {
+        assertThat(defendantListingStatusChangedEnvelope,
+                jsonEnvelope(
+                        metadata()
+                                .withName(eventName),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearing.id", is(hearingId.toString())),
+                                withJsonPath("$.hearing.courtApplications[0].verdict.applicationId", is(applicationId.toString())))
+                        )
+                ));
+    }
+
+    private void verifyHearingVerdictUpdated(final UUID hearingId, final UUID applicationId, final JsonEnvelope hearingVerdictUpdatedEnvelope, final String eventName) {
+        assertThat(hearingVerdictUpdatedEnvelope,
+                jsonEnvelope(
+                        metadata()
+                                .withName(eventName),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearingId", is(hearingId.toString())),
+                                withJsonPath("$.verdict.applicationId", is(applicationId.toString())))
+                        )
+                ));
+    }
+
     private List<JsonObject> prepareReferenceDataOffencesJsonObject(final UUID offenceId,
                                                                     final String offenceCode,
                                                                     final String legislation,
@@ -403,6 +468,14 @@ public class UpdateOffencesHandlerTest {
     private HearingAggregate getEventStreamReady(final UUID hearingId) {
         return new HearingAggregate() {{
             apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(Hearing.hearing().withId(hearingId).build()).build());
+        }};
+    }
+
+    private HearingAggregate getEventStreamReadyForApplication(final UUID hearingId, final UUID applicationId) {
+        return new HearingAggregate() {{
+            apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(Hearing.hearing().withId(hearingId)
+                    .withCourtApplications(singletonList(CourtApplication.courtApplication().withId(applicationId).build()))
+                    .build()).build());
         }};
     }
 

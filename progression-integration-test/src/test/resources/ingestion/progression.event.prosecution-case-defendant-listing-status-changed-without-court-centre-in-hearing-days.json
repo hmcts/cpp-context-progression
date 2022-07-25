@@ -153,6 +153,15 @@
                   "vehicleRegistration": "AA12345",
                   "alcoholReadingAmount": 111,
                   "alcoholReadingMethodCode": "2222"
+                },
+                "verdict" : {
+                  "offenceId" : "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "verdictDate" : "2019-01-01",
+                  "verdictType" : {
+                    "id" : "3789ab16-0bb7-4ef1-87ef-c936bf0364f2",
+                    "category" : "category",
+                    "categoryType" : "categoryType"
+                  }
                 }
               }
             ]

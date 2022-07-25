@@ -88,7 +88,7 @@ public class EmailServiceTest {
     private NotificationService notificationService;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Mock
     private DefenceService defenceService;

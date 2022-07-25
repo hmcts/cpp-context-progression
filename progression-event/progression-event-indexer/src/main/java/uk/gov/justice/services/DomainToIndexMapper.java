@@ -20,12 +20,16 @@ import uk.gov.justice.services.unifiedsearch.client.domain.Application;
 import uk.gov.justice.services.unifiedsearch.client.domain.LaaReference;
 import uk.gov.justice.services.unifiedsearch.client.domain.Offence;
 import uk.gov.justice.services.unifiedsearch.client.domain.Party;
+import uk.gov.justice.services.unifiedsearch.client.domain.Plea;
 import uk.gov.justice.services.unifiedsearch.client.domain.RepresentationOrder;
+import uk.gov.justice.services.unifiedsearch.client.domain.Verdict;
+import uk.gov.justice.services.unifiedsearch.client.domain.VerdictType;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -201,6 +205,8 @@ public class DomainToIndexMapper {
                 offence1.setOffenceCode(offence.getOffenceCode());
                 offence1.setOffenceLegislation(offence.getOffenceLegislation());
                 offence1.setOffenceTitle(offence.getOffenceTitle());
+                ofNullable(offence.getVerdict()).ifPresent(v -> offence1.setVerdict(verdict(v)));
+                ofNullable(offence.getPlea()).ifPresent(plea -> offence1.setPleas(plea(plea)));
 
                 indexOffences.add(offence1);
 
@@ -208,6 +214,22 @@ public class DomainToIndexMapper {
         }
         party.setOffences(indexOffences);
         return party;
+    }
+
+    private Verdict verdict(final uk.gov.justice.core.courts.Verdict orgVerdict) {
+        final VerdictType verdictType = new VerdictType();
+        verdictType.setVerdictTypeId(orgVerdict.getVerdictType().getId().toString());
+        verdictType.setCategory(orgVerdict.getVerdictType().getCategory());
+        verdictType.setCategoryType(orgVerdict.getVerdictType().getCategoryType());
+        ofNullable(orgVerdict.getVerdictType().getDescription()).ifPresent(verdictType::setDescription);
+        ofNullable(orgVerdict.getVerdictType().getSequence()).ifPresent(verdictType::setSequence);
+
+        final Verdict verdict = new Verdict();
+        ofNullable(orgVerdict.getVerdictDate()).ifPresent(date -> verdict.setVerdictDate(date.toString()));
+        verdict.setVerdictType(verdictType);
+        ofNullable(orgVerdict.getOriginatingHearingId()).ifPresent(id -> verdict.setOriginatingHearingId(id.toString()));
+
+        return verdict;
     }
 
     @SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S2589"})
@@ -237,6 +259,28 @@ public class DomainToIndexMapper {
         }
         return laaReference;
     }
+
+    @SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S2589"})
+    private List<Plea> plea(final uk.gov.justice.core.courts.Plea pleSrc) {
+        final Plea plea = new Plea();
+
+        if (pleSrc != null) {
+            if (pleSrc.getOriginatingHearingId() != null) {
+                plea.setOriginatingHearingId(pleSrc.getOriginatingHearingId().toString());
+            }
+
+            if (pleSrc.getPleaValue() != null) {
+                plea.setPleaValue(pleSrc.getPleaValue());
+            }
+
+            if (pleSrc.getPleaDate() != null) {
+                plea.setPleaDate(pleSrc.getPleaDate().toString());
+            }
+        }
+
+        return Collections.singletonList(plea);
+    }
+
 
     private void mapNullableAttributes(final uk.gov.justice.core.courts.Offence offence, final Offence offence1) {
         if (offence.getArrestDate() != null) {

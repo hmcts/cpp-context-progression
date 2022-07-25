@@ -10,6 +10,10 @@ import uk.gov.moj.cpp.progression.query.api.vo.UserOrganisationDetails;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -54,26 +58,41 @@ public class ProgressionQueryHelper {
         return builder;
     }
 
-    public static boolean isPermitted(final JsonEnvelope queryEnvelope, final UserDetailsLoader userDetailsLoader, final Requester requester, final String defendantId) {
+    public static boolean isPermitted(final JsonEnvelope queryEnvelope, final UserDetailsLoader userDetailsLoader, final Requester requester, final String defendantIds) {
         final String userId = queryEnvelope.metadata().userId()
                 .orElseThrow(() -> new IllegalStateException(USER_ID_NOT_SUPPLIED_FOR_THE_USER_GROUPS_LOOK_UP));
         final UserOrganisationDetails organisationDetailsForUser = userDetailsLoader.getOrganisationDetailsForUser(queryEnvelope, requester, userId);
-        final List<Permission> permissions = userDetailsLoader.getPermissions(queryEnvelope.metadata(), requester, defendantId);
-        if(permissions.isEmpty()) {
-            return false;
-        }
 
-        final Permission organisationPermission = Permission.permission()
-                .withTarget(fromString(defendantId))
-                .withSource(organisationDetailsForUser.getOrganisationId())
-                .build();
+        final List<UUID> defendantIdList = commaSeparatedUuidParam2UUIDs(defendantIds);
+        final AtomicBoolean isPermitted = new AtomicBoolean(true);
+        defendantIdList.forEach(defendantId -> {
+            final List<Permission> permissions = userDetailsLoader.getPermissions(queryEnvelope.metadata(), requester, defendantId);
+            if(permissions.isEmpty()) {
+                isPermitted.set(false);
+            }else{
+                final Permission organisationPermission = Permission.permission()
+                        .withTarget(defendantId)
+                        .withSource(organisationDetailsForUser.getOrganisationId())
+                        .build();
 
-        final Permission userPermission = Permission.permission()
-                .withTarget(fromString(defendantId))
-                .withSource(fromString(userId))
-                .build();
+                final Permission userPermission = Permission.permission()
+                        .withTarget(defendantId)
+                        .withSource(fromString(userId))
+                        .build();
 
-        return permissions.contains(organisationPermission) || permissions.contains(userPermission);
+                if(!(permissions.contains(organisationPermission) || permissions.contains(userPermission))){
+                    isPermitted.set(false);
+                }
+            }
+        });
+
+        return isPermitted.get();
+    }
+
+    private static List<UUID> commaSeparatedUuidParam2UUIDs(final String strUuids) {
+        return Stream.of(strUuids.split(","))
+                .map(UUID::fromString)
+                .collect(Collectors.toList());
     }
 
 

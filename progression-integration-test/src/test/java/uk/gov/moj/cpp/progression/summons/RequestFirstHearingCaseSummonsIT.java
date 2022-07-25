@@ -437,6 +437,7 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
                 .withEarliestStartDateTime(hearingStartTime)
                 .withListedStartDateTime(hearingStartTime)
                 .withEstimateMinutes(20)
+                .withEstimatedDuration("1 week")
                 .build();
 
         return addDefendantsToCourtProceedings()

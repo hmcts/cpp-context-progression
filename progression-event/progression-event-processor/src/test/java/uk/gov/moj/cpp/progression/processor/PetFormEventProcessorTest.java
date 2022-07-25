@@ -51,7 +51,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.MaterialService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 
 import java.io.IOException;
@@ -114,7 +114,7 @@ public class PetFormEventProcessorTest {
     private DocumentGeneratorService documentGeneratorService;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Mock
     private Requester requester;
@@ -237,6 +237,7 @@ public class PetFormEventProcessorTest {
                         .add(CASE_ID, caseId)
                         .add(PROSECUTION_CASE, createObjectBuilder().build())
                         .add(USER_ID, userId)
+                        .add(MATERIAL_ID,UUID.randomUUID().toString())
                         .add(FINALISED_FORM_DATA, arrayBuilder.build())
                         .add(SUBMISSION_ID, submissionId)
         );

@@ -83,6 +83,7 @@ import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.UpdateCourtApplicationToHearing;
 import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
+import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -97,7 +98,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -139,7 +140,8 @@ public class CourtApplicationHandlerTest {
             InitiateCourtHearingAfterSummonsApproved.class,
             HearingResultedApplicationUpdated.class,
             HearingUpdatedWithCourtApplication.class,
-            HearingPopulatedToProbationCaseworker.class
+            HearingPopulatedToProbationCaseworker.class,
+            VejHearingPopulatedToProbationCaseworker.class
     );
     @Mock
     private EventSource eventSource;
@@ -154,7 +156,7 @@ public class CourtApplicationHandlerTest {
     private CourtApplicationHandler courtApplicationHandler;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -1788,6 +1790,14 @@ public class CourtApplicationHandlerTest {
                 jsonEnvelope(
                         metadata()
                                 .withName("progression.events.hearing-populated-to-probation-caseworker"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.hearing.courtApplications[0].id", is(applicationId.toString())),
+                                withJsonPath("$.hearing.courtApplications[0].applicationReference", is("B")),
+                                withJsonPath("$.hearing.id", is(hearingId.toString()))
+                        ))),
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.events.vej-hearing-populated-to-probation-caseworker"),
                         payload().isJson(allOf(
                                 withJsonPath("$.hearing.courtApplications[0].id", is(applicationId.toString())),
                                 withJsonPath("$.hearing.courtApplications[0].applicationReference", is("B")),

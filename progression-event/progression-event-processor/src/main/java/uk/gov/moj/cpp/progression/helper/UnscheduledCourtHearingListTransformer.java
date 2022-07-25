@@ -341,6 +341,7 @@ public class UnscheduledCourtHearingListTransformer {
                         .withDescription(hearingType.getDescription())
                         .build())
                 .withEstimatedMinutes(0)
+                .withEstimatedDuration(hearing.getEstimatedDuration())
                 .withCourtCentre(courtCentre)
                 .withCourtApplications(courtApplications)
                 .build();

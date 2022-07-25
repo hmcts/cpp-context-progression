@@ -51,9 +51,11 @@ import java.util.stream.Collectors;
 @SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S3776"})
 public class HearingHelper {
 
+    private HearingHelper() {}
+
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingHelper.class);
 
-    public JsonObject transformedHearing(final JsonObject hearingPayload) {
+    public static JsonObject transformedHearing(final JsonObject hearingPayload) {
 
         LOGGER.info("Transforming Hearing");
         final JsonObject hearing = hearingPayload.getJsonObject("hearing");

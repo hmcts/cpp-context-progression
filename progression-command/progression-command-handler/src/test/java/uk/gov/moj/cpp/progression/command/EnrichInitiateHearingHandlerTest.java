@@ -16,16 +16,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
-import uk.gov.justice.core.courts.CommandEnrichHearingInitiate;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.HearingDay;
-import uk.gov.justice.core.courts.HearingDefendantRequestCreated;
-import uk.gov.justice.core.courts.HearingInitiateEnriched;
-import uk.gov.justice.core.courts.ListDefendantRequest;
-import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ReferralReason;
+import uk.gov.justice.core.courts.*;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -39,6 +30,7 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.handler.EnrichInitiateHearingHandler;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -108,12 +100,12 @@ public class EnrichInitiateHearingHandlerTest {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
         assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.hearing-initiate-enriched"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.hearing", notNullValue()))
-                        ))
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.hearing-initiate-enriched"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                        withJsonPath("$.hearing", notNullValue()))
+                                ))
 
                 )
         );
@@ -141,14 +133,14 @@ public class EnrichInitiateHearingHandlerTest {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
         assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.hearing-initiate-enriched"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.hearing", notNullValue()),
-                                withJsonPath("$.hearing.defendantReferralReasons[0].description", is(DEFENCE_REQUEST))
-                                )
-                        ))
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.hearing-initiate-enriched"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                                withJsonPath("$.hearing", notNullValue()),
+                                                withJsonPath("$.hearing.defendantReferralReasons[0].description", is(DEFENCE_REQUEST))
+                                        )
+                                ))
 
                 )
         );
@@ -176,6 +168,8 @@ public class EnrichInitiateHearingHandlerTest {
                                                 .build()))
                                         .build()))
                                 .build()))
+                        .withIsBoxHearing(true)
+                        .withCourtApplications(Collections.singletonList(CourtApplication.courtApplication().build()))
                         .build()
         ).build();
 

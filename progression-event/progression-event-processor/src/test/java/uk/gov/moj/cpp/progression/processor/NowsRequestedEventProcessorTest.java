@@ -48,7 +48,7 @@ import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.MaterialService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UploadMaterialContext;
 import uk.gov.moj.cpp.progression.service.UploadMaterialService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
@@ -126,7 +126,7 @@ public class NowsRequestedEventProcessorTest {
     @Mock
     private FileStorer fileStorer;
     @Mock
-    private ReferenceDataService refDataService;
+    private RefDataService refDataService;
     @Mock
     private UsersGroupService usersGroupService;
     @Mock

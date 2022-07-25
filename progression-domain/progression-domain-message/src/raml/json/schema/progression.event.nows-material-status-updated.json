@@ -12,11 +12,11 @@
     "welshTranslationRequired" : {
       "type": "boolean"
     },
-    "caseUrn": {
-      "type": "string"
-    },
-    "prosecutingAuthorityOUCode": {
-      "type": "string"
+    "caseSubjects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/caseSubject"
+      }
     },
     "defendantAsn": {
       "type": "array",
@@ -37,6 +37,19 @@
     "status",
     "welshTranslationRequired"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "definitions": {
+    "caseSubject": {
+      "type": "object",
+      "properties": {
+        "urn": {
+          "type": "string"
+        },
+        "prosecutingAuthorityOUCode": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }
 

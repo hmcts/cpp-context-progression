@@ -1,0 +1,28 @@
+{
+  "caseId": "a6b6d9e0-5b89-4f7e-a457-894f17217400",
+  "courtFormId": "%courtFormId%",
+  "formType": "BCM",
+  "updatedBy": {
+    "id": "a542a165-67e0-4b1c-9daa-826934e619fa",
+    "firstName": "firstName",
+    "lastName": "lastName"
+  },
+  "caseURN": "ABNM1276HJ",
+  "documentMetaData": [
+    {
+      "isWelsh": true,
+      "materialId": "861922c8-28e6-4c73-866b-b80e270b1655",
+      "fileName": "fileName One.pdf"
+    },
+    {
+      "isWelsh": true,
+      "materialId": "c0b6d9e0-5b89-4f7e-a457-894f17217486",
+      "fileName": "fileName One.pdf"
+    },
+    {
+      "isWelsh": true,
+      "materialId": "37aa859a-6a13-4440-8ed9-489a668f8e7f",
+      "fileName": "fileName One.pdf"
+    }
+  ]
+}

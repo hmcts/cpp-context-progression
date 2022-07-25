@@ -1,0 +1,30 @@
+{
+  "hearingId": "HEARING_ID",
+  "pleaModel": {
+    "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+    "prosecutionCaseId": "CASE_ID",
+    "defendantId": "DEFENDANT_ID",
+    "allocationDecision": {
+      "allocationDecisionDate": "2017-05-06",
+      "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+      "originatingHearingId": "HEARING_ID",
+      "motReasonId" : "3789ab16-0bb7-4ef1-87ef-c936bf0364f2",
+      "motReasonDescription" : "motReasonDescription",
+      "motReasonCode" : "motReasonCode",
+      "sequenceNumber": 1
+    },
+    "indicatedPlea": {
+      "indicatedPleaDate": "2017-05-06",
+      "indicatedPleaValue": "INDICATED_GUILTY",
+      "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+      "source": "IN_COURT"
+    },
+    "plea": {
+      "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+      "originatingHearingId": "HEARING_ID",
+      "pleaDate": "2017-05-06",
+      "pleaValue": "GUILTY"
+    }
+
+  }
+}

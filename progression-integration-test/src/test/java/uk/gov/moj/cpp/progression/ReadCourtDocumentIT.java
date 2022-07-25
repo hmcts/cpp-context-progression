@@ -9,11 +9,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getMaterialContent;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getMaterialContentResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStub;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.stubMaterialContent;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAdvocateRoleInCaseByCaseId;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupDefenceClientPermission;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupOrganisation;
 
@@ -102,7 +104,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         );
 
 
-        final Response documentContentResponse = getMaterialContent(materialId, userId,fromString(defendantId));
+        final Response documentContentResponse = getMaterialContent(materialId, userId, fromString(defendantId));
         assertThat(stringToJsonObjectConverter.convert(documentContentResponse.readEntity(String.class)), equalTo(expectedResponse));
     }
 
@@ -142,6 +144,38 @@ public class ReadCourtDocumentIT extends AbstractIT {
         assertThat(documentContentResponse.getStatus(), is(SC_FORBIDDEN));
     }
 
+    @Test
+    public void shouldGetMaterialMetadataAndContentForProsecution() throws Exception {
+
+        // given
+        final UUID userId = randomUUID();
+        final String caseId = UUID.randomUUID().toString();
+
+        final String userRoleInCase = getPayload("stub-data/defence.advocate.query.role-in-case-by-caseid.json")
+                .replace("%CASE_ID%", caseId)
+                .replace("%USER_ROLE_IN_CASE%", "prosecuting");
+
+        stubAdvocateRoleInCaseByCaseId(caseId, userRoleInCase);
+
+        //and
+        addProsecutionCaseToCrownCourt(caseId, defendantId, materialId.toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString());
+
+        pollForResponse("/search?q=" + materialId.toString(), QUERY_USERGROUPS_BY_MATERIAL_ID_JSON,
+                withJsonPath("$.allowedUserGroups[0]", is("Listing Officers")));
+        // and
+        pollForResponse("/material/" + materialId + "/metadata",
+                "application/vnd.progression.query.material-metadata+json",
+                withJsonPath("$.materialId", is(materialId.toString()))
+        );
+
+        String pathUri = "/material/" + materialId.toString() + "/content?caseId=" + caseId;
+
+        //when
+        final Response documentContentResponse = getMaterialContentResponse(pathUri, userId, "application/vnd.progression.query.material-content-for-prosecution+json");
+
+        //then
+        assertThat(stringToJsonObjectConverter.convert(documentContentResponse.readEntity(String.class)), equalTo(expectedResponse));
+    }
 
 }
 

@@ -91,7 +91,19 @@
         "defendants": [
           {
             "id": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
-            "prosecutionCaseId": "57ab0671-407c-4f9a-9e9f-1f5bd01778fb"
+            "prosecutionCaseId": "57ab0671-407c-4f9a-9e9f-1f5bd01778fb",
+            "offences" : [
+              {
+                "verdict" : {
+                  "offenceId" : "baa0552e-82b0-479b-bf4e-3314b163933c",
+                  "verdictType" : {
+                    "id" : "baa0552e-82b0-479b-bf4e-3314b163933d",
+                    "category" : "category",
+                    "categoryType" : "categoryType"
+                  }
+                }
+              }
+            ]
           }
         ],
         "id": "57ab0671-407c-4f9a-9e9f-1f5bd01778fb",
@@ -121,6 +133,22 @@
     "type": {
       "description": "qm1rJUZb0f",
       "id": "9623a7ac-25bb-43f8-b219-2ae4cd8b05db"
-    }
+    },
+    "defenceCounsels" : [
+      {
+        "attendanceDays": [
+          "2020-01-02"
+        ],
+        "defendants": [
+          "9c52f847-4125-4438-b855-9c264695ad33"
+        ],
+        "firstName": "acsc",
+        "id": "dba138e9-4ba9-4ff5-82e8-c646e8916d44",
+        "lastName": "CZCXz",
+        "middleName": "",
+        "status": "zczc",
+        "title": ""
+      }
+    ]
   }
 }

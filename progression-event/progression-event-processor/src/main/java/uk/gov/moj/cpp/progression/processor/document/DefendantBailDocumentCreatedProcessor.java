@@ -16,7 +16,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.DefendantBailDocumentCreated;
 import uk.gov.moj.cpp.progression.service.MaterialService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -52,7 +52,7 @@ public class DefendantBailDocumentCreatedProcessor {
     private Requester requester;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;

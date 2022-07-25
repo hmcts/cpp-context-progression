@@ -8,7 +8,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.RefDataDefinitionException;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.referencedata.json.schemas.DocumentTypeAccess;
 
 import java.util.UUID;
@@ -23,7 +23,7 @@ public class DocumentTypeAccessProvider {
     private Requester requester;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private DocumentTypeAccessConverter documentTypeAccessConverter;

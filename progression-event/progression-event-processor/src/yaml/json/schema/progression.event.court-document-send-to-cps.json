@@ -5,6 +5,9 @@
   "properties": {
     "courtDocument": {
       "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
+    },
+    "notificationType": {
+      "type": "string"
     }
   },
   "required": [

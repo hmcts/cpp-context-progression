@@ -17,12 +17,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.api.resource.DefaultQueryApiMaterialMaterialIdContentResource.PROGRESSION_QUERY_MATERIAL_CONTENT;
+import static uk.gov.justice.api.resource.DefaultQueryApiMaterialMaterialIdContentResource.PROGRESSION_QUERY_MATERIAL_CONTENT_PROSECUTION;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.core.accesscontrol.AccessControlViolationException;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorContext;
@@ -30,6 +32,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.client.MaterialClient;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -77,6 +81,9 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
     private final UUID materialId = randomUUID();
     private final UUID systemUserId = randomUUID();
     private final String documentUrl = "http://filelocation.com/myfile.pdf";
+    private final UUID caseId = randomUUID();
+
+    private final InputStream documentStream = new ByteArrayInputStream("test".getBytes());
 
     @Before
     public void init() {
@@ -165,6 +172,37 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
         verify(interceptorChainProcessor).process(interceptorContextCaptor.capture());
 
         assertThat(interceptorContextCaptor.getValue().inputEnvelope(), jsonEnvelope(metadata().withName(PROGRESSION_QUERY_MATERIAL_CONTENT).withUserId(userId.toString()),
+                payload().isJson(allOf(
+                        withJsonPath("$.materialId", equalTo(materialId.toString()))
+                ))
+        ));
+    }
+
+    @Test
+    public void shouldRunInterceptorsAndFetchDocumentWhenQueryMaterialByIdForProsecutor() {
+        final JsonEnvelope documentDetails = documentDetails(materialId);
+
+        final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, JSON_CONTENT_TYPE));
+
+        final JsonObject json = Json.createObjectBuilder()
+                .add("url", documentUrl)
+                .build();
+
+        when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
+        when(materialClient.getMaterial(materialId, systemUserId)).thenReturn(documentContentResponse);
+        when(documentContentResponse.readEntity(String.class)).thenReturn(documentUrl);
+        when(documentContentResponse.getHeaders()).thenReturn(headers);
+        when(documentContentResponse.getStatus()).thenReturn(SC_OK);
+
+        final Response documentContentResponse = endpointHandler.getMaterialForProsecutionByMaterialIdContent(materialId.toString(), caseId.toString(), null, userId);
+
+        assertThat(documentContentResponse.getStatus(), is(SC_OK));
+        assertThat(documentContentResponse.getHeaders(), is(headers));
+        assertThat(documentContentResponse.getEntity(), is(json));
+
+        verify(interceptorChainProcessor).process(interceptorContextCaptor.capture());
+
+        assertThat(interceptorContextCaptor.getValue().inputEnvelope(), jsonEnvelope(metadata().withName(PROGRESSION_QUERY_MATERIAL_CONTENT_PROSECUTION).withUserId(userId.toString()),
                 payload().isJson(allOf(
                         withJsonPath("$.materialId", equalTo(materialId.toString()))
                 ))

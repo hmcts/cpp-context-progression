@@ -67,7 +67,7 @@ public class StatDecLetterServiceTest {
     private UUID applicationId;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Mock
     private DocumentGeneratorService documentGeneratorService;

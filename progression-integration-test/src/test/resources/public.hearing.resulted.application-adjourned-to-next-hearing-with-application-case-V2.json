@@ -1,5 +1,6 @@
 {
   "hearing": {
+    "estimatedDuration": "1 week",
     "courtApplications": [
       {
         "applicant": {
@@ -749,6 +750,7 @@
                       }
                     ],
                     "nextHearing": {
+                      "estimatedDuration": "1 week",
                       "adjournmentReason": "adjournmentReason",
                       "courtCentre": {
                         "address": {

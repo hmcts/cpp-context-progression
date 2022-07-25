@@ -67,6 +67,7 @@ public class DefendantDefenceAssociationLockedListener {
 
         return Defendant.defendant()
                 .withOffences(originDefendant.getOffences())
+                .withCpsDefendantId(originDefendant.getCpsDefendantId())
                 .withPersonDefendant(originDefendant.getPersonDefendant())
                 .withLegalEntityDefendant(originDefendant.getLegalEntityDefendant())
                 .withAssociatedPersons(originDefendant.getAssociatedPersons())

@@ -49,6 +49,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationPartyAttendance;
 import uk.gov.justice.core.courts.CourtApplicationPartyCounsel;
+import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
@@ -74,6 +75,7 @@ import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.NextHearing;
@@ -176,6 +178,7 @@ public class ProgressionServiceTest {
 
     private static final String EMPTY = "";
     public static final String PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED = "progression.event.next-hearings-requested";
+    private static final String ESTIMATED_DURATION = "1 week";
     @Spy
     private final Enveloper enveloper = createEnveloper();
     @Spy
@@ -203,7 +206,7 @@ public class ProgressionServiceTest {
     @Mock
     private Requester requester;
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
     @Mock
     private ListingService listingService;
     @Spy
@@ -761,6 +764,56 @@ public class ProgressionServiceTest {
         progressionService.linkApplicationsToHearing(envelope, hearing, applicationId, HearingListingStatus.HEARING_INITIALISED);
         verify(sender).send(finalEnvelope);
     }
+
+    @Test
+    public void testCreateHearingApplicationLinkWithDuplicateApplicationIds() {
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final List<UUID> applicationIds = asList(applicationId, applicationId,applicationId);
+        final Hearing hearing = Hearing.hearing().withId(hearingId).build();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("hearing", objectToJsonObjectConverter.convert(hearing))
+                .add("hearingListingStatus", "HEARING_INITIALISED")
+                .add("applicationId", applicationId.toString())
+                .build();
+        when(enveloper.withMetadataFrom
+                (envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
+        progressionService.linkApplicationsToHearing(envelope, hearing, applicationIds, HearingListingStatus.HEARING_INITIALISED);
+        verify(sender).send(finalEnvelope);
+    }
+
+    @Test
+    public void testlinkApplicationToHearingWithDuplicateApplicationsInHearing() {
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final Hearing hearing = Hearing.hearing().withId(hearingId)
+                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withType(CourtApplicationType.courtApplicationType()
+                                .withLinkType(LinkType.LINKED)
+                                .build())
+                        .build(),CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withType(CourtApplicationType.courtApplicationType()
+                                .withLinkType(LinkType.LINKED)
+                                .build())
+                        .build()))
+                .build();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("hearing", objectToJsonObjectConverter.convert(hearing))
+                .add("hearingListingStatus", "HEARING_INITIALISED")
+                .add("applicationId", applicationId.toString())
+                .build();
+        when(enveloper.withMetadataFrom
+                (envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
+        progressionService.linkApplicationToHearing(envelope, hearing, HearingListingStatus.HEARING_INITIALISED);
+        verify(sender).send(finalEnvelope);
+    }
+
 
 
     @Test
@@ -1435,6 +1488,7 @@ public class ProgressionServiceTest {
                 .withLjaName("name").withWelshLjaName("welshName").build());
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withId(randomUUID())
+                .withEstimatedDuration(ESTIMATED_DURATION)
                 .withHearingDays(asList(HearingDay.hearingDay()
                         .withSittingDay(ZonedDateTime.now()).build()))
                 .withCourtCentre(CourtCentre.courtCentre()
@@ -1452,6 +1506,7 @@ public class ProgressionServiceTest {
         assertThat(hearing.getCourtCentre().getLja().getLjaCode(), is("nationalCourtCode"));
         assertThat(hearing.getCourtCentre().getLja().getLjaName(), is("name"));
         assertThat(hearing.getCourtCentre().getLja().getWelshLjaName(), is("welshName"));
+        assertThat(hearing.getEstimatedDuration(), is (ESTIMATED_DURATION));
     }
 
     @Test
@@ -1694,7 +1749,7 @@ public class ProgressionServiceTest {
         final LocalDate earliestHearingDate = LocalDate.now();
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
         final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
-                .withSeedingHearingId(randomUUID())
+                .withSeedingHearingId(UUID.randomUUID())
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
                 .build();
 

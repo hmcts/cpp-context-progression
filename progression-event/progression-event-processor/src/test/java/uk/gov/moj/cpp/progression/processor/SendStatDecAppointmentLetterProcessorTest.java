@@ -26,7 +26,7 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.StatDecNotificationService;
 
 import javax.json.JsonObject;
@@ -55,7 +55,7 @@ public class SendStatDecAppointmentLetterProcessorTest {
     private StatDecNotificationService statDecNotificationService;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
     @Mock
     private Requester requester;
 

@@ -31,7 +31,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.MaterialService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -78,7 +78,7 @@ public class CourtDocumentTransformerTest {
     private JsonEnvelope jsonEnvelope;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Mock
     private MaterialService materialService;
@@ -96,8 +96,7 @@ public class CourtDocumentTransformerTest {
     public void shouldTransformCourtDocumentMaterialToJsonStringAndEvaluateEventNotification() {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
-        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, Optional.empty(), jsonEnvelope);
-
+        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, Optional.empty(), jsonEnvelope, null);
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(
                 withJsonPath("$.subjectBusinessObjectId", is(prosecutionCaseDocumentId.toString())),
@@ -113,7 +112,7 @@ public class CourtDocumentTransformerTest {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = Optional.empty();
-        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope);
+        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(
@@ -129,7 +128,7 @@ public class CourtDocumentTransformerTest {
     public void shouldTransformCourtDocumentMaterialWhenProsecutionJsonObjectIsPresentAndCourtDocumentApplicationsAreNotPresent() {
 
         final CourtDocument courtDocument = buildCourtDocumentWithoutDocumentCategory(materialId);
-        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, Optional.empty(), jsonEnvelope);
+        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, Optional.empty(), jsonEnvelope, null);
 
         assertThat(transformedPayload.isPresent(), is(false));
     }
@@ -139,7 +138,7 @@ public class CourtDocumentTransformerTest {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObject(randomUUID());
-        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope);
+        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(
@@ -153,7 +152,7 @@ public class CourtDocumentTransformerTest {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObject(prosecutionCaseDocumentId);
-        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope);
+        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(
@@ -173,7 +172,7 @@ public class CourtDocumentTransformerTest {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObjectWithoutCaseUrn(prosecutionCaseDocumentId);
-        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope);
+        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(
@@ -191,7 +190,7 @@ public class CourtDocumentTransformerTest {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObjectWithoutCaseUrn(prosecutionCaseDocumentId);
-        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope);
+        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(
@@ -206,7 +205,7 @@ public class CourtDocumentTransformerTest {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObjectWithoutCaseUrn(prosecutionCaseDocumentId);
-        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope);
+        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(
@@ -224,7 +223,7 @@ public class CourtDocumentTransformerTest {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObjectWithoutProsecutorAuthorityRef(prosecutionCaseDocumentId);
-        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope);
+        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(
@@ -244,7 +243,7 @@ public class CourtDocumentTransformerTest {
         final UUID applicationId = randomUUID();
         final CourtDocument courtDocument = buildCourtDocumentWithApplication(materialId, applicationId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObjectWithoutProsecutorAuthorityRef(prosecutionCaseDocumentId);
-        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope);
+        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(
@@ -269,7 +268,7 @@ public class CourtDocumentTransformerTest {
 
         when(materialService.getMaterialMetadataV2(any(JsonEnvelope.class), any(UUID.class))).thenReturn("fileName.pdf");
 
-        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope);
+        final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
         System.out.println(transformedPayload.get());
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(

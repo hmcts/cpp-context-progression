@@ -277,6 +277,19 @@ public class HearingUpdatedEventProcessorTest {
         verify(progressionService, never()).populateHearingToProbationCaseworker(eq(jsonEnvelope), eq(hearingId));
     }
 
+    @Test
+    public void shouldHearingOffenceVerdictUpdated(){
+        final JsonObject payload = createObjectBuilder().build();
+        final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUID("public.hearing.hearing-offence-verdict-updated"),
+                payload);
+        eventProcessor.hearingOffenceVerdictUpdated(jsonEnvelope);
+        verify(sender).send(senderJsonEnvelopeCaptor.capture());
+
+        final DefaultEnvelope captorValue = senderJsonEnvelopeCaptor.getValue();
+        assertThat(captorValue.metadata().name(), is("progression.command.update-hearing-offence-verdict"));
+
+    }
+
     private JsonEnvelope getJsonEnvelopeForHearingUpdatedProcessed(final HearingUpdatedProcessed hearingUpdatedProcessed) {
         return JsonEnvelope.envelopeFrom(
                 metadataWithRandomUUID("progression.event.hearing-updated-processed"),

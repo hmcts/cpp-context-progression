@@ -9,20 +9,40 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 
+import java.time.ZonedDateTime;
 import java.util.Collections;
+
+import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.DefenceCounsel;
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingLanguage;
+import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
+import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
+import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingDeleted;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
+import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.OffenceInHearingDeleted;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
+import uk.gov.justice.progression.courts.UnscheduledHearingAllocationNotified;
+import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
+import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,13 +53,59 @@ import java.util.stream.Stream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HearingAggregateTest {
 
+    @Mock
+    private Hearing hearing;
+
+    @Mock
+    private DefenceCounsel defenceCounsel;
+
     @InjectMocks
     private HearingAggregate hearingAggregate;
+
+    @Test
+    public void shouldIgnoreDuplicateDefenceCounselsAdded() {
+        final UUID userId1 = randomUUID();
+        final UUID userId2 = randomUUID();
+
+        final UUID id1 = randomUUID();
+        final UUID id2 = randomUUID();
+        final String firstName = "firstName";
+        final String lastName = "lastName";
+        final String title = "title";
+        final String middleName = "middleName";
+        final List<UUID> defendantList = new ArrayList();
+        defendantList.add(randomUUID());
+        final List<LocalDate> attendanceDays = new ArrayList();
+        attendanceDays.add(LocalDate.now());
+
+        final DefenceCounsel defenceCounsel1 = getDefenceCounsel(id1, userId1, firstName, lastName, title, middleName, defendantList,attendanceDays);
+        final DefenceCounsel defenceCounselDuplicate = getDefenceCounsel(id1, userId1, firstName, lastName, title, middleName, defendantList,attendanceDays);
+        final DefenceCounsel defenceCounsel2 = getDefenceCounsel(id2, userId2, firstName, lastName, title, middleName, defendantList,attendanceDays);
+
+        final List<Object> eventStream1 = hearingAggregate.addDefenceCounselToHearing(defenceCounsel1).collect(toList());
+        assertThat(eventStream1.size(), is(2));
+        final ProsecutionCaseDefendantListingStatusChanged event1  = (ProsecutionCaseDefendantListingStatusChanged) eventStream1.get(1);
+        assertThat(event1.getHearing().getDefenceCounsels().size(),is(1));
+
+        //Duplicate
+        final List<Object> eventStream2 = hearingAggregate.addDefenceCounselToHearing(defenceCounselDuplicate).collect(toList());
+        assertThat(eventStream2.size(), is(2));
+        final ProsecutionCaseDefendantListingStatusChanged event2 = (ProsecutionCaseDefendantListingStatusChanged) eventStream2.get(1);
+        assertThat(event2.getHearing().getDefenceCounsels().size(),is(1));
+
+        final List<Object> eventStream3 = hearingAggregate.addDefenceCounselToHearing(defenceCounsel2).collect(toList());
+        assertThat(eventStream3.size(), is(2));
+        final ProsecutionCaseDefendantListingStatusChanged event3 = (ProsecutionCaseDefendantListingStatusChanged) eventStream3.get(1);
+        assertThat(event3.getHearing().getDefenceCounsels().size(),is(2));
+    }
+
+
 
     @Test
     public void shouldMarkHearingDuplicate() {
@@ -104,7 +170,7 @@ public class HearingAggregateTest {
         setField(hearingAggregate, "hearing", hearing);
         final List<Object> eventStream = hearingAggregate.deleteHearing(hearingId).collect(toList());
 
-        assertThat(eventStream.size(), is(3));
+        assertThat(eventStream.size(), is(4));
         final HearingDeleted hearingDeleted = (HearingDeleted) eventStream.get(0);
         assertThat(hearingDeleted.getHearingId(), is(hearingId));
         assertThat(hearingDeleted.getProsecutionCaseIds().get(0), is(prosecutionCaseId));
@@ -173,7 +239,7 @@ public class HearingAggregateTest {
                 .withId(defendantId1)
                 .withOffences(
                         Stream.of(Offence.offence().withId(offence1).build(),
-                                Offence.offence().withId(offence2).build())
+                                        Offence.offence().withId(offence2).build())
                                 .collect(toList())).build();
         //other defendant
         final Defendant defendantToBeRemained = Defendant.defendant()
@@ -264,7 +330,7 @@ public class HearingAggregateTest {
                 .withId(defendantId1)
                 .withOffences(
                         Stream.of(Offence.offence().withId(offence1).build(),
-                                Offence.offence().withId(offence2).build())
+                                        Offence.offence().withId(offence2).build())
                                 .collect(toList())).build();
 
         final Defendant defendantToBeRemained = Defendant.defendant()
@@ -289,6 +355,292 @@ public class HearingAggregateTest {
     }
 
 
+    @Test
+    public void shouldPopulateHearingPopulatedToProbationCaseworker() {
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = getHearingForVej(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
+        setField(hearingAggregate, "hearing", hearing);
+        final List<Object> eventStream1 = hearingAggregate.populateHearingToProbationCaseWorker().collect(toList());
+        assertThat(eventStream1.size(), is(1));
+        final HearingPopulatedToProbationCaseworker eventHearing = (HearingPopulatedToProbationCaseworker) eventStream1.get(0);
+        assertThat(eventHearing.getHearing().getProsecutionCases().size(), is(1));
+        assertThat(hearingId, is(eventHearing.getHearing().getId()));
+        final ProsecutionCase prosecutionCase = eventHearing.getHearing().getProsecutionCases().get(0);
+        assertThat(prosecutionCase.getDefendants().size(), is(1));
+        assertThat(prosecutionCaseId, is(prosecutionCase.getId()));
+        final Defendant defendant = prosecutionCase.getDefendants().get(0);
+        assertThat(defendant.getOffences().size(), is(1));
+        final Offence offence = defendant.getOffences().get(0);
+        assertThat(offenceId, is(offence.getId()));
+
+        assertThat(eventHearing.getHearing().getCourtApplications().size(), is(1));
+        final CourtApplication courtApplication = eventHearing.getHearing().getCourtApplications().get(0);
+        assertThat(courtApplicationId, is(courtApplication.getId()));
+
+    }
+
+    private Hearing getHearingForVej(final UUID prosecutionCaseId, final UUID courtApplicationId, final UUID hearingId, final UUID offenceId) {
+        final Hearing hearing = getHearingBuilder(Hearing.hearing()
+                .withId(hearingId), getProsecutionCaseCases(prosecutionCaseId, offenceId))
+                .withCourtApplications(
+                        getCourtApplications(courtApplicationId)
+                )
+                .build();
+        return hearing;
+    }
+
+    private List<CourtApplication> getCourtApplications(final UUID courtApplicationId) {
+        return asList(
+                CourtApplication.courtApplication()
+                        .withId(courtApplicationId)
+                        .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                        .build()
+        );
+    }
+
+    private List<ProsecutionCase> getProsecutionCaseCases(final UUID prosecutionCaseId, final UUID offenceId) {
+        return asList(
+                ProsecutionCase.prosecutionCase()
+                        .withId(prosecutionCaseId)
+                        .withDefendants(asList(Defendant.defendant()
+                                .withOffences(Collections.singletonList(Offence.offence()
+                                        .withId(offenceId)
+                                        .build()))
+                                .build()))
+                        .build()
+        );
+    }
+
+    private Hearing getHearingForVejWithoutCourtApplications(final UUID prosecutionCaseId, final UUID courtApplicationId, final UUID hearingId, final UUID offenceId) {
+        final Hearing hearing = getHearingBuilder(Hearing.hearing()
+                .withId(hearingId), getProsecutionCaseCases(prosecutionCaseId, offenceId))
+                .build();
+        return hearing;
+    }
+
+    private Hearing.Builder getHearingBuilder(final Hearing.Builder hearingId, final List<ProsecutionCase> prosecutionCaseId) {
+        return hearingId
+                .withProsecutionCases(
+                        prosecutionCaseId
+                );
+    }
+
+    @Test
+    public void shouldDeletedHearingPopulatedToProbationCaseworker() {
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = getHearingForVej(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
+        setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "deleted", true);
+        final List<Object> eventStream1 = hearingAggregate.populateHearingToProbationCaseWorker().collect(toList());
+        assertThat(eventStream1.size(), is(1));
+        final DeletedHearingPopulatedToProbationCaseworker eventHearing = (DeletedHearingPopulatedToProbationCaseworker) eventStream1.get(0);
+        assertThat(eventHearing.getHearing().getProsecutionCases().size(), is(1));
+        assertThat(hearingId, is(eventHearing.getHearing().getId()));
+        final ProsecutionCase prosecutionCase = eventHearing.getHearing().getProsecutionCases().get(0);
+        assertThat(prosecutionCase.getDefendants().size(), is(1));
+        assertThat(prosecutionCaseId, is(prosecutionCase.getId()));
+        final Defendant defendant = prosecutionCase.getDefendants().get(0);
+        assertThat(defendant.getOffences().size(), is(1));
+        final Offence offence = defendant.getOffences().get(0);
+        assertThat(offenceId, is(offence.getId()));
+
+        assertThat(eventHearing.getHearing().getCourtApplications().size(), is(1));
+        final CourtApplication courtApplication = eventHearing.getHearing().getCourtApplications().get(0);
+        assertThat(courtApplicationId, is(courtApplication.getId()));
+
+    }
+
+    @Test
+    public void shouldPopulateHearingToProbationCaseWorkerWithoutProsecutionCasesAndCourtApplications() {
+        final UUID hearingId = randomUUID();
+        final Hearing hearing = Hearing.hearing().withId(hearingId).build();
+        setField(hearingAggregate, "hearing", hearing);
+        final List<Object> eventStream1 = hearingAggregate.populateHearingToProbationCaseWorker().collect(toList());
+        assertThat(eventStream1.size(), is(0));
+    }
+
+    @Test
+    public void shouldPopulateHearingToProbationCaseWorkerWithHearingStatusSentForListing() {
+        final UUID hearingId = randomUUID();
+        final Hearing hearing = Hearing.hearing().withId(hearingId).build();
+        final HearingListingStatus hearingListingStatus = HearingListingStatus.SENT_FOR_LISTING;
+        setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", hearingListingStatus);
+        final List<Object> eventStream1 = hearingAggregate.populateHearingToProbationCaseWorker().collect(toList());
+        assertThat(eventStream1.size(), is(0));
+    }
+
+    @Test
+    public void shouldPopulateHearingToProbationCaseWorkerWithBoxHearing() {
+        final UUID hearingId = randomUUID();
+        final Hearing hearing = Hearing.hearing().withId(hearingId).withIsBoxHearing(true).build();
+        setField(hearingAggregate, "hearing", hearing);
+
+        final List<Object> eventStream1 = hearingAggregate.populateHearingToProbationCaseWorker().collect(toList());
+        assertThat(eventStream1.size(), is(0));
+    }
+
+    @Test
+    public void shouldPopulateHearingToProbationCaseWorkerWithHearingStatusHearingResulted() {
+        final UUID hearingId = randomUUID();
+        final Hearing hearing = Hearing.hearing().withId(hearingId).build();
+        final HearingListingStatus hearingListingStatus = HearingListingStatus.HEARING_RESULTED;
+        setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", hearingListingStatus);
+        final List<Object> eventStream1 = hearingAggregate.populateHearingToProbationCaseWorker().collect(toList());
+        assertThat(eventStream1.size(), is(0));
+    }
+
+    @Test
+    public void shouldUpdateDefendantListingStatusHearingResulted() {
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final Boolean notifyNCES = true;
+        final Hearing hearing = getHearingForVej(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
+        final HearingListingStatus hearingListingStatus = HearingListingStatus.HEARING_RESULTED;
+        setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", hearingListingStatus);
+        setField(hearingAggregate, "notifyNCES", notifyNCES);
+        final List<Object> eventStream1 = hearingAggregate.updateDefendantListingStatus(hearing, hearingListingStatus, notifyNCES,null).collect(toList());
+        assertThat(eventStream1.size(), is(2));
+        ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = (ProsecutionCaseDefendantListingStatusChangedV2) eventStream1.get(0);
+        assertThat(hearingId, is(prosecutionCaseDefendantListingStatusChangedV2.getHearing().getId()));
+    }
+
+    @Test
+    public void shouldUpdateDefendantListingStatusHearingInitialised() {
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = getHearingForVejWithoutCourtApplications(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
+        final HearingListingStatus hearingListingStatus = HearingListingStatus.HEARING_INITIALISED;
+        final Boolean notifyNCES = true;
+        setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", hearingListingStatus);
+        setField(hearingAggregate, "notifyNCES", notifyNCES);
+        final List<Object> eventStream1 = hearingAggregate.updateDefendantListingStatus(hearing, hearingListingStatus, notifyNCES, null).collect(toList());
+        assertThat(eventStream1.size(), is(4));
+        UnscheduledHearingAllocationNotified unscheduledHearingAllocationNotified = (UnscheduledHearingAllocationNotified) eventStream1.get(0);
+        assertThat(hearingId, is(unscheduledHearingAllocationNotified.getHearing().getId()));
+        ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = (ProsecutionCaseDefendantListingStatusChangedV2) eventStream1.get(1);
+        assertThat(hearingId, is(prosecutionCaseDefendantListingStatusChangedV2.getHearing().getId()));
+        HearingPopulatedToProbationCaseworker hearingPopulatedToProbationCaseworker = (HearingPopulatedToProbationCaseworker) eventStream1.get(2);
+        assertThat(hearingId, is(hearingPopulatedToProbationCaseworker.getHearing().getId()));
+        VejHearingPopulatedToProbationCaseworker vejHearingPopulatedToProbationCaseworker = (VejHearingPopulatedToProbationCaseworker) eventStream1.get(3);
+        assertThat(hearingId, is(vejHearingPopulatedToProbationCaseworker.getHearing().getId()));
+    }
+
+    @Test
+    public void shouldDeleteHearing() {
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = getHearingForVejWithoutCourtApplications(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
+        setField(hearingAggregate, "hearing", hearing);
+
+        final List<Object> eventStream1 = hearingAggregate.deleteHearing(hearing.getId()).collect(toList());
+        assertThat(eventStream1.size(), is(4));
+        HearingDeleted hearingDeleted = (HearingDeleted) eventStream1.get(0);
+        assertThat(hearingId, is(hearingDeleted.getHearingId()));
+        OffenceInHearingDeleted offenceInHearingDeleted = (OffenceInHearingDeleted) eventStream1.get(1);
+        assertThat(offenceId, is(offenceInHearingDeleted.getOffenceIds().get(0)));
+        DeletedHearingPopulatedToProbationCaseworker deletedHearingPopulatedToProbationCaseworker = (DeletedHearingPopulatedToProbationCaseworker) eventStream1.get(2);
+        assertThat(hearingId, is(deletedHearingPopulatedToProbationCaseworker.getHearing().getId()));
+        VejDeletedHearingPopulatedToProbationCaseworker vejDeletedHearingPopulatedToProbationCaseworker = (VejDeletedHearingPopulatedToProbationCaseworker) eventStream1.get(3);
+        assertThat(hearingId, is(vejDeletedHearingPopulatedToProbationCaseworker.getHearing().getId()));
+    }
+
+    @Test
+    public void shouldUpdateApplication() {
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = getHearingForVej(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
+
+        setField(hearingAggregate, "hearing", hearing);
+
+        final List<Object> eventStream1 = hearingAggregate.updateApplication(hearing.getCourtApplications().get(0)).collect(toList());
+        assertThat(eventStream1.size(), is(3));
+    }
+
+    @Test
+    public void shouldUpdateAllocationFields() {
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+        final UUID roomId = randomUUID();
+        final UUID hearingTypeId = randomUUID();
+        final Hearing hearing = getHearingForVej(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
+        final CourtApplication courtApplication = getCourtApplications(courtApplicationId).get(0);
+        Address address = getAddress();
+        CourtCentre courtCentre = getCourtCentre(courtCentreId, roomId, address);
+        List<HearingDay> hearingDays = asList(getHearingDay(courtCentreId, roomId));
+        HearingLanguage hearingLanguage = HearingLanguage.ENGLISH;
+        HearingType hearingType = getHearingType(hearingTypeId);
+        final UpdateHearingForAllocationFields updateHearingForAllocationFields = getUpdateHearingForAllocationFields(hearingId, hearingDays, hearingLanguage, hearingType, courtCentre, courtApplication);
+
+        setField(hearingAggregate, "hearing", hearing);
+
+        final List<Object> eventStream1 = hearingAggregate.updateAllocationFields(updateHearingForAllocationFields).collect(toList());
+        assertThat(eventStream1.size(), is(3));
+        HearingUpdatedForAllocationFields hearingUpdatedForAllocationFields = (HearingUpdatedForAllocationFields) eventStream1.get(0);
+        assertThat(hearingDays, is(hearingUpdatedForAllocationFields.getHearingDays()));
+        HearingPopulatedToProbationCaseworker hearingPopulatedToProbationCaseworker = (HearingPopulatedToProbationCaseworker) eventStream1.get(1);
+        assertThat(hearingId, is(hearingPopulatedToProbationCaseworker.getHearing().getId()));
+    }
+
+    private HearingType getHearingType(UUID hearingTypeId) {
+        return HearingType.hearingType().withId(hearingTypeId).withDescription("First Hearing").withWelshDescription("welsh").withDescription("First Hearing")
+                .build();
+    }
+
+    private HearingDay getHearingDay(UUID courtCentreId, UUID roomId) {
+        return HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).withListedDurationMinutes(30).withCourtRoomId(roomId).withCourtCentreId(courtCentreId)
+                .withListingSequence(4).withHasSharedResults(true).withIsCancelled(false)
+                .build();
+    }
+
+    private UpdateHearingForAllocationFields getUpdateHearingForAllocationFields(UUID hearingId, List<HearingDay> hearingDays, HearingLanguage english, HearingType hearingType, CourtCentre courtCentre, CourtApplication courtApplication) {
+        return UpdateHearingForAllocationFields.updateHearingForAllocationFields()
+                .withId(hearingId).withHearingDays(hearingDays).withHearingLanguage(english).withType(hearingType)
+                .withCourtCentre(courtCentre).withCourtApplication(courtApplication)
+                .build();
+    }
+
+    private CourtCentre getCourtCentre(UUID courtCentreId, UUID roomId, Address address) {
+        return CourtCentre.courtCentre().withWelshCourtCentre(true).withId(courtCentreId).withCode("C")
+                .withName("courtCentre").withWelshName("welsh").withRoomName("CourtRoom1").withRoomId(roomId).withWelshRoomName("Room1")
+                .withAddress(address).withWelshAddress(address).withCourtHearingLocation("London").withPsaCode(1)
+                .withLja(LjaDetails.ljaDetails().withLjaCode("ljaCode").withLjaName("ljaName")
+                        .withWelshLjaName("welshLja")
+                        .build()).withCourtLocationCode("C").
+                build();
+    }
+
+    private Address getAddress() {
+        return Address.address().withAddress1("address1").withAddress2("address2").withAddress3("address3").withAddress4("address4")
+                .withAddress5("address5").withPostcode("E6 2AJ").withWelshAddress1("welsh1").withWelshAddress2("welsh2")
+                .withWelshAddress3("welsh3").withWelshAddress4("welsh4").withWelshAddress5("welsh5").build();
+    }
+
     private ProsecutionCase createProsecutionCase(final UUID caseId, final UUID newDefendantID, final UUID offenceId1, final UUID offenceId2) {
         final List<Offence> offences = new ArrayList<>();
         offences.add(Offence.offence()
@@ -309,5 +661,21 @@ public class HearingAggregateTest {
                 .withId(caseId)
                 .withDefendants(defendants)
                 .build();
+    }
+
+    private DefenceCounsel getDefenceCounsel(final UUID id, final UUID userId,
+                                             final String firstName, final String lastName,
+                                             final String title, final String middleName,
+                                             final List<UUID> defendantList, final List<LocalDate> attendanceDays) {
+        final DefenceCounsel defenceCounsel =  DefenceCounsel.defenceCounsel()
+                .withId(id)
+                .withDefendants(defendantList)
+                .withAttendanceDays(attendanceDays)
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .withTitle(title)
+                .withMiddleName(middleName)
+                .withUserId(userId).build();
+        return defenceCounsel;
     }
 }

@@ -15,7 +15,9 @@ import java.util.Optional;
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
+import com.jayway.jsonpath.ReadContext;
 import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,10 @@ public class ProsecutionCaseUpdateOffencesHelper extends AbstractTestHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseUpdateOffencesHelper.class);
     private static final String WRITE_MEDIA_TYPE = "application/vnd.progression.update-offences-for-prosecution-case+json";
     private static final String TEMPLATE_UPDATE_OFFENCES_PAYLOAD = "progression.update-offences-for-prosecution-case.json";
+    private static final String TEMPLATE_UPDATE_OFFENCE_PLEA_PAYLOAD = "progression.update-hearing-offence-plea.json";
+    private static final String TEMPLATE_UPDATE_OFFENCE_VERDICT_PAYLOAD = "progression.update-hearing-offence-verdict.json";
+    private static final String WRITE_MEDIA_TYPE_PLEA = "application/vnd.progression.update-hearing-offence-plea+json";
+    private static final String WRITE_MEDIA_TYPE_VERDICT = "application/vnd.progression.update-hearing-offence-verdict+json";
     private final MessageConsumer publicEventsConsumerForOffencesUpdated =
             QueueUtil.publicEvents.createPublicConsumer(
                     "public.progression.defendant-offences-changed");
@@ -60,6 +66,26 @@ public class ProsecutionCaseUpdateOffencesHelper extends AbstractTestHelper {
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
+    public void updateOffenceVerdict(final String hearingId,final String offenceId ) {
+        final String jsonString = getPayload(TEMPLATE_UPDATE_OFFENCE_VERDICT_PAYLOAD);
+        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        jsonObjectPayload.getJSONObject("verdict").put("offenceId", offenceId);
+        jsonObjectPayload.put("hearingId", hearingId);
+
+        request = jsonObjectPayload.toString();
+        makePostCall(getWriteUrl("/hearing/" + hearingId + "/verdict" ), WRITE_MEDIA_TYPE_VERDICT, request);
+    }
+
+    public void updateOffencePlea(final String hearingId,final String offenceId ) {
+        final String jsonString = getPayload(TEMPLATE_UPDATE_OFFENCE_PLEA_PAYLOAD);
+        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        jsonObjectPayload.getJSONObject("pleaModel").put("offenceId", offenceId);
+        jsonObjectPayload.put("hearingId", hearingId);
+
+        request = jsonObjectPayload.toString();
+        makePostCall(getWriteUrl("/hearing/" + hearingId + "/plea" ), WRITE_MEDIA_TYPE_PLEA, request);
+    }
+
     public void updateMultipleOffences(final String offenceId, final String secondOffenceId, final String offenceCode) {
         final String jsonString = getPayload("progression.update-multiple-offences-for-prosecution-case.json");
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
@@ -79,6 +105,18 @@ public class ProsecutionCaseUpdateOffencesHelper extends AbstractTestHelper {
      * Retrieve message from queue and do additional verifications
      */
     public void verifyInActiveMQ() {
+        final JsonPath jsRequest = new JsonPath(request);
+        LOGGER.info("Request payload: {}", jsRequest.prettify());
+
+        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        LOGGER.info("message in queue payload: {}", jsonResponse.prettify());
+
+        assertThat(jsonResponse.getString("id"), is(jsRequest.getString("id")));
+    }
+
+    public void verifyVerdictInActiveMQ(final Matcher<? super ReadContext>... matchers) {
+        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+
         final JsonPath jsRequest = new JsonPath(request);
         LOGGER.info("Request payload: {}", jsRequest.prettify());
 

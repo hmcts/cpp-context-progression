@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/request-edit-form.json",
+  "description": "Edit information for Forms",
+  "additionalProperties": false
+}

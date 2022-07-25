@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -53,7 +54,6 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import com.jayway.restassured.path.json.JsonPath;
-import junit.framework.TestCase;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -67,6 +67,8 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
     private static final String EVENT_LOCATION_WITHOUT_COURT_CENTRE_IN_HEARING_DAYS = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed-without-court-centre-in-hearing-days.json";
     private static final String EVENT_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed.json";
     private static final String EVENT_WITH_LINKED_APPLICATION_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed-with-linked-applications.json";
+    private static final String DEFENDANT_LISTING_STATUS_CHANGED_WITH_ESTIMATED_DURATION_EVENT_PAYLOAD_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed-with-next-hearing-estimated-duration.json";
+    private static final String DEFENDANT_LISTING_STATUS_CHANGED_WITH_OFFENCE_PAYLOAD_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed-with-offence.json";
 
     private static final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer(DEFENDANT_LISTING_STATUS_CHANGED_EVENT);
     private static final MessageConsumer messageConsumerV2 = privateEvents.createPrivateConsumer(DEFENDANT_LISTING_STATUS_CHANGED_V2_EVENT);
@@ -183,7 +185,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
             verificationHelper.verifyProsecutionCase(parse(hearing), outputCase, "$.prosecutionCases[" + i + "]");
             verificationHelper.verifyHearings(parse(prosecutionCaseDefendantListingStatusChangedEvent), outputCase, 0);
         }
-        verificationHelper.verifyCounts(3,3,0);
+        verificationHelper.verifyCounts(3, 3, 0);
     }
 
     @Test
@@ -497,7 +499,183 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
             verificationHelper.verifyProsecutionCase(parse(hearing), outputCase, "$.prosecutionCases[" + i + "]");
             verificationHelper.verifyHearingsWithoutCourtCentre(parse(prosecutionCaseDefendantListingStatusChangedEvent), outputCase, 0);
         }
-        verificationHelper.verifyCounts(3,3,0);
+        verificationHelper.verifyCounts(3, 3, 0);
+    }
+
+    @Test
+    public void shouldIngestProsecutionCaseDefendantListingStatusChangedEventWithEstimatedDuration() {
+        final Metadata metadata = createMetadata(DEFENDANT_LISTING_STATUS_CHANGED_EVENT);
+
+        final JsonObject prosecutionCaseDefendantListingStatusChangedEvent = getProsecutionCaseDefendantListingStatusChangedPayload(DEFENDANT_LISTING_STATUS_CHANGED_WITH_ESTIMATED_DURATION_EVENT_PAYLOAD_LOCATION);
+
+        sendMessage(messageProducer, DEFENDANT_LISTING_STATUS_CHANGED_EVENT, prosecutionCaseDefendantListingStatusChangedEvent, metadata);
+
+        verifyInMessagingQueue();
+
+        final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
+
+            try {
+                final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
+                if (jsonObject.getInt("totalResults") == 3) {
+                    return of(jsonObject);
+                }
+            } catch (final IOException e) {
+                fail();
+            }
+            return empty();
+        });
+
+        assertTrue(prosecutionCaseResponseJsonObject.isPresent());
+
+        final int indexSize = prosecutionCaseResponseJsonObject.get().getJsonArray("index").size();
+
+        IntStream.range(0, indexSize).forEach(outputCaseIndex -> {
+            final JsonObject outputCase = getCaseAt(prosecutionCaseResponseJsonObject, outputCaseIndex);
+            final JsonObject outputHearing = outputCase.getJsonArray("hearings").getJsonObject(0);
+            final JsonObject inputHearing = prosecutionCaseDefendantListingStatusChangedEvent.getJsonObject("hearing");
+
+            assertCase(outputCase, asList(firstCaseId, secondCaseId, thirdCaseId));
+            assertHearing(outputHearing, inputHearing, prosecutionCaseDefendantListingStatusChangedEvent, false);
+
+            final JsonArray outputJudiciaryTypesArray = outputHearing.getJsonArray("judiciaryTypes");
+            final JsonArray inputJudiciaryTypesArray = inputHearing.getJsonArray("judiciary");
+
+            assertJudiciaryTypes(outputJudiciaryTypesArray, inputJudiciaryTypesArray);
+
+            if (outputCase.containsKey(APPLICATIONS)) {
+                final JsonArray outputApplications = outputCase.getJsonArray(APPLICATIONS);
+                final JsonArray inputCourtApplications = inputHearing.getJsonArray(COURT_APPLICATIONS);
+                assertCourtApplications(outputApplications, inputCourtApplications);
+            }
+        });
+
+
+        final Map<String, JsonObject> caseAndApplicationsOutputMap = new HashMap<>();
+        final Map<String, JsonObject> applicationsInputMap = new HashMap<>();
+        final Map<String, JsonObject> casesInputMap = new HashMap<>();
+
+        final JsonObject hearing = prosecutionCaseDefendantListingStatusChangedEvent.getJsonObject("hearing");
+        final JsonArray courtApplications = hearing.getJsonArray("courtApplications");
+        final JsonArray cases = hearing.getJsonArray("prosecutionCases");
+
+
+        IntStream.range(0, indexSize).forEach(outputCaseIndex -> {
+            final JsonObject outputCase = getCaseAt(prosecutionCaseResponseJsonObject, outputCaseIndex);
+            caseAndApplicationsOutputMap.putIfAbsent(outputCase.getString("caseId"), outputCase);
+        });
+
+        IntStream.range(0, hearing.getJsonArray("courtApplications").size()).forEach(applicationIndex -> {
+            final JsonObject application = (JsonObject) hearing.getJsonArray("courtApplications").get(applicationIndex);
+            applicationsInputMap.putIfAbsent(application.getString("id"), application);
+        });
+
+        IntStream.range(0, cases.size()).forEach(caseIndex -> {
+            final JsonObject cases1 = (JsonObject) hearing.getJsonArray("prosecutionCases").get(caseIndex);
+            casesInputMap.putIfAbsent(cases1.getString("id"), cases1);
+        });
+
+        IntStream.range(0, courtApplications.size()).forEach(courtApplicationIndex -> {
+            final JsonObject inputApplication = (JsonObject) hearing.getJsonArray("courtApplications").get(courtApplicationIndex);
+            final JsonObject outputApplication = caseAndApplicationsOutputMap.get(inputApplication.getString("id"));
+            verificationHelper.verifyApplication(parse(hearing), outputApplication, "$.courtApplications[" + courtApplicationIndex + "]");
+            verificationHelper.verifyHearings(parse(prosecutionCaseDefendantListingStatusChangedEvent), outputApplication, 0);
+        });
+
+        for (int i = 0; i < cases.size(); i++) {
+            final JsonObject inputCase = (JsonObject) hearing.getJsonArray("prosecutionCases").get(i);
+            final JsonObject outputCase = caseAndApplicationsOutputMap.get(inputCase.getString("id"));
+            verificationHelper.verifyProsecutionCase(parse(hearing), outputCase, "$.prosecutionCases[" + i + "]");
+            verificationHelper.verifyHearingsWithEstimatedDuration(parse(prosecutionCaseDefendantListingStatusChangedEvent), outputCase, 0);
+        }
+        verificationHelper.verifyCounts(3, 3, 0);
+    }
+
+    @Test
+    public void shouldIngestProsecutionCaseDefendantListingStatusChangedEventWithOffence() {
+        final Metadata metadata = createMetadata(DEFENDANT_LISTING_STATUS_CHANGED_EVENT);
+
+        final JsonObject prosecutionCaseDefendantListingStatusChangedEvent = getProsecutionCaseDefendantListingStatusChangedPayload(DEFENDANT_LISTING_STATUS_CHANGED_WITH_OFFENCE_PAYLOAD_LOCATION);
+
+        sendMessage(messageProducer, DEFENDANT_LISTING_STATUS_CHANGED_EVENT, prosecutionCaseDefendantListingStatusChangedEvent, metadata);
+
+        verifyInMessagingQueue();
+
+        final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
+
+            try {
+                final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
+                if (jsonObject.getInt("totalResults") == 3) {
+                    return of(jsonObject);
+                }
+            } catch (final IOException e) {
+                fail();
+            }
+            return empty();
+        });
+
+        assertTrue(prosecutionCaseResponseJsonObject.isPresent());
+
+        final int indexSize = prosecutionCaseResponseJsonObject.get().getJsonArray("index").size();
+
+        IntStream.range(0, indexSize).forEach(outputCaseIndex -> {
+            final JsonObject outputCase = getCaseAt(prosecutionCaseResponseJsonObject, outputCaseIndex);
+            final JsonObject outputHearing = outputCase.getJsonArray("hearings").getJsonObject(0);
+            final JsonObject inputHearing = prosecutionCaseDefendantListingStatusChangedEvent.getJsonObject("hearing");
+
+            assertCase(outputCase, asList(firstCaseId, secondCaseId, thirdCaseId));
+            assertHearing(outputHearing, inputHearing, prosecutionCaseDefendantListingStatusChangedEvent, false);
+
+            final JsonArray outputJudiciaryTypesArray = outputHearing.getJsonArray("judiciaryTypes");
+            final JsonArray inputJudiciaryTypesArray = inputHearing.getJsonArray("judiciary");
+
+            assertJudiciaryTypes(outputJudiciaryTypesArray, inputJudiciaryTypesArray);
+
+            if (outputCase.containsKey(APPLICATIONS)) {
+                final JsonArray outputApplications = outputCase.getJsonArray(APPLICATIONS);
+                final JsonArray inputCourtApplications = inputHearing.getJsonArray(COURT_APPLICATIONS);
+                assertCourtApplications(outputApplications, inputCourtApplications);
+            }
+        });
+
+
+        final Map<String, JsonObject> caseAndApplicationsOutputMap = new HashMap<>();
+        final Map<String, JsonObject> applicationsInputMap = new HashMap<>();
+        final Map<String, JsonObject> casesInputMap = new HashMap<>();
+
+        final JsonObject hearing = prosecutionCaseDefendantListingStatusChangedEvent.getJsonObject("hearing");
+        final JsonArray courtApplications = hearing.getJsonArray("courtApplications");
+        final JsonArray cases = hearing.getJsonArray("prosecutionCases");
+
+
+        IntStream.range(0, indexSize).forEach(outputCaseIndex -> {
+            final JsonObject outputCase = getCaseAt(prosecutionCaseResponseJsonObject, outputCaseIndex);
+            caseAndApplicationsOutputMap.putIfAbsent(outputCase.getString("caseId"), outputCase);
+        });
+
+        IntStream.range(0, hearing.getJsonArray("courtApplications").size()).forEach(applicationIndex -> {
+            final JsonObject application = (JsonObject) hearing.getJsonArray("courtApplications").get(applicationIndex);
+            applicationsInputMap.putIfAbsent(application.getString("id"), application);
+        });
+
+        IntStream.range(0, cases.size()).forEach(caseIndex -> {
+            final JsonObject cases1 = (JsonObject) hearing.getJsonArray("prosecutionCases").get(caseIndex);
+            casesInputMap.putIfAbsent(cases1.getString("id"), cases1);
+        });
+
+        IntStream.range(0, courtApplications.size()).forEach(courtApplicationIndex -> {
+            final JsonObject inputApplication = (JsonObject) hearing.getJsonArray("courtApplications").get(courtApplicationIndex);
+            final JsonObject outputApplication = caseAndApplicationsOutputMap.get(inputApplication.getString("id"));
+            verificationHelper.verifyApplication(parse(hearing), outputApplication, "$.courtApplications[" + courtApplicationIndex + "]");
+            verificationHelper.verifyHearings(parse(prosecutionCaseDefendantListingStatusChangedEvent), outputApplication, 0);
+        });
+
+        for (int i = 0; i < cases.size(); i++) {
+            final JsonObject inputCase = (JsonObject) hearing.getJsonArray("prosecutionCases").get(i);
+            final JsonObject outputCase = caseAndApplicationsOutputMap.get(inputCase.getString("id"));
+            verificationHelper.verifyProsecutionCase(parse(hearing), outputCase, "$.prosecutionCases[" + i + "]");
+            verificationHelper.verifyHearingsWithEstimatedDuration(parse(prosecutionCaseDefendantListingStatusChangedEvent), outputCase, 0);
+        }
+        verificationHelper.verifyCounts(3, 3, 0);
     }
 
     @Test

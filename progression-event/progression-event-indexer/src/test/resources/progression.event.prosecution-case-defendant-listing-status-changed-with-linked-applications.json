@@ -211,7 +211,15 @@
                 "offenceTitle": "Use / install a television set without a licence",
                 "orderIndex": 1,
                 "startDate": "2020-02-09",
-                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse",
+                "verdict" : {
+                  "offenceId" : "baa0552e-82b0-479b-bf4e-3314b163933c",
+                  "verdictType" : {
+                    "id" : "baa0552e-82b0-479b-bf4e-3314b163933d",
+                    "category" : "category",
+                    "categoryType" : "categoryType"
+                  }
+                }
               },
               {
                 "arrestDate": "2020-02-09",
@@ -451,7 +459,23 @@
     "type": {
       "description": "Application",
       "id": "3449743b-95d6-4836-8941-57f588b52068"
-    }
+    },
+    "defenceCounsels" : [
+      {
+        "attendanceDays": [
+          "2020-01-02"
+        ],
+        "defendants": [
+          "9c52f847-4125-4438-b855-9c264695ad33"
+        ],
+        "firstName": "acsc",
+        "id": "dba138e9-4ba9-4ff5-82e8-c646e8916d44",
+        "lastName": "CZCXz",
+        "middleName": "",
+        "status": "zczc",
+        "title": ""
+      }
+    ]
   },
   "hearingListingStatus": "HEARING_INITIALISED"
 }

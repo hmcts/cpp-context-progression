@@ -135,7 +135,7 @@ public class HearingAtAGlanceService {
                         .map(HearingDay::getSittingDay)
                         .sorted()
                         .findFirst()
-                        .orElseThrow(IllegalArgumentException::new)
+                        .<IllegalArgumentException>orElseThrow(IllegalArgumentException::new)
                 ));
 
         JurisdictionType jurisdictionType = null;

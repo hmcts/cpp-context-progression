@@ -4,6 +4,7 @@ import static com.jayway.jsonassert.JsonAssert.with;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -1056,6 +1057,40 @@ public class ProsecutionCaseQueryViewTest {
         assertThat(hearingTypes.size(), is(2));
         assertThat(hearingTypes.get(hearingId1.toString()), is(FIRST_HEARING_TYPE_DESCRIPTION));
     }
+
+
+    @Test
+    public void shouldFindProsecutionAuthorityIdByCaseIds() {
+        final UUID caseId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("caseId", caseId.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.prosecutionauthorityid-by-case-id").build(),
+                jsonObject);
+
+        final List<Defendant> defendants = new ArrayList<>();
+        defendants.add(Defendant.defendant()
+                .withMasterDefendantId(masterDefendantId)
+                .build());
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(defendants)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityId(randomUUID())
+                        .build())
+                .build();
+
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+        when(prosecutionCaseRepository.findByProsecutionCaseIds(singletonList(caseId))).thenReturn(singletonList(prosecutionCaseEntity));
+
+
+        final JsonEnvelope response = prosecutionCaseQuery.searchProsecutionAuthorityId(jsonEnvelope);
+        assertThat(response.payloadAsJsonObject().get("prosecutors"), notNullValue());
+    }
+
 
     private CourtApplication getCourtApplication() {
         return CourtApplication.courtApplication()

@@ -1,5 +1,10 @@
 package uk.gov.moj.cpp.progression.util;
 
+import org.apache.http.HttpStatus;
+
+import javax.ws.rs.core.Response.Status;
+import java.util.UUID;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -20,12 +25,6 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import java.util.UUID;
-
-import javax.ws.rs.core.Response.Status;
-
-import org.apache.http.HttpStatus;
-
 public class WireMockStubUtils {
 
     public static final String MATERIAL_UPLOAD_COMMAND =
@@ -36,6 +35,7 @@ public class WireMockStubUtils {
     private static final String CONTENT_TYPE_QUERY_HEARING = "application/vnd.hearing.get.hearing+json";
     private static final String CONTENT_TYPE_QUERY_PERMISSION = "application/vnd.usersgroups.permissions+json";
     private static final String CONTENT_TYPE_QUERY_USER_ORGANISATION = "application/vnd.usersgroups.get-organisation-details-for-user+json";
+    private static final String CONTENT_TYPE_QUERY_DEFENCE_SERVICE_USER_ROLE_IN_CASE = "application/vnd.advocate.query.role-in-case-by-caseid+json";
 
     static {
         configureFor(HOST, 8080);
@@ -96,6 +96,18 @@ public class WireMockStubUtils {
                         .withBody(responsePayLoad)));
 
         waitForStubToBeReady(format("usersgroups-service/query/api/rest/usersgroups/permissions"), CONTENT_TYPE_QUERY_PERMISSION);
+    }
+
+    public static void stubAdvocateRoleInCaseByCaseId(final String caseId, final String responsePayLoad) {
+        stubPingFor("defence-service");
+
+        stubFor(get(urlPathEqualTo(format("/defence-service/query/api/rest/defence/cases/{0}", caseId)))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, CONTENT_TYPE_QUERY_DEFENCE_SERVICE_USER_ROLE_IN_CASE)
+                        .withBody(responsePayLoad)));
+
+        waitForStubToBeReady(format("/defence-service/query/api/rest/defence/cases/{0}", caseId), CONTENT_TYPE_QUERY_DEFENCE_SERVICE_USER_ROLE_IN_CASE);
     }
 
 

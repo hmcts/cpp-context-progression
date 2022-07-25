@@ -27,7 +27,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.value.object.CPSNotificationVO;
 import uk.gov.moj.cpp.progression.value.object.CaseVO;
 import uk.gov.moj.cpp.progression.value.object.DefenceOrganisationVO;
@@ -51,6 +51,7 @@ import javax.json.JsonObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 @SuppressWarnings({"squid:S3457", "squid:S3655"})
 @ServiceComponent(EVENT_PROCESSOR)
@@ -78,7 +79,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     private ProgressionService progressionService;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private Requester requester;

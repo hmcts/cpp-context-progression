@@ -436,12 +436,25 @@
         "applicantDisplayName": {
           "type": "string"
         },
+        "applicantId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
         "respondentDisplayNames": {
           "type": "array",
           "minItems": 0,
           "items": {
             "type": "string"
           }
+        },
+        "respondentIds": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          }
+        },
+        "subjectId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "isAppeal": {
           "type": "boolean"

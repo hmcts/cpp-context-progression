@@ -9,8 +9,8 @@ import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.ID;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataService.NATIONALITY_CODE;
+import static uk.gov.moj.cpp.progression.service.RefDataService.ID;
+import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY_CODE;
 import static uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer.PROSECUTION_AUTHORITY_CODE;
 import static uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer.PROSECUTION_AUTHORITY_ID;
 
@@ -26,7 +26,7 @@ import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Plea;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -76,7 +76,7 @@ public class SendingSheetCompleteTransformerTest {
     @Mock
     private ReferenceDataOffenceService referenceDataOffenceService;
     @Mock
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
     @Mock
     private Requester requester;
     @InjectMocks

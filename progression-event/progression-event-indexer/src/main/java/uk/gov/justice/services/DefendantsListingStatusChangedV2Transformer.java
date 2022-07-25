@@ -1,13 +1,8 @@
 package uk.gov.justice.services;
 
-import javax.json.JsonObject;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toList;
 
-import org.apache.commons.collections.CollectionUtils;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -18,12 +13,21 @@ import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.services.transformer.BaseCourtApplicationTransformer;
 import uk.gov.justice.services.unifiedsearch.client.domain.CaseDetails;
 
-import static java.util.Objects.nonNull;
-import static java.util.stream.Collectors.toList;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import org.apache.commons.collections.CollectionUtils;
+import uk.gov.justice.services.unifiedsearch.client.domain.Party;
 
 public class DefendantsListingStatusChangedV2Transformer extends BaseCourtApplicationTransformer {
 
     private HearingMapper hearingMapper = new HearingMapper();
+    private DomainToIndexMapper domainToIndexMapper = new DomainToIndexMapper();
 
     @Override
     public Object transform(final Object input) {
@@ -58,6 +62,7 @@ public class DefendantsListingStatusChangedV2Transformer extends BaseCourtApplic
             for (final ProsecutionCase prosecutionCase : prosecutionCases) {
                 final List<String> defendantIds = new ArrayList<>();
                 final List<Defendant> defendants = prosecutionCase.getDefendants();
+                final List<Party> parties = new ArrayList<>();
                 for (final Defendant defendant : defendants) {
                     defendantIds.add(defendant.getId().toString());
                     final UUID prosecutionCaseId = prosecutionCase.getId();
@@ -65,6 +70,8 @@ public class DefendantsListingStatusChangedV2Transformer extends BaseCourtApplic
                     caseDetailsExisting = caseDetails(PROSECUTION, hearing, prosecutionCaseId, caseDetailsExisting);
                     caseDetailsExisting.setHearings(hearings(listingStatusChanged.getHearing(), defendantIds));
                     populateProsecutingAuthorityDetails(prosecutionCase, caseDetailsExisting);
+                    parties.add(domainToIndexMapper.party(defendant));
+                    caseDetailsExisting.setParties(parties);
                     caseDocumentsMap.put(prosecutionCaseId, caseDetailsExisting);
                 }
             }

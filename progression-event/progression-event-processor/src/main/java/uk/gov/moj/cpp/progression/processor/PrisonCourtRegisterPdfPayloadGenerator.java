@@ -1,5 +1,9 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
 
@@ -8,9 +12,9 @@ import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.json.Json;
@@ -41,17 +45,17 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
         final JsonObjectBuilder payloadForPdf = Json.createObjectBuilder();
         final JsonArrayBuilder casesArray = Json.createArrayBuilder();
 
-        Optional.ofNullable(jsonObject.getJsonObject("prisonCourtRegister")).ifPresent(prisonCourtRegisterRequest -> {
+        ofNullable(jsonObject.getJsonObject("prisonCourtRegister")).ifPresent(prisonCourtRegisterRequest -> {
             payloadForPdf.add("registerDate", LocalDate.now().format(OUT_DATE_FORMATTER));
-            Optional.ofNullable(prisonCourtRegisterRequest.getJsonObject("hearingVenue")).ifPresent(hearingVenue -> {
+            ofNullable(prisonCourtRegisterRequest.getJsonObject("hearingVenue")).ifPresent(hearingVenue -> {
                 payloadForPdf.add("ljaName", hearingVenue.getString("ljaName", DASH));
                 payloadForPdf.add("courtHouse", hearingVenue.getString("courtHouse", DASH));
-                Optional.ofNullable(hearingVenue.getJsonObject("address")).ifPresent(
+                ofNullable(hearingVenue.getJsonObject("address")).ifPresent(
                         address -> payloadForPdf.add("courtHouseAddress", buildCourtHouseAddress(address))
                 );
             });
 
-            Optional.ofNullable(prisonCourtRegisterRequest.getJsonObject("custodyLocation"))
+            ofNullable(prisonCourtRegisterRequest.getJsonObject("custodyLocation"))
                     .ifPresent(custodyLocation ->
                             payloadForPdf.add("custodyLocation", custodyLocation.getString("name", DASH)));
 
@@ -60,7 +64,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
 
             defendant.getJsonArray("prosecutionCasesOrApplications").stream()
                     .map(JsonObject.class::cast)
-                    .collect(Collectors.toList())
+                    .collect(toList())
                     .forEach(pcoa -> {
                         final JsonObjectBuilder caseJson = Json.createObjectBuilder();
 
@@ -97,8 +101,8 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
 
     private void buildDefendantResults(final JsonObject defendant, final JsonObjectBuilder caseJson) {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        Optional.ofNullable(defendant.getJsonArray("defendantResults")).ifPresent(results -> {
-            final List<JsonObject> resultList = results.stream().map(JsonObject.class::cast).collect(Collectors.toList());
+        ofNullable(defendant.getJsonArray("defendantResults")).ifPresent(results -> {
+            final List<JsonObject> resultList = results.stream().map(JsonObject.class::cast).collect(toList());
             resultList.forEach(result -> {
                 final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
                         .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
@@ -115,16 +119,18 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
 
     private void buildCaseResults(final JsonObject pcoa, final JsonObjectBuilder caseJson) {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        Optional.ofNullable(pcoa.getJsonArray(RESULTS)).ifPresent(results -> results.stream().map(JsonObject.class::cast).forEach(result -> {
-            final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
-                    .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
-                    .add(RESULT_TEXT, clearUndesiredCharacters(result.getString(RESULT_TEXT, "")));
-            jsonArrayBuilder.add(resultBuilder.build());
-        }));
+        if(!isApplicationValid(pcoa)){
+            ofNullable(pcoa.getJsonArray(RESULTS)).ifPresent(results -> results.stream().map(JsonObject.class::cast).forEach(result -> {
+                final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
+                        .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
+                        .add(RESULT_TEXT, clearUndesiredCharacters(result.getString(RESULT_TEXT, "")));
+                jsonArrayBuilder.add(resultBuilder.build());
+            }));
 
-        final JsonArray caseResults = jsonArrayBuilder.build();
-        if (!caseResults.isEmpty()) {
-            caseJson.add("caseResults", caseResults);
+            final JsonArray caseResults = jsonArrayBuilder.build();
+            if (!caseResults.isEmpty()) {
+                caseJson.add("caseResults", caseResults);
+            }
         }
     }
 
@@ -162,7 +168,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
 
     private void buildNameAndAddress(final JsonObject defendant, final JsonObjectBuilder caseJson) {
         caseJson.add("name", defendant.getString("name", DASH));
-        Optional.ofNullable(defendant.getJsonObject(ADDRESS)).ifPresent(addressObj -> {
+        ofNullable(defendant.getJsonObject(ADDRESS)).ifPresent(addressObj -> {
             Stream.of("1", "2", "3", "4", "5").map(a -> ADDRESS + a).forEach(a -> caseJson.add(a, addressObj.getString(a, "")));
             caseJson.add("postCode", addressObj.getString("postCode", ""));
         });
@@ -233,16 +239,25 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
     private void buildApplication(final JsonObject pcoaJson, final JsonObjectBuilder caseJson) {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
 
-        if (isApplicationValid(pcoaJson)) {
-            final JsonObject application = Json.createObjectBuilder()
+        if (isApplicationValid(pcoaJson) && nonNull(pcoaJson.getJsonArray(RESULTS))) {
+            final List<String> resultList =
+            IntStream
+                    .range(0,pcoaJson.getJsonArray(RESULTS).size())
+                    .mapToObj(i -> pcoaJson.getJsonArray(RESULTS).getJsonObject(i))
+                    .map(result -> clearUndesiredCharacters(result.getString(RESULT_TEXT, DASH)))
+                    .collect(Collectors.toList());
+            final JsonArrayBuilder resultJsonArrayBuilder  = Json.createArrayBuilder();
+            resultList.stream().forEach(resultJsonArrayBuilder::add);
+
+            final JsonObjectBuilder applicationBuilder = Json.createObjectBuilder()
                     .add("type", pcoaJson.getString("applicationType", DASH))
-                    .add("decision", pcoaJson.getString("applicationDecision", DASH))
-                    .add("decisionDate", formatDate(pcoaJson.getString("applicationDecisionDate", DASH)))
-                    .add("response", pcoaJson.getString("applicationResponse", DASH))
-                    .add("responseDate", formatDate(pcoaJson.getString("applicationResponseDate", DASH)))
-                    .add("result", clearUndesiredCharacters(pcoaJson.getString("applicationResult", DASH)))
-                    .build();
-            jsonArrayBuilder.add(application);
+                    .add("result", resultJsonArrayBuilder.build()
+                    );
+            ofNullable(pcoaJson.getString("applicationDecision", null)).ifPresent(decision -> applicationBuilder.add("decision", decision));
+            ofNullable(pcoaJson.getString("applicationDecisionDate", null)).ifPresent(decisionDate -> applicationBuilder.add("decisionDate", formatDate(decisionDate)));
+            ofNullable(pcoaJson.getString("applicationResponse", null)).ifPresent(response -> applicationBuilder.add("response", response));
+            ofNullable(pcoaJson.getString("applicationResponseDate", null)).ifPresent(responseDate -> applicationBuilder.add("responseDate", formatDate(responseDate)));
+            jsonArrayBuilder.add(applicationBuilder.build());
         }
 
         final JsonArray applications = jsonArrayBuilder.build();
@@ -259,9 +274,11 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
         return applicationFields.stream().anyMatch(s -> !pcoaJson.getString(s, "").isEmpty());
     }
 
+
+
     private void buildOffences(final JsonObject pcoaJson, final JsonObjectBuilder caseJson) {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        Optional.ofNullable(pcoaJson.getJsonArray("offences")).ifPresent(offences -> offences.stream().map(JsonObject.class::cast).forEach(offenceJson -> {
+        ofNullable(pcoaJson.getJsonArray("offences")).ifPresent(offences -> offences.stream().map(JsonObject.class::cast).filter(offenceJson -> nonNull(offenceJson.getJsonArray(RESULTS))).forEach(offenceJson -> {
             final String convictionDate = formatDate(offenceJson.getString(CONVICTION_DATE, DASH));
             final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder()
                     .add("offenceCode", offenceJson.getString("offenceCode", DASH))
@@ -285,8 +302,8 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
 
     private void setResults(final JsonArray resultsArray, final JsonObjectBuilder offenceBuilder) {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        Optional.ofNullable(resultsArray).ifPresent(results -> {
-            final List<JsonObject> resultList = results.stream().map(JsonObject.class::cast).collect(Collectors.toList());
+        ofNullable(resultsArray).ifPresent(results -> {
+            final List<JsonObject> resultList = results.stream().map(JsonObject.class::cast).collect(toList());
             resultList.forEach(result -> {
                 final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
                         .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.Integer.valueOf;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -24,11 +25,15 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
 import uk.gov.moj.cpp.progression.helper.EnvelopeHelper;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -58,7 +63,7 @@ public class UpdateCourtDocumentHandler {
     @Inject
     private EnvelopeHelper envelopeHelper;
     @Inject
-    private ReferenceDataService refDataService;
+    private RefDataService refDataService;
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
     @Inject
@@ -94,12 +99,29 @@ public class UpdateCourtDocumentHandler {
                     withContainsFinancialMeans(updateCourtDocument.getContainsFinancialMeans()).
                     withDocumentTypeDescription(documentTypeData.getString(SECTION)).
                     withName(updateCourtDocument.getName()).
-                    withSeqNum(valueOf(documentTypeData.getInt(SEQNUM)))
-                    .withSendToCps(updateCourtDocument.getSendToCps() != null ? updateCourtDocument.getSendToCps() : false)
+                    withSeqNum(valueOf(documentTypeData.getInt(SEQNUM))).
+                    withSendToCps(updateCourtDocument.getSendToCps() != null && updateCourtDocument.getSendToCps())
                     .build();
-
+            final List<UUID> petFormFinalisedDocuments= new ArrayList<>();
+            final List<UUID> bcmFormFinalisedDocuments= new ArrayList<>();
+            final List<UUID> ptphFormFinalisedDocuments= new ArrayList<>();
+            if (inputCourtDocumentDetails.getSendToCps()) {
+                final UUID caseId = updateCourtDocument.getProsecutionCaseId();
+                if(Objects.nonNull(caseId)) {
+                    final EventStream caseEventStream = eventSource.getStreamById(caseId);
+                    final CaseAggregate caseAggregate = aggregateService.get(caseEventStream, CaseAggregate.class);
+                    petFormFinalisedDocuments.addAll(caseAggregate.getPetFormFinalisedDocuments());
+                    bcmFormFinalisedDocuments.addAll(caseAggregate.getBcmFormFinalisedDocuments());
+                    ptphFormFinalisedDocuments.addAll(caseAggregate.getPtphFormFinalisedDocuments());
+                }
+            }
             events = courtDocumentAggregate
-                    .updateCourtDocument(inputCourtDocumentDetails, updateCourtDocument.getReceivedDateTime(), buildDocumentTypeRBAC(documentTypeData));
+                    .updateCourtDocument(inputCourtDocumentDetails,
+                            updateCourtDocument.getReceivedDateTime(),
+                            buildDocumentTypeRBAC(documentTypeData),
+                            petFormFinalisedDocuments,
+                            bcmFormFinalisedDocuments,
+                            ptphFormFinalisedDocuments);
 
         } else {
             events = courtDocumentAggregate.updateCourtDocumentFailed(updateCourtDocument.getCourtDocumentId(), format("Update document is not supported for this Document Category %s", documentTypeData.getString(DOCUMENT_CATEGORY)));

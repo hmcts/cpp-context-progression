@@ -53,7 +53,12 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
             final String outputCaseDocumentsPath = format(OUTPUT_CASE_JSON_PATH);
             with(outputCase.toString())
                     .assertThat(outputCaseDocumentsPath + ".caseId", equalTo(((JsonString) inputProsecutionCase.read(inputDefendantPath + ".id")).getString()))
-                    .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("PROSECUTION"));
+                    .assertThat(outputCaseDocumentsPath + "._case_type", equalTo("PROSECUTION"))
+                    .assertThat(outputCaseDocumentsPath + ".parties[0].offences[0].verdict.verdictDate", equalTo("2019-01-01"))
+                    .assertThat(outputCaseDocumentsPath + ".parties[0].offences[0].verdict.verdictType.category", equalTo("category"))
+                    .assertThat(outputCaseDocumentsPath + ".parties[0].offences[0].verdict.verdictType.categoryType", equalTo("categoryType"))
+                    .assertThat(outputCaseDocumentsPath + ".parties[0].offences[0].verdict.verdictType.sequence", equalTo(0))
+                    .assertThat(outputCaseDocumentsPath + ".parties[0].offences[0].verdict.verdictType.verdictTypeId", equalTo("3789ab16-0bb7-4ef1-87ef-c936bf0364f2"));
             incrementCaseDocumentsCount();
         } catch (final Exception e) {
             incrementExceptionCount();

@@ -7,7 +7,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.core.courts.CreateHearingForApplication;
 import uk.gov.justice.core.courts.CreateHearingForApplicationV2;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;

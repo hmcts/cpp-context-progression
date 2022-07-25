@@ -24,6 +24,9 @@
     "validTo": {
       "$ref": "#/definitions/isoDate"
     },
+    "defenceOnly": {
+      "type": "boolean"
+    },
     "courtDocumentTypeRBAC": {
       "type": "object",
       "properties": {

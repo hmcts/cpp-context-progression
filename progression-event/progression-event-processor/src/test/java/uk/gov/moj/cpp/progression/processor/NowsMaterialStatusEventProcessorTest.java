@@ -179,7 +179,7 @@ public class NowsMaterialStatusEventProcessorTest {
 
         eventProcessor.processStatusUpdated(event);
 
-        verify(notificationService).sendApiNotification(Mockito.eq(event), Mockito.any(UUID.class), materialDetailsArgumentCaptor.capture(), Mockito.any(String.class), Mockito.any(List.class), Mockito.any(String.class), Mockito.any(List.class));
+        verify(notificationService).sendApiNotification(Mockito.eq(event), Mockito.any(UUID.class), materialDetailsArgumentCaptor.capture(), Mockito.any(List.class), Mockito.any(List.class), Mockito.any(List.class));
         verify(notificationService, never()).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
 
         final MaterialDetails materialDetails = materialDetailsArgumentCaptor.getValue();

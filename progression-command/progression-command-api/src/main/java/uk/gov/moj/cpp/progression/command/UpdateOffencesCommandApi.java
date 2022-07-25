@@ -24,6 +24,20 @@ public class UpdateOffencesCommandApi {
         sender.send(commandEnvelope);
     }
 
+    @Handles("progression.update-hearing-offence-plea")
+    public void handleUpdatePlea(final JsonEnvelope envelope) {
+        final JsonEnvelope commandEnvelope = envelopeWithUpdatedActionName(envelope,
+                "progression.command.update-hearing-offence-plea");
+        sender.send(commandEnvelope);
+    }
+
+    @Handles("progression.update-hearing-offence-verdict")
+    public void handleUpdateVerdict(final JsonEnvelope envelope) {
+        final JsonEnvelope commandEnvelope = envelopeWithUpdatedActionName(envelope,
+                "progression.command.update-hearing-offence-verdict");
+        sender.send(commandEnvelope);
+    }
+
     private JsonEnvelope envelopeWithUpdatedActionName(final JsonEnvelope existingEnvelope, final String name) {
         return enveloper.withMetadataFrom(existingEnvelope, name).apply(existingEnvelope.payloadAsJsonObject());
     }

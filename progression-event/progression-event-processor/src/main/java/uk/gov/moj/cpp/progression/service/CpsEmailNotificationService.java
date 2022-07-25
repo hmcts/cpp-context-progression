@@ -63,7 +63,7 @@ public class CpsEmailNotificationService {
     private ApplicationParameters applicationParameters;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @ServiceComponent(Component.EVENT_PROCESSOR)
     @Inject

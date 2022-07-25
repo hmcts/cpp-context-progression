@@ -220,6 +220,7 @@ public class CaseAtAGlanceHelper {
                     final CaagResults.Builder caagResultsBuilder = CaagResults.caagResults()
                             .withId(jr.getJudicialResultId())
                             .withLabel(jr.getLabel())
+                            .withUsergroups(jr.getUsergroups())
                             .withOrderedDate(jr.getOrderedDate())
                             .withLastSharedDateTime(jr.getLastSharedDateTime())
                             .withAmendmentReason(jr.getAmendmentReason())
@@ -242,6 +243,7 @@ public class CaseAtAGlanceHelper {
                 .map(jrp -> CaagResultPrompts.caagResultPrompts()
                         .withLabel(jrp.getLabel())
                         .withValue(jrp.getValue())
+                        .withUsergroups(jrp.getUsergroups())
                         .build())
                 .collect(toList());
     }

@@ -20,7 +20,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -39,7 +39,7 @@ public class UpdateCpsProsecutorHandler {
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
     @Inject
     @ServiceComponent(COMMAND_HANDLER)
     private Requester requester;

@@ -16,6 +16,12 @@ import java.util.UUID;
 @SuppressWarnings("squid:S3776")
 public class HearingDaysMapper {
 
+    final HearingDaySharedResultsMapper hasSharedResultsMapper;
+
+    public HearingDaysMapper(final HearingDaySharedResultsMapper hearingDaySharedResultsMapper){
+        this.hasSharedResultsMapper = hearingDaySharedResultsMapper;
+    }
+
     public List<uk.gov.justice.services.unifiedsearch.client.domain.HearingDay> extractHearingDays(final Hearing hearing) {
         final List<uk.gov.justice.services.unifiedsearch.client.domain.HearingDay> hearingDayIndexes = new ArrayList<>();
         for (final HearingDay hearingDay : ofNullable(hearing.getHearingDays()).orElse(Collections.emptyList())) {
@@ -43,14 +49,27 @@ public class HearingDaysMapper {
         if (nonNull(hearingDay.getSittingDay())) {
             hearingDayIndex.setSittingDay(hearingDay.getSittingDay().format(ISO_8601_FORMATTER));
         }
-        if(nonNull(courtCentreId)) {
+        if (nonNull(courtCentreId)) {
             hearingDayIndex.setCourtCentreId(courtCentreId.toString());
         }
-        if(nonNull(courtRoomId)) {
+        if (nonNull(courtRoomId)) {
             hearingDayIndex.setCourtRoomId(courtRoomId.toString());
         }
-
+        final Boolean hasSharedResults = hearingDay.getHasSharedResults();
+        if (nonNull(hasSharedResults)) {
+            hearingDayIndex.setHasSharedResults(hasSharedResults);
+        }
+        setHearingResultsShared(hearing, hearingDayIndex);
         return hearingDayIndex;
     }
 
+    private void setHearingResultsShared(final Hearing hearing, final uk.gov.justice.services.unifiedsearch.client.domain.HearingDay hearingDayIndex) {
+        if (isNull(hearing.getHasSharedResults())) {
+            if (hasSharedResultsMapper.shouldSetHasSharedResults(hearing)) {
+                hearingDayIndex.setHasSharedResults(true);
+            } else {
+                hearingDayIndex.setHasSharedResults(false);
+            }
+        }
+    }
 }

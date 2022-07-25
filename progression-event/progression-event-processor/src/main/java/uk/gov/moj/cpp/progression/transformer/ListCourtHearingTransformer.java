@@ -34,7 +34,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.MissingRequiredFieldException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -71,7 +71,7 @@ public class ListCourtHearingTransformer {
     private Requester requester;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     private static final String POSTCODE_IS_MISSING = "Postcode is missing for";
 
@@ -286,6 +286,7 @@ public class ListCourtHearingTransformer {
                     final HearingListingNeeds hearings = HearingListingNeeds.hearingListingNeeds()
                             .withEarliestStartDateTime(calculateEarliestHearingDate(getNoticeDate(sjpReferral), getReferralDate(sjpReferral)).atStartOfDay(ZoneId.systemDefault()))
                             .withEstimatedMinutes(getRequiredField(referredListHearingRequest.getEstimateMinutes(), "EstimatedMinutes minutes"))
+                            .withEstimatedDuration(referredListHearingRequest.getEstimatedDuration())
                             .withId(hearingId)
                             .withJurisdictionType(referredListHearingRequest.getJurisdictionType())
                             .withProsecutionCases(listOfProsecutionCase)
@@ -316,6 +317,7 @@ public class ListCourtHearingTransformer {
                     .withEarliestStartDateTime(listHearingRequest.getEarliestStartDateTime())
                     .withListedStartDateTime(listHearingRequest.getListedStartDateTime())
                     .withEstimatedMinutes(listHearingRequest.getEstimateMinutes())
+                    .withEstimatedDuration(listHearingRequest.getEstimatedDuration())
                     .withId(hearingId)
                     .withJurisdictionType(listHearingRequest.getJurisdictionType())
                     .withProsecutionCases(listOfProsecutionCase)
@@ -430,6 +432,7 @@ public class ListCourtHearingTransformer {
                 .withJurisdictionType(hearingRequest.getJurisdictionType())
                 .withEarliestStartDateTime(hearingRequest.getEarliestStartDateTime())
                 .withEstimatedMinutes(hearingRequest.getEstimatedMinutes())
+                .withEstimatedDuration(hearingRequest.getEstimatedDuration())
                 .withReportingRestrictionReason(hearingRequest.getReportingRestrictionReason())
                 .withListingDirections(hearingRequest.getListingDirections())
                 .withDefendantListingNeeds(hearingRequest.getDefendantListingNeeds())
@@ -485,7 +488,7 @@ public class ListCourtHearingTransformer {
     }
 
     private CourtCentre calculateCourtCentre(final SjpReferral sjpReferral,
-                                             final ReferenceDataService referenceDataService,
+                                             final RefDataService referenceDataService,
                                              final JsonEnvelope jsonEnvelope,
                                              final List<ProsecutionCase> listOfProsecutionCase,
                                              final List<ProsecutionCase> prosecutionCases,

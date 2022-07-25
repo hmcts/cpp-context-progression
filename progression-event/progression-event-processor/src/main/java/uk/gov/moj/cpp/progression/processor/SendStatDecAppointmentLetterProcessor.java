@@ -8,7 +8,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.StatDecNotificationService;
 
 import javax.inject.Inject;
@@ -33,7 +33,7 @@ public class SendStatDecAppointmentLetterProcessor {
 
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
     @Inject
     private Requester requester;
 

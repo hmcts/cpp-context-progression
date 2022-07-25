@@ -121,6 +121,7 @@ public class DefendantDefenceOrganisationSavedListener {
 
         return Defendant.defendant()
                 .withOffences(originDefendant.getOffences())
+                .withCpsDefendantId(originDefendant.getCpsDefendantId())
                 .withPersonDefendant(originDefendant.getPersonDefendant())
                 .withLegalEntityDefendant(originDefendant.getLegalEntityDefendant())
                 .withAssociatedPersons(originDefendant.getAssociatedPersons())

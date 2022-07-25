@@ -56,6 +56,7 @@ public class CourtDocumentNotifiedProcessor {
         LOGGER.info("processCourtDocumentSendToCPS sendToCPS is called and payload is {}", envelope);
         final JsonObject event = envelope.payloadAsJsonObject();
         final CourtDocument courtDocument = jsonObjectConverter.convert(event.getJsonObject("courtDocument"), CourtDocument.class);
+        final String notificationType = event.getString("notificationType", null);
         final List<UUID> caseIds = getLinkedCaseIds(courtDocument.getDocumentCategory());
         final UUID prosecutionCaseId = caseIds.get(0);
 
@@ -64,7 +65,7 @@ public class CourtDocumentNotifiedProcessor {
         if (prosecutionCaseOptional.isPresent()) {
 
             if (featureControlGuard.isFeatureEnabled(FEATURE_DEFENCE_DISCLOSURE)) {
-                final Optional<String> transformedJsonPayload = courtDocumentTransformer.transform(courtDocument, prosecutionCaseOptional, envelope);
+                final Optional<String> transformedJsonPayload = courtDocumentTransformer.transform(courtDocument, prosecutionCaseOptional, envelope,notificationType);
                 if (transformedJsonPayload.isPresent()) {
                     LOGGER.info("Event court-document-send-to-cps triggered and API-M notification is enabled");
                     cpsRestNotificationService.sendMaterial(transformedJsonPayload.get());

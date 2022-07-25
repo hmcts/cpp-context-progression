@@ -168,6 +168,9 @@ public final class SchemaVariableConstants {
     public static final String MASTER_DEFENDANT = "masterDefendant";
     public static final String REPRESENTATION_ORGANISATION = "representationOrganisation";
     public static final String LISTING_NUMBER = "listingNumber" ;
+    public static final String OU_CODE = "prosecutionAuthorityOUCode" ;
+    public static final String PROSECUTOR_CODE = "prosecutionAuthorityId" ;
+    public static final String OFFENCE ="offence";
 
     private SchemaVariableConstants() {
     }

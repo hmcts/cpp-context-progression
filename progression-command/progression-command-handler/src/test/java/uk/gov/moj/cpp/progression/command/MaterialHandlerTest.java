@@ -251,11 +251,14 @@ public class MaterialHandlerTest {
 
         List<UUID> cases = new ArrayList<>();
         cases.add(caseId);
+        cases.add(randomUUID());
 
         final NowDocumentRequest nowDocumentRequest = NowDocumentRequest.nowDocumentRequest()
                     .withMaterialId(materialId)
                     .withCases(cases)
-                    .withNowContent(NowDocumentContent.nowDocumentContent().build())
+                    .withNowContent(NowDocumentContent.nowDocumentContent()
+                            .withDefendant(Nowdefendant.nowdefendant().withProsecutingAuthorityReference("ref").build())
+                            .build())
                     .build();
 
         Envelope<NowDocumentRequest> buildEnvelope =  Envelope.envelopeFrom(metadataWithRandomUUID(ADD_NOW_DOCUMENT_REQUEST_COMMAND_NAME),
@@ -296,5 +299,6 @@ public class MaterialHandlerTest {
             final NowsMaterialStatusUpdated updated = jsonObjectToObjectConverter.convert((JsonObject) statusJsonEnvelope.payload(), NowsMaterialStatusUpdated.class);
             assertThat(updated.getDetails().getMaterialId(), is(commandObject.getContext().getMaterialId()));
             assertThat(updated.getStatus(), is(statusCommandObject.getStatus()));
+            assertThat(updated.getCaseSubjects().size(), is(2));
     }
 }

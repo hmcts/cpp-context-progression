@@ -3,7 +3,9 @@ package uk.gov.moj.cpp.progression.aggregate;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
+import static java.time.ZonedDateTime.now;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -12,9 +14,18 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.core.courts.Address.address;
 import static uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument.caseCpsDetailsUpdatedFromCourtDocument;
+import static uk.gov.justice.core.courts.EditFormRequested.editFormRequested;
+import static uk.gov.justice.core.courts.FormCreated.formCreated;
+import static uk.gov.justice.core.courts.FormDefendants.formDefendants;
+import static uk.gov.justice.core.courts.FormDefendantsUpdated.formDefendantsUpdated;
+import static uk.gov.justice.core.courts.FormFinalised.formFinalised;
+import static uk.gov.justice.core.courts.FormOperationFailed.formOperationFailed;
+import static uk.gov.justice.core.courts.FormUpdated.formUpdated;
 import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged;
+import static uk.gov.justice.core.courts.LockStatus.lockStatus;
 import static uk.gov.justice.core.courts.Organisation.organisation;
 import static uk.gov.justice.core.courts.UpdatedOrganisation.updatedOrganisation;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
@@ -65,11 +76,17 @@ import uk.gov.justice.core.courts.Defendants;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
+import uk.gov.justice.core.courts.EditFormRequested;
 import uk.gov.justice.core.courts.ExactMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.FinancialDataAdded;
 import uk.gov.justice.core.courts.FinancialMeansDeleted;
+import uk.gov.justice.core.courts.FormCreated;
+import uk.gov.justice.core.courts.FormDefendants;
+import uk.gov.justice.core.courts.FormDefendantsUpdated;
+import uk.gov.justice.core.courts.FormFinalised;
 import uk.gov.justice.core.courts.FormType;
+import uk.gov.justice.core.courts.FormUpdated;
 import uk.gov.justice.core.courts.FundingType;
 import uk.gov.justice.core.courts.HearingConfirmedCaseStatusUpdated;
 import uk.gov.justice.core.courts.HearingExtended;
@@ -79,6 +96,7 @@ import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
 import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.LockStatus;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
@@ -131,6 +149,7 @@ import uk.gov.moj.cpp.progression.domain.UnmatchDefendant;
 import uk.gov.moj.cpp.progression.domain.UnmatchedDefendant;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.Form;
+import uk.gov.moj.cpp.progression.domain.aggregate.utils.FormLockStatus;
 import uk.gov.moj.cpp.progression.domain.event.CaseAlreadyExistsInCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.ConvictionDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.ConvictionDateRemoved;
@@ -211,7 +230,7 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188"})
 public class CaseAggregate implements Aggregate {
-    private static final long serialVersionUID = -4933049804196421466L;
+    private static final long serialVersionUID = -33049804196421400L;
 
     //Static
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -276,6 +295,17 @@ public class CaseAggregate implements Aggregate {
     private UUID latestHearingId;
     private ProsecutionCase prosecutionCase;
     private boolean hasProsecutionCaseBeenCreated;
+    private final List<UUID> petFormFinalisedDocuments = new ArrayList<>();
+    private final List<UUID> bcmFormFinalisedDocuments = new ArrayList<>();
+    private final List<UUID> ptphFormFinalisedDocuments = new ArrayList<>();
+    private static final String FORM_CREATION_COMMAND_NAME = "form-created";
+    private static final String FORM_FINALISATION_COMMAND_NAME = "finalise-form";
+    private static final String FORM_EDIT_COMMAND_NAME = "edit-form";
+    private static final String FORM_UPDATE_COMMAND_NAME = "update-form";
+    private static final String MESSAGE_FOR_DUPLICATE_COURT_FORM_ID = "courtFormId already exists";
+    private static final String MESSAGE_FOR_PROSECUTION_NULL = "ProsecutionCase(%s) does not exists.";
+    private static final String MESSAGE_FOR_COURT_FORM_ID_NOT_PRESENT = "courtFormId (%s) does not exists.";
+    private static final String UPDATE_BCM_DEFENDANT_OPERATION_IS_FAILED = "update BCM defendant operation is failed";
 
     private static boolean isConcludedAtDefendantLevel(uk.gov.justice.core.courts.Defendant defendant) {
         final boolean isNotConcluded = isNotEmpty(defendant.getOffences()) && defendant.getOffences().stream()
@@ -458,7 +488,14 @@ public class CaseAggregate implements Aggregate {
                 ),
                 when(CaseCpsDetailsUpdatedFromCourtDocument.class).apply(this::handleCaseCpsDetailsUpdatedFromCourtDocument),
                 when(CpsDefendantIdUpdated.class).apply(this::handleCpsDefendantIdUpdated),
+                when(FormCreated.class).apply(this::onFormCreated),
+                when(FormDefendantsUpdated.class).apply(this::onFormDefendantsUpdated),
+
+                when(EditFormRequested.class).apply(this::editFormRequest),
+                when(FormUpdated.class).apply(this::updateFormOnFormUpdate),
                 when(PetFormCreated.class).apply(this::onPetFormCreated),
+                when(PetFormFinalised.class).apply(this::addPetFormFinalisedDocument),
+                when(FormFinalised.class).apply(this::addFormFinalisedDocument),
                 otherwiseDoNothing());
 
     }
@@ -623,9 +660,26 @@ public class CaseAggregate implements Aggregate {
         return defendantFinancialDocs;
     }
 
+    public List<UUID> getPetFormFinalisedDocuments() {
+        return petFormFinalisedDocuments;
+    }
+
+    public List<UUID> getBcmFormFinalisedDocuments() {
+        return bcmFormFinalisedDocuments;
+    }
+
+    public List<UUID> getPtphFormFinalisedDocuments() {
+        return ptphFormFinalisedDocuments;
+    }
+
     public Map<UUID, List<uk.gov.justice.core.courts.Offence>> getDefendantCaseOffences() {
         return defendantCaseOffences;
     }
+
+    public Map<UUID, Form> getFormMap() {
+        return formMap;
+    }
+
 
     private void deleteFinancialData(final FinancialMeansDeleted financialMeansDeleted) {
         this.defendantFinancialDocs.remove(financialMeansDeleted.getDefendantId());
@@ -653,6 +707,21 @@ public class CaseAggregate implements Aggregate {
             this.applicationFinancialDocs.put(financialDataAdded.getApplicationId(), financialDataAdded.getMaterialIds());
         } else if (financialDataAdded.getDefendantId() != null) {
             this.defendantFinancialDocs.put(financialDataAdded.getDefendantId(), financialDataAdded.getMaterialIds());
+        }
+    }
+    private void addPetFormFinalisedDocument(final PetFormFinalised petFormFinalised) {
+        if (petFormFinalised.getMaterialId() != null) {
+            this.petFormFinalisedDocuments.add(petFormFinalised.getMaterialId());
+        }
+    }
+    private void addFormFinalisedDocument(final FormFinalised formFinalised) {
+        if (formFinalised.getMaterialId() != null) {
+            if(FormType.BCM.equals(formFinalised.getFormType())) {
+                this.bcmFormFinalisedDocuments.add(formFinalised.getMaterialId());
+            }
+            if(FormType.PTPH.equals(formFinalised.getFormType())) {
+                this.ptphFormFinalisedDocuments.add(formFinalised.getMaterialId());
+            }
         }
     }
 
@@ -1542,7 +1611,7 @@ public class CaseAggregate implements Aggregate {
                 .withIsPinned(isPinned)
                 .withFirstName(firstName)
                 .withLastName(lastName)
-                .withCreatedDateTime(ZonedDateTime.now())
+                .withCreatedDateTime(now())
                 .build()));
     }
 
@@ -2024,7 +2093,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     private List<MatchedDefendants> transform(final List<MatchedDefendant> matchedDefendants) {
-        return matchedDefendants.stream()
+        return matchedDefendants.stream().filter(s->s.getCourtProceedingsInitiated()!=null)
                 .map(matchedDefendant -> MatchedDefendants.matchedDefendants()
                         .withDefendantId(matchedDefendant.getDefendantId())
                         .withProsecutionCaseId(matchedDefendant.getProsecutionCaseId())
@@ -2037,7 +2106,7 @@ public class CaseAggregate implements Aggregate {
     private List<MatchedDefendants> transformToExactMatchedDefendants(final List<Cases> casesList) {
         final List<MatchedDefendants> matchedDefendantsList = new ArrayList<>();
         casesList
-                .forEach(cases -> cases.getDefendants()
+                .forEach(cases -> cases.getDefendants().stream().filter(s->s.getCourtProceedingsInitiated()!=null)
                         .forEach(def -> matchedDefendantsList.add(MatchedDefendants.matchedDefendants()
                                 .withProsecutionCaseId(UUID.fromString(cases.getProsecutionCaseId()))
                                 .withDefendantId(UUID.fromString(def.getDefendantId()))
@@ -2415,6 +2484,7 @@ public class CaseAggregate implements Aggregate {
                 .withUserId(userId)
                 .withFinalisedFormData(finalisedFormData)
                 .withSubmissionId(submissionId)
+                .withMaterialId(UUID.randomUUID())
                 .build()));
     }
 
@@ -2466,9 +2536,216 @@ public class CaseAggregate implements Aggregate {
     private void updatePetFormState(final UUID petId, final List<PetDefendants> formDefendants, final FormType formType) {
         final Form form = formMap.containsKey(petId) ? formMap.get(petId) : new Form();
         form.setFormType(formType);
-        form.setFormDefendants(formDefendants);
+        form.setPetDefendants(formDefendants);
         form.setCourtFormId(petId);
         formMap.put(petId, form);
     }
 
+
+    public Stream<Object> updateFormDefendants(final UUID courtFormId, final UUID caseId, final List<UUID> defendantIds, final UUID userId, final FormType formType) {
+        if (!formMap.containsKey(courtFormId)) {
+            return apply(Stream.of(formOperationFailed()
+                    .withCourtFormId(courtFormId)
+                    .withFormType(formType)
+                    .withCaseId(caseId)
+                    .withOperation(FORM_UPDATE_COMMAND_NAME)
+                    .withMessage(UPDATE_BCM_DEFENDANT_OPERATION_IS_FAILED)
+                    .build()));
+        }
+
+        return apply(Stream.of(formDefendantsUpdated()
+                .withCourtFormId(courtFormId)
+                .withFormType(formType)
+                .withCaseId(caseId)
+                .withFormDefendants(buildDefendants(defendantIds))
+                .withUserId(userId)
+                .build()));
+    }
+
+    public Stream<Object> createForm(final UUID courtFormId, final UUID caseId, final UUID formId, final List<UUID> defendantIds, final String formData, final UUID userId, final FormType formType, final UUID submissionId, final String userName) {
+        if (formMap.containsKey(courtFormId)) {
+            return apply(Stream.of(formOperationFailed()
+                    .withCourtFormId(courtFormId)
+                    .withFormType(formType)
+                    .withCaseId(caseId)
+                    .withOperation(FORM_CREATION_COMMAND_NAME)
+                    .withMessage(MESSAGE_FOR_DUPLICATE_COURT_FORM_ID)
+                    .withSubmissionId(submissionId)
+                    .build()));
+        }
+
+        return apply(Stream.of(formCreated()
+                .withCourtFormId(courtFormId)
+                .withFormType(formType)
+                .withFormData(formData)
+                .withCaseId(caseId)
+                .withFormDefendants(buildDefendants(defendantIds))
+                .withFormId(formId)
+                .withFormData(formData)
+                .withUserId(userId)
+                .withSubmissionId(submissionId)
+                .withUserName(userName)
+                .build()));
+    }
+
+    public Stream<Object> updateForm(final UUID caseId, final String formData,
+                                     final UUID courtFormId, final UUID userId) {
+        if (!formMap.containsKey(courtFormId)) {
+            return apply(Stream.of(formOperationFailed()
+                    .withCaseId(caseId)
+                    .withCourtFormId(courtFormId)
+                    .withOperation(FORM_UPDATE_COMMAND_NAME)
+                    .withMessage(format(MESSAGE_FOR_COURT_FORM_ID_NOT_PRESENT, courtFormId))
+                    .build()));
+        }
+
+        return apply(Stream.of(formUpdated()
+                .withCaseId(caseId)
+                .withFormData(formData)
+                .withCourtFormId(courtFormId)
+                .withUserId(userId)
+                .withFormType(formMap.get(courtFormId).getFormType())
+                .build()));
+    }
+
+
+    public Stream<Object> finaliseForm(final UUID caseId, final UUID courtFormId, final UUID userId, final List<String> finalisedFormData) {
+        final UUID submissionId = nonNull(formMap.get(courtFormId)) ? formMap.get(courtFormId).getSubmissionId() : null;
+        if (isNull(prosecutionCase)) {
+            return apply(Stream.of(formOperationFailed()
+                    .withCaseId(caseId)
+                    .withCourtFormId(courtFormId)
+                    .withOperation(FORM_FINALISATION_COMMAND_NAME)
+                    .withMessage(format(MESSAGE_FOR_PROSECUTION_NULL, caseId))
+                    .withSubmissionId(submissionId)
+                    .build()));
+        }
+
+        if (!formMap.containsKey(courtFormId)) {
+            return apply(Stream.of(formOperationFailed()
+                    .withCaseId(caseId)
+                    .withCourtFormId(courtFormId)
+                    .withOperation(FORM_FINALISATION_COMMAND_NAME)
+                    .withMessage(format(MESSAGE_FOR_COURT_FORM_ID_NOT_PRESENT, courtFormId))
+                    .withSubmissionId(submissionId)
+                    .build()));
+        }
+        final ProsecutionCaseIdentifier caseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+        final String caseURN = isBlank(caseIdentifier.getCaseURN()) ? caseIdentifier.getProsecutionAuthorityReference() : caseIdentifier.getCaseURN();
+
+
+        final List<FormFinalised> formFinalisedList = finalisedFormData.stream()
+                .map(finalisedDataString -> formFinalised()
+                        .withCaseId(caseId)
+                        .withFormType(formMap.get(courtFormId).getFormType())
+                        .withCourtFormId(courtFormId)
+                        .withUserId(userId)
+                        .withFinalisedFormData(singletonList(finalisedDataString))
+                        .withCaseURN(caseURN)
+                        .withSubmissionId(submissionId)
+                        .withMaterialId(UUID.randomUUID())
+                        .build())
+                .collect(toList());
+
+        return apply(formFinalisedList.stream().map(formFinalised -> formFinalised));
+    }
+
+    public Stream<Object> requestEditForm(final UUID caseId, final UUID courtFormId, final UUID userId, final Map<FormType, Integer> durationMapByFormType, final ZonedDateTime requestEditTime) {
+        if (!formMap.containsKey(courtFormId)) {
+            return apply(Stream.of(formOperationFailed()
+                    .withCaseId(caseId)
+                    .withCourtFormId(courtFormId)
+                    .withOperation(FORM_EDIT_COMMAND_NAME)
+                    .withMessage(format(MESSAGE_FOR_COURT_FORM_ID_NOT_PRESENT, courtFormId))
+                    .build()));
+        }
+
+        final Form form = formMap.get(courtFormId);
+        final FormLockStatus formLockStatus = form.getFormLockStatus();
+
+        final EditFormRequested.Builder editFormRequested = editFormRequested()
+                .withCaseId(caseId)
+                .withCourtFormId(courtFormId);
+        final LockStatus.Builder lockStatusBuilder = lockStatus()
+                .withLockRequestedBy(userId);
+
+        if (formLockStatus.getLockExpiryTime() == null || hasLockExpired(requestEditTime, formLockStatus.getLockExpiryTime())) {
+            lockStatusBuilder
+                    .withExpiryTime(requestEditTime.plusMinutes(durationMapByFormType.get(form.getFormType())))
+                    .withIsLocked(false)
+                    .withIsLockAcquirable(true);
+        } else if (userId.equals(formLockStatus.getLockedBy())) {
+            lockStatusBuilder
+                    .withExpiryTime(formLockStatus.getLockExpiryTime())
+                    .withIsLocked(false);
+        } else {
+            lockStatusBuilder
+                    .withIsLocked(true)
+                    .withExpiryTime(formLockStatus.getLockExpiryTime())
+                    .withLockedBy(formLockStatus.getLockedBy());
+        }
+
+        return apply(Stream.of(editFormRequested.withLockStatus(lockStatusBuilder.build()).build()));
+    }
+
+    private boolean hasLockExpired(final ZonedDateTime requestedLockTime, final ZonedDateTime lockExpiryTime) {
+        return requestedLockTime.compareTo(lockExpiryTime) >= 0;
+    }
+
+    private List<FormDefendants> buildDefendants(final List<UUID> defendantIds) {
+        return defendantIds.stream().map(entry -> formDefendants()
+                .withDefendantId(entry)
+                .build()).collect(toList());
+    }
+
+    private void updateFormOnFormUpdate(final FormUpdated formUpdated) {
+        final Form form = formMap.get(formUpdated.getCourtFormId());
+        final FormLockStatus lockStatus = form.getFormLockStatus();
+        if (formUpdated.getUserId().equals(lockStatus.getLockedBy())) {
+            lockStatus.setLockedBy(null);
+            lockStatus.setLocked(false);
+            lockStatus.setLockExpiryTime(null);
+            lockStatus.setLockRequestedBy(null);
+            form.setFormLockStatus(lockStatus);
+            formMap.put(formUpdated.getCourtFormId(), form);
+        }
+    }
+
+    private void editFormRequest(final EditFormRequested editFormRequested) {
+        final Form form = formMap.get(editFormRequested.getCourtFormId());
+        final FormLockStatus lockStatus = form.getFormLockStatus();
+
+        if (nonNull(editFormRequested.getLockStatus().getIsLockAcquirable()) && editFormRequested.getLockStatus().getIsLockAcquirable()) {
+            lockStatus.setLockedBy(editFormRequested.getLockStatus().getLockRequestedBy());
+            lockStatus.setLockExpiryTime(editFormRequested.getLockStatus().getExpiryTime());
+            form.setFormLockStatus(lockStatus);
+            formMap.put(editFormRequested.getCourtFormId(), form);
+        }
+
+    }
+
+    private void onFormCreated(final FormCreated formCreated) {
+        updateFormState(formCreated.getCourtFormId(), formCreated.getFormDefendants(), formCreated.getFormType());
+    }
+
+    private void onFormDefendantsUpdated(final FormDefendantsUpdated formDefendantsUpdated) {
+        if (!formMap.containsKey(formDefendantsUpdated.getCourtFormId())) {
+            return;
+        }
+
+        final Form form = formMap.get(formDefendantsUpdated.getCourtFormId());
+        form.setFormDefendants(formDefendantsUpdated.getFormDefendants());
+    }
+
+    private void updateFormState(final UUID courtFormId, final List<FormDefendants> formDefendants, final FormType formType) {
+        Form form;
+        form = formMap.containsKey(courtFormId) ? formMap.get(courtFormId) : new Form();
+        form.setFormType(formType);
+        form.setFormDefendants(formDefendants);
+        form.setCourtFormId(courtFormId);
+        form.setFormLockStatus(new FormLockStatus(false, null, null, null));
+        formMap.put(courtFormId, form);
+    }
+
 }
+

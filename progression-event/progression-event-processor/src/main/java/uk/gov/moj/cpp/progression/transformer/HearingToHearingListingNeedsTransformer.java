@@ -236,11 +236,20 @@ public class HearingToHearingListingNeedsTransformer {
         final HearingListingNeeds hearingListingNeeds = addCourtApplication(createHearingListingNeeds(nextHearing, judiciaries), courtApplication, prosecutionCases);
 
         if (hearingListingNeedsMap.containsKey(key) && nonNull(hearingListingNeedsMap.get(key).getCourtApplications())) {
-            hearingListingNeedsMap.get(key).getCourtApplications().add(courtApplication);
+            if(isNewApplication(hearingListingNeedsMap.get(key), courtApplication)) {
+                hearingListingNeedsMap.get(key).getCourtApplications().add(courtApplication);
+            }
         } else {
-            hearingListingNeedsMap.put(key, hearingListingNeeds);
+             hearingListingNeedsMap.put(key, hearingListingNeeds);
         }
 
+    }
+
+    private boolean isNewApplication(final HearingListingNeeds hearingListingNeeds, final CourtApplication courtApplication) {
+        if(nonNull(hearingListingNeeds.getCourtApplications()) && nonNull(courtApplication.getId())) {
+           return  !hearingListingNeeds.getCourtApplications().stream().anyMatch(x -> courtApplication.getId().equals(x.getId()));
+        }
+        return true;
     }
 
     private String getKey(Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIdMap, NextHearing nextHearing, UUID bookingReference) {
@@ -338,6 +347,7 @@ public class HearingToHearingListingNeedsTransformer {
                 .withBookedSlots(nextHearing.getHmiSlots())
                 .withCourtCentre(nextHearing.getCourtCentre())
                 .withEstimatedMinutes(nextHearing.getEstimatedMinutes())
+                .withEstimatedDuration(nextHearing.getEstimatedDuration())
                 .withType(nextHearing.getType())
                 .withJudiciary((nonNull(nextHearing.getReservedJudiciary()) && nextHearing.getReservedJudiciary()) ? judiciaries : nextHearing.getJudiciary())
                 .withJurisdictionType(nextHearing.getJurisdictionType())

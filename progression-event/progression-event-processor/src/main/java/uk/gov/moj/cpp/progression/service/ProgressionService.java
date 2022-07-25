@@ -1,25 +1,8 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static java.util.Collections.singletonList;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.fromString;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
-import static uk.gov.justice.core.courts.ConfirmedProsecutionCaseId.confirmedProsecutionCaseId;
-import static uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing.prepareSummonsDataForExtendedHearing;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
-import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
-import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
-
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.BoxworkApplicationReferred;
@@ -72,6 +55,12 @@ import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
 
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -86,16 +75,26 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Collections.singletonList;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.fromString;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
+import static uk.gov.justice.core.courts.ConfirmedProsecutionCaseId.confirmedProsecutionCaseId;
+import static uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing.prepareSummonsDataForExtendedHearing;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 
 @SuppressWarnings({"squid:CommentedOutCodeLine", "squid:S1188", "squid:S2789", "squid:S3655", "squid:S1192", "squid:S1168", "pmd:NullAssignment", "squid:CallToDeprecatedMethod", "squid:S1166", "squid:S2221"})
 public class ProgressionService {
@@ -161,7 +160,7 @@ public class ProgressionService {
     private ListToJsonArrayConverter<CourtApplication> listToJsonArrayConverter;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private AzureFunctionService azureFunctionService;
@@ -964,6 +963,7 @@ public class ProgressionService {
                 .withProsecutionCases(transformProsecutionCase(confirmedHearing.getProsecutionCases(), earliestHearingDate, jsonEnvelope, seedingHearing))
                 .withCourtApplications(extractCourtApplications(confirmedHearing, jsonEnvelope))
                 .withShadowListedOffences(listingService.getShadowListedOffenceIds(jsonEnvelope, confirmedHearing.getId()))
+                .withEstimatedDuration(confirmedHearing.getEstimatedDuration())
                 .build();
     }
 
@@ -1193,6 +1193,7 @@ public class ProgressionService {
                 .withId(existingHearingId)
                 .withJurisdictionType(incomingHearing.getJurisdictionType())
                 .withEstimatedMinutes(30)
+                .withEstimatedDuration(incomingHearing.getEstimatedDuration())
                 .withType(incomingHearing.getType())
                 .build();
     }
@@ -1220,7 +1221,7 @@ public class ProgressionService {
 
     public void linkApplicationsToHearing(final JsonEnvelope jsonEnvelope, final Hearing hearing, final List<UUID> applicationIds, final HearingListingStatus status) {
         final JsonObject hearingJson = objectToJsonObjectConverter.convert(hearing);
-        applicationIds.forEach(applicationId ->
+        applicationIds.stream().collect(toSet()).forEach(applicationId ->
                 sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)
                         .apply(createObjectBuilder()
                                 .add(APPLICATION_ID, applicationId.toString())
@@ -1232,7 +1233,7 @@ public class ProgressionService {
 
     public void linkApplicationToHearing(final JsonEnvelope jsonEnvelope, final Hearing hearing, final HearingListingStatus status) {
         final JsonObject hearingJson = objectToJsonObjectConverter.convert(hearing);
-        hearing.getCourtApplications().forEach(application ->
+        hearing.getCourtApplications().stream().distinct().forEach(application ->
                 sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)
                         .apply(createObjectBuilder()
                                 .add(APPLICATION_ID, application.getId().toString())

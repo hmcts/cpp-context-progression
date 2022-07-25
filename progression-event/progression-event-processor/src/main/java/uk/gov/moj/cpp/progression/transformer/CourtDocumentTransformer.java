@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.transformer;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
@@ -33,14 +34,19 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.MaterialService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +66,7 @@ public class CourtDocumentTransformer {
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -69,10 +75,10 @@ public class CourtDocumentTransformer {
     @Inject
     private MaterialService materialService;
 
-    public Optional<String> transform(final CourtDocument courtDocument, final Optional<JsonObject> prosecutionCaseJsonOptional, final JsonEnvelope envelope) {
+    public Optional<String> transform(final CourtDocument courtDocument, final Optional<JsonObject> prosecutionCaseJsonOptional, final JsonEnvelope envelope, final String notificationType) {
 
-        final UUID subjectBusinessObjectId = getSubjectBusinessObjectIdFromCaseOrApplicationOrDefendants(courtDocument);
-        if (isNull(subjectBusinessObjectId)) {
+        final List<UUID> subjectBusinessObjectId = getSubjectBusinessObjectIdFromCaseOrApplicationOrDefendants(courtDocument);
+        if (subjectBusinessObjectId.isEmpty()) {
             LOGGER.error("Unable to transform the payload. subjectBusinessObjectId is null. CourtDocumentId is {}", courtDocument.getCourtDocumentId());
             return empty();
         }
@@ -82,21 +88,24 @@ public class CourtDocumentTransformer {
         addMaterialV2.withCourtApplicationSubject(courtApplicationSubject);
 
         final Optional<ProsecutionCase> prosecutionCaseOptional = getProsecutionCase(prosecutionCaseJsonOptional);
-
+        List<DefendantSubject> additionalDefendantSubject = new ArrayList<>();
         if (prosecutionCaseOptional.isPresent()) {
             final ProsecutionCaseSubject.Builder prosecutionCaseSubjectBuilder = prosecutionCaseSubject();
-            final Optional<Defendant> defendantLinkedToDocument = prosecutionCaseOptional.get().getDefendants().stream().filter(defendant -> defendant.getId().equals(subjectBusinessObjectId)).findFirst();
+            final List<Defendant> defendantLinkedToDocument = prosecutionCaseOptional.get().getDefendants().stream().filter(defendant -> subjectBusinessObjectId.contains(defendant.getId())).collect(Collectors.toList());
 
-            if (defendantLinkedToDocument.isPresent()) {
-                final DefendantSubject defendantSubject = buildDefendantSubject(defendantLinkedToDocument.get(), defendantLinkedToDocument.get());
+            if (defendantLinkedToDocument.size()==1) {
+                final DefendantSubject defendantSubject = buildDefendantSubject(defendantLinkedToDocument.get(0), defendantLinkedToDocument.get(0));
                 prosecutionCaseSubjectBuilder.withDefendantSubject(defendantSubject);
+            }else{
+                additionalDefendantSubject= defendantLinkedToDocument.stream().map(v->buildDefendantSubject(v,v)).collect(Collectors.toList());
             }
 
             buildProsecutionCaseSubject(prosecutionCaseSubjectBuilder, prosecutionCaseOptional.get(), envelope);
             addMaterialV2.withProsecutionCaseSubject(prosecutionCaseSubjectBuilder.build());
+
         }
 
-        final EventNotification eventNotification = buildEventNotification(addMaterialV2, subjectBusinessObjectId);
+        final EventNotification eventNotification = buildEventNotification(addMaterialV2, subjectBusinessObjectId,notificationType,additionalDefendantSubject);
 
         return ofNullable(objectToJsonObjectConverter.convert(eventNotification).toString());
     }
@@ -115,11 +124,13 @@ public class CourtDocumentTransformer {
         return materialService.getMaterialMetadataV2(envelope, materialId);
     }
 
-    private EventNotification buildEventNotification(final AddMaterialV2.Builder addMaterialV2, final UUID defendantId) {
+    private EventNotification buildEventNotification(final AddMaterialV2.Builder addMaterialV2, final List<UUID> subjectBusinessObjectId, final String notificationType, final List<DefendantSubject> additionalDefendantSubject) {
         final EventNotification.Builder eventNotificationBuilder = eventNotification();
-        eventNotificationBuilder.withSubjectBusinessObjectId(defendantId);
+        eventNotificationBuilder.withSubjectBusinessObjectId(subjectBusinessObjectId.get(0));
         eventNotificationBuilder.withSubjectDetails(addMaterialV2.build());
         eventNotificationBuilder.withBusinessEventType(BUSINESS_EVENT_TYPE);
+        eventNotificationBuilder.withAdditionalProperty("notificationType", Optional.ofNullable(notificationType).orElse("defence-disclosure"));
+        eventNotificationBuilder.withAdditionalProperty("additionalDefendantSubject",additionalDefendantSubject);
         return eventNotificationBuilder.build();
     }
 
@@ -212,15 +223,15 @@ public class CourtDocumentTransformer {
         return EMPTY;
     }
 
-    private UUID getSubjectBusinessObjectIdFromCaseOrApplicationOrDefendants(final CourtDocument courtDocument) {
+    private List<UUID> getSubjectBusinessObjectIdFromCaseOrApplicationOrDefendants(final CourtDocument courtDocument) {
 
         if (nonNull(courtDocument.getDocumentCategory().getCaseDocument())) {
-            return courtDocument.getDocumentCategory().getCaseDocument().getProsecutionCaseId();
+            return Arrays.asList(courtDocument.getDocumentCategory().getCaseDocument().getProsecutionCaseId());
         } else if (nonNull(courtDocument.getDocumentCategory().getApplicationDocument())) {
-            return courtDocument.getDocumentCategory().getApplicationDocument().getApplicationId();
+            return Arrays.asList(courtDocument.getDocumentCategory().getApplicationDocument().getApplicationId());
         } else if (nonNull(courtDocument.getDocumentCategory().getDefendantDocument())) {
-            return courtDocument.getDocumentCategory().getDefendantDocument().getDefendants().get(0);
+            return courtDocument.getDocumentCategory().getDefendantDocument().getDefendants();
         }
-        return null;
+        return newArrayList();
     }
 }

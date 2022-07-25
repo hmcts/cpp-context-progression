@@ -20,7 +20,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.NotificationService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -62,7 +62,7 @@ public class UnscheduledHearingAllocationNotifiedEventProcessor {
     private NotificationService notificationService;
 
     @Inject
-    private ReferenceDataService referenceDataService;
+    private RefDataService referenceDataService;
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;

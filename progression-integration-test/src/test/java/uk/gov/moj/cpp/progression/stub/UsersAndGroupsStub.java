@@ -84,6 +84,15 @@ public class UsersAndGroupsStub {
                         .withBody(getPayload("stub-data/usersgroups.get-non-defence-groups-by-user.json"))));
     }
 
+    public static void stubGetUsersAndGroupsUserDetailsQuery(final String userId) {
+        InternalEndpointMockUtils.stubPingFor("usersgroups-service");
+        stubFor(get(urlMatching("/usersgroups-service/query/api/rest/usersgroups/users/".concat(userId)))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/vnd.usersgroups.user-details+json")
+                        .withBody(getPayload("stub-data/usersgroups.user-details.json").replaceAll("%USER_ID%", userId))));
+    }
+
     public static void stubGetOrganisationDetailsForUser(final String userId, final String organisationId, final String organisationName) {
 
         InternalEndpointMockUtils.stubPingFor(USERS_GROUPS_SERVICE_NAME);
