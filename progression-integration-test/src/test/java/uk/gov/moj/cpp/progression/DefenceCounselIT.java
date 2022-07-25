@@ -171,7 +171,7 @@ public class DefenceCounselIT extends AbstractIT {
 
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             addProsecutionCaseToCrownCourt(caseId, defendantId);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -187,7 +187,7 @@ public class DefenceCounselIT extends AbstractIT {
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
@@ -196,7 +196,7 @@ public class DefenceCounselIT extends AbstractIT {
         }
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             addDefenceCounsel(hearingId, defenceCounselId, defendantList, attendanceDaysList, "progression.add-hearing-defence-counsel.json");
             doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         }
@@ -228,7 +228,7 @@ public class DefenceCounselIT extends AbstractIT {
 
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             addProsecutionCaseToCrownCourt(caseId, defendantId);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -244,7 +244,7 @@ public class DefenceCounselIT extends AbstractIT {
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
@@ -253,7 +253,7 @@ public class DefenceCounselIT extends AbstractIT {
         }
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             addDefenceCounsel(hearingId, defenceCounselId, defendantList, attendanceDaysList, "progression.add-hearing-defence-counsel.json");
             doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         }
@@ -271,7 +271,7 @@ public class DefenceCounselIT extends AbstractIT {
         );
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             updateDefenceCounsel(hearingId, defenceCounselId, updatedDefendantList, updatedAttendanceDaysList, "progression.add-hearing-defence-counsel.json");
             doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         }
@@ -300,7 +300,7 @@ public class DefenceCounselIT extends AbstractIT {
 
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             addProsecutionCaseToCrownCourt(caseId, defendantId);
             pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -316,7 +316,7 @@ public class DefenceCounselIT extends AbstractIT {
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
@@ -325,7 +325,7 @@ public class DefenceCounselIT extends AbstractIT {
         }
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             addDefenceCounsel(hearingId, defenceCounselId, defendantList, attendanceDaysList, "progression.add-hearing-defence-counsel.json");
             doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         }
@@ -343,7 +343,7 @@ public class DefenceCounselIT extends AbstractIT {
         );
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             removeDefenceCounsel(hearingId, defenceCounselId, defendantList, attendanceDaysList, "progression.remove-hearing-defence-counsel.json");
             doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         }
