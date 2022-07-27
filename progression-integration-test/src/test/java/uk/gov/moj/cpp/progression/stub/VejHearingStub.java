@@ -42,7 +42,7 @@ public class VejHearingStub {
     }
 
     public static void verifyVejHearingStubCommandInvoked(final String commandEndPoint) {
-        await().atMost(10, SECONDS).pollInterval(5, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(10, SECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlMatching(commandEndPoint));
             verify(1, requestPatternBuilder);
         });
