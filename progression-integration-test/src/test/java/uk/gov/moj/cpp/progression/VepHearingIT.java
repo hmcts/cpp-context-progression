@@ -50,8 +50,10 @@ import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("for Release 22.21")
 public class VepHearingIT extends AbstractIT {
     private static final String DOCUMENT_TEXT = STRING.next();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -192,8 +194,8 @@ public class VepHearingIT extends AbstractIT {
 
     }
 
-    public static Matcher<? super ReadContext>[] getProsecutionCaseMatchers(final String caseId, final String defendantId, List<Matcher<? super ReadContext>> additionalMatchers) {
-        List<Matcher<? super ReadContext>> matchers = newArrayList(
+    public static Matcher<? super ReadContext>[] getProsecutionCaseMatchers(final String caseId, final String defendantId, final List<Matcher<? super ReadContext>> additionalMatchers) {
+        final List<Matcher<? super ReadContext>> matchers = newArrayList(
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
                 withJsonPath("$.prosecutionCase.originatingOrganisation", is("0450000")),
                 withJsonPath("$.prosecutionCase.initiationCode", is("J")),
@@ -331,7 +333,7 @@ public class VepHearingIT extends AbstractIT {
 
     private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged) {
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
+        final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
         return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
     }
 
