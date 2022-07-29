@@ -37,7 +37,7 @@ rule "Command - Rule for finalise Pet Form"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.finalise-pet-form");
-    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.petFormGrantAccessPermission()));
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.petFormFinaliseAccessPermission()));
   then
     $outcome.setSuccess(true);
 end

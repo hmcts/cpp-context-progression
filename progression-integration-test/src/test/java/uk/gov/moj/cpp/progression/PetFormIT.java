@@ -5,6 +5,7 @@ import static com.google.common.io.Resources.getResource;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.nio.charset.Charset.defaultCharset;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.json.Json.createArrayBuilder;
@@ -15,6 +16,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
@@ -29,6 +31,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStructuredPetQuery;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
@@ -42,6 +45,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.helper.CpsServeMaterialHelper;
 import uk.gov.moj.cpp.progression.service.RefDataService;
+import uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -82,6 +86,9 @@ public class PetFormIT extends AbstractIT {
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final String PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_PET_SUBMITTED = "public.prosecutioncasefile.cps-serve-pet-submitted";
     private static final String DOCUMENT_TEXT = STRING.next();
+    private static final String EDIT_FORM_ENDPOINT = "/prosecutioncases/%caseId%/form/%courtFormId%";
+    private static final String REQUEST_EDIT_FORM_MEDIA_TYPE = "application/vnd.progression.request-edit-form+json";
+
     private static final MessageProducer PUBLIC_MESSAGE_CONSUMER = publicEvents.createPublicProducer();
     private static final MessageConsumer CREATE_PETFORM_REQUESTED = privateEvents.createPrivateConsumer("progression.event.pet-form-created");
     private static final MessageConsumer consumerForPetFormCreated = publicEvents
@@ -98,6 +105,9 @@ public class PetFormIT extends AbstractIT {
             .createPublicConsumer("public.progression.pet-form-finalised");
     private static final MessageConsumer consumerForCourtsDocumentAdded = privateEvents
             .createPrivateConsumer("progression.event.court-document-added");
+    private static MessageConsumer consumerForEditFormRequested = publicEvents
+            .createPublicConsumer("public.progression.edit-form-requested");
+
     public static final String NAME = "name";
     public static final String USER_NAME_VALUE = "cps user name";
     public static final String UPDATED_BY = "updatedBy";
@@ -181,6 +191,35 @@ public class PetFormIT extends AbstractIT {
 
         //query pets by caseId
         queryAndVerifyPetCaseDetail(caseId, petId, defendantId, false);
+
+        //edit form to check lock status
+        //when form is unlocked
+        final UUID userId = randomUUID();
+        UsersAndGroupsStub.stubGetUsersAndGroupsUserDetailsQuery(userId.toString());
+        final String editFormEndpointUrl = EDIT_FORM_ENDPOINT
+                .replaceAll("%caseId%", caseId.toString())
+                .replaceAll("%courtFormId%", petId.toString());
+        final Response responseForEditForm = postCommandWithUserId(getWriteUrl(editFormEndpointUrl), REQUEST_EDIT_FORM_MEDIA_TYPE,
+                createObjectBuilder()
+                        .build()
+                        .toString(),
+                userId.toString());
+        assertThat(responseForEditForm.getStatusCode(), Matchers.is(ACCEPTED.getStatusCode()));
+
+        JsonObject editRequestedEvent = verifyInMessagingQueueForEditFormRequested();
+        assertEditFormRequestedFromEventStream(caseId, petId, null, null, false, editRequestedEvent);
+
+        //when form is locked
+        final UUID userId2 = randomUUID();
+        final Response responseForEditForm2 = postCommandWithUserId(getWriteUrl(editFormEndpointUrl), REQUEST_EDIT_FORM_MEDIA_TYPE,
+                createObjectBuilder()
+                        .build()
+                        .toString(),
+                userId2.toString());
+        assertThat(responseForEditForm2.getStatusCode(), Matchers.is(ACCEPTED.getStatusCode()));
+
+        JsonObject editRequestedEvent2 = verifyInMessagingQueueForEditFormRequested();
+        assertEditFormRequestedFromEventStream(caseId, petId, userId, userId2, true, editRequestedEvent2);
 
         // update pet form
         final JsonObject payloadForUpdate = createObjectBuilder()
@@ -521,5 +560,39 @@ public class PetFormIT extends AbstractIT {
         assertThat(eventPayload.getJsonObject(UPDATED_BY).getString(NAME), is(USER_NAME_VALUE));
         assertTrue(eventPayload.getString(PET_FORM_DATA).contains(DATA));
     }
+
+    private void assertEditFormRequestedFromEventStream(final UUID caseId, final UUID courtFormId, final UUID lockedBy, final UUID lockRequestedBy, final boolean isLocked, final JsonObject event) {
+        assertThat(event, Matchers.notNullValue());
+        assertThat(caseId.toString(), Matchers.is(event.getString("caseId")));
+        assertThat(courtFormId.toString(), Matchers.is(event.getString("courtFormId")));
+        assertThat(event.get("lockStatus"), Matchers.notNullValue());
+        final JsonObject lockStatus = event.getJsonObject("lockStatus");
+
+        if (nonNull(lockedBy)) {
+            final JsonObject lockedByJsonObject = lockStatus.getJsonObject("lockedBy");
+            assertThat(lockedBy.toString(), Matchers.is(lockedByJsonObject.getString("userId")));
+            assertThat("rickey", Matchers.is(lockedByJsonObject.getString("firstName")));
+            assertThat("vaughn", Matchers.is(lockedByJsonObject.getString("lastName")));
+            assertThat("rickey.vaughn@test.probation.gsi.gov.uk", Matchers.is(lockedByJsonObject.getString("email")));
+        } else {
+            assertThat(lockStatus.getString("lockedBy", null), Matchers.is(nullValue()));
+        }
+
+        if (nonNull(lockRequestedBy)) {
+            final JsonObject lockRequestedByJsonObject = lockStatus.getJsonObject("lockRequestedBy");
+            assertThat(lockRequestedBy.toString(), Matchers.is(lockRequestedByJsonObject.getString("userId")));
+        } else {
+            assertThat(lockStatus.getString("lockRequestedBy", null), nullValue());
+        }
+
+        assertThat(isLocked, Matchers.is(lockStatus.getBoolean("isLocked")));
+    }
+
+    private JsonObject verifyInMessagingQueueForEditFormRequested() {
+        final Optional<JsonObject> message = retrieveMessageAsJsonObject(consumerForEditFormRequested);
+        assertTrue(message.isPresent());
+        return message.get();
+    }
+
 
 }

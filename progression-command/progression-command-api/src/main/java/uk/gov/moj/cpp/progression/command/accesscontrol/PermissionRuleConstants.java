@@ -22,6 +22,8 @@ public class PermissionRuleConstants {
     private static final String VIEW = "View";
     private static final String EDIT = "Edit";
     private static final String FINALISE = "Finalise";
+    private static final String OBJECT = "object";
+    private static final String ACTION = "action";
 
     private static final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
@@ -29,7 +31,11 @@ public class PermissionRuleConstants {
     }
 
     public static String petFormGrantAccessPermission() {
-        return createObjectBuilder().add("object", "PetForm").add("action", "GrantAccess").build().toString();
+        return createObjectBuilder().add(OBJECT, "PetForm").add(ACTION, "GrantAccess").build().toString();
+    }
+
+    public static String petFormFinaliseAccessPermission() {
+        return createObjectBuilder().add(OBJECT, "PET").add(ACTION, FINALISE).build().toString();
     }
 
     public static String getBCMCreatePermission() {
@@ -82,6 +88,6 @@ public class PermissionRuleConstants {
     }
 
     public static String adhocHearingCreatePermission() {
-        return createObjectBuilder().add("object", "AdhocHearing").add("action", CREATE).build().toString();
+        return createObjectBuilder().add(OBJECT, "AdhocHearing").add(ACTION, CREATE).build().toString();
     }
 }

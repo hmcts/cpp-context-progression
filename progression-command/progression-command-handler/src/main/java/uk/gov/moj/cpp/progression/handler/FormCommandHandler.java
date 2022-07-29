@@ -5,6 +5,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static uk.gov.justice.core.courts.FormType.BCM;
+import static uk.gov.justice.core.courts.FormType.PET;
 import static uk.gov.justice.core.courts.FormType.PTPH;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
@@ -180,6 +181,7 @@ public class FormCommandHandler {
     private Map getDurationMapByFormType() {
         if (isNull(lockDurationMapByFormType)) {
             lockDurationMapByFormType = ImmutableMap.of(
+                    PET, parseInt(bcmFormLockDurationInMinutes) ,
                     BCM, parseInt(bcmFormLockDurationInMinutes),
                     PTPH, parseInt(ptphFormLockDurationInMinutes));
         }

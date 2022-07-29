@@ -255,7 +255,7 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188"})
 public class CaseAggregate implements Aggregate {
-    private static final long serialVersionUID = -33049804196421400L;
+    private static final long serialVersionUID = -1498099964214009L;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -521,6 +521,9 @@ public class CaseAggregate implements Aggregate {
 
                 when(EditFormRequested.class).apply(this::editFormRequest),
                 when(FormUpdated.class).apply(this::updateFormOnFormUpdate),
+                when(PetFormUpdated.class).apply(this::updateFormOnPetFormUpdate),
+                when(PetFormDefendantUpdated.class).apply(this::updateFormOnPetFormDefendantUpdated),
+                when(PetDetailUpdated.class).apply(this::onPetDetailUpdated),
                 when(PetFormCreated.class).apply(this::onPetFormCreated),
                 when(PetFormFinalised.class).apply(this::addPetFormFinalisedDocument),
                 when(FormFinalised.class).apply(this::addFormFinalisedDocument),
@@ -2661,9 +2664,10 @@ public class CaseAggregate implements Aggregate {
 
     private void updatePetFormState(final UUID petId, final List<PetDefendants> formDefendants, final FormType formType) {
         final Form form = formMap.containsKey(petId) ? formMap.get(petId) : new Form();
-        form.setFormType(formType);
+        form.setFormType(FormType.PET.equals(formType) ? formType : FormType.PET);
         form.setPetDefendants(formDefendants);
         form.setCourtFormId(petId);
+        form.setFormLockStatus(new FormLockStatus(false, null, null, null));
         formMap.put(petId, form);
     }
 
@@ -2837,6 +2841,32 @@ public class CaseAggregate implements Aggregate {
         }
     }
 
+    private void updateFormOnPetFormUpdate(final PetFormUpdated petFormUpdated) {
+        final Form form = formMap.get(petFormUpdated.getPetId());
+        final FormLockStatus lockStatus = form.getFormLockStatus();
+        if (petFormUpdated.getUserId().equals(lockStatus.getLockedBy())) {
+            lockStatus.setLockedBy(null);
+            lockStatus.setLocked(false);
+            lockStatus.setLockExpiryTime(null);
+            lockStatus.setLockRequestedBy(null);
+            form.setFormLockStatus(lockStatus);
+            formMap.put(petFormUpdated.getPetId(), form);
+        }
+    }
+
+    private void updateFormOnPetFormDefendantUpdated(final PetFormDefendantUpdated petFormDefendantUpdated) {
+        final Form form = formMap.get(petFormDefendantUpdated.getPetId());
+        final FormLockStatus lockStatus = form.getFormLockStatus();
+        if (petFormDefendantUpdated.getUserId().equals(lockStatus.getLockedBy())) {
+            lockStatus.setLockedBy(null);
+            lockStatus.setLocked(false);
+            lockStatus.setLockExpiryTime(null);
+            lockStatus.setLockRequestedBy(null);
+            form.setFormLockStatus(lockStatus);
+            formMap.put(petFormDefendantUpdated.getPetId(), form);
+        }
+    }
+
     private void editFormRequest(final EditFormRequested editFormRequested) {
         final Form form = formMap.get(editFormRequested.getCourtFormId());
         final FormLockStatus lockStatus = form.getFormLockStatus();
@@ -2914,6 +2944,15 @@ public class CaseAggregate implements Aggregate {
         form.setCourtFormId(courtFormId);
         form.setFormLockStatus(new FormLockStatus(false, null, null, null));
         formMap.put(courtFormId, form);
+    }
+
+    private void onPetDetailUpdated(final PetDetailUpdated petDetailUpdated) {
+        if (!formMap.containsKey(petDetailUpdated.getPetId())) {
+            return;
+        }
+
+        final Form form = formMap.get(petDetailUpdated.getPetId());
+        form.setPetDefendants(petDetailUpdated.getPetDefendants());
     }
 
 }
