@@ -272,11 +272,18 @@ public class NotificationService {
         }
 
         final DefendantSubject.Builder defendantSubjectBuilder = defendantSubject();
-        if(isNotEmpty(defendantAsns)) {
-            defendantSubjectBuilder.withAsn(StringUtils.join(defendantAsns, COMMA));
+        final List<DefendantSubject> additionalDefendantSubject = new ArrayList<>();
+
+        if (isNotEmpty(defendantAsns)) {
+            if (defendantAsns.get(0).contains(COMMA)) {
+                buildAdditionalDefendantSubject(defendantAsns, cpsDefendantIds, additionalDefendantSubject);
+            } else {
+                defendantSubjectBuilder.withAsn(defendantAsns.get(0));
+            }
         }
-        if(isNotEmpty(cpsDefendantIds)) {
-            defendantSubjectBuilder.withCpsDefendantId(StringUtils.join(cpsDefendantIds, COMMA));
+
+        if (isNotEmpty(cpsDefendantIds)) {
+            defendantSubjectBuilder.withCpsDefendantId(getCpsDefendantIds(cpsDefendantIds));
         }
 
         final ProsecutionCaseSubject.Builder prosecutionCaseSubjectBuilder = prosecutionCaseSubject();
@@ -296,7 +303,7 @@ public class NotificationService {
                 .withTag(new ArrayList<MaterialTag>())
                 .withProsecutionCaseSubject(prosecutionCaseSubjectBuilder.build());
 
-        final EventNotification eventNotification = buildEventNotification(addMaterialV2, materialId, caseSubjects);
+        final EventNotification eventNotification = buildEventNotification(addMaterialV2, materialId, caseSubjects, additionalDefendantSubject);
 
         final Optional<String> transformedJsonPayload = ofNullable(objectToJsonObjectConverter.convert(eventNotification).toString());
         if (transformedJsonPayload.isPresent()) {
@@ -307,7 +314,24 @@ public class NotificationService {
         }
     }
 
-    private EventNotification buildEventNotification(final AddMaterialV2.Builder addMaterialV2, final UUID materialId, final List<CaseSubjects> caseSubjects) {
+    private void buildAdditionalDefendantSubject(final List<String> defendantAsns, final List<String> cpsDefendantIds, final List<DefendantSubject> additionalDefendantSubject) {
+        List<String> asnList = Stream.of(defendantAsns.get(0).split(COMMA, -1))
+                .collect(Collectors.toList());
+        asnList.forEach(asn -> {
+            final DefendantSubject.Builder defendantSubjectBuilder1 = defendantSubject();
+            defendantSubjectBuilder1.withAsn(asn);
+            if (isNotEmpty(cpsDefendantIds)) {
+                defendantSubjectBuilder1.withCpsDefendantId(getCpsDefendantIds(cpsDefendantIds));
+            }
+            additionalDefendantSubject.add(defendantSubjectBuilder1.build());
+        });
+    }
+
+    private String getCpsDefendantIds(final List<String> cpsDefendantIds) {
+        return StringUtils.join(cpsDefendantIds, COMMA);
+    }
+
+    private EventNotification buildEventNotification(final AddMaterialV2.Builder addMaterialV2, final UUID materialId, final List<CaseSubjects> caseSubjects, final List<DefendantSubject> additionalDefendantSubject) {
         final EventNotification.Builder eventNotificationBuilder = eventNotification();
         eventNotificationBuilder.withSubjectBusinessObjectId(materialId);
         eventNotificationBuilder.withSubjectDetails(addMaterialV2.build());
@@ -324,6 +348,10 @@ public class NotificationService {
                 casesBuilder.add(object.build());
             });
             eventNotificationBuilder.withAdditionalProperty("cases", casesBuilder.build());
+        }
+
+        if (isNotEmpty(additionalDefendantSubject)) {
+            eventNotificationBuilder.withAdditionalProperty("additionalDefendantSubject", additionalDefendantSubject);
         }
         return eventNotificationBuilder.build();
     }

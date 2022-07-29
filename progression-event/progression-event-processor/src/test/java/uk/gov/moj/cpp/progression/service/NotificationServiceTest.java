@@ -731,12 +731,13 @@ public class NotificationServiceTest {
                 .withProsecutingAuthorityOUCode("ouCode456")
                 .build());
 
-        notificationService.sendApiNotification(envelope, notificationId, materialDetails, caseSubjects, Arrays.asList("defAsn"),  null);
+        notificationService.sendApiNotification(envelope, notificationId, materialDetails, caseSubjects, Arrays.asList("defAsn,defAsn2"),  null);
         verify(cpsRestNotificationService, times(1)).sendMaterial(apiNotificationArgumentCaptor.capture());
 
         JsonObject jsonObject = new StringToJsonObjectConverter().convert(apiNotificationArgumentCaptor.getValue());
         assertThat(jsonObject.getString("businessEventType"), is("now-generated-for-cps-subscription"));
         assertThat(jsonObject.getJsonArray("cases").size(), is(2));
+        assertThat(jsonObject.getJsonArray("additionalDefendantSubject").size(), is(2));
     }
 
     @Test
@@ -756,5 +757,6 @@ public class NotificationServiceTest {
         JsonObject jsonObject = new StringToJsonObjectConverter().convert(apiNotificationArgumentCaptor.getValue());
         assertThat(jsonObject.getJsonObject("subjectDetails").getJsonObject("prosecutionCaseSubject").getJsonString("prosecutingAuthority").getString(), is("ouCode123"));
         assertThat(jsonObject.getJsonArray("cases"), is(nullValue()));
+        assertThat(jsonObject.getJsonArray("additionalDefendantSubject"), is(nullValue()));
     }
 }
