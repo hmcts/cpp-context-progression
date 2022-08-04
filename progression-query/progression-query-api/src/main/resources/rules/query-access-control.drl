@@ -62,7 +62,7 @@ rule "Query - Access control for  progression.query.case"
     $outcome: Outcome();
     $action: Action(name == "progression.query.case");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"Defence Lawyers", "CPS", "Court Associates",  "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
-    "Youth Offending Service Admin", "Magistrates", "Advocates", "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group"))
+    "Youth Offending Service Admin", "Magistrates", "Advocates", "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "Online Plea System Users"))
   then
     $outcome.setSuccess(true);
 end

@@ -29,6 +29,7 @@ import static uk.gov.justice.core.courts.FormUpdated.formUpdated;
 import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged;
 import static uk.gov.justice.core.courts.LockStatus.lockStatus;
 import static uk.gov.justice.core.courts.Organisation.organisation;
+import static uk.gov.justice.core.courts.ProsecutionCaseDefendantOrganisationUpdatedByLaa.prosecutionCaseDefendantOrganisationUpdatedByLaa;
 import static uk.gov.justice.core.courts.UpdatedOrganisation.updatedOrganisation;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
@@ -124,6 +125,7 @@ import uk.gov.justice.core.courts.PetOperationFailed;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseCreatedInHearing;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantOrganisationUpdatedByLaa;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
@@ -135,6 +137,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequ
 import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
 import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.core.courts.ReceiveRepresentationOrderForDefendant;
+import uk.gov.justice.core.courts.UpdatedOrganisation;
 import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.CustodyTimeLimitExtended;
@@ -255,7 +258,8 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188"})
 public class CaseAggregate implements Aggregate {
-    private static final long serialVersionUID = -33049804196421400L;
+
+    private static final long serialVersionUID = -4933049804196421466L;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -287,6 +291,9 @@ public class CaseAggregate implements Aggregate {
     private final Map<UUID, String> defendantLegalAidStatus = new HashMap<>();
     private final Set<UUID> matchedDefendantIds = new HashSet<>();
     private final Map<UUID, UUID> defendantAssociatedDefenceOrganisation = new HashMap<>();
+
+    private final Map<UUID, UUID> defendantLAAUpdatedOrganisation = new HashMap<>();
+
     private final Map<UUID, uk.gov.justice.core.courts.Defendant> defendantsMap = new HashMap<>();
     private final List<uk.gov.justice.core.courts.Defendant> defendantsToBeAdded = new ArrayList<>();
     private final Map<UUID, Form> formMap = new HashMap<>();
@@ -521,10 +528,16 @@ public class CaseAggregate implements Aggregate {
 
                 when(EditFormRequested.class).apply(this::editFormRequest),
                 when(FormUpdated.class).apply(this::updateFormOnFormUpdate),
+                when(PetFormUpdated.class).apply(this::updateFormOnPetFormUpdate),
+                when(PetFormDefendantUpdated.class).apply(this::updateFormOnPetFormDefendantUpdated),
+                when(PetDetailUpdated.class).apply(this::onPetDetailUpdated),
                 when(PetFormCreated.class).apply(this::onPetFormCreated),
                 when(PetFormFinalised.class).apply(this::addPetFormFinalisedDocument),
                 when(FormFinalised.class).apply(this::addFormFinalisedDocument),
                 when(OnlinePleaRecorded.class).apply(this::updateOffenceForOnlinePlea),
+                when(ProsecutionCaseDefendantOrganisationUpdatedByLaa.class).apply(e ->
+                    this.defendantLAAUpdatedOrganisation.put(e.getDefendantId(), e.getUpdatedOrganisation().getId())
+                ),
                 otherwiseDoNothing());
 
     }
@@ -1515,6 +1528,25 @@ public class CaseAggregate implements Aggregate {
                     .withAssociationEndDate(receiveRepresentationOrderForDefendant.getEffectiveEndDate())
                     .build();
             if (offencesForDefendantChanged.isPresent()) {
+                 UpdatedOrganisation updatedOrganisation = updatedOrganisation()
+                        .withAddressLine1(organisationDetails.getAddressLine1())
+                        .withAddressLine2(organisationDetails.getAddressLine2())
+                        .withAddressLine3(organisationDetails.getAddressLine3())
+                        .withAddressLine4(organisationDetails.getAddressLine4())
+                        .withId(organisationDetails.getId())
+                        .withAddressPostcode(organisationDetails.getAddressPostcode())
+                        .withEmail(organisationDetails.getEmail())
+                        .withLaaContractNumber(organisationDetails.getLaaContractNumber())
+                        .withPhoneNumber(organisationDetails.getPhoneNumber())
+                        .withName(organisationDetails.getName())
+                        .build();
+
+                streamBuilder.add(prosecutionCaseDefendantOrganisationUpdatedByLaa().
+                        withDefendantId(defendantId).withUpdatedOrganisation(updatedOrganisation).build());
+                if(this.defendantLAAUpdatedOrganisation.containsKey(defendantId) && updatedOrganisation.getId().equals(this.defendantLAAUpdatedOrganisation.get(defendantId))) {
+                    updatedOrganisation = null;
+                }
+
                 streamBuilder.add(ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()
                         .withDefendantCaseOffences(newDefendantCaseOffences).build());
                 streamBuilder.add(offencesForDefendantChanged.get());
@@ -1550,18 +1582,7 @@ public class CaseAggregate implements Aggregate {
                                 .build())
                         .withProsecutionAuthorityId(getProsecutorId(prosecutionCase))
                         .withCaseUrn(prosecutionCase.getProsecutionCaseIdentifier().getCaseURN())
-                        .withUpdatedOrganisation(updatedOrganisation()
-                                .withAddressLine1(organisationDetails.getAddressLine1())
-                                .withAddressLine2(organisationDetails.getAddressLine2())
-                                .withAddressLine3(organisationDetails.getAddressLine3())
-                                .withAddressLine4(organisationDetails.getAddressLine4())
-                                .withId(organisationDetails.getId())
-                                .withAddressPostcode(organisationDetails.getAddressPostcode())
-                                .withEmail(organisationDetails.getEmail())
-                                .withLaaContractNumber(organisationDetails.getLaaContractNumber())
-                                .withPhoneNumber(organisationDetails.getPhoneNumber())
-                                .withName(organisationDetails.getName())
-                                .build())
+                        .withUpdatedOrganisation(updatedOrganisation)
                         .build());
 
             }
@@ -2661,9 +2682,10 @@ public class CaseAggregate implements Aggregate {
 
     private void updatePetFormState(final UUID petId, final List<PetDefendants> formDefendants, final FormType formType) {
         final Form form = formMap.containsKey(petId) ? formMap.get(petId) : new Form();
-        form.setFormType(formType);
+        form.setFormType(FormType.PET.equals(formType) ? formType : FormType.PET);
         form.setPetDefendants(formDefendants);
         form.setCourtFormId(petId);
+        form.setFormLockStatus(new FormLockStatus(false, null, null, null));
         formMap.put(petId, form);
     }
 
@@ -2837,6 +2859,32 @@ public class CaseAggregate implements Aggregate {
         }
     }
 
+    private void updateFormOnPetFormUpdate(final PetFormUpdated petFormUpdated) {
+        final Form form = formMap.get(petFormUpdated.getPetId());
+        final FormLockStatus lockStatus = form.getFormLockStatus();
+        if (petFormUpdated.getUserId().equals(lockStatus.getLockedBy())) {
+            lockStatus.setLockedBy(null);
+            lockStatus.setLocked(false);
+            lockStatus.setLockExpiryTime(null);
+            lockStatus.setLockRequestedBy(null);
+            form.setFormLockStatus(lockStatus);
+            formMap.put(petFormUpdated.getPetId(), form);
+        }
+    }
+
+    private void updateFormOnPetFormDefendantUpdated(final PetFormDefendantUpdated petFormDefendantUpdated) {
+        final Form form = formMap.get(petFormDefendantUpdated.getPetId());
+        final FormLockStatus lockStatus = form.getFormLockStatus();
+        if (petFormDefendantUpdated.getUserId().equals(lockStatus.getLockedBy())) {
+            lockStatus.setLockedBy(null);
+            lockStatus.setLocked(false);
+            lockStatus.setLockExpiryTime(null);
+            lockStatus.setLockRequestedBy(null);
+            form.setFormLockStatus(lockStatus);
+            formMap.put(petFormDefendantUpdated.getPetId(), form);
+        }
+    }
+
     private void editFormRequest(final EditFormRequested editFormRequested) {
         final Form form = formMap.get(editFormRequested.getCourtFormId());
         final FormLockStatus lockStatus = form.getFormLockStatus();
@@ -2914,6 +2962,15 @@ public class CaseAggregate implements Aggregate {
         form.setCourtFormId(courtFormId);
         form.setFormLockStatus(new FormLockStatus(false, null, null, null));
         formMap.put(courtFormId, form);
+    }
+
+    private void onPetDetailUpdated(final PetDetailUpdated petDetailUpdated) {
+        if (!formMap.containsKey(petDetailUpdated.getPetId())) {
+            return;
+        }
+
+        final Form form = formMap.get(petDetailUpdated.getPetId());
+        form.setPetDefendants(petDetailUpdated.getPetDefendants());
     }
 
 }

@@ -30,6 +30,7 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantOrganisationUpdatedByLaa;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.Prosecutor;
@@ -126,7 +127,8 @@ public class ReceiveRepresentationOrderHandlerTest {
             DefendantLegalaidStatusUpdated.class,
             DefendantLaaAssociated.class,
             DefendantDefenceAssociationLocked.class,
-            ProsecutionCaseDefendantUpdated.class);
+            ProsecutionCaseDefendantUpdated.class,
+            ProsecutionCaseDefendantOrganisationUpdatedByLaa.class);
 
     @InjectMocks
     private ReceiveRepresentationOrderHandler receiveRepresentationOrderHandler;

@@ -5,6 +5,10 @@
       "action": "GrantAccess"
     },
     {
+      "object": "PET",
+      "action": "Finalise"
+    },
+    {
       "object": "BCM",
       "action": "View"
     },
