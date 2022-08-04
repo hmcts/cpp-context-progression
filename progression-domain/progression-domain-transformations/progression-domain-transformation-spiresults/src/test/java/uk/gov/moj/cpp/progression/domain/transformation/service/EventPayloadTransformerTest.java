@@ -149,6 +149,109 @@ public class EventPayloadTransformerTest {
 
     }
 
+    @Test
+    public void testTransformV2() {
+
+        final JsonArrayBuilder offenceJudicialResultPrompts = createArrayBuilder()
+            .add(createObjectBuilder()
+                .add("isAvailableForCourtExtract", true)
+                .add("label", OFFENCE_JUDICIAL_RESULT_PROMPT_LABEL_VALUE)
+            );
+
+        final JsonArrayBuilder defendantJudicialResultPrompts = createArrayBuilder()
+            .add(createObjectBuilder()
+                .add("isAvailableForCourtExtract", true)
+                .add("label", DEFENDANT_JUDICIAL_RESULT_PROMPT_LABEL_VALUE)
+            );
+
+        final JsonArrayBuilder offenceJudicialResults = createArrayBuilder()
+            .add(createObjectBuilder()
+                .add("", OFFENCE_JUDICIAL_RESULT_LABEL_VALUE) // deliberately left out attribute
+                .add(JUDICIAL_RESULT_PROMPTS_ATTRIBUTE, offenceJudicialResultPrompts)
+            );
+
+        final JsonArrayBuilder defendantJudicialResults = createArrayBuilder()
+            .add(createObjectBuilder()
+                .add("label", DEFENDANT_JUDICIAL_RESULT_LABEL_VALUE)
+                .add(JUDICIAL_RESULT_PROMPTS_ATTRIBUTE, defendantJudicialResultPrompts)
+            );
+
+        final JsonArrayBuilder offences = createArrayBuilder()
+            .add(createObjectBuilder()
+                .add(JUDICIAL_RESULTS_ATTRIBUTE, offenceJudicialResults));
+
+        final JsonArrayBuilder defendants = createArrayBuilder()
+            .add(createObjectBuilder()
+                .add(JUDICIAL_RESULTS_ATTRIBUTE, defendantJudicialResults)
+                .add("offences", offences)
+            );
+
+        final JsonArrayBuilder prosecutionCases = createArrayBuilder()
+            .add(createObjectBuilder()
+                .add("defendants", defendants)
+            );
+
+        final String hearingId = randomUUID().toString();
+        final JsonObject payload = createObjectBuilder()
+            .add("hearing", createObjectBuilder().add("id", hearingId))
+            .add("prosecutionCases", prosecutionCases)
+            .build();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("progression.event.prosecutionCase-defendant-listing-status-changed-v2"), payload);
+
+        final ResultDefinition defendantResultDefinition = getResultDefinition(DEFENDANT_JUDICIAL_RESULT_LABEL_VALUE, DEFENDANT_JUDICIAL_RESULT_PROMPT_LABEL_VALUE);
+        final ResultDefinition offenceResultDefinition = getResultDefinition(OFFENCE_JUDICIAL_RESULT_LABEL_VALUE, OFFENCE_JUDICIAL_RESULT_PROMPT_LABEL_VALUE);
+        final String formattedDate = EVENT_DATE.format(DATE_TIME_FORMATTER);
+
+        when(resultDefinitionService.getResultDefinition(formattedDate, DEFENDANT_JUDICIAL_RESULT_LABEL_VALUE)).thenReturn(defendantResultDefinition);
+        when(resultDefinitionService.getResultDefinition(formattedDate, OFFENCE_JUDICIAL_RESULT_LABEL_VALUE)).thenReturn(offenceResultDefinition);
+        when(hearingService.getHearingSittingDate(hearingId)).thenReturn(EVENT_DATE);
+
+        final EventPayloadTransformer eventPayloadTransformer = new EventPayloadTransformer();
+        eventPayloadTransformer.setResultDefinitionService(resultDefinitionService);
+        eventPayloadTransformer.setHearingService(hearingService);
+        final JsonObject transformedPayload = eventPayloadTransformer.transform(jsonEnvelope);
+
+        final JsonObject firstDefendant = transformedPayload.getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0);
+        final JsonObject defendantJudicialResultObject = firstDefendant.getJsonArray(JUDICIAL_RESULTS_ATTRIBUTE).getJsonObject(0);
+        assertThat(defendantJudicialResultObject.getString("judicialResultTypeId"), is(defendantResultDefinition.getId()));
+        assertThat(defendantJudicialResultObject.getString("resultText"), is("NA"));
+        assertThat(defendantJudicialResultObject.getBoolean("terminatesOffenceProceedings"), is(false));
+        assertThat(defendantJudicialResultObject.getBoolean("lifeDuration"), is(false));
+        assertThat(defendantJudicialResultObject.getBoolean("publishedAsAPrompt"), is(false));
+        assertThat(defendantJudicialResultObject.getBoolean("excludedFromResults"), is(false));
+        assertThat(defendantJudicialResultObject.getBoolean("alwaysPublished"), is(false));
+        assertThat(defendantJudicialResultObject.getBoolean("urgent"), is(true));
+        assertThat(defendantJudicialResultObject.getBoolean("d20"), is(false));
+
+        final JsonObject judicialResultPromptObject = defendantJudicialResultObject.getJsonArray(JUDICIAL_RESULT_PROMPTS_ATTRIBUTE).getJsonObject(0);
+        assertThat(judicialResultPromptObject.getString("judicialResultPromptTypeId"), is(defendantResultDefinition.getPrompts().get(0).getId()));
+        assertThat(judicialResultPromptObject.getString("courtExtract"), is("Y"));
+        assertThat(judicialResultPromptObject.containsKey("isAvailableForCourtExtract"), is(false));
+
+        final JsonObject offenceJudicialResultObject = firstDefendant.getJsonArray("offences").getJsonObject(0).getJsonArray(JUDICIAL_RESULTS_ATTRIBUTE).getJsonObject(0);
+        assertThat(offenceJudicialResultObject.getString("judicialResultTypeId"), is(offenceResultDefinition.getId()));
+        assertThat(offenceJudicialResultObject.getString("resultText"), is("NA"));
+        assertThat(offenceJudicialResultObject.getBoolean("terminatesOffenceProceedings"), is(false));
+        assertThat(offenceJudicialResultObject.getBoolean("lifeDuration"), is(false));
+        assertThat(offenceJudicialResultObject.getBoolean("publishedAsAPrompt"), is(false));
+        assertThat(offenceJudicialResultObject.getBoolean("excludedFromResults"), is(false));
+        assertThat(offenceJudicialResultObject.getBoolean("alwaysPublished"), is(false));
+        assertThat(offenceJudicialResultObject.getBoolean("urgent"), is(true));
+        assertThat(offenceJudicialResultObject.getBoolean("d20"), is(false));
+        assertThat(offenceJudicialResultObject.getString("label"), is(OFFENCE_JUDICIAL_RESULT_LABEL_VALUE));
+        assertThat(offenceJudicialResultObject.get(""), nullValue());
+
+        final JsonObject offenceJudicialResultPromptObject = offenceJudicialResultObject.getJsonArray(JUDICIAL_RESULT_PROMPTS_ATTRIBUTE).getJsonObject(0);
+        assertThat(offenceJudicialResultPromptObject.getString("judicialResultPromptTypeId"), is(offenceResultDefinition.getPrompts().get(0).getId()));
+        assertThat(offenceJudicialResultPromptObject.getString("courtExtract"), is("Y"));
+        assertThat(offenceJudicialResultPromptObject.containsKey("isAvailableForCourtExtract"), is(false));
+
+        verify(resultDefinitionService).getResultDefinition(formattedDate, OFFENCE_JUDICIAL_RESULT_LABEL_VALUE);
+        verify(resultDefinitionService).getResultDefinition(formattedDate, DEFENDANT_JUDICIAL_RESULT_LABEL_VALUE);
+
+    }
+
     private ResultDefinition getResultDefinition(final String resultDefinitionLabel, final String promptLabel) {
         ResultDefinition resultDefinition = new ResultDefinition();
         resultDefinition.setId(randomUUID().toString());

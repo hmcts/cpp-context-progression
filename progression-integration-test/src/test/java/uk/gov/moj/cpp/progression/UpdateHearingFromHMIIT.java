@@ -46,7 +46,7 @@ import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 public class UpdateHearingFromHMIIT extends AbstractIT {
 
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
     private static final MessageConsumer messageConsumerProsecutionHearingMovedtoUnAllocated = privateEvents.createPrivateConsumer("progression.event.hearing-moved-to-unallocated");
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
 
@@ -175,7 +175,7 @@ public class UpdateHearingFromHMIIT extends AbstractIT {
 
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);

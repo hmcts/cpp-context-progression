@@ -69,7 +69,7 @@ public class ReferApplicationToCourtIT extends AbstractIT {
         applicationId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
-        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
         messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
         messageProducerClientPublic = publicEvents.createPublicProducer();
         stubInitiateHearing();

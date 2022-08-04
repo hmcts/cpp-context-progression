@@ -46,7 +46,7 @@ public class HearingUnallocatedIT extends AbstractIT {
     private static final String PUBLIC_EVENTS_LISTING_HEARING_UNALLOCATED = "public.events.listing.hearing-unallocated";
 
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
     private static final MessageConsumer messageConsumerOffencesRemovedFromHearing = privateEvents.createPrivateConsumer("progression.events.offences-removed-from-hearing");
 
 

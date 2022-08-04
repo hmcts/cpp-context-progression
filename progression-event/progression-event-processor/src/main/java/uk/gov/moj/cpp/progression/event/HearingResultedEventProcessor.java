@@ -1,22 +1,21 @@
 package uk.gov.moj.cpp.progression.event;
 
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toMap;
-import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
+import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ListUnscheduledNextHearings;
 import uk.gov.justice.core.courts.NextHearingsRequested;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCasesResultedV2;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
+import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
 import uk.gov.justice.listing.courts.ListNextHearings;
 import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.progression.courts.StoreBookingReferenceCourtScheduleIds;
@@ -33,7 +32,11 @@ import uk.gov.moj.cpp.progression.helper.UnscheduledCourtHearingListTransformer;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
+import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,12 +46,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toMap;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingResultedEventProcessor {
@@ -79,6 +82,9 @@ public class HearingResultedEventProcessor {
 
     @Inject
     private SummonsHelper summonsHelper;
+
+    @Inject
+    private ListCourtHearingTransformer listCourtHearingTransformer;
 
     @Handles("public.events.hearing.hearing-resulted")
     @FeatureControl("amendReshare")
@@ -160,13 +166,29 @@ public class HearingResultedEventProcessor {
     @Handles("progression.event.hearing-for-application-created")
     public void processCreateHearingForApplication(final JsonEnvelope jsonEnvelope) {
 
-        final HearingForApplicationCreated hearingForApplicationCreated = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingForApplicationCreated.class);
+       final HearingForApplicationCreated hearingForApplicationCreated = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingForApplicationCreated.class);
+
+        final Hearing hearing = hearingForApplicationCreated.getHearing();
+
+        progressionService.linkApplicationToHearing(jsonEnvelope, hearing, hearingForApplicationCreated.getHearingListingStatus());
+    }
+
+    @Handles("progression.event.hearing-for-application-created-v2")
+    public void processCreateHearingForApplicationV2(final JsonEnvelope jsonEnvelope) {
+
+        final HearingForApplicationCreatedV2 hearingForApplicationCreated = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingForApplicationCreatedV2.class);
 
         final Hearing hearing = hearingForApplicationCreated.getHearing();
 
         progressionService.linkApplicationToHearing(jsonEnvelope, hearing, hearingForApplicationCreated.getHearingListingStatus());
 
+        final List<ProsecutionCase> prosecutionCases = hearingForApplicationCreated.getHearing().getProsecutionCases();
+        final List<ListHearingRequest> listHearingRequests = hearingForApplicationCreated.getListHearingRequests();
+        final UUID hearingId = hearingForApplicationCreated.getHearing().getId();
 
+        if (!CollectionUtils.isEmpty(listHearingRequests)) {
+            listingService.listCourtHearing(jsonEnvelope, listCourtHearingTransformer.transform(jsonEnvelope, prosecutionCases, listHearingRequests, hearingId));
+        }
     }
 
     @Handles("progression.event.unscheduled-next-hearings-requested")

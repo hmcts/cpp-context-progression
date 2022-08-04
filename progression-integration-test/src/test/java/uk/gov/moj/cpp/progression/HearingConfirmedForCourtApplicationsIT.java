@@ -63,7 +63,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-            .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+            .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.event.hearing-application-link-created";
     private static final MessageConsumer messageConsumerLink = privateEvents.createPrivateConsumer(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
     private static final String MAGISTRATES_JURISDICTION_TYPE = "MAGISTRATES";

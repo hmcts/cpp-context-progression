@@ -4,7 +4,6 @@ package uk.gov.moj.cpp.progression.processor;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.moj.cpp.progression.service.ProgressionService.HEARING;
 import static uk.gov.moj.cpp.progression.transformer.HearingHelper.transformedHearing;
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.COURT_APPLICATIONS;
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.COURT_APPLICATION_CASES;
@@ -74,6 +73,9 @@ public class VejCaseworkerProcessor {
 
     @Inject
     private RestEasyClientService restEasyClientService;
+
+    private static final String HEARING = "hearing";
+
 
     @Handles("progression.events.vej-hearing-populated-to-probation-caseworker")
     public void processVejHearingPopulatedToProbationCaseworker(final JsonEnvelope jsonEnvelope) {

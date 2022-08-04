@@ -80,6 +80,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -532,6 +533,8 @@ public class CourtApplicationProcessor {
                             .build();
 
                     final BreachedApplications breachedApplication = breachApplicationCreationRequested.getBreachedApplications();
+                    final List<Offence> offences = nonNull(defendant.get().getOffences())? defendant.get().getOffences().stream().collect(toList()) :null;
+
                     final CourtApplication courtApplication = CourtApplication.courtApplication()
                             .withId(UUID.randomUUID())
                             .withType(breachedApplication.getApplicationType())
@@ -541,6 +544,13 @@ public class CourtApplicationProcessor {
                             .withApplicant(applicant)
                             .withSubject(respondent)
                             .withRespondents(singletonList(respondent))
+                            .withCourtApplicationCases(Arrays.asList(CourtApplicationCase.courtApplicationCase()
+                                    .withIsSJP(Boolean.FALSE)
+                                    .withProsecutionCaseId(prosecutionCase.getId())
+                                    .withOffences(offences)
+                                    .withCaseStatus("ACTIVE")
+                                    .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
+                                    .build()))
                             .build();
 
                     final CourtHearingRequest courtHearingRequest = CourtHearingRequest.courtHearingRequest()

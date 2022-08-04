@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.core.courts.CreateHearingForApplication;
+import uk.gov.justice.core.courts.CreateHearingForApplicationV2;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
@@ -81,12 +81,12 @@ public class CreateHearingForApplicationHandlerTest {
         final Hearing hearing = Hearing.hearing().withId(hearingId).build();
 
 
-        final Envelope<CreateHearingForApplication> envelope = envelopeFrom(metadata, CreateHearingForApplication.createHearingForApplication()
+        final Envelope<CreateHearingForApplicationV2> envelope = envelopeFrom(metadata, CreateHearingForApplicationV2.createHearingForApplicationV2()
                 .withHearing(hearing)
                 .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
                 .build());
 
-        when(hearingAggregate.createHearingForApplication(hearing,HearingListingStatus.SENT_FOR_LISTING))
+        when(hearingAggregate.createHearingForApplication(hearing,HearingListingStatus.SENT_FOR_LISTING, null))
                 .thenReturn(Stream.of(HearingForApplicationCreated.hearingForApplicationCreated()
                         .withHearing(hearing)
                         .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)

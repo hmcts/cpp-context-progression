@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.handler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.core.courts.UpdateDefendantListingStatus;
+import uk.gov.justice.core.courts.UpdateDefendantListingStatusV2;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -32,13 +32,13 @@ public class UpdateDefedantListingStatusHandler {
     private AggregateService aggregateService;
 
     @Handles("progression.command.update-defendant-listing-status")
-    public void handle(final Envelope<UpdateDefendantListingStatus> updateDefendantListingStatusEnvelope) throws EventStreamException {
+    public void handle(final Envelope<UpdateDefendantListingStatusV2> updateDefendantListingStatusEnvelope) throws EventStreamException {
         LOGGER.debug("progression.command.update-defendant-listing-status {}", updateDefendantListingStatusEnvelope.payload());
 
-        final UpdateDefendantListingStatus updateDefendantListingStatus = updateDefendantListingStatusEnvelope.payload();
+        final UpdateDefendantListingStatusV2 updateDefendantListingStatus = updateDefendantListingStatusEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateDefendantListingStatus.getHearing().getId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
-        final Stream<Object> events = hearingAggregate.updateDefendantListingStatus(updateDefendantListingStatus.getHearing(), updateDefendantListingStatus.getHearingListingStatus(), updateDefendantListingStatus.getNotifyNCES());
+        final Stream<Object> events = hearingAggregate.updateDefendantListingStatus(updateDefendantListingStatus.getHearing(), updateDefendantListingStatus.getHearingListingStatus(), updateDefendantListingStatus.getNotifyNCES(), updateDefendantListingStatus.getListHearingRequests());
         appendEventsToStream(updateDefendantListingStatusEnvelope, eventStream, events);
     }
 

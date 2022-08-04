@@ -33,7 +33,7 @@ public class BreachApplicationIT extends AbstractIT {
 
     private static final String COURT_APPLICATION_CREATED_PRIVATE_EVENT = "progression.event.court-application-created";
     private static final String COURT_APPLICATION_PROCEEDINGS_INITIATED_PRIVATE_EVENT = "progression.event.court-application-proceedings-initiated";
-    private static final String PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED = "progression.event.prosecutionCase-defendant-listing-status-changed";
+    private static final String PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED = "progression.event.prosecutionCase-defendant-listing-status-changed-v2";
     private static MessageConsumer consumerForCourtApplicationCreated;
     private static MessageConsumer consumerForCourtApplicationProceedingsInitiated;
     private static MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
@@ -90,6 +90,7 @@ public class BreachApplicationIT extends AbstractIT {
 
         final String caseId = randomUUID().toString();
         final String masterDefendantId = randomUUID().toString();
+
 
         addProsecutionCaseToCrownCourt(caseId, masterDefendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, masterDefendantId));
@@ -154,7 +155,7 @@ public class BreachApplicationIT extends AbstractIT {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationProceedingsInitiated);
         assertTrue(message.isPresent());
         final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
-        assertThat(applicationReference.length(), is(11));
+        assertThat(applicationReference.length(), is(8));
         return message.get().getJsonObject("courtApplication").getString("id");
     }
 }

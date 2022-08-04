@@ -45,7 +45,7 @@ import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.core.courts.ProsecutionCasesResulted;
 import uk.gov.justice.hearing.courts.HearingResult;
 import uk.gov.justice.progression.courts.ApplicationsResulted;
@@ -75,9 +75,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -102,7 +99,7 @@ public class HearingResultHandlerTest {
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             HearingResulted.class,
-            ProsecutionCaseDefendantListingStatusChanged.class,
+            ProsecutionCaseDefendantListingStatusChangedV2.class,
             ProsecutionCasesResulted.class,
             ApplicationsResulted.class,
             LaaDefendantProceedingConcludedChanged.class);
@@ -161,14 +158,14 @@ public class HearingResultHandlerTest {
 
         final JsonEnvelope hearingResultedEnvelope = (JsonEnvelope) envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
 
-        final JsonEnvelope defendantListingStatusEnvelope = (JsonEnvelope) envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.prosecutionCase-defendant-listing-status-changed")).findFirst().get();
+        final JsonEnvelope defendantListingStatusEnvelope = (JsonEnvelope) envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.prosecutionCase-defendant-listing-status-changed-v2")).findFirst().get();
 
 
         assertThat(hearingResultedEnvelope.payloadAsJsonObject().getJsonObject("hearing")
                 , notNullValue());
         assertThat(hearingResultedEnvelope.metadata().name(), is("progression.event.hearing-resulted"));
 
-        assertThat(defendantListingStatusEnvelope.metadata().name(), is("progression.event.prosecutionCase-defendant-listing-status-changed"));
+        assertThat(defendantListingStatusEnvelope.metadata().name(), is("progression.event.prosecutionCase-defendant-listing-status-changed-v2"));
         assertThat(defendantListingStatusEnvelope.payloadAsJsonObject().getJsonObject("hearing")
                 , notNullValue());
 
@@ -617,7 +614,7 @@ public class HearingResultHandlerTest {
                 .withCourtApplications(getCourtApplications())
                 .build();
 
-        aggregate.apply(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
+        aggregate.apply(ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
                 .withHearing(initHearing)
                 .build());
 

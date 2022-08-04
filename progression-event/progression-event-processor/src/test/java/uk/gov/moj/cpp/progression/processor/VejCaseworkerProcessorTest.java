@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.progression.service.ProgressionService.HEARING;
 import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.PROSECUTION_CASES;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -68,6 +67,9 @@ public class VejCaseworkerProcessorTest {
 
     @Captor
     private ArgumentCaptor<String> envelopeArgumentCaptor;
+
+    private static final String HEARING = "hearing";
+
 
     @Before
     public void setUp() {

@@ -74,7 +74,7 @@ public class HearingDeletedIT extends AbstractIT {
     @Before
     public void setUp() {
         messageProducerClientPublic = publicEvents.createPublicProducer();
-        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
         messageConsumerHearingDeleted = privateEvents.createPrivateConsumer("progression.event.hearing-deleted");
         messageConsumerHearingDeletedForProsecutionCase = privateEvents.createPrivateConsumer("progression.event.hearing-deleted-for-prosecution-case");
         messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
@@ -112,7 +112,7 @@ public class HearingDeletedIT extends AbstractIT {
 
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
 
             sendMessage(messageProducerClientPublic,
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);

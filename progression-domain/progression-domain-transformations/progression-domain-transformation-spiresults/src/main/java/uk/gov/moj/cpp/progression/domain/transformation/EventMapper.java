@@ -16,6 +16,9 @@ public class EventMapper {
 
     static {
         EVENT_MAP.put("progression.event.prosecutionCase-defendant-listing-status-changed", newArrayList(
+            "$.hearing.id"));
+
+        EVENT_MAP.put("progression.event.prosecutionCase-defendant-listing-status-changed-v2", newArrayList(
                 "$.hearing.id"));
 
         EVENT_MAP.put("progression.event.hearing-resulted", newArrayList(

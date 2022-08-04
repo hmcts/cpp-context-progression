@@ -69,7 +69,7 @@ public class ReportingRestrictionsIT extends AbstractIT {
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static String userId;
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged =
-            privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed");
+            privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
     private static final MessageConsumer consumerForCourtApplicationCreated =
             publicEvents.createPublicConsumer("public.progression.court-application-created");
     private String hearingId1;

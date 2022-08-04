@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 @Transformation
 public class    ProsecutionCaseDefendantListingStatusChangedTransformer implements EventTransformation {
     private static final Logger LOGGER = getLogger(ProsecutionCaseDefendantListingStatusChangedTransformer.class);
-    public static final String PROGRESSION_CASE_DEFENDANT_LISTING_STATUS_CHANGED = "progression.event.prosecutionCase-defendant-listing-status-changed";
+    public static final String PROGRESSION_CASE_DEFENDANT_LISTING_STATUS_CHANGED = "progression.event.prosecutionCase-defendant-listing-status-changed-v2";
     public static final String HEARING_LISTING_STATUS_KEY = "hearingListingStatus";
     public static final String HEARING_LISTING_STATUS_VALUE = "HEARING_RESULTED";
     public static final String HEARING_KEY = "hearing";

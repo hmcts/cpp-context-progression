@@ -9,6 +9,8 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-created.json
         - name: progression.event.prosecutionCase-defendant-listing-status-changed
           schema_uri: http://justice.gov.uk/core/courts/prosecutionCase-defendant-listing-status-changed.json
+        - name: progression.event.prosecutionCase-defendant-listing-status-changed-v2
+          schema_uri: http://justice.gov.uk/core/courts/prosecutionCase-defendant-listing-status-changed-v2.json
         - name: progression.event.court-application-created
           schema_uri: http://justice.gov.uk/core/courts/court-application-created.json
         - name: progression.event.prosecution-case-defendant-updated

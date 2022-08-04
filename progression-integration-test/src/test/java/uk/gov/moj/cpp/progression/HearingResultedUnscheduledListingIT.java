@@ -57,8 +57,7 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 = "public.events.hearing.hearing-resulted-unscheduled-listing";
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
-    private static final String PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED = "progression.event" +
-            ".prosecutionCase-defendant-listing-status-changed";
+    private static final String PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED = "progression.event.prosecutionCase-defendant-listing-status-changed-v2";
     private static final String PROGRESSION_EVENT_UNSCHEDULED_HEARING_RECORDED = "progression.event.unscheduled-hearing-recorded";
 
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression" +

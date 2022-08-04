@@ -29,6 +29,7 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingDeleted;
@@ -510,10 +511,10 @@ public class HearingAggregateTest {
         setField(hearingAggregate, "hearing", hearing);
         setField(hearingAggregate, "hearingListingStatus", hearingListingStatus);
         setField(hearingAggregate, "notifyNCES", notifyNCES);
-        final List<Object> eventStream1 = hearingAggregate.updateDefendantListingStatus(hearing, hearingListingStatus, notifyNCES).collect(toList());
+        final List<Object> eventStream1 = hearingAggregate.updateDefendantListingStatus(hearing, hearingListingStatus, notifyNCES,null).collect(toList());
         assertThat(eventStream1.size(), is(2));
-        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) eventStream1.get(0);
-        assertThat(hearingId, is(prosecutionCaseDefendantListingStatusChanged.getHearing().getId()));
+        ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = (ProsecutionCaseDefendantListingStatusChangedV2) eventStream1.get(0);
+        assertThat(hearingId, is(prosecutionCaseDefendantListingStatusChangedV2.getHearing().getId()));
     }
 
     @Test
@@ -529,12 +530,12 @@ public class HearingAggregateTest {
         setField(hearingAggregate, "hearing", hearing);
         setField(hearingAggregate, "hearingListingStatus", hearingListingStatus);
         setField(hearingAggregate, "notifyNCES", notifyNCES);
-        final List<Object> eventStream1 = hearingAggregate.updateDefendantListingStatus(hearing, hearingListingStatus, notifyNCES).collect(toList());
+        final List<Object> eventStream1 = hearingAggregate.updateDefendantListingStatus(hearing, hearingListingStatus, notifyNCES, null).collect(toList());
         assertThat(eventStream1.size(), is(4));
         UnscheduledHearingAllocationNotified unscheduledHearingAllocationNotified = (UnscheduledHearingAllocationNotified) eventStream1.get(0);
         assertThat(hearingId, is(unscheduledHearingAllocationNotified.getHearing().getId()));
-        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) eventStream1.get(1);
-        assertThat(hearingId, is(prosecutionCaseDefendantListingStatusChanged.getHearing().getId()));
+        ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = (ProsecutionCaseDefendantListingStatusChangedV2) eventStream1.get(1);
+        assertThat(hearingId, is(prosecutionCaseDefendantListingStatusChangedV2.getHearing().getId()));
         HearingPopulatedToProbationCaseworker hearingPopulatedToProbationCaseworker = (HearingPopulatedToProbationCaseworker) eventStream1.get(2);
         assertThat(hearingId, is(hearingPopulatedToProbationCaseworker.getHearing().getId()));
         VejHearingPopulatedToProbationCaseworker vejHearingPopulatedToProbationCaseworker = (VejHearingPopulatedToProbationCaseworker) eventStream1.get(3);

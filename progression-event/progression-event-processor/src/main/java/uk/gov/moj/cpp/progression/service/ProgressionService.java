@@ -29,6 +29,7 @@ import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.PrepareSummonsData;
@@ -120,8 +121,8 @@ public class ProgressionService {
     private static final String PUBLIC_EVENT_HEARING_DETAIL_CHANGED = "public.hearing-detail-changed";
     private static final String HEARING_LISTING_STATUS = "hearingListingStatus";
     private static final String UNSCHEDULED = "isUnscheduled";
-    public static final String HEARING = "hearing";
-    public static final String HEARING_POLICE_CASE_PROSECUTORS = "policeCases";
+    private static final String HEARING = "hearing";
+    private static final String LIST_HEARING_REQUESTS = "listHearingRequests";
     private static final String HEARING_INITIALISED = "HEARING_INITIALISED";
     private static final String SENT_FOR_LISTING = "SENT_FOR_LISTING";
     private static final String EMPTY_STRING = "";
@@ -173,6 +174,9 @@ public class ProgressionService {
 
     @Inject
     private ListToJsonArrayConverter<DefendantJudicialResult> resultListToJsonArrayConverter;
+
+    @Inject
+    private ListToJsonArrayConverter<ListHearingRequest> hearingRequestListToJsonArrayConverter;
 
 
     private static JsonArray transformProsecutionCases(final List<ConfirmedProsecutionCase> prosecutionCases) {
@@ -708,20 +712,33 @@ public class ProgressionService {
      * @param hearings       - the hearings to update the status for
      * @param seedingHearing - The originating hearing details
      */
-    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<HearingListingNeeds> hearings, final SeedingHearing seedingHearing) {
+    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<HearingListingNeeds> hearings, final SeedingHearing seedingHearing, final List<ListHearingRequest> listHearingRequests) {
         hearings.forEach(hearingListingNeeds -> {
             final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds, seedingHearing);
+
             if (isNotEmpty(hearing.getProsecutionCases())) {
-                final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
+                final JsonObjectBuilder hearingListingStatusCommandBuilder = Json.createObjectBuilder()
                         .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
-                        .add(HEARING, objectToJsonObjectConverter.convert(hearing)).build();
+                        .add(HEARING, objectToJsonObjectConverter.convert(hearing));
+
+                if (isNotEmpty(listHearingRequests)) {
+                    hearingListingStatusCommandBuilder.add(LIST_HEARING_REQUESTS, hearingRequestListToJsonArrayConverter.convert(listHearingRequests));
+                }
+
+                final JsonObject hearingListingStatusCommand = hearingListingStatusCommandBuilder.build();
                 LOGGER.info("update hearing listing status after send case for listing with payload {}", hearingListingStatusCommand);
                 sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
             } else {
 
-                final JsonObject hearingCreatedForApplicationCommand = Json.createObjectBuilder()
+                final JsonObjectBuilder hearingCreatedForApplicationCommandBuilder = Json.createObjectBuilder()
                         .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
-                        .add(HEARING, objectToJsonObjectConverter.convert(hearing)).build();
+                        .add(HEARING, objectToJsonObjectConverter.convert(hearing));
+
+                if (isNotEmpty(listHearingRequests)) {
+                    hearingCreatedForApplicationCommandBuilder.add(LIST_HEARING_REQUESTS, hearingRequestListToJsonArrayConverter.convert(listHearingRequests));
+                }
+
+                final JsonObject hearingCreatedForApplicationCommand = hearingCreatedForApplicationCommandBuilder.build();
 
                 LOGGER.info("create hearing listing status after send application for listing with payload {}", hearingCreatedForApplicationCommand);
 
@@ -732,8 +749,16 @@ public class ProgressionService {
         });
     }
 
+    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final ListCourtHearing listCourtHearing, final List<ListHearingRequest> listHearingRequests) {
+        updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing.getHearings(), null, listHearingRequests);
+    }
+
     public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final ListCourtHearing listCourtHearing) {
-        updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing.getHearings(), null);
+        updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing.getHearings(), null, null);
+    }
+
+    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<HearingListingNeeds> hearings, final SeedingHearing seedingHearing) {
+        updateHearingListingStatusToSentForListing(jsonEnvelope, hearings, seedingHearing, null);
     }
 
 
