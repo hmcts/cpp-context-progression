@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.entity;
 
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -13,7 +14,7 @@ import javax.persistence.Table;
 @Table(name = "pet_case_defendant_offence")
 @SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public class PetCaseDefendantOffence implements Serializable {
-    private static final long serialVersionUID = 4945821424721498615L;
+    private static final long serialVersionUID = 3345821424721498600L;
 
     @Id
     private UUID id; //internal id for uniquely represent pet
@@ -26,6 +27,9 @@ public class PetCaseDefendantOffence implements Serializable {
     @Column(name = "defendant_id")
     private UUID defendantId;
 
+    @Column(name = "last_updated")
+    private ZonedDateTime lastUpdated;
+
     public PetCaseDefendantOffence() {
     }
 
@@ -35,6 +39,15 @@ public class PetCaseDefendantOffence implements Serializable {
         this.petId = petId;
         this.isYouth = isYouth;
         this.defendantId = defendantId;
+    }
+
+    public PetCaseDefendantOffence(final UUID id, final UUID caseId, final UUID petId, final boolean isYouth, final UUID defendantId, final ZonedDateTime lastUpdated) {
+        this.id = id;
+        this.caseId = caseId;
+        this.petId = petId;
+        this.isYouth = isYouth;
+        this.defendantId = defendantId;
+        this.lastUpdated = lastUpdated;
     }
 
     public UUID getId() {
@@ -81,6 +94,14 @@ public class PetCaseDefendantOffence implements Serializable {
         this.isYouth = isYouth;
     }
 
+    public ZonedDateTime getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(final ZonedDateTime lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -109,6 +130,8 @@ public class PetCaseDefendantOffence implements Serializable {
         private UUID petId;
         private UUID defendantId;
         private boolean isYouth;
+        private ZonedDateTime lastUpdated;
+
         public Builder withPetkey(final UUID id) {
             this.id = id;
             return this;
@@ -131,8 +154,13 @@ public class PetCaseDefendantOffence implements Serializable {
             return this;
         }
 
+        public Builder withLastUpdated(final ZonedDateTime lastUpdated) {
+            this.lastUpdated = lastUpdated;
+            return this;
+        }
+
         public PetCaseDefendantOffence build() {
-            return new PetCaseDefendantOffence(id, caseId, petId, isYouth, defendantId);
+            return new PetCaseDefendantOffence(id, caseId, petId, isYouth, defendantId, lastUpdated);
         }
     }
 }

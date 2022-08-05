@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.prosecutioncase.persistence.entity;
 import uk.gov.justice.core.courts.FormType;
 
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -36,6 +37,9 @@ public class CaseDefendantOffence implements Serializable {
     @Enumerated(EnumType.STRING)
     private FormType formType;
 
+    @Column(name = "last_updated")
+    private ZonedDateTime lastUpdated;
+
     public CaseDefendantOffence() {
     }
 
@@ -45,6 +49,15 @@ public class CaseDefendantOffence implements Serializable {
         this.caseId = caseId;
         this.courtFormId = courtFormId;
         this.formType = formType;
+    }
+
+    public CaseDefendantOffence(final UUID id, final UUID defendantId, final UUID caseId, final UUID courtFormId, final FormType formType, final ZonedDateTime lastUpdated) {
+        this.id = id;
+        this.defendantId = defendantId;
+        this.caseId = caseId;
+        this.courtFormId = courtFormId;
+        this.formType = formType;
+        this.lastUpdated = lastUpdated;
     }
 
     public void setId(UUID id) {
@@ -87,6 +100,14 @@ public class CaseDefendantOffence implements Serializable {
         this.formType = formType;
     }
 
+    public ZonedDateTime getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(final ZonedDateTime lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -117,6 +138,7 @@ public class CaseDefendantOffence implements Serializable {
         private UUID caseId;
         private UUID courtFormId;
         private FormType formType;
+        private ZonedDateTime lastUpdated;
 
         public Builder withId(final UUID id) {
             this.id = id;
@@ -142,8 +164,13 @@ public class CaseDefendantOffence implements Serializable {
             return this;
         }
 
+        public Builder withLastUpdated(final ZonedDateTime lastUpdated) {
+            this.lastUpdated = lastUpdated;
+            return this;
+        }
+
         public CaseDefendantOffence build() {
-            return new CaseDefendantOffence(id, defendantId, caseId, courtFormId, formType);
+            return new CaseDefendantOffence(id, defendantId, caseId, courtFormId, formType, lastUpdated);
         }
     }
 }

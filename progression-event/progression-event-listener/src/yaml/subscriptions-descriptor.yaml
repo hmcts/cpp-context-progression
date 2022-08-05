@@ -249,6 +249,9 @@ subscriptions_descriptor:
         - name: progression.event.pet-form-created
           schema_uri: http://justice.gov.uk/core/courts/pet-form-created.json
 
+        - name: progression.event.pet-form-updated
+          schema_uri: http://justice.gov.uk/core/courts/pet-form-updated.json
+
         - name: progression.event.pet-detail-updated
           schema_uri: http://justice.gov.uk/core/courts/pet-detail-updated.json
 
@@ -257,6 +260,12 @@ subscriptions_descriptor:
 
         - name: progression.event.pet-form-received
           schema_uri: http://justice.gov.uk/core/courts/pet-form-received.json
+
+        - name: progression.event.pet-form-defendant-updated
+          schema_uri: http://justice.gov.uk/core/courts/pet-form-defendant-updated.json
+
+        - name: progression.event.pet-form-finalised
+          schema_uri: http://justice.gov.uk/core/courts/pet-form-finalised.json
 
         - name: progression.event.form-defendants-updated
           schema_uri: http://justice.gov.uk/core/courts/form-defendants-updated.json
@@ -339,6 +348,12 @@ subscriptions_descriptor:
 
         - name: progression.event.form-created
           schema_uri: http://justice.gov.uk/core/courts/form-created.json
+
+        - name: progression.event.form-finalised
+          schema_uri: http://justice.gov.uk/core/courts/form-finalised.json
+
+        - name: progression.event.form-updated
+          schema_uri: http://justice.gov.uk/core/courts/form-updated.json
           # Deprecated API  - End
 
       event_source_name: progression

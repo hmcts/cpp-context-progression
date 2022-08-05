@@ -100,4 +100,6 @@
     <include file="liquibase/online-plea-changes.xml"/>
     <include file="liquibase/create-online-plea-detail-table.xml"/>
     <include file="liquibase/alter-online-plea-for-legal-entity.xml"/>
+    <include file="liquibase/alter-form-case-add-column-lastupdated-datetime.xml"/>
+    <include file="liquibase/alter-pet-case-add-column-lastupdated-datetime.xml"/>
 </databaseChangeLog>

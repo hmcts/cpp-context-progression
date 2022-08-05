@@ -39,6 +39,9 @@
               ],
               "additionalProperties": false
             }
+          },
+          "lastUpdated": {
+            "type": "string"
           }
         },
         "required": [

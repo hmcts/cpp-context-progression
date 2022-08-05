@@ -1,12 +1,16 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.time.ZonedDateTime.now;
 import static org.slf4j.LoggerFactory.getLogger;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.PetDetailReceived;
 import uk.gov.justice.core.courts.PetDetailUpdated;
 import uk.gov.justice.core.courts.PetFormCreated;
+import uk.gov.justice.core.courts.PetFormDefendantUpdated;
+import uk.gov.justice.core.courts.PetFormFinalised;
 import uk.gov.justice.core.courts.PetFormReceived;
+import uk.gov.justice.core.courts.PetFormUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -49,6 +53,34 @@ public class PetFormEventListener {
         petCaseDefendantOffenceList.forEach(petCaseDefendantOffence -> petCaseDefendantOffenceRepository.save(petCaseDefendantOffence));
     }
 
+    @Handles("progression.event.pet-form-updated")
+    public void petFormUpdated(final JsonEnvelope event) {
+        final PetFormUpdated petFormUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), PetFormUpdated.class);
+
+        LOGGER.info("progression.event.pet-form-updated event received with petId: {} for case: {}", petFormUpdated.getPetId(), petFormUpdated.getCaseId());
+
+        final List<PetCaseDefendantOffence> petCaseDefendantOffences = petCaseDefendantOffenceRepository.findByPetId(petFormUpdated.getPetId());
+
+        petCaseDefendantOffences.forEach(petCaseDefendantOffence -> {
+            petCaseDefendantOffence.setLastUpdated(now());
+            petCaseDefendantOffenceRepository.save(petCaseDefendantOffence);
+        });
+    }
+
+    @Handles("progression.event.pet-form-finalised")
+    public void petFormFinalised(final JsonEnvelope event) {
+        final PetFormFinalised petFormFinalised = jsonObjectConverter.convert(event.payloadAsJsonObject(), PetFormFinalised.class);
+
+        LOGGER.info("progression.event.pet-form-finalised event received with petId: {} for case: {}", petFormFinalised.getPetId(), petFormFinalised.getCaseId());
+
+        final List<PetCaseDefendantOffence> petCaseDefendantOffences = petCaseDefendantOffenceRepository.findByPetId(petFormFinalised.getPetId());
+
+        petCaseDefendantOffences.forEach(petCaseDefendantOffence -> {
+            petCaseDefendantOffence.setLastUpdated(now());
+            petCaseDefendantOffenceRepository.save(petCaseDefendantOffence);
+        });
+    }
+
     @Handles("progression.event.pet-form-received")
     public void petFormReceived(final JsonEnvelope event) {
         final PetFormReceived petFormReceived = jsonObjectConverter.convert(event.payloadAsJsonObject(), PetFormReceived.class);
@@ -85,6 +117,21 @@ public class PetFormEventListener {
 
     }
 
+
+    @Handles("progression.event.pet-form-defendant-updated")
+    public void petFormDefendantUpdated(final JsonEnvelope event) {
+        final PetFormDefendantUpdated petFormDefendantUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), PetFormDefendantUpdated.class);
+
+        LOGGER.info("progression.event.pet-form-defendant-updated event received with petId: {} for case: {}", petFormDefendantUpdated.getPetId(), petFormDefendantUpdated.getCaseId());
+
+        final List<PetCaseDefendantOffence> petCaseDefendantOffences = petCaseDefendantOffenceRepository.findByPetId(petFormDefendantUpdated.getPetId());
+
+        petCaseDefendantOffences.forEach(petCaseDefendantOffence -> {
+            petCaseDefendantOffence.setLastUpdated(now());
+            petCaseDefendantOffenceRepository.save(petCaseDefendantOffence);
+        });
+    }
+
     @Handles("progression.event.pet-detail-received")
     public void petDetailReceived(final JsonEnvelope event) {
         final PetDetailReceived petDetailReceived = jsonObjectConverter.convert(event.payloadAsJsonObject(), PetDetailReceived.class);
@@ -115,6 +162,7 @@ public class PetFormEventListener {
                 .withCaseId(caseId)
                 .withPetId(petId)
                 .withIsYouth(youth)
+                .withLastUpdated(now())
                 .build();
     }
 
