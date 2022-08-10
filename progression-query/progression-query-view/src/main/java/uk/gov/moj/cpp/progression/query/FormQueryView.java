@@ -15,10 +15,12 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantOffence;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantOffenceRepository;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -35,6 +37,8 @@ public class FormQueryView {
     private static final String DEFENDANTS = "defendants";
     private static final String FORMS = "forms";
     private static final String DEFENDANT_ID = "defendantId";
+    private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    private static final String LAST_UPDATED = "lastUpdated";
 
     @Inject
     private CaseDefendantOffenceRepository caseDefendantOffenceRepository;
@@ -95,11 +99,19 @@ public class FormQueryView {
     }
 
     private JsonObject buildForm(final UUID courtFormId, final List<CaseDefendantOffence> defendantOffencesList, final FormType formType) {
-        return createObjectBuilder()
+        final JsonObjectBuilder formBuilder = createObjectBuilder()
                 .add(COURT_FORM_ID, courtFormId.toString())
                 .add(FORM_TYPE, formType.name())
-                .add(DEFENDANTS, buildDefendantsAndOffences(defendantOffencesList))
-                .build();
+                .add(DEFENDANTS, buildDefendantsAndOffences(defendantOffencesList));
+
+        final Optional<String> lastUpdated = defendantOffencesList.stream()
+                .filter(caseDefendantOffence -> nonNull(caseDefendantOffence.getLastUpdated()))
+                .map(caseDefendant -> caseDefendant.getLastUpdated().format(ZONE_DATETIME_FORMATTER))
+                .findFirst();
+
+        lastUpdated.ifPresent(date -> formBuilder.add(LAST_UPDATED, date));
+
+        return formBuilder.build();
     }
 
     private Map<UUID, List<CaseDefendantOffence>> groupByDefendantId(final List<CaseDefendantOffence> formCaseDefendantOffenceList) {

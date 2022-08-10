@@ -1,30 +1,33 @@
 package uk.gov.moj.cpp.progression.query;
 
-import org.apache.commons.lang3.tuple.Pair;
+import static java.util.Objects.nonNull;
+import static java.util.UUID.fromString;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.PetCaseDefendantOffence;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.PetCaseDefendantOffenceRepository;
 
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.PetCaseDefendantOffenceRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.PetCaseDefendantOffence;
+import javax.inject.Inject;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
-import static java.util.UUID.fromString;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import org.apache.commons.lang3.tuple.Pair;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class PetQueryView {
@@ -35,6 +38,8 @@ public class PetQueryView {
     public static final String PETS = "pets";
     public static final String OFFENCES = "offences";
     public static final String DEFENDANT_ID = "defendantId";
+    private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    private static final String LAST_UPDATED = "lastUpdated";
 
     @Inject
     private PetCaseDefendantOffenceRepository petCaseDefendantOffenceRepository;
@@ -67,11 +72,19 @@ public class PetQueryView {
         final JsonArrayBuilder defendants = createArrayBuilder();
         itemsGroupedByDefendant.values().forEach(list -> defendants.add(buildPetDefendant(list)));
 
-        return createObjectBuilder()
+        final JsonObjectBuilder petBuilder =  createObjectBuilder()
                 .add(PET_ID, petId.toString())
                 .add(IS_YOUTH, isYouth)
-                .add(DEFENDANTS, defendants)
-                .build();
+                .add(DEFENDANTS, defendants);
+
+        final Optional<String> lastUpdated = petCaseDefendantOffenceList.stream()
+                .filter(petCaseDefendantOffence -> nonNull(petCaseDefendantOffence.getLastUpdated()))
+                .map(petOffence -> petOffence.getLastUpdated().format(ZONE_DATETIME_FORMATTER))
+                .findFirst();
+
+        lastUpdated.ifPresent(date -> petBuilder.add(LAST_UPDATED,date));
+
+        return petBuilder.build();
     }
 
     private JsonObject buildPetDefendant(final List<PetCaseDefendantOffence> list) {
