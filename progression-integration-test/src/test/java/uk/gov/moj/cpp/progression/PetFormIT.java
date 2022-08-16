@@ -221,6 +221,18 @@ public class PetFormIT extends AbstractIT {
         JsonObject editRequestedEvent2 = verifyInMessagingQueueForEditFormRequested();
         assertEditFormRequestedFromEventStream(caseId, petId, userId, userId2, true, editRequestedEvent2);
 
+        final Response responseForEditFormLast = postCommandWithUserId(getWriteUrl(editFormEndpointUrl), REQUEST_EDIT_FORM_MEDIA_TYPE,
+                createObjectBuilder()
+                        .add("extend", true)
+                        .add("extendTime", 5)
+                        .build()
+                        .toString(),
+                userId.toString());
+        assertThat(responseForEditFormLast.getStatusCode(), Matchers.is(ACCEPTED.getStatusCode()));
+
+        JsonObject editRequestedEventLast = verifyInMessagingQueueForEditFormRequested();
+        assertEditFormRequestedFromEventStream(caseId, petId, null, null, false, editRequestedEventLast);
+
         // update pet form
         final JsonObject payloadForUpdate = createObjectBuilder()
                 .add("caseId", caseId.toString())

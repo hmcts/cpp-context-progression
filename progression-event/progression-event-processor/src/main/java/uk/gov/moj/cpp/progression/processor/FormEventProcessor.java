@@ -558,19 +558,26 @@ public class FormEventProcessor {
                 .add(CASE_ID, editFormRequestedEventPayload.getString(CASE_ID));
         final JsonObject privateEventLockStatus = editFormRequestedEventPayload.getJsonObject(LOCK_STATUS);
         final JsonObjectBuilder lockStatusBuilder = createObjectBuilder().add(IS_LOCKED, privateEventLockStatus.getBoolean(IS_LOCKED));
-        final boolean isLocked = privateEventLockStatus.getBoolean(IS_LOCKED);
         final JsonObjectBuilder lockedBy = createObjectBuilder();
-        if (isLocked) {
-            lockStatusBuilder.add(EXPIRY_TIME, privateEventLockStatus.getString(EXPIRY_TIME))
-                    .add(LOCK_REQUESTED_BY, createObjectBuilder().add(USER_ID, privateEventLockStatus.getString(LOCK_REQUESTED_BY)));
-            lockedBy.add(USER_ID, privateEventLockStatus.getString(LOCKED_BY));
-            if (nonNull(userDetailsPayload)) {
-                lockedBy.add(FIRST_NAME, userDetailsPayload.getString(FIRST_NAME))
-                        .add(LAST_NAME, userDetailsPayload.getString(LAST_NAME))
-                        .add(EMAIL, userDetailsPayload.getString(EMAIL));
-            }
-            lockStatusBuilder.add(LOCKED_BY, lockedBy.build());
+
+        if (isNotEmpty(privateEventLockStatus.getString(EXPIRY_TIME, ""))) {
+            lockStatusBuilder.add(EXPIRY_TIME, privateEventLockStatus.getString(EXPIRY_TIME));
         }
+
+        if (isNotEmpty(privateEventLockStatus.getString(LOCK_REQUESTED_BY, ""))) {
+            lockStatusBuilder.add(LOCK_REQUESTED_BY, createObjectBuilder().add(USER_ID, privateEventLockStatus.getString(LOCK_REQUESTED_BY)));
+        }
+
+        if (isNotEmpty(privateEventLockStatus.getString(LOCKED_BY, ""))) {
+            lockedBy.add(USER_ID, privateEventLockStatus.getString(LOCKED_BY));
+        }
+
+        if (nonNull(userDetailsPayload)) {
+            lockedBy.add(FIRST_NAME, userDetailsPayload.getString(FIRST_NAME))
+                    .add(LAST_NAME, userDetailsPayload.getString(LAST_NAME))
+                    .add(EMAIL, userDetailsPayload.getString(EMAIL));
+        }
+        lockStatusBuilder.add(LOCKED_BY, lockedBy.build());
 
         return publicEventBuilder.add(LOCK_STATUS, lockStatusBuilder.build()).build();
     }
