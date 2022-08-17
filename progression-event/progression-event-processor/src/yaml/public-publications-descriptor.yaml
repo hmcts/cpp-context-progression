@@ -249,4 +249,7 @@ subscriptions_descriptor:
         - name: public.progression.now-notification-suppressed
           schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.now-notification-suppressed.json
 
+        - name: public.progression.court-application-proceedings-initiated
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-application-proceedings-initiated.json
+
       event_source_name: public.event.source

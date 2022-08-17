@@ -107,6 +107,8 @@ public class CourtApplicationProcessor {
     private static final String COURT_APPLICATION = "courtApplication";
     private static final String PROSECUTION_CASE = "prosecutionCase";
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_CREATED = "public.progression.court-application-created";
+
+    private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_PROCEEDINGS_INITIATED = "public.progression.court-application-proceedings-initiated";
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_CHANGED = "public.progression.court-application-changed";
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_UPDATED = "public.progression.court-application-updated";
     private static final String PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED = "public.progression.boxwork-application-referred";
@@ -151,12 +153,18 @@ public class CourtApplicationProcessor {
 
     @Handles("progression.event.court-application-created")
     public void processCourtApplicationCreated(final JsonEnvelope event) {
+
+        LOGGER.info("Converting courtApplication Created payload");
         final CourtApplicationCreated courtApplicationCreated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationCreated.class);
+        LOGGER.info("Converted courtApplication Created payload  {}", courtApplicationCreated);
         final CourtApplication courtApplication = courtApplicationCreated.getCourtApplication();
+        LOGGER.info("CourtApplication  {}", courtApplication);
 
         final JsonObject publicEvent = createObjectBuilder()
                 .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
                 .build();
+
+        LOGGER.info("Raiseing public event for CourtApplication {}", courtApplication);
         sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_CREATED).build(), publicEvent));
 
         sendUpdateCpsDefendantIdCommand(event, courtApplicationCreated);
@@ -212,6 +220,35 @@ public class CourtApplicationProcessor {
         } else {
             initiateCourtApplication(event, courtApplicationProceedingsInitiated.getCourtApplication());
         }
+        final JsonObjectBuilder courtApplicationWithCase = createObjectBuilder();
+        courtApplicationWithCase.add("courtApplication", objectToJsonObjectConverter.convert(courtApplicationProceedingsInitiated.getCourtApplication()));
+        final BoxHearingRequest boxHearing = courtApplicationProceedingsInitiated.getBoxHearing();
+        if (nonNull(boxHearing)) {
+            courtApplicationWithCase.add("boxHearing", objectToJsonObjectConverter.convert(boxHearing));
+        }
+        final Boolean summonsRequired = courtApplicationProceedingsInitiated.getSummonsApprovalRequired();
+        if (nonNull(summonsRequired)) {
+            courtApplicationWithCase.add("summonsApprovalRequired", summonsRequired);
+        }
+
+        final CourtHearingRequest courtHearing = courtApplicationProceedingsInitiated.getCourtHearing();
+        if (nonNull(courtHearing)) {
+            courtApplicationWithCase.add("courtHearing", objectToJsonObjectConverter.convert(courtHearing));
+        }
+
+        final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
+        if (nonNull(courtApplicationProceedingsInitiated.getCourtApplication()) && nonNull(courtApplicationProceedingsInitiated.getCourtApplication().getCourtApplicationCases())) {
+            courtApplicationProceedingsInitiated.getCourtApplication().getCourtApplicationCases().forEach(courtApplicationCase -> progressionService.getProsecutionCase(event, courtApplicationCase.getProsecutionCaseId().toString()).ifPresent(pc -> {
+                final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(pc.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+                prosecutionCases.add(prosecutionCase);
+            }));
+        }
+        final JsonArrayBuilder prosecutionsWithCaseArray = createArrayBuilder();
+        prosecutionCases.forEach(prosecutionCase -> prosecutionsWithCaseArray.add(objectToJsonObjectConverter.convert(prosecutionCase)));
+        courtApplicationWithCase.add("prosecutionCases", prosecutionsWithCaseArray);
+        final JsonObject courtApplicationWithCaseJsonObject = courtApplicationWithCase.build();
+        LOGGER.info("Raising event {} with jsonObject {} ", PUBLIC_PROGRESSION_COURT_APPLICATION_PROCEEDINGS_INITIATED, courtApplicationWithCaseJsonObject);
+        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_PROCEEDINGS_INITIATED), courtApplicationWithCaseJsonObject));
     }
 
     @Handles("progression.event.court-application-proceedings-edited")

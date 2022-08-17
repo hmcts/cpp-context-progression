@@ -22,6 +22,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationType;
 import static uk.gov.justice.listing.events.PublicListingNewDefendantAddedForCourtProceedings.publicListingNewDefendantAddedForCourtProceedings;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -33,8 +34,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-
-import org.hamcrest.Matchers;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -49,7 +48,6 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationPartyAttendance;
 import uk.gov.justice.core.courts.CourtApplicationPartyCounsel;
-import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
@@ -105,6 +103,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -112,7 +111,6 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -122,11 +120,11 @@ import java.util.function.Function;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.json.JsonValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -136,7 +134,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings({"squid:S1607"})
@@ -177,8 +174,8 @@ public class ProgressionServiceTest {
     private static final String PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND = "progression.command.create-hearing-for-application";
 
     private static final String EMPTY = "";
-    public static final String PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED = "progression.event.next-hearings-requested";
     private static final String ESTIMATED_DURATION = "1 week";
+    public static final String PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED = "progression.event.next-hearings-requested";
     @Spy
     private final Enveloper enveloper = createEnveloper();
     @Spy
@@ -792,12 +789,12 @@ public class ProgressionServiceTest {
         final Hearing hearing = Hearing.hearing().withId(hearingId)
                 .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
                         .withId(applicationId)
-                        .withType(CourtApplicationType.courtApplicationType()
+                        .withType(courtApplicationType()
                                 .withLinkType(LinkType.LINKED)
                                 .build())
                         .build(),CourtApplication.courtApplication()
                         .withId(applicationId)
-                        .withType(CourtApplicationType.courtApplicationType()
+                        .withType(courtApplicationType()
                                 .withLinkType(LinkType.LINKED)
                                 .build())
                         .build()))

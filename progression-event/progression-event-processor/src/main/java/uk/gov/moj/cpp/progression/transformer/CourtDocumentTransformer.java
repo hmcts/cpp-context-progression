@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.transformer;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor.document;
 
+import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -14,25 +15,28 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.FEATURE_DEFENCE_DISCLOSURE;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PROGRESSION_COMMAND_UPDATE_CASE_FOR_CPS_PROSECUTOR;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PUBLIC_COURT_DOCUMENT_ADDED;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentAddedProcessor.PUBLIC_IDPC_COURT_DOCUMENT_RECEIVED;
 
 import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.moj.cpp.progression.service.CpsRestNotificationService;
 import uk.gov.moj.cpp.progression.service.DefenceNotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.service.payloads.UserGroupDetails;
+import uk.gov.moj.cpp.progression.transformer.CourtDocumentTransformer;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -52,7 +56,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -64,11 +67,14 @@ public class CourtDocumentAddedProcessorTest {
 
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
     @Spy
     @InjectMocks
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
     @InjectMocks
     private CourtDocumentAddedProcessor eventProcessor;
+    @Mock
+    private Requester requester;
     @Mock
     private Sender sender;
     @Mock
@@ -79,6 +85,12 @@ public class CourtDocumentAddedProcessorTest {
     private ProgressionService progressionService;
     @Mock
     private RefDataService referenceDataService;
+    @Mock
+    private FeatureControlGuard featureControlGuard;
+    @Mock
+    private CourtDocumentTransformer courtDocumentTransformer;
+    @Mock
+    private CpsRestNotificationService cpsRestNotificationService;
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
 
@@ -144,7 +156,7 @@ public class CourtDocumentAddedProcessorTest {
                 .add("cpsFlag", true)
                 .build();
         when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), anyString()))
-                .thenReturn(Optional.of(getProsecutionCase(true)));
+                .thenReturn(of(getProsecutionCase(true)));
         when(referenceDataService.getProsecutorV2(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(of(jsonObject));
     }
 
@@ -160,8 +172,8 @@ public class CourtDocumentAddedProcessorTest {
         when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
         when(usersGroupService.getGroupIdForDefenceLawyers()).thenReturn(randomUUID().toString());
         when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), anyString()))
-                .thenReturn(Optional.of(getProsecutionCase(false)));
-        when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(DOCUMENT_TYPE_ID)));
+                .thenReturn(of(getProsecutionCase(false)));
+        when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(of(generateDocumentTypeAccessForApplication(DOCUMENT_TYPE_ID)));
         defenceNotificationService.prepareNotificationsForCourtDocument(any(), any(CourtDocument.class), anyString(), anyString());
         eventProcessor.handleCourtDocumentAddEvent(requestMessage);
 
@@ -345,6 +357,70 @@ public class CourtDocumentAddedProcessorTest {
         final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
         verifyCreateCommand(commands.get(0), requestMessage, true);
         verifyPublicCourtDocumentAdded(commands.get(1), requestMessage);
+    }
+
+    @Test
+    public void shouldNotCallNotifyCpsWhenDefenceDisclosureFeatureNotEnabled() {
+
+        final JsonObject caseDocumentPayload = buildDocumentCategoryJsonObject(buildCaseDocument(), "41be14e8-9df5-4b08-80b0-1e670bc80a5a", false);
+        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
+                caseDocumentPayload);
+
+        List<UserGroupDetails> userGroupDetails = new ArrayList<>();
+        userGroupDetails.add(new UserGroupDetails(randomUUID(), "Chambers Admin"));
+        when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
+
+        eventProcessor.handleCourtDocumentAddEvent(requestMessage);
+
+        verify(progressionService, times(0)).getCourtApplicationById(any(), any());
+    }
+
+    @Test
+    public void shouldCallNotifyCpsWhenDefenceDisclosureFeatureEnabled() {
+
+        final UUID applicationId = randomUUID();
+        final JsonObject caseDocumentPayload = buildDocumentCategoryJsonObject(buildApplicationDocument(applicationId.toString()), "41be14e8-9df5-4b08-80b0-1e670bc80a5a", false);
+        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
+                caseDocumentPayload);
+
+        List<UserGroupDetails> userGroupDetails = new ArrayList<>();
+        userGroupDetails.add(new UserGroupDetails(randomUUID(), "Chambers Admin"));
+        when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
+        when(featureControlGuard.isFeatureEnabled(FEATURE_DEFENCE_DISCLOSURE)).thenReturn(true);
+        when(progressionService.getProsecutionCaseDetailById(eq(requestMessage), any())).thenReturn(empty());
+        when(courtDocumentTransformer.transform(any(CourtDocument.class), eq(empty()), eq(requestMessage), anyString())).thenReturn(of("courtDocumentTransformed"));
+
+        final UUID applicantCps = randomUUID();
+        when(progressionService.getCourtApplicationById(requestMessage, applicationId.toString())).thenReturn(of(buildCourtApplication(applicationId.toString(), applicantCps.toString())));
+        when(referenceDataService.getCPSProsecutors(requestMessage, requester)).thenReturn(Optional.of(createArrayBuilder()
+                .add(createObjectBuilder().add("id", randomUUID().toString()).build())
+                .add(createObjectBuilder().add("id", applicantCps.toString()).build())
+                .build()));
+
+        eventProcessor.handleCourtDocumentAddEvent(requestMessage);
+
+        verify(progressionService).getCourtApplicationById(any(), any());
+        verify(cpsRestNotificationService).sendMaterial(anyString());
+    }
+
+    private JsonObject buildApplicationDocument(String applicationId) {
+        return createObjectBuilder().add("applicationDocument",
+                createObjectBuilder()
+                        .add("applicationId", applicationId)
+                        .add("prosecutionCaseId", "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27"))
+                .add("caseDocument",
+                        createObjectBuilder().add("prosecutionCaseId", "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27")).build();
+    }
+
+    private JsonObject buildCourtApplication(final String applicationId, final String applicantProsecutorCps) {
+        return createObjectBuilder()
+                .add("courtApplication", createObjectBuilder()
+                        .add("id", applicationId)
+                        .add("applicant", createObjectBuilder().add("prosecutingAuthority", createObjectBuilder()
+                                .add("prosecutionAuthorityId", applicantProsecutorCps).build()).build())
+        ).build();
     }
 
     private JsonObject getProsecutionCase(boolean withProsecutor) {

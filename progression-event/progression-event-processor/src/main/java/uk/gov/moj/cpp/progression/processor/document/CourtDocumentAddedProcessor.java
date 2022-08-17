@@ -10,6 +10,7 @@ import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.core.courts.CaseDocument;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtsDocumentAdded;
 import uk.gov.justice.core.courts.DefendantDocument;
@@ -20,17 +21,20 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.helper.JsonHelper;
+import uk.gov.moj.cpp.progression.service.CpsRestNotificationService;
 import uk.gov.moj.cpp.progression.service.DefenceNotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.service.payloads.UserGroupDetails;
+import uk.gov.moj.cpp.progression.transformer.CourtDocumentTransformer;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +42,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 @SuppressWarnings({"squid:S3655"})
@@ -54,6 +59,8 @@ public class CourtDocumentAddedProcessor {
     private static final String IS_UNBUNDLED_DOCUMENT = "isUnbundledDocument";
     private static final String PROSECUTION_CASE = "prosecutionCase";
     private static final String IS_NOTIFY_DEFENCE = "notifyDefence";
+    static final String FEATURE_DEFENCE_DISCLOSURE = "defenceDisclosure";
+
     @Inject
     private Sender sender;
 
@@ -75,6 +82,14 @@ public class CourtDocumentAddedProcessor {
     @Inject
     private Requester requester;
 
+    @Inject
+    private CourtDocumentTransformer courtDocumentTransformer;
+
+    @Inject
+    private CpsRestNotificationService cpsRestNotificationService;
+
+    @Inject
+    private FeatureControlGuard featureControlGuard;
 
     @Handles("progression.event.court-document-added")
     public void handleCourtDocumentAddEvent(final JsonEnvelope envelope) {
@@ -106,6 +121,56 @@ public class CourtDocumentAddedProcessor {
         }
 
         sendIdpcCourtDocumentPublicEvent(envelope, courtsDocumentAdded, courtDocument);
+
+        if (featureControlGuard.isFeatureEnabled(FEATURE_DEFENCE_DISCLOSURE) &&
+                nonNull(courtDocument.getDocumentCategory()) &&
+                nonNull(courtDocument.getDocumentCategory().getApplicationDocument())) {
+
+            final UUID applicationId = courtDocument.getDocumentCategory().getApplicationDocument().getApplicationId();
+            caseId.ifPresent(caseID -> sendNotificationToCpsIfApplicantOrRespondentIsCps(envelope, courtDocument, applicationId, caseID));
+
+        }
+    }
+
+    private void sendNotificationToCpsIfApplicantOrRespondentIsCps(final JsonEnvelope envelope, final CourtDocument courtDocument, final UUID applicationId, final UUID prosecutionCaseId) {
+        final Optional<CourtApplication> courtApplicationOptional = progressionService.getCourtApplicationById(envelope, applicationId.toString())
+                .map(caJson -> jsonObjectConverter.convert(caJson.getJsonObject("courtApplication"), CourtApplication.class));
+
+        if (courtApplicationOptional.isPresent()) {
+            final Optional<JsonArray> cpsProsecutors = referenceDataService.getCPSProsecutors(envelope, requester);
+            if (cpsProsecutors.isPresent() && isApplicantOrRespondentCps(courtApplicationOptional.get(), toProsecutorIdList(cpsProsecutors.get()))) {
+
+                final Optional<JsonObject> prosecutionCaseOptional = nonNull(prosecutionCaseId) ? progressionService.getProsecutionCaseDetailById(envelope, prosecutionCaseId.toString()) : Optional.empty();
+
+                final Optional<String> transformedJsonPayload = courtDocumentTransformer.transform(courtDocument, prosecutionCaseOptional, envelope, "application-document");
+                transformedJsonPayload.ifPresent(s -> cpsRestNotificationService.sendMaterial(s));
+            }
+        }
+    }
+
+    private boolean isApplicantOrRespondentCps(final CourtApplication courtApplication, final List<UUID> cpsProsecutorIdList) {
+
+        //check applicant CPS
+        if (nonNull(courtApplication.getApplicant())
+                && nonNull(courtApplication.getApplicant().getProsecutingAuthority())
+                && nonNull(courtApplication.getApplicant().getProsecutingAuthority().getProsecutionAuthorityId())) {
+
+            return cpsProsecutorIdList.contains(courtApplication.getApplicant().getProsecutingAuthority().getProsecutionAuthorityId());
+        }
+        //check applicant CPS
+        if (nonNull(courtApplication.getRespondents()) && !courtApplication.getRespondents().isEmpty()) {
+            return courtApplication.getRespondents().stream()
+                    .filter(resp -> nonNull(resp.getProsecutingAuthority()))
+                    .anyMatch(resp -> cpsProsecutorIdList.contains(resp.getProsecutingAuthority().getProsecutionAuthorityId()));
+        }
+        return false;
+    }
+
+    private List<UUID> toProsecutorIdList(JsonArray cpsProsecutorsJsonArray) {
+        return cpsProsecutorsJsonArray.getValuesAs(JsonObject.class).stream()
+                .map(p -> (p.getString("id")))
+                .map(UUID::fromString)
+                .collect(Collectors.toList());
     }
 
     private void sendIdpcCourtDocumentPublicEvent(final JsonEnvelope envelope, final CourtsDocumentAdded courtsDocumentAdded, final CourtDocument courtDocument) {

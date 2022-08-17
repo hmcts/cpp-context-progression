@@ -725,12 +725,16 @@ public class CourtApplicationProcessorTest {
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-proceedings-initiated");
 
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = courtApplicationProceedingsInitiated()
-                .withCourtApplication(courtApplication().build())
+                .withCourtApplication(courtApplication().withCourtApplicationCases(Arrays.asList(courtApplicationCase().withProsecutionCaseId(randomUUID()).build())).build())
                 .withIsSJP(false)
                 .build();
 
         final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationProceedingsInitiated);
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
+                (createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().build
+                        ()).build()));
 
         //When
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class)).thenReturn(courtApplicationProceedingsInitiated);
@@ -739,7 +743,7 @@ public class CourtApplicationProcessorTest {
 
         //Then
         ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender).send(captor.capture());
+        verify(sender, times(2)).send(captor.capture());
         List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), is("progression.command.create-court-application"));
     }
@@ -776,11 +780,15 @@ public class CourtApplicationProcessorTest {
                         .build())
                 .build());
 
+        when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
+                (createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().build
+                        ()).build()));
+
         courtApplicationProcessor.processCourtApplicationInitiated(event);
 
         //Then
         ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender, times(2)).send(captor.capture());
+        verify(sender, times(3)).send(captor.capture());
     }
 
     @Test
@@ -815,11 +823,15 @@ public class CourtApplicationProcessorTest {
                         .build())
                 .build());
 
+        when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
+                (createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().build
+                        ()).build()));
+
         courtApplicationProcessor.processCourtApplicationInitiated(event);
 
         //Then
         ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender).send(captor.capture());
+        verify(sender, times(2)).send(captor.capture());
     }
 
     @Test

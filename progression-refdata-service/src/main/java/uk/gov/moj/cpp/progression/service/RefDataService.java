@@ -70,6 +70,8 @@ public class RefDataService {
     public static final String REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS = "referencedata.query.local-justice-areas";
     public static final String REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS = "referencedata.get-all-result-definitions";
     private static final String REFERENCEDATA_QUERY_COUNTRY_BY_POSTCODE = "referencedata.query.country-by-postcode";
+    private static final String REFERENCE_DATA_QUERY_CPS_PROSECUTORS = "referencedata.query.get.prosecutor.by.cpsflag";
+    private static final String PROSECUTORS = "prosecutors";
 
     public static final String PROSECUTOR = "shortName";
     public static final String NATIONALITY_CODE = "isoCode";
@@ -508,6 +510,25 @@ public class RefDataService {
         }
 
         return Optional.of(response.payloadAsJsonObject());
+    }
+
+    public Optional<JsonArray> getCPSProsecutors(final JsonEnvelope event, final Requester requester) {
+
+        LOGGER.info(" Calling {} to get prosecutors with cpsFlag true", REFERENCE_DATA_QUERY_CPS_PROSECUTORS);
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add(CPS_FLAG, TRUE)
+                .build();
+
+        final JsonEnvelope response = requester.request(envelop(payload)
+                .withName(REFERENCE_DATA_QUERY_CPS_PROSECUTORS)
+                .withMetadataFrom(event));
+
+        if (JsonValue.NULL.equals(response.payload())) {
+            return Optional.empty();
+        }
+
+        return Optional.of(response.payloadAsJsonObject().getJsonArray(PROSECUTORS));
     }
 
     public Optional<JsonObject> getJudiciariesByJudiciaryIdList(final List<UUID> judiciaryIds, final JsonEnvelope event, final Requester requester) {
