@@ -46,6 +46,7 @@ public class CourtDocumentQueryApi {
 
     public static final String COURT_DOCUMENT_SEARCH_NAME = "progression.query.courtdocument";
     public static final String COURT_DOCUMENTS_SEARCH_NAME = "progression.query.courtdocuments";
+    public static final String COURT_DOCUMENTS_SEARCH_NAME_ALL = "progression.query.courtdocuments-all";
     public static final String COURT_DOCUMENTS_SEARCH_WITH_PAGINATION_NAME = "progression.query.courtdocuments.with.pagination";
     public static final String COURT_DOCUMENTS_SEARCH_DEFENCE = "progression.query.courtdocuments.for.defence";
     public static final String COURT_DOCUMENTS_SEARCH_PROSECUTION = "progression.query.courtdocuments.for.prosecution";
@@ -91,6 +92,11 @@ public class CourtDocumentQueryApi {
             return requestSharedCourtDocuments(query, magsGroup.get().getGroupId().toString());
         }
 
+        return requester.request(query);
+    }
+
+    @Handles(COURT_DOCUMENTS_SEARCH_NAME_ALL)
+    public JsonEnvelope searchCourtDocumentsAll(final JsonEnvelope query) {
         return requester.request(query);
     }
 

@@ -99,6 +99,7 @@ public class CourtDocumentQueryView {
     public static final String HEARING_ID_PARAMETER = "hearingId";
     public static final String COURT_DOCUMENT_SEARCH_NAME = "progression.query.courtdocument";
     public static final String COURT_DOCUMENTS_SEARCH_NAME = "progression.query.courtdocuments";
+    public static final String COURT_DOCUMENTS_SEARCH_NAME_ALL = "progression.query.courtdocuments-all";
     public static final String COURT_DOCUMENTS_SEARCH_WITH_PAGINATION_NAME = "progression.query.courtdocuments.with.pagination";
     public static final String COURT_DOCUMENTS_NOW_SEARCH_NAME = "progression.query.courtdocuments.now";
     public static final String COURT_DOCUMENT_RESULT_FIELD = "courtDocument";
@@ -351,6 +352,33 @@ public class CourtDocumentQueryView {
             }
         }
 
+        result.setDocumentIndices(courtDocumentIndices);
+
+        final JsonObject resultJson = objectToJsonObjectConverter.convert(result);
+
+        return envelopeFrom(envelope.metadata(), resultJson);
+    }
+
+    @Handles(COURT_DOCUMENTS_SEARCH_NAME_ALL)
+    public JsonEnvelope searchCourtDocumentsAll(final JsonEnvelope envelope) {
+        final String strCaseIds = JsonObjects.getString(envelope.payloadAsJsonObject(), CASE_ID_SEARCH_PARAM).orElse(null);
+
+        final List<CourtDocumentEntity> courtDocumentEntities = new ArrayList<>();
+
+        final List<CourtDocumentEntity> byProsecutionCaseIds = courtDocumentRepository
+                .findByProsecutionCaseIds(commaSeparatedUuidParam2UUIDs(strCaseIds));
+        if (!byProsecutionCaseIds.isEmpty()) {
+            courtDocumentEntities.addAll(byProsecutionCaseIds);
+        }
+
+        final List<CourtDocumentIndex> courtDocumentIndices = courtDocumentEntities.stream()
+                .filter(entity -> !entity.isRemoved())
+                .map(this::courtDocument)
+                .map(courtDocumentFiltered -> courtDocumentTransform
+                .transform(courtDocumentFiltered).build())
+                .collect(toList());
+
+        final CourtDocumentsSearchResult result = new CourtDocumentsSearchResult();
         result.setDocumentIndices(courtDocumentIndices);
 
         final JsonObject resultJson = objectToJsonObjectConverter.convert(result);
