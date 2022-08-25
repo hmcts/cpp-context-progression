@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
@@ -64,16 +65,22 @@ public class HearingMarkedAsDuplicateEventListenerTest {
     public void shouldDeleteHearingWhenMarkedAsDuplicate() {
         final UUID hearingIdToBeDeleted = UUID.randomUUID();
         final HearingEntity hearingEntity = new HearingEntity();
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
         hearingEntity.setHearingId(hearingIdToBeDeleted);
 
         when(envelope.payload()).thenReturn(HearingMarkedAsDuplicate.hearingMarkedAsDuplicate()
                 .withHearingId(hearingIdToBeDeleted)
+                .withCaseIds(asList(caseId))
+                .withDefendantIds(asList(defendantId))
                 .build());
         when(hearingRepository.findBy(hearingIdToBeDeleted)).thenReturn(hearingEntity);
 
         hearingMarkedAsDuplicateEventListener.hearingMarkedAsDuplicate(envelope);
 
         verify(hearingRepository).remove(hearingEntity);
+        verify(matchDefendantCaseHearingRepository, times(1)).removeByHearingIdAndCaseIdAndDefendantId(eq(hearingIdToBeDeleted), eq(caseId), eq(defendantId));
+
     }
 
     @Test
@@ -107,7 +114,7 @@ public class HearingMarkedAsDuplicateEventListenerTest {
         when(envelopeForCase.payload()).thenReturn(HearingMarkedAsDuplicateForCase.hearingMarkedAsDuplicateForCase()
                 .withHearingId(hearingId)
                 .withCaseId(caseId)
-                .withDefendantIds(Arrays.asList(defendant1Id, defendant2Id))
+                .withDefendantIds(asList(defendant1Id, defendant2Id))
                 .build());
 
         doNothing().when(caseDefendantHearingRepository).removeByHearingIdAndCaseIdAndDefendantId(eq(hearingId), eq(caseId), defendantArgumentCaptor.capture());

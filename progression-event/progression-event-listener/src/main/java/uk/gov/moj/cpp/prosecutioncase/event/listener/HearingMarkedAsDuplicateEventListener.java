@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
@@ -12,7 +13,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearin
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -38,14 +38,22 @@ public class HearingMarkedAsDuplicateEventListener {
     @Handles("progression.event.hearing-marked-as-duplicate")
     public void hearingMarkedAsDuplicate(final Envelope<HearingMarkedAsDuplicate> event) {
         final UUID hearingId = event.payload().getHearingId();
+        final List<UUID> defendantIds = event.payload().getDefendantIds();
+        final List<UUID> caseIds = event.payload().getCaseIds();
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("received event progression.event.hearing-marked-as-duplicate hearingId: {} ", hearingId);
         }
 
         final HearingEntity hearingEntity = hearingRepository.findBy(hearingId);
-        if (Objects.nonNull(hearingEntity)) {
+        if (nonNull(hearingEntity)) {
             hearingRepository.remove(hearingEntity);
+            if(nonNull(caseIds) && nonNull(defendantIds)) {
+                caseIds.forEach(caseId ->
+                    defendantIds.forEach(defendantId ->
+                        matchDefendantCaseHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId)
+                    ));
+            }
         }
     }
 
