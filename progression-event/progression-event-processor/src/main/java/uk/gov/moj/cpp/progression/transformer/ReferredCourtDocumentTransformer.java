@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.transformer;
 
-import static java.lang.Boolean.FALSE;
 import static java.util.stream.Collectors.toList;
 
 import uk.gov.justice.core.courts.CourtDocument;

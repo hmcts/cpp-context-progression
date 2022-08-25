@@ -47,6 +47,7 @@ public class FormCommandHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FormCommandHandler.class);
     private static final String NO_USER_ID_PRESENT = "No userId present";
+    private static final int DEFAULT_LOCK_EXTEND_TIME_IN_MINUTES = 10;
 
     @Inject
     private EventSource eventSource;
@@ -169,7 +170,9 @@ public class FormCommandHandler {
                 requestEditForm.getCourtFormId(),
                 fromString(userId),
                 getDurationMapByFormType(),
-                ZonedDateTime.now());
+                ZonedDateTime.now(),
+                nonNull(requestEditForm.getExtend()) ? requestEditForm.getExtend() : Boolean.FALSE.booleanValue(),
+                nonNull(requestEditForm.getExtendTime()) && requestEditForm.getExtendTime() > 0 ? requestEditForm.getExtendTime() : DEFAULT_LOCK_EXTEND_TIME_IN_MINUTES);
 
         eventStream.append(events.map(toEnvelopeWithMetadataFrom(envelope)));
     }

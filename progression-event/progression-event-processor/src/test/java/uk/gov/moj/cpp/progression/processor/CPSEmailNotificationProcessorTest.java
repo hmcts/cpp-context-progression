@@ -30,7 +30,6 @@ import uk.gov.moj.cpp.progression.value.object.DefendantVO;
 import uk.gov.moj.cpp.progression.value.object.EmailTemplateType;
 import uk.gov.moj.cpp.progression.value.object.HearingVO;
 
-import javax.inject.Inject;
 import javax.json.JsonObject;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
@@ -41,8 +40,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
-
-import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.junit.Assert;

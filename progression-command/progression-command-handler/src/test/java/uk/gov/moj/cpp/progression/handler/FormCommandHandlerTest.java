@@ -323,7 +323,7 @@ public class FormCommandHandlerTest {
         final CaseAggregate caseAggregate = new CaseAggregate();
         caseAggregate.createForm(COURT_FORM_ID, CASE_ID, FORM_ID, ImmutableList.of(DEFENDANT_ID), "blah", USER_ID_FOR_BILL, BCM, randomUUID(), null);
 
-        caseAggregate.requestEditForm(CASE_ID, COURT_FORM_ID, USER_ID_FOR_BILL, ImmutableMap.of(BCM, FORM_LOCK_DURATION_TIME), requestEditTime);
+        caseAggregate.requestEditForm(CASE_ID, COURT_FORM_ID, USER_ID_FOR_BILL, ImmutableMap.of(BCM, FORM_LOCK_DURATION_TIME), requestEditTime, false, 0);
 
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
@@ -358,7 +358,7 @@ public class FormCommandHandlerTest {
 
         final CaseAggregate caseAggregate = new CaseAggregate();
         caseAggregate.createForm(COURT_FORM_ID, CASE_ID, FORM_ID, ImmutableList.of(DEFENDANT_ID), "blah", USER_ID_FOR_BILL, BCM, randomUUID(), null);
-        caseAggregate.requestEditForm(CASE_ID, COURT_FORM_ID, USER_ID_FOR_BILL, ImmutableMap.of(BCM, FORM_LOCK_DURATION_TIME), originalRequestEditTime);
+        caseAggregate.requestEditForm(CASE_ID, COURT_FORM_ID, USER_ID_FOR_BILL, ImmutableMap.of(BCM, FORM_LOCK_DURATION_TIME), originalRequestEditTime, false , 0);
 
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
@@ -391,7 +391,7 @@ public class FormCommandHandlerTest {
 
         final CaseAggregate caseAggregate = new CaseAggregate();
     caseAggregate.createForm(COURT_FORM_ID, CASE_ID, FORM_ID, ImmutableList.of(DEFENDANT_ID), "blah", USER_ID_FOR_BILL, BCM, randomUUID(), null);
-        caseAggregate.requestEditForm(CASE_ID, COURT_FORM_ID, USER_ID_FOR_BILL, ImmutableMap.of(BCM, FORM_LOCK_DURATION_TIME), originalRequestEditTime);
+        caseAggregate.requestEditForm(CASE_ID, COURT_FORM_ID, USER_ID_FOR_BILL, ImmutableMap.of(BCM, FORM_LOCK_DURATION_TIME), originalRequestEditTime, false , 0);
 
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
@@ -431,7 +431,7 @@ public class FormCommandHandlerTest {
 
         final CaseAggregate caseAggregate = new CaseAggregate();
         caseAggregate.createForm(COURT_FORM_ID, CASE_ID, FORM_ID, ImmutableList.of(DEFENDANT_ID), "blah", USER_ID_FOR_BILL, BCM, randomUUID(), null);
-        caseAggregate.requestEditForm(CASE_ID, COURT_FORM_ID, USER_ID_FOR_BILL, ImmutableMap.of(BCM, FORM_LOCK_DURATION_TIME), originalRequestEditTime);
+        caseAggregate.requestEditForm(CASE_ID, COURT_FORM_ID, USER_ID_FOR_BILL, ImmutableMap.of(BCM, FORM_LOCK_DURATION_TIME), originalRequestEditTime, false , 0);
         caseAggregate.updateForm(CASE_ID, "updateFormData", COURT_FORM_ID, USER_ID_FOR_BILL);
 
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);

@@ -36,7 +36,6 @@ import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -45,7 +44,6 @@ import uk.gov.moj.cpp.progression.value.object.CaseVO;
 import uk.gov.moj.cpp.progression.value.object.EmailTemplateType;
 import uk.gov.moj.cpp.progression.value.object.HearingVO;
 
-import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -58,7 +56,6 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

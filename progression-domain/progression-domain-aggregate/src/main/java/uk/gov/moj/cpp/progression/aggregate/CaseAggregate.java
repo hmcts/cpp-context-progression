@@ -2798,7 +2798,8 @@ public class CaseAggregate implements Aggregate {
         return apply(formFinalisedList.stream().map(formFinalised -> formFinalised));
     }
 
-    public Stream<Object> requestEditForm(final UUID caseId, final UUID courtFormId, final UUID userId, final Map<FormType, Integer> durationMapByFormType, final ZonedDateTime requestEditTime) {
+    public Stream<Object> requestEditForm(final UUID caseId, final UUID courtFormId, final UUID userId, final Map<FormType, Integer> durationMapByFormType,
+                                          final ZonedDateTime requestEditTime, final boolean extend ,final  int extendTime) {
         if (!formMap.containsKey(courtFormId)) {
             return apply(Stream.of(formOperationFailed()
                     .withCaseId(caseId)
@@ -2819,13 +2820,16 @@ public class CaseAggregate implements Aggregate {
 
         if (formLockStatus.getLockExpiryTime() == null || hasLockExpired(requestEditTime, formLockStatus.getLockExpiryTime())) {
             lockStatusBuilder
-                    .withExpiryTime(requestEditTime.plusMinutes(durationMapByFormType.get(form.getFormType())))
+                    .withExpiryTime(extend ? calculateExpiryTimeWithExtension(requestEditTime, extendTime) : requestEditTime.plusMinutes(durationMapByFormType.get(form.getFormType())))
                     .withIsLocked(false)
+                    .withLockedBy(userId)
                     .withIsLockAcquirable(true);
         } else if (userId.equals(formLockStatus.getLockedBy())) {
             lockStatusBuilder
-                    .withExpiryTime(formLockStatus.getLockExpiryTime())
-                    .withIsLocked(false);
+                    .withExpiryTime(extend ? calculateExpiryTimeWithExtension(requestEditTime, extendTime) : formLockStatus.getLockExpiryTime())
+                    .withIsLocked(false)
+                    .withLockedBy(formLockStatus.getLockedBy())
+                    .withIsLockAcquirable(true);
         } else {
             lockStatusBuilder
                     .withIsLocked(true)
@@ -2834,6 +2838,10 @@ public class CaseAggregate implements Aggregate {
         }
 
         return apply(Stream.of(editFormRequested.withLockStatus(lockStatusBuilder.build()).build()));
+    }
+
+    private ZonedDateTime calculateExpiryTimeWithExtension(final ZonedDateTime fromTime , final int extendTime){
+        return fromTime.plusMinutes(extendTime);
     }
 
     private boolean hasLockExpired(final ZonedDateTime requestedLockTime, final ZonedDateTime lockExpiryTime) {

@@ -12,6 +12,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
@@ -290,9 +291,9 @@ public class CaseAggregateTest {
     private CaseAggregate caseAggregate;
 
     private static final Map<FormType, Integer> lockDurationMapByFormType = new HashMap<FormType, Integer>() {{
-        put(BCM, 1);
-        put(PTPH, 2);
-        put(PET, 2);
+        put(BCM, 60);
+        put(PTPH, 60);
+        put(PET, 60);
     }};
 
     private static LaaReference generateRecordLAAReferenceForOffence(final String statusCode, final String defendantLevelStatus) {
@@ -2721,9 +2722,9 @@ public class CaseAggregateTest {
 
         setField(caseAggregate, "formMap", formMap);
 
-        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
-        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId, false, expiryTime, eventStream);
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId, false, expiryTime, eventStream);
     }
 
     @Test
@@ -2746,9 +2747,9 @@ public class CaseAggregateTest {
 
         setField(caseAggregate, "formMap", formMap);
 
-        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, petId, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, petId, userId, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         ZonedDateTime expiryTime = caseAggregate.getFormMap().get(petId).getFormLockStatus().getLockExpiryTime();
-        assertEditFormRequestedFromEventStream(caseId, petId, null, userId, false, expiryTime, eventStream);
+        assertEditFormRequestedFromEventStream(caseId, petId, userId, userId, false, expiryTime, eventStream);
     }
 
     @Test
@@ -2772,7 +2773,7 @@ public class CaseAggregateTest {
         setField(caseAggregate, "formMap", formMap);
 
         final UUID courtFormId3 = randomUUID();
-        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId3, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId3, userId, lockDurationMapByFormType, ZonedDateTime.now(), true, 5).collect(toList());
         assertFormOperationFailedFromEventStream(caseId, courtFormId3, FORM_EDIT_COMMAND_NAME,
                 format(MESSAGE_FOR_COURT_FORM_ID_NOT_PRESENT, courtFormId3), null, eventStream);
 
@@ -2799,12 +2800,12 @@ public class CaseAggregateTest {
 
         setField(caseAggregate, "formMap", formMap);
 
-        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
-        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId, false, expiryTime, eventStream);
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId, false, expiryTime, eventStream);
 
         final UUID userId1 = randomUUID();
-        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, expiryTime, eventStream2);
 
     }
@@ -2829,20 +2830,20 @@ public class CaseAggregateTest {
         formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, BCM, new FormLockStatus(false, null, null, null)));
         setField(caseAggregate, "formMap", formMap);
 
-        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
-        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId, false, expiryTime, eventStream);
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId, false, expiryTime, eventStream);
 
         final UUID userId1 = randomUUID();
-        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime(), eventStream2);
 
         caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().setLockExpiryTime(ZonedDateTime.now().minusHours(2));
 
         final UUID userId2 = randomUUID();
-        final List<Object> eventStream3 = caseAggregate.requestEditForm(caseId, courtFormId, userId2, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream3 = caseAggregate.requestEditForm(caseId, courtFormId, userId2, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         ZonedDateTime nextExpiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
-        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId2, false, nextExpiryTime, eventStream3);
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId2, userId2, false, nextExpiryTime, eventStream3);
 
     }
 
@@ -2867,31 +2868,125 @@ public class CaseAggregateTest {
 
         setField(caseAggregate, "formMap", formMap);
 
-        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
-        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId, false, expiryTime, eventStream);
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId, false, expiryTime, eventStream);
 
         final UUID userId1 = randomUUID();
-        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime(), eventStream2);
 
         caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().setLockExpiryTime(ZonedDateTime.now().minusHours(2));
 
         final UUID userId2 = randomUUID();
-        final List<Object> eventStream3 = caseAggregate.requestEditForm(caseId, courtFormId, userId2, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream3 = caseAggregate.requestEditForm(caseId, courtFormId, userId2, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         final ZonedDateTime nextExpiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
-        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId2, false, nextExpiryTime, eventStream3);
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId2, userId2, false, nextExpiryTime, eventStream3);
         assertThat(nextExpiryTime, notNullValue());
         assertThat(nextExpiryTime, greaterThanOrEqualTo(ZonedDateTime.now().minusMinutes(10L)));
 
         //same user is editing again so should get form unlocked for same user.
-        final List<Object> eventStream4 = caseAggregate.requestEditForm(caseId, courtFormId, userId2, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream4 = caseAggregate.requestEditForm(caseId, courtFormId, userId2, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         final ZonedDateTime nextExpiryTime2 = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
         final Object object = eventStream4.get(0);
         final EditFormRequested editFormRequested = (EditFormRequested) object;
         final LockStatus lockStatus = editFormRequested.getLockStatus();
-        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId2, false, lockStatus.getExpiryTime(), eventStream4);
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId2, userId2, false, lockStatus.getExpiryTime(), eventStream4);
         assertThat(nextExpiryTime, is(nextExpiryTime2));
+    }
+
+    @Test
+    public void shouldGenerateEditFormRequested_WhenFormIsLocked_WithExpiryTimeInFuture_EditRequestSentBySameUser_WithExtendTime() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, BCM, new FormLockStatus(false, null, null, null)));
+
+        setField(caseAggregate, "formMap", formMap);
+
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
+        ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId, false, expiryTime, eventStream);
+
+        final UUID userId1 = randomUUID();
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime(), eventStream2);
+
+        caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().setLockExpiryTime(ZonedDateTime.now().minusHours(2));
+
+        final UUID userId2 = randomUUID();
+        final List<Object> eventStream3 = caseAggregate.requestEditForm(caseId, courtFormId, userId2, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
+        final ZonedDateTime nextExpiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId2, userId2, false, nextExpiryTime, eventStream3);
+        assertThat(nextExpiryTime, notNullValue());
+        assertThat(nextExpiryTime, greaterThanOrEqualTo(ZonedDateTime.now().minusMinutes(10L)));
+
+        //same user is editing again so should get form unlocked for same user.
+        final List<Object> eventStream4 = caseAggregate.requestEditForm(caseId, courtFormId, userId2, lockDurationMapByFormType, ZonedDateTime.now(), true, 5).collect(toList());
+        final ZonedDateTime nextExpiryTime2 = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        final Object object = eventStream4.get(0);
+        final EditFormRequested editFormRequested = (EditFormRequested) object;
+        final LockStatus lockStatus = editFormRequested.getLockStatus();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId2, userId2, false, lockStatus.getExpiryTime(), eventStream4);
+        assertThat(ZonedDateTime.now().plusMinutes(6), greaterThan(nextExpiryTime2));
+    }
+
+    @Test
+    public void shouldGenerateEditFormRequested_WhenFormIsLocked_WithExpiryTimeInFuture_EditRequestSentBySameUser_WithDefaultExtendTime() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, BCM, new FormLockStatus(false, null, null, null)));
+
+        setField(caseAggregate, "formMap", formMap);
+
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
+        ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId, false, expiryTime, eventStream);
+
+        final UUID userId1 = randomUUID();
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime(), eventStream2);
+
+        caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().setLockExpiryTime(ZonedDateTime.now().minusHours(2));
+
+        final UUID userId2 = randomUUID();
+        final List<Object> eventStream3 = caseAggregate.requestEditForm(caseId, courtFormId, userId2, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
+        final ZonedDateTime nextExpiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId2, userId2, false, nextExpiryTime, eventStream3);
+        assertThat(nextExpiryTime, notNullValue());
+        assertThat(nextExpiryTime, greaterThanOrEqualTo(ZonedDateTime.now().minusMinutes(10L)));
+
+        //same user is editing again so should get form unlocked for same user.
+        final List<Object> eventStream4 = caseAggregate.requestEditForm(caseId, courtFormId, userId2, lockDurationMapByFormType, ZonedDateTime.now(), true, 0).collect(toList());
+        final ZonedDateTime nextExpiryTime2 = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        final Object object = eventStream4.get(0);
+        final EditFormRequested editFormRequested = (EditFormRequested) object;
+        final LockStatus lockStatus = editFormRequested.getLockStatus();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId2, userId2, false, lockStatus.getExpiryTime(), eventStream4);
+        assertThat(ZonedDateTime.now().plusMinutes(11), greaterThan(nextExpiryTime2));
     }
 
     @Test
@@ -2914,21 +3009,96 @@ public class CaseAggregateTest {
 
         setField(caseAggregate, "formMap", formMap);
 
-        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
-        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId, false, expiryTime, eventStream);
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId, false, expiryTime, eventStream);
 
         final UUID userId1 = randomUUID();
-        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, expiryTime, eventStream2);
 
         caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().setLockExpiryTime(ZonedDateTime.now().minusHours(2));
 
-        final List<Object> eventStream3 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream3 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         final ZonedDateTime expiryTime2 = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
-        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId1, false, expiryTime2, eventStream3);
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId1, userId1, false, expiryTime2, eventStream3);
         assertThat(expiryTime2, notNullValue());
         assertThat(expiryTime2, greaterThanOrEqualTo(ZonedDateTime.now().minusMinutes(10L)));
+    }
+
+
+    @Test
+    public void shouldGenerateEditFormRequested_WhenFormIsLocked_WithExpiryTimeInPast_EditRequestSentBySameUser_WithExtendTime() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, BCM, new FormLockStatus(false, null, null, null)));
+
+        setField(caseAggregate, "formMap", formMap);
+
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
+        ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId, false, expiryTime, eventStream);
+
+        final UUID userId1 = randomUUID();
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, expiryTime, eventStream2);
+
+        caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().setLockExpiryTime(ZonedDateTime.now().minusHours(2));
+
+        final List<Object> eventStream3 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now(), true, 5).collect(toList());
+        final ZonedDateTime expiryTime2 = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId1, userId1, false, expiryTime2, eventStream3);
+        assertThat(expiryTime2, notNullValue());
+        assertThat(ZonedDateTime.now().plusMinutes(6L), greaterThan(expiryTime2));
+    }
+
+    @Test
+    public void shouldGenerateEditFormRequested_WhenFormIsLocked_WithExpiryTimeInPast_EditRequestSentBySameUser_WithDefaultExtendTime() {
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final Map<UUID, Form> formMap = new HashMap<>();
+        final UUID courtFormId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        FormDefendants formDefendants = formDefendants().withDefendantId(defendantId).build();
+        formMap.put(courtFormId, new Form(asList(formDefendants), courtFormId, BCM, new FormLockStatus(false, null, null, null)));
+
+        final UUID courtFormId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        FormDefendants formDefendants2 = formDefendants().withDefendantId(defendantId2).build();
+        formMap.put(courtFormId2, new Form(asList(formDefendants2), courtFormId2, BCM, new FormLockStatus(false, null, null, null)));
+
+        setField(caseAggregate, "formMap", formMap);
+
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
+        ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId, false, expiryTime, eventStream);
+
+        final UUID userId1 = randomUUID();
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, expiryTime, eventStream2);
+
+        caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().setLockExpiryTime(ZonedDateTime.now().minusHours(2));
+
+        final List<Object> eventStream3 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now(), true, 0).collect(toList());
+        final ZonedDateTime expiryTime2 = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId1, userId1, false, expiryTime2, eventStream3);
+        assertThat(expiryTime2, notNullValue());
+        assertThat(ZonedDateTime.now().plusMinutes(11L), greaterThan(expiryTime2));
     }
 
     @Test
@@ -2951,12 +3121,12 @@ public class CaseAggregateTest {
 
         setField(caseAggregate, "formMap", formMap);
 
-        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream = caseAggregate.requestEditForm(caseId, courtFormId, userId, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         ZonedDateTime expiryTime = caseAggregate.getFormMap().get(courtFormId).getFormLockStatus().getLockExpiryTime();
-        assertEditFormRequestedFromEventStream(caseId, courtFormId, null, userId, false, expiryTime, eventStream);
+        assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId, false, expiryTime, eventStream);
 
         final UUID userId1 = randomUUID();
-        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now()).collect(toList());
+        final List<Object> eventStream2 = caseAggregate.requestEditForm(caseId, courtFormId, userId1, lockDurationMapByFormType, ZonedDateTime.now(), false, 0).collect(toList());
         assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId1, true, expiryTime, eventStream2);
 
         //form updated by same userId which got the lock earlier

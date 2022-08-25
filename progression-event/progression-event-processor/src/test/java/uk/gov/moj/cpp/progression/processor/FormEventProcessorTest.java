@@ -627,7 +627,7 @@ public class FormEventProcessorTest {
         final JsonObject lockedStatusObject = publicEventPayload.getJsonObject(LOCK_STATUS);
         assertThat(lockedStatusObject, notNullValue());
         assertThat(lockedStatusObject.getBoolean(IS_LOCKED), is(false));
-        assertThat(lockedStatusObject.containsKey(LOCKED_BY), is(false));
+        assertThat(lockedStatusObject.containsKey(LOCKED_BY), is(true));
         assertThat(lockedStatusObject.containsKey(LOCK_REQUESTED_BY), is(false));
     }
 

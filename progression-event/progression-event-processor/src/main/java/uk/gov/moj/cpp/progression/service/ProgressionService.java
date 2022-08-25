@@ -1,8 +1,26 @@
 package uk.gov.moj.cpp.progression.service;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Collections.singletonList;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.fromString;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
+import static uk.gov.justice.core.courts.ConfirmedProsecutionCaseId.confirmedProsecutionCaseId;
+import static uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing.prepareSummonsDataForExtendedHearing;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
+
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.BoxworkApplicationReferred;
@@ -55,12 +73,6 @@ import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -75,26 +87,16 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Collections.singletonList;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.fromString;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
-import static uk.gov.justice.core.courts.ConfirmedProsecutionCaseId.confirmedProsecutionCaseId;
-import static uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing.prepareSummonsDataForExtendedHearing;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
-import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
-import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:CommentedOutCodeLine", "squid:S1188", "squid:S2789", "squid:S3655", "squid:S1192", "squid:S1168", "pmd:NullAssignment", "squid:CallToDeprecatedMethod", "squid:S1166", "squid:S2221"})
 public class ProgressionService {
@@ -127,6 +129,7 @@ public class ProgressionService {
     private static final String SENT_FOR_LISTING = "SENT_FOR_LISTING";
     private static final String EMPTY_STRING = "";
     private static final String PROGRESSION_QUERY_COURT_APPLICATION = "progression.query.application";
+    private static final String PROGRESSION_QUERY_CASE = "progression.query.case";
     private static final String PROGRESSION_QUERY_COURT_APPLICATION_ONLY = "progression.query.application-only";
     private static final String PROGRESSION_COMMAND_UPDATE_COURT_APPLICATION_STATUS = "progression.command.update-court-application-status";
     private static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH = "progression.command.update-defendant-for-prosecution-case";
@@ -839,6 +842,31 @@ public class ProgressionService {
 
         if (!courtApplication.payloadAsJsonObject().isEmpty()) {
             result = Optional.of(courtApplication.payloadAsJsonObject());
+        }
+        return result;
+    }
+
+
+    public Optional<JsonObject> getProsecutionCase(final JsonEnvelope envelope, final String prosecutionCaseId) {
+
+        Optional<JsonObject> result = Optional.empty();
+        final JsonObject requestParameter = createObjectBuilder()
+                .add(CASE_ID, prosecutionCaseId)
+                .build();
+
+        LOGGER.info("caseId {} ,   get prosceutionCase {}", prosecutionCaseId, requestParameter);
+
+        final JsonEnvelope prosecutionCase = requester.requestAsAdmin(enveloper
+                .withMetadataFrom(envelope, PROGRESSION_QUERY_CASE)
+                .apply(requestParameter));
+
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("case {} ,   get court payLoad {}", prosecutionCaseId, prosecutionCase.payloadAsJsonObject());
+        }
+
+        if (!prosecutionCase.payloadAsJsonObject().isEmpty()) {
+            result = Optional.of(prosecutionCase.payloadAsJsonObject());
         }
         return result;
     }
