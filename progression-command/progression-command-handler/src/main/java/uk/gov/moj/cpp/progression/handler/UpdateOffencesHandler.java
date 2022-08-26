@@ -8,6 +8,7 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupRe
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.core.courts.UpdateHearingOffenceVerdict;
+import uk.gov.justice.core.courts.UpdateIndexForBdf;
 import uk.gov.justice.core.courts.UpdateListingNumber;
 import uk.gov.justice.core.courts.UpdateOffencesForHearing;
 import uk.gov.justice.core.courts.UpdateOffencesForProsecutionCase;
@@ -114,6 +115,17 @@ public class UpdateOffencesHandler {
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
         final Stream<Object> events = hearingAggregate.updateHearingWithVerdict(updateHearingOffenceVerdict.getVerdict());
         appendEventsToStream(updateHearingOffenceVerdictEnvelope, eventStream, events);
+    }
+
+    @Handles("progression.command.update-index-for-bdf")
+    public void handleUpdateIndex(final Envelope<UpdateIndexForBdf> updateIndexForBdfEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.command.update-index-for-bdf {}", updateIndexForBdfEnvelope.payload());
+
+        final UpdateIndexForBdf  updateIndexForBdf = updateIndexForBdfEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(updateIndexForBdf.getHearing().getId());
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events = hearingAggregate.updateIndex(updateIndexForBdf.getHearing(), updateIndexForBdf.getHearingListingStatus(), updateIndexForBdf.getNotifyNCES());
+        appendEventsToStream(updateIndexForBdfEnvelope, eventStream, events);
     }
 
     private Offence addYouthRestrictions(final Offence offence) {

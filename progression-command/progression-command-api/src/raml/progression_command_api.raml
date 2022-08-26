@@ -935,6 +935,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         (mapping):
             requestType: application/vnd.progression.update-listing-number+json
             name: progression.update-listing-number
+        (mapping):
+            requestType: application/vnd.progression.update-index-for-bdf+json
+            name: progression.update-index-for-bdf
         ...
       body:
         application/vnd.progression.update-defendant-listing-status+json:
@@ -947,6 +950,11 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
              !include json/progression.update-listing-number.json
             schema:
              !include json/schema/progression.update-listing-number.json
+        application/vnd.progression.update-index-for-bdf+json:
+            example:
+             !include json/progression.update-index-for-bdf.json
+            schema:
+             !include json/schema/progression.update-index-for-bdf.json
       responses:
             202:
                 description: OK

@@ -32,3 +32,12 @@ rule "Command - Rule for remove hearing defence counsel action"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Rule for Update Index"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.update-index-for-bdf");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ));
+  then
+    $outcome.setSuccess(true);
+end

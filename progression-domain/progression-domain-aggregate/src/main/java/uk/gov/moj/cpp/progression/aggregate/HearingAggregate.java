@@ -1468,6 +1468,17 @@ public class HearingAggregate implements Aggregate {
         return apply(streamBuilder.build());
     }
 
+    public Stream<Object> updateIndex(final Hearing newHearing, final HearingListingStatus hearingListingStatus, final Boolean notifyNCES){
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
+                .withHearingListingStatus(hearingListingStatus)
+                .withNotifyNCES(notifyNCES)
+                .withHearing(newHearing)
+                .build());
+
+        return apply(streamBuilder.build());
+    }
+
     private Hearing getHearingWithNewPleaForApplication(final UUID applicationId, final Plea plea) {
         return Hearing.hearing().withValuesFrom(hearing)
                 .withCourtApplications(hearing.getCourtApplications().stream()
