@@ -908,10 +908,15 @@ public class HearingAggregate implements Aggregate {
 
     public Stream<Object> hearingTrialVacated(final UUID hearingId, final UUID vacatedTrialReasonId) {
 
-        return apply(Stream.of(HearingTrialVacated.hearingTrialVacated()
-                .withHearingId(hearingId)
-                .withVacatedTrialReasonId(vacatedTrialReasonId)
-                .build()));
+        if(nonNull(this.hearing)) {
+
+            return apply(Stream.of(HearingTrialVacated.hearingTrialVacated()
+                    .withHearingId(hearingId)
+                    .withVacatedTrialReasonId(vacatedTrialReasonId)
+                    .build()));
+        } else {
+            return Stream.empty();
+        }
     }
 
     public Stream<Object> removeOffenceFromHearing(final UUID hearingId, final List<UUID> offencesToBeRemoved) {

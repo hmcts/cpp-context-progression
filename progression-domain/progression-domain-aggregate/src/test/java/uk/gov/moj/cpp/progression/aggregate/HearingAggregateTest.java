@@ -465,6 +465,16 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldNotRaiseHearingTrialVacatedWhenHearingIsNotCreated() {
+
+        final UUID hearingId = randomUUID();
+
+        final List<Object> eventStream = hearingAggregate.hearingTrialVacated(hearingId, randomUUID()).collect(toList());
+        assertThat(eventStream.size(), is(0));
+
+    }
+
+    @Test
     public void shouldRaiseHearingPopulateEventForOnlyAdults() {
         final UUID case1Id = randomUUID();
         final UUID case2Id = randomUUID();
@@ -483,6 +493,7 @@ public class HearingAggregateTest {
                                         .withId(randomUUID())
                                         .withIsYouth(true)
                                         .build()
+
                         )))
                         .build(), ProsecutionCase.prosecutionCase()
                         .withId(case2Id)

@@ -39,13 +39,13 @@
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <junit4-dataprovider.version>2.6</junit4-dataprovider.version>
-        <material.version>8.0.8</material.version>
+        <material.version>8.0.9</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>8.0.10</referencedata.version>
+        <referencedata.version>8.0.14</referencedata.version>
         <listing.version>8.0.17</listing.version>
         <hearing.version>8.0.25</hearing.version>
-        <usersgroups.version>7.0.47</usersgroups.version>
+        <usersgroups.version>8.0.6</usersgroups.version>
         <defence.version>8.0.6</defence.version>
         <referencedata.offence.version>7.0.13</referencedata.offence.version>
         <coredomain.version>1.0.188</coredomain.version>
