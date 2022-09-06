@@ -182,6 +182,7 @@ public class HearingResultedEventProcessor {
 
         progressionService.linkApplicationToHearing(jsonEnvelope, hearing, hearingForApplicationCreated.getHearingListingStatus());
 
+
         final List<ProsecutionCase> prosecutionCases = hearingForApplicationCreated.getHearing().getProsecutionCases();
         final List<ListHearingRequest> listHearingRequests = hearingForApplicationCreated.getListHearingRequests();
         final UUID hearingId = hearingForApplicationCreated.getHearing().getId();
@@ -204,7 +205,7 @@ public class HearingResultedEventProcessor {
             listUnscheduledHearings(event, seedingHearing, unscheduledListingNeeds);
 
             final List<Hearing> hearingList = unscheduledListingNeeds.stream()
-                    .filter(uln -> nonNull(uln.getProsecutionCases()))
+                    .filter(uln -> nonNull(uln.getProsecutionCases()) ||  nonNull(uln.getCourtApplications()))
                     .map(uln -> hearingResultUnscheduledListingHelper.convertToHearing(uln, hearing.getHearingDays()))
                     .collect(Collectors.toList());
 

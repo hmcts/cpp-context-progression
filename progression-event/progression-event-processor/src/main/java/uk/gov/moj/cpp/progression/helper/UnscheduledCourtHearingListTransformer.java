@@ -72,7 +72,6 @@ public class UnscheduledCourtHearingListTransformer {
                         }
                     });
         } else if (hearing.getProsecutionCases() != null) {
-
             hearing.getProsecutionCases().stream().forEach(
                     prosecutionCase -> prosecutionCase.getDefendants().stream().forEach(
                             defendant -> hearingUnscheduledListingNeeds.addAll(transformDefendantWithSeedHearing(hearing, prosecutionCase, defendant, seedingHearing))
@@ -98,7 +97,7 @@ public class UnscheduledCourtHearingListTransformer {
 
             final CourtCentre courtCentre = judicialResultWithNextHearing.get().getNextHearing().getCourtCentre();
 
-            final HearingUnscheduledListingNeeds hearingListingNeeds = createHearingListingNeeds(hearing, typeOfList, jurisdictionType, null,
+            final HearingUnscheduledListingNeeds hearingListingNeeds = createHearingListingNeeds(hearing, typeOfList, jurisdictionType, hearing.getProsecutionCases(),
                     Arrays.asList(createCourtApplication(courtApplication, judicialResultWithNextHearing.get())), hearingType, courtCentre);
 
             LOGGER.info("Unscheduled listing (nextHearing) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +
@@ -118,7 +117,7 @@ public class UnscheduledCourtHearingListTransformer {
                 final JurisdictionType jurisdictionType = getJuristictionType(hearing.getJurisdictionType(), judicialResultWithUnscheduledFlag.get());
                 final HearingType hearingType = HearingType.hearingType().withId(HEARING_TYPE_HRG_ID).withDescription(HEARING_TYPE_HRG_DESC).build();
 
-                final HearingUnscheduledListingNeeds hearingListingNeeds = createHearingListingNeeds(hearing, typeOfList, jurisdictionType, null,
+                final HearingUnscheduledListingNeeds hearingListingNeeds = createHearingListingNeeds(hearing, typeOfList, jurisdictionType, hearing.getProsecutionCases(),
                         Arrays.asList(createCourtApplication(courtApplication, judicialResultWithUnscheduledFlag.get())), hearingType, hearing.getCourtCentre());
 
                 LOGGER.info("Unscheduled listing (result) New HearingId: {} created with typeOfList {} , jurisdictionType {} ," +

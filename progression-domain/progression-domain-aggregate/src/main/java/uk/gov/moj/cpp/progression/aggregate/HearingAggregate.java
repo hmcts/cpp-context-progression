@@ -1508,9 +1508,10 @@ public class HearingAggregate implements Aggregate {
     }
 
     private List<CourtApplicationCase> getCourtApplicationCasesWithNewPlea(final PleaModel pleaModel, final CourtApplication courtApplication) {
+        ofNullable(hearing.getDefenceCounsels()).map(Collection::stream).orElseGet(Stream::empty).collect(toList());
         return ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase().withValuesFrom(courtApplicationCase)
-                        .withOffences(courtApplicationCase.getOffences().stream()
+                        .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
                                 .map(offence -> getOffenceWithNewPlea(offence, pleaModel))
                                 .collect(toList()))
                         .build())
