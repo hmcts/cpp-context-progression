@@ -41,6 +41,8 @@ public class ReferenceDataService {
     public static final String REFERENCEDATA_GET_PROSECUTOR = "referencedata.query.prosecutor";
     public static final String REFERENCEDATA_GET_HEARINGTYPES = "referencedata.query.hearing-types";
     private static final String REFERENCEDATA_QUERY_JUDICIARIES = "referencedata.query.judiciaries";
+    private static final String REFERENCEDATA_QUERY_CLUSTER = "referencedata.query.cluster-org-units";
+
     private static final String ADDRESS_1 = "address1";
     private static final String ADDRESS_2 = "address2";
     private static final String ADDRESS_3 = "address3";
@@ -184,6 +186,21 @@ public class ReferenceDataService {
         final JsonArray judiciaries = jsonEnvelop.payload().getJsonArray(FIELD_JUDICIARIES);
         LOGGER.info("'referencedata.query.judiciaries {} received with payload {}", judiciaryId, jsonEnvelop.payload());
         return isNull(judiciaries) ? empty() : of(judiciaries.getJsonObject(0));
+    }
+
+    public JsonEnvelope getCourtCentreIdsByClusterId( final UUID clusterId) {
+        final JsonObject payload = createObjectBuilder().add("clusterId", clusterId.toString()).build();
+
+        final Metadata metadata = metadataBuilder()
+                .withId(clusterId)
+                .withName(REFERENCEDATA_QUERY_CLUSTER)
+                .build();
+
+        final JsonEnvelope jsonEnvelop = requester.request(envelopeFrom(metadata, payload));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("'referencedata.query.cluster-org-units' {} received with payload {}", clusterId, jsonEnvelop.toObfuscatedDebugString());
+        }
+        return  jsonEnvelop;
     }
 
     public static class ReferenceHearingDetails {

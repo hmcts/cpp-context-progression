@@ -12,6 +12,7 @@ import static uk.gov.justice.services.common.converter.LocalDates.to;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.LjaDetails;
@@ -90,6 +91,7 @@ public class RefDataService {
     public static final String ORGANISATIONUNITS = "organisationunits";
     public static final String COURT_CODE_QUERY_PARAMETER = "localJusticeAreaNationalCourtCode";
     public static final String LOCAL_JUSTICE_AREA = "localJusticeArea";
+    private static final String REFERENCEDATA_GET_COTR_REVIEW_NOTES = "referencedata.query.cotr-review-notes";
     private static final String FIELD_PLEA_STATUS_TYPES = "pleaStatusTypes";
     private static final String PLEA_TYPE_VALUE = "pleaValue";
     private static final String REFERENCEDATA_QUERY_PLEA_TYPES = "referencedata.query.plea-types";
@@ -243,6 +245,11 @@ public class RefDataService {
             LOGGER.info("Get ljaCode '{}' received with payload {} ", REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS, responseForLocalJusticeArea.toObfuscatedDebugString());
         }
         return Optional.of(responseForLocalJusticeArea.payloadAsJsonObject());
+    }
+
+    public Optional<JsonObject> getCotrReviewNotes(final Metadata metadata, final Requester requester) {
+        final Metadata metadataNew = metadataWithNewActionName(metadata, REFERENCEDATA_GET_COTR_REVIEW_NOTES);
+        return Optional.ofNullable(requester.request(envelopeFrom(metadataNew, createObjectBuilder().build()), JsonObject.class).payload());
     }
 
     public Optional<JsonObject> getCourtsOrganisationUnitsByOuCode(final JsonEnvelope event, final String oucode, final Requester requester) {

@@ -77,6 +77,15 @@ public class StubUtil {
                         .withBody(getPayload("stub-data/material.query.structured-form.json").replace("STRUCTURED_FORM_ID", structuredFormId))));
     }
 
+    public static void setupMaterialStructuredPetQueryForCotr(final String structuredFormId) {
+        InternalEndpointMockUtils.stubPingFor("material-service");
+        stubFor(get(urlMatching(MATERIAL_QUERY_URL +"/structured-form/" + structuredFormId))
+                .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getPayload("stub-data/material.query.structured-form-for-cotr.json").replace("STRUCTURED_FORM_ID", structuredFormId))));
+    }
+
     public static String getJsonBodyStr(final String path, final String caseId,
                                         final String defendantId, final String defendant2Id) {
         final String payload = getPayload(path);

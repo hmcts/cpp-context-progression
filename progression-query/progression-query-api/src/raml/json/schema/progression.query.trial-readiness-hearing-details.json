@@ -1,0 +1,228 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/query/progression.query.trial-readiness-hearing-details.json",
+  "type": "object",
+  "properties": {
+    "trialSummary": {
+      "type": "object",
+      "properties": {
+        "nextHearingDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "nextHearingType": {
+          "$ref": "http://justice.gov.uk/core/courts/hearingType.json"
+        },
+        "hearingType": {
+          "$ref": "http://justice.gov.uk/core/courts/hearingType.json"
+        },
+        "hearingDay": {
+          "$ref": "http://justice.gov.uk/core/courts/hearingDay.json#"
+        }
+      },
+      "additionalProperties": false
+    },
+    "idpcAndCaseHistories": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "isYouth": {
+            "type": "boolean"
+          },
+          "idpcServiceDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "plea": {
+            "$ref": "http://justice.gov.uk/core/courts/plea.json"
+          },
+          "bailStatus": {
+            "$ref": "http://justice.gov.uk/core/courts/bailStatus.json"
+          },
+          "custodyTimeLimit": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "petDetails": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string"
+          },
+          "lastChangeDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "courtCentre": {
+            "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
+          },
+          "defendants": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "firstName": {
+                  "type": "string"
+                },
+                "lastName": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "ptphDetails": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "lastChangeDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "defendants": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "firstName": {
+                  "type": "string"
+                },
+                "lastName": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "defendantCotrDetails": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "dueDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "isProsecutionServed": {
+            "type": "boolean"
+          },
+          "isDefenceServed": {
+            "type": "boolean"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "cotrStatus": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "courtApplications": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "type": {
+            "$ref": "http://justice.gov.uk/core/courts/courtApplicationType.json"
+          },
+          "receivedDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "decisionMadeDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "applicant": {
+            "$ref": "http://justice.gov.uk/core/courts/courtApplicationParty.json"
+          },
+          "applicationStatus": {
+            "description": "Indicates if the application is draft, listed or finalised",
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/courtApplicationStatus"
+          },
+          "respondents": {
+            "description": "The parties answering to a matter before the court",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "http://justice.gov.uk/core/courts/courtApplicationParty.json"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "caseDirections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "assignee": {
+            "type": "string"
+          },
+          "caseId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "defaultDirection": {
+            "type": "boolean"
+          },
+          "directionTypeId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "displayText": {
+            "type": "string"
+          },
+          "dueDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "hearingType": {
+            "type": "string"
+          },
+          "id": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "orderDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "status": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

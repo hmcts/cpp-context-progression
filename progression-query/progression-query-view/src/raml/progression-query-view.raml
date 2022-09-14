@@ -812,6 +812,69 @@ protocols: [ HTTP, HTTPS ]
               example: !include json/progression.query.form.json
               schema:  !include json/schema/progression.query.form.json
 
+/prosecutioncases/{prosecutionCaseId}/cotr-trial-hearings:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+  description: get trial hearings for a given prosecution case id
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.cotr-trial-hearings+json
+          name: progression.query.cotr-trial-hearings
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.cotr-trial-hearings+json:
+            example:  !include json/progression.query.cotr-trial-hearings.json
+            schema:  !include json/schema/progression.query.cotr-trial-hearings.json
+
+/prosecutioncases/{prosecutionCaseId}/cotr-details:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+  description: get cotr details for a given prosecution case id
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.cotr-details+json
+          name: progression.query.cotr-details
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.cotr-details+json:
+            example:  !include json/progression.query.cotr-details.json
+            schema:  !include json/schema/progression.query.cotr-details.json
+
+/prosecutioncases/{prosecutionCaseId}/cotr/{cotrId}:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+    cotrId:
+      description: cotr id
+      type: string
+  description: get cotr form for given cotr
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.cotr-form+json
+          name: progression.query.cotr-form
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.cotr-form+json:
+            example:  !include json/progression.query.cotr-form.json
+            schema:  !include json/schema/progression.query.cotr-form.json
+
 
 # Deprecated API  - End
 
@@ -892,3 +955,23 @@ protocols: [ HTTP, HTTPS ]
       200:
         body:
           application/vnd.progression.search.court.list+json:
+
+/prosecutioncases/{prosecutionCaseId}/cotr-details-prosecutioncase:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+  description: get cotr details for a given prosecution case id
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.cotr.details.prosecutioncase+json
+          name: progression.query.cotr.details.prosecutioncase
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.cotr.details.prosecutioncase+json:
+            example:  !include json/progression.query.cotr.details.prosecutioncase.json
+            schema:  !include json/schema/progression.query.cotr.details.prosecutioncase.json

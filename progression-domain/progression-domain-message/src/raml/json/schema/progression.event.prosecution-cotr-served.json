@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/cpp/progression/event/prosecution-cotr-served.json",
+  "type": "object",
+  "properties": {
+    "cotrId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+
+    "submissionId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "lastRecordedTimeEstimate": {
+      "type": "integer"
+    },
+    "hasAllEvidenceToBeReliedOnBeenServed": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "hasAllDisclosureBeenProvided": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "haveOtherDirectionsBeenCompliedWith": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "haveTheProsecutionWitnessesRequiredToAttendAcknowledgedThatTheyWillAttend": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "haveAnyWitnessSummonsesRequiredBeenReceivedAndServed": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "haveSpecialMeasuresOrRemoteAttendanceIssuesForWitnessesBeenResolved": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "haveInterpretersForWitnessesBeenArranged": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "haveEditedAbeInterviewsBeenPreparedAndAgreed": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "haveArrangementsBeenMadeForStatementOfPointsOfAgreementAndDisagreement": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "isTheCaseReadyToProceedWithoutDelayBeforeTheJury": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "isTheTimeEstimateCorrect": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "certifyThatTheProsecutionIsTrialReady": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "applyForThePtrToBeVacated": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "formCompletedOnBehalfOfTheProsecutionBy": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "certificationDate": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "furtherInformationToAssistTheCourt": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    }
+  },
+  "required": [
+    "cotrId",
+    "hearingId",
+    "submissionId"
+  ],
+  "additionalProperties": false
+}

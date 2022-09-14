@@ -50,7 +50,7 @@ public class ProgressionQueryHelper {
         return builder.build();
     }
 
-    private static JsonObjectBuilder buildJsonBuilder(final JsonObject origin) {
+    public static JsonObjectBuilder buildJsonBuilder(final JsonObject origin) {
         final JsonObjectBuilder builder = Json.createObjectBuilder();
         for (final Map.Entry<String, JsonValue> entry : origin.entrySet()) {
             builder.add(entry.getKey(), entry.getValue());

@@ -10,6 +10,8 @@ import static java.text.MessageFormat.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
@@ -50,6 +52,9 @@ public class UsersAndGroupsStub {
     public static final String USERS_GROUPS_SERVICE_NAME = "usergroups-service";
     public static final String GET_ORGANISATIONS_DETAILS_FORIDS_QUERY = BASE_QUERY + "/organisations*";
     public static final String GET_ORGANISATION_DETAILS_FORIDS_MEDIA_TYPE = "application/vnd.usersgroups.get-organisations-details-forids+json";
+    private static final String CONTENT_TYPE_QUERY_PERMISSION = "application/vnd.usersgroups.get-logged-in-user-permissions+json";
+    public static final String GET_ORGANISATIONS_DETAILS_FOR_TYPES_QUERY = BASE_QUERY + "/organisationlist";
+    public static final String GET_ORGANISATION_DETAILS_FOR_TYPES_MEDIA_TYPE = "application/vnd.usersgroups.organisations+json";
 
 
     public static void stubGetOrganisationQuery(final String userId, final String organisationId, final String organisationName) {
@@ -221,6 +226,28 @@ public class UsersAndGroupsStub {
                 .withHeader(HttpHeaders.CONTENT_TYPE,APPLICATION_JSON)
                 .withBody(body)));
         waitForStubToBeReady(GET_ORGANISATIONS_DETAILS_FORIDS_QUERY,GET_ORGANISATION_DETAILS_FORIDS_MEDIA_TYPE);
+    }
+    public static void stubGetOrganisationDetailForTypes(final String resourceName,final String userId ) {
+        InternalEndpointMockUtils.stubPingFor(USERS_GROUPS_SERVICE_NAME);
+        String body = getPayload(resourceName);
+        stubFor(get(urlPathMatching(GET_ORGANISATIONS_DETAILS_FOR_TYPES_QUERY))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID,randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE,APPLICATION_JSON)
+                        .withBody(body)));
+        waitForStubToBeReady(GET_ORGANISATIONS_DETAILS_FOR_TYPES_QUERY,GET_ORGANISATION_DETAILS_FOR_TYPES_MEDIA_TYPE);
+    }
+
+    public static void stubUserWithPermission(final String userId, final String body) {
+        stubPingFor("usersgroups-service");
+
+        stubFor(get(urlPathEqualTo("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permission"))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, userId)
+                        .withHeader(CONTENT_TYPE, "application/json")
+                        .withBody(body)));
+
+        waitForStubToBeReady("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permission", CONTENT_TYPE_QUERY_PERMISSION);
     }
 
 }

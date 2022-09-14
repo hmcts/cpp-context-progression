@@ -3,10 +3,9 @@ package uk.gov.moj.cpp.progression.handler;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
+import uk.gov.justice.core.courts.AddConvictingCourt;
 import uk.gov.justice.core.courts.AddConvictingInformation;
 import uk.gov.justice.core.courts.CourtCentre;
-
-import uk.gov.justice.core.courts.AddConvictingCourt;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Handles;

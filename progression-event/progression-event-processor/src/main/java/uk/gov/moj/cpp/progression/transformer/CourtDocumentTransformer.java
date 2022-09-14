@@ -116,6 +116,7 @@ public class CourtDocumentTransformer {
         ofNullable(courtDocument.getMimeType()).ifPresent(addMaterialV2::withMaterialContentType);
         ofNullable(courtDocument.getName()).ifPresent(addMaterialV2::withMaterialName);
         ofNullable(getMaterialFileName(envelope, courtDocument.getMaterials().get(0).getId())).ifPresent(addMaterialV2::withFileName);
+        ofNullable(courtDocument.getNotificationType()).ifPresent(addMaterialV2::withNotificationType);
         return addMaterialV2;
     }
 

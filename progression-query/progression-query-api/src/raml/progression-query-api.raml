@@ -817,8 +817,6 @@ protocols: [ HTTP, HTTPS ]
               example:  !include json/progression.query.pet-for-defendant.json
               schema:  !include json/schema/progression.query.pet-for-defendant.json
 
-
-
 /prosecutioncases/{caseId}/form:
   uriParameters:
         caseId:
@@ -844,7 +842,6 @@ protocols: [ HTTP, HTTPS ]
             application/vnd.progression.query.forms-for-case+json:
               example: !include json/progression.query.forms-for-case.json
               schema:  !include json/schema/progression.query.forms-for-case.json
-
 
 /prosecutioncases/{caseId}/form/{courtFormId}:
   uriParameters:
@@ -894,6 +891,127 @@ protocols: [ HTTP, HTTPS ]
               example:  !include json/progression.query.form-change-history.json
               schema:  !include json/schema/progression.query.form-change-history.json
 
+/prosecutioncases/{prosecutionCaseId}/cotr-trial-hearings:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+  description: get trial hearings for given prosecution case id
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.cotr-trial-hearings+json
+          name: progression.query.cotr-trial-hearings
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.cotr-trial-hearings+json:
+            example:  !include json/progression.query.cotr-trial-hearings.json
+            schema:  !include json/schema/progression.query.cotr-trial-hearings.json
+
+/prosecutioncases/{prosecutionCaseId}/cotr-details:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+  description: get cotr details for given prosecution case id
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.cotr-details+json
+          name: progression.query.cotr-details
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.cotr-details+json:
+            example:  !include json/progression.query.cotr-details.json
+            schema:  !include json/schema/progression.query.cotr-details.json
+
+/prosecutioncases/{prosecutionCaseId}/cotr/{cotrId}:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+    cotrId:
+      description: cotr id
+      type: string
+  description: get cotr form for given cotr
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.cotr-form+json
+          name: progression.query.cotr-form
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.cotr-form+json:
+            example:  !include json/progression.query.cotr-form.json
+            schema:  !include json/schema/progression.query.cotr-form.json
+
+/search-trial-readiness:
+  get:
+      description: |
+        Return all the trial hearings for a given search criteria
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.search-trial-readiness+json
+            name: progression.query.search-trial-readiness
+        ...
+
+      queryParameters:
+            courtCentreId:
+              description: court certre id
+              type: string
+              required: true
+            startDate:
+              description: hearing start date
+              type: date
+              required: true
+            endDate:
+              description: hearing end date
+              type: date
+              required: true
+            remandStatus:
+              description: remand status
+              type: string
+              required: false
+            trailWithOverdueDirection:
+              description: trail with overdue direction (Y/N)
+              type: string
+              required: true
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.search-trial-readiness+json:
+                    example:  !include json/progression.query.search-trial-readiness.json
+                    schema:  !include json/schema/progression.query.search-trial-readiness.json
+
+/trial-readiness-hearings/{hearingId}:
+  uriParameters:
+    hearingId:
+      description: hearing Id
+      type: string
+  description: get trial rediness hearing
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.trial-readiness-details+json
+          name: progression.query.trial-readiness-details
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.trial-readiness-details+json:
+            example:  !include json/progression.query.trial-readiness-hearing-details.json
+            schema:  !include json/schema/progression.query.trial-readiness-hearing-details.json
 
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
@@ -1105,6 +1223,26 @@ protocols: [ HTTP, HTTPS ]
       200:
         body:
           application/vnd.progression.search.court.list+json:
+
+/prosecutioncases/{prosecutionCaseId}/cotr-details-prosecutioncase:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+  description: get cotr details for a given prosecution case id
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.cotr.details.prosecutioncase+json
+          name: progression.query.cotr.details.prosecutioncase
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.cotr.details.prosecutioncase+json:
+            example:  !include json/progression.query.cotr.details.prosecutioncase.json
+            schema:  !include json/schema/progression.query.cotr.details.prosecutioncase.json
 
 
 # Deprecated API  - End

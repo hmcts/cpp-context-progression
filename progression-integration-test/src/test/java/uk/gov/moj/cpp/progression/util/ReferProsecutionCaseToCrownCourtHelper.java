@@ -23,6 +23,23 @@ public class ReferProsecutionCaseToCrownCourtHelper {
 
     }
 
+    public static Matcher<? super ReadContext>[] getCotrTrialHearingsMatchers(final String hearingId, List<Matcher<? super ReadContext>> additionalMatchers) {
+        List<Matcher<? super ReadContext>> matchers = newArrayList(
+                withJsonPath("$.trialHearings[0].id", is(hearingId))
+        );
+        matchers.addAll(additionalMatchers);
+        return matchers.toArray(new Matcher[0]);
+    }
+
+    public static Matcher<? super ReadContext>[] getCotrDetailsMatchers(final String cotrId, final String hearingId, List<Matcher<? super ReadContext>> additionalMatchers) {
+        List<Matcher<? super ReadContext>> matchers = newArrayList(
+                withJsonPath("$.cotrDetails[0].id", is(cotrId)),
+                withJsonPath("$.cotrDetails[0].hearingId", is(hearingId))
+        );
+        matchers.addAll(additionalMatchers);
+        return matchers.toArray(new Matcher[0]);
+    }
+
     public static List<Matcher<? super ReadContext>> getYouthReportingRestrictionsMatchers(final LocalDate orderedDate, final LocalDate dateOfBirth, final int expectedRestrictionsCount) {
         List<Matcher<? super ReadContext>> matchers = new ArrayList<>();
         matchers.add(withJsonPath("$.prosecutionCase.defendants[0].offences[*].reportingRestrictions", hasSize(equalTo(expectedRestrictionsCount))));

@@ -1,0 +1,156 @@
+package uk.gov.moj.cpp.progression.cotr.cotrHelper;
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
+import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
+
+import uk.gov.justice.core.courts.CreateCotr;
+import uk.gov.justice.core.courts.ServeDefendantCotr;
+import uk.gov.justice.progression.courts.AddFurtherInfoDefenceCotrCommand;
+import uk.gov.justice.progression.courts.AddFurtherInfoProsecutionCotr;
+import uk.gov.justice.progression.courts.ChangeDefendantsCotr;
+import uk.gov.justice.progression.courts.UpdateReviewNotes;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.moj.cpp.progression.command.ServeProsecutionCotr;
+import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
+import uk.gov.moj.cpp.progression.util.Utilities;
+
+import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.jms.MessageConsumer;
+import javax.json.JsonObject;
+
+import com.jayway.restassured.response.Response;
+import org.hamcrest.Matchers;
+
+public class CotrHelper {
+    private static StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+
+    public static Response createCotr(final CreateCotr createCotr, final String userId) throws IOException {
+        final String jsonString = Utilities.JsonUtil.toJsonString(createCotr);
+        return postCommandWithUserId(getWriteUrl("/cotr"),
+                "application/vnd.progression.create-cotr+json",
+                jsonString, userId);
+    }
+
+    public static Response serveProsecutionCotr(final ServeProsecutionCotr serveProsecutionCotr, final String userId) throws IOException {
+        final String jsonString = Utilities.JsonUtil.toJsonString(serveProsecutionCotr);
+        return postCommandWithUserId(getWriteUrl("/cotr/" + serveProsecutionCotr.getCotrId()), "application/vnd.progression.serve-prosecution-cotr+json", jsonString, userId);
+    }
+
+    public static Response archiveCotr(final String cotrId, final String userId) throws IOException {
+        return postCommandWithUserId(getWriteUrl("/cotr/" + cotrId), "application/vnd.progression.archive-cotr+json", "", userId);
+    }
+
+    public static Response serveDefendantCotr(final ServeDefendantCotr serveProsecutionCotr, final String userId) throws IOException {
+        final String jsonString = Utilities.JsonUtil.toJsonString(serveProsecutionCotr);
+        return postCommandWithUserId(getWriteUrl("/cotr/" + serveProsecutionCotr.getCotrId()), "application/vnd.progression.serve-defendant-cotr+json", jsonString, userId);
+    }
+
+    public static Response changeCotrDefendants(final ChangeDefendantsCotr changeDefendantsCotr, final String userId) throws IOException {
+        final String jsonString = Utilities.JsonUtil.toJsonString(changeDefendantsCotr);
+        return postCommandWithUserId(getWriteUrl("/cotr/" + changeDefendantsCotr.getCotrId()), "application/vnd.progression.change-defendants-cotr+json", jsonString, userId);
+    }
+
+    public static Response addFurtherInfoForProsecutionCotr(final AddFurtherInfoProsecutionCotr addFurtherInfoProsecutionCotr, final String userId) throws IOException {
+        final String jsonString = Utilities.JsonUtil.toJsonString(addFurtherInfoProsecutionCotr);
+        return postCommandWithUserId(getWriteUrl("/cotr/" + addFurtherInfoProsecutionCotr.getCotrId()), "application/vnd.progression.add-further-info-prosecution-cotr+json", jsonString, userId);
+    }
+    public static Response addFurtherInfoDefenceCotr(final AddFurtherInfoDefenceCotrCommand addFurtherInfoDefenceCotr, final String userId, String cotrId) throws IOException {
+        final String jsonString = Utilities.JsonUtil.toJsonString(addFurtherInfoDefenceCotr);
+        return postCommandWithUserId(getWriteUrl("/cotr/" + cotrId), "application/vnd.progression.add-further-info-defence-cotr+json", jsonString, userId);
+    }
+
+    public static Response updateReviewNotes(final UpdateReviewNotes updateReviewNotes, final String userId) throws IOException {
+        final String jsonString = Utilities.JsonUtil.toJsonString(updateReviewNotes);
+        return postCommandWithUserId(getWriteUrl("/cotr/" + updateReviewNotes.getCotrId()), "application/vnd.progression.update-review-notes+json", jsonString, userId);
+    }
+
+
+    public static JsonObject verifyCotrAndGetCotr(final MessageConsumer consumer, final String inCotrId) {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumer);
+        assertTrue(message.isPresent());
+        final String cotrId = message.get().getString("cotrId");
+        assertThat(cotrId, notNullValue());
+        assertThat(cotrId, is(inCotrId));
+        return message.orElse(null);
+    }
+
+    public static void verifyCaseId(final JsonObject message, final String inCaseId) {
+        final String caseId = message.getString("caseId");
+        assertThat(caseId, notNullValue());
+        assertThat(caseId, is(inCaseId));
+    }
+
+    public static void verifyCotrCreated(final JsonObject event, final CreateCotr createCotr) {
+        assertThat(event.getString("hearingId"), is(createCotr.getHearingId().toString()));
+        assertThat(event.getString("caseId"), is(createCotr.getCaseId().toString()));
+    }
+
+    public static void verifyServeProsecution(final JsonObject event, final ServeProsecutionCotr serveProsecutionCotr) {
+        assertThat(event.getString("hearingId"), is(serveProsecutionCotr.getHearingId().toString()));
+
+    }
+
+    public static void verifyServeDefendant(final JsonObject event, final ServeDefendantCotr serveDefendantCotr) {
+        assertThat(event.getString("defendantId"), is(serveDefendantCotr.getDefendantId().toString()));
+        assertThat(event.getString("defendantFormData"), is(serveDefendantCotr.getDefendantFormData()));
+    }
+
+    public static void verifyChangeDefendantsAddedCotr(final JsonObject event, final ChangeDefendantsCotr changeDefendantsCotr) {
+        assertThat(event.getString("hearingId"), is(changeDefendantsCotr.getHearingId().toString()));
+        assertThat(event.getString("defendantId"), notNullValue());
+        assertThat(event.getJsonNumber("defendantNumber"), notNullValue());
+    }
+
+    public static void verifyChangeDefendantsRemovedCotr(final JsonObject event, final ChangeDefendantsCotr changeDefendantsCotr) {
+        assertThat(event.getString("hearingId"), is(changeDefendantsCotr.getHearingId().toString()));
+        assertThat(event.getString("defendantId"), notNullValue());
+    }
+
+    public static void verifyUpdatingReviewNotes(final JsonObject event, final UpdateReviewNotes updateReviewNotes) {
+        assertThat(event.getJsonArray("cotrNotes").getJsonObject(0).getString("reviewNoteType"), is(updateReviewNotes.getCotrNotes().get(0).getReviewNoteType().toString()));
+        assertThat(event.getJsonArray("cotrNotes").getJsonObject(0).getJsonArray("reviewNotes"), hasSize(1));
+    }
+
+    public static void verifyInMessagingQueue(MessageConsumer messageConsumer) {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumer);
+        assertTrue(message.isPresent());
+    }
+
+    public static void addCaseProsecutor(final String caseId) {
+        CaseProsecutorUpdateHelper caseProsecutorUpdateHelper = new CaseProsecutorUpdateHelper(caseId);
+        caseProsecutorUpdateHelper.updateCaseProsecutor();
+        caseProsecutorUpdateHelper.verifyInActiveMQ();
+    }
+
+    public static void queryAndVerifyCotrForm(final UUID caseId, final UUID cotrId) {
+        poll(requestParams(AbstractTestHelper.getReadUrl(String.format("/prosecutioncases/%s/cotr/%s", caseId, cotrId)),
+                "application/vnd.progression.query.cotr-form+json")
+                .withHeader("CJSCPPUID", randomUUID()))
+                .timeout(30, SECONDS)
+                .until(status().is(OK),
+                        payload().isJson(
+                                allOf(
+                                        withJsonPath("$.cotrForm.caseId", Matchers.is(caseId.toString())),
+                                        withJsonPath("$.cotrForm.id", is(cotrId.toString()))
+                                )));
+    }
+}

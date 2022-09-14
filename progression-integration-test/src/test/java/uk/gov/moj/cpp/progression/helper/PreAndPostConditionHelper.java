@@ -945,6 +945,16 @@ public class PreAndPostConditionHelper {
     }
 
     @SafeVarargs
+    public static String pollForCotrTrialHearings(final String caseId, final Matcher<? super ReadContext>... matchers) {
+        return pollForResponse("/prosecutioncases/" + caseId + "/cotr-trial-hearings", "application/vnd.progression.query.cotr-trial-hearings+json", matchers);
+    }
+
+    @SafeVarargs
+    public static String pollForCotrDetails(final String caseId, final Matcher<? super ReadContext>... matchers) {
+        return pollForResponse("/prosecutioncases/" + caseId + "/cotr-details", "application/vnd.progression.query.cotr-details+json", matchers);
+    }
+
+    @SafeVarargs
     public static String pollProsecutionCasesProgressionAndReturnHearingId(final String caseId, final String defendantId, final Matcher<? super ReadContext>... matchers) {
         final String prosecutionCaseAsString = pollProsecutionCasesProgressionFor(caseId, matchers);
         final JsonObject prosecutionCaseJson = getJsonObject(prosecutionCaseAsString);
@@ -996,6 +1006,18 @@ public class PreAndPostConditionHelper {
                 withJsonPath("$.documentIndices[0].document.courtDocumentId", is(caseDocumentId))
         };
         return getCourtDocumentsByCaseWithMatchers(userId, caseId, matchers);
+    }
+
+    public static String pollForSearchTrialReadiness(final String courtCentreId, final String startDate, final String endDate, final String trailWithOverdueDirection) {
+        return pollForResponse(MessageFormat.format("/search-trial-readiness?courtCentreId={0}&startDate={1}&endDate={2}&trailWithOverdueDirection={3}", courtCentreId, startDate, endDate, trailWithOverdueDirection), "application/vnd.progression.query.search-trial-readiness+json");
+    }
+
+    public static String pollForSearchTrialReadinessByCluster(final String clusterId, final String startDate, final String endDate) {
+        return pollForResponse(MessageFormat.format("/search-trial-readiness?clusterId={0}&startDate={1}&endDate={2}", clusterId, startDate, endDate), "application/vnd.progression.query.search-trial-readiness+json");
+    }
+
+    public static String pollForGetTrialReadinessHearingDetails(final String hearingId) {
+        return pollForResponse(MessageFormat.format("/trial-readiness-hearings/{0}", hearingId), "application/vnd.progression.query.trial-readiness-details+json");
     }
 
     public static String getCourtDocumentsByCaseWithMatchers(final String userId, final String caseId, final Matcher[] matchers) {

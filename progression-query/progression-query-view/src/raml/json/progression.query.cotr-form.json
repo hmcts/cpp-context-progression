@@ -1,0 +1,82 @@
+{
+  "id": "3ce573f2-5bc1-4acf-99c0-b8de600d8033",
+  "caseUrn": "UXCF45TF",
+  "caseId": "4ce573f2-5bc1-4acf-99c0-b8de600d8033",
+  "hearingId": "7ce573f2-5bc1-4acf-99c0-b8de600d8033",
+  "hearingDay": "2022-02-23T15:00:00.000Z",
+  "listedDurationMinutes": "20",
+  "prosecutionFormData": "Json as Text {}",
+  "prosecutionAdditionalInfo": [
+    {
+      "id": "2ce573f2-5bc1-4acf-99c0-b8de600d8033",
+      "information": "text",
+      "addedBy": "robin",
+      "addedOn": "10-12-2021"
+    }
+  ],
+  "cotrDefendants": [
+    {
+      "defendantNumber": "D1",
+      "id": "fd180dff-dc2c-4d4b-b04c-a8d1160eaaec",
+      "dateOfBirth": "1997-01-22",
+      "fullName": "Agnes Bogan",
+      "defenceFormData": "Json as Text {}",
+      "defenceAdditionalInfo": [
+        {
+          "id": "1ce573f2-5bc1-4acf-99c0-b8de600d8033",
+          "information": "text",
+          "isCertificationReady": "yes",
+          "addedBy": "54eebd78-6c05-4fce-8d87-0f508995b4bc",
+          "addedByName": "John Turner",
+          "addedOn": "10-12-2021"
+        }
+      ]
+    },
+    {
+      "defendantNumber": "D2",
+      "dateOfBirth": "1997-01-22",
+      "fullName": "Theresa Muller",
+      "id": "6ce573f2-5bc1-4acf-99c0-b8de600d8033",
+      "defenceFormData": "Json as Text {}",
+      "defenceAdditionalInfo": [
+        {
+          "id": "2ce573f2-5bc1-4acf-99c0-b8de600d8033",
+          "information": "text",
+          "isCertificationReady": "yes",
+          "addedBy": "robin",
+          "addedOn": "10-12-2021"
+        }
+      ]
+    }
+  ],
+  "caseProgressionReviewNote": [
+    {
+      "id": "8ce573f2-5bc1-4acf-99c0-b8de600d8033",
+      "comments": "Some Text"
+    },
+    {
+      "id": "9ce573f2-5bc1-4acf-99c0-b8de600d8033",
+      "comments": "Some other Text"
+    }
+  ],
+  "judgeReviewNotes": [
+    {
+      "id": "8ce573f2-5bc1-4acf-99c0-b8de600d8033",
+      "comments": "Some Text"
+    },
+    {
+      "id": "9ce573f2-5bc1-4acf-99c0-b8de600d8033",
+      "comments": "Some other Text"
+    }
+  ],
+  "listingReviewNotes": [
+    {
+      "id": "8ce573f2-5bc1-4acf-99c0-b8de600d8033",
+      "comments": "Some Text"
+    },
+    {
+      "id": "9ce573f2-5bc1-4acf-99c0-b8de600d8033",
+      "comments": "Some other Text"
+    }
+  ]
+}

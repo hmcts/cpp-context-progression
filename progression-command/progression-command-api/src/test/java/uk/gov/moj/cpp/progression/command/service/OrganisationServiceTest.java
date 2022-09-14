@@ -20,13 +20,15 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import java.util.List;
+import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OrganisationServiceTest {
-    public static final String JSON_ASSOCIATED_ORGANISATION_JSON = "json/associatedOrganisation.json";
+
+    private static final String JSON_ASSOCIATED_ORGANISATION_JSON = "json/associatedOrganisation.json";
     private static final String DEFENCE_ASSOCIATION_QUERY = "defence.query.associated-organisation";
-
-
+    private static final String DEFENCE_ASSOCIATED_DEFENDANTS_QUERY = "defence.query.get-associated-defendants";
 
     @InjectMocks
     private OrganisationService organisationService;
@@ -61,6 +63,39 @@ public class OrganisationServiceTest {
 
         final JsonObject associatedOrganisation = organisationService.getAssociatedOrganisation(envelope, randomUUID().toString(), requester);
         assertThat(associatedOrganisation.getString("organisationId", null), nullValue());
+    }
+
+    @Test
+    public void shouldReturnDefendantIdsWhenDefenceIsAssociatedWithDefendants() {
+
+        final JsonObject jsonObjectPayload = Json.createObjectBuilder()
+                .add("defendantIds", Json.createArrayBuilder()
+                        .add(randomUUID().toString())
+                        .add(randomUUID().toString())
+                ).build();
+        final Metadata metadata = CommandClientTestBase.metadataFor(DEFENCE_ASSOCIATED_DEFENDANTS_QUERY, randomUUID().toString());
+        final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);
+
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
+
+        final List<UUID> associatedDefendants = organisationService.getAssociatedDefendants(envelope, requester);
+        assertThat(associatedDefendants.size(), is(2));
+
+    }
+
+    @Test
+    public void shouldReturnEmptyDefendantIdsWhenDefenceIsNotAssociatedWithDefendants() {
+
+        final JsonObject jsonObjectPayload = Json.createObjectBuilder()
+                .add("defendantIds", Json.createArrayBuilder()).build();
+        final Metadata metadata = CommandClientTestBase.metadataFor(DEFENCE_ASSOCIATED_DEFENDANTS_QUERY, randomUUID().toString());
+        final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);
+
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
+
+        final List<UUID> associatedDefendants = organisationService.getAssociatedDefendants(envelope, requester);
+        assertThat(associatedDefendants.size(), is(0));
+
     }
 
 }

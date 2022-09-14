@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/serve-prosecution-cotr.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "submissionId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "lastRecordedTimeEstimate": {
+      "type": "integer"
+    },
+    "hasAllEvidenceToBeReliedOnBeenServed": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "hasAllDisclosureBeenProvided": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "haveOtherDirectionsBeenCompliedWith": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "haveTheProsecutionWitnessesRequiredToAttendAcknowledgedThatTheyWillAttend": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "haveAnyWitnessSummonsesRequiredBeenReceivedAndServed": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "haveSpecialMeasuresOrRemoteAttendanceIssuesForWitnessesBeenResolved": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "haveInterpretersForWitnessesBeenArranged": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "haveEditedAbeInterviewsBeenPreparedAndAgreed": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "haveArrangementsBeenMadeForStatementOfPointsOfAgreementAndDisagreement": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "isTheCaseReadyToProceedWithoutDelayBeforeTheJury": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "isTheTimeEstimateCorrect": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "certifyThatTheProsecutionIsTrialReady": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "applyForThePtrToBeVacated": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "formCompletedOnBehalfOfTheProsecutionBy": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "certificationDate": {
+      "$ref": "#/definitions/polarQuestion"
+    },
+    "furtherInformationToAssistTheCourt": {
+      "$ref": "#/definitions/polarQuestion"
+    }
+  },
+  "definitions": {
+    "polarQuestion": {
+      "type": "object",
+      "properties": {
+        "answer": {
+          "type": "string",
+          "enum": [
+            "Yes",
+            "No",
+            "NA"
+          ]
+        },
+        "details": {
+          "type": "string"
+        },
+        "attentionRequired": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "hearingId",
+    "submissionId"
+  ],
+  "additionalProperties": false
+}

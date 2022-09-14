@@ -433,34 +433,6 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            <!-- MI schema contract validation tests jar dependency-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>unpack</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <artifactId>mireportdata-progression-event-listener</artifactId>
-                                    <groupId>uk.gov.moj.cpp.mi.reportdata</groupId>
-                                    <version>RELEASE</version>
-                                    <classifier>processor-tests</classifier>
-                                    <type>jar</type>
-                                    <outputDirectory>${project.build.directory}/test-classes
-                                    </outputDirectory>
-                                    <overWrite>true</overWrite>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>

@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/query/progression.query.cotr-details.json",
+  "type": "object",
+  "properties": {
+    "cotrDetails": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/cotrDetail"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "cotrDetail": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "hearingId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "hearingDay": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "isProsecutionServed": {
+          "type": "boolean"
+        },
+        "cotrDefendants": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/cotrDefendant"
+          }
+        },
+        "isArchived" : {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "hearingId",
+        "hearingDay",
+        "cotrDefendants",
+        "isArchived"
+      ]
+    },
+    "cotrDefendant": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "dateOfBirth": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "isDefenceServed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "cotrDetails"
+  ]
+}

@@ -1,0 +1,48 @@
+package uk.gov.moj.cpp.progression.command.api.accesscontrol;
+
+import static javax.json.Json.createObjectBuilder;
+
+public class PermissionConstants {
+    static final String COTR_DEFENCE_ACCESS = "defence-access";
+    static final String COTR_COURTS_ACCESS = "courts-access";
+    static final String COTR = "COTR";
+    static final String OBJECT = "object";
+    static final String ACTION = "action";
+
+    private PermissionConstants() {
+    }
+
+    public static String[] createCotrPermissions() {
+        return new String[]{createObjectBuilder().add(OBJECT, COTR).add(ACTION, COTR_DEFENCE_ACCESS).build().toString(),
+                createObjectBuilder().add(OBJECT, COTR).add(ACTION, COTR_COURTS_ACCESS).build().toString()};
+    }
+
+    public static String[] archivePermissions() {
+        return new String[]{
+                createObjectBuilder().add(OBJECT, COTR).add(ACTION, COTR_COURTS_ACCESS).build().toString(),
+        };
+    }
+
+    public static String[] serveDefendantCotrPermissions() {
+        return new String[]{createObjectBuilder().add(OBJECT, COTR).add(ACTION, COTR_DEFENCE_ACCESS).build().toString(),
+                createObjectBuilder().add(OBJECT, COTR).add(ACTION, COTR_COURTS_ACCESS).build().toString()};
+    }
+
+    public static String[] changeDefendantsCotrPermissions() {
+        return new String[]{
+                createObjectBuilder().add(OBJECT, COTR).add(ACTION, COTR_DEFENCE_ACCESS).build().toString(),
+                createObjectBuilder().add(OBJECT, COTR).add(ACTION, COTR_COURTS_ACCESS).build().toString()};
+    }
+    
+    public static String[] addFurtherInfoDefenceCotrPermissions() {
+        return new String[]{
+                createObjectBuilder().add(OBJECT, COTR).add(ACTION, COTR_DEFENCE_ACCESS).build().toString(),
+                createObjectBuilder().add(OBJECT, COTR).add(ACTION, COTR_COURTS_ACCESS).build().toString()};
+    }
+
+    public static String[] updateReviewNotesPermissions() {
+        return new String[] {
+                createObjectBuilder().add(OBJECT, COTR).add(ACTION, COTR_COURTS_ACCESS).build().toString()
+        };
+    }
+}

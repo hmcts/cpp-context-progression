@@ -52,21 +52,21 @@ public class CourtDocumentEnricherTest {
         final String name = "name";
         final int seqNum = 23;
 
-        final CourtDocument courtDocument = new CourtDocument(
-                amendmentDate,
-                containsFinancialMeans,
-                courtDocumentId,
-                documentCategory,
-                documentTypeDescription,
-                documentTypeId,
-                mock(DocumentTypeRBAC.class),
-                isRemoved,
-                materials,
-                mimeType,
-                name,
-                false,
-                seqNum
-        );
+        final CourtDocument courtDocument = CourtDocument.courtDocument()
+                .withAmendmentDate(amendmentDate)
+                .withContainsFinancialMeans(containsFinancialMeans)
+                .withCourtDocumentId(courtDocumentId)
+                .withDocumentCategory(documentCategory)
+                .withDocumentTypeDescription(documentTypeDescription)
+                .withDocumentTypeId(documentTypeId)
+                .withDocumentTypeRBAC(mock(DocumentTypeRBAC.class))
+                .withIsRemoved(isRemoved)
+                .withMaterials(materials)
+                .withMimeType(mimeType)
+                .withName(name)
+                .withSendToCps(false)
+                .withSeqNum(seqNum)
+                .build();
 
 
         final DocumentTypeAccess documentTypeAccess = mock(DocumentTypeAccess.class);
@@ -112,21 +112,21 @@ public class CourtDocumentEnricherTest {
         final String name = "name";
         final int seqNum = 23;
 
-        final CourtDocument courtDocument = new CourtDocument(
-                amendmentDate,
-                containsFinancialMeans,
-                courtDocumentId,
-                documentCategory,
-                documentTypeDescription,
-                documentTypeId,
-                mock(DocumentTypeRBAC.class),
-                isRemoved,
-                materials,
-                mimeType,
-                name,
-                false,
-                seqNum
-        );
+        final CourtDocument courtDocument = CourtDocument.courtDocument()
+                .withAmendmentDate(amendmentDate)
+                .withContainsFinancialMeans(containsFinancialMeans)
+                .withCourtDocumentId(courtDocumentId)
+                .withDocumentCategory(documentCategory)
+                .withDocumentTypeDescription(documentTypeDescription)
+                .withDocumentTypeId(documentTypeId)
+                .withDocumentTypeRBAC(mock(DocumentTypeRBAC.class))
+                .withIsRemoved(isRemoved)
+                .withMaterials(materials)
+                .withMimeType(mimeType)
+                .withName(name)
+                .withSendToCps(false)
+                .withSeqNum(seqNum)
+                .build();
 
 
         final DocumentTypeAccess documentTypeAccess = mock(DocumentTypeAccess.class);

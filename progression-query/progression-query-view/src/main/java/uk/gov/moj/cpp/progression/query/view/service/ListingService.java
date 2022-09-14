@@ -37,6 +37,5 @@ public class ListingService {
         final JsonEnvelope jsonResultEnvelope = requester.requestAsAdmin(requestEnvelope);
         return nonNull(jsonResultEnvelope) ? ofNullable(jsonResultEnvelope.payloadAsJsonObject()) : Optional.empty();
 
-
     }
 }
