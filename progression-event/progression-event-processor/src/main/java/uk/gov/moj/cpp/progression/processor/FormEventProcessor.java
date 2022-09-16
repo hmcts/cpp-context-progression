@@ -35,6 +35,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
 import uk.gov.moj.cpp.progression.service.CpsApiService;
 import uk.gov.moj.cpp.progression.service.DefenceService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
@@ -689,10 +690,18 @@ public class FormEventProcessor {
 
         final JsonObject payload = envelope.payloadAsJsonObject();
 
+        final JsonArrayBuilder defendantIdArray = Json.createArrayBuilder();
+        final List<JsonObject> formDefendantList = payload.getJsonArray(FORM_DEFENDANTS).getValuesAs(JsonObject.class);
+        formDefendantList.forEach(defendant -> defendantIdArray.add(Json.createObjectBuilder()
+                                .add(DEFENDANT_ID, defendant.getString(DEFENDANT_ID))
+                                .build()
+                        )
+                );
+
         final JsonObject createPetFormPayload = Json.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
                 .add(COURT_FORM_ID, String.valueOf(randomUUID()))
-                .add(FORM_DEFENDANTS, payload.getJsonArray(FORM_DEFENDANTS))
+                .add(FORM_DEFENDANTS, defendantIdArray.build())
                 .add(FORM_DATA, appendDataElement(payload.getString(FORM_DATA)))
                 .add(FORM_TYPE, BCM)
                 .add(FORM_ID, String.valueOf(randomUUID()))
@@ -701,6 +710,10 @@ public class FormEventProcessor {
         this.sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
                 .withName("progression.command.create-form")
                 .build(), createPetFormPayload));
+
+        if(isNotEmpty(formDefendantList)){
+            formDefendantList.forEach( defendant -> updateCpsDefendantId(envelope, payload.getString(CASE_ID), defendant));
+        }
 
         LOGGER.info("prosecutioncasefile.event.cps-serve-bcm-submitted");
 
@@ -713,10 +726,18 @@ public class FormEventProcessor {
 
         final JsonObject payload = envelope.payloadAsJsonObject();
 
+        final JsonArrayBuilder defendantIdArray = Json.createArrayBuilder();
+        final List<JsonObject> formDefendantList = payload.getJsonArray(FORM_DEFENDANTS).getValuesAs(JsonObject.class);
+        formDefendantList.forEach(defendant -> defendantIdArray.add(Json.createObjectBuilder()
+                                .add(DEFENDANT_ID, defendant.getString(DEFENDANT_ID))
+                                .build()
+                        )
+                );
+
         final JsonObject createPetFormPayload = Json.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
                 .add(COURT_FORM_ID, String.valueOf(randomUUID()))
-                .add(FORM_DEFENDANTS, payload.getJsonArray(FORM_DEFENDANTS))
+                .add(FORM_DEFENDANTS, defendantIdArray.build())
                 .add(FORM_DATA, appendDataElement(payload.getString(FORM_DATA)))
                 .add(FORM_TYPE, PTPH)
                 .add(USER_NAME, payload.getString(USER_NAME))
@@ -725,6 +746,10 @@ public class FormEventProcessor {
         this.sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
                 .withName("progression.command.create-form")
                 .build(), createPetFormPayload));
+
+        if(isNotEmpty(formDefendantList)){
+            formDefendantList.forEach( defendant -> updateCpsDefendantId(envelope, payload.getString(CASE_ID), defendant));
+        }
 
         LOGGER.info("prosecutioncasefile.event.cps-serve-ptph-submitted");
 
@@ -736,5 +761,20 @@ public class FormEventProcessor {
         data.append(formData);
         data.append("}");
         return data.toString();
+    }
+
+    private void updateCpsDefendantId(final JsonEnvelope envelope, final String caseId, final JsonObject defendant) {
+        if (isNotEmpty(defendant.getString(CPS_DEFENDANT_ID, null))) {
+            final String defendantId = defendant.getString(DEFENDANT_ID);
+            final String cpsDefendantId = defendant.getString(CPS_DEFENDANT_ID);
+            LOGGER.info("updating defendant {} with cpsDefendantId {} in case {}", defendantId, cpsDefendantId, caseId);
+            final UpdateCpsDefendantId updateCpsDefendantId = UpdateCpsDefendantId.updateCpsDefendantId()
+                    .withCpsDefendantId(fromString(cpsDefendantId))
+                    .withCaseId(fromString(caseId))
+                    .withDefendantId(fromString(defendantId))
+                    .build();
+
+            sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata()).withName("progression.command.update-cps-defendant-id").build(), updateCpsDefendantId));
+        }
     }
 }

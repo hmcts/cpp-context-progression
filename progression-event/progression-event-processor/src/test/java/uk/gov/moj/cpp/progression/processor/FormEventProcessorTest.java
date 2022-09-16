@@ -67,6 +67,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
 import uk.gov.moj.cpp.progression.service.CpsApiService;
 import uk.gov.moj.cpp.progression.service.DefenceService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
@@ -86,6 +87,7 @@ import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.Response;
 
 import com.google.common.io.Resources;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -110,6 +112,7 @@ public class FormEventProcessorTest {
     public static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
     public static final String USER_NAME = "userName";
 
+    public static final String PROGRESSION_COMMAND_UPDATE_CPS_DEFENDANT_ID = "progression.command.update-cps-defendant-id";
     public static final String PROGRESSION_EVENT_FORM_OPERATION_FAILED = "progression.event.form-operation-failed";
     public static final String PROGRESSION_EVENT_FORM_FORM_CREATED = "progression.event.form-created";
     public static final String PROGRESSION_EVENT_FORM_UPDATED = "progression.event.form-updated";
@@ -819,6 +822,22 @@ public class FormEventProcessorTest {
     }
 
     @Test
+    public void shouldHandleServeBcmSubmittedPublicEvent_RaiseUpdateCpsDefendantIdCommand() {
+
+        final String payload = getPayload("cps-serve-bcm-submitted.json");
+        final JsonObject jsonPayload = jsonFromString(payload);
+
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-bcm-submitted"),
+                jsonPayload);
+        formEventProcessor.handleServeFormSubmittedPublicEvent(envelope);
+        verify(sender, times(2)).send(envelopeArgumentCaptor.capture());
+        final List<JsonEnvelope> envelopeList = envelopeArgumentCaptor.getAllValues();
+        assertThat(((Envelope) envelopeList.get(0)).metadata().name(), is("progression.command.create-form"));
+        verifyUpdateCpsDefendantIdCommand("1a8fe782-a287-11eb-bcbc-0242ac130077", "071e108d-8a70-4532-b7da-2168d0260d08", "2ee7407e-ed91-41fa-8409-db373ab486a0", ((Envelope) envelopeList.get(1)));
+    }
+
+    @Test
     public void shouldSendBcmNotificationOnFormUpdation() throws IOException {
         final String courtFormId = randomUUID().toString();
         final String caseId = randomUUID().toString();
@@ -904,5 +923,30 @@ public class FormEventProcessorTest {
         verify(sender, atLeastOnce()).send(envelopeArgumentCaptor.capture());
         final Envelope publicEvent = envelopeArgumentCaptor.getAllValues().get(0);
         assertThat(publicEvent.metadata().name(), is("progression.command.create-form"));
+    }
+
+    @Test
+    public void shouldHandleServePtphSubmittedPublicEvent_RaiseUpdateCpsDefendantIdCommand() {
+
+        final String payload = getPayload("cps-serve-ptph-submitted.json");
+        final JsonObject jsonPayload = jsonFromString(payload);
+
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-ptph-submitted"),
+                jsonPayload);
+        formEventProcessor.handleServePtphFormSubmittedPublicEvent(envelope);
+        verify(sender, times(2)).send(envelopeArgumentCaptor.capture());
+        List<JsonEnvelope> envelopeList = envelopeArgumentCaptor.getAllValues();
+        final Envelope publicEvent = envelopeList.get(0);
+        assertThat(publicEvent.metadata().name(), is("progression.command.create-form"));
+        verifyUpdateCpsDefendantIdCommand("1a8fe782-a287-11eb-bcbc-0242ac130077", "071e108d-8a70-4532-b7da-2168d0260d08", "2ee7407e-ed91-41fa-8409-db373ab486a0", ((Envelope) envelopeList.get(1)));
+    }
+
+    private void verifyUpdateCpsDefendantIdCommand(final String cpsDefendantId1, final String caseId, final String defendantId1, final Envelope envelope) {
+        assertThat(envelope.metadata().name(), CoreMatchers.is(PROGRESSION_COMMAND_UPDATE_CPS_DEFENDANT_ID));
+        UpdateCpsDefendantId payload = (UpdateCpsDefendantId) envelope.payload();
+        assertThat(payload.getCaseId().toString(), CoreMatchers.is(caseId));
+        assertThat(payload.getDefendantId().toString(), CoreMatchers.is(defendantId1));
+        assertThat(payload.getCpsDefendantId().toString(), CoreMatchers.is(cpsDefendantId1));
     }
 }

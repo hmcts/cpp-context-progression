@@ -4,6 +4,7 @@ import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.slf4j.LoggerFactory.getLogger;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -24,6 +25,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.MaterialService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
@@ -31,6 +33,7 @@ import uk.gov.moj.cpp.progression.service.UsersGroupService;
 
 import java.time.ZonedDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -81,6 +84,8 @@ public class PetFormEventProcessor {
     public static final String DEFENDANT_DATA = "defendantData";
     public static final String SUBMISSION_ID = "submissionId";
     public static final String FORM_ID_SNAKE_CASE = "form_id";
+    private static final String CPS_DEFENDANT_ID = "cpsDefendantId";
+
     private static final Logger LOGGER = getLogger(PetFormEventProcessor.class);
     @Inject
     private Sender sender;
@@ -164,7 +169,7 @@ public class PetFormEventProcessor {
 
     }
 
-    private JsonObject processFinalisedFormData(final JsonEnvelope event, final JsonValue formDataPerDefendant, final UUID petId, final UUID caseId , final UUID materialId) {
+    private JsonObject processFinalisedFormData(final JsonEnvelope event, final JsonValue formDataPerDefendant, final UUID petId, final UUID caseId, final UUID materialId) {
         final JsonObjectBuilder documentMetaDataBuilder = createObjectBuilder();
         final JsonObject documentData = stringToJsonObjectConverter.convert(((JsonString) formDataPerDefendant).getString());
         LOGGER.info("Generating Pet Form Document petId: {}, MaterialId: {}", petId, materialId);
@@ -324,21 +329,48 @@ public class PetFormEventProcessor {
         final Optional<JsonObject> petFormObject = referenceDataService.getPetForm(envelope, requester);
         final String formId = petFormObject.map(jsonObject -> jsonObject.getString(FORM_ID_SNAKE_CASE)).orElse(null);
 
+        final JsonArrayBuilder defendantIdArray = Json.createArrayBuilder();
+        final List<JsonObject> petDefendantList = payload.getJsonArray(PET_DEFENDANTS).getValuesAs(JsonObject.class);
+        petDefendantList.forEach(defendant -> defendantIdArray.add(Json.createObjectBuilder()
+                                .add(DEFENDANT_ID, defendant.getString(DEFENDANT_ID))
+                                .build()
+                        )
+                );
+
         final JsonObject createPetFormPayload = Json.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
                 .add(PET_ID, String.valueOf(randomUUID()))
                 .add(FORM_ID, formId)
-                .add(PET_DEFENDANTS, payload.getJsonArray(PET_DEFENDANTS))
+                .add(PET_DEFENDANTS, defendantIdArray.build())
                 .add(PET_FORM_DATA, appendDataElement(payload.getString(PET_FORM_DATA)))
-                .add(USER_NAME, payload.getString(USER_NAME) )
+                .add(USER_NAME, payload.getString(USER_NAME))
                 .build();
 
         this.sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
                 .withName("progression.command.create-pet-form")
                 .build(), createPetFormPayload));
 
+        if(isNotEmpty(petDefendantList)){
+            petDefendantList.forEach( defendant -> updateCpsDefendantId(envelope, payload.getString(CASE_ID), defendant));
+        }
+        
         LOGGER.info("prosecutioncasefile.event.cps-serve-pet-submitted");
 
+    }
+
+    private void updateCpsDefendantId(final JsonEnvelope envelope, final String caseId, final JsonObject defendant) {
+        if (isNotEmpty(defendant.getString(CPS_DEFENDANT_ID, null))) {
+            final String defendantId = defendant.getString(DEFENDANT_ID);
+            final String cpsDefendantId = defendant.getString(CPS_DEFENDANT_ID);
+            LOGGER.info("updating defendant {} with cpsDefendantId {} in case {}", defendantId, cpsDefendantId, caseId);
+            final UpdateCpsDefendantId updateCpsDefendantId = UpdateCpsDefendantId.updateCpsDefendantId()
+                    .withCpsDefendantId(fromString(cpsDefendantId))
+                    .withCaseId(fromString(caseId))
+                    .withDefendantId(fromString(defendantId))
+                    .build();
+
+            sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata()).withName("progression.command.update-cps-defendant-id").build(), updateCpsDefendantId));
+        }
     }
 
     private String appendDataElement(final String petFormData) {

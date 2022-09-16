@@ -43,6 +43,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
 import uk.gov.moj.cpp.progression.json.schemas.event.CotrTaskRequested;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
@@ -151,6 +152,7 @@ public class CotrEventsProcessor {
     public static final String N = "N";
     public static final String YES = "Yes";
     public static final String NO = "No";
+    private static final String CPS_DEFENDANT_ID = "cpsDefendantId";
 
     @Inject
     private Requester requester;
@@ -488,6 +490,12 @@ public class CotrEventsProcessor {
             this.sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
                     .withName(PROGRESSION_COMMAND_SERVE_COTR)
                     .build(), serveCotrPayload));
+
+            final List<JsonObject> formDefendantList = payload.getJsonArray(FORM_DEFENDANTS).getValuesAs(JsonObject.class);
+            if (isNotEmpty(formDefendantList)) {
+                formDefendantList.forEach(defendant -> updateCpsDefendantId(envelope, payload.getString(CASE_ID), defendant));
+            }
+
         } else {
             sendOperationFailed(envelope, payload, HEARING_ID_NOT_FOUND, CREATE_COTR_FORM);
         }
@@ -669,6 +677,21 @@ public class CotrEventsProcessor {
         LOGGER.info("getCotrCaseDetails - caseHearings {} ", caseHearings);
 
         return ofNullable(caseHearings);
+    }
+
+    private void updateCpsDefendantId(final JsonEnvelope envelope, final String caseId, final JsonObject defendant) {
+        if (StringUtils.isNotEmpty(defendant.getString(CPS_DEFENDANT_ID, null))) {
+            final String defendantId = defendant.getString(DEFENDANT_ID);
+            final String cpsDefendantId = defendant.getString(CPS_DEFENDANT_ID);
+            LOGGER.info("updating defendant {} with cpsDefendantId {} in case {}", defendantId, cpsDefendantId, caseId);
+            final UpdateCpsDefendantId updateCpsDefendantId = UpdateCpsDefendantId.updateCpsDefendantId()
+                    .withCpsDefendantId(fromString(cpsDefendantId))
+                    .withCaseId(fromString(caseId))
+                    .withDefendantId(fromString(defendantId))
+                    .build();
+
+            sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata()).withName("progression.command.update-cps-defendant-id").build(), updateCpsDefendantId));
+        }
     }
 
 }

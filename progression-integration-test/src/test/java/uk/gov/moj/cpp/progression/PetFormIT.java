@@ -61,6 +61,7 @@ import javax.json.JsonObjectBuilder;
 import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
@@ -543,14 +544,38 @@ public class PetFormIT extends AbstractIT {
         return payloadBuilder.build();
     }
 
-    private JsonObject buildPayloadForCpsServePetSubmitted() throws IOException {
+    private JsonObject buildPayloadForCpsServePetSubmitted(final String caseId, final String defendantId1, final String defendantId2, final String cpsDefendantId1) throws IOException {
         final String inputEvent = Resources.toString(getResource("public.prosecutioncasefile.cps-serve-pet-submitted.json"), defaultCharset());
-        final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
+        final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent
+                .replaceAll("<CASE_ID>", caseId)
+                .replaceAll("<DEFENDANT_ID_1>", defendantId1)
+                .replaceAll("<DEFENDANT_ID_2>", defendantId2)
+                .replaceAll("<CPS_DEFENDANT_ID_1>", cpsDefendantId1));
         return readData;
     }
 
     @Test
     public void shouldSubmitCpsPetForm() throws IOException {
+
+        final boolean isYouthFlagWhenCreated = true;
+        final UUID caseId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID cpsDefendantId1 = randomUUID();
+        final UUID formId = randomUUID();
+        final String offenceId2 = "3789ab16-0bb7-4ef1-87ef-c936bf0364f2";
+
+        addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId.toString(), defendantId1.toString());
+        final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId.toString(), defendantId1.toString(),
+                newArrayList(
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[1].id", is("4789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
+                )
+
+        );
+
+        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
+        final JsonObject caseObject = stringToJsonObjectConverter.convert(responseForCaseQuery);
 
         final CpsServeMaterialHelper cpsServeMaterialHelper = new CpsServeMaterialHelper();
 
@@ -560,7 +585,8 @@ public class PetFormIT extends AbstractIT {
                 .withUserId(String.valueOf(randomUUID()))
                 .withName(PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_PET_SUBMITTED)
                 .build();
-        final JsonObject cpsServePetSubmittedPublicEvent = buildPayloadForCpsServePetSubmitted();
+        final JsonObject cpsServePetSubmittedPublicEvent = buildPayloadForCpsServePetSubmitted(caseId.toString(),
+        defendantId1.toString(), defendantId2.toString(), cpsDefendantId1.toString());
 
         sendMessage(PUBLIC_MESSAGE_CONSUMER,
                 PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_PET_SUBMITTED, cpsServePetSubmittedPublicEvent, metadata);
@@ -571,6 +597,14 @@ public class PetFormIT extends AbstractIT {
         final JsonObject eventPayload = publicEvent.payloadAsJsonObject();
         assertThat(eventPayload.getJsonObject(UPDATED_BY).getString(NAME), is(USER_NAME_VALUE));
         assertTrue(eventPayload.getString(PET_FORM_DATA).contains(DATA));
+
+        final Matcher[] caseWithCpsDefendantIdMatchers = getProsecutionCaseMatchers(caseId.toString(), defendantId1.toString(),
+                newArrayList(
+                        withJsonPath("$.prosecutionCase.defendants[0].cpsDefendantId", CoreMatchers.is(cpsDefendantId1.toString()))
+                )
+        );
+
+        final String updatedResponseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithCpsDefendantIdMatchers);
     }
 
     private void assertEditFormRequestedFromEventStream(final UUID caseId, final UUID courtFormId, final UUID lockedBy, final UUID lockRequestedBy, final boolean isLocked, final JsonObject event) {

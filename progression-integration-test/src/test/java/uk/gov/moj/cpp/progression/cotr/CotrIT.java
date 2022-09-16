@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.cotr;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -111,14 +112,13 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import com.jayway.restassured.response.Response;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("for Release 22.24")
 public class CotrIT extends AbstractIT {
 
     private static final String DEFENCE_USER_ID = UUID.randomUUID().toString();
@@ -495,7 +495,7 @@ public class CotrIT extends AbstractIT {
     }
 
     @Test
-    public void shouldRaisePublicEventWhenRemovingDefendantFromCotr() throws Exception {
+        public void shouldRaisePublicEventWhenRemovingDefendantFromCotr() throws Exception {
         final UUID caseId = randomUUID();
         final UUID cotrId = randomUUID();
         final UUID defendantId1 = UUID.fromString("bd8d80d0-e995-40fb-9f59-340a53a1a688");
@@ -730,7 +730,8 @@ public class CotrIT extends AbstractIT {
 
         UsersAndGroupsStub.stubGetOrganisationDetailForTypes("stub-data/usersgroups.get-organisations-details.json", PROSECUTOR_USER_ID);
 
-        final JsonObject cpsServeCotrSubmittedPublicEvent = buildPayloadForCpsServeCotrSubmitted();
+        final String cpsDefendantId = randomUUID().toString();
+        final JsonObject cpsServeCotrSubmittedPublicEvent = buildPayloadForCpsServeCotrSubmitted(cpsDefendantId);
 
         final Metadata metadata = JsonEnvelope.metadataBuilder()
                 .withId(randomUUID())
@@ -746,6 +747,14 @@ public class CotrIT extends AbstractIT {
         assertThat(publicEvent, is(notNullValue()));
         final JsonObject eventPayload = publicEvent.payloadAsJsonObject();
         assertThat(eventPayload, notNullValue());
+
+        final Matcher[] caseWithCpsDefendantIdMatchers = getProsecutionCaseMatchers(caseId, defendantId,
+                newArrayList(
+                        withJsonPath("$.prosecutionCase.defendants[0].cpsDefendantId", CoreMatchers.is(cpsDefendantId))
+                )
+        );
+
+        final String updatedResponseForCaseQuery = pollProsecutionCasesProgressionFor(caseId, caseWithCpsDefendantIdMatchers);
     }
 
 
@@ -778,7 +787,8 @@ public class CotrIT extends AbstractIT {
                 .withName(PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_COTR_SUBMITTED)
                 .build();
 
-        final JsonObject cpsServeCotrSubmittedPublicEvent = buildPayloadForCpsServeCotrSubmitted();
+        final String cpsDefendantId = randomUUID().toString();
+        final JsonObject cpsServeCotrSubmittedPublicEvent = buildPayloadForCpsServeCotrSubmitted(cpsDefendantId);
 
         sendMessage(PUBLIC_MESSAGE_CONSUMER,
                 PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_COTR_SUBMITTED, cpsServeCotrSubmittedPublicEvent, metadata);
@@ -815,9 +825,12 @@ public class CotrIT extends AbstractIT {
 
     }
 
-    private JsonObject buildPayloadForCpsServeCotrSubmitted() throws IOException {
+    private JsonObject buildPayloadForCpsServeCotrSubmitted(final String cpsDefendantId) throws IOException {
         final String inputEvent = getPayload("stub-data/cps-serve-cotr-submitted.json")
-                .replace("%CASE_ID%", caseId);
+                .replace("%CASE_ID%", caseId)
+                .replace("%DEFENDANT_ID%", defendantId)
+                .replace("%CPS_DEFENDANT_ID%",cpsDefendantId);
+
 
         final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
         return readData;

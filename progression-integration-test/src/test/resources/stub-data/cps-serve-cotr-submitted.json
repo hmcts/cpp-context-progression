@@ -4,7 +4,8 @@
   "caseUrn": "87GD9945217",
   "formDefendants": [
     {
-      "defendantId": "68e55356-7683-4cb7-a1a2-d0f94286a6d3"
+      "defendantId": "%DEFENDANT_ID%",
+      "cpsDefendantId" : "%CPS_DEFENDANT_ID%"
     }
   ],
   "trialDate": "1980-01-24",
