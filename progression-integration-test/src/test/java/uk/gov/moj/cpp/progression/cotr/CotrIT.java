@@ -115,8 +115,10 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("for Release 22.24")
 public class CotrIT extends AbstractIT {
 
     private static final String DEFENCE_USER_ID = UUID.randomUUID().toString();
