@@ -109,6 +109,11 @@ public class HearingResultUnscheduledListingHelper {
                                                 .collect(Collectors.toList())).build())
                                 .collect(Collectors.toList())).build())
                         .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
+                .withCourtApplications(ofNullable(unscheduledListingNeeds.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                        .map(ca-> CourtApplication.courtApplication().withValuesFrom(ca)
+                                .withJudicialResults(null)
+                                .build())
+                        .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                 .withHearingDays(hearingDays)
                 .build();
     }

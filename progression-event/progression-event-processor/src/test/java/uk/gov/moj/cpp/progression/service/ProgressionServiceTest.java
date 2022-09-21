@@ -463,8 +463,13 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void shouldSendUpdateDefendantListingStatusForUnscheduledListing() {
-        final List<Hearing> hearings = Arrays.asList(Hearing.hearing().withId(randomUUID()).build());
+    public void shouldSendUpdateDefendantListingStatusForUnscheduledListing(){
+        final List<Hearing> hearings = Arrays.asList(Hearing.hearing()
+                .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
+                        .withId(randomUUID())
+                        .build()))
+                .withId(randomUUID())
+                .build());
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND);
         progressionService.sendUpdateDefendantListingStatusForUnscheduledListing(envelope, hearings, new HashSet<>());
         verify(sender).send(envelopeCaptor.capture());

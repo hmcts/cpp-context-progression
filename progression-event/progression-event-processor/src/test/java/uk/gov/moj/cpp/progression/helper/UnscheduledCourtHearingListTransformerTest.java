@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static uk.gov.moj.cpp.progression.helper.UnscheduledCourtHearingListTransformer.RESULT_DEFINITION_SAC;
 
+import org.checkerframework.checker.units.qual.C;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
@@ -15,6 +16,8 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultPrompt;
+import uk.gov.justice.core.courts.JudicialResultPromptDurationElement;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
@@ -86,6 +89,26 @@ public class UnscheduledCourtHearingListTransformerTest {
         final HearingUnscheduledListingNeeds unscheduledListingNeeds = unscheduledListingNeedsList.get(0);
         assertThat(unscheduledListingNeeds.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getSeedingHearing().getSeedingHearingId(), is(seedingHearingId));
     }
+
+    /**
+     * Test to see if the unscheduledCourtHearingListTransformer works for hearing with application and cases.
+     *
+     */
+    @Test
+    public void shouldReturnHearingSheduleNeedWhenHearingHasApplicationAndCases() {
+        final Offence offence = createOffenceWithJR(asList(wofnResult()));
+        final Hearing hearing = creatingHearingWithCaseAndApplication(asList(offence));
+        final UUID seedingHearingId = randomUUID();
+
+        final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList = unscheduledCourtHearingListTransformer.transformWithSeedHearing(hearing, SeedingHearing
+                .seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build());
+        assertThat(unscheduledListingNeedsList.size(), is(1));
+
+
+    }
+
 
     /***
      * Case 2: One Offence, Two Result and both Unscheduled flags are true.
@@ -376,6 +399,47 @@ public class UnscheduledCourtHearingListTransformerTest {
                                 .build()))
                         .build()))
                 .build();
+    }
+
+    private Hearing creatingHearingWithCaseAndApplication(final List<Offence> offences) {
+        return Hearing.hearing()
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
+                        .withId(randomUUID())
+                        .withCpsOrganisation("A01")
+                        .withDefendants(asList(Defendant.defendant()
+                                .withId(randomUUID())
+                                .withOffences(offences)
+                                .build()))
+                        .build()))
+                .withCourtApplications(asList(CourtApplication.courtApplication()
+                        .withId(randomUUID())
+                        .withJudicialResults(asList(JudicialResult.judicialResult()
+                                .withNextHearing(NextHearing.nextHearing()
+                                        .withDateToBeFixed(Boolean.TRUE)
+                                        .withType(HearingType.hearingType()
+                                                .withId(randomUUID())
+                                                .withDescription("Plea")
+                                                .build())
+                                        .withCourtCentre(CourtCentre.courtCentre()
+                                                .withId(randomUUID())
+                                                .withRoomId(randomUUID())
+                                                .build())
+                                        .build())
+                                .withJudicialResultPrompts(asList(JudicialResultPrompt.judicialResultPrompt()
+                                        .withLabel("Next hearing in Crown Court")
+                                        .withDurationElement(JudicialResultPromptDurationElement.judicialResultPromptDurationElement()
+                                                .withPrimaryDurationValue(20)
+                                                .build())
+
+                                        .withValue("Date and time to be fixed:Yes\n" +
+                                                "Courthouse organisation name:Mold Crown Court\n" +
+                                                "Courthouse address line 1:The Law Courts\n")
+                                        .build()))
+                                .build()))
+                        .build()))
+                .build();
+
     }
 
 

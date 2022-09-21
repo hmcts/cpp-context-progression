@@ -775,13 +775,14 @@ public class ProgressionService {
 
     public void sendUpdateDefendantListingStatusForUnscheduledListing(final JsonEnvelope jsonEnvelope, final List<Hearing> unscheduledHearings, final Set<UUID> hearingsToBeSentNotification) {
         unscheduledHearings.forEach(unscheduledHearing -> {
-            final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
-                    .add(UNSCHEDULED, true)
-                    .add(NOTIFY_NCES, hearingsToBeSentNotification.contains(unscheduledHearing.getId()))
-                    .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
-                    .add(HEARING, objectToJsonObjectConverter.convert(unscheduledHearing))
-                    .build();
-            sender.send(Enveloper.envelop(hearingListingStatusCommand).withName(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).withMetadataFrom(jsonEnvelope));
+                final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
+                        .add(UNSCHEDULED, true)
+                        .add(NOTIFY_NCES, hearingsToBeSentNotification.contains(unscheduledHearing.getId()))
+                        .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
+                        .add(HEARING, objectToJsonObjectConverter.convert(unscheduledHearing))
+                        .build();
+                sender.send(Enveloper.envelop(hearingListingStatusCommand).withName(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).withMetadataFrom(jsonEnvelope));
+
         });
     }
 

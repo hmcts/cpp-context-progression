@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import org.codehaus.groovy.vmplugin.v5.JUnit4Utils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -8,10 +9,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultPrompt;
+import uk.gov.justice.core.courts.JudicialResultPromptDurationElement;
+import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -142,10 +148,32 @@ public class HearingResultUnscheduledListingHelperTest {
                                         .build()))
                                 .build()))
                         .build()))
+                .withCourtApplications(asList(CourtApplication.courtApplication()
+                        .withId(UUID.randomUUID())
+                        .withJudicialResults(asList(JudicialResult.judicialResult()
+                                .withJudicialResultPrompts(asList(JudicialResultPrompt.judicialResultPrompt()
+                                        .withLabel("Next hearing in Crown Court")
+                                        .withDurationElement(JudicialResultPromptDurationElement.judicialResultPromptDurationElement()
+                                                .withPrimaryDurationValue(20)
+                                                .build())
+                                        .withValue("Date and time to be fixed:Yes\n" +
+                                                "Courthouse organisation name:Mold Crown Court\n" +
+                                                "Courthouse address line 1:The Law Courts\n")
+                                        .build()))
+                                .build()))
+                        .withType(CourtApplicationType.courtApplicationType()
+                                .withLinkType(LinkType.LINKED)
+                                .build())
+                        .withApplicant(CourtApplicationParty.courtApplicationParty()
+                                .withId(UUID.randomUUID())
+                                .build())
+                        .build()))
                 .build();
         final Hearing hearing = hearingResultUnscheduledListingHelper.convertToHearing(unscheduledListingNeeds, null);
 
         assertThat(hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getJudicialResults(), is(nullValue()));
+        assertThat(hearing.getCourtApplications().get(0).getJudicialResults(), is(nullValue()));
+
     }
 
     private JudicialResult judicialResultWithFlag(){

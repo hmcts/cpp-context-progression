@@ -908,10 +908,15 @@ public class HearingAggregate implements Aggregate {
 
     public Stream<Object> hearingTrialVacated(final UUID hearingId, final UUID vacatedTrialReasonId) {
 
-        return apply(Stream.of(HearingTrialVacated.hearingTrialVacated()
-                .withHearingId(hearingId)
-                .withVacatedTrialReasonId(vacatedTrialReasonId)
-                .build()));
+        if(nonNull(this.hearing)) {
+
+            return apply(Stream.of(HearingTrialVacated.hearingTrialVacated()
+                    .withHearingId(hearingId)
+                    .withVacatedTrialReasonId(vacatedTrialReasonId)
+                    .build()));
+        } else {
+            return Stream.empty();
+        }
     }
 
     public Stream<Object> removeOffenceFromHearing(final UUID hearingId, final List<UUID> offencesToBeRemoved) {
@@ -1514,9 +1519,10 @@ public class HearingAggregate implements Aggregate {
     }
 
     private List<CourtApplicationCase> getCourtApplicationCasesWithNewPlea(final PleaModel pleaModel, final CourtApplication courtApplication) {
+        ofNullable(hearing.getDefenceCounsels()).map(Collection::stream).orElseGet(Stream::empty).collect(toList());
         return ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase().withValuesFrom(courtApplicationCase)
-                        .withOffences(courtApplicationCase.getOffences().stream()
+                        .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
                                 .map(offence -> getOffenceWithNewPlea(offence, pleaModel))
                                 .collect(toList()))
                         .build())
