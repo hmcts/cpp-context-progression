@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.serve-defendant-cotr.json",
+  "type": "object",
+  "properties": {
+    "cotrId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "cotrId"
+  ],
+  "additionalProperties": false
+}

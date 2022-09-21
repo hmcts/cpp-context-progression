@@ -131,9 +131,35 @@ subscriptions_descriptor:
         - name: public.progression.event.form-defendants-updated
           schema_uri: http://justice.gov.uk/core/courts/public.progression.event.form-defendants-updated.json
 
-
         - name: public.progression.offences-removed-from-existing-allocated-hearing
           schema_uri: http://justice.gov.uk/progression/courts/public.progression.offences-removed-from-existing-allocated-hearing.json
+
+        - name: public.progression.cotr-created
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.cotr-created.json
+
+        - name: public.progression.prosecution-cotr-served
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.prosecution-cotr-served.json
+
+        - name: public.progression.cotr-archived
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.cotr-archived.json
+
+        - name: public.progression.serve-defendant-cotr
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.serve-defendant-cotr.json
+
+        - name: public.progression.further-info-for-prosecution-cotr-added
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.further-info-for-prosecution-cotr-added.json
+
+        - name: public.progression.further-info-for-defence-cotr-added
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.further-info-for-defence-cotr-added.json
+
+        - name: public.progression.cotr-review-notes-updated
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.cotr-review-notes-updated.json
+
+        - name: public.progression.defendants-changed-in-cotr
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.defendants-changed-in-cotr.json
+
+        - name: public.progression.cotr-task-requested
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.event.cotr-task-requested.json
 
         # ***** Deprecated API - Start ********
         # ***** Do not add any new API in this section *****
@@ -231,6 +257,12 @@ subscriptions_descriptor:
         - name: public.progression.pet-form-finalised
           schema_uri: http://justice.gov.uk/core/courts/public-pet-form-finalised.json
 
+        - name: public.progression.now-notification-suppressed
+          schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.now-notification-suppressed.json
+
+        - name: public.progression.court-application-proceedings-initiated
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-application-proceedings-initiated.json
+
         - name: public.progression.form-created
           schema_uri: http://justice.gov.uk/core/courts/form-created.json
 
@@ -246,10 +278,10 @@ subscriptions_descriptor:
         - name: public.progression.edit-form-requested
           schema_uri: http://justice.gov.uk/core/courts/public-edit-form-requested.json
 
-        - name: public.progression.now-notification-suppressed
-          schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.now-notification-suppressed.json
+        - name: public.progression.cotr-updated
+          schema_uri: http://justice.gov.uk/core/courts/cotr-updated.json
 
-        - name: public.progression.court-application-proceedings-initiated
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-application-proceedings-initiated.json
+        - name: public.progression.cotr-operation-failed
+          schema_uri: http://justice.gov.uk/core/courts/cotr-operation-failed.json
 
       event_source_name: public.event.source

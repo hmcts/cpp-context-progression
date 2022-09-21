@@ -32,8 +32,8 @@ import org.apache.commons.collections.CollectionUtils;
 @ServiceComponent(Component.QUERY_VIEW)
 public class SharedCourtDocumentsQueryView {
 
-    private static final String COURT_DOCUMENTS_SEARCH_NAME = "progression.query.courtdocuments";
     private static final int BATCH_SIZE = 50;
+    public static final String PROGRESSION_QUERY_SHARED_COURT_DOCUMENTS = "progression.query.shared-court-documents";
 
     @Inject
     private SharedCourtDocumentRepository sharedCourtDocumentRepository;
@@ -53,11 +53,11 @@ public class SharedCourtDocumentsQueryView {
     @Inject
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
-    @Handles("progression.query.shared-court-documents")
+    @Handles(PROGRESSION_QUERY_SHARED_COURT_DOCUMENTS)
     public JsonEnvelope getSharedCourtDocuments(final JsonEnvelope envelope) {
 
         if (!envelope.payloadAsJsonObject().containsKey("caseId") || !envelope.payloadAsJsonObject().containsKey("defendantId")) {
-            throw new BadRequestException(String.format("%s no search parameter specified ", COURT_DOCUMENTS_SEARCH_NAME));
+            throw new BadRequestException(String.format("%s no search parameter specified ", PROGRESSION_QUERY_SHARED_COURT_DOCUMENTS));
         }
         final UUID hearingId = fromString(envelope.payloadAsJsonObject().getString("hearingId"));
         final UUID userGroupId = fromString(envelope.payloadAsJsonObject().getString("userGroupId"));

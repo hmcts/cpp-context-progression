@@ -8,6 +8,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.notMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
@@ -32,6 +33,8 @@ public class NotificationServiceStub {
     public static final String NOTIFICATION_NOTIFY_CONTENT_TYPE = "application/vnd.notificationnotify.letter+json";
     public static final String NOTIFICATIONNOTIFY_SEND_EMAIL_NOTIFICATION_JSON = "application/vnd.notificationnotify.send-email-notification+json";
 
+    static final String NOTIFY_CMS_TRANSFORM_AND_SEND = "/notification-cms/v1/transformAndSendCms";
+    static final String COTR_FORM_SERVED = "cotr-form-served";
 
     public static void setUp() {
         stubPingFor("notificationnotify-service");
@@ -154,5 +157,19 @@ public class NotificationServiceStub {
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("Ocp-Apim-Subscription-Key", "3674a16507104b749a76b29b6c837352")
                         .withHeader("Ocp-Apim-Trace", "true")));
+    }
+
+    public static void studCotrFormServedNotificationCms() {
+        stubFor(post(urlPathEqualTo(NOTIFY_CMS_TRANSFORM_AND_SEND))
+                .withRequestBody(containing(COTR_FORM_SERVED))
+                .willReturn(aResponse().withStatus(SC_OK)));
+    }
+
+    public static void verifyCotrFormServedNotifyCms() {
+        await().atMost(60, SECONDS).pollInterval(10, SECONDS).until(() -> {
+            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlEqualTo(NOTIFY_CMS_TRANSFORM_AND_SEND));
+            requestPatternBuilder.withRequestBody(containing(COTR_FORM_SERVED));
+            verify(requestPatternBuilder);
+        });
     }
 }

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/query/cotr-details.json",
+  "type": "object",
+  "properties": {
+    "cotrDetails": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/progression/query/cotr-detail.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

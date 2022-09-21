@@ -102,4 +102,6 @@
     <include file="liquibase/alter-online-plea-for-legal-entity.xml"/>
     <include file="liquibase/alter-form-case-add-column-lastupdated-datetime.xml"/>
     <include file="liquibase/alter-pet-case-add-column-lastupdated-datetime.xml"/>
+    <include file="liquibase/drop-process-event-index.xml"/>
+    <include file="liquibase/create-tables-certificate-of-trial-readiness.xml"/>
 </databaseChangeLog>

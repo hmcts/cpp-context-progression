@@ -13,7 +13,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearin
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import javax.inject.Inject;

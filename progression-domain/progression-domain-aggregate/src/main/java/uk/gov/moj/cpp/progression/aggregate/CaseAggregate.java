@@ -18,6 +18,7 @@ import static java.util.stream.Stream.of;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.core.courts.Address.address;
+import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged;
 import static uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument.caseCpsDetailsUpdatedFromCourtDocument;
 import static uk.gov.justice.core.courts.EditFormRequested.editFormRequested;
 import static uk.gov.justice.core.courts.FormCreated.formCreated;
@@ -26,7 +27,6 @@ import static uk.gov.justice.core.courts.FormDefendantsUpdated.formDefendantsUpd
 import static uk.gov.justice.core.courts.FormFinalised.formFinalised;
 import static uk.gov.justice.core.courts.FormOperationFailed.formOperationFailed;
 import static uk.gov.justice.core.courts.FormUpdated.formUpdated;
-import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged;
 import static uk.gov.justice.core.courts.LockStatus.lockStatus;
 import static uk.gov.justice.core.courts.Organisation.organisation;
 import static uk.gov.justice.core.courts.ProsecutionCaseDefendantOrganisationUpdatedByLaa.prosecutionCaseDefendantOrganisationUpdatedByLaa;
@@ -259,7 +259,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = -4933049804196421466L;
+    private static final long serialVersionUID = -4933049804196421467L;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -739,9 +739,20 @@ public class CaseAggregate implements Aggregate {
         final ProsecutionCase pc = hearingResultedCaseUpdated.getProsecutionCase();
         final String currentProsecutionCaseStatus = pc.getCaseStatus();
         hearingResultedCaseUpdated.getProsecutionCase().getDefendants().stream().forEach(defendant -> {
+            final List<uk.gov.justice.core.courts.Offence> existingOffences = this.defendantCaseOffences.get(defendant.getId());
             this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
             updateDefendantProceedingConcluded(defendant, defendant.getProceedingsConcluded());
-            this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
+            if(existingOffences != null) {
+                final List<UUID> updatedDefendantOffences =  defendant.getOffences().stream().map(i -> i.getId()).collect(toList());
+                final List<uk.gov.justice.core.courts.Offence> noLongerInHearing = existingOffences.stream().filter(x -> !updatedDefendantOffences.contains(x.getId())).collect(toList());
+                final List<uk.gov.justice.core.courts.Offence> concludedPlusOngoingOffences =  new ArrayList<>();
+                concludedPlusOngoingOffences.addAll(defendant.getOffences());
+                concludedPlusOngoingOffences.addAll(noLongerInHearing);
+                this.defendantCaseOffences.put(defendant.getId(), concludedPlusOngoingOffences);
+            } else {
+                this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
+            }
+
         });
 
         if (pc.getCaseStatus() != null && !currentProsecutionCaseStatus.equalsIgnoreCase(INACTIVE.getDescription())) {
@@ -1447,7 +1458,7 @@ public class CaseAggregate implements Aggregate {
                         .withLegalAidStatus(legalAidStatus)
                         .withProsecutionCaseId(prosecutionCaseId)
                         .build();
-                final DefendantLegalaidStatusUpdated defendantLegalaidStatusUpdated = DefendantLegalaidStatusUpdated.defendantLegalaidStatusUpdated()
+                final DefendantLegalaidStatusUpdated defendantLegalaidStatusUpdated = DefendantLegalaidStatusUpdated.defendantLegalaidStatusUpdated() //Not used on listener
                         .withCaseId(prosecutionCaseId)
                         .withDefendantId(defendantId)
                         .withLegalAidStatus(legalAidStatus)
@@ -1457,12 +1468,13 @@ public class CaseAggregate implements Aggregate {
                 if (offencesForDefendantChanged.isPresent()) {
                     streamBuilder.add(ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()
                             .withDefendantCaseOffences(newDefendantCaseOffences).build());
-                    streamBuilder.add(offencesForDefendantChanged.get());
+                    streamBuilder.add(offencesForDefendantChanged.get()); //Not used on listener
                     streamBuilder.add(defendantLegalaidStatusUpdated);
                 }
 
                 if (LAA_WITHDRAW_STATUS_CODE.equalsIgnoreCase(laaReference.getStatusCode()) && !GRANTED.getDescription().equals(legalAidStatus)
                         && this.defendantAssociatedDefenceOrganisation.containsKey(defendantId)) {
+                    //progression.event.defendant-defence-organisation-disassociated not used in Listener
                     final DefendantDefenceOrganisationDisassociated defendantDefenceOrganisationDisassociated = defendantDefenceOrganisationDisassociated()
                             .withDefendantId(defendantId)
                             .withOrganisationId(defendantAssociatedDefenceOrganisation.get(defendantId))

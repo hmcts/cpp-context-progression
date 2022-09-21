@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.command.request-cotr-task.json",
+  "type": "object",
+  "properties": {
+    "cotrId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "taskName": {
+      "type": "string"
+    },
+    "roles": {
+      "type": "string"
+    },
+    "comments": {
+      "type": "string"
+    },
+    "numberOfDays": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "cotrId",
+    "taskName",
+    "roles",
+    "numberOfDays"
+  ],
+  "additionalProperties": false
+}

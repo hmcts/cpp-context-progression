@@ -1,11 +1,14 @@
 package uk.gov.moj.cpp.progression.command.api;
 
+import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -23,8 +26,10 @@ import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 public class UserDetailsLoader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserDetailsLoader.class.getName());
     private static final String USER_ID = "userId";
     public static final String PERMISSIONS = "permissions";
 
@@ -116,6 +121,40 @@ public class UserDetailsLoader {
         return permissions.contains(organisationPermission) || permissions.contains(userPermission);
     }
 
+    public boolean isDefenceClient(final JsonEnvelope envelope, final Requester requester) {
+
+        final String userId = envelope.metadata().userId()
+                .orElseThrow(() -> new IllegalStateException(USER_ID_NOT_SUPPLIED_FOR_THE_USER_GROUPS_LOOK_UP));
+        final JsonObject getPermissionsForUserRequest = createObjectBuilder().add(USER_ID, userId).build();
+        final Envelope<JsonObject> requestEnvelope = envelop(getPermissionsForUserRequest)
+                .withName("usersgroups.get-logged-in-user-permissions").withMetadataFrom(envelope);
+        final JsonEnvelope response = requester.request(requestEnvelope);
+        return checkPermissionExistsForUser(userId, response);
+
+    }
+
+    private boolean checkPermissionExistsForUser(final String userId, final JsonEnvelope response) {
+        if (notFound(response)
+                || (response.payloadAsJsonObject().getJsonArray(PERMISSIONS) == null)
+                || (response.payloadAsJsonObject().getJsonArray(PERMISSIONS).isEmpty())) {
+            LOGGER.debug("Unable to retrieve User Permissions for User {}", userId);
+            throw new IllegalArgumentException(format("User %s does not belong to any of the HMCTS groups", userId));
+        }
+
+        final JsonArray permissions = response.payloadAsJsonObject().getJsonArray(PERMISSIONS);
+        final JsonObject permissionJson = permissions.getValuesAs(JsonObject.class).stream()
+                .filter(permission -> "defence-access".equals(permission.getString(ACTION)))
+                .findFirst().orElse(null);
+        return nonNull(permissionJson);
+
+    }
+
+    private static boolean notFound(JsonEnvelope response) {
+        final JsonValue payload = response.payload();
+
+        return payload == null
+                || payload.equals(JsonValue.NULL);
+    }
 
 }
 

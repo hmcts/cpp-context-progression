@@ -87,7 +87,6 @@ public class DocumentGeneratorService {
     public static final String STRING_CREATED = " created ";
     public static final String STRING_CREATED_WITH_WELSH = " created (welsh) ";
 
-
     private final DocumentGeneratorClientProducer documentGeneratorClientProducer;
 
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter;
@@ -118,8 +117,7 @@ public class DocumentGeneratorService {
                                     final ApplicationParameters applicationParameters,
                                     final NowDocumentValidator nowDocumentValidator,
                                     final ObjectMapper mapper,
-                                    final MaterialService materialService
-    ) {
+                                    final MaterialService materialService) {
         this.systemUserProvider = systemUserProvider;
         this.documentGeneratorClientProducer = documentGeneratorClientProducer;
         this.objectToJsonObjectConverter = objectToJsonObjectConverter;
@@ -260,6 +258,28 @@ public class DocumentGeneratorService {
             LOGGER.error(ERROR_MESSAGE, e);
             throw new InvalidHearingTimeException("Error while generating document");
         }
+    }
+
+    @Transactional(REQUIRES_NEW)
+    public String generateCotrDocument(final JsonEnvelope envelope, final JsonObject documentPayload, String templateName, final UUID materialId,final String filleNameOfPdf) {
+
+        final String fileName = filleNameOfPdf+".pdf";
+        try {
+            final byte[] resultOrderAsByteArray = documentGeneratorClientProducer
+                    .documentGeneratorClient()
+                    .generatePdfDocument(documentPayload, templateName, getSystemUserUuid());
+
+            addDocumentToMaterial(
+                    envelope,
+                    fileName,
+                    new ByteArrayInputStream(resultOrderAsByteArray),
+                    materialId);
+
+        } catch (IOException e) {
+            LOGGER.error(ERROR_MESSAGE, e);
+            throw new InvalidHearingTimeException("Error while generating cotr document", e);
+        }
+        return fileName;
     }
 
     private void addDocumentToMaterial(Sender sender, JsonEnvelope originatingEnvelope, final String filename, final InputStream fileContent,

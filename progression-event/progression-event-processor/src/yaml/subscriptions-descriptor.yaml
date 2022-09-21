@@ -355,8 +355,6 @@ subscriptions_descriptor:
         - name: progression.event.list-hearing-requested
           schema_uri: http://justice.gov.uk/core/courts/list-hearing-requested.json
 
-
-
         - name: progression.event.hearing-for-application-created
           schema_uri: http://justice.gov.uk/core/progression/courts/progression.event.hearing-for-application-created.json
 
@@ -377,6 +375,39 @@ subscriptions_descriptor:
 
         - name: progression.event.create-hearing-for-application-v2
           schema_uri: http://justice.gov.uk/core/progression/courts/progression.event.hearing-for-application-created-v2.json
+
+        - name: progression.event.cotr-created
+          schema_uri: http://justice.gov.uk/cpp/progression/event/progression.event.cotr-created.json
+
+        - name: progression.event.prosecution-cotr-served
+          schema_uri: http://moj.gov.uk/cpp/progression/event/prosecution-cotr-served.json
+
+        - name: progression.event.cotr-archived
+          schema_uri: http://justice.gov.uk/cpp/progression/event/progression.event.cotr-archived.json
+
+        - name: progression.event.defendant-cotr-served
+          schema_uri: http://justice.gov.uk/core/courts/defendant-cotr-served.json
+
+        - name: progression.event.defendant-added-to-cotr
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.defendant-added-to-cotr.json
+
+        - name: progression.event.defendant-removed-from-cotr
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.defendant-removed-from-cotr.json
+
+        - name: progression.event.further-info-for-prosecution-cotr-added
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.further-info-for-prosecution-cotr-added.json
+
+        - name: progression.event.further-info-for-defence-cotr-added
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.further-info-for-defence-cotr-added.json
+
+        - name: progression.event.review-notes-updated
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.review-notes-updated.json
+
+        - name: progression.event.cotr-task-requested
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.cotr-task-requested.json
+
+        - name: progression.event.prosecution-cotr-updated
+          schema_uri: http://justice.gov.uk/cpp/progression/event/prosecution-cotr-updated.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
@@ -482,7 +513,6 @@ subscriptions_descriptor:
 
         - name: progression.event.edit-form-requested
           schema_uri: http://justice.gov.uk/core/courts/edit-form-requested.json
-
 
         - name: progression.event.now-document-notification-suppressed
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.now-document-notification-suppressed.json
@@ -652,5 +682,11 @@ subscriptions_descriptor:
 
         - name: public.hearing.hearing-offence-plea-updated
           schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/public.hearing-offence-plea-updated.json
+
+        - name: public.prosecutioncasefile.cps-serve-cotr-submitted
+          schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-cotr-submitted.json
+
+        - name: public.prosecutioncasefile.cps-update-cotr-submitted
+          schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-update-cotr-submitted.json
 
       event_source_name: public.event.source

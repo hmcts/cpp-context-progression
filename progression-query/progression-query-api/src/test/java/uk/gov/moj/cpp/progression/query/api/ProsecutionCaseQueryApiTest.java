@@ -40,8 +40,13 @@ public class ProsecutionCaseQueryApiTest {
     private static final String PROSECUTION_CASE_QUERY_API_EXPECTED_WITH_COURT_ORDERS_MULTIPLE_DEFENDANTS_JSON = "json/caseQueryApiWithCourtOrdersMultipleDefendantsExpectedResponse.json";
     private static final String PROSECUTION_CASE_QUERY_API_EXPECTED_WIT_NO_COURT_ORDERS_JSON = "json/caseQueryApiWithNoCourtOrdersExpectedResponse.json";
     private static final String CASE_QUERY_VIEW_JSON = "json/caseQueryResponse.json";
+    private static final String COTR_QUERY_VIEW_JSON = "json/cotrQueryResponse.json";
     private static final String CASE_QUERY_API_EXPECTED_JSON = "json/caseQueryExpectedResponse.json";
+    private static final String COTR_QUERY_API_EXPECTED_JSON = "json/cotrQueryExpectedResponse.json";
+
     private static final String PROSECUTION_CASE_QUERY = "progression.query.prosecutioncase";
+    private static final String COTR_CASE_QUERY = "progression.query.cotr.details.prosecutioncase";
+
 
     @Mock
     private JsonEnvelope query;
@@ -211,5 +216,20 @@ public class ProsecutionCaseQueryApiTest {
         final JsonObject expectedProsecutionCaseResponse = readJson(CASE_QUERY_API_EXPECTED_JSON, JsonObject.class);
 
         assertThat(actualProsecutionCaseResponse.payloadAsJsonObject(), equalTo(expectedProsecutionCaseResponse));
+    }
+
+    @Test
+    public void shouldHandleCotrDetailsProsecutionCase() {
+        final JsonObject cotrPayload = readJson(COTR_QUERY_VIEW_JSON, JsonObject.class);
+
+        final Metadata metadata = QueryClientTestBase.metadataFor(COTR_CASE_QUERY, randomUUID());
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, cotrPayload);
+
+        when(requester.request(query)).thenReturn(envelope);
+        final JsonEnvelope actualCotrCaseResponse = prosecutionCaseQueryApi.getCotrDetailsProsecutionCase(query);
+
+        final JsonObject expectedCotrCaseResponse = readJson(COTR_QUERY_API_EXPECTED_JSON, JsonObject.class);
+
+        assertThat(actualCotrCaseResponse.payloadAsJsonObject(), equalTo(expectedCotrCaseResponse));
     }
 }

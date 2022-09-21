@@ -45,4 +45,14 @@ public class UpdateDefendantListingStatusCommandApi {
 
     }
 
+    @Handles("progression.update-index-for-bdf")
+    public void handleUpdateIndex(final JsonEnvelope envelope) {
+
+        final Metadata metadata = metadataFrom(envelope.metadata())
+                .withName("progression.command.update-index-for-bdf")
+                .build();
+
+        sender.send(envelopeFrom(metadata,removeProperty(envelope.payloadAsJsonObject(), "hearingId")));
+
+    }
 }

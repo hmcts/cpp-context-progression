@@ -8,6 +8,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
 
@@ -85,7 +86,7 @@ public class UsersGroupService {
         return response.payload().getGroupId().toString();
     }
 
-    public Map<String,String> getEmailsForOrganisationIds(final JsonEnvelope envelope, final List<String> orgIds) {
+    public Map<String, String> getEmailsForOrganisationIds(final JsonEnvelope envelope, final List<String> orgIds) {
         final JsonObject orgIdsForEmails = createObjectBuilder().add("ids", join(",", orgIds)).build();
         final Envelope<JsonObject> requestEnvelope = envelop(orgIdsForEmails)
                 .withName("usersgroups.get-organisations-details-forids").withMetadataFrom(envelope);
@@ -95,7 +96,7 @@ public class UsersGroupService {
         final Stream<JsonObject> stream = organisations.getValuesAs(JsonObject.class).stream();
         return stream
                 .filter(x -> x.containsKey(EMAIL))
-                .collect(Collectors.toMap(json->json.getString(ORGANISATION_ID), json-> json.getString(EMAIL)));
+                .collect(Collectors.toMap(json -> json.getString(ORGANISATION_ID), json -> json.getString(EMAIL)));
     }
 
     protected JsonObject getUserGroupsDetailsForUser(final JsonEnvelope envelope) {
@@ -144,6 +145,24 @@ public class UsersGroupService {
         }
         return isUserPartOfGroup;
     }
+
+    public UUID getOrganisationByType(final Metadata metadata) {
+        final JsonObject getRequest = createObjectBuilder()
+                .add("name", "HMCTS")
+                .add("type", "HMCTS")
+                .add("limit", 1)
+                .build();
+        final Envelope<JsonObject> response = requester.requestAsAdmin(Envelope.envelopeFrom(metadataFrom(metadata)
+                .withName("usersgroups.organisations")
+                .build(), getRequest), JsonObject.class);
+
+
+        final String organisationIdStr = response.payload().getJsonArray("organisations")
+                .getValuesAs(JsonObject.class)
+                .stream().map(s -> s.getString(ORGANISATION_ID)).findFirst().orElseThrow(RuntimeException::new);
+        return UUID.fromString(organisationIdStr);
+    }
+
 }
 
 

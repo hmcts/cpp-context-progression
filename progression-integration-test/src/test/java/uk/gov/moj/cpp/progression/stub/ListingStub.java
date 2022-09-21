@@ -24,7 +24,6 @@ import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
-
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 import java.util.UUID;
@@ -45,10 +44,11 @@ public class ListingStub {
 
     private static final String LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE = "application/vnd.listing.command.list-unscheduled-court-hearing+json";
 
-    public static final String LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE_V2 = "application/vnd.listing.list-unscheduled-next-hearings+json";
+    private static final String LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE_V2 = "application/vnd.listing.list-unscheduled-next-hearings+json";
 
     private static final String LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE = "application/vnd.listing.search.hearings+json";
     private static final String LISTING_NEXT_HEARING_V2_TYPE = "application/vnd.listing.next-hearings-v2+json";
+    private static final String LISTING_COTR_SEARCH_QUERY_TYPE = "application/vnd.listing.search.hearings+json";
 
     public static void stubListCourtHearing() {
         InternalEndpointMockUtils.stubPingFor("listing-service");
@@ -484,5 +484,19 @@ public class ListingStub {
                         .withBody(getPayload(resource).replaceAll("HEARING_ID", hearingId))));
 
         waitForStubToBeReady(urlPath, LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE);
+    }
+
+    public static void stubListingCotrSearch(final String resource, final String hearingId) {
+
+        stubPingFor("listing-service");
+
+        final String urlPath = format("/listing-service/query/api/rest/listing/hearings/cotr-search");
+        stubFor(get(urlPathEqualTo(urlPath))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(getPayload(resource).replaceAll("HEARING_ID", hearingId))));
+
+        waitForStubToBeReady(urlPath, LISTING_COTR_SEARCH_QUERY_TYPE);
     }
 }

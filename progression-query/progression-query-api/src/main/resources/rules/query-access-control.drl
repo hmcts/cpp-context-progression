@@ -39,6 +39,15 @@ rule "Query - Access control for  progression.query.courtdocuments"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.courtdocuments-all"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.courtdocuments-all");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.courtdocuments.with.pagination"
   when
     $outcome: Outcome();
@@ -99,7 +108,7 @@ rule "Query - Access control for  progression.query.casehearings"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.casehearings");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "Magistrates","Second Line Support","Defence Lawyers", "Eject Case Group", "Recorders", "Advocates"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "Magistrates","Second Line Support","Defence Lawyers", "Eject Case Group", "Recorders", "Advocates"))
   then
     $outcome.setSuccess(true);
 end
@@ -588,6 +597,64 @@ rule "Query - Access control for progression.query.prosecutionauthorityid-by-cas
     $outcome: Outcome();
     $action: Action(name == "progression.query.prosecutionauthorityid-by-case-id");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users", "Defence Users", "District Judge", "Access Controller", "Court Associates",  "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "Magistrates","Second Line Support","Defence Lawyers", "Eject Case Group"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for progression.query.cotr-trial-hearings"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.cotr-trial-hearings");
+    eval(userAndGroupProvider.hasPermission($action, RuleConstants.cotrTrialHearingsGrantAccessPermission())) or
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for progression.query.cotr-details"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.cotr-details");
+    eval(userAndGroupProvider.hasPermission($action, RuleConstants.cotrDetailsGrantAccessPermission())) or
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for progression.query.cotr-form"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.cotr-form");
+    eval(userAndGroupProvider.hasPermission($action, RuleConstants.cotrFormGrantAccessPermission())) or
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for progression.query.search-trial-readiness"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.search-trial-readiness");
+    eval(userAndGroupProvider.hasPermission($action, RuleConstants.searchTrialReadinessGrantAccessPermission())) or
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for progression.query.trial-readiness-details"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.trial-readiness-details");
+    eval(userAndGroupProvider.hasPermission($action, RuleConstants.trialReadinessDetailsAccessPermission())) or
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for progression.query.cotr.details.prosecutioncase"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.cotr.details.prosecutioncase");
   then
     $outcome.setSuccess(true);
 end

@@ -43,6 +43,7 @@ import uk.gov.justice.core.courts.RespondentCounsel;
 import uk.gov.justice.progression.courts.CourtApplications;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
+import uk.gov.justice.progression.query.TrialHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -64,6 +65,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationR
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -1028,6 +1031,86 @@ public class HearingAtAGlanceServiceTest {
         assertThat(judicialResult.getJudicialResult().getAmendmentDate(), is(AMENDMENT_DATE));
         assertThat(judicialResult.getJudicialResult().getCategory(), is(JudicialResultCategory.INTERMEDIARY));
     }
+
+    @Test
+    public void prosecutionCaseWithOneHearingShouldReturnTwoDefendants() {
+
+        ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2));
+        Hearing hearing = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
+
+        ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
+        HearingEntity caseHearingEntity1 = createHearingEntity(hearing, CASE_HEARING_ID_1, HEARING_INITIALISED);
+
+        List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity1 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity1.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_1, CASE_HEARING_ID_1));
+        caseDefendantHearingEntity1.setHearing(caseHearingEntity1);
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity2 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity2.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_2, CASE_HEARING_ID_1));
+        caseDefendantHearingEntity2.setHearing(caseHearingEntity1);
+
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity1);
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity2);
+
+        when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
+        when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
+
+        List<TrialHearing> trialHearings = this.hearingAtAGlanceService.getTrialHearings(CASE_ID);
+
+        assertThat(trialHearings.size(), is(1));
+        assertThat(trialHearings.get(0).getTrialDefendants().size(), is(2));
+        assertThat(trialHearings.get(0).getHearingDay(), is(ZonedDateTime.of(2019, 07, 16, 0, 0, 0, 0, ZoneId.of("UTC"))));
+        assertThat(trialHearings.get(0).getTrialDefendants().get(0).getFullName(), is("John Williams"));
+
+    }
+
+    @Test
+    public void prosecutionCaseWithTwoHearingsShouldReturnTwoDefendantsForEachHearing() {
+
+        ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2));
+        Hearing hearing1 = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
+        Hearing hearing2 = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_2);
+
+        ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
+        HearingEntity caseHearingEntity1 = createHearingEntity(hearing1, CASE_HEARING_ID_1, HEARING_INITIALISED);
+        HearingEntity caseHearingEntity2 = createHearingEntity(hearing2, CASE_HEARING_ID_2, HEARING_INITIALISED);
+
+        List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity1 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity1.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_1, CASE_HEARING_ID_1));
+        caseDefendantHearingEntity1.setHearing(caseHearingEntity1);
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity2 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity2.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_2, CASE_HEARING_ID_1));
+        caseDefendantHearingEntity2.setHearing(caseHearingEntity2);
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity3 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity3.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_1, CASE_HEARING_ID_2));
+        caseDefendantHearingEntity3.setHearing(caseHearingEntity1);
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity4 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity4.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_2, CASE_HEARING_ID_2));
+        caseDefendantHearingEntity4.setHearing(caseHearingEntity2);
+
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity1);
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity2);
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity3);
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity4);
+
+        when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
+        when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
+
+        List<TrialHearing> trialHearings = this.hearingAtAGlanceService.getTrialHearings(CASE_ID);
+
+        assertThat(trialHearings.size(), is(2));
+        assertThat(trialHearings.get(0).getTrialDefendants().size(), is(2));
+        assertThat(trialHearings.get(1).getTrialDefendants().size(), is(2));
+
+    }
+
 
     private CourtApplication createCourtApplicationWithDefendants(UUID courtApplicationId, UUID defendantId) {
         return CourtApplication.courtApplication()

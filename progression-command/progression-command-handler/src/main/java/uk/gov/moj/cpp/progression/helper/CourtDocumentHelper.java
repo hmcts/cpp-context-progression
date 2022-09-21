@@ -35,6 +35,8 @@ public class CourtDocumentHelper {
         //optional fields with defaults
         builder.sendToCps = defaultToFalse(copy.getSendToCps());
         builder.containsFinancialMeans = defaultToFalse(copy.getContainsFinancialMeans());
+
+        builder.notificationType = copy.getNotificationType();
         return builder;
     }
 
@@ -63,7 +65,7 @@ public class CourtDocumentHelper {
         private String name;
         private Integer seqNum;
         private Boolean sendToCps;
-
+        private String notificationType;
 
         public Builder withAmendmentDate(final LocalDate val) {
             amendmentDate = val;
@@ -126,6 +128,10 @@ public class CourtDocumentHelper {
             return this;
         }
 
+        public Builder withNotificationType(final String notificationType) {
+            this.notificationType = notificationType;
+            return this;
+        }
 
         public uk.gov.justice.core.courts.CourtDocument build() {
 
@@ -142,6 +148,7 @@ public class CourtDocumentHelper {
                     .withDocumentTypeRBAC(documentTypeRBAC)
                     .withSeqNum(seqNum)
                     .withSendToCps(sendToCps)
+                    .withNotificationType(notificationType)
                     .build();
 
         }

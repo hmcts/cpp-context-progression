@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/referencedata/query/reference-data-cotr-review-notes.json",
+  "type": "object",
+  "properties": {
+    "reviewNotes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reviewNoteType": {
+            "type": "string"
+          },
+          "reviewNoteDescription": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "string"
+          },
+          "numberOfDays": {
+            "type": "integer"
+          },
+          "taskName": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "reviewNoteType",
+          "reviewNoteDescription"
+        ]
+      }
+    }
+  },
+  "required": [
+    "reviewNotes"
+  ],
+  "additionalProperties": false
+}

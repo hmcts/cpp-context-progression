@@ -1,0 +1,15 @@
+{
+  "submissionId": "7e2f843e-d639-40b3-8611-8015f3a18958",
+  "submissionStatus": "REJECTED",
+  "errors": [
+    {
+      "code": "HEARING_ID_NOT_FOUND",
+      "values": [
+        {
+          "key": "hearingId",
+          "value": "Not In CP"
+        }
+      ]
+    }
+  ]
+}

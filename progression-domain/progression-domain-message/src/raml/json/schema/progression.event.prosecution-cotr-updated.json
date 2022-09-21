@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/cpp/progression/event/prosecution-cotr-updated.json",
+  "type": "object",
+  "properties": {
+    "cotrId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "submissionId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "furtherProsecutionInformationProvidedAfterCertification": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "certifyThatTheProsecutionIsTrialReady": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "formCompletedOnBehalfOfProsecutionBy": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    },
+    "certificationDate": {
+      "$ref": "http://moj.gov.uk/cpp/progression/polar-question.json"
+    }
+  },
+  "required": [
+    "cotrId",
+    "hearingId",
+    "submissionId"
+  ],
+  "additionalProperties": false
+}

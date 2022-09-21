@@ -753,6 +753,86 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       202:
         description: OK
 
+/cotr:
+  post:
+    description: |
+      Create COTR for defendants of an hearing:
+      ...
+      (mapping):
+        requestType: application/vnd.progression.create-cotr+json
+        name: progression.create-cotr
+      ...
+    body:
+      application/vnd.progression.create-cotr+json:
+        schema: !include json/schema/progression.create-cotr.json
+        example: !include json/progression.create-cotr.json
+
+    responses:
+      202:
+        description: Request accepted
+
+/cotr/{cotrId}:
+  uriParameters:
+    cotrId:
+      description: The ID of the COTR
+      type: string
+  post:
+    description: |
+      Update COTR details:
+      ...
+      (mapping):
+        requestType: application/vnd.progression.serve-prosecution-cotr+json
+        name: progression.serve-prosecution-cotr
+      (mapping):
+        requestType: application/vnd.progression.archive-cotr+json
+        name: progression.archive-cotr
+      (mapping):
+        requestType: application/vnd.progression.serve-defendant-cotr+json
+        name: progression.serve-defendant-cotr
+      (mapping):
+        requestType: application/vnd.progression.change-defendants-cotr+json
+        name: progression.change-defendants-cotr
+      (mapping):
+        requestType: application/vnd.progression.add-further-info-prosecution-cotr+json
+        name: progression.add-further-info-prosecution-cotr
+      (mapping):
+        requestType: application/vnd.progression.add-further-info-defence-cotr+json
+        name: progression.add-further-info-defence-cotr
+      (mapping):
+        requestType: application/vnd.progression.update-review-notes+json
+        name: progression.update-review-notes
+      ...
+    body:
+      application/vnd.progression.serve-prosecution-cotr+json:
+        schema: !include json/schema/progression.serve-prosecution-cotr.json
+        example: !include json/progression.serve-prosecution-cotr.json
+
+      application/vnd.progression.archive-cotr+json: !!null
+
+      application/vnd.progression.serve-defendant-cotr+json:
+        schema: !include json/schema/progression.serve-defendant-cotr.json
+        example: !include json/progression.serve-defendant-cotr.json
+
+      application/vnd.progression.change-defendants-cotr+json:
+        schema: !include json/schema/progression.change-defendants-cotr.json
+        example: !include json/progression.change-defendants-cotr.json
+
+      application/vnd.progression.add-further-info-prosecution-cotr+json:
+        schema: !include json/schema/progression.add-further-info-prosecution-cotr.json
+        example: !include json/progression.add-further-info-prosecution-cotr.json
+
+      application/vnd.progression.add-further-info-defence-cotr+json:
+        schema: !include json/schema/progression.add-further-info-defence-cotr.json
+        example: !include json/progression.add-further-info-defence-cotr.json
+
+      application/vnd.progression.update-review-notes+json:
+        schema: !include json/schema/progression.update-review-notes.json
+        example: !include json/progression.update-review-notes.json
+
+    responses:
+      202:
+        description: Request accepted
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
 /cases/{caseId} :
@@ -935,6 +1015,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         (mapping):
             requestType: application/vnd.progression.update-listing-number+json
             name: progression.update-listing-number
+        (mapping):
+            requestType: application/vnd.progression.update-index-for-bdf+json
+            name: progression.update-index-for-bdf
         ...
       body:
         application/vnd.progression.update-defendant-listing-status+json:
@@ -947,6 +1030,11 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
              !include json/progression.update-listing-number.json
             schema:
              !include json/schema/progression.update-listing-number.json
+        application/vnd.progression.update-index-for-bdf+json:
+            example:
+             !include json/progression.update-index-for-bdf.json
+            schema:
+             !include json/schema/progression.update-index-for-bdf.json
       responses:
             202:
                 description: OK

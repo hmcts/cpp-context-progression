@@ -67,4 +67,30 @@ public class DefenceStub {
                         .withBody(body.toString())));
 
     }
+
+    public static void stubForAssociatedDefendantsForDefenceOrganisation(final String resourceName, final String userId) {
+        stubPingFor("defence-service");
+        String body = getPayload(resourceName);
+
+        stubFor(get(urlPathEqualTo(MessageFormat.format("/defence-service/query/api/rest/defence/defenceusers/{0}", userId)))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(body)));
+
+        waitForStubToBeReady(MessageFormat.format("/defence-service/query/api/rest/defence/defenceusers/{0}", userId), "application/vnd.defence.query.get-associated-defendants+json");
+    }
+
+    public static void stubForDefendantIdpcMetadata(final String resourceName, final String defendantId) {
+        stubPingFor("defence-service");
+        String body = getPayload(resourceName);
+
+        stubFor(get(urlPathEqualTo(MessageFormat.format("/defence-service/query/api/rest/defence/defendants/{0}/idpc/metadata", defendantId)))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(body)));
+
+        waitForStubToBeReady(MessageFormat.format("/defence-service/query/api/rest/defence/defendants/{0}/idpc/metadata", defendantId), "application/vnd.defence.query.defendant-idpc-metadata+json");
+    }
 }

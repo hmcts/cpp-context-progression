@@ -474,7 +474,7 @@ public class NowDocumentRequestIT extends AbstractIT {
     private static String getNowDocumentRequestsFor(final String requestId, final Matcher... matchers) {
         return poll(requestParams(getReadUrl(join("", "/nows/request/", requestId)),
                 "application/vnd.progression.query.now-document-requests-by-request-id+json")
-                .withHeader(USER_ID, UUID.randomUUID()))
+                .withHeader(USER_ID, randomUUID()))
                 .timeout(40, TimeUnit.SECONDS)
                 .until(status().is(OK), payload().isJson(allOf(matchers)))
                 .getPayload();

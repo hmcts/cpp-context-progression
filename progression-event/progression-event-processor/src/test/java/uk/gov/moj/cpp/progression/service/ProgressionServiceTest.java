@@ -6,8 +6,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.EMPTY_LIST;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.empty;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static org.apache.activemq.artemis.utils.JsonLoader.createObjectBuilder;
 import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -118,6 +120,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -146,6 +149,9 @@ public class ProgressionServiceTest {
     private static final UUID COURT_CENTRE_ID = randomUUID();
     private static final UUID JUDICIARY_ID_1 = randomUUID();
     private static final UUID JUDICIARY_ID_2 = randomUUID();
+    public static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTENDED_HEARING = "progression.command.prepare-summons-data-for-extended-hearing";
+    public static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
+    public static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH = "progression.command.update-defendant-for-prosecution-case";
     private static final String HEARING_DATE_1 = "2018-06-01T10:00:00.000Z";
     private static final String HEARING_DATE_2 = "2018-06-04T10:00:00.000Z";
     private static final String HEARING_DATE_3 = "2018-07-01T10:00:00.000Z";
@@ -167,13 +173,18 @@ public class ProgressionServiceTest {
     private static final String PUBLIC_EVENT_HEARING_DETAIL_CHANGED = "public.hearing-detail-changed";
     private static final String PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND = "progression.command.list-unscheduled-hearing";
     private static final String PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING = "progression.command.record-unscheduled-hearing";
-    public static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTENDED_HEARING = "progression.command.prepare-summons-data-for-extended-hearing";
     private static final String PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION = "progression.command.update-hearing-for-partial-allocation";
-    public static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
-    public static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH = "progression.command.update-defendant-for-prosecution-case";
+    private static final String PROGRESSION_QUERY_CASEHEARINGS = "progression.query.casehearings";
+
     private static final String PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND = "progression.command.create-hearing-for-application";
 
     private static final String EMPTY = "";
+    private static final String LABEL1 = "label 1";
+    private static final String LABEL2 = "label 2";
+    private static final String LABEL3 = "label 3";
+    private static final String LABEL4 = "label 4";
+
+
     private static final String ESTIMATED_DURATION = "1 week";
     public static final String PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED = "progression.event.next-hearings-requested";
     @Spy
@@ -185,7 +196,7 @@ public class ProgressionServiceTest {
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
     @Spy
     @InjectMocks
-    private JsonObjectToObjectConverter jsonObjectConverter =  new JsonObjectToObjectConverter(objectMapper);
+    private JsonObjectToObjectConverter jsonObjectConverter = new JsonObjectToObjectConverter(objectMapper);
     @Mock
     private Sender sender;
     @Spy
@@ -214,6 +225,7 @@ public class ProgressionServiceTest {
     @Mock
     private JsonEnvelope finalEnvelope;
 
+
     @Before
     public void initMocks() {
         setField(this.listToJsonArrayConverter, "mapper", objectMapper);
@@ -224,7 +236,6 @@ public class ProgressionServiceTest {
         setField(this.hearingRequestListToJsonArrayConverter, "mapper", objectMapper);
         setField(this.hearingRequestListToJsonArrayConverter, "stringToJsonObjectConverter", new StringToJsonObjectConverter());
     }
-
 
     @Test
     public void shouldSendPrepareSummonsCommand() {
@@ -266,7 +277,7 @@ public class ProgressionServiceTest {
 
         verify(sender).send(typedEnvelopeArgumentCaptor.capture());
 
-        final PrepareSummonsData payload = (PrepareSummonsData)typedEnvelopeArgumentCaptor.getValue().payload();
+        final PrepareSummonsData payload = (PrepareSummonsData) typedEnvelopeArgumentCaptor.getValue().payload();
         assertThat(typedEnvelopeArgumentCaptor.getValue().metadata().name(), is(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA));
         assertThat(payload.getHearingDateTime(), is(publicEventPayload.getHearingDateTime()));
         assertThat(payload.getHearingId(), is(publicEventPayload.getHearingId()));
@@ -397,19 +408,19 @@ public class ProgressionServiceTest {
 
         final Hearing mixHearing = progressionService.updateHearingForHearingUpdated(confirmedHearing, jsonEnvelope, hearing);
 
-        assertThat(mixHearing.getIsVacatedTrial(), is (true));
-        assertThat(mixHearing.getProsecutionCases().get(0).getId(), is (hearing.getProsecutionCases().get(0).getId()));
-        assertThat(mixHearing.getIsBoxHearing(), is (hearing.getIsBoxHearing()));
-        assertThat(mixHearing.getHearingDays().get(0).getCourtRoomId(), is (confirmedHearing.getHearingDays().get(0).getCourtRoomId()));
+        assertThat(mixHearing.getIsVacatedTrial(), is(true));
+        assertThat(mixHearing.getProsecutionCases().get(0).getId(), is(hearing.getProsecutionCases().get(0).getId()));
+        assertThat(mixHearing.getIsBoxHearing(), is(hearing.getIsBoxHearing()));
+        assertThat(mixHearing.getHearingDays().get(0).getCourtRoomId(), is(confirmedHearing.getHearingDays().get(0).getCourtRoomId()));
         assertThat(mixHearing.getId(), is(confirmedHearing.getId()));
         assertThat(mixHearing.getType().getId(), is(confirmedHearing.getType().getId()));
         assertThat(mixHearing.getHearingLanguage(), is(HearingLanguage.ENGLISH));
         assertThat(mixHearing.getCourtApplications().get(0).getId(), is(hearing.getCourtApplications().get(0).getId()));
         assertThat(mixHearing.getPanel(), is("panel"));
-        assertThat(mixHearing.getCourtCentre().getId(), is (confirmedHearing.getCourtCentre().getId()));
+        assertThat(mixHearing.getCourtCentre().getId(), is(confirmedHearing.getCourtCentre().getId()));
         assertThat(mixHearing.getApplicantCounsels().get(0).getId(), is(hearing.getApplicantCounsels().get(0).getId()));
         assertThat(mixHearing.getApplicationPartyCounsels().get(0).getId(), is(hearing.getApplicationPartyCounsels().get(0).getId()));
-        assertThat(mixHearing.getApprovalsRequested().get(0).getHearingId(), is( hearing.getApprovalsRequested().get(0).getHearingId()));
+        assertThat(mixHearing.getApprovalsRequested().get(0).getHearingId(), is(hearing.getApprovalsRequested().get(0).getHearingId()));
         assertThat(mixHearing.getCompanyRepresentatives().get(0).getId(), is(hearing.getCompanyRepresentatives().get(0).getId()));
         assertThat(mixHearing.getCourtApplicationPartyAttendance().get(0).getCourtApplicationPartyId(), is(hearing.getCourtApplicationPartyAttendance().get(0).getCourtApplicationPartyId()));
         assertThat(mixHearing.getCrackedIneffectiveTrial().getId(), is(hearing.getCrackedIneffectiveTrial().getId()));
@@ -421,7 +432,7 @@ public class ProgressionServiceTest {
         assertThat(mixHearing.getDefendantReferralReasons().get(0).getId(), is(hearing.getDefendantReferralReasons().get(0).getId()));
         assertThat(mixHearing.getHasSharedResults(), is(false));
         assertThat(mixHearing.getHearingCaseNotes().get(0).getId(), is(hearing.getHearingCaseNotes().get(0).getId()));
-        assertThat(mixHearing.getIntermediaries().get(0).getId(), is (hearing.getIntermediaries().get(0).getId()));
+        assertThat(mixHearing.getIntermediaries().get(0).getId(), is(hearing.getIntermediaries().get(0).getId()));
         assertThat(mixHearing.getIsEffectiveTrial(), is(true));
         assertThat(mixHearing.getIsSJPHearing(), is(false));
         assertThat(mixHearing.getIsVirtualBoxHearing(), is(false));
@@ -576,7 +587,6 @@ public class ProgressionServiceTest {
         verifyNoMoreInteractions(sender);
     }
 
-
     private JsonObject generateJudiciariesJson() throws IOException {
         final String jsonString = Resources.toString(Resources.getResource("referenceData.getJudiciariesByIdList.json"), Charset.defaultCharset())
                 .replace("JUDICIARY_ID_1", JUDICIARY_ID_1.toString())
@@ -593,7 +603,6 @@ public class ProgressionServiceTest {
         return returnAsJson(jsonString);
     }
 
-
     private JsonObject generateCourtCentreJson() throws IOException {
         final String jsonString = Resources.toString(Resources.getResource("referencedata.query.organisationunits.json"), Charset.defaultCharset())
                 .replace("COURT_CENTRE_ID", COURT_CENTRE_ID.toString())
@@ -607,7 +616,6 @@ public class ProgressionServiceTest {
             return jsonReader.readObject();
         }
     }
-
 
     private HearingUpdatedProcessed generateHearingUpdated() {
         return HearingUpdatedProcessed.hearingUpdatedProcessed()
@@ -635,7 +643,6 @@ public class ProgressionServiceTest {
                 .withDescription("Sentence")
                 .build();
     }
-
 
     private ConfirmedHearing generateConfirmedHearingForPrepareSummons() {
         return ConfirmedHearing.confirmedHearing()
@@ -817,7 +824,6 @@ public class ProgressionServiceTest {
     }
 
 
-
     @Test
     public void testCreateHearingProsecutionCaseLink() {
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_CREATE_HEARING_PROSECUTION_CASE_LINK);
@@ -834,7 +840,6 @@ public class ProgressionServiceTest {
         progressionService.linkProsecutionCasesToHearing(envelope, hearingId, caseIds);
         verify(sender).send(finalEnvelope);
     }
-
 
     @Test
     public void testShouldTransformBoxWorkApplication() {
@@ -1088,7 +1093,7 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void shouldNotCallUpdateCommandWhenOldYouthIsNullAndNewValueIsFalse(){
+    public void shouldNotCallUpdateCommandWhenOldYouthIsNullAndNewValueIsFalse() {
         final UUID caseId = randomUUID();
         final UUID defendant1 = randomUUID();
         final UUID defendant2 = randomUUID();
@@ -1203,7 +1208,7 @@ public class ProgressionServiceTest {
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(),any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
         ));
 
@@ -1246,7 +1251,7 @@ public class ProgressionServiceTest {
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(),any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
         ));
 
@@ -1290,7 +1295,7 @@ public class ProgressionServiceTest {
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(),any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
         ));
 
@@ -1334,7 +1339,7 @@ public class ProgressionServiceTest {
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(),any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
         ));
 
@@ -1372,11 +1377,11 @@ public class ProgressionServiceTest {
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1,JurisdictionType.MAGISTRATES)
+                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.MAGISTRATES)
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(),any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
         ));
 
@@ -1414,11 +1419,11 @@ public class ProgressionServiceTest {
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1,JurisdictionType.CROWN)
+                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN)
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(),any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "Yes").build()
         ));
 
@@ -1461,7 +1466,7 @@ public class ProgressionServiceTest {
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(),any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
         ));
 
@@ -1550,21 +1555,21 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void shouldPopulateHearingToProbationCaseworker(){
+    public void shouldPopulateHearingToProbationCaseworker() {
         final JsonEnvelope envelope = getEnvelope("progression.command.populate-hearing-to-probation-caseworker");
         final UUID hearingId = randomUUID();
         progressionService.populateHearingToProbationCaseworker(envelope, hearingId);
 
         verify(sender).send(envelopeCaptor.capture());
 
-        assertThat(envelopeCaptor.getValue().metadata().name(),is("progression.command.populate-hearing-to-probation-caseworker"));
+        assertThat(envelopeCaptor.getValue().metadata().name(), is("progression.command.populate-hearing-to-probation-caseworker"));
         JsonObject jsonObject = (JsonObject) envelopeCaptor.getValue().payload();
-        assertThat(jsonObject.size(),is(1));
-        assertThat(jsonObject.getString("hearingId"),is(hearingId.toString()));
+        assertThat(jsonObject.size(), is(1));
+        assertThat(jsonObject.getString("hearingId"), is(hearingId.toString()));
     }
 
     @Test
-    public void shouldRemoveJudicialResultFromApplication(){
+    public void shouldRemoveJudicialResultFromApplication() {
         final UUID applicationId = randomUUID();
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
                 .withCourtApplicationIds(singletonList(applicationId))
@@ -1602,7 +1607,7 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void shouldDeleteJudicialResultsFromApplicationWhenNewHearingForListing(){
+    public void shouldDeleteJudicialResultsFromApplicationWhenNewHearingForListing() {
 
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
         final List<HearingListingNeeds> hearings = singletonList(HearingListingNeeds.hearingListingNeeds()
@@ -1644,7 +1649,7 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void shouldDeleteJudicialResultsFromApplicationWhenNewHearingForListingWithoutCourtApplicationCase(){
+    public void shouldDeleteJudicialResultsFromApplicationWhenNewHearingForListingWithoutCourtApplicationCase() {
 
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
         final List<HearingListingNeeds> hearings = singletonList(HearingListingNeeds.hearingListingNeeds()
@@ -1660,7 +1665,7 @@ public class ProgressionServiceTest {
                                                 .build())
                                         .build()))
                                 .build())
-                    .build()))
+                        .build()))
                 .build());
 
         progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, hearings, null);
@@ -1825,6 +1830,11 @@ public class ProgressionServiceTest {
 
         return new StringToJsonObjectConverter().convert(response);
     }
+
+    private Optional<JsonObject> createNoCaseHearing() {
+        return empty();
+    }
+
     private ProsecutionCase buildProsecutionCasesWithTwoDefendantsOffences(UUID caseId, UUID defendant1, UUID defendant2, UUID defendant1sOffence1, UUID defendant1sOffence2, UUID defendant2sOffence1, UUID defendant2sOffence2, Boolean youth) {
         return ProsecutionCase.prosecutionCase()
                 .withId(caseId)

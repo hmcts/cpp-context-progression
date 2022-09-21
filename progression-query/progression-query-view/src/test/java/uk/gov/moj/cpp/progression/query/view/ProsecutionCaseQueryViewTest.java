@@ -1,14 +1,58 @@
 package uk.gov.moj.cpp.progression.query.view;
 
-import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.Logger;
+import static com.jayway.jsonassert.JsonAssert.with;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.slf4j.LoggerFactory.getLogger;
+import static uk.gov.justice.core.courts.Defendant.defendant;
+import static uk.gov.justice.progression.courts.GetHearingsAtAGlance.getHearingsAtAGlance;
+import static uk.gov.justice.progression.courts.Hearings.hearings;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
+import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
+import static com.jayway.jsonassert.JsonAssert.with;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.slf4j.LoggerFactory.getLogger;
+import static uk.gov.justice.core.courts.Defendant.defendant;
+import static uk.gov.justice.progression.courts.GetHearingsAtAGlance.getHearingsAtAGlance;
+import static uk.gov.justice.progression.courts.Hearings.hearings;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
+import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
+
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -20,6 +64,7 @@ import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
@@ -32,16 +77,23 @@ import uk.gov.justice.progression.courts.CaagDefendants;
 import uk.gov.justice.progression.courts.DefendantHearings;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
+import uk.gov.justice.progression.query.CotrDefendants;
+import uk.gov.justice.progression.query.CotrDetail;
+import uk.gov.justice.progression.query.DefenceAdditionalInfo;
+import uk.gov.justice.progression.query.TrialDefendants;
+import uk.gov.justice.progression.query.TrialHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonMetadata;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
+import uk.gov.moj.cpp.progression.query.view.service.CotrQueryService;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseCpsProsecutorEntity;
@@ -80,33 +132,30 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.jayway.jsonassert.JsonAssert.with;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.time.format.DateTimeFormatter.ofPattern;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static java.util.UUID.fromString;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.slf4j.LoggerFactory.getLogger;
-import static uk.gov.justice.core.courts.Defendant.defendant;
-import static uk.gov.justice.progression.courts.GetHearingsAtAGlance.getHearingsAtAGlance;
-import static uk.gov.justice.progression.courts.Hearings.hearings;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
-import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.apache.commons.io.IOUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -193,6 +242,8 @@ public class ProsecutionCaseQueryViewTest {
     private CaseCpsProsecutorRepository caseCpsProsecutorRepository;
     @Spy
     private ListToJsonArrayConverter jsonConverter;
+    @Mock
+    private CotrQueryService cotrQueryService;
 
     @Before
     public void setup() {
@@ -574,10 +625,15 @@ public class ProsecutionCaseQueryViewTest {
         final UUID courtCentreId1 = randomUUID();
         final UUID hearingId2 = randomUUID();
         final UUID courtCentreId2 = randomUUID();
+        final ZonedDateTime sittingDay1 = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z");
+        final ZonedDateTime sittingDay2 = ZonedDateTimes.fromString("2020-05-30T18:32:04.238Z");
+        final ZonedDateTime sittingDay3 = ZonedDateTimes.fromString("2021-05-30T18:32:04.238Z");
+        final ZonedDateTime sittingDay4 = ZonedDateTimes.fromString("2020-05-30T18:32:04.238Z");
+
 
         when(hearingAtAGlanceService.getCaseHearings(caseId)).thenReturn(asList(
-                createCaseHearing(hearingId1, courtCentreId1),
-                createCaseHearing(hearingId2, courtCentreId2)));
+                createCaseHearing(hearingId1, courtCentreId1, sittingDay1, sittingDay2),
+                createCaseHearing(hearingId2, courtCentreId2, sittingDay3, sittingDay4)));
 
         final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_CASEHEARINGS, caseId);
         final JsonEnvelope response = prosecutionCaseQuery.getCaseHearings(envelopeWithCaseId);
@@ -644,6 +700,144 @@ public class ProsecutionCaseQueryViewTest {
         assertThat(hearing2.isPresent(), is(true));
         assertThat(hearing2.get().getJsonObject("courtCentre").getString("id"), is(courtCentreId2.toString()));
         assertThat(hearing2.get().getJsonArray("hearingDays").getJsonObject(0).getString("sittingDay"), is(sittingDay2.format(ZONE_DATETIME_FORMATTER)));
+    }
+
+    @Test
+    public void shouldReturnTrialHearingsForAProsecutionCase() {
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID hearingId1 = randomUUID();
+        final UUID courtCentreId1 = randomUUID();
+        final UUID hearingId2 = randomUUID();
+        final UUID courtCentreId2 = randomUUID();
+
+        when(hearingAtAGlanceService.getTrialHearings(prosecutionCaseId)).thenReturn(asList(
+                createTrialHearing(hearingId1, courtCentreId1),
+                createTrialHearing(hearingId2, courtCentreId2)));
+
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithProsecutionCaseId("progression.query.cotr-trial-hearings", prosecutionCaseId);
+        final JsonEnvelope response = prosecutionCaseQuery.getTrialHearings(envelopeWithCaseId);
+        final JsonObject payload = response.payloadAsJsonObject();
+        final JsonArray trialHearings = payload.getJsonArray("trialHearings");
+        assertThat(trialHearings.size(), is(2));
+
+        final Optional<JsonObject> hearing1 = trialHearings.stream()
+                .map(h -> (JsonObject)h)
+                .filter(h -> hearingId1.toString().equals(h.getString("id")))
+                .findFirst();
+        assertThat(hearing1.isPresent(), is(true));
+        final String actualCourtCentre1 = hearing1.get().getJsonObject("courtCentre").getString("id");
+        assertThat(actualCourtCentre1, is(courtCentreId1.toString()));
+
+        final Optional<JsonObject> hearing2 = trialHearings.stream()
+                .map(h -> (JsonObject)h)
+                .filter(h -> hearingId2.toString().equals(h.getString("id")))
+                .findFirst();
+        assertThat(hearing2.isPresent(), is(true));
+        final String actualCourtCentre2 = hearing2.get().getJsonObject("courtCentre").getString("id");
+        assertThat(actualCourtCentre2, is(courtCentreId2.toString()));
+    }
+
+    @Test
+    public void shouldReturnCotrDetailsForAProsecutionCase() {
+        final UUID cotrId1 = randomUUID();
+        final UUID cotrId2 = randomUUID();
+        final UUID hearingId1 = randomUUID();
+        final UUID hearingId2 = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final String defendantFistName1 = "John";
+        final String defendantLastName1 = "Smith";
+        final String defendantFirstName2 = "Mark";
+        final String defendantLastName2 = "Parker";
+        final LocalDate dateOfBirth1 = LocalDate.of(1987, 10, 05);
+        final LocalDate dateOfBirth2 = LocalDate.of(1990, 04, 02);
+        final ZonedDateTime hearingDay = ZonedDateTime.now();
+
+        when(cotrQueryService.getCotrDetailsForAProsecutionCase(prosecutionCaseId)).thenReturn(asList(
+                createCotrDetail(cotrId1, defendantId1, hearingId1, defendantFistName1, defendantLastName1, dateOfBirth1, hearingDay, true),
+                createCotrDetail(cotrId2, defendantId2, hearingId2, defendantFirstName2, defendantLastName2, dateOfBirth2, hearingDay, false)));
+
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithProsecutionCaseId("progression.query.cotr-details", prosecutionCaseId);
+        final JsonEnvelope response = prosecutionCaseQuery.getCotrDetails(envelopeWithCaseId);
+        final JsonObject payload = response.payloadAsJsonObject();
+        final JsonArray cotrDetails = payload.getJsonArray("cotrDetails");
+        assertThat(cotrDetails.size(), is(2));
+
+        final JsonObject cotrDetail1 = cotrDetails.getJsonObject(0);
+        assertThat(1, is(cotrDetail1.getJsonArray("cotrDefendants").size()));
+        assertThat(cotrId1.toString(), is(cotrDetail1.getString("id")));
+        assertThat(hearingId1.toString(), is(cotrDetail1.getString("hearingId")));
+        assertThat(true, is(cotrDetail1.getBoolean("isArchived")));
+
+        final JsonObject cotrDetail2 = cotrDetails.getJsonObject(1);
+        assertThat(1, is(cotrDetail1.getJsonArray("cotrDefendants").size()));
+        assertThat(cotrId2.toString(), is(cotrDetail2.getString("id")));
+        assertThat(hearingId2.toString(), is(cotrDetail2.getString("hearingId")));
+        assertThat(false, is(cotrDetail2.getBoolean("isArchived")));
+
+    }
+
+    @Test
+    public void shouldReturnCotrDetailsForAProsecutionCaseLatestHearingDate() {
+        final UUID cotrId1 = randomUUID();
+        final UUID cotrId2 = randomUUID();
+        final UUID hearingId1 = randomUUID();
+        final UUID hearingId2 = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final String defendantFistName1 = "John";
+        final String defendantLastName1 = "Smith";
+        final String defendantFirstName2 = "Mark";
+        final String defendantLastName2 = "Parker";
+        final LocalDate dateOfBirth1 = LocalDate.of(1987, 10, 05);
+        final LocalDate dateOfBirth2 = LocalDate.of(1990, 04, 02);
+        final ZonedDateTime hearingDay = ZonedDateTime.now();
+
+        when(cotrQueryService.getCotrDetailsForAProsecutionCaseByLatestHearingDate(prosecutionCaseId)).thenReturn(asList(
+                createCotrDetail(cotrId1, defendantId1, hearingId1, defendantFistName1, defendantLastName1, dateOfBirth1, hearingDay, true),
+                createCotrDetail(cotrId2, defendantId2, hearingId2, defendantFirstName2, defendantLastName2, dateOfBirth2, hearingDay, false)));
+
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithProsecutionCaseId("progression.query.cotr.details.prosecutioncase", prosecutionCaseId);
+        final JsonEnvelope response = prosecutionCaseQuery.getCotrDetailsByCaseId(envelopeWithCaseId);
+        final JsonObject payload = response.payloadAsJsonObject();
+        final JsonArray cotrDetails = payload.getJsonArray("cotrDetails");
+        assertThat(cotrDetails.size(), is(2));
+
+        final JsonObject cotrDetail1 = cotrDetails.getJsonObject(0);
+        assertThat(1, is(cotrDetail1.getJsonArray("cotrDefendants").size()));
+        assertThat(cotrId1.toString(), is(cotrDetail1.getString("id")));
+        assertThat(hearingId1.toString(), is(cotrDetail1.getString("hearingId")));
+        assertThat(true, is(cotrDetail1.getBoolean("isArchived")));
+
+        final JsonObject cotrDetail2 = cotrDetails.getJsonObject(1);
+        assertThat(1, is(cotrDetail1.getJsonArray("cotrDefendants").size()));
+        assertThat(cotrId2.toString(), is(cotrDetail2.getString("id")));
+        assertThat(hearingId2.toString(), is(cotrDetail2.getString("hearingId")));
+        assertThat(false, is(cotrDetail2.getBoolean("isArchived")));
+
+    }
+
+    @Test
+    public void shouldReturnCotrFormForAProsecutionCase(){
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID cotrId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final String defendantFirstName1 = "John";
+        final String defendantLastName1 = "Smith";
+        final LocalDate dateOfBirth1 = LocalDate.of(1987, 10, 05);
+        final ZonedDateTime hearingDay = ZonedDateTime.now();
+
+        when(cotrQueryService.getCotrFormForAProsecutionCaseAndCotr(prosecutionCaseId, cotrId)).thenReturn(
+                createCotrForm(defendantId1, defendantFirstName1, defendantLastName1, dateOfBirth1, hearingDay, prosecutionCaseId));
+
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithProsecutionCaseIdAndCotrId("progression.query.cotr-form", prosecutionCaseId, cotrId);
+        final JsonEnvelope response = prosecutionCaseQuery.getCotrForm(envelopeWithCaseId);
+        final JsonObject payload = response.payloadAsJsonObject();
+        final JsonObject cotrForm = payload.getJsonObject("cotrForm");
+
+        assertThat(cotrForm.getString("caseId"), is(prosecutionCaseId.toString()));
     }
 
     @Test
@@ -1163,8 +1357,28 @@ public class ProsecutionCaseQueryViewTest {
                 .build();
     }
 
-    private Hearings createCaseHearing(final UUID hearingId, final UUID courtCentreId) {
+    private Hearings createCaseHearing(final UUID hearingId, final UUID courtCentreId, final ZonedDateTime sittingDay1, final ZonedDateTime sittingDay2){
         return Hearings.hearings()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(courtCentreId)
+                        .withName("name")
+                        .withRoomId(randomUUID())
+                        .withRoomName("roomName")
+                        .build())
+                .withHearingDays(
+                        asList(createHearingDay(sittingDay1), createHearingDay(sittingDay2))).build();
+    }
+
+    private HearingDay createHearingDay(final ZonedDateTime sittingDay){
+        HearingDay hearingDay = HearingDay.hearingDay()
+                .withSittingDay(sittingDay).build();
+        return hearingDay;
+    }
+
+    private TrialHearing createTrialHearing(final UUID hearingId, final UUID courtCentreId) {
+        return TrialHearing.trialHearing()
                 .withId(hearingId)
                 .withCourtCentre(CourtCentre.courtCentre()
                         .withId(courtCentreId)
@@ -1172,6 +1386,52 @@ public class ProsecutionCaseQueryViewTest {
                         .withRoomId(randomUUID())
                         .withRoomName("roomName")
                         .build())
+                .withHearingDay(ZonedDateTime.now())
+                .withTrialDefendants(asList(TrialDefendants.trialDefendants()
+                        .withId(randomUUID())
+                        .withFullName("John Smith")
+                        .build()))
+                .build();
+    }
+
+    private JsonObject createCotrForm(final UUID defendantId, final String firstName, final String lastName, final LocalDate dateOfBirth, final ZonedDateTime hearingDay, final UUID prosecutionCaseId) {
+       return Json.createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("caseId", prosecutionCaseId.toString())
+                .add("hearingId", randomUUID().toString())
+                .add("caseUrn", "CASEURN")
+                .add("hearingDay", hearingDay.toLocalDate().toString())
+                .add("listedDurationMinutes", "20")
+                .add("prosecutionFormData", "form data")
+                .build();
+
+    }
+
+    private List<DefenceAdditionalInfo> createDefendantAdditionalInfo() {
+        final LocalDate addedOn = LocalDate.of(2021, 04, 02);
+        DefenceAdditionalInfo defenceAdditionalInfo = DefenceAdditionalInfo.defenceAdditionalInfo()
+                .withId(randomUUID())
+                .withIsCertificationReady(Boolean.TRUE)
+                .withAddedBy(randomUUID())
+                .withAddedByName("John Turner")
+                .withAddedOn(addedOn)
+                .withInformation("")
+                .build();
+        return asList(defenceAdditionalInfo);
+    }
+
+    private CotrDetail createCotrDetail(final UUID cotrId, final UUID defendantId, final UUID hearingId, final String firstName, final String lastName, final LocalDate dateOfBirth, final ZonedDateTime hearingDay, final Boolean isArchived) {
+        return CotrDetail.cotrDetail()
+                .withId(cotrId)
+                .withHearingId(hearingId)
+                .withHearingDay(hearingDay)
+                .withCotrDefendants(asList(CotrDefendants.cotrDefendants()
+                        .withId(defendantId)
+                        .withFirstName(firstName)
+                        .withLastName(lastName)
+                        .withDateOfBirth(dateOfBirth)
+                        .build()))
+                .withIsArchived(isArchived)
                 .build();
     }
 
@@ -1289,6 +1549,21 @@ public class ProsecutionCaseQueryViewTest {
                 createObjectBuilder()
                         .add("caseId", caseId.toString())
                         .add("orderDate", orderDate.toString())
+                        .build());
+    }
+
+    private JsonEnvelope buildEnvelopeWithProsecutionCaseId(final String eventName, final UUID prosecutionCaseId) {
+        return envelopeFrom(
+                DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(eventName).createdAt(ZonedDateTime.now()),
+                createObjectBuilder().add("prosecutionCaseId", prosecutionCaseId.toString()).build());
+    }
+
+    private JsonEnvelope buildEnvelopeWithProsecutionCaseIdAndCotrId(final String eventName, final UUID prosecutionCaseId, final UUID cotrId) {
+        return envelopeFrom(
+                DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(eventName).createdAt(ZonedDateTime.now()),
+                createObjectBuilder()
+                        .add("prosecutionCaseId", prosecutionCaseId.toString())
+                        .add("cotrId", cotrId.toString())
                         .build());
     }
 

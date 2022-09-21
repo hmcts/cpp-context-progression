@@ -143,6 +143,15 @@
                                 <include>
                                     progression.add-court-document.json
                                 </include>
+                                <include>
+                                    progression.create-cotr.json
+                                </include>
+                                <include>
+                                    progression.change-defendants-cotr.json
+                                </include>
+                                <include>
+                                    progression.add-further-info-defence-cotr.json
+                                </include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

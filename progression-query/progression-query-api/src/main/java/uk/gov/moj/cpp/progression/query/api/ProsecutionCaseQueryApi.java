@@ -1,6 +1,10 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 
+import static java.util.Objects.nonNull;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.addProperty;
+
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -20,10 +24,6 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-
-import static java.util.Objects.nonNull;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.addProperty;
 
 @ServiceComponent(Component.QUERY_API)
 public class ProsecutionCaseQueryApi {
@@ -168,6 +168,21 @@ public class ProsecutionCaseQueryApi {
         return requester.request(query);
     }
 
+    @Handles("progression.query.cotr-trial-hearings")
+    public JsonEnvelope getTrialHearings(final JsonEnvelope query){
+        return requester.request(query);
+    }
+
+    @Handles("progression.query.cotr-details")
+    public JsonEnvelope getCotrDetails(final JsonEnvelope query){
+        return requester.request(query);
+    }
+
+    @Handles("progression.query.cotr-form")
+    public JsonEnvelope getCotrForm(final JsonEnvelope query){
+        return requester.request(query);
+    }
+
     private JsonObject createOrganisation(final JsonObject completeOrganisationDetails) {
 
         final JsonObject address = completeOrganisationDetails.getJsonObject(ORGANISATION_ADDRESS);
@@ -179,5 +194,10 @@ public class ProsecutionCaseQueryApi {
                         .add(ADDRESS_LINE_4, address.getString("address4"))
                         .add(ADDRESS_POSTCODE, address.getString(ADDRESS_POSTCODE))
                 ).build();
+    }
+
+    @Handles("progression.query.cotr.details.prosecutioncase")
+    public JsonEnvelope getCotrDetailsProsecutionCase(final JsonEnvelope query){
+        return requester.request(query);
     }
 }

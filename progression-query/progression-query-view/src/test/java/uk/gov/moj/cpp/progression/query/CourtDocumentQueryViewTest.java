@@ -17,6 +17,18 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
+import static uk.gov.moj.cpp.progression.query.CourtDocumentQueryView.APPLICATION_ID;
+import static uk.gov.moj.cpp.progression.query.CourtDocumentQueryView.APPLICATION_ID_SEARCH_PARAM;
+import static uk.gov.moj.cpp.progression.query.CourtDocumentQueryView.CASE_ID_SEARCH_PARAM;
+import static uk.gov.moj.cpp.progression.query.CourtDocumentQueryView.COURT_DOCUMENTS_NOW_SEARCH_NAME;
+import static uk.gov.moj.cpp.progression.query.CourtDocumentQueryView.COURT_DOCUMENTS_SEARCH_NAME;
+import static uk.gov.moj.cpp.progression.query.CourtDocumentQueryView.COURT_DOCUMENTS_SEARCH_WITH_PAGINATION_NAME;
+import static uk.gov.moj.cpp.progression.query.CourtDocumentQueryView.COURT_DOCUMENT_SEARCH_NAME;
+import static uk.gov.moj.cpp.progression.query.CourtDocumentQueryView.DEFENDANT_ID_PARAMETER;
+import static uk.gov.moj.cpp.progression.query.CourtDocumentQueryView.DEFENDANT_ID_SEARCH_PARAM;
+import static uk.gov.moj.cpp.progression.query.CourtDocumentQueryView.HEARING_ID_PARAMETER;
+import static uk.gov.moj.cpp.progression.query.CourtDocumentQueryView.ID_PARAMETER;
+import static uk.gov.moj.cpp.progression.query.CourtDocumentQueryView.PROSECUTION_NOTIFICATION_STATUS;
 
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -375,10 +387,10 @@ public class CourtDocumentQueryViewTest {
     public void shouldFindDocumentById() throws Exception {
         final UUID courtDocumentId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                .add(CourtDocumentQueryView.ID_PARAMETER, courtDocumentId.toString()).build();
+                .add(ID_PARAMETER, courtDocumentId.toString()).build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
-                        .withName(CourtDocumentQueryView.COURT_DOCUMENT_SEARCH_NAME).build(),
+                        .withName(COURT_DOCUMENT_SEARCH_NAME).build(),
                 jsonObject);
         final CourtDocument courtDocument = courtDocument(courtDocumentId, DOCUMENT_TYPE_ID_1, "Court Clerks");
         final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
@@ -398,10 +410,10 @@ public class CourtDocumentQueryViewTest {
     public void shouldNotFindDocumentWhenIsRemoveIsTrue() throws Exception {
         final UUID courtDocumentId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                .add(CourtDocumentQueryView.ID_PARAMETER, courtDocumentId.toString()).build();
+                .add(ID_PARAMETER, courtDocumentId.toString()).build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
-                        .withName(CourtDocumentQueryView.COURT_DOCUMENT_SEARCH_NAME).build(),
+                        .withName(COURT_DOCUMENT_SEARCH_NAME).build(),
                 jsonObject);
         final CourtDocument remCourtDocument = removedCourtDocument(courtDocumentId, DOCUMENT_TYPE_ID_1);
 
@@ -449,11 +461,11 @@ public class CourtDocumentQueryViewTest {
         final Map<UUID, UUID> courtDocumentId2Id = new HashMap<>();
         final UUID documentTypeId = DOCUMENT_TYPE_ID_1;
         addId(null, randomUUID(), null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, documentTypeId, null);
-        jsonBuilder.add(CourtDocumentQueryView.DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
+        jsonBuilder.add(DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
 
         JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
-                        .withName(CourtDocumentQueryView.COURT_DOCUMENTS_SEARCH_NAME)
+                        .withName(COURT_DOCUMENTS_SEARCH_NAME)
                         .withUserId(randomUUID().toString()).build(),
                 jsonBuilder.build());
         mockUserGroups(userGroupArray, jsonEnvelopeIn);
@@ -893,7 +905,7 @@ public class CourtDocumentQueryViewTest {
 
         JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
-                        .withName(CourtDocumentQueryView.COURT_DOCUMENTS_SEARCH_WITH_PAGINATION_NAME)
+                        .withName(COURT_DOCUMENTS_SEARCH_WITH_PAGINATION_NAME)
                         .withUserId(randomUUID().toString())
                         .build(),
                 jsonBuilder.build());
@@ -993,18 +1005,18 @@ public class CourtDocumentQueryViewTest {
         if (isNotEmpty(caseIds) || defendantId != null || isNotEmpty(applicationIds)) {
             if (isNotEmpty(caseIds) && defendantId != null) {
                 addId(caseIds, defendantId, null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_1, userGroup);
-                jsonBuilder.add(CourtDocumentQueryView.CASE_ID_SEARCH_PARAM, caseIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
-                jsonBuilder.add(CourtDocumentQueryView.DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
+                jsonBuilder.add(CASE_ID_SEARCH_PARAM, caseIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
+                jsonBuilder.add(DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
             } else if (caseIds != null) {
                 addId(caseIds, null, null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_1, null);
-                jsonBuilder.add(CourtDocumentQueryView.CASE_ID_SEARCH_PARAM, caseIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
+                jsonBuilder.add(CASE_ID_SEARCH_PARAM, caseIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
             } else if (applicationIds != null) {
                 addId(null, null, applicationIds, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_2, null);
-                jsonBuilder.add(CourtDocumentQueryView.APPLICATION_ID_SEARCH_PARAM, applicationIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
+                jsonBuilder.add(APPLICATION_ID_SEARCH_PARAM, applicationIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
 
             } else if (defendantId != null) {
                 addId(null, defendantId, null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_4, null);
-                jsonBuilder.add(CourtDocumentQueryView.DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
+                jsonBuilder.add(DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
             }
         }
 
@@ -1012,7 +1024,7 @@ public class CourtDocumentQueryViewTest {
 
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
-                        .withName(CourtDocumentQueryView.COURT_DOCUMENTS_SEARCH_NAME)
+                        .withName(COURT_DOCUMENTS_SEARCH_NAME)
                         .withUserId(randomUUID().toString()).build(),
                 jsonObject);
 
@@ -1061,10 +1073,67 @@ public class CourtDocumentQueryViewTest {
                     }
             );
 
-        } else {
+        }else{
             assertThat(result.getDocumentIndices().size(), is(0));
-
         }
+    }
+
+    @Test
+    public void shouldFindAllDocuments() {
+
+        final UUID caseId = randomUUID();
+        final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        final Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex = new HashMap<>();
+        final Map<UUID, UUID> courtDocumentId2Id = new HashMap<>();
+        addId(singletonList(caseId), null, null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_1, null);
+        jsonBuilder.add(CASE_ID_SEARCH_PARAM, caseId.toString());
+
+        final JsonObject jsonObject = jsonBuilder.build();
+
+        final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID())
+                        .withName(COURT_DOCUMENTS_SEARCH_NAME)
+                        .withUserId(randomUUID().toString()).build(),
+                jsonObject);
+
+
+        Answer<?> transformResult = new Answer<Object>() {
+            @Override
+            public Object answer(final InvocationOnMock invocationOnMock) throws Throwable {
+                CourtDocument courtDocument = (CourtDocument) invocationOnMock.getArguments()[0];
+                UUID id = courtDocumentId2Id.get(courtDocument.getCourtDocumentId());
+                return id2ExpectedCourtDocumentIndex.get(id);
+            }
+        };
+
+        when(courtDocumentTransform.transform(any())).thenAnswer(transformResult);
+
+        final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsAll(jsonEnvelopeIn);
+        final CourtDocumentsSearchResult result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
+
+        assertThat(result.getDocumentIndices().size(), is(id2ExpectedCourtDocumentIndex.size()));
+
+        id2ExpectedCourtDocumentIndex.forEach(
+                (id, expectedIndexBuilder) -> {
+                    CourtDocumentIndex actualIndex = result.getDocumentIndices().stream().filter(
+                            cdi -> cdi.getCaseIds() != null && cdi.getCaseIds().stream().anyMatch(idin -> idin.equals(id))
+                                    || cdi.getDefendantIds() != null && cdi.getDefendantIds().stream().anyMatch(idIn -> idIn.equals(id))
+                                    //this mess in necessary because output document index does not have applicatiinId field
+                                    || (cdi.getDocument() != null && cdi.getDocument().getDocumentCategory() != null
+                                    && cdi.getDocument().getDocumentCategory().getApplicationDocument() != null
+                                    && id.equals(cdi.getDocument().getDocumentCategory().getApplicationDocument().getApplicationId()))
+
+                    ).findAny().orElse(null);
+                    assertThat(actualIndex, org.hamcrest.Matchers.notNullValue());
+                    CourtDocumentIndex expectedIndex = expectedIndexBuilder.build();
+                    assertThat(actualIndex.getType(), is(expectedIndex.getType()));
+                    assertThat(actualIndex.getCategory(), is(expectedIndex.getCategory()));
+                    assertThat(actualIndex.getHearingIds().get(0), is(expectedIndex.getHearingIds().get(0)));
+                    final int materialCount = actualIndex.getDocument().getMaterials().size();
+                    assertThat(materialCount, is(1));
+                }
+        );
+
     }
 
     private JsonObject getJsonPayload(final String fileName) throws IOException {
@@ -1083,12 +1152,12 @@ public class CourtDocumentQueryViewTest {
         final UUID applicationId = UUID.randomUUID();
         final UUID courtDocumentId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                .add(CourtDocumentQueryView.APPLICATION_ID, applicationId.toString())
-                .add(CourtDocumentQueryView.APPLICATION_ID, applicationId.toString())
+                .add(APPLICATION_ID, applicationId.toString())
+                .add(APPLICATION_ID, applicationId.toString())
                 .build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
-                        .withName(CourtDocumentQueryView.COURT_DOCUMENTS_SEARCH_NAME)
+                        .withName(COURT_DOCUMENTS_SEARCH_NAME)
                         .withUserId(randomUUID().toString()).build(),
                 jsonObject);
         final List<String> userGroups = singletonList("group1");
@@ -1144,12 +1213,12 @@ public class CourtDocumentQueryViewTest {
                 .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                .add(CourtDocumentQueryView.APPLICATION_ID, applicationId.toString())
-                .add(CourtDocumentQueryView.APPLICATION_ID, applicationId.toString())
+                .add(APPLICATION_ID, applicationId.toString())
+                .add(APPLICATION_ID, applicationId.toString())
                 .build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
-                        .withName(CourtDocumentQueryView.COURT_DOCUMENTS_SEARCH_NAME).withUserId(randomUUID().toString()).build(),
+                        .withName(COURT_DOCUMENTS_SEARCH_NAME).withUserId(randomUUID().toString()).build(),
                 jsonObject);
         final CourtDocument courtDocument = removedCourtDocument(courtDocumentId, DOCUMENT_TYPE_ID_1);
         final CourtDocumentEntity courtDocumentEntity = removedCourtDocumentEntity(courtDocumentId, courtDocument);
@@ -1177,11 +1246,11 @@ public class CourtDocumentQueryViewTest {
         boolean permitted = true;
         final UUID applicationId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                .add(CourtDocumentQueryView.APPLICATION_ID, applicationId.toString())
+                .add(APPLICATION_ID, applicationId.toString())
                 .build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
-                        .withName(CourtDocumentQueryView.COURT_DOCUMENTS_SEARCH_NAME)
+                        .withName(COURT_DOCUMENTS_SEARCH_NAME)
                         .withUserId(randomUUID().toString()).build(),
                 jsonObject);
         final JsonArray userGroupArray = Json.createArrayBuilder()
@@ -1264,12 +1333,12 @@ public class CourtDocumentQueryViewTest {
         final UUID defendantId = UUID.randomUUID();
         final UUID courtDocumentId = UUID.randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                .add(CourtDocumentQueryView.DEFENDANT_ID_PARAMETER, defendantId.toString())
-                .add(CourtDocumentQueryView.HEARING_ID_PARAMETER, hearingId.toString())
+                .add(DEFENDANT_ID_PARAMETER, defendantId.toString())
+                .add(HEARING_ID_PARAMETER, hearingId.toString())
                 .build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
-                        .withName(CourtDocumentQueryView.COURT_DOCUMENTS_NOW_SEARCH_NAME).build(),
+                        .withName(COURT_DOCUMENTS_NOW_SEARCH_NAME).build(),
                 jsonObject);
         final CourtDocument courtDocument = courtDocumentNowType(courtDocumentId);
         final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
@@ -1314,12 +1383,12 @@ public class CourtDocumentQueryViewTest {
                 .add(Json.createObjectBuilder().add("groupName", "group1").build())
                 .build();
         final JsonObject jsonObject = Json.createObjectBuilder()
-                .add(CourtDocumentQueryView.DEFENDANT_ID_PARAMETER, defendantId.toString())
-                .add(CourtDocumentQueryView.HEARING_ID_PARAMETER, hearingId.toString())
+                .add(DEFENDANT_ID_PARAMETER, defendantId.toString())
+                .add(HEARING_ID_PARAMETER, hearingId.toString())
                 .build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
-                        .withName(CourtDocumentQueryView.COURT_DOCUMENTS_NOW_SEARCH_NAME)
+                        .withName(COURT_DOCUMENTS_NOW_SEARCH_NAME)
                         .withUserId(randomUUID().toString()).build(),
                 jsonObject);
         final CourtDocument courtDocument = courtDocumentNowTypeWithRbacDetails(courtDocumentId);
@@ -1401,18 +1470,18 @@ public class CourtDocumentQueryViewTest {
         final UUID documentTypeId = DOCUMENT_TYPE_ID_1;
 
         final JsonObject jsonObject = Json.createObjectBuilder()
-                .add(CourtDocumentQueryView.CASE_ID_SEARCH_PARAM, caseId.toString())
+                .add(CASE_ID_SEARCH_PARAM, caseId.toString())
                 .build();
 
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
-                        .withName(CourtDocumentQueryView.PROSECUTION_NOTIFICATION_STATUS).build(),
+                        .withName(PROSECUTION_NOTIFICATION_STATUS).build(),
                 jsonObject);
 
         final ProsecutionCase prosecutionCase = createProsecutionCase(randomUUID());
         final ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase, caseId);
 
-        final CourtDocument courtDocument = courtDocument(courtDocumentId, documentTypeId, "Court Clerks");
+        final CourtDocument courtDocument = courtDocument(courtDocumentId, documentTypeId,"Court Clerks");
         final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
         final NotificationStatusEntity notificationStatusEntity = notificationStatusEntity(caseId);
 

@@ -415,7 +415,9 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.update-form-defendants+json:
             example: !include json/progression.command.update-form-defendants.json
             schema:  !include json/schema/progression.command.update-form-defendants.json
-
+        application/vnd.progression.command.update-prosecution-cotr+json:
+             example: !include json/progression.command.update-prosecution-cotr.json
+             schema:  !include json/schema/progression.command.update-prosecution-cotr.json
         application/vnd.progression.command.update-cps-defendant-id+json:
             example: !include json/progression.command.update-cps-defendant-id.json
             schema: !include json/schema/progression.command.update-cps-defendant-id.json
@@ -429,6 +431,46 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.plead-online+json:
             schema: !include json/schema/progression.command.online-plea-request.json
             example: !include json/progression.command.online-plea-request.json
+        application/vnd.progression.command.update-index-for-bdf+json:
+            schema: !include json/schema/progression.command.update-index-for-bdf.json
+            example: !include json/progression.command.update-index-for-bdf.json
+
+# COTR
+        application/vnd.progression.command.create-cotr+json:
+            schema: !include json/schema/progression.command.create-cotr.json
+            example: !include json/progression.command.create-cotr.json
+
+        application/vnd.progression.command.serve-prosecution-cotr+json:
+            schema: !include json/schema/progression.command.serve-prosecution-cotr.json
+            example: !include json/progression.command.serve-prosecution-cotr.json
+
+        application/vnd.progression.command.archive-cotr+json:
+            schema: !include json/schema/progression.command.archive-cotr.json
+            example: !include json/progression.command.archive-cotr.json
+
+        application/vnd.progression.command.serve-defendant-cotr+json:
+            schema: !include json/schema/progression.command.serve-defendant-cotr.json
+            example: !include json/progression.command.serve-defendant-cotr.json
+
+        application/vnd.progression.command.change-defendants-cotr+json:
+            schema: !include json/schema/progression.command.change-defendants-cotr.json
+            example: !include json/progression.command.change-defendants-cotr.json
+
+        application/vnd.progression.command.add-further-info-prosecution-cotr+json:
+            schema: !include json/schema/progression.command.add-further-info-prosecution-cotr.json
+            example: !include json/progression.command.add-further-info-prosecution-cotr.json
+
+        application/vnd.progression.command.add-further-info-defence-cotr+json:
+            schema: !include json/schema/progression.command.add-further-info-defence-cotr.json
+            example: !include json/progression.command.add-further-info-defence-cotr.json
+
+        application/vnd.progression.command.update-review-notes+json:
+            schema: !include json/schema/progression.command.update-review-notes.json
+            example: !include json/progression.command.update-review-notes.json
+
+        application/vnd.progression.command.request-cotr-task+json:
+            schema: !include json/schema/progression.command.request-cotr-task.json
+            example: !include json/progression.command.request-cotr-task.json
 
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****

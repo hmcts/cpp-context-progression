@@ -38,6 +38,7 @@ public class CourtDocumentEnricher {
                 .withSeqNum(seqNum)
                 .withDocumentTypeRBAC(documentTypeRBAC)
                 .withSendToCps(courtDocument.getSendToCps())
+                .withNotificationType(courtDocument.getNotificationType())
                 .build();
     }
 

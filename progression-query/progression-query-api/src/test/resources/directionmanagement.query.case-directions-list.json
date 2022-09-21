@@ -1,0 +1,34 @@
+{
+  "caseDirections": [
+    {
+      "assignee": {
+        "assigneePersonId": "8ff2893b-4d89-457c-942e-c598632b2363"
+      },
+      "caseId": "8ff2893b-4d89-457c-942e-c598632b2363",
+      "defendantId": "15038b5f-07e6-4992-8884-9e695c2a13d4",
+      "defaultDirection": false,
+      "directionTypeId": "0a18eadf-0970-42ff-b980-b7f383391391",
+      "displayText": "The Prosecutor must serve any further evidence by 1 Aug 2021",
+      "dueDate": "2021-08-01",
+      "hearingType": "Second hearing",
+      "id": "f52b05c5-772d-4b4f-92f7-24efb591fd10",
+      "orderDate": "2022-03-20",
+      "status": "PENDING"
+    },
+    {
+      "assignee": {
+        "assigneePersonId": "8ff2893b-4d89-457c-942e-c598632b2363"
+      },
+      "caseId": "8ff2893b-4d89-457c-942e-c598632b2363",
+      "defendantId": "23338b5f-07e6-4992-8884-9e695c2a13d7",
+      "defaultDirection": false,
+      "directionTypeId": "29be8453-b3c6-4f5c-815f-7f6b41ac1ac1",
+      "displayText": "If the initial duty of disclosure has not been compiled with, the prosecutor must comply by 10 Aug 2021",
+      "dueDate": "2021-08-10",
+      "hearingType": "Second hearing",
+      "id": "d49ea9f8-ede6-4189-9213-15ea09c8046a",
+      "orderDate": "2022-03-20",
+      "status": "PENDING"
+    }
+  ]
+}

@@ -63,7 +63,26 @@ public class PetForDefendantQueryHelper {
 
     }
 
-    private JsonObject convertToPetForDefendant(final Requester requester, final JsonObject petDefendantOffence, final JsonEnvelope query) {
+    public JsonObject buildPetForDefendant(final Requester requester, final JsonEnvelope query, final String caseId, final String defendantId) {
+
+        final JsonArray petsJsonArray = progressionService.getPetsForCase(requester, query, caseId).getJsonArray(PETS);
+        final JsonArrayBuilder petsArrayBuilder = createArrayBuilder();
+
+        petsJsonArray.stream()
+                .map(JsonObject.class::cast)
+                .forEach(obj -> {
+                    final JsonObject pet = convertToPetForDefendant(requester, obj, query, defendantId);
+                    if(nonNull(pet)) {
+                        petsArrayBuilder.add(pet);
+                    }
+                });
+
+
+        return createObjectBuilder().add(PETS, petsArrayBuilder).build();
+
+    }
+
+    private JsonObject convertToPetForDefendant(final Requester requester, final JsonObject petDefendantOffence, final JsonEnvelope query){
         final String petId = petDefendantOffence.getString(PET_ID);
         final String defendantId = query.payloadAsJsonObject().getString(DEFENDANT_ID);
 
@@ -85,6 +104,30 @@ public class PetForDefendantQueryHelper {
         }
         return jsonObjectBuilder.build();
     }
+
+    private JsonObject convertToPetForDefendant(final Requester requester, final JsonObject petDefendantOffence, final JsonEnvelope query, final String defendantId) {
+        final String petId = petDefendantOffence.getString(PET_ID);
+
+        final JsonObject petFormPayload = materialService.getPet(requester, query, petId);
+        final JsonObject petData = stringToJsonObjectConverter.convert(petFormPayload.getString(DATA));
+        final JsonObject defendantPetData = buildDefendantPetData(petData, defendantId);
+
+        final JsonArray offences = getOffencesOfDefendant(petDefendantOffence, defendantId);
+
+        if (!offences.isEmpty()) {
+            return createObjectBuilder()
+                    .add(PET_ID, petId)
+                    .add(FORM_ID, petFormPayload.getString(FORM_ID))
+                    .add(OFFENCES, offences)
+                    .add(DATA, defendantPetData.toString())
+                    .add(LAST_UPDATED, petFormPayload.getString(LAST_UPDATED))
+                    .build();
+        } else {
+            return null;
+        }
+
+    }
+
 
     private JsonArray getOffencesOfDefendant(final JsonObject petDefendantOffence, final String defendantId){
         final JsonArray defendants = petDefendantOffence.getJsonArray(DEFENDANTS);

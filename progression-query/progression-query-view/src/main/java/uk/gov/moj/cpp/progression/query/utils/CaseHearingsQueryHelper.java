@@ -1,5 +1,11 @@
 package uk.gov.moj.cpp.progression.query.utils;
 
+import static java.util.Objects.nonNull;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Optional.ofNullable;
+
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.progression.courts.Hearings;
@@ -12,12 +18,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static java.time.format.DateTimeFormatter.ofPattern;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 
 public class CaseHearingsQueryHelper {
 
@@ -36,6 +36,7 @@ public class CaseHearingsQueryHelper {
     public static final String HEARING_DAYS = "hearingDays";
     public static final String SITTING_DAY = "sittingDay";
     public static final DateTimeFormatter ZONE_DATETIME_FORMATTER = ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    public static final String JURISDICTION_TYPE = "jurisdictionType";
 
     private CaseHearingsQueryHelper() {
     }
@@ -67,10 +68,16 @@ public class CaseHearingsQueryHelper {
 
     private static JsonObject buildHearing(final Hearings hearing) {
         final JsonObjectBuilder builder = createObjectBuilder()
-                .add(HEARING_ID, hearing.getId().toString());
+                .add(HEARING_ID, hearing.getId().toString())
+                .add(ID, hearing.getId().toString())
+                .add(JURISDICTION_TYPE, hearing.getJurisdictionType().toString());
 
         if (nonNull(hearing.getCourtCentre())) {
             builder.add(COURT_CENTRE, buildCourtCentre(hearing.getCourtCentre()));
+        }
+
+        if (nonNull(hearing.getHearingDays())) {
+            builder.add(HEARING_DAYS, buildHearingDays(hearing.getHearingDays()));
         }
 
         return builder.build();

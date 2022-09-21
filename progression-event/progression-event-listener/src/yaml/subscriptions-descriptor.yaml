@@ -273,12 +273,41 @@ subscriptions_descriptor:
         - name: progression.hearing-initiate-enriched
           schema_uri: http://justice.gov.uk/core/courts/progression.event-hearing-initiate-enriched.json
 
-
         - name: progression.event.hearing-moved-to-unallocated
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-moved-to-unallocated.json
 
         - name: progression.event.online-plea-recorded
           schema_uri: http://justice.gov.uk/core/courts/online-plea-recorded.json
+
+        - name: progression.event.cotr-created
+          schema_uri: http://justice.gov.uk/cpp/progression/event/progression.event.cotr-created.json
+
+        - name: progression.event.prosecution-cotr-served
+          schema_uri: http://justice.gov.uk/cpp/progression/event/prosecution-cotr-served.json
+
+        - name: progression.event.prosecution-cotr-updated
+          schema_uri: http://justice.gov.uk/cpp/progression/event/prosecution-cotr-updated.json
+
+        - name: progression.event.cotr-archived
+          schema_uri: http://justice.gov.uk/cpp/progression/event/progression.event.cotr-archived.json
+
+        - name: progression.event.defendant-cotr-served
+          schema_uri: http://justice.gov.uk/core/courts/defendant-cotr-served.json
+
+        - name: progression.event.defendant-added-to-cotr
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.defendant-added-to-cotr.json
+
+        - name: progression.event.defendant-removed-from-cotr
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.defendant-removed-from-cotr.json
+
+        - name: progression.event.further-info-for-prosecution-cotr-added
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.further-info-for-prosecution-cotr-added.json
+
+        - name: progression.event.further-info-for-defence-cotr-added
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.further-info-for-defence-cotr-added.json
+
+        - name: progression.event.review-notes-updated
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.review-notes-updated.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****

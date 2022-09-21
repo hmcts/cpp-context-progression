@@ -37,6 +37,8 @@ import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.Offences;
 import uk.gov.justice.progression.courts.Respondents;
+import uk.gov.justice.progression.query.TrialDefendants;
+import uk.gov.justice.progression.query.TrialHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
@@ -122,6 +124,13 @@ public class HearingAtAGlanceService {
         }
 
         return getQueryResponse(hearingEntities, caseId, prosecutionCase, caseDefendantHearingEntities, latestHearingJurisdictionType);
+    }
+
+    public List<TrialHearing> getTrialHearings(final UUID prosecutionCaseId) {
+        LOGGER.info("Get trial hearings for prosecution case id {}", prosecutionCaseId);
+        final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByCaseId(prosecutionCaseId);
+        final List<HearingEntity> hearingEntities = getHearingEntities(caseDefendantHearingEntities);
+        return createTrialHearings(hearingEntities, prosecutionCaseId);
     }
 
     private List<HearingEntity> getHearingEntities(final List<CaseDefendantHearingEntity> caseDefendantHearingEntities) {
@@ -212,7 +221,7 @@ public class HearingAtAGlanceService {
         final List<Hearings> hearingsList = new ArrayList<>();
         hearingEntities.forEach(hearingEntity -> {
             final JsonObject hearingJson = stringToJsonObjectConverter.convert(hearingEntity.getPayload());
-            final uk.gov.justice.core.courts.Hearing hearing = jsonObjectToObjectConverter.convert(hearingJson, uk.gov.justice.core.courts.Hearing.class);
+            final Hearing hearing = jsonObjectToObjectConverter.convert(hearingJson, Hearing.class);
 
             final Hearings hearingsView = Hearings.hearings()
                     .withId(hearing.getId())
@@ -255,6 +264,26 @@ public class HearingAtAGlanceService {
             hearingsList.add(hearingsView);
         });
         return hearingsList;
+    }
+
+    private List<TrialHearing> createTrialHearings(final List<HearingEntity> hearingEntities, final UUID prosecutionCaseId) {
+        LOGGER.info("Create trial hearings for prosecution case {}", prosecutionCaseId);
+        final List<TrialHearing> trialHearings = new ArrayList<>();
+        hearingEntities.forEach(hearingEntity -> {
+            final JsonObject hearingJson = stringToJsonObjectConverter.convert(hearingEntity.getPayload());
+            final Hearing hearing = jsonObjectToObjectConverter.convert(hearingJson, Hearing.class);
+
+            final TrialHearing trialHearing = TrialHearing.trialHearing()
+                    .withId(hearing.getId())
+                    .withType(hearing.getType())
+                    .withHearingDay(getEarliestHearingDate(hearing.getHearingDays()))
+                    .withJurisdictionType(getJurisdictionType(hearing))
+                    .withCourtCentre(hearing.getCourtCentre())
+                    .withTrialDefendants(createTrialHearingDefendants(prosecutionCaseId, hearing.getProsecutionCases()))
+                    .build();
+            trialHearings.add(trialHearing);
+        });
+        return trialHearings;
     }
 
     private Boolean hasResultAmended(final Hearing hearing) {
@@ -351,6 +380,21 @@ public class HearingAtAGlanceService {
         return defendantsList;
     }
 
+    private List<TrialDefendants> createTrialHearingDefendants(final UUID prosecutionCaseId, final List<ProsecutionCase> prosecutionCases) {
+        LOGGER.info("Create defendants for prosecution case {}", prosecutionCaseId);
+        final List<TrialDefendants> trialDefendants = new ArrayList<>();
+        if (isNotEmpty(prosecutionCases)) {
+            final ProsecutionCase prosecutionCase = prosecutionCases.stream()
+                    .filter(pc -> nonNull(pc) && prosecutionCaseId.equals(pc.getId()))
+                    .findFirst()
+                    .orElse(null);
+            if (nonNull(prosecutionCase)) {
+                addDefendantsToTrialHearing(prosecutionCase.getDefendants(), trialDefendants);
+            }
+        }
+        return trialDefendants;
+    }
+
     private static void addNonDefendantsToDefendantsView(final List<CourtApplication> courtApplications, final List<Defendants> defendantsList, final List<CourtApplicationParty> courtApplicationParties) {
         courtApplicationParties.forEach(courtApplicationParty -> {
             if (nonNull(courtApplicationParty.getPersonDetails()) ||
@@ -378,6 +422,17 @@ public class HearingAtAGlanceService {
                     .withProceedingsConcluded(defendant.getProceedingsConcluded())
                     .build();
             defendantsList.add(defendantView);
+        });
+    }
+
+    private static void addDefendantsToTrialHearing(final List<Defendant> defendants, final List<TrialDefendants> defendantsList) {
+        defendants.forEach(defendant -> {
+            final TrialDefendants trialDefendants = TrialDefendants.trialDefendants()
+                    .withId(defendant.getId())
+                    .withFullName(getDefendantName(defendant.getPersonDefendant(), defendant.getLegalEntityDefendant()))
+                    .withDateOfBirth(getDefendantDataOfBirth(defendant.getPersonDefendant()))
+                    .build();
+            defendantsList.add(trialDefendants);
         });
     }
 
@@ -585,7 +640,7 @@ public class HearingAtAGlanceService {
         return null;
     }
 
-    private static DefenceOrganisation getDefenceOrganisation(final uk.gov.justice.core.courts.Defendant defendant, final uk.gov.justice.core.courts.Hearing hearing) {
+    private static DefenceOrganisation getDefenceOrganisation(final Defendant defendant, final Hearing hearing) {
         return DefenceOrganisation.defenceOrganisation()
                 .withDefendantId(defendant.getId())
                 .withDefenceOrganisation(defendant.getDefenceOrganisation())
@@ -593,7 +648,7 @@ public class HearingAtAGlanceService {
                 .build();
     }
 
-    private static List<DefenceCounsel> getDefenceCounselsForDefendant(final uk.gov.justice.core.courts.Defendant defendant, final List<DefenceCounsel> defenceCounsels) {
+    private static List<DefenceCounsel> getDefenceCounselsForDefendant(final Defendant defendant, final List<DefenceCounsel> defenceCounsels) {
         if (null != defenceCounsels) {
             return defenceCounsels.stream()
                     .filter(defenceCounsel -> defenceCounsel.getDefendants().contains(defendant.getId()))

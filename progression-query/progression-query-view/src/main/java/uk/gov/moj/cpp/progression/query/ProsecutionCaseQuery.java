@@ -23,6 +23,8 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.CaagDefendants;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
+import uk.gov.justice.progression.query.CotrDetail;
+import uk.gov.justice.progression.query.TrialHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -34,6 +36,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.domain.pojo.Prosecutor;
 import uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper;
+import uk.gov.moj.cpp.progression.query.view.service.CotrQueryService;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseCpsProsecutorEntity;
@@ -137,6 +140,9 @@ public class ProsecutionCaseQuery {
 
     @Inject
     private CaseCpsProsecutorRepository caseCpsProsecutorRepository;
+
+    @Inject
+    private CotrQueryService cotrQueryService;
 
     @Handles("progression.query.prosecutioncase")
     public JsonEnvelope getProsecutionCase(final JsonEnvelope envelope) {
@@ -289,6 +295,54 @@ public class ProsecutionCaseQuery {
         return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
     }
 
+    @Handles("progression.query.cotr-trial-hearings")
+    public JsonEnvelope getTrialHearings(final JsonEnvelope envelope) {
+        final UUID prosecutionCaseId = getProsecutionCaseId(envelope);
+        final List<TrialHearing> trialHearings = hearingAtAGlanceService.getTrialHearings(prosecutionCaseId);
+
+        final JsonArrayBuilder trialHearingsBuilder = createArrayBuilder();
+        trialHearings.forEach(trialHearing -> {
+            final JsonObject trialHearingJsonObject = objectToJsonObjectConverter.convert(trialHearing);
+            trialHearingsBuilder.add(trialHearingJsonObject);
+        });
+
+        final JsonObject responsePayload = createObjectBuilder().add("trialHearings", trialHearingsBuilder).build();
+        return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
+    }
+
+    @Handles("progression.query.cotr-details")
+    public JsonEnvelope getCotrDetails(final JsonEnvelope envelope) {
+        final UUID prosecutionCaseId = getProsecutionCaseId(envelope);
+        final List<CotrDetail> cotrDetails = cotrQueryService.getCotrDetailsForAProsecutionCase(prosecutionCaseId);
+
+        final JsonArrayBuilder cotrDetailsBuilder = createArrayBuilder();
+        cotrDetails.forEach(cotrDetail -> {
+            final JsonObject cotrDetailsJsonObject = objectToJsonObjectConverter.convert(cotrDetail);
+            cotrDetailsBuilder.add(cotrDetailsJsonObject);
+        });
+
+        final JsonObject responsePayload = createObjectBuilder().add("cotrDetails", cotrDetailsBuilder).build();
+        return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
+    }
+
+    @Handles("progression.query.cotr-form")
+    public JsonEnvelope getCotrForm(final JsonEnvelope envelope) {
+        final UUID prosecutionCaseId = getProsecutionCaseId(envelope);
+        final UUID cotrId = getCotrId(envelope);
+        final JsonObject cotrForm = cotrQueryService.getCotrFormForAProsecutionCaseAndCotr(prosecutionCaseId, cotrId);
+
+        final JsonObject responsePayload = createObjectBuilder().add("cotrForm", cotrForm).build();
+        return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
+    }
+
+    private UUID getProsecutionCaseId(final JsonEnvelope envelope) {
+        return JsonObjects.getUUID(envelope.payloadAsJsonObject(), "prosecutionCaseId").get();
+    }
+
+    private UUID getCotrId(final JsonEnvelope envelope) {
+        return JsonObjects.getUUID(envelope.payloadAsJsonObject(), "cotrId").get();
+    }
+
     private void addCourtApplication(final GetHearingsAtAGlance getHearingAtAGlance, final List<CourtApplicationCaseEntity> courtApplicationEntities) {
         getHearingAtAGlance.getCourtApplications()
                 .addAll(courtApplicationEntities.stream()
@@ -363,6 +417,21 @@ public class ProsecutionCaseQuery {
         return JsonEnvelope.envelopeFrom(
                 envelope.metadata(),
                 jsonObjectBuilder.build());
+    }
+
+    @Handles("progression.query.cotr.details.prosecutioncase")
+    public JsonEnvelope getCotrDetailsByCaseId(final JsonEnvelope envelope) {
+        final UUID prosecutionCaseId = getProsecutionCaseId(envelope);
+        final List<CotrDetail> cotrDetails = cotrQueryService.getCotrDetailsForAProsecutionCaseByLatestHearingDate(prosecutionCaseId);
+
+        final JsonArrayBuilder cotrDetailsBuilder = createArrayBuilder();
+        cotrDetails.forEach(cotrDetail -> {
+            final JsonObject cotrDetailsJsonObject = objectToJsonObjectConverter.convert(cotrDetail);
+            cotrDetailsBuilder.add(cotrDetailsJsonObject);
+        });
+
+        final JsonObject responsePayload = createObjectBuilder().add("cotrDetails", cotrDetailsBuilder).build();
+        return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
     }
 
     private void buildApplicationSummary(final String applicationPayload, final JsonArrayBuilder jsonApplicationBuilder) {

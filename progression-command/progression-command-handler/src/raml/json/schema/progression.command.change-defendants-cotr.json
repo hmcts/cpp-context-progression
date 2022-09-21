@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/progression.command.change-defendants-cotr.json",
+  "type": "object",
+  "properties": {
+    "cotrId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "addedDefendantIds": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      }
+    },
+    "removedDefendantIds": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      }
+    }
+  },
+  "required": [
+    "cotrId",
+    "hearingId"
+  ],
+  "additionalProperties": false
+}
