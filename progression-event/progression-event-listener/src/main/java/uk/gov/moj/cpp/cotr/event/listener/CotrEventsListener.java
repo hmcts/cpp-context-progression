@@ -156,7 +156,7 @@ public class CotrEventsListener {
                             .withFurtherProsecutionInformationProvidedAfterCertification(nonNull(prosecutionFormDataEntity.getProsecutionQuestions().getFurtherProsecutionInformationProvidedAfterCertification())  && nonNull( prosecutionCotrUpdated.getFurtherProsecutionInformationProvidedAfterCertification())?
                                     append(prosecutionFormDataEntity.getProsecutionQuestions().getFurtherProsecutionInformationProvidedAfterCertification(), prosecutionCotrUpdated.getFurtherProsecutionInformationProvidedAfterCertification()) :
                                     prosecutionCotrUpdated.getFurtherProsecutionInformationProvidedAfterCertification())
-                            .withFormCompletedOnBehalfOfProsecutionBy(nonNull(prosecutionFormDataEntity.getProsecutionQuestions().getFormCompletedOnBehalfOfProsecutionBy())  && nonNull(prosecutionCotrUpdated.getFormCompletedOnBehalfOfProsecutionBy())?
+                            .withFormCompletedOnBehalfOfProsecutionBy(nonNull(prosecutionCotrUpdated.getFormCompletedOnBehalfOfProsecutionBy())?
                                     prosecutionCotrUpdated.getFormCompletedOnBehalfOfProsecutionBy() :
                                     prosecutionFormDataEntity.getProsecutionQuestions().getFormCompletedOnBehalfOfProsecutionBy())
                             .build())
@@ -164,7 +164,7 @@ public class CotrEventsListener {
                             .withValuesFrom(prosecutionFormDataEntity.getCertification())
                             .withCertificationDate(prosecutionCotrUpdated.getCertificationDate())
                             .withCertifyThatTheProsecutionIsTrialReady(prosecutionCotrUpdated.getCertifyThatTheProsecutionIsTrialReady())
-                            .withFormCompletedOnBehalfOfTheProsecutionBy(nonNull(prosecutionFormDataEntity.getProsecutionQuestions().getFormCompletedOnBehalfOfProsecutionBy())  && nonNull(prosecutionCotrUpdated.getFormCompletedOnBehalfOfProsecutionBy())?
+                            .withFormCompletedOnBehalfOfTheProsecutionBy(nonNull(prosecutionCotrUpdated.getFormCompletedOnBehalfOfProsecutionBy())?
                                     prosecutionCotrUpdated.getFormCompletedOnBehalfOfProsecutionBy() :
                                     prosecutionFormDataEntity.getProsecutionQuestions().getFormCompletedOnBehalfOfProsecutionBy())
                             .build()).build();
