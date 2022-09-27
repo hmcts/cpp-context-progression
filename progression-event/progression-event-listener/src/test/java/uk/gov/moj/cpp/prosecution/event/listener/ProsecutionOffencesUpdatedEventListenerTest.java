@@ -22,6 +22,7 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ReportingRestriction;
@@ -488,7 +489,7 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
     }
 
     @Test
-    public void shouldAddOffencesToBothFirstHearingAndAdjournedHearing() {
+    public void shouldAddOffencesToUnResultedHearing() {
         final UUID hearing1Id = randomUUID();
         final UUID hearing2Id = randomUUID();
         final UUID prosecutionCaseId = randomUUID();
@@ -535,6 +536,7 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         caseDefendantHearing1Entity.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId, hearing1Id));
         final HearingEntity hearing1Entity = new HearingEntity();
         hearing1Entity.setHearingId(hearing1Id);
+        hearing1Entity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
         final Hearing hearing1 = hearing()
                 .withProsecutionCases(Arrays.asList(prosecutionCase()
                         .withId(prosecutionCaseId)
@@ -544,6 +546,7 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
                                         offence().withId(offence2Id).build())))
                                 .build())))
                         .build()))
+                .withHasSharedResults(true)
                 .build();
 
         hearing1Entity.setPayload(objectToJsonObjectConverter.convert(hearing1).toString());
@@ -580,11 +583,10 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
 
 
         verify(repository).save(argumentCaptor.capture());
-        verify(hearingRepository, times(2)).save(hearingEntityArgumentCaptor.capture());
+        verify(hearingRepository, times(1)).save(hearingEntityArgumentCaptor.capture());
 
         List<HearingEntity> hearingEntityList = hearingEntityArgumentCaptor.getAllValues();
         JsonObject jsonObjectHearing1 = stringToJsonObjectConverter.convert(hearingEntityList.get(0).getPayload());
-        JsonObject jsonObjectHearing2 = stringToJsonObjectConverter.convert(hearingEntityList.get(1).getPayload());
 
         JsonArray jsonHearing1OffencesArray = jsonObjectHearing1.getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences");
         assertThat(jsonHearing1OffencesArray.size(), is(3));
@@ -592,11 +594,6 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         assertThat(jsonHearing1OffencesArray.getJsonObject(1).getJsonString("id").getString(), is(offence2Id.toString()));
         assertThat(jsonHearing1OffencesArray.getJsonObject(2).getJsonString("id").getString(), is(offence3Id.toString()));
 
-        JsonArray jsonHearing2OffencesArray = jsonObjectHearing2.getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences");
-        assertThat(jsonHearing2OffencesArray.size(), is(3));
-        assertThat(jsonHearing2OffencesArray.getJsonObject(0).getJsonString("id").getString(), is(offence1Id.toString()));
-        assertThat(jsonHearing2OffencesArray.getJsonObject(1).getJsonString("id").getString(), is(offence2Id.toString()));
-        assertThat(jsonHearing2OffencesArray.getJsonObject(2).getJsonString("id").getString(), is(offence3Id.toString()));
 
     }
 

@@ -467,7 +467,7 @@ public class UpdateOffencesHandlerTest {
 
     private HearingAggregate getEventStreamReady(final UUID hearingId) {
         return new HearingAggregate() {{
-            apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(Hearing.hearing().withId(hearingId).build()).build());
+            apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(Hearing.hearing().withId(hearingId).withHasSharedResults(false).build()).build());
         }};
     }
 

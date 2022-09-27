@@ -35,6 +35,7 @@ import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.HearingOffencesUpdated;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
@@ -51,6 +52,7 @@ import uk.gov.justice.core.courts.PleaModel;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
 import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.core.courts.VerdictType;
@@ -65,6 +67,7 @@ import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCa
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
+import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.justice.staginghmi.courts.UpdateHearingFromHmi;
 import uk.gov.moj.cpp.progression.test.CoreTestTemplates;
 
@@ -72,6 +75,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -90,6 +94,7 @@ public class HearingAggregateTest {
     private static final String GUILTY = "GUILTY";
     @InjectMocks
     private HearingAggregate hearingAggregate;
+
 
     @Test
     public void shouldDoCorrectiononHearingDaysWithoutCourtCentre() throws IOException {
@@ -1159,6 +1164,53 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldOnlyUpdateWhenHearingIsUnResulted() {
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String offenceCode = new StringGenerator().next();
+        final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withHasSharedResults(false)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now())
+                                .withCourtRoomId(randomUUID()).build()))
+                        .withType(HearingType.hearingType().withDescription("Statement").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("A001").build())
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .withJudiciary(singletonList(JudicialRole.judicialRole().build()))
+                        .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(randomUUID())
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                                .withId(defendantId)
+                                        .withMasterDefendantId(defendantId)
+                                                .withOffences(singletonList(Offence.offence().withListingNumber(1).build()))
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(randomUUID())
+                                                .withMasterDefendantId(randomUUID())
+                                                .withOffences(singletonList(Offence.offence().withListingNumber(1).build()))
+                                                .build()))).build()))
+                        .build()).build());
+
+        final List<Offence> offences  =  Stream.of(
+                Offence.offence().withId(randomUUID()).withOffenceCode(randomUUID().toString()).withOffenceTitle("RegularOffence1").withReportingRestrictions(Collections.singletonList(ReportingRestriction.reportingRestriction().withId(randomUUID()).withLabel(YOUTH_RESTRICTION).withOrderedDate(LocalDate.now()).build())).build(),
+                Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withOffenceTitle("SexualOffence1").build()
+        ).collect(Collectors.toList());
+
+        List<Object> events = hearingAggregate.updateOffence(defendantId, offences).collect(toList());
+        final HearingOffencesUpdated hearingOffencesUpdated = (HearingOffencesUpdated)events.get(0);
+        assertThat(hearingOffencesUpdated.getHearingId(), is(hearingId));
+        List<Offence> offencesInHearing = hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences();
+        assertThat(offencesInHearing.size(), is(2));
+
+    }
+
+
+
+
+        @Test
     public void shouldRaiseUnAllocatedEventWhenCourtRoomRemoved(){
         final UUID hearingId = randomUUID();
 
