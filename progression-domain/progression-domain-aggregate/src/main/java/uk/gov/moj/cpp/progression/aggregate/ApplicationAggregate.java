@@ -228,19 +228,24 @@ public class ApplicationAggregate implements Aggregate {
 
     public Stream<Object> initiateCourtApplicationProceedings(final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings, final boolean applicationReferredToNewHearing, final boolean applicationCreatedForSJPCase) {
         LOGGER.debug("Initiated Court Application Proceedings");
-        CourtApplication updatedCourtApplication = updateCourtApplicationReference(initiateCourtApplicationProceedings.getCourtApplication());
-        if (initiateCourtApplicationProceedings.getSummonsApprovalRequired() && nonNull(initiateCourtApplicationProceedings.getCourtHearing())) {
-            updatedCourtApplication = updateCourtApplicationWithFutureSummonsHearing(updatedCourtApplication, initiateCourtApplicationProceedings.getCourtHearing());
+        if(isNull(this.courtApplication)) {
+            CourtApplication updatedCourtApplication = updateCourtApplicationReference(initiateCourtApplicationProceedings.getCourtApplication());
+            if (initiateCourtApplicationProceedings.getSummonsApprovalRequired() && nonNull(initiateCourtApplicationProceedings.getCourtHearing())) {
+                updatedCourtApplication = updateCourtApplicationWithFutureSummonsHearing(updatedCourtApplication, initiateCourtApplicationProceedings.getCourtHearing());
+            }
+            return apply(
+                    Stream.of(CourtApplicationProceedingsInitiated.courtApplicationProceedingsInitiated()
+                            .withCourtApplication(updatedCourtApplication)
+                            .withCourtHearing(initiateCourtApplicationProceedings.getCourtHearing())
+                            .withBoxHearing(initiateCourtApplicationProceedings.getBoxHearing())
+                            .withSummonsApprovalRequired(initiateCourtApplicationProceedings.getSummonsApprovalRequired())
+                            .withApplicationReferredToNewHearing(applicationReferredToNewHearing)
+                            .withIsSJP(applicationCreatedForSJPCase)
+                            .build()));
+        } else {
+            LOGGER.debug("Initiated Court Application Event not raised as it is a duplicate request");
+            return ignoreApplicationProceedings(initiateCourtApplicationProceedings);
         }
-        return apply(
-                Stream.of(CourtApplicationProceedingsInitiated.courtApplicationProceedingsInitiated()
-                        .withCourtApplication(updatedCourtApplication)
-                        .withCourtHearing(initiateCourtApplicationProceedings.getCourtHearing())
-                        .withBoxHearing(initiateCourtApplicationProceedings.getBoxHearing())
-                        .withSummonsApprovalRequired(initiateCourtApplicationProceedings.getSummonsApprovalRequired())
-                        .withApplicationReferredToNewHearing(applicationReferredToNewHearing)
-                        .withIsSJP(applicationCreatedForSJPCase)
-                        .build()));
     }
 
     public Stream<Object> ignoreApplicationProceedings(InitiateCourtApplicationProceedings initiateCourtProceedingsForApplication) {

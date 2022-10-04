@@ -37,16 +37,20 @@ import static uk.gov.justice.progression.courts.RejectApplicationSummons.rejectA
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import org.junit.Assert;
 import uk.gov.justice.core.courts.AddCourtApplicationToCase;
 import uk.gov.justice.core.courts.ApplicationReferredToBoxwork;
 import uk.gov.justice.core.courts.ApplicationReferredToCourtHearing;
@@ -148,6 +152,10 @@ public class CourtApplicationHandlerTest {
 
     @Mock
     private EventStream eventStream;
+
+    @Mock
+    private EventStream eventStream1;
+
 
     @Mock
     private AggregateService aggregateService;
@@ -1393,6 +1401,54 @@ public class CourtApplicationHandlerTest {
                                 withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].wording", is(courtApplicationCase.getOffences().get(0).getWording())),
                                 withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].wordingWelsh", is(courtApplicationCase.getOffences().get(0).getWordingWelsh()))
                         )))));
+    }
+
+    @Test
+    public void testCourtProceedingInitiatedForApplicationIsIdempotent() throws EventStreamException {
+        InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = buildFirstHearingApplicationCourtProceedings();
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.initiate-court-proceedings-for-application")
+                .withId(randomUUID())
+                .build();
+        final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
+
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+
+        courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        final CourtApplicationCase courtApplicationCase = initiateCourtApplicationProceedings.getCourtApplication().getCourtApplicationCases().get(0);
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(metadata().withName("progression.event.court-application-proceedings-initiated"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication", notNullValue()),
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].prosecutionCaseId", is(courtApplicationCase.getProsecutionCaseId().toString())),
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].id", is(courtApplicationCase.getOffences().get(0).getId().toString())),
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].offenceCode", is(courtApplicationCase.getOffences().get(0).getOffenceCode())),
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].wording", is(courtApplicationCase.getOffences().get(0).getWording())),
+                                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].wordingWelsh", is(courtApplicationCase.getOffences().get(0).getWordingWelsh()))
+                        )))));
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream1);
+        when(aggregateService.get(eventStream1, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
+
+        courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream1 = verifyAppendAndGetArgumentFrom(eventStream1);
+
+        assertThat(envelopeStream1,
+                streamContaining(
+                        jsonEnvelope(metadata().withName("progression.event.court-application-proceedings-initiate-ignored"),
+                                payload().isJson(allOf(
+                                        withJsonPath("$.courtApplication", notNullValue())
+                                )))
+                        )
+
+        );
+
+
     }
 
     @Test
