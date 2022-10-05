@@ -281,6 +281,40 @@ public class SummonsNotificationEmailPayloadServiceTest {
     }
 
     @Test
+    public void shouldGenerateEmailNotificationForCaseSummonsWhenSuppressedAndWithEmptyProsecutionAuthorityReference() {
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase();
+        final SummonsDocumentContent summonsDocumentContent = getCaseSummonsDocumentContentForDefendant();
+        final Defendant defendant = getDefendant(DEFENDANT_ID, null);
+        final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
+        final boolean sendForRemotePrinting = false;
+
+        final Optional<EmailChannel> optionalResult = target.getEmailChannelForCaseDefendant(
+                summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, emptyList(), sendForRemotePrinting,
+                DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
+
+        assertThat(optionalResult.isPresent(), is(true));
+        final EmailChannel result = optionalResult.get();
+        assertThat(result.getTemplateId(), is(fromString(SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID)));
+        assertThat(result.getMaterialUrl(), is(MATERIAL_URL));
+        assertThat(result.getSendToAddress(), is(EMAIL_ADDRESS));
+        assertThat(result.getPersonalisation(), is(notNullValue()));
+        final Map<String, Object> additionalProperties = result.getPersonalisation().getAdditionalProperties();
+        assertThat(additionalProperties, is(notNullValue()));
+        assertThat(additionalProperties.entrySet(), hasSize(6));
+        assertThat(additionalProperties.get(PROPERTY_CASE_REFERENCE), is(CASE_URN));
+        assertThat(additionalProperties.get(PROPERTY_DEFENDANT_DETAILS), is(format("%s %s %s", DEFENDANT_FIRST_NAME, DEFENDANT_MIDDLE_NAME, DEFENDANT_LAST_NAME)));
+        assertThat(additionalProperties.get(PROPERTY_COURT_LOCATION), is(COURT_NAME));
+        assertThat(additionalProperties.get(PROPERTY_HEARING_DATE), is("27 Oct 2013"));
+        assertThat(additionalProperties.get(PROPERTY_HEARING_TIME), is(HEARING_TIME));
+        assertThat(additionalProperties.get(PROPERTY_DEFENDANT_IS_YOUTH), is(DEFENDANT_IS_YOUTH));
+
+        assertThat(result.getReplyToAddress(), is(nullValue()));
+        assertThat(result.getReplyToAddressId(), is(nullValue()));
+        verify(applicationParameters).getSummonsApprovedAndSuppressedTemplateId();
+        verify(materialUrlGenerator).pdfFileStreamUrlFor(eq(MATERIAL_ID));
+    }
+
+    @Test
     public void shouldGenerateEmailNotificationForDefendantParentWhenCaseSummonsIsSuppressed() {
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase();
         final SummonsDocumentContent parentSummonsDocumentContent = getCaseSummonsDocumentContentForDefendantParent();
@@ -304,6 +338,41 @@ public class SummonsNotificationEmailPayloadServiceTest {
         assertThat(additionalProperties.get(PROPERTY_CASE_REFERENCE), is(CASE_URN));
         assertThat(additionalProperties.get(PROPERTY_DEFENDANT_DETAILS), is(format("%s %s %s (parent/guardian of %s %s %s), %s",
                 PARENT_FIRST_NAME, PARENT_MIDDLE_NAME, PARENT_LAST_NAME, DEFENDANT_FIRST_NAME, DEFENDANT_MIDDLE_NAME, DEFENDANT_LAST_NAME, PROSECUTION_AUTHORITY_REFERENCE)));
+        assertThat(additionalProperties.get(PROPERTY_COURT_LOCATION), is(COURT_NAME));
+        assertThat(additionalProperties.get(PROPERTY_HEARING_DATE), is("27 Oct 2013"));
+        assertThat(additionalProperties.get(PROPERTY_HEARING_TIME), is(HEARING_TIME));
+        assertThat(additionalProperties.get(PROPERTY_DEFENDANT_IS_YOUTH), is(false));
+
+        assertThat(result.getReplyToAddress(), is(nullValue()));
+        assertThat(result.getReplyToAddressId(), is(nullValue()));
+        verify(applicationParameters).getSummonsApprovedAndSuppressedTemplateId();
+        verify(materialUrlGenerator).pdfFileStreamUrlFor(eq(MATERIAL_ID));
+    }
+
+    @Test
+    public void shouldGenerateEmailNotificationForDefendantParentWhenCaseSummonsIsSuppressedAndWithEmptyProsecutionAuthorityReference() {
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase();
+        final SummonsDocumentContent parentSummonsDocumentContent = getCaseSummonsDocumentContentForDefendantParent();
+        final Defendant defendant = getDefendant(DEFENDANT_ID, null);
+        final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
+        final boolean sendForRemotePrinting = false;
+
+        final Optional<EmailChannel> optionalResult = target.getEmailChannelForCaseDefendantParent(
+                summonsDataPrepared, parentSummonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant,
+                emptyList(), sendForRemotePrinting, MATERIAL_ID, SUMMONS_REQUIRED);
+
+        assertThat(optionalResult.isPresent(), is(true));
+        final EmailChannel result = optionalResult.get();
+        assertThat(result.getTemplateId(), is(fromString(SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID)));
+        assertThat(result.getMaterialUrl(), is(MATERIAL_URL));
+        assertThat(result.getSendToAddress(), is(EMAIL_ADDRESS));
+        assertThat(result.getPersonalisation(), is(notNullValue()));
+        final Map<String, Object> additionalProperties = result.getPersonalisation().getAdditionalProperties();
+        assertThat(additionalProperties, is(notNullValue()));
+        assertThat(additionalProperties.entrySet(), hasSize(6));
+        assertThat(additionalProperties.get(PROPERTY_CASE_REFERENCE), is(CASE_URN));
+        assertThat(additionalProperties.get(PROPERTY_DEFENDANT_DETAILS), is(format("%s %s %s (parent/guardian of %s %s %s)",
+                PARENT_FIRST_NAME, PARENT_MIDDLE_NAME, PARENT_LAST_NAME, DEFENDANT_FIRST_NAME, DEFENDANT_MIDDLE_NAME, DEFENDANT_LAST_NAME)));
         assertThat(additionalProperties.get(PROPERTY_COURT_LOCATION), is(COURT_NAME));
         assertThat(additionalProperties.get(PROPERTY_HEARING_DATE), is("27 Oct 2013"));
         assertThat(additionalProperties.get(PROPERTY_HEARING_TIME), is(HEARING_TIME));
