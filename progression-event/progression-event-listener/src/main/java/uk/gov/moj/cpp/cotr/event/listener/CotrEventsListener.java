@@ -37,7 +37,10 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.COTRDefendantReposi
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.COTRDetailsRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.COTRProsecutionFurtherInfoRepository;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,12 +53,15 @@ import javax.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S3776", "pmd:NullAssignment", "squid:S1125"})
 @ServiceComponent(EVENT_LISTENER)
 public class CotrEventsListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CotrEventsListener.class);
     private static final String RECEIVED_EVENT_WITH_PAYLOAD = "Received '{}' event with payload {}";
     private static final String USER_ID_NOT_SUPPLIED = "User id Not Supplied to persist COTR Served by information";
+    private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu-MM-dd");
+    private static final String YES = "Yes";
 
     @Inject
     private COTRDetailsRepository cotrDetailsRepository;
@@ -153,36 +159,47 @@ public class CotrEventsListener {
             final ProsecutionFormData prosecutionFormData = ProsecutionFormData.prosecutionFormData()
                     .withProsecutionQuestions(ProsecutionQuestions.prosecutionQuestions()
                             .withValuesFrom(prosecutionFormDataEntity.getProsecutionQuestions())
-                            .withFurtherProsecutionInformationProvidedAfterCertification(nonNull(prosecutionFormDataEntity.getProsecutionQuestions().getFurtherProsecutionInformationProvidedAfterCertification())  && nonNull( prosecutionCotrUpdated.getFurtherProsecutionInformationProvidedAfterCertification())?
-                                    append(prosecutionFormDataEntity.getProsecutionQuestions().getFurtherProsecutionInformationProvidedAfterCertification(), prosecutionCotrUpdated.getFurtherProsecutionInformationProvidedAfterCertification()) :
-                                    prosecutionCotrUpdated.getFurtherProsecutionInformationProvidedAfterCertification())
-                            .withFormCompletedOnBehalfOfProsecutionBy(nonNull(prosecutionCotrUpdated.getFormCompletedOnBehalfOfProsecutionBy())?
+                            .withFormCompletedOnBehalfOfProsecutionBy(nonNull(prosecutionFormDataEntity.getProsecutionQuestions().getFormCompletedOnBehalfOfProsecutionBy())  && nonNull(prosecutionCotrUpdated.getFormCompletedOnBehalfOfProsecutionBy())?
                                     prosecutionCotrUpdated.getFormCompletedOnBehalfOfProsecutionBy() :
                                     prosecutionFormDataEntity.getProsecutionQuestions().getFormCompletedOnBehalfOfProsecutionBy())
                             .build())
                     .withCertification(Certification.certification()
                             .withValuesFrom(prosecutionFormDataEntity.getCertification())
                             .withCertificationDate(prosecutionCotrUpdated.getCertificationDate())
-                            .withCertifyThatTheProsecutionIsTrialReady(prosecutionCotrUpdated.getCertifyThatTheProsecutionIsTrialReady())
-                            .withFormCompletedOnBehalfOfTheProsecutionBy(nonNull(prosecutionCotrUpdated.getFormCompletedOnBehalfOfProsecutionBy())?
-                                    prosecutionCotrUpdated.getFormCompletedOnBehalfOfProsecutionBy() :
-                                    prosecutionFormDataEntity.getProsecutionQuestions().getFormCompletedOnBehalfOfProsecutionBy())
+                            .withCertifyThatTheProsecutionIsTrialReady(nonNull(prosecutionCotrUpdated.getCertifyThatTheProsecutionIsTrialReady()) ? PolarQuestion.polarQuestion()
+                                    .withAnswer(prosecutionCotrUpdated.getCertifyThatTheProsecutionIsTrialReady().getAnswer())
+                                    .withDetails(prosecutionFormDataEntity.getCertification().getCertifyThatTheProsecutionIsTrialReady().getDetails())
+                                    .build() : null)
+                            .withFormCompletedOnBehalfOfTheProsecutionBy(prosecutionFormDataEntity.getCertification().getFormCompletedOnBehalfOfTheProsecutionBy())
                             .build()).build();
             cotrDetailsEntity.setProsecutionFormData(objectToJsonObjectConverter.convert(prosecutionFormData).toString());
             cotrDetailsRepository.save(cotrDetailsEntity);
+
+            final COTRProsecutionFurtherInfoEntity cotrProsecutionFurtherInfoEntity = new COTRProsecutionFurtherInfoEntity();
+            cotrProsecutionFurtherInfoEntity.setId(randomUUID());
+            cotrProsecutionFurtherInfoEntity.setCotrId(prosecutionCotrUpdated.getCotrId());
+            cotrProsecutionFurtherInfoEntity.setFurtherInformation(nonNull(prosecutionCotrUpdated.getFurtherProsecutionInformationProvidedAfterCertification()) ? prosecutionCotrUpdated.getFurtherProsecutionInformationProvidedAfterCertification().getDetails():null);
+
+            if(nonNull(prosecutionCotrUpdated.getCertificationDate())) {
+                final ZonedDateTime zdt = LocalDate.parse(prosecutionCotrUpdated.getCertificationDate().getDetails(), dtf).atStartOfDay(ZoneOffset.UTC);
+                cotrProsecutionFurtherInfoEntity.setAddedOn(zdt);
+            } else {
+                cotrProsecutionFurtherInfoEntity.setAddedOn(null);
+            }
+
+            cotrProsecutionFurtherInfoEntity.setInfoAddedBy(randomUUID());
+            cotrProsecutionFurtherInfoEntity.setInfoAddedByName(nonNull(prosecutionCotrUpdated.getFormCompletedOnBehalfOfProsecutionBy()) ?
+                    prosecutionCotrUpdated.getFormCompletedOnBehalfOfProsecutionBy().getDetails() : null);
+            cotrProsecutionFurtherInfoEntity.setIsCertificationReady(nonNull(prosecutionCotrUpdated.getCertifyThatTheProsecutionIsTrialReady()) ?
+                    checkCertifyThatTheProsecutionIsTrialReady(prosecutionCotrUpdated.getCertifyThatTheProsecutionIsTrialReady().getAnswer()) : null);
+
+            cotrProsecutionFurtherInfoRepository.save(cotrProsecutionFurtherInfoEntity);
+
         }
     }
 
-    private PolarQuestion append(final PolarQuestion furtherProsecutionInformationProvidedAfterCertification, final PolarQuestion furtherProsecutionInformationProvidedAfterCertification1) {
-        if (furtherProsecutionInformationProvidedAfterCertification.getDetails().equalsIgnoreCase(furtherProsecutionInformationProvidedAfterCertification1.getDetails())) {
-            return furtherProsecutionInformationProvidedAfterCertification1;
-        } else {
-            return PolarQuestion.polarQuestion().withValuesFrom(furtherProsecutionInformationProvidedAfterCertification)
-                    .withDetails(
-                            new StringBuilder().append(furtherProsecutionInformationProvidedAfterCertification.getDetails()).
-                                    append(furtherProsecutionInformationProvidedAfterCertification1.getDetails()).toString()).build();
-
-        }
+    private boolean checkCertifyThatTheProsecutionIsTrialReady(final String answer) {
+        return YES.equalsIgnoreCase(answer)?true:false;
     }
 
     @Handles("progression.event.cotr-archived")

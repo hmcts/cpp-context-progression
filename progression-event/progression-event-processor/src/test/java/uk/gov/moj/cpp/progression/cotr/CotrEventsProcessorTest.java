@@ -54,6 +54,8 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.COTRDetailsEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.COTRDetailsRepository;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -81,13 +83,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class CotrEventsProcessorTest {
 
     public static final String SUBMISSION_ID = "submissionId";
-    public static final String SUBMISSION_STATUS = "submissionStatus";
-    public static final String ERRORS = "errors";
-    public static final String LAST_RECORDED_TIME_ESTIMATE = "lastRecordedTimeEstimate";
     public static final String HAS_ALL_EVIDENCE_TO_BE_RELIED_ON_BEEN_SERVED = "hasAllEvidenceToBeReliedOnBeenServed";
-    public static final String HAS_ALL_DISCLOSURE_BEEN_PROVIDED = "hasAllDisclosureBeenProvided";
-    public static final String HAVE_OTHER_DIRECTIONS_BEEN_COMPLIED_WITH = "haveOtherDirectionsBeenCompliedWith";
-    public static final String HAVE_THE_PROSECUTION_WITNESSES_REQUIRED_TO_ATTEND_ACKNOWLEDGED_THAT_THEY_WILL_ATTEND = "haveTheProsecutionWitnessesRequiredToAttendAcknowledgedThatTheyWillAttend";
     public static final String REVIEW_NOTE_DESCRIPTION = "reviewNoteDescription";
     public static final String WELSH_REVIEW_NOTE_DESCRIPTION = "welshReviewNoteDescription";
     public static final String ROLES = "roles";
@@ -99,13 +95,9 @@ public class CotrEventsProcessorTest {
     private static final String COTR_ID = "cotrId";
     private static final String CASE_ID = "caseId";
     private static final String CASE_URN = "caseUrn";
-    private static final String TRIAL_DATE = "trialDate";
-    private static final String TAG = "tag";
-    private static final String CERTIFICATION_DATE = "certificationDate";
     private static final String COURT_CENTER = "courtCenter";
     private static final String HEARING_ID = "hearingId";
     private static final String HEARING_DATE = "hearingDate";
-    private static final String FORM_DEFENDANTS = "formDefendants";
     private static final String DEFENDANT_IDS = "defendantIds";
     private static final String PROGRESSION_OPERATION_FAILED = "public.progression.cotr-operation-failed";
     public static final String REVIEW_NOTE_TYPE = "reviewNoteType";
@@ -151,6 +143,10 @@ public class CotrEventsProcessorTest {
 
     @Spy
     private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+
+
+    @Mock
+    private COTRDetailsRepository cotrDetailsRepository;
 
     @Mock
     private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
@@ -530,6 +526,7 @@ public class CotrEventsProcessorTest {
 
         String payload = Resources.toString(getResource("cps-serve-cotr-submitted.json"), defaultCharset());
         final JsonObject jsonPayload = jsonFromString(payload);
+        final String submissionId  = jsonPayload.getString(SUBMISSION_ID);
         assertThat(jsonPayload.getString(HAS_ALL_EVIDENCE_TO_BE_RELIED_ON_BEEN_SERVED),Matchers.is("Y"));
 
         final JsonEnvelope envelope = envelopeFrom(
@@ -548,7 +545,7 @@ public class CotrEventsProcessorTest {
 
         assertThat(currentEvents.get(0).payload().toString(), notNullValue());
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(CASE_ID), Matchers.is(notNullValue()));
-        assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(COTR_ID), Matchers.is(notNullValue()));
+        assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(COTR_ID), Matchers.is(submissionId));
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(SUBMISSION_ID), Matchers.is(notNullValue()));
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(HEARING_ID), Matchers.is(notNullValue()));
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(CASE_URN), Matchers.is(notNullValue()));
@@ -690,8 +687,6 @@ public class CotrEventsProcessorTest {
 
     @Test
     public void shouldHandleUpdateCotrReceivedPublicEvent() throws IOException {
-        final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_QUERY_COTR_DETAILS_PROSECUTION_CASE);
-        final UUID caseId = randomUUID();
         when(queryResponseEnvelope.payloadAsJsonObject()).thenReturn(createCotrDetails().get());
         when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
         String payload = Resources.toString(getResource("cps-update-cotr-submitted.json"), defaultCharset());
@@ -699,6 +694,7 @@ public class CotrEventsProcessorTest {
         final JsonEnvelope envelope = envelopeFrom(
                 metadataWithRandomUUID("public.prosecutioncasefile.cps-update-cotr-submitted"),
                 jsonPayload);
+        when(cotrDetailsRepository.findBy(any())).thenReturn(new COTRDetailsEntity(randomUUID(),randomUUID(),randomUUID(),false, null, null, null, null));
         //when
         processor.handleUpdateCotrReceivedPublicEvent(envelope);
         //Then
