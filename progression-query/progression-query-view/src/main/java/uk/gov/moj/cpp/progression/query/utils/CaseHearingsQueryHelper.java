@@ -19,6 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+
 public class CaseHearingsQueryHelper {
 
     public static final String HEARINGS = "hearings";

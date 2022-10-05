@@ -6,6 +6,8 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -26,8 +28,6 @@ import javax.inject.Inject;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-
-import org.apache.commons.lang3.tuple.Pair;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class PetQueryView {

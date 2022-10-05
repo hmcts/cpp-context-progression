@@ -135,6 +135,8 @@ public class NotificationService {
     private RefDataService referenceDataService;
     @Inject
     private DocumentGeneratorService documentGeneratorService;
+    @Inject
+    private RestApiNotificationService restApiNotificationService;
 
     @Inject
     private PostalService postalService;

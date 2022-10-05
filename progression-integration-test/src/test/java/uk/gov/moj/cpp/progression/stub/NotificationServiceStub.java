@@ -74,16 +74,6 @@ public class NotificationServiceStub {
         });
     }
 
-    public static void verifyBcmNotificationApiNotInvoked(final List<String> expectedValues) {
-        await().atMost(90, SECONDS).pollInterval(5, SECONDS).until(() -> {
-            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching("/CPS/v1/notification/bcm-notification"));
-            expectedValues.forEach(
-                    expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
-            );
-            verify(0, requestPatternBuilder);
-        });
-    }
-
     public static void verifyNotificationApi(final List<String> expectedValues) {
         await().atMost(90, SECONDS).pollInterval(5, SECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching("/notification-cms/v1/transformAndSendCms"));
@@ -94,6 +84,15 @@ public class NotificationServiceStub {
         });
     }
 
+    public static void verifyBcmNotificationApiNotInvoked(final List<String> expectedValues) {
+        await().atMost(90, SECONDS).pollInterval(5, SECONDS).until(() -> {
+            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching("/CPS/v1/notification/bcm-notification"));
+            expectedValues.forEach(
+                    expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
+            );
+            verify(0, requestPatternBuilder);
+        });
+    }
 
     public static void verifyEmailNotificationIsRaisedWithoutAttachment(final List<String> expectedValues) {
         await().atMost(30, SECONDS).pollInterval(5, SECONDS).until(() -> {

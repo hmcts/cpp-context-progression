@@ -189,6 +189,7 @@ public class ProgressionServiceTest {
 
     private static final String ESTIMATED_DURATION = "1 week";
     public static final String PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED = "progression.event.next-hearings-requested";
+
     @Spy
     private final Enveloper enveloper = createEnveloper();
     @Spy
@@ -1792,7 +1793,7 @@ public class ProgressionServiceTest {
         final LocalDate earliestHearingDate = LocalDate.now();
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
         final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
-                .withSeedingHearingId(UUID.randomUUID())
+                .withSeedingHearingId(randomUUID())
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
                 .build();
 
@@ -1865,10 +1866,6 @@ public class ProgressionServiceTest {
         }
 
         return new StringToJsonObjectConverter().convert(response);
-    }
-
-    private Optional<JsonObject> createNoCaseHearing() {
-        return empty();
     }
 
     private ProsecutionCase buildProsecutionCasesWithTwoDefendantsOffences(UUID caseId, UUID defendant1, UUID defendant2, UUID defendant1sOffence1, UUID defendant1sOffence2, UUID defendant2sOffence1, UUID defendant2sOffence2, Boolean youth) {

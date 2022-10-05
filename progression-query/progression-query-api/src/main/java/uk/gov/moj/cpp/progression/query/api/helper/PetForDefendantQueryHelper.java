@@ -86,7 +86,7 @@ public class PetForDefendantQueryHelper {
 
     }
 
-    private JsonObject convertToPetForDefendant(final Requester requester, final JsonObject petDefendantOffence, final JsonEnvelope query){
+    private JsonObject convertToPetForDefendant(final Requester requester, final JsonObject petDefendantOffence, final JsonEnvelope query) {
         final String petId = petDefendantOffence.getString(PET_ID);
         final String defendantId = query.payloadAsJsonObject().getString(DEFENDANT_ID);
 
