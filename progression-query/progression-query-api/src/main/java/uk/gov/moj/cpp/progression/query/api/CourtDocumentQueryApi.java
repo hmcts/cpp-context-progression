@@ -18,15 +18,18 @@ import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
 import uk.gov.justice.courts.progression.query.Courtdocuments;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.query.ApplicationQueryView;
+import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
+import uk.gov.moj.cpp.progression.query.SharedCourtDocumentsQueryView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +64,15 @@ public class CourtDocumentQueryApi {
     private Requester requester;
 
     @Inject
+    private CourtDocumentQueryView courtDocumentQueryView;
+
+    @Inject
+    private ApplicationQueryView applicationQueryView;
+
+    @Inject
+    private SharedCourtDocumentsQueryView sharedCourtDocumentsQueryView;
+
+    @Inject
     private UserDetailsLoader userDetailsLoader;
 
     @Inject
@@ -75,12 +87,14 @@ public class CourtDocumentQueryApi {
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentQueryApi.class);
 
     @Handles(COURT_DOCUMENT_SEARCH_NAME)
     public JsonEnvelope getCourtDocument(final JsonEnvelope query) {
-
-        return requester.request(query);
+        return courtDocumentQueryView.getCourtDocument(query);
     }
 
     @Handles(COURT_DOCUMENTS_SEARCH_NAME)
@@ -92,17 +106,17 @@ public class CourtDocumentQueryApi {
             return requestSharedCourtDocuments(query, magsGroup.get().getGroupId().toString());
         }
 
-        return requester.request(query);
+        return courtDocumentQueryView.searchCourtDocuments(query);
     }
 
     @Handles(COURT_DOCUMENTS_SEARCH_NAME_ALL)
     public JsonEnvelope searchCourtDocumentsAll(final JsonEnvelope query) {
-        return requester.request(query);
+        return courtDocumentQueryView.searchCourtDocumentsAll(query);
     }
 
     @Handles(COURT_DOCUMENTS_SEARCH_WITH_PAGINATION_NAME)
     public JsonEnvelope searchCourtDocumentsWithPagination(final JsonEnvelope query) {
-        return requester.request(query);
+        return courtDocumentQueryView.searchCourtDocumentsWithPagination(query);
     }
 
 
@@ -133,7 +147,7 @@ public class CourtDocumentQueryApi {
             final JsonObject resultJson = objectToJsonObjectConverter.convert(Courtdocuments.courtdocuments().withDocumentIndices(finalDocumentList).build());
             return envelopeFrom(query.metadata(), resultJson);
         } else { // for applicationId
-            return requester.request(envelopeFrom(metadata, query.payloadAsJsonObject()));
+            return courtDocumentQueryView.searchCourtDocuments(envelopeFrom(metadata, query.payloadAsJsonObject()));
         }
 
     }
@@ -147,8 +161,8 @@ public class CourtDocumentQueryApi {
     }
 
     private Courtdocuments getCourtDocument(final JsonEnvelope query, final Metadata metadata, final UUID defendantId) {
-        final Envelope<Courtdocuments> responseEnvelope = requester.request(envelopeFrom(metadata, getEnrichedQueryPayload(query, defendantId)), Courtdocuments.class);
-        return responseEnvelope.payload();
+        final JsonEnvelope responseEnvelope = courtDocumentQueryView.searchCourtDocuments(envelopeFrom(metadata, getEnrichedQueryPayload(query, defendantId)));
+        return jsonObjectToObjectConverter.convert(responseEnvelope.payloadAsJsonObject(), Courtdocuments.class);
     }
 
     private JsonObject getEnrichedQueryPayload(final JsonEnvelope query, final UUID defendantId) {
@@ -174,19 +188,19 @@ public class CourtDocumentQueryApi {
                 .withName(COURT_DOCUMENTS_SEARCH_NAME)
                 .build();
 
-        return requester.request(envelopeFrom(metadata, getUpdatedQueryPayload(query.payloadAsJsonObject(), isProsecutingCase)));
+        return courtDocumentQueryView.searchCourtDocuments(envelopeFrom(metadata, getUpdatedQueryPayload(query.payloadAsJsonObject(), isProsecutingCase)));
 
     }
 
 
     @Handles(COURT_DOCUMENT_PROSECUTION_NOTIFICATION_STATUS)
     public JsonEnvelope getCaseNotificationStatus(final JsonEnvelope query) {
-        return requester.request(query);
+        return courtDocumentQueryView.getCaseNotifications(query);
     }
 
     @Handles(COURT_DOCUMENT_APPLICATION_NOTIFICATION_STATUS)
     public JsonEnvelope getApplicationNotificationStatus(final JsonEnvelope query) {
-        return requester.request(query);
+        return applicationQueryView.getApplicationNotifications(query);
     }
 
     private Optional<UserGroupsDetails> getMagistratesGroup(final JsonEnvelope query) {
@@ -239,7 +253,7 @@ public class CourtDocumentQueryApi {
         final Metadata metadata = metadataFrom(query.metadata())
                 .withName("progression.query.shared-court-documents")
                 .build();
-        return requester.request(envelopeFrom(metadata, withGroupId));
+        return sharedCourtDocumentsQueryView.getSharedCourtDocuments(envelopeFrom(metadata, withGroupId));
     }
 
     private JsonObject getUpdatedQueryPayload(JsonObject payload, final boolean isProsecutingCase) {

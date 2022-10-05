@@ -4,8 +4,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.NowDocumentRequestQueryView;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +20,7 @@ public class NowDocumentRequestQueryApiTest {
     private JsonEnvelope query;
 
     @Mock
-    private Requester requester;
+    private NowDocumentRequestQueryView nowDocumentRequestQueryView;
 
     @Mock
     private JsonEnvelope response;
@@ -30,13 +30,13 @@ public class NowDocumentRequestQueryApiTest {
 
     @Test
     public void shouldHandleNowDocumentRequestsQuery() {
-        when(requester.request(query)).thenReturn(response);
+        when(nowDocumentRequestQueryView.getNowDocumentRequestsByRequestId(query)).thenReturn(response);
         assertThat(nowDocumentRequestQueryApi.getNowDocumentRequests(query), equalTo(response));
     }
 
     @Test
     public void shouldHandleNowDocumentRequestsByHearingQuery() {
-        when(requester.request(query)).thenReturn(response);
+        when(nowDocumentRequestQueryView.getNowDocumentRequestByHearing(query)).thenReturn(response);
         assertThat(nowDocumentRequestQueryApi.getNowDocumentRequestsByHearing(query), equalTo(response));
     }
 }

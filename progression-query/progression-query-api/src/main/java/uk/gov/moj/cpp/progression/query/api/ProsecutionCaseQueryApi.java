@@ -10,6 +10,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 import uk.gov.moj.cpp.progression.query.api.service.CourtOrderService;
 import uk.gov.moj.cpp.progression.query.api.service.OrganisationService;
 
@@ -46,6 +47,9 @@ public class ProsecutionCaseQueryApi {
     private Requester requester;
 
     @Inject
+    private ProsecutionCaseQuery prosecutionCaseQuery;
+
+    @Inject
     private OrganisationService organisationService;
 
     @Inject
@@ -54,7 +58,7 @@ public class ProsecutionCaseQueryApi {
     @Handles("progression.query.prosecutioncase")
     public JsonEnvelope getCaseProsecutionCase(final JsonEnvelope query) {
 
-        final JsonEnvelope appQueryResponse = requester.request(query);
+        final JsonEnvelope appQueryResponse = prosecutionCaseQuery.getProsecutionCase(query);
         final JsonObject queryViewPayload = appQueryResponse.payloadAsJsonObject();
         final JsonObject prosecutionCase = appQueryResponse.payloadAsJsonObject().getJsonObject("prosecutionCase");
 
@@ -89,7 +93,7 @@ public class ProsecutionCaseQueryApi {
 
     @Handles("progression.query.prosecutioncase.caag")
     public JsonEnvelope getProsecutionCaseForCaseAtAGlance(final JsonEnvelope query) {
-        final JsonEnvelope appQueryResponse = requester.request(query);
+        final JsonEnvelope appQueryResponse = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(query);
         final JsonObject payload = appQueryResponse.payloadAsJsonObject();
         final JsonArray defendants = payload.getJsonArray(DEFENDANTS);
         final JsonArrayBuilder caagDefendantsBuilder = Json.createArrayBuilder();
@@ -116,33 +120,33 @@ public class ProsecutionCaseQueryApi {
 
     @Handles("progression.query.case")
     public JsonEnvelope getProsecutionCase(final JsonEnvelope query) {
-        return requester.request(query);
+        return prosecutionCaseQuery.getCase(query);
     }
 
     @Handles("progression.query.casehearings")
     public JsonEnvelope getCaseHearings(final JsonEnvelope query) {
-        return requester.request(query);
+        return prosecutionCaseQuery.getCaseHearings(query);
     }
 
     @Handles("progression.query.case-defendant-hearings")
     public JsonEnvelope getCaseDefendantHearings(final JsonEnvelope query) {
-        return requester.request(query);
+        return prosecutionCaseQuery.getCaseDefendantHearings(query);
     }
 
     @Handles("progression.query.usergroups-by-material-id")
     public JsonEnvelope searchForUserGroupsByMaterialId(final JsonEnvelope query) {
-        return this.requester.request(query);
+        return this.prosecutionCaseQuery.searchByMaterialId(query);
     }
 
 
     @Handles("progression.query.search-cases")
     public JsonEnvelope searchCaseProsecutionCase(final JsonEnvelope query) {
-        return requester.request(query);
+        return prosecutionCaseQuery.searchCase(query);
     }
 
     @Handles("progression.query.prosecutionauthorityid-by-case-id")
     public JsonEnvelope searchProsecutionAuthorityIdByCaseId(final JsonEnvelope query) {
-        return requester.request(query);
+        return prosecutionCaseQuery.searchProsecutionAuthorityId(query);
     }
 
 
@@ -165,22 +169,22 @@ public class ProsecutionCaseQueryApi {
 
     @Handles("progression.query.case.hearingtypes")
     public JsonEnvelope getCaseHearingTypes(final JsonEnvelope query) {
-        return requester.request(query);
+        return prosecutionCaseQuery.getCaseHearingTypes(query);
     }
 
     @Handles("progression.query.cotr-trial-hearings")
     public JsonEnvelope getTrialHearings(final JsonEnvelope query){
-        return requester.request(query);
+        return prosecutionCaseQuery.getTrialHearings(query);
     }
 
     @Handles("progression.query.cotr-details")
     public JsonEnvelope getCotrDetails(final JsonEnvelope query){
-        return requester.request(query);
+        return prosecutionCaseQuery.getCotrDetails(query);
     }
 
     @Handles("progression.query.cotr-form")
     public JsonEnvelope getCotrForm(final JsonEnvelope query){
-        return requester.request(query);
+        return prosecutionCaseQuery.getCotrForm(query);
     }
 
     private JsonObject createOrganisation(final JsonObject completeOrganisationDetails) {
@@ -198,6 +202,6 @@ public class ProsecutionCaseQueryApi {
 
     @Handles("progression.query.cotr.details.prosecutioncase")
     public JsonEnvelope getCotrDetailsProsecutionCase(final JsonEnvelope query){
-        return requester.request(query);
+        return prosecutionCaseQuery.getCotrDetailsByCaseId(query);
     }
 }

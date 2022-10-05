@@ -76,7 +76,7 @@ import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 
-@SuppressWarnings({"squid:S1155", "squid:S3655"})
+@SuppressWarnings({"squid:S1155", "squid:S3655", "squid:S2142"})
 public class CotrEventsProcessor {
 
     public static final String SUBMISSION_ID = "submissionId";
@@ -488,6 +488,8 @@ public class CotrEventsProcessor {
                     .withName(PROGRESSION_COMMAND_CREATE_COTR)
                     .build(), creatCotrPayload));
 
+            sleep();
+
             LOGGER.info(PROGRESSION_COMMAND_SERVE_COTR);
             final JsonObject serveCotrPayload = buildServeCotrPayload(hearingId, cotrId, payload);
             LOGGER.info("serveCotrPayload - {}", serveCotrPayload);
@@ -503,6 +505,14 @@ public class CotrEventsProcessor {
 
         } else {
             sendOperationFailed(envelope, payload, HEARING_ID_NOT_FOUND, CREATE_COTR_FORM);
+        }
+    }
+
+    private static void sleep() {
+        try {
+            Thread.sleep(500);
+        } catch (final InterruptedException e) {
+            //ignore
         }
     }
 

@@ -41,6 +41,10 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.FormQueryView;
+import uk.gov.moj.cpp.progression.query.HearingQueryView;
+import uk.gov.moj.cpp.progression.query.PetQueryView;
+import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 import uk.gov.moj.cpp.progression.query.api.service.CotrQueryApiService;
 import uk.gov.moj.cpp.progression.query.api.service.DefenceService;
 import uk.gov.moj.cpp.progression.query.api.service.ListingService;
@@ -67,6 +71,18 @@ public class CotrQueryApi {
 
     @Inject
     private Requester requester;
+
+    @Inject
+    private PetQueryView petQueryView;
+
+    @Inject
+    private FormQueryView formQueryView;
+
+    @Inject
+    private ProsecutionCaseQuery prosecutionCaseQuery;
+
+    @Inject
+    private HearingQueryView hearingQueryView;
 
     @Inject
     private DefenceService defenceService;
@@ -237,7 +253,7 @@ public class CotrQueryApi {
     @SuppressWarnings("squid:S1188")
     private List<PetDetails> createPetDetails(JsonEnvelope envelope, CourtCentre courtCentre, ProsecutionCase prosecutionCase) {
         final List<Defendant> defendants = prosecutionCase.getDefendants();
-        final JsonObject petsForCase = progressionService.getPetsForCase(requester, envelope, prosecutionCase.getId().toString());
+        final JsonObject petsForCase = progressionService.getPetsForCase(petQueryView, envelope, prosecutionCase.getId().toString());
         if (nonNull(petsForCase)) {
             final JsonArray petsJsonArray = petsForCase.getJsonArray("pets");
             return petsJsonArray.stream()
@@ -270,14 +286,14 @@ public class CotrQueryApi {
 
     private  List<PtphDetails> createPtphDetails(JsonEnvelope envelope, ProsecutionCase prosecutionCase) {
         final List<Defendant> defendants = prosecutionCase.getDefendants();
-        final JsonObject formsForCase = progressionService.getFormsForCase(requester, envelope, prosecutionCase.getId().toString());
+        final JsonObject formsForCase = progressionService.getFormsForCase(formQueryView, envelope, prosecutionCase.getId().toString());
         if (nonNull(formsForCase)) {
             final JsonArray formsJsonArray = formsForCase.getJsonArray("forms");
             return formsJsonArray.stream()
                     .map(JsonObject.class::cast)
                     .map(obj -> {
                         final String courtFormId = obj.getString("courtFormId");
-                        final JsonObject form = progressionService.getForm(requester, envelope, prosecutionCase.getId().toString(), courtFormId);
+                        final JsonObject form = progressionService.getForm(formQueryView, envelope, prosecutionCase.getId().toString(), courtFormId);
                         final String lastUpdated = form.getString("lastUpdated", null);
                         final JsonArray defendantsJsonArray = obj.getJsonArray("defendants");
                         final List<String> defendantIds = defendantsJsonArray.stream()
@@ -328,7 +344,7 @@ public class CotrQueryApi {
             if (optionalCasesDirections.isPresent()) {
                 directionManagementCasesDirectionList = jsonObjectToObjectConverter.convert(optionalCasesDirections.get(), DirectionManagementCasesDirectionList.class);
             }
-            final Optional<JsonObject> cotrDetailsJson = cotrQueryApiService.getCotrDetails(requester, prosecutionCase.getId().toString());
+            final Optional<JsonObject> cotrDetailsJson = cotrQueryApiService.getCotrDetails(prosecutionCaseQuery, prosecutionCase.getId().toString());
             CotrDetails cotrDetails = null;
             if (cotrDetailsJson.isPresent()) {
                 cotrDetails = jsonObjectToObjectConverter.convert(cotrDetailsJson.get(), CotrDetails.class);
@@ -426,7 +442,7 @@ public class CotrQueryApi {
     private List<Hearing> getHearings(final JsonEnvelope envelope, final List<UUID> hearingIds) {
         final List<Hearing> hearings = new ArrayList<>();
         hearingIds.forEach(hearingId -> {
-            final JsonObject hearingJson = progressionService.getHearing(requester, envelope, hearingId.toString());
+            final JsonObject hearingJson = progressionService.getHearing(hearingQueryView, envelope, hearingId.toString());
             final Hearing hearing = jsonObjectToObjectConverter.convert(hearingJson.getJsonObject("hearing"), Hearing.class);
             hearings.add(hearing);
         });
@@ -434,7 +450,7 @@ public class CotrQueryApi {
     }
 
     private Hearing getHearing(final JsonEnvelope envelope, final String hearingId) {
-        final JsonObject hearingJson = progressionService.getHearing(requester, envelope, hearingId);
+        final JsonObject hearingJson = progressionService.getHearing(hearingQueryView, envelope, hearingId);
         return jsonObjectToObjectConverter.convert(hearingJson.getJsonObject("hearing"), Hearing.class);
     }
 

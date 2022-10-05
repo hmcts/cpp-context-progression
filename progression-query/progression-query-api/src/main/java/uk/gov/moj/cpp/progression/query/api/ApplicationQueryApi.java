@@ -16,6 +16,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.query.ApplicationQueryView;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -37,6 +38,9 @@ public class ApplicationQueryApi {
     private Requester requester;
 
     @Inject
+    private ApplicationQueryView applicationQueryView;
+
+    @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Inject
@@ -50,7 +54,7 @@ public class ApplicationQueryApi {
 
     @Handles("progression.query.application")
     public JsonEnvelope getApplication(final JsonEnvelope query) {
-        final JsonEnvelope appQueryResponse = requester.request(query);
+        final JsonEnvelope appQueryResponse = applicationQueryView.getApplication(query);
         JsonEnvelope response = appQueryResponse;
         final JsonObject jsonObject = appQueryResponse.payloadAsJsonObject();
         if (jsonObject.containsKey(ASSIGNED_USER_FIELD_NAME)) {
@@ -83,17 +87,17 @@ public class ApplicationQueryApi {
 
     @Handles("progression.query.application-only")
     public JsonEnvelope getApplicationOnly(final JsonEnvelope query) {
-        return requester.request(query);
+        return applicationQueryView.getApplicationOnly(query);
     }
 
     @Handles("progression.query.application.summary")
     public JsonEnvelope getApplicationSummary(final JsonEnvelope query) {
-        return requester.request(query);
+        return applicationQueryView.getApplicationSummary(query);
     }
 
     @Handles("progression.query.application.aaag")
     public JsonEnvelope getCourtApplicationForApplicationAtAGlance(final JsonEnvelope query) {
-        return requester.request(query);
+        return applicationQueryView.getCourtApplicationForApplicationAtAGlance(query);
     }
 
     @Handles("progression.query.application.aaag-for-defence")
@@ -101,7 +105,7 @@ public class ApplicationQueryApi {
         final Metadata metadata = metadataFrom(query.metadata())
                 .withName("progression.query.application.aaag").build();
         final JsonEnvelope applicationAaagEnvelope = envelopeFrom(metadata, query.payload());
-        final JsonEnvelope jsonEnvelope = requester.request(applicationAaagEnvelope);
+        final JsonEnvelope jsonEnvelope = applicationQueryView.getCourtApplicationForApplicationAtAGlance(applicationAaagEnvelope);
         if (!jsonEnvelope.payloadAsJsonObject().containsKey(LINKED_CASES)) {
             throw new ForbiddenRequestException("Cannot view application details, no linked cases found for the application");
         } else {
@@ -120,12 +124,12 @@ public class ApplicationQueryApi {
 
     @Handles("progression.query.applicationhearings")
     public JsonEnvelope getApplicationHearings(final JsonEnvelope query) {
-        return requester.request(query);
+        return applicationQueryView.getApplicationHearings(query);
     }
 
     @Handles("progression.query.court-proceedings-for-application")
     public JsonEnvelope getCourtProceedingsForApplication(final JsonEnvelope query) {
-        return requester.request(query);
+        return applicationQueryView.getCourtProceedingsForApplication(query);
     }
 
 }

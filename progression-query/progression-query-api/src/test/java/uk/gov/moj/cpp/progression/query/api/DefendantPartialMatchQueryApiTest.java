@@ -4,15 +4,14 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.DefendantPartialMatchQueryView;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantPartialMatchQueryApiTest {
 
@@ -23,14 +22,14 @@ public class DefendantPartialMatchQueryApiTest {
     private JsonEnvelope response;
 
     @Mock
-    private Requester requester;
+    private DefendantPartialMatchQueryView defendantPartialMatchQueryView;
 
     @InjectMocks
     private DefendantPartialMatchQueryApi defendantPartialMatchQueryApi;
 
     @Test
     public void shouldHandlePartialMatchQuery() {
-        when(requester.request(query)).thenReturn(response);
+        when(defendantPartialMatchQueryView.getDefendantPartialMatches(query)).thenReturn(response);
         assertThat(defendantPartialMatchQueryApi.getPartialMatchDefendant(query), equalTo(response));
     }
 }

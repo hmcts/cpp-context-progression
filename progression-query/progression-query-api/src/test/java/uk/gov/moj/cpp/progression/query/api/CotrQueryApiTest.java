@@ -9,8 +9,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
@@ -18,13 +16,10 @@ import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.progression.query.CotrDefendants;
 import uk.gov.justice.progression.query.CotrDetail;
 import uk.gov.justice.progression.query.CotrDetails;
@@ -35,6 +30,9 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.FormQueryView;
+import uk.gov.moj.cpp.progression.query.HearingQueryView;
+import uk.gov.moj.cpp.progression.query.PetQueryView;
 import uk.gov.moj.cpp.progression.query.api.service.CotrQueryApiService;
 import uk.gov.moj.cpp.progression.query.api.service.DefenceService;
 import uk.gov.moj.cpp.progression.query.api.service.ListingService;
@@ -107,8 +105,8 @@ public class CotrQueryApiTest {
         when(listingService.searchTrialReadiness(any(JsonEnvelope.class))).thenReturn(listingResponse);
         when(cotrQueryApiService.getCaseDirectionsByHearingIdAndDirectionIds(any(), any())).thenReturn(directionsResponse);
         when(cotrQueryApiService.convertCasesDirections(any())).thenReturn(caseDirections);
-        when(progressionService.getHearing(any(Requester.class), any(JsonEnvelope.class), eq("82b243f8-c4d3-4790-92ef-6192db00539c"))).thenReturn(hearing1Json);
-        when(progressionService.getHearing(any(Requester.class), any(JsonEnvelope.class), eq("111d2f19-89a7-4f4f-8d14-a90fd3977be4"))).thenReturn(hearing2Json);
+        when(progressionService.getHearing(any(HearingQueryView.class), any(JsonEnvelope.class), eq("82b243f8-c4d3-4790-92ef-6192db00539c"))).thenReturn(hearing1Json);
+        when(progressionService.getHearing(any(HearingQueryView.class), any(JsonEnvelope.class), eq("111d2f19-89a7-4f4f-8d14-a90fd3977be4"))).thenReturn(hearing2Json);
         when(cotrQueryApiService.getTrialReadinessHearing(any(), any())).thenReturn(trialReadinessHearing1);
 
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
@@ -148,8 +146,8 @@ public class CotrQueryApiTest {
         when(listingService.searchTrialReadiness(any(JsonEnvelope.class))).thenReturn(listingResponse);
         when(cotrQueryApiService.getCaseDirectionsByHearingIdAndDirectionIds(any(), any())).thenReturn(directionsResponse);
         when(cotrQueryApiService.convertCasesDirections(any())).thenReturn(caseDirections);
-        when(progressionService.getHearing(any(Requester.class), any(JsonEnvelope.class), eq("82b243f8-c4d3-4790-92ef-6192db00539c"))).thenReturn(hearing1Json);
-        when(progressionService.getHearing(any(Requester.class), any(JsonEnvelope.class), eq("111d2f19-89a7-4f4f-8d14-a90fd3977be4"))).thenReturn(hearing2Json);
+        when(progressionService.getHearing(any(HearingQueryView.class), any(JsonEnvelope.class), eq("82b243f8-c4d3-4790-92ef-6192db00539c"))).thenReturn(hearing1Json);
+        when(progressionService.getHearing(any(HearingQueryView.class), any(JsonEnvelope.class), eq("111d2f19-89a7-4f4f-8d14-a90fd3977be4"))).thenReturn(hearing2Json);
         when(cotrQueryApiService.getTrialReadinessHearing(any(), any())).thenReturn(trialReadinessHearing1);
 
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
@@ -188,8 +186,8 @@ public class CotrQueryApiTest {
         when(listingService.searchTrialReadiness(any(JsonEnvelope.class))).thenReturn(listingResponse);
         when(cotrQueryApiService.getCaseDirectionsByHearingIdAndDirectionIds(any(), any())).thenReturn(directionsResponse);
         when(cotrQueryApiService.convertCasesDirections(any())).thenReturn(caseDirections);
-        when(progressionService.getHearing(any(Requester.class), any(JsonEnvelope.class), eq("82b243f8-c4d3-4790-92ef-6192db00539c"))).thenReturn(hearing1Json);
-        when(progressionService.getHearing(any(Requester.class), any(JsonEnvelope.class), eq("111d2f19-89a7-4f4f-8d14-a90fd3977be4"))).thenReturn(hearing2Json);
+        when(progressionService.getHearing(any(HearingQueryView.class), any(JsonEnvelope.class), eq("82b243f8-c4d3-4790-92ef-6192db00539c"))).thenReturn(hearing1Json);
+        when(progressionService.getHearing(any(HearingQueryView.class), any(JsonEnvelope.class), eq("111d2f19-89a7-4f4f-8d14-a90fd3977be4"))).thenReturn(hearing2Json);
         when(cotrQueryApiService.getTrialReadinessHearing(any(), any())).thenReturn(trialReadinessHearing1);
 
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
@@ -229,8 +227,8 @@ public class CotrQueryApiTest {
         when(listingService.searchTrialReadiness(any(JsonEnvelope.class))).thenReturn(listingResponse);
         when(cotrQueryApiService.getCaseDirectionsByHearingIdAndDirectionIds(any(), any())).thenReturn(directionsResponse);
         when(cotrQueryApiService.convertCasesDirections(any())).thenReturn(caseDirections);
-        when(progressionService.getHearing(any(Requester.class), any(JsonEnvelope.class), eq("82b243f8-c4d3-4790-92ef-6192db00539c"))).thenReturn(hearing1Json);
-        when(progressionService.getHearing(any(Requester.class), any(JsonEnvelope.class), eq("111d2f19-89a7-4f4f-8d14-a90fd3977be4"))).thenReturn(hearing2Json);
+        when(progressionService.getHearing(any(HearingQueryView.class), any(JsonEnvelope.class), eq("82b243f8-c4d3-4790-92ef-6192db00539c"))).thenReturn(hearing1Json);
+        when(progressionService.getHearing(any(HearingQueryView.class), any(JsonEnvelope.class), eq("111d2f19-89a7-4f4f-8d14-a90fd3977be4"))).thenReturn(hearing2Json);
         when(cotrQueryApiService.getTrialReadinessHearing(any(), any())).thenReturn(trialReadinessHearing1);
 
         final JsonEnvelope query = JsonEnvelope.envelopeFrom(
@@ -277,11 +275,11 @@ public class CotrQueryApiTest {
         final JsonObject petsForDefendantPayload = getJsonPayload("progression.query.pets-for-case.json");
         final JsonObject ptphForDefendantPayload = getJsonPayload("progression.query.forms-for-case.json");
 
-        when(progressionService.getHearing(any(Requester.class), any(JsonEnvelope.class), eq(hearingId))).thenReturn(hearingJson);
+        when(progressionService.getHearing(any(HearingQueryView.class), any(JsonEnvelope.class), eq(hearingId))).thenReturn(hearingJson);
         when(defenceService.getIdpcDetailsForDefendant(any(), any(), any())).thenReturn(Optional.of(defendantIdpcMetadata));
         when(cotrQueryApiService.getCaseDirectionsByHearingIdAndDirectionIds(any(), any())).thenReturn(Optional.of(directionsList));
         when(cotrQueryApiService.getCotrDetails(any(), any())).thenReturn(Optional.of(cotrDetailsJson));
-        when(progressionService.getPetsForCase(any(Requester.class), any(JsonEnvelope.class), any(String.class))).thenReturn(petsForDefendantPayload);
+        when(progressionService.getPetsForCase(any(PetQueryView.class), any(JsonEnvelope.class), any(String.class))).thenReturn(petsForDefendantPayload);
         when(progressionService.getPet(any(Requester.class), any(JsonEnvelope.class), any(String.class))).thenReturn(createObjectBuilder()
                 .add("petId", "733d43c3-4e04-464d-a8a7-c96fcc22bc38")
                 .add("formId", UUID.randomUUID().toString())
@@ -289,8 +287,8 @@ public class CotrQueryApiTest {
                 .add("lastUpdated", "2021-01-13T10:15")
                 .add("defendants", createArrayBuilder().add(createObjectBuilder().add("defendantId", "df73207f-3ced-488a-82a0-3fba79c2ce86").build()))
                 .build());
-        when(progressionService.getFormsForCase(any(Requester.class), any(JsonEnvelope.class), any(String.class))).thenReturn(ptphForDefendantPayload);
-        when(progressionService.getForm(any(Requester.class), any(JsonEnvelope.class), any(String.class), any(String.class))).thenReturn(createObjectBuilder()
+        when(progressionService.getFormsForCase(any(FormQueryView.class), any(JsonEnvelope.class), any(String.class))).thenReturn(ptphForDefendantPayload);
+        when(progressionService.getForm(any(FormQueryView.class), any(JsonEnvelope.class), any(String.class), any(String.class))).thenReturn(createObjectBuilder()
                 .add("lastUpdated", "2021-01-13T10:15")
                 .add("defendants", createArrayBuilder().add(createObjectBuilder().add("defendantId", "df73207f-3ced-488a-82a0-3fba79c2ce86").build()))
                 .build());

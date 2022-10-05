@@ -28,9 +28,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
-import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.query.view.ApplicationAtAGlanceHelper;
@@ -66,7 +64,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"squid:S3655", "squid:S1612"})
-@ServiceComponent(Component.QUERY_VIEW)
 public class ApplicationQueryView {
 
     public static final String APPLICATION_ID_SEARCH_PARAM = "applicationId";
