@@ -98,6 +98,7 @@ public class RefDataService {
     private static final String REFERENCEDATA_QUERY_PET_FORM = "referencedata.query.latest-pet-form";
     private static final String REFERENCE_DATA_QUERY_GET_PROSECUTOR_BY_OUCODE = "referencedata.query.get.prosecutor.by.oucode";
     private static final String REFERENCE_DATA_QUERY_GET_PROSECUTORS = "referencedata.query.prosecutors";
+    public static final String REFERENCE_DATA_QUERY_GET_OU_COURT_CODE = "referencedata.query.get.police-opt-courtroom-ou-courtroom-code";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RefDataService.class);
     private static final String REFERENCEDATA_GET_ALL_DOCUMENT_TYPE_ACCESS_QUERY = "referencedata.get-all-document-type-access";
@@ -669,5 +670,18 @@ public class RefDataService {
                 .withMetadataFrom(envelope));
 
         return response.payloadAsJsonObject().getString("country");
+    }
+
+    public JsonObject getOuCourtRoomCode(final String courtRoomId, final Requester requester) {
+        final JsonObject payload = createObjectBuilder()
+                .add("courtRoomUuid", courtRoomId)
+                .build();
+
+        final MetadataBuilder metadataBuilder = Envelope.metadataBuilder()
+                .withId(randomUUID())
+                .withName(REFERENCE_DATA_QUERY_GET_OU_COURT_CODE);
+
+        return requester.requestAsAdmin(envelopeFrom(metadataBuilder, payload), JsonObject.class).payload();
+
     }
 }

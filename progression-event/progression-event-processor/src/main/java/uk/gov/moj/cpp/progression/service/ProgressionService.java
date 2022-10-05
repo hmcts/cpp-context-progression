@@ -1098,11 +1098,15 @@ public class ProgressionService {
                 .orElseThrow(() -> new ReferenceDataNotFoundException("Court center ", courtCentre.getId().toString()));
 
         final LjaDetails ljaDetails = referenceDataService.getLjaDetails(jsonEnvelope, courtCentreJson.getString("lja"), requester);
+        final String code = ofNullable(courtCentre.getRoomId())
+                .map( roomId -> referenceDataService.getOuCourtRoomCode(roomId.toString(), requester).getJsonArray("ouCourtRoomCodes").getString(0))
+                .orElseGet(() -> courtCentreJson.getString("oucode", null));
 
         return CourtCentre.courtCentre()
                 .withId(courtCentre.getId())
                 .withLja(ljaDetails)
-                .withCode(courtCentreJson.getString("oucode", null))
+                .withCode(code)
+                .withCourtHearingLocation(code)
                 .withName(courtCentreJson.getString("oucodeL3Name"))
                 .withRoomName(nonNull(courtCentre.getRoomId()) ? enrichCourtRoomName(courtCentre.getId(), courtCentre.getRoomId(), jsonEnvelope) : null)
                 .withRoomId(courtCentre.getRoomId())

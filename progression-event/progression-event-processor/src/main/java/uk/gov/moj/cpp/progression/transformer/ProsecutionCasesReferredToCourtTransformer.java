@@ -31,6 +31,7 @@ public class ProsecutionCasesReferredToCourtTransformer {
                                             .withProsecutionCaseId(prosecutionCase.getId())
                                             .withSummonsMaterialId(summonsMaterialId)
                                             .withHearingDays(hearingInitiate.getHearing().getHearingDays())
+                                            .withHearingType(hearingInitiate.getHearing().getType())
                                             .build())
                     )
             );
@@ -54,6 +55,7 @@ public class ProsecutionCasesReferredToCourtTransformer {
                                                     .withHearingId(hearingListingNeeds.getId())
                                                     .withProsecutionCaseId(prosecutionCase.getId())
                                                     .withHearingDays(hearing.getHearingDays())
+                                                    .withHearingType(hearing.getType())
                                                     .build())
                             )
             );
