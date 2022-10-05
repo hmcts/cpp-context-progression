@@ -5,6 +5,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Arrays.asList;
+import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -52,6 +53,7 @@ import uk.gov.moj.cpp.progression.service.MaterialService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
+import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -149,6 +151,9 @@ public class CotrEventsProcessorTest {
 
     @Spy
     private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+
+    @Mock
+    private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
 
     private static JsonObject getReviewNotes(final UUID id1, final UUID id2) {
 
@@ -530,6 +535,7 @@ public class CotrEventsProcessorTest {
         final JsonEnvelope envelope = envelopeFrom(
                 metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-pet-submitted"),
                 jsonPayload);
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
 
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);
@@ -575,6 +581,8 @@ public class CotrEventsProcessorTest {
                 metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-pet-submitted"),
                 jsonPayload);
 
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
+
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);
         //Then
@@ -618,6 +626,8 @@ public class CotrEventsProcessorTest {
         final JsonEnvelope envelope = envelopeFrom(
                 metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-pet-submitted"),
                 jsonPayload);
+
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
 
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);
@@ -664,6 +674,8 @@ public class CotrEventsProcessorTest {
         final JsonEnvelope envelope = envelopeFrom(
                 metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-pet-submitted"),
                 jsonPayload);
+
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
 
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);

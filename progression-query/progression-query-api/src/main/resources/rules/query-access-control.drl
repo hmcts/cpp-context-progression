@@ -606,7 +606,7 @@ rule "Query - Access control for progression.query.cotr-trial-hearings"
     $outcome: Outcome();
     $action: Action(name == "progression.query.cotr-trial-hearings");
     eval(userAndGroupProvider.hasPermission($action, RuleConstants.cotrTrialHearingsGrantAccessPermission())) or
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users", "Advocates"));
   then
     $outcome.setSuccess(true);
 end
@@ -616,7 +616,7 @@ rule "Query - Access control for progression.query.cotr-details"
     $outcome: Outcome();
     $action: Action(name == "progression.query.cotr-details");
     eval(userAndGroupProvider.hasPermission($action, RuleConstants.cotrDetailsGrantAccessPermission())) or
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users", "Advocates"));
   then
     $outcome.setSuccess(true);
 end
@@ -626,7 +626,7 @@ rule "Query - Access control for progression.query.cotr-form"
     $outcome: Outcome();
     $action: Action(name == "progression.query.cotr-form");
     eval(userAndGroupProvider.hasPermission($action, RuleConstants.cotrFormGrantAccessPermission())) or
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users", "Advocates"));
   then
     $outcome.setSuccess(true);
 end

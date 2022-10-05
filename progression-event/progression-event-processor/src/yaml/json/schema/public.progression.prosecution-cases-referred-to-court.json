@@ -32,6 +32,9 @@
     },
     "summonsMaterialId": {
       "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "hearingType": {
+      "$ref": "http://justice.gov.uk/core/courts/hearingType.json"
     }
   },
   "required": [

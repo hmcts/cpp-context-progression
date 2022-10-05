@@ -36,6 +36,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+
+import org.apache.activemq.artemis.utils.JsonLoader;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -585,6 +587,40 @@ public class ProgressionServiceTest {
         when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
         progressionService.updateCaseStatus(envelope, hearing, singletonList(courtApplicationId));
         verifyNoMoreInteractions(sender);
+    }
+
+    @Test
+    public void shouldCreateCourtCenterWithCourtRoomOuCode(){
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS);
+        when(enveloper.withMetadataFrom
+                (envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
+        final String address1 = "ADDRESS1";
+        final UUID courtCentreId = randomUUID();
+        final UUID courtRoomId = randomUUID();
+        final String oucode = STRING.next();
+        final JsonObject courtCentreJson = createObjectBuilder()
+                .add("oucodeL3Name", "Lavender Hill Magistrates Court")
+                .add("address1", address1)
+                .add("oucode", oucode)
+                .add("lja", "ljaCode")
+                .build();
+        final JsonObject courtRoomOuJson = createObjectBuilder().add("ouCourtRoomCodes", JsonLoader.createArrayBuilder().add("B46IR03").build()).build();
+        final JsonObject courtRoomJson = createObjectBuilder()
+                .add("courtrooms", JsonLoader.createArrayBuilder()
+                        .add(createObjectBuilder().add("id", courtRoomId.toString())
+                                .add("courtroomName", "room name 1")
+                                .build())
+                        .build())
+                .build();
+        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(courtCentreId).withRoomId(courtRoomId).build();
+        when(referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester)).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getOuCourtRoomCode(courtRoomId.toString(), requester)).thenReturn(courtRoomOuJson);
+        when(referenceDataService.getCourtRoomById(courtCentreId, envelope, requester)).thenReturn(Optional.of(courtRoomJson));
+
+        final CourtCentre result = progressionService.transformCourtCentre(courtCentre, envelope);
+
+        assertThat(result.getCode(), is("B46IR03"));
+
     }
 
     private JsonObject generateJudiciariesJson() throws IOException {

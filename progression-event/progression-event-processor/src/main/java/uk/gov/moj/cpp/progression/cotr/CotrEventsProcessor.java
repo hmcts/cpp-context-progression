@@ -13,6 +13,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.core.courts.CotrPdfContent;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -43,10 +44,13 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
 import uk.gov.moj.cpp.progression.json.schemas.event.CotrTaskRequested;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
+import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -72,7 +76,7 @@ import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 
-@SuppressWarnings({"squid:S1155"})
+@SuppressWarnings({"squid:S1155", "squid:S3655"})
 public class CotrEventsProcessor {
 
     public static final String SUBMISSION_ID = "submissionId";
@@ -151,6 +155,7 @@ public class CotrEventsProcessor {
     public static final String N = "N";
     public static final String YES = "Yes";
     public static final String NO = "No";
+    private static final String CPS_DEFENDANT_ID = "cpsDefendantId";
 
     @Inject
     private Requester requester;
@@ -166,6 +171,8 @@ public class CotrEventsProcessor {
     private RefDataService referenceDataService;
     @Inject
     private UsersGroupService usersGroupService;
+    @Inject
+    private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
 
     private static Optional<Map.Entry<UUID, ZonedDateTime>> getRecentHearing(List<Hearings> nonResultedHearing) {
         final Map<UUID, ZonedDateTime> hearingDaysMap = new HashMap<>();
@@ -466,7 +473,7 @@ public class CotrEventsProcessor {
         LOGGER.info("public.prosecutioncasefile.cps-serve-cotr-submitted");
         final UUID cotrId = randomUUID();
         final JsonObject payload = envelope.payloadAsJsonObject();
-        final Optional<Hearings> hearings = getCaseHearing(envelope, payload);
+        final Optional<Hearings> hearings = getCaseHearing(payload);
 
         if (hearings.isPresent()) {
             final String courtCenterName = hearings.get().getCourtCentre().getName();
@@ -488,14 +495,20 @@ public class CotrEventsProcessor {
             this.sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
                     .withName(PROGRESSION_COMMAND_SERVE_COTR)
                     .build(), serveCotrPayload));
+
+            final List<JsonObject> formDefendantList = payload.getJsonArray(FORM_DEFENDANTS).getValuesAs(JsonObject.class);
+            if (isNotEmpty(formDefendantList)) {
+                formDefendantList.forEach(defendant -> updateCpsDefendantId(envelope, payload.getString(CASE_ID), defendant));
+            }
+
         } else {
             sendOperationFailed(envelope, payload, HEARING_ID_NOT_FOUND, CREATE_COTR_FORM);
         }
     }
 
-    private Optional<Hearings> getCaseHearing(final JsonEnvelope envelope, final JsonObject payload) {
+    private Optional<Hearings> getCaseHearing(final JsonObject payload) {
         List<Hearings> hearingList;
-        final Optional<JsonObject> caseHearingsResponse = this.getCaseHearings(payload.getString(CASE_ID), envelope);
+        final Optional<JsonObject> caseHearingsResponse = this.getCaseHearings(payload.getString(CASE_ID));
         if (caseHearingsResponse.isPresent()) {
             hearingList = caseHearingsResponse.get().getJsonArray(HEARINGS).
                     getValuesAs(JsonObject.class).stream().map(hearing ->
@@ -512,11 +525,15 @@ public class CotrEventsProcessor {
         return Optional.empty();
     }
 
-    public Optional<JsonObject> getCaseHearings(final String caseId, final JsonEnvelope event) {
+    public Optional<JsonObject> getCaseHearings(final String caseId) {
         final JsonObject payload = Json.createObjectBuilder().add(CASE_ID, caseId).build();
-        final JsonObject caseHearings = requester.request(envelop(payload)
+        final UUID systemUser = nonNull(serviceContextSystemUserProvider.getContextSystemUserId()) && serviceContextSystemUserProvider.getContextSystemUserId().isPresent()?serviceContextSystemUserProvider.getContextSystemUserId().get() : null;
+
+        final MetadataBuilder metadataBuilder = metadataBuilder().withId(UUID.randomUUID())
                 .withName(PROGRESSION_QUERY_CASE_HEARINGS)
-                .withMetadataFrom(event)).payloadAsJsonObject();
+                .withUserId(nonNull(systemUser)? systemUser.toString():null);
+
+        final JsonObject caseHearings = requester.request(envelopeFrom(metadataBuilder, payload)).payloadAsJsonObject();
 
         return ofNullable(caseHearings);
     }
@@ -669,6 +686,21 @@ public class CotrEventsProcessor {
         LOGGER.info("getCotrCaseDetails - caseHearings {} ", caseHearings);
 
         return ofNullable(caseHearings);
+    }
+
+    private void updateCpsDefendantId(final JsonEnvelope envelope, final String caseId, final JsonObject defendant) {
+        if (StringUtils.isNotEmpty(defendant.getString(CPS_DEFENDANT_ID, null))) {
+            final String defendantId = defendant.getString(DEFENDANT_ID);
+            final String cpsDefendantId = defendant.getString(CPS_DEFENDANT_ID);
+            LOGGER.info("updating defendant {} with cpsDefendantId {} in case {}", defendantId, cpsDefendantId, caseId);
+            final UpdateCpsDefendantId updateCpsDefendantId = UpdateCpsDefendantId.updateCpsDefendantId()
+                    .withCpsDefendantId(fromString(cpsDefendantId))
+                    .withCaseId(fromString(caseId))
+                    .withDefendantId(fromString(defendantId))
+                    .build();
+
+            sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata()).withName("progression.command.update-cps-defendant-id").build(), updateCpsDefendantId));
+        }
     }
 
 }

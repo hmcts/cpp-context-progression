@@ -686,4 +686,32 @@ public class CotrEventsListenerTest {
         assertThat(savedCOTRDetailsEntity.getProsecutionCaseId(), is(cotrDetailsEntity.getProsecutionCaseId()));
         assertThat(savedCOTRDetailsEntity.getJudgeReviewNotes(), is(reviewNotes));
     }
+
+    @Test
+    public void shouldTestUpdateProsecutionCotr_FormCompletedOnBehalfOfTheProsecutionBy() {
+        final ProsecutionCotrUpdated prosecutionCotrUpdated = ProsecutionCotrUpdated.prosecutionCotrUpdated()
+                .withCotrId(randomUUID())
+                .withHearingId(randomUUID())
+                .withCertifyThatTheProsecutionIsTrialReady(setPolarQuestion(CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY))
+                .withFormCompletedOnBehalfOfProsecutionBy(setPolarQuestion("Test"))
+                .build();
+        ProsecutionFormData prosecutionFormData = getProsecutionFormData();
+        final COTRDetailsEntity cotrDetailsEntity = new COTRDetailsEntity();
+        cotrDetailsEntity.setProsecutionFormData(prosecutionFormData.toString());
+        cotrDetailsEntity.setId(prosecutionCotrUpdated.getCotrId());
+        cotrDetailsEntity.setHearingId(prosecutionCotrUpdated.getHearingId());
+        final JsonObject jsonObject = getJsonObject();
+        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(jsonObject);
+        when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionFormData.class)).thenReturn(getProsecutionFormData());
+        cotrDetailsEntity.setProsecutionFormData(getProsecutionFormData().toString());
+        when(prosecutionCotrUpdatedEnvelope.payload()).thenReturn(prosecutionCotrUpdated);
+        when(cotrDetailsRepository.findBy(prosecutionCotrUpdated.getCotrId())).thenReturn(cotrDetailsEntity);
+
+        cotrEventsListener.updateProsecutionCotr(prosecutionCotrUpdatedEnvelope);
+        verify(cotrDetailsRepository).findBy(prosecutionCotrUpdated.getCotrId());
+        verify(cotrDetailsRepository).save(cotrDetailsEntityArgumentCaptor.capture());
+
+        final COTRDetailsEntity savedCOTRDetailsEntity = cotrDetailsEntityArgumentCaptor.getValue();
+        assertTrue(savedCOTRDetailsEntity.getProsecutionFormData().contains("formCompletedOnBehalfOfTheProsecutionBy"));
+    }
 }

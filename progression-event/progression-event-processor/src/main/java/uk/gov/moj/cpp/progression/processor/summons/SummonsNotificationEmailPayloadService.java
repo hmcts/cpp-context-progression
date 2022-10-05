@@ -5,6 +5,7 @@ import static java.lang.String.format;
 import static java.lang.System.lineSeparator;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -13,6 +14,7 @@ import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
 import static uk.gov.justice.core.courts.notification.EmailChannel.emailChannel;
 import static uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats.SPACE_SEPARATED_3_CHAR_MONTH;
 
+import com.google.common.collect.ImmutableList;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.SummonsDataPrepared;
 import uk.gov.justice.core.courts.SummonsType;
@@ -206,13 +208,18 @@ public class SummonsNotificationEmailPayloadService {
     }
 
     private String getCaseDefendantDetails(final SummonsDocumentContent summonsDocumentContent, final Defendant defendant, final boolean notificationForParentOrGuardian) {
+        final ImmutableList.Builder<String> builder = ImmutableList.builder();
         if (notificationForParentOrGuardian) {
-            return of(format("%s (parent/guardian of %s)", summonsDocumentContent.getAddressee().getName(), summonsDocumentContent.getDefendant().getName()),
-                    defendant.getProsecutionAuthorityReference()).stream()
+            final String defendantName = format("%s (parent/guardian of %s)", summonsDocumentContent.getAddressee().getName(), summonsDocumentContent.getDefendant().getName());
+            builder.add(defendantName);
+            ofNullable(defendant.getProsecutionAuthorityReference()).ifPresent(builder::add);
+            return builder.build().stream()
                     .filter(StringUtils::isNotBlank)
                     .collect(joining(", "));
         }
-        return of(summonsDocumentContent.getDefendant().getName(), defendant.getProsecutionAuthorityReference()).stream()
+        ofNullable(summonsDocumentContent.getDefendant().getName()).ifPresent(builder::add);
+        ofNullable(defendant.getProsecutionAuthorityReference()).ifPresent(builder::add);
+        return builder.build().stream()
                 .filter(StringUtils::isNotBlank)
                 .collect(joining(", "));
     }
