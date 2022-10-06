@@ -10,6 +10,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.FormQueryView;
 
 import javax.inject.Inject;
 import javax.json.JsonArrayBuilder;
@@ -44,9 +45,12 @@ public class FormQueryApi {
     @Inject
     private Requester requester;
 
+    @Inject
+    private FormQueryView formQueryView;
+
     @Handles("progression.query.forms-for-case")
     public JsonEnvelope getFormsForCase(final JsonEnvelope query) {
-        return requester.request(query);
+        return formQueryView.getFormsForCase(query);
     }
 
     @Handles("progression.query.form")
@@ -59,7 +63,7 @@ public class FormQueryApi {
         final JsonObject formDataFromMaterial = materialResponse.payloadAsJsonObject();
         LOGGER.info("structured form from material: {}", formDataFromMaterial);
 
-        final JsonEnvelope envelope = requester.request(query);
+        final JsonEnvelope envelope = formQueryView.getForm(query);
         final JsonObject response = envelope.payloadAsJsonObject();
         final JsonObjectBuilder formResponseAsJsonObject = createObjectBuilder().add(CASE_ID, query.payloadAsJsonObject().getString(CASE_ID))
                 .add(COURT_FORM_ID, courtFormId)

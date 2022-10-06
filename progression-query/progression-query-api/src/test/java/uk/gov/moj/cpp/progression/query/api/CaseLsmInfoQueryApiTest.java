@@ -5,8 +5,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.CaseLsmInfoQuery;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,14 +20,14 @@ public class CaseLsmInfoQueryApiTest {
     private JsonEnvelope response;
 
     @Mock
-    private Requester requester;
+    private CaseLsmInfoQuery caseLsmInfoQuery;
 
     @InjectMocks
     private CaseLsmInfoQueryApi caseLsmInfoQueryApi;
 
     @Test
     public void shouldHandleCaseLsmInfo() {
-        when(requester.request(query)).thenReturn(response);
+        when(caseLsmInfoQuery.getCaseLsmInfo(query)).thenReturn(response);
         assertThat(caseLsmInfoQueryApi.getProsecutionCaseLsmInfo(query), equalTo(response));
     }
 }

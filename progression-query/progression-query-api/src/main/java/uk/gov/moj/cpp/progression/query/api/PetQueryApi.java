@@ -10,6 +10,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.PetQueryView;
 import uk.gov.moj.cpp.progression.query.api.helper.PetForDefendantQueryHelper;
 
 import javax.inject.Inject;
@@ -46,6 +47,9 @@ public class PetQueryApi {
     private Requester requester;
 
     @Inject
+    private PetQueryView petQueryView;
+
+    @Inject
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Inject
@@ -67,7 +71,7 @@ public class PetQueryApi {
 
     @Handles("progression.query.pets-for-case")
     public JsonEnvelope getPetsForCase(final JsonEnvelope query) {
-        return requester.request(query);
+        return petQueryView.getPetsForCase(query);
     }
 
     @Handles("progression.query.pet-change-history")

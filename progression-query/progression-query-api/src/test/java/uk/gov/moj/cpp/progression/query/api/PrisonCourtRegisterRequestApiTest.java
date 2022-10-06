@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.query.api;
 
-import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.moj.cpp.progression.query.PrisonCourtRegisterDocumentRequestQueryView;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -17,7 +17,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class PrisonCourtRegisterRequestApiTest {
     @Mock
-    private Requester requester;
+    private PrisonCourtRegisterDocumentRequestQueryView prisonCourtRegisterDocumentRequestQueryView;
 
     @InjectMocks
     private PrisonCourtRegisterRequestApi prisonCourtRegisterRequestApi;
@@ -29,6 +29,6 @@ public class PrisonCourtRegisterRequestApiTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.query.prison-court-register-document-by-court-centre"),
                 prisonCourtRegisterDocumentPayload);
         prisonCourtRegisterRequestApi.getPrisonCourtRegisterDocumentRequestByCourtCentre(response);
-        Mockito.verify(requester).request(response);
+        Mockito.verify(prisonCourtRegisterDocumentRequestQueryView).getPrisonCourtRegistersByCourtCentre(response);
     }
 }

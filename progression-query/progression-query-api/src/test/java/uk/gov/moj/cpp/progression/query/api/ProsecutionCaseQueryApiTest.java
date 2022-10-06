@@ -12,6 +12,7 @@ import uk.gov.QueryClientTestBase;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 import uk.gov.moj.cpp.progression.query.api.service.CourtOrderService;
 import uk.gov.moj.cpp.progression.query.api.service.OrganisationService;
 
@@ -56,6 +57,9 @@ public class ProsecutionCaseQueryApiTest {
     @Mock
     private Requester requester;
 
+    @Mock
+    private ProsecutionCaseQuery prosecutionCaseQuery;
+
     @InjectMocks
     private ProsecutionCaseQueryApi prosecutionCaseQueryApi;
 
@@ -67,25 +71,25 @@ public class ProsecutionCaseQueryApiTest {
 
     @Test
     public void shouldHandleGetCaseHearings() {
-        when(requester.request(query)).thenReturn(response);
+        when(prosecutionCaseQuery.getCaseHearings(query)).thenReturn(response);
         assertThat(prosecutionCaseQueryApi.getCaseHearings(query), equalTo(response));
     }
 
     @Test
     public void shouldHandleGetCaseDefendantHearings() {
-        when(requester.request(query)).thenReturn(response);
+        when(prosecutionCaseQuery.getCaseDefendantHearings(query)).thenReturn(response);
         assertThat(prosecutionCaseQueryApi.getCaseDefendantHearings(query), equalTo(response));
     }
 
     @Test
     public void shouldHandleSearchProsecutionCaseQuery() {
-        when(requester.request(query)).thenReturn(response);
+        when(prosecutionCaseQuery.searchCase(query)).thenReturn(response);
         assertThat(prosecutionCaseQueryApi.searchCaseProsecutionCase(query), equalTo(response));
     }
 
     @Test
     public void shouldHandleSearchForUserGroupsByMaterialId() {
-        when(requester.request(query)).thenReturn(response);
+        when(prosecutionCaseQuery.searchByMaterialId(query)).thenReturn(response);
         assertThat(prosecutionCaseQueryApi.searchForUserGroupsByMaterialId(query), equalTo(response));
     }
 
@@ -97,7 +101,7 @@ public class ProsecutionCaseQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
 
-        when(requester.request(query)).thenReturn(envelope);
+        when(prosecutionCaseQuery.getProsecutionCase(query)).thenReturn(envelope);
         when(courtOrderService.getCourtOrdersByDefendant(any(), any(), any())).thenReturn(courtOrdersPayload);
         final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getCaseProsecutionCase(query);
 
@@ -114,7 +118,7 @@ public class ProsecutionCaseQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
 
-        when(requester.request(query)).thenReturn(envelope);
+        when(prosecutionCaseQuery.getProsecutionCase(query)).thenReturn(envelope);
         when(courtOrderService.getCourtOrdersByDefendant(any(), any(), any())).thenReturn(courtOrdersPayload);
         final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getCaseProsecutionCase(query);
 
@@ -131,7 +135,7 @@ public class ProsecutionCaseQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
 
-        when(requester.request(query)).thenReturn(envelope);
+        when(prosecutionCaseQuery.getProsecutionCase(query)).thenReturn(envelope);
         when(courtOrderService.getCourtOrdersByDefendant(any(), any(), any())).thenReturn(courtOrdersPayload);
         final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getCaseProsecutionCase(query);
 
@@ -148,7 +152,7 @@ public class ProsecutionCaseQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
 
-        when(requester.request(query)).thenReturn(envelope);
+        when(prosecutionCaseQuery.getProsecutionCase(query)).thenReturn(envelope);
         when(courtOrderService.getCourtOrdersByDefendant(any(), any(), any())).thenReturn(courtOrdersPayload);
         final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getCaseProsecutionCase(query);
 
@@ -166,7 +170,7 @@ public class ProsecutionCaseQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(CAAG_PROSECUTION_QUERY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, caagResponse);
 
-        when(requester.request(query)).thenReturn(envelope);
+        when(prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(query)).thenReturn(envelope);
         when(organisationService.getAssociatedCaseDefendantsWithOrganisationAddress(any(), any(), any())).thenReturn(jsonObjectPayload.getJsonObject("caseDefendantOrganisation"));
         final JsonEnvelope prosecutionCaseForCaseAtAGlance = prosecutionCaseQueryApi.getProsecutionCaseForCaseAtAGlance(query);
 
@@ -184,7 +188,7 @@ public class ProsecutionCaseQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(CAAG_PROSECUTION_QUERY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, caagResponse);
 
-        when(requester.request(query)).thenReturn(envelope);
+        when(prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(query)).thenReturn(envelope);
         when(organisationService.getAssociatedCaseDefendantsWithOrganisationAddress(any(), any(), any())).thenReturn(jsonObjectPayload);
         final JsonEnvelope prosecutionCaseForCaseAtAGlance = prosecutionCaseQueryApi.getProsecutionCaseForCaseAtAGlance(query);
 
@@ -197,7 +201,7 @@ public class ProsecutionCaseQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(CAAG_PROSECUTION_QUERY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, caagResponse);
 
-        when(requester.request(query)).thenReturn(envelope);
+        when(prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(query)).thenReturn(envelope);
         final JsonEnvelope prosecutionCaseForCaseAtAGlance = prosecutionCaseQueryApi.getProsecutionCaseForCaseAtAGlance(query);
 
         assertThat(prosecutionCaseForCaseAtAGlance.payloadAsJsonObject(), equalTo(caagResponse));
@@ -210,7 +214,7 @@ public class ProsecutionCaseQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
 
-        when(requester.request(query)).thenReturn(envelope);
+        when(prosecutionCaseQuery.getCase(query)).thenReturn(envelope);
         final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getProsecutionCase(query);
 
         final JsonObject expectedProsecutionCaseResponse = readJson(CASE_QUERY_API_EXPECTED_JSON, JsonObject.class);
@@ -225,7 +229,7 @@ public class ProsecutionCaseQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(COTR_CASE_QUERY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, cotrPayload);
 
-        when(requester.request(query)).thenReturn(envelope);
+        when(prosecutionCaseQuery.getCotrDetailsByCaseId(query)).thenReturn(envelope);
         final JsonEnvelope actualCotrCaseResponse = prosecutionCaseQueryApi.getCotrDetailsProsecutionCase(query);
 
         final JsonObject expectedCotrCaseResponse = readJson(COTR_QUERY_API_EXPECTED_JSON, JsonObject.class);

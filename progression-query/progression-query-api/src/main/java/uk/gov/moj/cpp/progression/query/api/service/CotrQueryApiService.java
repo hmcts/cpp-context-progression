@@ -28,6 +28,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
+import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 
 import javax.json.JsonObject;
 
@@ -65,7 +66,7 @@ public class CotrQueryApiService {
                 .build();
     }
 
-    public Optional<JsonObject> getCotrDetails(final Requester requester, final String prosecutionCaseId) {
+    public Optional<JsonObject> getCotrDetails(final ProsecutionCaseQuery prosecutionCaseQuery, final String prosecutionCaseId) {
         final JsonObject payload = createObjectBuilder()
                 .add("prosecutionCaseId", prosecutionCaseId)
                 .build();
@@ -75,8 +76,8 @@ public class CotrQueryApiService {
                         withName("progression.query.cotr-details"),
                 payload);
 
-        final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
-        return ofNullable(response.payload());
+        final JsonEnvelope response = prosecutionCaseQuery.getCotrDetails(requestEnvelope);
+        return ofNullable(response.payloadAsJsonObject());
     }
 
     public Optional<JsonObject> getCaseDirectionsByHearingIdAndDirectionIds(final Requester requester, final String hearingId) {

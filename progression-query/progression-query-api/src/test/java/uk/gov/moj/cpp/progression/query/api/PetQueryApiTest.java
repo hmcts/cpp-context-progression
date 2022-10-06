@@ -9,6 +9,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.PetQueryView;
 import uk.gov.moj.cpp.progression.query.api.helper.PetForDefendantQueryHelper;
 
 import javax.json.JsonObject;
@@ -30,6 +31,9 @@ public class PetQueryApiTest {
     @Mock
     private Requester requester;
 
+    @Mock
+    private PetQueryView petQueryView;
+
     @InjectMocks
     private PetQueryApi petQueryApi;
 
@@ -50,7 +54,7 @@ public class PetQueryApiTest {
                 .add("caseId", caseId)
                 .build());
 
-        when(requester.request(query)).thenReturn(envelope);
+        when(petQueryView.getPetsForCase(query)).thenReturn(envelope);
 
         final JsonEnvelope result = petQueryApi.getPetsForCase(query);
         assertThat(result, is(envelope));

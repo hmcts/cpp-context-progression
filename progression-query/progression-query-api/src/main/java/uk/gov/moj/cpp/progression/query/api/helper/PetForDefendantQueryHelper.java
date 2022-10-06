@@ -7,6 +7,7 @@ import static javax.json.Json.createObjectBuilder;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.PetQueryView;
 import uk.gov.moj.cpp.progression.query.api.service.MaterialService;
 import uk.gov.moj.cpp.progression.query.api.service.ProgressionService;
 
@@ -41,10 +42,13 @@ public class PetForDefendantQueryHelper {
     @Inject
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
+    @Inject
+    private PetQueryView petQueryView;
+
     public JsonObject buildPetForDefendant(final Requester requester, final JsonEnvelope query){
         final String caseId = query.payloadAsJsonObject().getString(CASE_ID);
 
-        final JsonArray petsJsonArray = progressionService.getPetsForCase(requester, query, caseId).getJsonArray(PETS);
+        final JsonArray petsJsonArray = progressionService.getPetsForCase(petQueryView, query, caseId).getJsonArray(PETS);
         final JsonArrayBuilder petsArrayBuilder = createArrayBuilder();
         final String defendantId = query.payloadAsJsonObject().getString(DEFENDANT_ID);
         petsJsonArray.stream()
@@ -65,7 +69,7 @@ public class PetForDefendantQueryHelper {
 
     public JsonObject buildPetForDefendant(final Requester requester, final JsonEnvelope query, final String caseId, final String defendantId) {
 
-        final JsonArray petsJsonArray = progressionService.getPetsForCase(requester, query, caseId).getJsonArray(PETS);
+        final JsonArray petsJsonArray = progressionService.getPetsForCase(petQueryView, query, caseId).getJsonArray(PETS);
         final JsonArrayBuilder petsArrayBuilder = createArrayBuilder();
 
         petsJsonArray.stream()

@@ -4,8 +4,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.CaseNotesQueryView;
+import uk.gov.moj.cpp.progression.query.DefendantByLAAContractNumberQueryView;
+import uk.gov.moj.cpp.progression.query.HearingQueryView;
+import uk.gov.moj.cpp.progression.query.view.ProgressionQueryView;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,73 +24,82 @@ public class ProgressionQueryApiTest {
     private JsonEnvelope response;
 
     @Mock
-    private Requester requester;
+    private ProgressionQueryView progressionQueryView;
+
+    @Mock
+    private HearingQueryView hearingQueryView;
+
+    @Mock
+    private CaseNotesQueryView caseNotesQueryView;
+
+    @Mock
+    private DefendantByLAAContractNumberQueryView defendantByLAAContractNumberQueryView;
 
     @InjectMocks
     private ProgressionQueryApi progressionHearingsQueryApi;
 
     @Test
     public void shouldHandleCaseprogressiondetailQuery() {
-        when(requester.request(query)).thenReturn(response);
+        when(progressionQueryView.getCaseProgressionDetails(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getCaseprogressiondetail(query), equalTo(response));
     }
 
     @Test
     public void shouldHandleCaseQuery() {
-        when(requester.request(query)).thenReturn(response);
+        when(progressionQueryView.getCases(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getCases(query), equalTo(response));
     }
 
     @Test
     public void shouldHandleDefendantQuery() {
-        when(requester.request(query)).thenReturn(response);
+        when(progressionQueryView.getDefendant(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getDefendant(query), equalTo(response));
     }
 
     @Test
     public void shouldHandleDefendantsQuery() {
-        when(requester.request(query)).thenReturn(response);
+        when(progressionQueryView.getDefendants(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getDefendants(query), equalTo(response));
     }
 
     @Test
     public void shouldGetDefendantsOffenceQuery() {
-        when(requester.request(query)).thenReturn(response);
+        when(progressionQueryView.findOffences(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.findOffences(query), equalTo(response));
     }
 
     @Test
     public void shouldGetDefendantDocumentQuery() {
-        when(requester.request(query)).thenReturn(response);
+        when(progressionQueryView.getDefendantDocument(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getDefendantDocument(query), equalTo(response));
     }
 
     @Test
     public void shouldGetCaseSearchByMaterialId() {
-        when(requester.request(query)).thenReturn(response);
+        when(progressionQueryView.searchCaseByMaterialId(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getCaseSearchByMaterialId(query), equalTo(response));
     }
 
     @Test
     public void shouldGetCaseByUrn() {
-        when(requester.request(query)).thenReturn(response);
+        when(progressionQueryView.findCaseByUrn(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getCaseByUrn(query), equalTo(response));
     }
 
     @Test
     public void shouldGetHearingByHearingId() {
-        when(requester.request(query)).thenReturn(response);
+        when(hearingQueryView.getHearing(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getHearing(query), equalTo(response));
     }
 
     @Test
     public void shouldGetCaseNotesByCaseId() {
-        when(requester.request(query)).thenReturn(response);
+        when(caseNotesQueryView.getCaseNotes(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getCaseNotes(query), equalTo(response));
     }
     @Test
     public void shouldGetDefendantsByLAAContractNumber(){
-        when(requester.request(query)).thenReturn(response);
+        when(defendantByLAAContractNumberQueryView.getDefendantsByLAAContractNumber(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getDefendantsByLAAContractNumber(query), equalTo(response));
     }
 

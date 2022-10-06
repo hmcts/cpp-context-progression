@@ -8,13 +8,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.progression.query.api.CourtDocumentApi.MATERIAL_CONTENT_FOR_PROSECUTION;
-import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.CASE_ID;
-import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.COURT_DOCUMENTS_SEARCH_PROSECUTION;
 
 import uk.gov.QueryClientTestBase;
 import uk.gov.justice.api.resource.service.DefenceQueryService;
-import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
@@ -22,12 +18,12 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.query.ApplicationQueryView;
 
 import java.util.HashSet;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -36,8 +32,6 @@ import javax.json.JsonObjectBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -48,7 +42,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ApplicationQueryApiTest {
 
     public static final String APPLICATION_AT_GLANCE_DEFENCE = "progression.query.application.aaag-for-defence";
-    public static final String CASE_ID = "caseId";
 
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
@@ -77,17 +70,15 @@ public class ApplicationQueryApiTest {
     @Mock
     private Requester requester;
 
+    @Mock
+    private ApplicationQueryView applicationQueryView;
+
     @InjectMocks
     private ApplicationQueryApi applicationQueryApi;
 
     @Mock
     private DefenceQueryService defenceQueryService;
 
-    @Captor
-    private ArgumentCaptor<String> responsePutKeys;
-
-    @Captor
-    private ArgumentCaptor<JsonObject> responsePutValues;
     private Object suppliedObject;
 
     @Before
@@ -114,7 +105,7 @@ public class ApplicationQueryApiTest {
         when(assignedUserJson.getString("userId")).thenReturn(userDetails.getUserId().toString());
 
 
-        when(requester.request(query)).thenReturn(response);
+        when(applicationQueryView.getApplication(query)).thenReturn(response);
         when(response.payloadAsJsonObject()).thenReturn(responseJson);
 
 
@@ -135,25 +126,25 @@ public class ApplicationQueryApiTest {
 
     @Test
     public void shouldGetCourtApplicationForApplicationAtAGlance() {
-        when(requester.request(query)).thenReturn(response);
+        when(applicationQueryView.getCourtApplicationForApplicationAtAGlance(query)).thenReturn(response);
         assertThat(applicationQueryApi.getCourtApplicationForApplicationAtAGlance(query), equalTo(response));
     }
 
     @Test
     public void shouldGetCourtApplicationOnly() {
-        when(requester.request(query)).thenReturn(response);
+        when(applicationQueryView.getApplicationOnly(query)).thenReturn(response);
         assertThat(applicationQueryApi.getApplicationOnly(query), equalTo(response));
     }
 
     @Test
     public void shouldGetCourtProceedingsForApplication() {
-        when(requester.request(query)).thenReturn(response);
+        when(applicationQueryView.getCourtProceedingsForApplication(query)).thenReturn(response);
         assertThat(applicationQueryApi.getCourtProceedingsForApplication(query), equalTo(response));
     }
 
     @Test
     public void shouldGetApplicationHearings() {
-        when(requester.request(query)).thenReturn(response);
+        when(applicationQueryView.getApplicationHearings(query)).thenReturn(response);
         assertThat(applicationQueryApi.getApplicationHearings(query), equalTo(response));
     }
 
@@ -164,7 +155,7 @@ public class ApplicationQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(APPLICATION_AT_GLANCE_DEFENCE);
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
 
-        when(requester.request(any())).thenReturn(envelope);
+        when(applicationQueryView.getCourtApplicationForApplicationAtAGlance(any())).thenReturn(envelope);
 
         applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope);
     }
@@ -180,7 +171,7 @@ public class ApplicationQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(APPLICATION_AT_GLANCE_DEFENCE);
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
 
-        when(requester.request(any())).thenReturn(envelope);
+        when(applicationQueryView.getCourtApplicationForApplicationAtAGlance(any())).thenReturn(envelope);
         when(defenceQueryService.isUserProsecutingOrDefendingCase(envelope, caseId)).thenReturn(false);
 
         applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope);
@@ -197,7 +188,7 @@ public class ApplicationQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(APPLICATION_AT_GLANCE_DEFENCE);
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
 
-        when(requester.request(any())).thenReturn(envelope);
+        when(applicationQueryView.getCourtApplicationForApplicationAtAGlance(any())).thenReturn(envelope);
         when(defenceQueryService.isUserProsecutingOrDefendingCase(envelope, caseId)).thenReturn(true);
 
         JsonEnvelope response = applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope);

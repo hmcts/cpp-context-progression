@@ -24,6 +24,7 @@ import static uk.gov.moj.cpp.progression.query.api.PetQueryApi.PROSECUTION;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.PetQueryView;
 import uk.gov.moj.cpp.progression.query.api.service.MaterialService;
 import uk.gov.moj.cpp.progression.query.api.service.ProgressionService;
 
@@ -43,6 +44,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class PetForDefendantQueryHelperTest {
     @Mock
     private Requester requester;
+
+    @Mock
+    private PetQueryView petQueryView;
 
     @Mock
     private ProgressionService progressionService;
@@ -90,7 +94,7 @@ public class PetForDefendantQueryHelperTest {
                 .replaceAll("OFFENCE_ID1", offenceId1)
                 .replaceAll("OFFENCE_ID2", offenceId2));
 
-        when(progressionService.getPetsForCase(requester, query, caseId)).thenReturn(petsForCasePayload);
+        when(progressionService.getPetsForCase(petQueryView, query, caseId)).thenReturn(petsForCasePayload);
         when(materialService.getPet(requester, query, petId)).thenReturn(materialPetPayload);
 
         final JsonObject payload = petForDefendantQueryHelper.buildPetForDefendant(requester, query);
@@ -148,7 +152,7 @@ public class PetForDefendantQueryHelperTest {
                 .replaceAll("OFFENCE_ID1", offenceId1)
                 .replaceAll("OFFENCE_ID2", offenceId2));
 
-        when(progressionService.getPetsForCase(requester, query, caseId)).thenReturn(petsForCasePayload);
+        when(progressionService.getPetsForCase(petQueryView, query, caseId)).thenReturn(petsForCasePayload);
         when(materialService.getPet(requester, query, petId)).thenReturn(materialPetPayload);
 
         final JsonObject payload = petForDefendantQueryHelper.buildPetForDefendant(requester, query);
@@ -207,7 +211,7 @@ public class PetForDefendantQueryHelperTest {
                 .replaceAll("OFFENCE_ID1", offenceId1)
                 .replaceAll("OFFENCE_ID2", offenceId2));
 
-        when(progressionService.getPetsForCase(requester, query, caseId)).thenReturn(petsForCasePayload);
+        when(progressionService.getPetsForCase(petQueryView, query, caseId)).thenReturn(petsForCasePayload);
         when(materialService.getPet(requester, query, petId)).thenReturn(materialPetPayload);
 
         final JsonObject payload = petForDefendantQueryHelper.buildPetForDefendant(requester, query);

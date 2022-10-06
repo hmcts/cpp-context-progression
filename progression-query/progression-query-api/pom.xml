@@ -19,18 +19,6 @@
                 <version>${cpp.framework.version}</version>
                 <dependencies>
                     <dependency>
-                        <groupId>uk.gov.moj.cpp.progression</groupId>
-                        <artifactId>progression-query-view</artifactId>
-                        <version>${project.version}</version>
-                        <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
                         <groupId>uk.gov.moj.cpp.material</groupId>
                         <artifactId>material-query-api</artifactId>
                         <version>${material.version}</version>
@@ -125,7 +113,11 @@
             <artifactId>query-api</artifactId>
 
         </dependency>
-
+        <dependency>
+            <groupId>uk.gov.moj.cpp.progression</groupId>
+            <artifactId>progression-query-view</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>

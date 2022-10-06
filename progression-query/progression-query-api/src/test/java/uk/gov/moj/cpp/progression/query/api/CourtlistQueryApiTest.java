@@ -4,15 +4,14 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.CourtlistQueryView;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 @RunWith(MockitoJUnitRunner.class)
 public class CourtlistQueryApiTest {
 
@@ -24,7 +23,7 @@ public class CourtlistQueryApiTest {
     private JsonEnvelope response;
 
     @Mock
-    private Requester requester;
+    private CourtlistQueryView courtlistQueryView;
 
     @InjectMocks
     private CourtlistQueryApi courtListQueryApi;
@@ -32,7 +31,7 @@ public class CourtlistQueryApiTest {
 
     @Test
     public void shouldHandleApplicationQuery() {
-        when(requester.request(query)).thenReturn(response);
+        when(courtlistQueryView.searchCourtlist(query)).thenReturn(response);
         assertThat(courtListQueryApi.searchCourtlist(query), equalTo(response));
     }
 }

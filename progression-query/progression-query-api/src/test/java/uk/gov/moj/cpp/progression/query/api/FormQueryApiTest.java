@@ -17,6 +17,7 @@ import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.FormQueryView;
 
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -34,6 +35,9 @@ public class FormQueryApiTest {
     @Mock
     private Requester requester;
 
+    @Mock
+    private FormQueryView formQueryView;
+
     @InjectMocks
     private FormQueryApi formQueryApi;
 
@@ -48,7 +52,7 @@ public class FormQueryApiTest {
                 .add("caseId", caseId)
                 .build());
 
-        when(requester.request(query)).thenReturn(envelope);
+        when(formQueryView.getFormsForCase(query)).thenReturn(envelope);
 
         final JsonEnvelope result = formQueryApi.getFormsForCase(query);
         assertThat(result, is(envelope));
@@ -90,7 +94,7 @@ public class FormQueryApiTest {
                         .add("formType", "BCM")
                         .build());
 
-        when(requester.request(envelope)).thenReturn(defendantsResponse);
+        when(formQueryView.getForm(envelope)).thenReturn(defendantsResponse);
 
         final JsonEnvelope result = formQueryApi.getForm(envelope);
 

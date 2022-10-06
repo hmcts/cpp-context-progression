@@ -22,6 +22,7 @@ import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
 import uk.gov.justice.courts.progression.query.Courtdocuments;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.requester.Requester;
@@ -29,6 +30,8 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
+import uk.gov.moj.cpp.progression.query.SharedCourtDocumentsQueryView;
 import uk.gov.moj.cpp.progression.query.api.vo.Permission;
 import uk.gov.moj.cpp.progression.query.api.vo.UserOrganisationDetails;
 
@@ -49,7 +52,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class DocumentQueryApiTest {
@@ -73,6 +75,12 @@ public class DocumentQueryApiTest {
     private ReferenceDataService referenceDataService;
     @Mock
     private Requester requester;
+    @Mock
+    private CourtDocumentQueryView courtDocumentQueryView;
+    @Mock
+    private SharedCourtDocumentsQueryView sharedCourtDocumentsQueryView;
+    @Mock
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
     @Captor
     private ArgumentCaptor<JsonEnvelope> jsonEnvelopeArgumentCaptor;
     @Spy
@@ -139,9 +147,9 @@ public class DocumentQueryApiTest {
                 MetadataBuilderFactory.metadataWithRandomUUID(CourtDocumentQueryApi.COURT_DOCUMENT_SEARCH_NAME),
                 courtDocumentPayload);
 
-        when(requester.request(query)).thenReturn(response);
+        when(courtDocumentQueryView.getCourtDocument(query)).thenReturn(response);
         assertThat(target.getCourtDocument(query), equalTo(response));
-        verify(requester).request(jsonEnvelopeArgumentCaptor.capture());
+        verify(courtDocumentQueryView).getCourtDocument(jsonEnvelopeArgumentCaptor.capture());
 
     }
 
@@ -149,11 +157,11 @@ public class DocumentQueryApiTest {
     public void shouldHandleSearchCourtDocumentsQuery() {
         when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments").build());
         when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().build());
-        when(requester.request(query)).thenReturn(response);
+        when(courtDocumentQueryView.searchCourtDocuments(query)).thenReturn(response);
 
         assertThat(target.searchCourtDocuments(query), equalTo(response));
 
-        verify(requester).request(jsonEnvelopeArgumentCaptor.capture());
+        verify(courtDocumentQueryView).searchCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
         final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
 
         assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments"));
@@ -163,11 +171,11 @@ public class DocumentQueryApiTest {
     public void shouldHandleSearchCourtDocumentsQueryWithPagination() {
         when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.with.pagination").build());
         when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().build());
-        when(requester.request(query)).thenReturn(response);
+        when(courtDocumentQueryView.searchCourtDocumentsWithPagination(query)).thenReturn(response);
 
         assertThat(target.searchCourtDocumentsWithPagination(query), equalTo(response));
 
-        verify(requester).request(jsonEnvelopeArgumentCaptor.capture());
+        verify(courtDocumentQueryView).searchCourtDocumentsWithPagination(jsonEnvelopeArgumentCaptor.capture());
         final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
 
         assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments.with.pagination"));
@@ -186,11 +194,11 @@ public class DocumentQueryApiTest {
         when(hearingDetailsLoader.getHearingDetails(requester, hearingId)).thenReturn(trialHearingDetailsWithNoMags);
         when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withUserId(magsUserId.toString()).withName("progression.query.courtdocuments").build());
         when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("hearingId", hearingId.toString()).build());
-        when(requester.request(query)).thenReturn(response);
+        when(courtDocumentQueryView.searchCourtDocuments(query)).thenReturn(response);
 
         assertThat(target.searchCourtDocuments(query), equalTo(response));
 
-        verify(requester).request(jsonEnvelopeArgumentCaptor.capture());
+        verify(courtDocumentQueryView).searchCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
         final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
         assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments"));
     }
@@ -229,12 +237,12 @@ public class DocumentQueryApiTest {
         when(hearingDetailsLoader.getHearingDetails(requester, hearingId)).thenReturn(trialHearingDetails);
         when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withUserId(magsUserId.toString()).withName("progression.query.courtdocuments").build());
         when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("hearingId", hearingId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString()).build());
-        when(requester.request(any(JsonEnvelope.class))).thenReturn(response);
+        when(sharedCourtDocumentsQueryView.getSharedCourtDocuments(any(JsonEnvelope.class))).thenReturn(response);
 
 
         assertThat(target.searchCourtDocuments(query), equalTo(response));
 
-        verify(requester).request(jsonEnvelopeArgumentCaptor.capture());
+        verify(sharedCourtDocumentsQueryView).getSharedCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
         final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
 
         assertThat(jsonEnvelope.payloadAsJsonObject().containsKey("userGroupId"), is(true));
@@ -262,12 +270,12 @@ public class DocumentQueryApiTest {
         when(hearingDetailsLoader.getHearingDetails(requester, hearingId)).thenReturn(trialHearingDetails);
         when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withUserId(magsUserId.toString()).withName("progression.query.courtdocuments").build());
         when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("hearingId", hearingId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString()).build());
-        when(requester.request(any(JsonEnvelope.class))).thenReturn(response);
+        when(sharedCourtDocumentsQueryView.getSharedCourtDocuments(any(JsonEnvelope.class))).thenReturn(response);
 
 
         assertThat(target.searchCourtDocuments(query), equalTo(response));
 
-        verify(requester).request(jsonEnvelopeArgumentCaptor.capture());
+        verify(sharedCourtDocumentsQueryView).getSharedCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
         final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
 
         assertThat(jsonEnvelope.payloadAsJsonObject().containsKey("userGroupId"), is(true));
@@ -310,11 +318,11 @@ public class DocumentQueryApiTest {
         when(hearingDetailsLoader.getHearingDetails(requester, hearingId)).thenCallRealMethod();
         when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withUserId(magsUserId.toString()).withName("progression.query.courtdocuments").build());
         when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("hearingId", hearingId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString()).build());
-        when(requester.request(any(JsonEnvelope.class))).thenReturn(response);
+        when(sharedCourtDocumentsQueryView.getSharedCourtDocuments(any(JsonEnvelope.class))).thenReturn(response);
 
         assertThat(target.searchCourtDocuments(query), equalTo(response));
 
-        verify(requester).request(jsonEnvelopeArgumentCaptor.capture());
+        verify(sharedCourtDocumentsQueryView).getSharedCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
         final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
 
         assertThat(jsonEnvelope.payloadAsJsonObject().containsKey("userGroupId"), is(true));
@@ -342,12 +350,12 @@ public class DocumentQueryApiTest {
         when(hearingDetailsLoader.getHearingDetails(requester, hearingId)).thenReturn(nonTrialHearingDetails);
         when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withUserId(magsUserId.toString()).withName("progression.query.courtdocuments").build());
         when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("hearingId", hearingId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString()).build());
-        when(requester.request(query)).thenReturn(response);
+        when(courtDocumentQueryView.searchCourtDocuments(query)).thenReturn(response);
 
         assertThat(target.searchCourtDocuments(query), equalTo(response));
 
 
-        verify(requester).request(jsonEnvelopeArgumentCaptor.capture());
+        verify(courtDocumentQueryView).searchCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
         final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
         assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments"));
     }
@@ -428,12 +436,12 @@ public class DocumentQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor("progression.query.courtdocuments.for.defence", randomUUID());
         final Envelope<Object> envelope = Envelope.envelopeFrom(metadata, courtdocuments);
 
-        when(requester.request(any(), any())).thenReturn(envelope);
+        when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(response);
 
         //Given
         when(defenceQueryService.getDefendantList(any(), any())).thenReturn(asList(defendantId1, defendantId2));
         when(userDetailsLoader.getOrganisationDetailsForUser(any(), any(), any())).thenReturn(new UserOrganisationDetails(fromString("4a18bec5-ab1a-410a-9889-885694356401"), "Test Lab"));
-
+        when (jsonObjectToObjectConverter.convert(response.payloadAsJsonObject(), Courtdocuments.class)).thenReturn(courtdocuments);
         Permission firstPermission = Permission.permission().withSource(fromString("4a18bec5-ab1a-410a-9889-885694356401"))
                 .withTarget(defendantId1).build();
         Permission secondPermission = Permission.permission().withSource(fromString("4a18bec5-ab1a-410a-9889-885694356402"))
@@ -442,7 +450,7 @@ public class DocumentQueryApiTest {
 
         final JsonEnvelope responseEnvelope = target.searchCourtDocumentsForDefence(query);
 
-        verify(requester, times(2)).request(jsonEnvelopeArgumentCaptor.capture(), any());
+        verify(courtDocumentQueryView, times(2)).searchCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
         final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
         assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments"));
 
@@ -467,12 +475,12 @@ public class DocumentQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor("progression.query.courtdocuments.for.defence", randomUUID());
         final Envelope<Object> envelope = Envelope.envelopeFrom(metadata, courtdocuments);
 
-        when(requester.request(any(), any())).thenReturn(envelope);
+        when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(response);
 
         //Given
         when(defenceQueryService.getDefendantList(any(), any())).thenReturn(asList(defendantId1, defendantId2));
         when(userDetailsLoader.getOrganisationDetailsForUser(any(), any(), any())).thenReturn(new UserOrganisationDetails(fromString("4a18bec5-ab1a-410a-9889-885694356411"), "Test Lab"));
-
+        when (jsonObjectToObjectConverter.convert(response.payloadAsJsonObject(), Courtdocuments.class)).thenReturn(courtdocuments);
         Permission firstPermission = Permission.permission().withSource(fromString("4a18bec5-ab1a-410a-9889-885694356401"))
                 .withTarget(defendantId1).build();
         Permission secondPermission = Permission.permission().withSource(fromString(userId))
@@ -481,7 +489,7 @@ public class DocumentQueryApiTest {
 
         final JsonEnvelope responseEnvelope = target.searchCourtDocumentsForDefence(query);
 
-        verify(requester, times(2)).request(jsonEnvelopeArgumentCaptor.capture(), any());
+        verify(courtDocumentQueryView, times(2)).searchCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
         final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
         assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments"));
 

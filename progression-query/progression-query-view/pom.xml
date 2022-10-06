@@ -6,7 +6,7 @@
         <version>8.0.42-DLQ-FIX-SNAPSHOT</version>
     </parent>
     <artifactId>progression-query-view</artifactId>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <cpp.service-component>QUERY_VIEW</cpp.service-component>
