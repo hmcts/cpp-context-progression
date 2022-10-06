@@ -27,6 +27,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
+import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiateIgnored;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtHearingRequest;
@@ -153,6 +154,30 @@ public class ApplicationAggregateTest {
         assertThat(eventStream.size(), is(1));
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = (CourtApplicationProceedingsInitiated) eventStream.get(0);
         assertThat(courtApplicationProceedingsInitiated.getClass(), is(equalTo(CourtApplicationProceedingsInitiated.class)));
+    }
+
+    @Test
+    public void testCourtApplicationCreatedForCourtProceedingsIsIdempotent() {
+        InitiateCourtApplicationProceedings initiateCourtProceedings = InitiateCourtApplicationProceedings
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication().withId(randomUUID()).build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .build();
+        final List<Object> eventStream = aggregate.initiateCourtApplicationProceedings(initiateCourtProceedings, false, false)
+                .collect(toList());
+        assertThat(eventStream.size(), is(1));
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = (CourtApplicationProceedingsInitiated) eventStream.get(0);
+        assertThat(courtApplicationProceedingsInitiated.getClass(), is(equalTo(CourtApplicationProceedingsInitiated.class)));
+        aggregate.apply(courtApplicationProceedingsInitiated);
+        final List<Object> eventStream2 = aggregate.initiateCourtApplicationProceedings(initiateCourtProceedings, false, false)
+                .collect(toList());
+        assertThat(eventStream2.size(), is(1));
+        final CourtApplicationProceedingsInitiateIgnored courtApplicationProceedingsInitiateIgnored = (CourtApplicationProceedingsInitiateIgnored) eventStream2.get(0);
+        assertThat(courtApplicationProceedingsInitiateIgnored.getClass(), is(equalTo(CourtApplicationProceedingsInitiateIgnored.class)));
+
+
+        
     }
 
     @Test

@@ -373,7 +373,7 @@ subscriptions_descriptor:
         - name: progression.event.finance-document-for-online-plea-submitted
           schema_uri: http://moj.gov.uk/cpp/progression/events/finance-document-for-online-plea-submitted.json
 
-        - name: progression.event.create-hearing-for-application-v2
+        - name: progression.event.hearing-for-application-created-v2
           schema_uri: http://justice.gov.uk/core/progression/courts/progression.event.hearing-for-application-created-v2.json
 
         - name: progression.event.cotr-created
