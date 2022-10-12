@@ -212,6 +212,7 @@ import uk.gov.moj.cpp.progression.events.NotificationSentForPleaDocument;
 import uk.gov.moj.cpp.progression.events.NotificationSentForPleaDocumentFailed;
 import uk.gov.moj.cpp.progression.events.OnlinePleaCaseUpdateRejected;
 import uk.gov.moj.cpp.progression.events.OnlinePleaDocumentUploadedAsCaseMaterial;
+import uk.gov.moj.cpp.progression.events.OnlinePleaPcqVisitedRecorded;
 import uk.gov.moj.cpp.progression.events.OnlinePleaRecorded;
 import uk.gov.moj.cpp.progression.events.PleaDocumentForOnlinePleaSubmitted;
 import uk.gov.moj.cpp.progression.events.RepresentationType;
@@ -221,6 +222,7 @@ import uk.gov.moj.cpp.progression.events.ValidateLinkCases;
 import uk.gov.moj.cpp.progression.events.ValidateMergeCases;
 import uk.gov.moj.cpp.progression.events.ValidateSplitCases;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
+import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.progression.plea.json.schemas.TemplateType;
 
 import java.time.LocalDate;
@@ -2679,6 +2681,15 @@ public class CaseAggregate implements Aggregate {
         }
 
         return apply(streamBuilder.build());
+    }
+
+   public Stream<Object> createOnlinePleaPcqVisited(final PleadOnlinePcqVisited pleadOnlinePcqVisited) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(OnlinePleaPcqVisitedRecorded.onlinePleaPcqVisitedRecorded()
+                .withCaseId(pleadOnlinePcqVisited.getCaseId())
+                .withPleadOnlinePcqVisited(pleadOnlinePcqVisited)
+                .build());
+       return apply(streamBuilder.build());
     }
 
     private Optional<uk.gov.justice.core.courts.Defendant> buildDefendantForPet(final uk.gov.justice.core.courts.Defendant defendant) {

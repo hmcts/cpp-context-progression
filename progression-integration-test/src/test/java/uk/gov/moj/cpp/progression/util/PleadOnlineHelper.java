@@ -17,4 +17,12 @@ public class PleadOnlineHelper extends AbstractTestHelper {
                 "application/vnd.progression.plead-online+json",
                 getPayload(resource));
     }
+
+    public Response submitOnlinePleaPcqVisited(final String caseId, final String defendantId, final String resource) throws IOException {
+
+        final String commandUri = getWriteUrl("/cases/" + caseId + "/defendants/" + defendantId + "/plead-online-pcq-visited");
+        return postCommand(commandUri,
+                "application/vnd.progression.plead-online-pcq-visited+json",
+                getPayload(resource));
+    }
 }

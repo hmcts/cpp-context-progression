@@ -22,4 +22,11 @@ public class PleadOnlineApi {
         sender.send(Envelope.envelopeFrom(metadataFrom(command.metadata()).withName("progression.command.plead-online").build(),
                 command.payloadAsJsonObject()));
     }
+
+    @Handles("progression.plead-online-pcq-visited")
+    public void handlePleadOnlinePCQVisited(final JsonEnvelope command) {
+        sender.send(Envelope.envelopeFrom(metadataFrom(command.metadata()).withName("progression.command.plead-online-pcq-visited").build(),
+                command.payloadAsJsonObject()));
+    }
+
 }

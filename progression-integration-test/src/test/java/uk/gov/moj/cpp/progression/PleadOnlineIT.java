@@ -46,6 +46,9 @@ public class PleadOnlineIT extends AbstractIT {
 
     private static final MessageConsumer messageConsumerOnlinePleaRecorded = QueueUtil.privateEvents.createPrivateConsumer("progression.event.online-plea-recorded");
 
+    private static final MessageConsumer messageConsumerOnlinePleaPcqVisitedRecorded = QueueUtil.privateEvents.createPrivateConsumer("progression.event.online-plea-pcq-visited-recorded");
+
+
 
     @Before
     public void setUp() throws Exception {
@@ -83,6 +86,35 @@ public class PleadOnlineIT extends AbstractIT {
 
     }
 
+    //CCT-1324
+    @Test
+    public void shouldRaiseOnlinePleaPcqVisitedRequestForIndividual() throws IOException {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId.toString(), defendantId.toString());
+        final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId.toString(), defendantId.toString(),
+                newArrayList(
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[1].id", is("4789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
+                )
+        );
+
+        pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
+
+        Response response = pleadOnlineHelper.submitOnlinePleaPcqVisited(caseId.toString(), defendantId.toString(), "progression.command.online-plea-pcq-visited-individual.json");
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final JsonPath matchers = QueueUtil.retrieveMessage(messageConsumerOnlinePleaPcqVisitedRecorded, isJson(Matchers.allOf(
+                withJsonPath("$.caseId", is(caseId.toString())),
+                withJsonPath("$.pleadOnlinePcqVisited.defendantId", is(defendantId.toString())),
+                withJsonPath("$.pleadOnlinePcqVisited.pcqId",is("9ec012ea-566a-4952-ad8d-b09a57030d95")),
+                withJsonPath("$.pleadOnlinePcqVisited.urn", is("TFL12345467"))
+        )));
+
+        Assert.assertNotNull(matchers);
+    }
+
+
     @Test
     public void shouldSubmitOnlinePleaRequestForCorporate() throws IOException {
 
@@ -107,6 +139,32 @@ public class PleadOnlineIT extends AbstractIT {
         )));
         Assert.assertNotNull(matchers);
 
+    }
+
+    //CCT-1324
+    @Test
+    public void shouldSubmitOnlinePleaPcqVisitedRequestForCorporate() throws IOException {
+
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        // initiation of first case
+        initiateCourtProceedingsForLegalEntityDefendantMatching(caseId.toString(), defendantId.toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString(), ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString());
+        verifyInMessagingQueueForProsecutionCaseCreated();
+        List<Matcher<? super ReadContext>> customMatchers = newArrayList(
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceDateCode", is(4))
+        );
+
+        Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchersForLegalEntity(caseId.toString(), defendantId.toString(), customMatchers);
+        pollProsecutionCasesProgressionFor(caseId.toString(), prosecutionCaseMatchers);
+
+        Response response = pleadOnlineHelper.submitOnlinePleaPcqVisited(caseId.toString(), defendantId.toString(), "progression.command.online-plea-pcq-visited-corporate.json");
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final JsonPath matchers = QueueUtil.retrieveMessage(messageConsumerOnlinePleaPcqVisitedRecorded, isJson(Matchers.allOf(
+                withJsonPath("$.caseId", is(caseId.toString())),
+                withJsonPath("$.pleadOnlinePcqVisited.defendantId", is(defendantId.toString()))
+        )));
+        Assert.assertNotNull(matchers);
 
     }
 

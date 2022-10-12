@@ -14,6 +14,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.command.handler.HandleOnlinePleaDocumentCreation;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
+import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnlinePcqVisited;
 
 import java.util.stream.Stream;
 
@@ -59,5 +60,18 @@ public class PleadOnlineHandler {
 
         eventStream.append(events.map(toEnvelopeWithMetadataFrom(envelope)));
 
+    }
+
+    @Handles("progression.command.plead-online-pcq-visited")
+    public void handlePleadOnlinePcqVisitedRequest(final Envelope<PleadOnlinePcqVisited> envelope) throws EventStreamException {
+        final PleadOnlinePcqVisited pleadOnlinePcqVisited = envelope.payload();
+        LOGGER.info("progression.command.plead-online-pcq-visited with caseId={} for defendantId={}", pleadOnlinePcqVisited.getCaseId(), pleadOnlinePcqVisited.getDefendantId());
+
+        final EventStream eventStream = eventSource.getStreamById(pleadOnlinePcqVisited.getCaseId());
+
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+        final Stream<Object> events = caseAggregate.createOnlinePleaPcqVisited(pleadOnlinePcqVisited);
+
+        eventStream.append(events.map(toEnvelopeWithMetadataFrom(envelope)));
     }
 }

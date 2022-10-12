@@ -881,10 +881,10 @@ public class ProgressionServiceTest {
     @Test
     public void testShouldTransformBoxWorkApplication() {
 
-        final UUID applicationId = randomUUID();
+        final UUID applicationId = UUID.randomUUID();
 
         final Hearing expectedHearing = Hearing.hearing()
-                .withIsBoxHearing(true).withId(randomUUID())
+                .withIsBoxHearing(true).withId(UUID.randomUUID())
                 .withCourtApplications(asList(CourtApplication.courtApplication()
                         .withId(applicationId).build()))
                 .withHearingDays(asList(HearingDay.hearingDay()

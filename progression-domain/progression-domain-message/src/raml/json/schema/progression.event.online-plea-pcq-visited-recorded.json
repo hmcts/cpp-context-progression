@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/online-plea-pcq-visited-recorded.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "pleadOnlinePcqVisited": {
+      "$ref": "http://moj.gov.uk/cpp/progression/plea/json/schemas/plead-online-pcq-visited.json"
+    }
+  },
+  "required": [
+    "caseId",
+    "pleadOnlinePcqVisited"
+  ],
+  "additionalProperties": false
+}
