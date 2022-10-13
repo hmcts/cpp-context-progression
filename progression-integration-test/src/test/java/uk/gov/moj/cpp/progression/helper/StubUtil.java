@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.helper;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
@@ -25,6 +26,7 @@ public class StubUtil {
     protected static final String DEFAULT_JSON_CONTENT_TYPE = "application/json";
 
     private static final int HTTP_STATUS_OK = 200;
+    private static final int HTTP_STATUS_ACCEPTED = 202;
     private static final String MATERIAL_QUERY_URL = "/material-service/query/api/rest/material";
 
     public static void setupUsersGroupQueryStub() {
@@ -44,6 +46,35 @@ public class StubUtil {
                         .withHeader("CPPID", randomUUID().toString())
                         .withHeader("Content-Type", "application/json")
                         .withBody(getPayload("stub-data/usersgroups.user-permissions.json"))));
+
+    }
+
+    public static void setupListingQueryStub() {
+        InternalEndpointMockUtils.stubPingFor("listing-service");
+        stubFor(get(urlPathEqualTo("/listing-service/query/api/rest/listing/courtlistpayload"))
+                .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getPayload("stub-data/listing.courtlistpayload.json"))));
+
+    }
+
+    public static void setupStagingPubHubCommandStub() {
+        InternalEndpointMockUtils.stubPingFor("stagingpubhub-service");
+        stubFor(post(urlPathEqualTo("/stagingpubhub-service/command/api/rest/stagingpubhub/pubhub"))
+                .willReturn(aResponse().withStatus(HTTP_STATUS_ACCEPTED)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")));
+
+    }
+
+    public static void setupReferenceDataQueryCourtCenterDataByCourtNameStub() {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        stubFor(get(urlPathEqualTo("/referencedata-service/query/api/rest/referencedata/courtrooms"))
+                .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getPayload("stub-data/referencedata.get.ou.courtrooms.ou-courtroom-name.json"))));
 
     }
 

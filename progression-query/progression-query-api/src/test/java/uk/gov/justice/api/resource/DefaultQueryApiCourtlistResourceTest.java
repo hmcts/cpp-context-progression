@@ -1,6 +1,7 @@
 package uk.gov.justice.api.resource;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -12,6 +13,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -26,8 +28,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 
+import uk.gov.justice.api.resource.service.ReferenceDataService;
+import uk.gov.justice.api.resource.service.StagingPubHubService;
+import uk.gov.justice.api.resource.utils.FileUtil;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorContext;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
@@ -75,6 +81,10 @@ public class DefaultQueryApiCourtlistResourceTest {
     @Mock
     private InterceptorChainProcessor interceptorChainProcessor;
     @Mock
+    private StagingPubHubService stagingPubHubService;
+    @Mock
+    private ReferenceDataService referenceDataService;
+    @Mock
     private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
     @Mock
     private DocumentGeneratorClientProducer documentGeneratorClientProducer;
@@ -84,6 +94,16 @@ public class DefaultQueryApiCourtlistResourceTest {
     private ArgumentCaptor<InterceptorContext> interceptorContextCaptor;
     @InjectMocks
     private DefaultQueryApiCourtlistResource defaultQueryApiCourtlistResource;
+    @Mock
+    private Requester requester;
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<String> stringArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<JsonObject> jsonObjectArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<UUID> uuidArgumentCaptor;
 
     @Before
     public void init() {
@@ -93,15 +113,20 @@ public class DefaultQueryApiCourtlistResourceTest {
     @Test
     public void shouldRunAllInterceptorsAndFetchAndStreamDocument() throws IOException {
         final String pdfContent = "PDF Content";
-        final JsonEnvelope interceptorResponse = documentDetails();
+        final JsonEnvelope interceptorResponse = envelopeFrom(metadataWithRandomUUID(COURT_LIST_QUERY_NAME),
+                FileUtil.jsonFromPath("stub-data/progression.search.court.list.json"));;
         final byte[] documentGeneratorClientResponse = pdfContent.getBytes();
 
         final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, PDF_CONTENT_TYPE, CONTENT_DISPOSITION, DISPOSITION));
+
 
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(ofNullable(interceptorResponse));
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(documentGeneratorClient.generatePdfDocument(eq(interceptorResponse.payloadAsJsonObject()), anyString(), eq(systemUserId)))
                 .thenReturn(documentGeneratorClientResponse);
+        when(referenceDataService.getCourtCenterDataByCourtName(argThat(any(JsonEnvelope.class)), anyString()))
+                .thenReturn(of(FileUtil.jsonFromPath("stub-data/referencedata.query.ou.courtrooms.ou-courtroom-name.json")));
+
 
         final Response actual = defaultQueryApiCourtlistResource
                 .getCourtlist(courtCentreId.toString(), courtRoomId.toString(), listId.toString(),
@@ -112,6 +137,16 @@ public class DefaultQueryApiCourtlistResourceTest {
         assertThat(actual.getHeaders(), is(headers));
         assertThat(pdfContent.getBytes(), is(IOUtils.toByteArray(inputStream)));
         verifyInterceptorChainExecution();
+
+        verify(referenceDataService).getCourtCenterDataByCourtName(envelopeArgumentCaptor.capture(), stringArgumentCaptor.capture());
+        assertEquals("Lavender Hill Magistrates' Court", stringArgumentCaptor.getValue());
+        assertEquals(interceptorResponse.payloadAsJsonObject(), envelopeArgumentCaptor.getValue().payloadAsJsonObject());
+
+        verify(stagingPubHubService).publishStandardList(jsonObjectArgumentCaptor.capture(), uuidArgumentCaptor.capture());
+
+        final JsonObject expectedJson = FileUtil.jsonFromPath("stub-data/stagingpubhub.command.publish-standard-list.json");
+        assertEquals(userId, uuidArgumentCaptor.getValue());
+        assertEquals(expectedJson, jsonObjectArgumentCaptor.getValue());
     }
 
     @Test

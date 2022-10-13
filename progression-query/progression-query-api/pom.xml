@@ -43,6 +43,18 @@
                         </exclusions>
                     </dependency>
                     <dependency>
+                        <groupId>uk.gov.moj.cpp.staging.pubhub</groupId>
+                        <artifactId>stagingpubhub-command-api</artifactId>
+                        <version>${stagingpubhub.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
                         <groupId>uk.gov.moj.cpp.hearing</groupId>
                         <artifactId>hearing-query-api</artifactId>
                         <version>${hearing.version}</version>
@@ -82,6 +94,18 @@
                         <groupId>uk.gov.moj.cpp.applications.courtorders</groupId>
                         <artifactId>applicationscourtorders-query-api</artifactId>
                         <version>${applicationscourtorders.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.directions.management</groupId>
+                        <artifactId>directionsmanagement-query-api</artifactId>
+                        <version>${directionsmanagement.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>

@@ -60,6 +60,7 @@
         <sjp.version>8.0.16</sjp.version>
         <jackson-data-format.version>2.8.8</jackson-data-format.version>
         <httpmime.version>4.5.1</httpmime.version>
+        <stagingpubhub.version>8.0.1</stagingpubhub.version>
     </properties>
     <build>
         <plugins>

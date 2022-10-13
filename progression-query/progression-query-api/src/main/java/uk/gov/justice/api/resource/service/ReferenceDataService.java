@@ -93,6 +93,24 @@ public class ReferenceDataService {
         return Optional.of(jsonEnvelop.payloadAsJsonObject());
     }
 
+    public Optional<JsonObject> getCourtCenterDataByCourtName(final JsonEnvelope event, final String courtName) {
+        final JsonObject payload = createObjectBuilder()
+                .add("ouCourtRoomName", courtName)
+                .build();
+
+        final Metadata metadata = metadataFrom(event.metadata())
+                .withName("referencedata.query.ou.courtrooms.ou-courtroom-name")
+                .build();
+
+        final JsonEnvelope jsonEnvelop = requester.request(envelopeFrom(metadata, payload));
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("'referencedata.query.ou.courtrooms.ou-courtroom-name' {} received with payload {}", courtName, jsonEnvelop.toObfuscatedDebugString());
+        }
+
+        return Optional.of(jsonEnvelop.payloadAsJsonObject());
+    }
+
     public Address getCourtCentreAddress(final JsonEnvelope jsonEnvelope, final UUID courtCentreId) {
         LOGGER.debug("Calling referenceDataService getOrganisationUnitById with courtCenterId: {} ", courtCentreId);
         final JsonObject courtCentreJson = this
