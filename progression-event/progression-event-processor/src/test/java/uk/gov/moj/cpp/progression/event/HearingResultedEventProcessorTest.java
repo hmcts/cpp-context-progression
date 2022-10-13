@@ -67,6 +67,7 @@ import java.time.Period;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -198,8 +199,8 @@ public class HearingResultedEventProcessorTest {
                 Hearing.hearing()
                         .withId(randomUUID())
                         .withProsecutionCases(Arrays.asList(
-                                ProsecutionCase.prosecutionCase().withId(caseId1).build(),
-                                ProsecutionCase.prosecutionCase().withId(caseId2).build()))
+                                ProsecutionCase.prosecutionCase().withId(caseId1).withDefendants(Collections.singletonList(Defendant.defendant().build())).build(),
+                                ProsecutionCase.prosecutionCase().withId(caseId2).withDefendants(Collections.singletonList(Defendant.defendant().build())).build()))
                         .withCourtApplications(Arrays.asList(CourtApplication.courtApplication().withId(applicationId).build()))
                         .build())
                 .build();
