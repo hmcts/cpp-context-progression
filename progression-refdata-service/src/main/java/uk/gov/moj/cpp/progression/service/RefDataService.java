@@ -675,7 +675,7 @@ public class RefDataService {
         return response.payloadAsJsonObject().getString("country");
     }
 
-    public JsonObject getOuCourtRoomCode(final String courtRoomId, final Requester requester) {
+    public Optional<JsonObject> getOuCourtRoomCode(final String courtRoomId, final Requester requester) {
         final JsonObject payload = createObjectBuilder()
                 .add("courtRoomUuid", courtRoomId)
                 .build();
@@ -684,10 +684,8 @@ public class RefDataService {
                 .withId(randomUUID())
                 .withName(REFERENCE_DATA_QUERY_GET_OU_COURT_CODE);
 
-        return requester.requestAsAdmin(envelopeFrom(metadataBuilder, payload), JsonObject.class).payload();
-
+        return ofNullable(requester.requestAsAdmin(envelopeFrom(metadataBuilder, payload), JsonObject.class).payload());
     }
-
 
     public CourtApplicationType retrieveApplicationType(final String applicationCode, final Requester requester) {
         final List<CourtApplicationType> courtApplicationTypes = getRefDataStream(requester, REFERENCEDATA_QUERY_COURT_APPLICATION_TYPES, FIELD_APPLICATION_TYPES, createObjectBuilder()).map(asApplicationTypeRefData()).collect(Collectors.toList());

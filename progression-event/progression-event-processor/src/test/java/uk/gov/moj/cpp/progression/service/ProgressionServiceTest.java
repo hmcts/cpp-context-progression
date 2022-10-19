@@ -6,7 +6,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.EMPTY_LIST;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -37,7 +37,6 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STR
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 
-import org.apache.activemq.artemis.utils.JsonLoader;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -117,12 +116,10 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -297,9 +294,9 @@ public class ProgressionServiceTest {
         final JsonEnvelope envelope = getEnvelope(PUBLIC_EVENT_HEARING_DETAIL_CHANGED);
 
         when(referenceDataService.getOrganisationUnitById(updatedHearing.getCourtCentre().getId(), envelope, requester))
-                .thenReturn(Optional.of(generateCourtCentreJson()));
+                .thenReturn(of(generateCourtCentreJson()));
         when(referenceDataService.getJudiciariesByJudiciaryIdList(asList(JUDICIARY_ID_1, JUDICIARY_ID_2), envelope, requester))
-                .thenReturn(Optional.of(generateJudiciariesJson()));
+                .thenReturn(of(generateJudiciariesJson()));
 
         progressionService.publishHearingDetailChangedPublicEvent(envelope, hearingUpdatedProcessed.getConfirmedHearing());
 
@@ -405,9 +402,9 @@ public class ProgressionServiceTest {
                 .build();
 
         when(referenceDataService.getOrganisationUnitById(confirmedHearing.getCourtCentre().getId(), jsonEnvelope, requester))
-                .thenReturn(Optional.of(generateCourtCentreJson()));
+                .thenReturn(of(generateCourtCentreJson()));
         when(referenceDataService.getJudiciariesByJudiciaryIdList(asList(JUDICIARY_ID_1, JUDICIARY_ID_2), jsonEnvelope, requester))
-                .thenReturn(Optional.of(generateJudiciariesJson()));
+                .thenReturn(of(generateJudiciariesJson()));
 
         final Hearing mixHearing = progressionService.updateHearingForHearingUpdated(confirmedHearing, jsonEnvelope, hearing);
 
@@ -605,22 +602,56 @@ public class ProgressionServiceTest {
                 .add("oucode", oucode)
                 .add("lja", "ljaCode")
                 .build();
-        final JsonObject courtRoomOuJson = createObjectBuilder().add("ouCourtRoomCodes", JsonLoader.createArrayBuilder().add("B46IR03").build()).build();
+        final JsonObject courtRoomOuJson = createObjectBuilder().add("ouCourtRoomCodes", createArrayBuilder().add("B46IR03").build()).build();
         final JsonObject courtRoomJson = createObjectBuilder()
-                .add("courtrooms", JsonLoader.createArrayBuilder()
+                .add("courtrooms", createArrayBuilder()
                         .add(createObjectBuilder().add("id", courtRoomId.toString())
                                 .add("courtroomName", "room name 1")
                                 .build())
                         .build())
                 .build();
         final CourtCentre courtCentre = CourtCentre.courtCentre().withId(courtCentreId).withRoomId(courtRoomId).build();
-        when(referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester)).thenReturn(Optional.of(courtCentreJson));
-        when(referenceDataService.getOuCourtRoomCode(courtRoomId.toString(), requester)).thenReturn(courtRoomOuJson);
-        when(referenceDataService.getCourtRoomById(courtCentreId, envelope, requester)).thenReturn(Optional.of(courtRoomJson));
+        when(referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester)).thenReturn(of(courtCentreJson));
+        when(referenceDataService.getOuCourtRoomCode(courtRoomId.toString(), requester)).thenReturn(of(courtRoomOuJson));
+        when(referenceDataService.getCourtRoomById(courtCentreId, envelope, requester)).thenReturn(of(courtRoomJson));
 
         final CourtCentre result = progressionService.transformCourtCentre(courtCentre, envelope);
 
-        assertThat(result.getCode(), is("B46IR03"));
+        assertThat(result.getCourtHearingLocation(), is("B46IR03"));
+
+    }
+
+    @Test
+    public void shouldCreateCourtCenterWithCourtRoomOuCodeWhenDefinitionNotExist(){
+        final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS);
+        when(enveloper.withMetadataFrom
+                (envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
+        final String address1 = "ADDRESS1";
+        final UUID courtCentreId = randomUUID();
+        final UUID courtRoomId = randomUUID();
+        final String oucode = STRING.next();
+        final JsonObject courtCentreJson = createObjectBuilder()
+                .add("oucodeL3Name", "Lavender Hill Magistrates Court")
+                .add("address1", address1)
+                .add("oucode", oucode)
+                .add("lja", "ljaCode")
+                .build();
+        final JsonObject courtRoomOuJson = createObjectBuilder().add("ouCourtRoomCodes", createArrayBuilder().build()).build();
+        final JsonObject courtRoomJson = createObjectBuilder()
+                .add("courtrooms", createArrayBuilder()
+                        .add(createObjectBuilder().add("id", courtRoomId.toString())
+                                .add("courtroomName", "room name 1")
+                                .build())
+                        .build())
+                .build();
+        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(courtCentreId).withRoomId(courtRoomId).build();
+        when(referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester)).thenReturn(of(courtCentreJson));
+        when(referenceDataService.getOuCourtRoomCode(courtRoomId.toString(), requester)).thenReturn(of(courtRoomOuJson));
+        when(referenceDataService.getCourtRoomById(courtCentreId, envelope, requester)).thenReturn(of(courtRoomJson));
+
+        final CourtCentre result = progressionService.transformCourtCentre(courtCentre, envelope);
+
+        assertThat(result.getCourtHearingLocation(), is(oucode));
 
     }
 
@@ -1245,7 +1276,7 @@ public class ProgressionServiceTest {
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
         ));
 
@@ -1288,7 +1319,7 @@ public class ProgressionServiceTest {
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
         ));
 
@@ -1332,7 +1363,7 @@ public class ProgressionServiceTest {
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
         ));
 
@@ -1376,7 +1407,7 @@ public class ProgressionServiceTest {
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
         ));
 
@@ -1418,7 +1449,7 @@ public class ProgressionServiceTest {
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
         ));
 
@@ -1460,7 +1491,7 @@ public class ProgressionServiceTest {
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "Yes").build()
         ));
 
@@ -1503,7 +1534,7 @@ public class ProgressionServiceTest {
                 )).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(Optional.of(
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
                 Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
         ));
 
@@ -1527,7 +1558,7 @@ public class ProgressionServiceTest {
                 .add("oucode", oucode)
                 .add("lja", "ljaCode")
                 .build();
-        when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(of(courtCentreJson));
         when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(LjaDetails.ljaDetails().withLjaCode("nationalCourtCode")
                 .withLjaName("name").withWelshLjaName("welshName").build());
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
@@ -1566,7 +1597,7 @@ public class ProgressionServiceTest {
                 .add("oucode", oucode)
                 .add("lja", "ljaCode")
                 .build();
-        when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(of(courtCentreJson));
         when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(LjaDetails.ljaDetails().withLjaCode("nationalCourtCode")
                 .withLjaName("name").withWelshLjaName("welshName").build());
 
@@ -1821,7 +1852,7 @@ public class ProgressionServiceTest {
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
 
-        when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(of(courtCentreJson));
         when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(LjaDetails.ljaDetails().withLjaCode("nationalCourtCode")
                 .withLjaName("name").withWelshLjaName("welshName").build());
         final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()

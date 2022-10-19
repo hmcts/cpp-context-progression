@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.progression.service;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
@@ -1110,13 +1109,13 @@ public class ProgressionService {
 
         final LjaDetails ljaDetails = referenceDataService.getLjaDetails(jsonEnvelope, courtCentreJson.getString("lja"), requester);
         final String code = ofNullable(courtCentre.getRoomId())
-                .map( roomId -> referenceDataService.getOuCourtRoomCode(roomId.toString(), requester).getJsonArray("ouCourtRoomCodes").getString(0))
+                .map( roomId -> referenceDataService.getOuCourtRoomCode(roomId.toString(), requester).map(obj -> obj.getJsonArray("ouCourtRoomCodes")).map(codes -> codes.isEmpty() ? null : codes.getString(0)).orElse(null))
                 .orElseGet(() -> courtCentreJson.getString("oucode", null));
 
         return CourtCentre.courtCentre()
                 .withId(courtCentre.getId())
                 .withLja(ljaDetails)
-                .withCode(code)
+                .withCode(courtCentreJson.getString("oucode", null))
                 .withCourtHearingLocation(code)
                 .withName(courtCentreJson.getString("oucodeL3Name"))
                 .withRoomName(nonNull(courtCentre.getRoomId()) ? enrichCourtRoomName(courtCentre.getId(), courtCentre.getRoomId(), jsonEnvelope) : null)
