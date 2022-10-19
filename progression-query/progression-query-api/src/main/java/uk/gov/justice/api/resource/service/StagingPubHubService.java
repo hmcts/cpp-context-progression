@@ -9,7 +9,6 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.query.api.exception.StagingPubHubException;
 
 import java.util.UUID;
 
@@ -49,7 +48,6 @@ public class StagingPubHubService {
             requester.request(stagingPubhub);
         } catch (RuntimeException ex) {
             LOGGER.error("Failed call stagingpubhub.command.publish-standard-list", ex);
-            throw new StagingPubHubException();
         }
 
     }
