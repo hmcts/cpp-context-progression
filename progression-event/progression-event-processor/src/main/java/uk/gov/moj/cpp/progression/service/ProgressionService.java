@@ -1391,102 +1391,98 @@ public class ProgressionService {
     }
 
     public void initiateNewCourtApplication(JsonEnvelope event, Defendant defendant, ProsecutionCase prosecutionCase, Hearing hearing, NextHearing nextHearing) {
-        final CourtCentre courtCentre = nextHearing.getCourtCentre();
-        LOGGER.info("CourtCentr populated {}", courtCentre);
+        if (nonNull(referenceDataService.retrieveApplicationType(nextHearing.getApplicationTypeCode(), requester))) {
+            final CourtCentre courtCentre = nextHearing.getCourtCentre();
+            LOGGER.info("CourtCentr populated {}", courtCentre);
 
-        final Organisation organisation = Organisation.organisation().withName(courtCentre.getName()).withAddress(courtCentre.getAddress()).build();
-        LOGGER.info("Organization {}", organisation.getName());
-        final List<CourtApplicationParty> respondents = new ArrayList<>();
-        respondents.add(
-                CourtApplicationParty.courtApplicationParty()
-                        .withPersonDetails(defendant.getPersonDefendant().getPersonDetails())
-                        .withNotificationRequired(false)
-                        .withSummonsRequired(false)
-                        .withId(defendant.getId())
-                        .build());
-        LOGGER.info("Respondents {}", respondents);
+            final Organisation organisation = Organisation.organisation().withName(courtCentre.getName()).withAddress(courtCentre.getAddress()).build();
+            LOGGER.info("Organization {}", organisation.getName());
+            final List<CourtApplicationParty> respondents = new ArrayList<>();
+            respondents.add(
+                    CourtApplicationParty.courtApplicationParty()
+                            .withPersonDetails(defendant.getPersonDefendant().getPersonDetails())
+                            .withNotificationRequired(false)
+                            .withSummonsRequired(false)
+                            .withId(defendant.getId())
+                            .build());
+            LOGGER.info("Respondents {}", respondents);
 
-        final CourtApplicationParty subject = CourtApplicationParty.courtApplicationParty()
-                .withId(defendant.getId())
-                .withSummonsRequired(false)
-                .withNotificationRequired(false)
-                .withOrganisation(organisation)
-                .withMasterDefendant(MasterDefendant.masterDefendant()
-                        .withPersonDefendant(defendant.getPersonDefendant())
-                        .withMasterDefendantId(defendant.getMasterDefendantId())
-                        .withAssociatedPersons(defendant.getAssociatedPersons())
-                        .build())
-                .build();
+            final CourtApplicationParty subject = CourtApplicationParty.courtApplicationParty()
+                    .withId(defendant.getId())
+                    .withSummonsRequired(false)
+                    .withNotificationRequired(false)
+                    .withOrganisation(organisation)
+                    .withMasterDefendant(MasterDefendant.masterDefendant()
+                            .withPersonDefendant(defendant.getPersonDefendant())
+                            .withMasterDefendantId(defendant.getMasterDefendantId())
+                            .withAssociatedPersons(defendant.getAssociatedPersons())
+                            .build())
+                    .build();
 
-        final CourtApplicationParty.Builder thirdPartyBuilder = CourtApplicationParty.courtApplicationParty();
-        if (nextHearing.getProbationTeamName() != null) {
-            thirdPartyBuilder.withOrganisation(Organisation.organisation()
-                    .withName(nextHearing.getProbationTeamName())
-                    .withAddress(Address.address()
-                            .withAddress1(nextHearing.getProbationTeamAddress()).build()).build());
+            final CourtApplicationParty.Builder thirdPartyBuilder = CourtApplicationParty.courtApplicationParty();
+            if (nextHearing.getProbationTeamName() != null) {
+                thirdPartyBuilder.withOrganisation(Organisation.organisation()
+                        .withName(nextHearing.getProbationTeamName())
+                        .withAddress(Address.address()
+                                .withAddress1(nextHearing.getProbationTeamAddress()).build()).build());
+            }
+            thirdPartyBuilder.withSummonsRequired(false);
+            thirdPartyBuilder.withNotificationRequired(false);
+            thirdPartyBuilder.withId(defendant.getId());
+
+            final CourtApplicationParty applicant = CourtApplicationParty.courtApplicationParty()
+                    .withId(defendant.getId())
+                    .withOrganisation(Organisation.organisation()
+                            .withName(nextHearing.getCourtCentre().getName())
+                            .withAddress(nextHearing.getCourtCentre().getAddress()).build())
+                    .withSummonsRequired(false)
+                    .withNotificationRequired(false)
+                    .build();
+
+
+            final CourtApplicationCase courtApplicationCase = CourtApplicationCase.courtApplicationCase()
+                    .withProsecutionCaseId(prosecutionCase.getId())
+                    .withIsSJP(false)
+                    .withCaseStatus(INACTIVE.getDescription())
+                    .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier()).build();
+            final CourtApplication newCourtApplication = CourtApplication.courtApplication()
+                    .withId(randomUUID())
+                    .withType(referenceDataService.retrieveApplicationType(nextHearing.getApplicationTypeCode(), requester))
+                    .withApplicationReceivedDate(LocalDate.now())
+                    .withApplicant(applicant)
+                    .withCourtApplicationCases(Collections.singletonList(courtApplicationCase))
+                    .withApplicationStatus(ApplicationStatus.DRAFT)
+                    .withThirdParties(singletonList(thirdPartyBuilder.build()))
+                    .withSubject(subject)
+                    .withRespondents(respondents)
+                    .withApplicationParticulars(getApplicationParticulars(nextHearing))
+                    .build();
+
+            LOGGER.info("==========    Case status for creating new application ================= {}", prosecutionCase.getCaseStatus());
+
+
+            final CourtHearingRequest courtHearingRequest = CourtHearingRequest.courtHearingRequest()
+                    .withHearingType(nextHearing.getType())
+                    .withJurisdictionType(nextHearing.getJurisdictionType())
+                    .withEndDate(nextHearing.getEndDate())
+                    .withJurisdictionType(nextHearing.getJurisdictionType())
+                    .withJudiciary(nextHearing.getJudiciary())
+                    .withEarliestStartDateTime(hearing.getEarliestNextHearingDate())
+                    .withListedStartDateTime(nextHearing.getListedStartDateTime())
+                    .withCourtCentre(courtCentre)
+                    .withEstimatedMinutes(nextHearing.getEstimatedMinutes())
+                    .build();
+            final JsonObject command = createObjectBuilder()
+                    .add("courtApplication", objectToJsonObjectConverter.convert(newCourtApplication))
+                    .add("courtHearing", objectToJsonObjectConverter.convert(courtHearingRequest))
+                    .build();
+
+            sender.send(
+                    envelop(command)
+                            .withName("progression.command.initiate-court-proceedings-for-application")
+                            .withMetadataFrom(event));
         }
-        thirdPartyBuilder.withSummonsRequired(false);
-        thirdPartyBuilder.withNotificationRequired(false);
-        thirdPartyBuilder.withId(defendant.getId());
 
-        final CourtApplicationParty applicant = CourtApplicationParty.courtApplicationParty()
-                .withId(defendant.getId())
-                .withOrganisation(Organisation.organisation()
-                        .withName(nextHearing.getCourtCentre().getName())
-                        .withAddress(nextHearing.getCourtCentre().getAddress()).build())
-                .withSummonsRequired(false)
-                .withNotificationRequired(false)
-                .build();
-
-
-        //final List<CourtOrderOffence> offences = new ArrayList<>();
-
-        //defendant.getOffences().forEach(offence -> {
-        //final CourtOrderOffence courtOrderOffence = CourtOrderOffence.courtOrderOffence().withOffence(offence).withProsecutionCaseId(prosecutionCase.getId()).withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier()).build();
-        //offences.add(courtOrderOffence);
-        //});
-        final CourtApplicationCase courtApplicationCase = CourtApplicationCase.courtApplicationCase()
-                .withProsecutionCaseId(prosecutionCase.getId())
-                .withIsSJP(false)
-                .withCaseStatus(INACTIVE.getDescription())
-                .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier()).build();
-        final CourtApplication newCourtApplication = CourtApplication.courtApplication()
-                .withId(randomUUID())
-                .withType(referenceDataService.retrieveApplicationType(nextHearing.getApplicationTypeCode(), requester))
-                .withApplicationReceivedDate(LocalDate.now())
-                .withApplicant(applicant)
-                .withCourtApplicationCases(Collections.singletonList(courtApplicationCase))
-                .withApplicationStatus(ApplicationStatus.DRAFT)
-                .withThirdParties(singletonList(thirdPartyBuilder.build()))
-                .withSubject(subject)
-                .withRespondents(respondents)
-                .withApplicationParticulars(getApplicationParticulars(nextHearing))
-                .build();
-        //List<Hearings> hearings = hearingAtAGlanceService.getCaseHearings(prosecutionCase.getId());
-
-        LOGGER.info("==========    Case status for creating new application ================= {}", prosecutionCase.getCaseStatus());
-
-
-        final CourtHearingRequest courtHearingRequest = CourtHearingRequest.courtHearingRequest()
-                .withHearingType(nextHearing.getType())
-                .withJurisdictionType(nextHearing.getJurisdictionType())
-                .withEndDate(nextHearing.getEndDate())
-                .withJurisdictionType(nextHearing.getJurisdictionType())
-                .withJudiciary(nextHearing.getJudiciary())
-                .withEarliestStartDateTime(hearing.getEarliestNextHearingDate())
-                .withListedStartDateTime(nextHearing.getListedStartDateTime())
-                .withCourtCentre(courtCentre)
-                .withEstimatedMinutes(nextHearing.getEstimatedMinutes())
-                .build();
-        final JsonObject command = createObjectBuilder()
-                .add("courtApplication", objectToJsonObjectConverter.convert(newCourtApplication))
-                .add("courtHearing", objectToJsonObjectConverter.convert(courtHearingRequest))
-                .build();
-
-        sender.send(
-                envelop(command)
-                        .withName("progression.command.initiate-court-proceedings-for-application")
-                        .withMetadataFrom(event));
     }
 
     private String getApplicationParticulars(final NextHearing nextHearing) {

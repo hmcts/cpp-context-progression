@@ -154,7 +154,7 @@ public class HearingResultedEventProcessor {
                     LOGGER.info("Priority application Types: {}", judicialResult.getJudicialResultTypeId());
                     LOGGER.info("Drug rehab type: {}", DRNRR_JUDICIAL_RESULT_TYPE_ID);
                     final NextHearing nextHearing = judicialResult.getNextHearing();
-                    if (nextHearing != null) {
+                    if (nextHearing != null && nonNull(nextHearing.getIsFirstReviewHearing()) && Boolean.TRUE.equals(nextHearing.getIsFirstReviewHearing()) && nonNull(nextHearing.getApplicationTypeCode())) {
                         LOGGER.info("Next hearing populated with application Type{}", nextHearing.getApplicationTypeCode());
                         inititateApplicationCreation(event, hearing, prosecutionCase, defendant, nextHearing);
                     }
