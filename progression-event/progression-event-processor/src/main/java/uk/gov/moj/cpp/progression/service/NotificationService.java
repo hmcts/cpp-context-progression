@@ -588,6 +588,7 @@ public class NotificationService {
         final Optional<String> emailAddressOptional = getApplicantEmailAddress(courtApplicationParty);
 
         emailAddressOptional.ifPresent(emailAddress -> sendEmail(event, notificationId, null, courtApplication.getId(), null, Collections.singletonList(buildEmailChannel(emailAddress,
+                courtApplication.getApplicationReference(),
                 courtApplication.getType().getType(),
                 courtApplication.getType().getLegislation(),
                 hearingDate,
@@ -706,8 +707,13 @@ public class NotificationService {
         return emailAddress;
     }
 
-    private EmailChannel buildEmailChannel(final String destination, final String applicationType, final String legislationText, final String hearingDate, final String hearingTime,
+    private EmailChannel buildEmailChannel(final String destination,
+                                           final String applicationReference, final String applicationType,
+                                           final String legislationText, final String hearingDate,
+                                           final String hearingTime,
                                            final String courtCentreName, final Address address) {
+
+        final String APPLICATION_REFERENCE = "application_reference";
 
         final String APPLICATION_TYPE = "application_type";
 
@@ -731,6 +737,7 @@ public class NotificationService {
 
         final Map<String, Object> personalisation = new HashMap<>();
 
+        personalisation.put(APPLICATION_REFERENCE, applicationReference);
         personalisation.put(APPLICATION_TYPE, applicationType);
         personalisation.put(LEGISLATION_TEXT, legislationText);
         personalisation.put(DATED, hearingDate);

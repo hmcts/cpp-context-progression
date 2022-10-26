@@ -420,6 +420,7 @@ public class NotificationServiceTest {
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
+                .withApplicationReference("applicationReference")
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withRespondents(respondents)
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
@@ -439,7 +440,9 @@ public class NotificationServiceTest {
 
         assertThat(this.envelopeArgumentCaptor.getAllValues().get(1), jsonEnvelope(metadata().withName("progression.command.email"), payloadIsJson(allOf(
                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
-                withJsonPath("$.notifications[0].notificationId", equalTo(notificationId.toString()))))));
+                withJsonPath("$.notifications[0].notificationId", equalTo(notificationId.toString())),
+                withJsonPath("$.notifications[0].personalisation.application_reference", equalTo("applicationReference"))
+        ))));
     }
 
     @Test
