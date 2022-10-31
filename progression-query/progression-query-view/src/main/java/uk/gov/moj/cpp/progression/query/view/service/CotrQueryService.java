@@ -214,6 +214,7 @@ public class CotrQueryService {
                                 .withAddedOn(cotrProsecutionFurtherInfoEntity.getAddedOn().toLocalDate())
                                 .withAddedByName(cotrProsecutionFurtherInfoEntity.getInfoAddedByName())
                                 .withIsCertificationReady(cotrProsecutionFurtherInfoEntity.getIsCertificationReady())
+                                .withInformation(cotrProsecutionFurtherInfoEntity.getFurtherInformation())
                                 .build())
                 .collect(Collectors.toList());
     }

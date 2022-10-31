@@ -5,6 +5,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -16,6 +17,7 @@ import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
 import static uk.gov.justice.core.courts.ConfirmedProsecutionCaseId.confirmedProsecutionCaseId;
 import static uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing.prepareSummonsDataForExtendedHearing;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
@@ -30,8 +32,10 @@ import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
+import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
@@ -49,7 +53,10 @@ import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.LjaDetails;
+import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.PrepareSummonsData;
 import uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -76,9 +83,11 @@ import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNo
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -145,6 +154,8 @@ public class ProgressionService {
     private static final String PLEA_TYPE_GUILTY_FLAG_FIELD = "pleaTypeGuiltyFlag";
     public static final String NOTIFY_NCES = "notifyNCES";
     private static final String DEFENDANT_JUDICIAL_RESULTS = "defendantJudicialResults";
+
+    private DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd MMMM yyyy");
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -233,7 +244,7 @@ public class ProgressionService {
                         .withCourtOrder(ofNullable(courtApplication.getCourtOrder())
                                 .map(courtOrder -> CourtOrder.courtOrder()
                                         .withValuesFrom(courtOrder)
-                                        .withCourtOrderOffences(ofNullable(courtOrder.getCourtOrderOffences()).map(Collection ::stream).orElseGet(Stream::empty)
+                                        .withCourtOrderOffences(ofNullable(courtOrder.getCourtOrderOffences()).map(Collection::stream).orElseGet(Stream::empty)
                                                 .map(courtOrderOffence -> CourtOrderOffence.courtOrderOffence().withValuesFrom(courtOrderOffence)
                                                         .withOffence(Offence.offence().withValuesFrom(courtOrderOffence.getOffence())
                                                                 .withJudicialResults(null)
@@ -249,7 +260,7 @@ public class ProgressionService {
                                                 .map(courtApplicationOffence -> Offence.offence().withValuesFrom(courtApplicationOffence).withJudicialResults(null).build())
                                                 .collect(collectingAndThen(toList(), getListOrNull())))
                                         .build())
-                                .collect(collectingAndThen(toList(), getListOrNull())) :null)
+                                .collect(collectingAndThen(toList(), getListOrNull())) : null)
                         .build())
                 .collect(toList());
     }
@@ -389,7 +400,7 @@ public class ProgressionService {
                 updateCommandBuilder.build()));
     }
 
-    public void sendListingCommandToDeleteHearing(final JsonEnvelope jsonEnvelope,final UUID hearingId) {
+    public void sendListingCommandToDeleteHearing(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
         final JsonObject deleteHearingPayload = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .build();
@@ -781,8 +792,7 @@ public class ProgressionService {
                         .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
                         .add(HEARING, objectToJsonObjectConverter.convert(unscheduledHearing))
                         .build();
-                sender.send(Enveloper.envelop(hearingListingStatusCommand).withName(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).withMetadataFrom(jsonEnvelope));
-
+            sender.send(Enveloper.envelop(hearingListingStatusCommand).withName(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).withMetadataFrom(jsonEnvelope));
         });
     }
 
@@ -795,7 +805,7 @@ public class ProgressionService {
                 .add(HEARING_ID, originalHearingId.toString())
                 .add(UNSCHEDULED_HEARING_IDS, newHearingIdArrays.build())
                 .build();
-        sender.send(Enveloper.envelop(hearingListingStatusCommand).withName(PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING).withMetadataFrom(jsonEnvelope));
+        sender.send(envelop(hearingListingStatusCommand).withName(PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING).withMetadataFrom(jsonEnvelope));
     }
 
     public void updateHearingListingStatusToHearingUpdate(final JsonEnvelope jsonEnvelope, final Hearing hearing) {
@@ -1099,13 +1109,13 @@ public class ProgressionService {
 
         final LjaDetails ljaDetails = referenceDataService.getLjaDetails(jsonEnvelope, courtCentreJson.getString("lja"), requester);
         final String code = ofNullable(courtCentre.getRoomId())
-                .map( roomId -> referenceDataService.getOuCourtRoomCode(roomId.toString(), requester).getJsonArray("ouCourtRoomCodes").getString(0))
+                .map( roomId -> referenceDataService.getOuCourtRoomCode(roomId.toString(), requester).map(obj -> obj.getJsonArray("ouCourtRoomCodes")).map(codes -> codes.isEmpty() ? null : codes.getString(0)).orElse(null))
                 .orElseGet(() -> courtCentreJson.getString("oucode", null));
 
         return CourtCentre.courtCentre()
                 .withId(courtCentre.getId())
                 .withLja(ljaDetails)
-                .withCode(code)
+                .withCode(courtCentreJson.getString("oucode", null))
                 .withCourtHearingLocation(code)
                 .withName(courtCentreJson.getString("oucodeL3Name"))
                 .withRoomName(nonNull(courtCentre.getRoomId()) ? enrichCourtRoomName(courtCentre.getId(), courtCentre.getRoomId(), jsonEnvelope) : null)
@@ -1283,10 +1293,10 @@ public class ProgressionService {
         if (isNotEmpty(courtApplications)) {
             payloadBuilder.add(COURT_APPLICATIONS, listToJsonArrayConverter.convert(courtApplications));
         }
-        if(isNotEmpty(defendantJudicialResults)){
+        if (isNotEmpty(defendantJudicialResults)) {
             payloadBuilder.add(DEFENDANT_JUDICIAL_RESULTS, resultListToJsonArrayConverter.convert(defendantJudicialResults));
         }
-       sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_HEARING_RESULTED_UPDATE_CASE)
+        sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_HEARING_RESULTED_UPDATE_CASE)
                 .apply(payloadBuilder.build()));
     }
 
@@ -1346,7 +1356,7 @@ public class ProgressionService {
 
         LOGGER.info("Store booking references with court schedule ids for hearing '{}' ", storeBookingReferenceCourtScheduleIds.getHearingId());
 
-        this.sender.send(Enveloper.envelop(objectToJsonObjectConverter.convert(storeBookingReferenceCourtScheduleIds))
+        this.sender.send(envelop(objectToJsonObjectConverter.convert(storeBookingReferenceCourtScheduleIds))
                 .withName("progression.command.store-booking-reference-court-schedule-ids")
                 .withMetadataFrom(jsonEnvelope));
 
@@ -1357,7 +1367,7 @@ public class ProgressionService {
                 .add("hearingId", hearingId.toString())
                 .build();
 
-        this.sender.send(Enveloper.envelop(payload)
+        this.sender.send(envelop(payload)
                 .withName("progression.command.populate-hearing-to-probation-caseworker")
                 .withMetadataFrom(jsonEnvelope));
     }
@@ -1378,5 +1388,113 @@ public class ProgressionService {
                 .filter(courtApplication -> courtApplication.getId().equals(applicationId))
                 .filter(courtApplication -> courtApplication.getCourtApplicationCases() != null)
                 .findFirst();
+    }
+
+    public void initiateNewCourtApplication(JsonEnvelope event, Defendant defendant, ProsecutionCase prosecutionCase, Hearing hearing, NextHearing nextHearing) {
+        if (nonNull(referenceDataService.retrieveApplicationType(nextHearing.getApplicationTypeCode(), requester))) {
+            final CourtCentre courtCentre = nextHearing.getCourtCentre();
+            LOGGER.info("CourtCentr populated {}", courtCentre);
+
+            final Organisation organisation = Organisation.organisation().withName(courtCentre.getName()).withAddress(courtCentre.getAddress()).build();
+            LOGGER.info("Organization {}", organisation.getName());
+            final List<CourtApplicationParty> respondents = new ArrayList<>();
+            respondents.add(
+                    CourtApplicationParty.courtApplicationParty()
+                            .withPersonDetails(defendant.getPersonDefendant().getPersonDetails())
+                            .withNotificationRequired(false)
+                            .withSummonsRequired(false)
+                            .withId(defendant.getId())
+                            .build());
+            LOGGER.info("Respondents {}", respondents);
+
+            final CourtApplicationParty subject = CourtApplicationParty.courtApplicationParty()
+                    .withId(defendant.getId())
+                    .withSummonsRequired(false)
+                    .withNotificationRequired(false)
+                    .withOrganisation(organisation)
+                    .withMasterDefendant(MasterDefendant.masterDefendant()
+                            .withPersonDefendant(defendant.getPersonDefendant())
+                            .withMasterDefendantId(defendant.getMasterDefendantId())
+                            .withAssociatedPersons(defendant.getAssociatedPersons())
+                            .build())
+                    .build();
+
+            final CourtApplicationParty.Builder thirdPartyBuilder = CourtApplicationParty.courtApplicationParty();
+            if (nextHearing.getProbationTeamName() != null) {
+                thirdPartyBuilder.withOrganisation(Organisation.organisation()
+                        .withName(nextHearing.getProbationTeamName())
+                        .withAddress(Address.address()
+                                .withAddress1(nextHearing.getProbationTeamAddress()).build()).build());
+            }
+            thirdPartyBuilder.withSummonsRequired(false);
+            thirdPartyBuilder.withNotificationRequired(false);
+            thirdPartyBuilder.withId(defendant.getId());
+
+            final CourtApplicationParty applicant = CourtApplicationParty.courtApplicationParty()
+                    .withId(defendant.getId())
+                    .withOrganisation(Organisation.organisation()
+                            .withName(nextHearing.getCourtCentre().getName())
+                            .withAddress(nextHearing.getCourtCentre().getAddress()).build())
+                    .withSummonsRequired(false)
+                    .withNotificationRequired(false)
+                    .build();
+
+
+            final CourtApplicationCase courtApplicationCase = CourtApplicationCase.courtApplicationCase()
+                    .withProsecutionCaseId(prosecutionCase.getId())
+                    .withIsSJP(false)
+                    .withCaseStatus(INACTIVE.getDescription())
+                    .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier()).build();
+            final CourtApplication newCourtApplication = CourtApplication.courtApplication()
+                    .withId(randomUUID())
+                    .withType(referenceDataService.retrieveApplicationType(nextHearing.getApplicationTypeCode(), requester))
+                    .withApplicationReceivedDate(LocalDate.now())
+                    .withApplicant(applicant)
+                    .withCourtApplicationCases(Collections.singletonList(courtApplicationCase))
+                    .withApplicationStatus(ApplicationStatus.DRAFT)
+                    .withThirdParties(singletonList(thirdPartyBuilder.build()))
+                    .withSubject(subject)
+                    .withRespondents(respondents)
+                    .withApplicationParticulars(getApplicationParticulars(nextHearing))
+                    .build();
+
+            LOGGER.info("==========    Case status for creating new application ================= {}", prosecutionCase.getCaseStatus());
+
+
+            final CourtHearingRequest courtHearingRequest = CourtHearingRequest.courtHearingRequest()
+                    .withHearingType(nextHearing.getType())
+                    .withJurisdictionType(nextHearing.getJurisdictionType())
+                    .withEndDate(nextHearing.getEndDate())
+                    .withJurisdictionType(nextHearing.getJurisdictionType())
+                    .withJudiciary(nextHearing.getJudiciary())
+                    .withEarliestStartDateTime(hearing.getEarliestNextHearingDate())
+                    .withListedStartDateTime(nextHearing.getListedStartDateTime())
+                    .withCourtCentre(courtCentre)
+                    .withEstimatedMinutes(nextHearing.getEstimatedMinutes())
+                    .build();
+            final JsonObject command = createObjectBuilder()
+                    .add("courtApplication", objectToJsonObjectConverter.convert(newCourtApplication))
+                    .add("courtHearing", objectToJsonObjectConverter.convert(courtHearingRequest))
+                    .build();
+
+            sender.send(
+                    envelop(command)
+                            .withName("progression.command.initiate-court-proceedings-for-application")
+                            .withMetadataFrom(event));
+        }
+
+    }
+
+    private String getApplicationParticulars(final NextHearing nextHearing) {
+        return Stream.of(nextHearing.getOrderName(),
+                    nonNull(nextHearing.getSuspendedPeriod()) ? "Suspended Period: " + nextHearing.getSuspendedPeriod() : null,
+                    nonNull(nextHearing.getTotalCustodialPeriod()) ? "Total Custodial Period: " + nextHearing.getTotalCustodialPeriod() : null,
+                    getEndDateString(nextHearing))
+                .filter(applicationParticulars -> applicationParticulars != null && !applicationParticulars.isEmpty())
+                .collect(Collectors.joining(", "));
+    }
+
+    private String getEndDateString(final NextHearing nextHearing) {
+        return nextHearing.getEndDate() != null ? "End date: " + dateFormat.format(nextHearing.getEndDate()) : null;
     }
 }

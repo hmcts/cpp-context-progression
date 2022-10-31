@@ -798,7 +798,7 @@ public class CotrIT extends AbstractIT {
         final JsonObject privatePayload = cpsServeHelper.getPrivateEvents().payloadAsJsonObject();
         final String submissionId = privatePayload.getString("submissionId");
 
-        getCotrCaseDetails(caseId, anyOf(
+        String createCotr = getCotrCaseDetails(caseId, anyOf(
                 withJsonPath("$.cotrDetails.length()", is(1)),
                 withJsonPath("$.cotrDetails[0].id", is(notNullValue())),
                 withJsonPath("$.cotrDetails[0].hearingId", is(notNullValue())),
@@ -823,6 +823,10 @@ public class CotrIT extends AbstractIT {
         final JsonObject eventPayload = publicEvent.payloadAsJsonObject();
         assertThat(eventPayload, notNullValue());
 
+        String updateCotr = getCotrCaseDetails(caseId, anyOf(
+                withJsonPath("$.cotrDetails[0].id", is(notNullValue()))
+        ));
+
     }
 
     private JsonObject buildPayloadForCpsServeCotrSubmitted(final String cpsDefendantId) throws IOException {
@@ -839,7 +843,8 @@ public class CotrIT extends AbstractIT {
     private JsonObject buildPayloadForCpsUpdateCotrSubmitted(final String submissionId) throws IOException {
         final String inputEvent = getPayload("stub-data/cps-serve-cotr-update.json")
                 .replace("%CASE_ID%", caseId)
-                .replace("%SUBMISSION_ID%", submissionId);
+                .replace("%SUBMISSION_ID%", randomUUID().toString())
+                .replace("%COTR_ID%", submissionId);
 
 
         final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);

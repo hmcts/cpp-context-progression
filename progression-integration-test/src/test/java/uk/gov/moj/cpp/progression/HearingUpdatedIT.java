@@ -43,13 +43,17 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import com.jayway.restassured.path.json.JsonPath;
+
 import java.util.HashMap;
 import java.util.List;
+
 import org.hamcrest.CoreMatchers;
 
 import com.google.common.io.Resources;
+
 import java.nio.charset.Charset;
 import java.util.UUID;
+
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -84,6 +88,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
@@ -124,7 +129,8 @@ public class HearingUpdatedIT extends AbstractIT {
 
     @Before
     public void setUp() {
-        while(QueueUtil.retrieveMessageAsString(messageConsumerHearingPopulatedToProbationCaseWorker, 1L).isPresent());
+        while (QueueUtil.retrieveMessageAsString(messageConsumerHearingPopulatedToProbationCaseWorker, 1L).isPresent())
+            ;
         stubInitiateHearing();
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
@@ -178,6 +184,7 @@ public class HearingUpdatedIT extends AbstractIT {
         verifyInMessagingQueue(messageConsumerClientPublicForHearingDetailChanged);
     }
 
+
     @Test
     public void shouldUpdateHearingWhenDefendantMatched() throws Exception {
         final String prosecutionCaseId_1 = randomUUID().toString();
@@ -200,7 +207,7 @@ public class HearingUpdatedIT extends AbstractIT {
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].masterDefendantId", Matchers.is(defendantId))
         );
 
-        matchDefendant(caseId, defendantId, prosecutionCaseId_1, defendantId_1 , masterDefendantId_1);
+        matchDefendant(caseId, defendantId, prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
 
         pollProsecutionCasesProgressionFor(caseId, new Matcher[]{
                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
@@ -272,8 +279,8 @@ public class HearingUpdatedIT extends AbstractIT {
 
         initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application-adjorn.json");
         final JsonPath matchers1 = QueueUtil.retrieveMessage(messageConsumerHearingPopulatedToProbationCaseWorker, isJson(Matchers.allOf(
-                withJsonPath("$.hearing.id", CoreMatchers.is(hearingId)),
-                withJsonPath("$.hearing.courtApplications[0].id", is(courtApplicationId))
+                        withJsonPath("$.hearing.id", CoreMatchers.is(hearingId)),
+                        withJsonPath("$.hearing.courtApplications[0].id", is(courtApplicationId))
                 )
         ));
         Assert.assertNotNull(matchers1);
@@ -287,6 +294,7 @@ public class HearingUpdatedIT extends AbstractIT {
         assertThat(jsonObject.getString("hearingId"), CoreMatchers.is(hearingId));
         assertThat(jsonObject.getJsonArray("updatedOffences").getJsonObject(0).getString("id"), is(offenceId));
     }
+
     @Test
     public void shouldRaiseProbationEventWhenAllocationChanged() throws Exception {
         HearingStub.stubInitiateHearing();
@@ -668,6 +676,7 @@ public class HearingUpdatedIT extends AbstractIT {
                                             final String courtCentreId, final String courtCentreName) {
         return getHearingJsonObject(path, caseId, hearingId, defendantId, applicationId, adjournedHearingId, reference, courtCentreId, courtCentreName, "0000-01-01");
     }
+
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
                                             final String defendantId, final String applicationId,
                                             final String adjournedHearingId, final String reference,

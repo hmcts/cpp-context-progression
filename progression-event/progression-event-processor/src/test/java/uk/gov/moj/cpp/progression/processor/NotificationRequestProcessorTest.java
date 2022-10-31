@@ -26,10 +26,13 @@ import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
+import java.util.Optional;
 import java.util.UUID;
 
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import org.junit.Before;
 import org.junit.Test;

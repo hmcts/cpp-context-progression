@@ -279,6 +279,9 @@ subscriptions_descriptor:
         - name: progression.event.online-plea-recorded
           schema_uri: http://justice.gov.uk/core/courts/online-plea-recorded.json
 
+        - name: progression.event.online-plea-pcq-visited-recorded
+          schema_uri: http://justice.gov.uk/core/courts/online-plea-pcq-visited-recorded.json
+
         - name: progression.event.cotr-created
           schema_uri: http://justice.gov.uk/cpp/progression/event/progression.event.cotr-created.json
 

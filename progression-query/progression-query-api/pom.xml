@@ -19,6 +19,18 @@
                 <version>${cpp.framework.version}</version>
                 <dependencies>
                     <dependency>
+                        <groupId>uk.gov.moj.cpp.progression</groupId>
+                        <artifactId>progression-query-view</artifactId>
+                        <version>${project.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
                         <groupId>uk.gov.moj.cpp.material</groupId>
                         <artifactId>material-query-api</artifactId>
                         <version>${material.version}</version>
@@ -34,6 +46,18 @@
                         <groupId>uk.gov.moj.cpp.usersgroups</groupId>
                         <artifactId>usersgroups-query-api</artifactId>
                         <version>${usersgroups.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.staging.pubhub</groupId>
+                        <artifactId>stagingpubhub-command-api</artifactId>
+                        <version>${stagingpubhub.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>
@@ -82,6 +106,18 @@
                         <groupId>uk.gov.moj.cpp.applications.courtorders</groupId>
                         <artifactId>applicationscourtorders-query-api</artifactId>
                         <version>${applicationscourtorders.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.directions.management</groupId>
+                        <artifactId>directionsmanagement-query-api</artifactId>
+                        <version>${directionsmanagement.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>

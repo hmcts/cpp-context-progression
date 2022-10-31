@@ -38,12 +38,7 @@
     }
   },
   "required": [
-    "prosecutionCaseId",
-    "defendantId",
-    "defendantOffences",
-    "hearingId",
-    "hearingDays",
-    "courtCentre"
+    "prosecutionCaseId", "defendantId", "defendantOffences", "hearingId", "hearingDays", "courtCentre"
   ],
   "additionalProperties": false
 }

@@ -1244,3 +1244,28 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       202:
         description: Accepted
 
+/cases/{caseId}/defendants/{defendantId}/plead-online-pcq-visited:
+  uriParameters:
+    caseId:
+      description: The ID of the case update
+      type: string
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  post:
+    description: |
+      Receive an online plea for pcq visited
+      ...
+      (mapping):
+          requestType: application/vnd.progression.plead-online-pcq-visited+json
+          name: progression.plead-online-pcq-visited
+      ...
+    body:
+      application/vnd.progression.plead-online-pcq-visited+json:
+        schema:
+          !include json/schema/progression.online-plea-request-pcq-visited.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted

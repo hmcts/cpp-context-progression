@@ -12,6 +12,8 @@ import static uk.gov.justice.services.core.interceptor.InterceptorContext.interc
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
+import uk.gov.justice.api.resource.service.ReferenceDataService;
+import uk.gov.justice.api.resource.service.StagingPubHubService;
 import uk.gov.justice.services.adapter.rest.mapping.ActionMapper;
 import uk.gov.justice.services.core.annotation.Adapter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -54,6 +56,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResource {
 
     protected static final String COURT_LIST_QUERY_NAME = "progression.search.court.list";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultQueryApiCourtlistResource.class);
     private static final String EXTRACT_FILE_NAME = "CourtList.pdf";
     protected static final String DISPOSITION = "attachment; filename=\"" + EXTRACT_FILE_NAME + "\"";
@@ -74,6 +77,12 @@ public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResour
 
     @Inject
     private DocumentGeneratorClientProducer documentGeneratorClientProducer;
+
+    @Inject
+    private StagingPubHubService stagingPubHubService;
+
+    @Inject
+    private ReferenceDataService referenceDataService;
 
     @Override
     public Response getCourtlist(final String courtCentreId, final String courtRoomId, final String listId,
@@ -98,6 +107,24 @@ public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResour
                 payloadBuilder.build());
 
         final JsonEnvelope document = interceptorChainProcessor.process(interceptorContextWithInput(documentQuery)).get();
+
+        final JsonObjectBuilder standardListJsonObjectBuilder = Json.createObjectBuilder();
+
+        document
+                .payloadAsJsonObject()
+                .keySet()
+                .forEach(key -> standardListJsonObjectBuilder
+                        .add(key, document.payloadAsJsonObject().get(key))
+                );
+
+        final Optional<JsonObject> courtCentreDataOptional = referenceDataService.getCourtCenterDataByCourtName(document, document.payloadAsJsonObject().getString("courtCentreName"));
+        if (courtCentreDataOptional.isPresent()) {
+            final JsonObject courtCentreData = courtCentreDataOptional.get();
+            standardListJsonObjectBuilder.add("ouCode", courtCentreData.getJsonString("oucode"));
+            standardListJsonObjectBuilder.add("courtId", courtCentreData.getJsonString("id"));
+        }
+
+        stagingPubHubService.publishStandardList(standardListJsonObjectBuilder.build(), userId);
 
         return getDocumentContent(document);
     }

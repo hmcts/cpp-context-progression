@@ -14,6 +14,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
 
+import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -70,10 +71,12 @@ public class RefDataService {
     public static final String REFERENCEDATA_QUERY_JUDICIARIES = "referencedata.query.judiciaries";
     public static final String REFERENCEDATA_QUERY_LOCAL_JUSTICE_AREAS = "referencedata.query.local-justice-areas";
     public static final String REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS = "referencedata.get-all-result-definitions";
+
     private static final String REFERENCEDATA_QUERY_COUNTRY_BY_POSTCODE = "referencedata.query.country-by-postcode";
     private static final String REFERENCE_DATA_QUERY_CPS_PROSECUTORS = "referencedata.query.get.prosecutor.by.cpsflag";
     private static final String PROSECUTORS = "prosecutors";
-
+    private static final String  REFERENCEDATA_QUERY_COURT_APPLICATION_TYPES = "referencedata.query.application-types";
+    private static final String FIELD_APPLICATION_TYPES = "courtApplicationTypes";
     public static final String PROSECUTOR = "shortName";
     public static final String NATIONALITY_CODE = "isoCode";
     public static final String NATIONALITY = "nationality";
@@ -310,7 +313,7 @@ public class RefDataService {
             LOGGER.info(" get referral reasons '{}' received with payload {} ", REFERENCEDATA_GET_REFERRAL_REASONS, response.toObfuscatedDebugString());
         }
         return response.payloadAsJsonObject().getJsonArray("referralReasons").stream()
-                .map(jsonValue -> (JsonObject) jsonValue)
+                .map(JsonObject.class::cast)
                 .filter(jsonObject -> jsonObject.getString(ID).equals(id.toString()))
                 .findFirst();
     }
@@ -412,7 +415,7 @@ public class RefDataService {
                 .withMetadataFrom(event));
 
         return response.payloadAsJsonObject().getJsonArray(ETHNICITIES).stream()
-                .map(jsonValue -> (JsonObject) jsonValue)
+                .map(JsonObject.class::cast)
                 .filter(jsonObject -> jsonObject.getString(ID).equals(id.toString()))
                 .findFirst();
     }
@@ -428,7 +431,7 @@ public class RefDataService {
 
 
         return response.payloadAsJsonObject().getJsonArray(HEARING_TYPES).stream()
-                .map(jsonValue -> (JsonObject) jsonValue)
+                .map(JsonObject.class::cast)
                 .filter(jsonObject -> jsonObject.getString(ID).equals(id.toString()))
                 .findFirst();
     }
@@ -438,7 +441,7 @@ public class RefDataService {
         LOGGER.info(" Calling {} to get nationalities for {} ", REFERENCEDATA_QUERY_NATIONALITIES, id);
         final JsonEnvelope response = getNationalityResponse(event, requester);
         return response.payloadAsJsonObject().getJsonArray(COUNTRY_NATIONALITY).stream()
-                .map(jsonValue -> (JsonObject) jsonValue)
+                .map(JsonObject.class::cast)
                 .filter(jsonObject -> jsonObject.getString(ID).equals(id.toString()))
                 .findFirst();
     }
@@ -448,7 +451,7 @@ public class RefDataService {
         LOGGER.info(" Calling {} to get nationalities for {} ", REFERENCEDATA_QUERY_NATIONALITIES, nationality);
         final JsonEnvelope response = getNationalityResponse(event, requester);
         return response.payloadAsJsonObject().getJsonArray(COUNTRY_NATIONALITY).stream()
-                .map(jsonValue -> (JsonObject) jsonValue)
+                .map(JsonObject.class::cast)
                 .filter(jsonObject -> jsonObject.getString(NATIONALITY).equalsIgnoreCase(nationality))
                 .findFirst();
     }
@@ -590,7 +593,7 @@ public class RefDataService {
 
         return pleaStatusTypes
                 .stream()
-                .map(jsonValue -> (JsonObject) jsonValue)
+                .map(JsonObject.class::cast)
                 .filter(jsonObject -> jsonObject.getString(PLEA_TYPE_VALUE).equals(pleaTypeValue))
                 .findFirst();
     }
@@ -672,7 +675,7 @@ public class RefDataService {
         return response.payloadAsJsonObject().getString("country");
     }
 
-    public JsonObject getOuCourtRoomCode(final String courtRoomId, final Requester requester) {
+    public Optional<JsonObject> getOuCourtRoomCode(final String courtRoomId, final Requester requester) {
         final JsonObject payload = createObjectBuilder()
                 .add("courtRoomUuid", courtRoomId)
                 .build();
@@ -681,7 +684,37 @@ public class RefDataService {
                 .withId(randomUUID())
                 .withName(REFERENCE_DATA_QUERY_GET_OU_COURT_CODE);
 
-        return requester.requestAsAdmin(envelopeFrom(metadataBuilder, payload), JsonObject.class).payload();
+        return ofNullable(requester.requestAsAdmin(envelopeFrom(metadataBuilder, payload), JsonObject.class).payload());
+    }
 
+    public CourtApplicationType retrieveApplicationType(final String applicationCode, final Requester requester) {
+        final List<CourtApplicationType> courtApplicationTypes = getRefDataStream(requester, REFERENCEDATA_QUERY_COURT_APPLICATION_TYPES, FIELD_APPLICATION_TYPES, createObjectBuilder()).map(asApplicationTypeRefData()).collect(Collectors.toList());
+        final Optional<CourtApplicationType> courtApplicationTypeOptional = courtApplicationTypes.stream().filter(courtApplicationType -> applicationCode.equals(courtApplicationType.getCode())).findFirst();
+        return courtApplicationTypeOptional.isPresent() ? courtApplicationTypeOptional.get(): null;
+    }
+
+    private Stream<JsonValue> getRefDataStream(final Requester requester, final String queryName, final String fieldName, final JsonObjectBuilder jsonObjectBuilder) {
+        final JsonEnvelope envelope = envelopeFrom(getMetadataBuilder(queryName), jsonObjectBuilder);
+        return requester.requestAsAdmin(envelope, JsonObject.class)
+                .payload()
+                .getJsonArray(fieldName)
+                .stream();
+    }
+
+    private MetadataBuilder getMetadataBuilder(final String queryName) {
+        return metadataBuilder()
+                .withId(randomUUID())
+                .withName(queryName);
+    }
+
+    private static Function<JsonValue, CourtApplicationType> asApplicationTypeRefData() {
+        return jsonValue -> {
+            try {
+                return new ObjectMapperProducer().objectMapper().readValue(jsonValue.toString(), CourtApplicationType.class);
+            } catch (IOException e) {
+                LOGGER.error("Unable to unmarshal CourtApplicationType. Payload :{}", jsonValue, e);
+                return null;
+            }
+        };
     }
 }

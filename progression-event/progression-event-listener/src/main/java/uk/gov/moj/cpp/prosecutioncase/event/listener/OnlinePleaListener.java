@@ -1,11 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import static java.time.ZonedDateTime.now;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static org.slf4j.LoggerFactory.getLogger;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-
+import org.slf4j.Logger;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -13,6 +8,7 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.moj.cpp.progression.events.OnlinePleaPcqVisitedRecorded;
 import uk.gov.moj.cpp.progression.events.OnlinePleaRecorded;
 import uk.gov.moj.cpp.progression.plea.json.schemas.LegalEntityDefendant;
 import uk.gov.moj.cpp.progression.plea.json.schemas.Offence;
@@ -26,6 +22,10 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import java.io.StringReader;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -35,12 +35,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
-import org.slf4j.Logger;
+import static java.time.ZonedDateTime.now;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static org.slf4j.LoggerFactory.getLogger;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 @ServiceComponent(EVENT_LISTENER)
 public class OnlinePleaListener {
@@ -82,9 +81,35 @@ public class OnlinePleaListener {
 
     }
 
+    @Handles("progression.event.online-plea-pcq-visited-recorded")
+    public void onlinePleaPcqVisitedRecorded(final Envelope<OnlinePleaPcqVisitedRecorded> event) {
+        final OnlinePleaPcqVisitedRecorded onlinePleaPcqVisitedRecorded = event.payload();
+        LOGGER.info("progression.event.online-plea-pcq-visited-recorded event received");
+
+        final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(onlinePleaPcqVisitedRecorded.getCaseId());
+        final JsonObject prosecutionCaseJson = jsonFromString(prosecutionCaseEntity.getPayload());
+        final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
+
+        final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase()
+                .withValuesFrom(prosecutionCase)
+                .withDefendants(getUpdatedDefendants(prosecutionCase.getDefendants(),
+                        onlinePleaPcqVisitedRecorded.getPleadOnlinePcqVisited().getDefendantId(),
+                        nonNull(onlinePleaPcqVisitedRecorded.getPleadOnlinePcqVisited().getPcqId())
+                                ? onlinePleaPcqVisitedRecorded.getPleadOnlinePcqVisited().getPcqId().toString() : null
+                )).build();
+
+        prosecutionCaseRepository.save(getProsecutionCaseEntity(updatedProsecutionCase));
+    }
+
     private List<Defendant> getUpdatedDefendants(final List<Defendant> allDefendants, final UUID defendantId, final List<Offence> pleadOffences) {
         return allDefendants.stream()
                 .map(defendant -> defendant.getId().equals(defendantId) ? getUpdatedDefendant(defendant, pleadOffences) : defendant)
+                .collect(Collectors.toList());
+    }
+
+    private List<Defendant> getUpdatedDefendants(final List<Defendant> allDefendants, final UUID defendantId, final String pcqId) {
+        return allDefendants.stream()
+                .map(defendant -> defendant.getId().equals(defendantId) ? getUpdatedDefendant(defendant, pcqId) : defendant)
                 .collect(Collectors.toList());
     }
 
@@ -92,6 +117,13 @@ public class OnlinePleaListener {
         return Defendant.defendant()
                 .withValuesFrom(defendant)
                 .withOffences(getUpdatedOffences(defendant.getOffences(), pleadOffences))
+                .build();
+    }
+
+    private Defendant getUpdatedDefendant(final Defendant defendant, final String pcqId) {
+        return Defendant.defendant()
+                .withValuesFrom(defendant)
+                .withPcqId(pcqId)
                 .build();
     }
 

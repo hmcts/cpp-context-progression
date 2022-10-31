@@ -214,7 +214,43 @@ public class CotrEventsListenerTest {
                 .withCotrId(randomUUID())
                 .withHearingId(randomUUID())
                 .withFurtherProsecutionInformationProvidedAfterCertification(setPolarQuestion(FURTHER_PROSECUTION_INFORMATION_PROVIDED_AFTER_CERTIFICATION))
-                .withCertifyThatTheProsecutionIsTrialReady(setPolarQuestion(CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY))
+                .withFormCompletedOnBehalfOfProsecutionBy(setPolarQuestion("formCompletedOnBehalfOfProsecutionBy"))
+                .withCertificationDate(PolarQuestion.polarQuestion()
+                        .withDetails("2022-02-02")
+                        .build())
+                .build();
+        ProsecutionFormData prosecutionFormData = getProsecutionFormData();
+        final COTRDetailsEntity cotrDetailsEntity = new COTRDetailsEntity();
+        cotrDetailsEntity.setProsecutionFormData(prosecutionFormData.toString());
+        cotrDetailsEntity.setId(prosecutionCotrUpdated.getCotrId());
+        cotrDetailsEntity.setHearingId(prosecutionCotrUpdated.getHearingId());
+
+        final JsonObject jsonObject = getJsonObject();
+        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(jsonObject);
+        when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionFormData.class)).thenReturn(getProsecutionFormData());
+        cotrDetailsEntity.setProsecutionFormData(getProsecutionFormData().toString());
+        when(prosecutionCotrUpdatedEnvelope.payload()).thenReturn(prosecutionCotrUpdated);
+        when(cotrDetailsRepository.findBy(prosecutionCotrUpdated.getCotrId())).thenReturn(cotrDetailsEntity);
+
+        cotrEventsListener.updateProsecutionCotr(prosecutionCotrUpdatedEnvelope);
+        verify(cotrDetailsRepository).findBy(prosecutionCotrUpdated.getCotrId());
+        verify(cotrDetailsRepository).save(cotrDetailsEntityArgumentCaptor.capture());
+
+        final COTRDetailsEntity savedCOTRDetailsEntity = cotrDetailsEntityArgumentCaptor.getValue();
+        assertThat(savedCOTRDetailsEntity.getId(), is(cotrDetailsEntity.getId()));
+        assertThat(savedCOTRDetailsEntity.getHearingId(), is(cotrDetailsEntity.getHearingId()));
+        assertTrue(savedCOTRDetailsEntity.getProsecutionFormData().contains(FURTHER_PROSECUTION_INFORMATION_PROVIDED_AFTER_CERTIFICATION));
+    }
+
+    @Test
+    public void shouldTestUpdateProsecutionCotr_furtherProsecutionInformationProvidedAfterCertification() {
+        final ProsecutionCotrUpdated prosecutionCotrUpdated = ProsecutionCotrUpdated.prosecutionCotrUpdated()
+                .withCotrId(randomUUID())
+                .withHearingId(randomUUID())
+                .withCertifyThatTheProsecutionIsTrialReady(PolarQuestion.polarQuestion()
+                        .withAnswer("Y")
+                        .build())
+                .withFurtherProsecutionInformationProvidedAfterCertification(setPolarQuestion(FURTHER_PROSECUTION_INFORMATION_PROVIDED_AFTER_CERTIFICATION))
                 .build();
         ProsecutionFormData prosecutionFormData = getProsecutionFormData();
         final COTRDetailsEntity cotrDetailsEntity = new COTRDetailsEntity();
@@ -240,7 +276,7 @@ public class CotrEventsListenerTest {
     }
 
     @Test
-    public void shouldTestUpdateProsecutionCotr_furtherProsecutionInformationProvidedAfterCertification() {
+    public void shouldTestUpdateProsecutionCotr_certifyThatTheProsecutionIsTrialReady() {
         final ProsecutionCotrUpdated prosecutionCotrUpdated = ProsecutionCotrUpdated.prosecutionCotrUpdated()
                 .withCotrId(randomUUID())
                 .withHearingId(randomUUID())
@@ -267,36 +303,6 @@ public class CotrEventsListenerTest {
         assertThat(savedCOTRDetailsEntity.getHearingId(), is(cotrDetailsEntity.getHearingId()));
         assertTrue(savedCOTRDetailsEntity.getProsecutionFormData().contains(FURTHER_PROSECUTION_INFORMATION_PROVIDED_AFTER_CERTIFICATION));
         assertFalse(savedCOTRDetailsEntity.getProsecutionFormData().contains(CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY));
-    }
-
-    @Test
-    public void shouldTestUpdateProsecutionCotr_certifyThatTheProsecutionIsTrialReady() {
-        final ProsecutionCotrUpdated prosecutionCotrUpdated = ProsecutionCotrUpdated.prosecutionCotrUpdated()
-                .withCotrId(randomUUID())
-                .withHearingId(randomUUID())
-                .withCertifyThatTheProsecutionIsTrialReady(setPolarQuestion(CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY))
-                .build();
-        ProsecutionFormData prosecutionFormData = getProsecutionFormData();
-        final COTRDetailsEntity cotrDetailsEntity = new COTRDetailsEntity();
-        cotrDetailsEntity.setProsecutionFormData(prosecutionFormData.toString());
-        cotrDetailsEntity.setId(prosecutionCotrUpdated.getCotrId());
-        cotrDetailsEntity.setHearingId(prosecutionCotrUpdated.getHearingId());
-        final JsonObject jsonObject = getJsonObject();
-        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(jsonObject);
-        when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionFormData.class)).thenReturn(getProsecutionFormData());
-        cotrDetailsEntity.setProsecutionFormData(getProsecutionFormData().toString());
-        when(prosecutionCotrUpdatedEnvelope.payload()).thenReturn(prosecutionCotrUpdated);
-        when(cotrDetailsRepository.findBy(prosecutionCotrUpdated.getCotrId())).thenReturn(cotrDetailsEntity);
-
-        cotrEventsListener.updateProsecutionCotr(prosecutionCotrUpdatedEnvelope);
-        verify(cotrDetailsRepository).findBy(prosecutionCotrUpdated.getCotrId());
-        verify(cotrDetailsRepository).save(cotrDetailsEntityArgumentCaptor.capture());
-
-        final COTRDetailsEntity savedCOTRDetailsEntity = cotrDetailsEntityArgumentCaptor.getValue();
-        assertThat(savedCOTRDetailsEntity.getId(), is(cotrDetailsEntity.getId()));
-        assertThat(savedCOTRDetailsEntity.getHearingId(), is(cotrDetailsEntity.getHearingId()));
-        assertFalse(savedCOTRDetailsEntity.getProsecutionFormData().contains(FURTHER_PROSECUTION_INFORMATION_PROVIDED_AFTER_CERTIFICATION));
-        assertTrue(savedCOTRDetailsEntity.getProsecutionFormData().contains(CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY));
     }
 
     private JsonObject getJsonObject() {
@@ -692,7 +698,9 @@ public class CotrEventsListenerTest {
         final ProsecutionCotrUpdated prosecutionCotrUpdated = ProsecutionCotrUpdated.prosecutionCotrUpdated()
                 .withCotrId(randomUUID())
                 .withHearingId(randomUUID())
-                .withCertifyThatTheProsecutionIsTrialReady(setPolarQuestion(CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY))
+                .withCertifyThatTheProsecutionIsTrialReady(PolarQuestion.polarQuestion()
+                        .withAnswer("Y")
+                        .build())
                 .withFormCompletedOnBehalfOfProsecutionBy(setPolarQuestion("Test"))
                 .build();
         ProsecutionFormData prosecutionFormData = getProsecutionFormData();
@@ -712,6 +720,6 @@ public class CotrEventsListenerTest {
         verify(cotrDetailsRepository).save(cotrDetailsEntityArgumentCaptor.capture());
 
         final COTRDetailsEntity savedCOTRDetailsEntity = cotrDetailsEntityArgumentCaptor.getValue();
-        assertTrue(savedCOTRDetailsEntity.getProsecutionFormData().contains("formCompletedOnBehalfOfTheProsecutionBy"));
+        assertFalse(savedCOTRDetailsEntity.getProsecutionFormData().contains("formCompletedOnBehalfOfTheProsecutionBy"));
     }
 }

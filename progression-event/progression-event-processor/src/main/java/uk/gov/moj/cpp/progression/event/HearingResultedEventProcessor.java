@@ -1,14 +1,22 @@
 package uk.gov.moj.cpp.progression.event;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+
 import uk.gov.justice.core.courts.CommittingCourt;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ListUnscheduledNextHearings;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCasesResultedV2;
@@ -34,24 +42,23 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toMap;
-import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingResultedEventProcessor {
@@ -85,6 +92,10 @@ public class HearingResultedEventProcessor {
 
     @Inject
     private ListCourtHearingTransformer listCourtHearingTransformer;
+
+
+    public static final String DRNRR_JUDICIAL_RESULT_TYPE_ID = "cc2cbb94-b75a-4a8c-9840-31c5f8007724";
+
 
     @Handles("public.events.hearing.hearing-resulted")
     @FeatureControl("amendReshare")
@@ -127,7 +138,33 @@ public class HearingResultedEventProcessor {
             LOGGER.debug("Sending commands to update cases following hearing results shared for hearing id: {}", hearing.getId());
         }
 
+        for (final ProsecutionCase prosecutionCase : hearing.getProsecutionCases()) {
+            initiateApplicationForCase(event, hearing, prosecutionCase);
+        }
         hearing.getProsecutionCases().forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications(), hearing.getDefendantJudicialResults()));
+    }
+
+    private void initiateApplicationForCase(final JsonEnvelope event, final Hearing hearing, final ProsecutionCase prosecutionCase) {
+        prosecutionCase.getDefendants().forEach(defendant -> {
+            final List<JudicialResult> judicialResults = ofNullable(defendant.getOffences()).map(Collection::stream).orElseGet(Stream::empty).filter(offence -> offence.getJudicialResults() != null)
+                    .flatMap(offence -> ofNullable(offence.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty)).collect(toList());
+
+            if (nonNull(judicialResults)) {
+                judicialResults.forEach(judicialResult -> {
+                    LOGGER.info("Priority application Types: {}", judicialResult.getJudicialResultTypeId());
+                    LOGGER.info("Drug rehab type: {}", DRNRR_JUDICIAL_RESULT_TYPE_ID);
+                    final NextHearing nextHearing = judicialResult.getNextHearing();
+                    if (nextHearing != null && nonNull(nextHearing.getIsFirstReviewHearing()) && Boolean.TRUE.equals(nextHearing.getIsFirstReviewHearing()) && nonNull(nextHearing.getApplicationTypeCode())) {
+                        LOGGER.info("Next hearing populated with application Type{}", nextHearing.getApplicationTypeCode());
+                        inititateApplicationCreation(event, hearing, prosecutionCase, defendant, nextHearing);
+                    }
+                });
+            }
+        });
+    }
+
+    private void inititateApplicationCreation(final JsonEnvelope event, final Hearing hearing, final ProsecutionCase prosecutionCase, final Defendant defendant, final NextHearing nextHearing) {
+        progressionService.initiateNewCourtApplication(event, defendant, prosecutionCase, hearing, nextHearing);
     }
 
     @Handles("progression.event.next-hearings-requested")
@@ -207,7 +244,7 @@ public class HearingResultedEventProcessor {
             final List<Hearing> hearingList = unscheduledListingNeeds.stream()
                     .filter(uln -> nonNull(uln.getProsecutionCases()) ||  nonNull(uln.getCourtApplications()))
                     .map(uln -> hearingResultUnscheduledListingHelper.convertToHearing(uln, hearing.getHearingDays()))
-                    .collect(Collectors.toList());
+                    .collect(toList());
 
             if (!hearingList.isEmpty()) {
                 final Set<UUID> hearingsToBeSentNotification = hearingResultUnscheduledListingHelper.getHearingIsToBeSentNotification(unscheduledListingNeeds);

@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -66,7 +67,7 @@ import javax.json.JsonObjectBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S1170", "squid:S00116"})
+@SuppressWarnings({"squid:S1170", "squid:S00116", "squid:S3776"})
 @ServiceComponent(Component.QUERY_VIEW)
 public class CourtlistQueryView {
 
@@ -158,7 +159,6 @@ public class CourtlistQueryView {
     }
 
     private JsonObject addHearingInformation(JsonObject documentPayload, final Map<UUID, Hearing> hearingsMap) {
-
         final JsonArrayBuilder hearingDatesArray = createArrayBuilder();
 
         documentPayload.getJsonArray(HEARING_DATES).stream()
@@ -170,7 +170,6 @@ public class CourtlistQueryView {
     }
 
     private JsonObject enrichHearingDate(JsonObject hearingFromListing, final Map<UUID, Hearing> hearingsMap) {
-
         final JsonArrayBuilder courtRoomsArray = createArrayBuilder();
 
         hearingFromListing.getJsonArray(COURT_ROOMS).stream()
@@ -182,7 +181,6 @@ public class CourtlistQueryView {
     }
 
     private JsonObject enrichCourtRoom(JsonObject courtRoomFromListing, final Map<UUID, Hearing> hearingsMap) {
-
         final JsonArrayBuilder timeSlotsArray = createArrayBuilder();
 
         courtRoomFromListing.getJsonArray(TIME_SLOTS).stream()
@@ -195,7 +193,6 @@ public class CourtlistQueryView {
 
 
     private JsonObject enrichTimeslot(JsonObject timeSlotFromListing, final Map<UUID, Hearing> hearingsMap) {
-
         final JsonArrayBuilder hearingsArray = createArrayBuilder();
 
         timeSlotFromListing.getJsonArray(HEARINGS).stream()
@@ -217,10 +214,9 @@ public class CourtlistQueryView {
     }
 
     private JsonObject enrichHearingFromCase(JsonObject hearingFromListing, final Hearing hearing, final UUID caseId) {
-
         //DD-15717: deliberately loading case details from database as the copy of case on hearing object within progression is out of date
-        final List<ProsecutionCase> prosecutionCasesFromViewStore =  getProsecutionCaseFromDb(caseId);
-        final List<ProsecutionCase> prosecutionCases =  ofNullable(hearing.getProsecutionCases())
+        final List<ProsecutionCase> prosecutionCasesFromViewStore = getProsecutionCaseFromDb(caseId);
+        final List<ProsecutionCase> prosecutionCases = ofNullable(hearing.getProsecutionCases())
                 .map(prosecutionCasesFromHearing -> getProsecutionCaseWithListingNumberInHearings(prosecutionCasesFromViewStore, prosecutionCasesFromHearing))
                 .orElseGet(() -> prosecutionCasesFromViewStore);
 
@@ -260,7 +256,7 @@ public class CourtlistQueryView {
         return hearingFromListing;
     }
 
-    private List<ProsecutionCase> getProsecutionCaseWithListingNumberInHearings(final List<ProsecutionCase> prosecutionCasesFromViewStore, final List<ProsecutionCase> prosecutionCasesFromHearing ){
+    private List<ProsecutionCase> getProsecutionCaseWithListingNumberInHearings(final List<ProsecutionCase> prosecutionCasesFromViewStore, final List<ProsecutionCase> prosecutionCasesFromHearing) {
 
         final Map<UUID, Integer> listingMap = prosecutionCasesFromHearing.stream().flatMap(pc -> pc.getDefendants().stream())
                 .flatMap(defendant -> defendant.getOffences().stream())
@@ -272,7 +268,7 @@ public class CourtlistQueryView {
                         .withDefendants(ps.getDefendants().stream()
                                 .map(def -> Defendant.defendant().withValuesFrom(def)
                                         .withOffences(def.getOffences().stream()
-                                                .map(of->Offence.offence().withValuesFrom(of)
+                                                .map(of -> Offence.offence().withValuesFrom(of)
                                                         .withListingNumber(listingMap.get(of.getId()))
                                                         .build())
                                                 .collect(toList()))
@@ -327,7 +323,7 @@ public class CourtlistQueryView {
                     .filter(offence -> offencesForApplications.contains(offence.getId()))
                     .forEach(offence -> {
                         final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
-                        buildOffence(offenceBuilder, offence);
+                        buildOffence(offenceBuilder, offence, null);
                         addApplicationInformation(offenceBuilder, courtApplication);
                         offencesArray.add(offenceBuilder.build());
                     });
@@ -342,7 +338,7 @@ public class CourtlistQueryView {
                     .filter(offence -> offencesForApplications.contains(offence.getId()))
                     .forEach(offence -> {
                         final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
-                        buildOffence(offenceBuilder, offence);
+                        buildOffence(offenceBuilder, offence, null);
                         addApplicationInformation(offenceBuilder, courtApplication);
                         offencesArray.add(offenceBuilder.build());
                     });
@@ -360,9 +356,9 @@ public class CourtlistQueryView {
             if (nonNull(defendantAge)) {
                 defendantBuilder.add("age", defendantAge);
             }
-            ofNullable(person.getAddress()).ifPresent( address -> defendantBuilder.add("address", objectToJsonObjectConverter.convert(address)));
-            ofNullable(person.getDateOfBirth()).ifPresent(dateOfBirth -> defendantBuilder.add("dateOfBirth",dateOfBirth.format(DOB_FORMATTER)));
-            ofNullable(person.getNationalityDescription()).ifPresent(nationalityDescription->defendantBuilder.add("nationality", nationalityDescription));
+            ofNullable(person.getAddress()).ifPresent(address -> defendantBuilder.add("address", objectToJsonObjectConverter.convert(address)));
+            ofNullable(person.getDateOfBirth()).ifPresent(dateOfBirth -> defendantBuilder.add("dateOfBirth", dateOfBirth.format(DOB_FORMATTER)));
+            ofNullable(person.getNationalityDescription()).ifPresent(nationalityDescription -> defendantBuilder.add("nationality", nationalityDescription));
             if (isNotEmpty(hearing.getDefenceCounsels())) {
                 defendantBuilder.add(DEFENCE_COUNSELS, buildDefenceCounsels(hearing.getDefenceCounsels(), masterDefendant.getMasterDefendantId()));
             }
@@ -381,7 +377,6 @@ public class CourtlistQueryView {
 
 
     private JsonObject enrichDefendant(final JsonObject defendantFromListing, final Defendant defendant, final Hearing hearing, final ProsecutionCase prosecutionCase) {
-
         final JsonObjectBuilder defendantJsonBuilder = createObjectBuilder();
         defendantFromListing.forEach((name, value) -> defendantJsonBuilder.add(name, value));
 
@@ -389,8 +384,8 @@ public class CourtlistQueryView {
         if (nonNull(personDefendant)) {
             defendantJsonBuilder.add("gender", personDefendant.getPersonDetails().getGender().toString());
             ofNullable(personDefendant.getArrestSummonsNumber()).ifPresent(arrestSummonsNumber -> defendantJsonBuilder.add("asn", arrestSummonsNumber));
-        }else{
-            if(nonNull(defendant.getLegalEntityDefendant())) {
+        } else {
+            if (nonNull(defendant.getLegalEntityDefendant())) {
                 ofNullable(defendant.getLegalEntityDefendant().getOrganisation().getName()).ifPresent(name -> defendantJsonBuilder.add("name", name));
                 ofNullable(defendant.getLegalEntityDefendant().getOrganisation().getAddress()).ifPresent(address -> defendantJsonBuilder.add("address", objectToJsonObjectConverter.convert(address)));
             }
@@ -400,9 +395,11 @@ public class CourtlistQueryView {
 
         defenceOrganisation.ifPresent(org -> defendantJsonBuilder.add("defenceOrganization", org));
 
+        final List<Offence> offencesFromHearing = getOffencesFromHearing(defendant, hearing,prosecutionCase);
+
         final JsonArrayBuilder offencesArray = createArrayBuilder();
         JsonObject newDefendantFromListing = defendantJsonBuilder.build();
-        ofNullable(newDefendantFromListing.get(OFFENCES)).map(jsonValue -> (JsonArray)jsonValue).orElseGet(()-> createArrayBuilder().build()).stream()
+        ofNullable(newDefendantFromListing.get(OFFENCES)).map(jsonValue -> (JsonArray) jsonValue).orElseGet(() -> createArrayBuilder().build()).stream()
                 .map(offenceFromListing -> ((JsonObject) offenceFromListing))
                 .forEach(offenceFromListing -> {
                     final UUID offenceId = fromString(offenceFromListing.getString(ID));
@@ -410,7 +407,16 @@ public class CourtlistQueryView {
                             .forEach(offence -> {
                                 if (offence.getId().equals(offenceId)) {
                                     final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
-                                    buildOffence(offenceBuilder, offence);
+
+                                    if(nonNull(offencesFromHearing)) {
+                                        offencesFromHearing.forEach(offence1 -> {
+                                            if (offence1.getId().equals(offenceId)) {
+                                                buildOffence(offenceBuilder, offence, offence1);
+                                            }
+                                        });
+                                    } else {
+                                        buildOffence(offenceBuilder, offence, null);
+                                    }
                                     addOffenceInformation(offenceBuilder, offence);
                                     offencesArray.add(offenceBuilder.build());
                                 }
@@ -424,6 +430,23 @@ public class CourtlistQueryView {
         }
         newDefendantFromListing = addProperty(newDefendantFromListing, OFFENCES, offencesArray.build());
         return newDefendantFromListing;
+    }
+
+    private List<Offence> getOffencesFromHearing(final Defendant defendant, final Hearing hearing, final ProsecutionCase prosecutionCase){
+        final AtomicReference<List<Offence>> offencesFromHearing = new AtomicReference<>();
+        if(nonNull(hearing.getProsecutionCases())) {
+            hearing.getProsecutionCases().forEach(pc -> {
+                if (pc.getId().equals(prosecutionCase.getId())) {
+                    pc.getDefendants().forEach(defendant1 -> {
+                        if (defendant1.getId().equals(defendant.getId())) {
+                            offencesFromHearing.set(defendant1.getOffences());
+                        }
+                    });
+                }
+            });
+        }
+
+        return offencesFromHearing.get();
     }
 
     private Optional<String> findDefenceOrg(final Defendant defendant) {
@@ -458,7 +481,7 @@ public class CourtlistQueryView {
         ofNullable(courtApplication.getApplicationParticulars()).ifPresent(offenceWording -> offenceBuilder.add("offenceWording", offenceWording));
     }
 
-    private void buildOffence(final JsonObjectBuilder offenceBuilder, final Offence offence) {
+    private void buildOffence(final JsonObjectBuilder offenceBuilder, final Offence offence, final Offence offenceFromHearing) {
         offenceBuilder.add(ID, offence.getId().toString());
 
         if (nonNull(offence.getOffenceFacts())) {
@@ -470,7 +493,12 @@ public class CourtlistQueryView {
                     .ifPresent(alcoholReadingMethodDescription -> offenceBuilder.add("alcoholReadingMethodDescription", alcoholReadingMethodDescription));
         }
 
-        if (nonNull(offence.getPlea())) {
+
+        if ((nonNull(offenceFromHearing)) && (nonNull(offenceFromHearing.getPlea()))) {
+            final Plea pLea = offenceFromHearing.getPlea();
+            offenceBuilder.add("plea", pLea.getPleaValue());
+            offenceBuilder.add("pleaDate", pLea.getPleaDate().format(DATE_FORMATTER));
+        } else if (nonNull(offence.getPlea())) {
             final Plea pLea = offence.getPlea();
             offenceBuilder.add("plea", pLea.getPleaValue());
             offenceBuilder.add("pleaDate", pLea.getPleaDate().format(DATE_FORMATTER));

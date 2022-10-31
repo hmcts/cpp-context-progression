@@ -1340,10 +1340,16 @@ public class HearingAggregate implements Aggregate {
 
 
     public Stream<Object> updateOffence(UUID defendantId, final List<Offence> updatedOffences) {
-        return apply(Stream.of(HearingOffencesUpdated.hearingOffencesUpdated()
-                .withDefendantId(defendantId)
-                .withHearingId(this.hearing.getId())
-                .withUpdatedOffences(updatedOffences).build()));
+        if(!this.hearing.getHasSharedResults()) {
+            return apply(Stream.of(HearingOffencesUpdated.hearingOffencesUpdated()
+                    .withDefendantId(defendantId)
+                    .withHearingId(this.hearing.getId())
+                    .withUpdatedOffences(updatedOffences).build()));
+        }
+        else{
+            LOGGER.info("Hearing with id {} and the status: {} is already shared, offence can't be updated\"", hearing.getId(), hearingListingStatus);
+            return apply(empty());
+        }
     }
 
 
@@ -1557,7 +1563,7 @@ public class HearingAggregate implements Aggregate {
 
 
     private void updateOffenceInHearing(final HearingOffencesUpdated hearingOffencesUpdated) {
-        if (isNotEmpty(this.hearing.getProsecutionCases())) {
+        if (isNotEmpty(this.hearing.getProsecutionCases()) && !this.hearing.getHasSharedResults()) {
             this.hearing.getProsecutionCases().stream()
                     .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
                     .forEach(defendant -> {

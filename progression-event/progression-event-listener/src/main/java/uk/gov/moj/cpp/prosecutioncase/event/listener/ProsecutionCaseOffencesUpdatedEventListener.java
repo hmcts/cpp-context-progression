@@ -10,6 +10,7 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAl
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -90,7 +91,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
         repository.save(getProsecutionCaseEntity(prosecutionCase));
         final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByDefendantId(defendantCaseOffences.getDefendantId());
 
-        caseDefendantHearingEntities.stream().forEach(caseDefendantHearingEntity -> {
+        caseDefendantHearingEntities.stream().filter(entity-> entity.getHearing().getListingStatus()!= HearingListingStatus.HEARING_RESULTED).forEach(caseDefendantHearingEntity -> {
             final HearingEntity hearingEntity = caseDefendantHearingEntity.getHearing();
             final JsonObject hearingJson = jsonFromString(hearingEntity.getPayload());
             final Hearing hearing = jsonObjectConverter.convert(hearingJson, Hearing.class);
