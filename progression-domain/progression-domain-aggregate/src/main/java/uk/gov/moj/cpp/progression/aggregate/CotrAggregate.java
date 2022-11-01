@@ -104,8 +104,25 @@ public class CotrAggregate implements Aggregate {
                                 .withDnumber(dNumberCounter.incrementAndGet())
                                 .build())
                         .collect(Collectors.toList()))
-                        .withSubmissionId(createCotr.getSubmissionId())
-
+                .withSubmissionId(createCotr.getSubmissionId())
+                .withCertifyThatTheProsecutionIsTrialReady(createCotr.getCertifyThatTheProsecutionIsTrialReady())
+                .withCertificationDate(createCotr.getCertificationDate())
+                .withApplyForThePtrToBeVacated(createCotr.getApplyForThePtrToBeVacated())
+                .withFormCompletedOnBehalfOfTheProsecutionBy(createCotr.getFormCompletedOnBehalfOfTheProsecutionBy())
+                .withFurtherInformationToAssistTheCourt(createCotr.getFurtherInformationToAssistTheCourt())
+                .withHasAllDisclosureBeenProvided(createCotr.getHasAllDisclosureBeenProvided())
+                .withHasAllEvidenceToBeReliedOnBeenServed(createCotr.getHasAllEvidenceToBeReliedOnBeenServed())
+                .withHaveAnyWitnessSummonsesRequiredBeenReceivedAndServed(createCotr.getHaveAnyWitnessSummonsesRequiredBeenReceivedAndServed())
+                .withHaveArrangementsBeenMadeForStatementOfPointsOfAgreementAndDisagreement(createCotr.getHaveArrangementsBeenMadeForStatementOfPointsOfAgreementAndDisagreement())
+                .withHaveEditedAbeInterviewsBeenPreparedAndAgreed(createCotr.getHaveEditedAbeInterviewsBeenPreparedAndAgreed())
+                .withHaveInterpretersForWitnessesBeenArranged(createCotr.getHaveInterpretersForWitnessesBeenArranged())
+                .withHaveOtherDirectionsBeenCompliedWith(createCotr.getHaveOtherDirectionsBeenCompliedWith())
+                .withHaveSpecialMeasuresOrRemoteAttendanceIssuesForWitnessesBeenResolved(createCotr.getHaveSpecialMeasuresOrRemoteAttendanceIssuesForWitnessesBeenResolved())
+                .withHaveTheProsecutionWitnessesRequiredToAttendAcknowledgedThatTheyWillAttend(createCotr.getHaveTheProsecutionWitnessesRequiredToAttendAcknowledgedThatTheyWillAttend())
+                .withIsTheCaseReadyToProceedWithoutDelayBeforeTheJury(createCotr.getIsTheCaseReadyToProceedWithoutDelayBeforeTheJury())
+                .withIsTheTimeEstimateCorrect(createCotr.getIsTheTimeEstimateCorrect())
+                .withLastRecordedTimeEstimate(createCotr.getLastRecordedTimeEstimate())
+                .withFormDefendants(createCotr.getFormDefendants())
                 .build()));
     }
 

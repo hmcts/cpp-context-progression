@@ -23,6 +23,7 @@ import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.RequestCotrTask;
+import uk.gov.justice.cpp.progression.FormDefendants;
 import uk.gov.justice.cpp.progression.event.CotrCreated;
 import uk.gov.justice.cpp.progression.event.ProsecutionCotrServed;
 import uk.gov.justice.cpp.progression.event.ProsecutionCotrUpdated;
@@ -77,7 +78,7 @@ import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 
-@SuppressWarnings({"squid:S1155", "squid:S3655", "squid:S2142"})
+@SuppressWarnings({"squid:S1155", "squid:S3655", "squid:S2142", "squid:S2629"})
 public class CotrEventsProcessor {
 
     public static final String SUBMISSION_ID = "submissionId";
@@ -156,7 +157,6 @@ public class CotrEventsProcessor {
     public static final String N = "N";
     public static final String YES = "Yes";
     public static final String NO = "No";
-    private static final String CPS_DEFENDANT_ID = "cpsDefendantId";
 
     @Inject
     private Requester requester;
@@ -201,6 +201,31 @@ public class CotrEventsProcessor {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(RECEIVED_EVENT_WITH_PAYLOAD, "progression.event.cotr-created", event.payload().getCotrId());
         }
+        final CotrCreated cotrCreated = event.payload();
+        final UUID cotrId = cotrCreated.getCotrId();
+        final Optional<Hearings> hearings = getCaseHearing(cotrCreated.getCaseId().toString());
+
+        if (hearings.isPresent()) {
+            final UUID hearingId = hearings.get().getId();
+
+            final JsonObject serveCotrPayload = buildServeCotrPayload(hearingId, cotrId, objectToJsonObjectConverter.convert(cotrCreated));
+            LOGGER.info("serveCotrPayload - {}", serveCotrPayload);
+
+            LOGGER.info(PROGRESSION_COMMAND_SERVE_COTR);
+
+            this.sender.send(Envelope.envelopeFrom(metadataFrom(event.metadata())
+                    .withName(PROGRESSION_COMMAND_SERVE_COTR)
+                    .build(), serveCotrPayload));
+
+            final List<FormDefendants> formDefendantList = cotrCreated.getFormDefendants();
+            if (isNotEmpty(formDefendantList)) {
+                formDefendantList.forEach(defendant -> updateCpsDefendantId(event.metadata(), cotrCreated.getCaseId().toString(), defendant));
+            }
+        } else {
+            LOGGER.info("Hearing not present for the cotr id - {}", cotrId);
+            sendOperationFailed(event.metadata(), objectToJsonObjectConverter.convert(cotrCreated), HEARING_ID_NOT_FOUND, CREATE_COTR_FORM);
+        }
+
         final JsonObject jsonObject = buildPayload(event);
 
         sender.send(
@@ -457,7 +482,9 @@ public class CotrEventsProcessor {
 
     private JsonObject buildCreateCotrPayload(final String courtCenterName, final String jurisdictionType, final UUID hearingId, final UUID cotrId, final JsonObject payload) {
 
-        return createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
+        final JsonObjectBuilder createCotrBuilder = createObjectBuilder();
+
+        createCotrBuilder.add(CASE_ID, payload.get(CASE_ID))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
                 .add(COTR_ID, String.valueOf(cotrId))
                 .add(HEARING_ID, String.valueOf(hearingId))
@@ -466,18 +493,42 @@ public class CotrEventsProcessor {
                 .add(JURISDICTION_TYPE, jurisdictionType)
                 .add(COURT_CENTER, courtCenterName)
                 .add(DEFENDANT_IDS, getDefendants(payload))
-                .build();
+                .add(COTR_ID, String.valueOf(cotrId))
+                .add(HEARING_ID, String.valueOf(hearingId))
+                .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
+                .add(HAS_ALL_EVIDENCE_TO_BE_RELIED_ON_BEEN_SERVED, buildPayloadQuestions(payload.getString(HAS_ALL_EVIDENCE_TO_BE_RELIED_ON_BEEN_SERVED), getDetails(payload, HAS_ALL_EVIDENCE_TO_BE_RELIED_ON_BEEN_SERVED_DETAILS)))
+                .add(HAS_ALL_DISCLOSURE_BEEN_PROVIDED, buildPayloadQuestions(payload.getString(HAS_ALL_DISCLOSURE_BEEN_PROVIDED), getDetails(payload, HAS_ALL_DISCLOSURE_BEEN_PROVIDED_DETAILS)))
+                .add(HAVE_OTHER_DIRECTIONS_BEEN_COMPLIED_WITH, buildPayloadQuestions(payload.getString(HAVE_OTHER_DIRECTIONS_BEEN_COMPLIED_WITH), getDetails(payload, HAVE_OTHER_DIRECTIONS_BEEN_COMPLIED_WITH_DETAILS)))
+                .add(HAVE_THE_PROSECUTION_WITNESSES_REQUIRED_TO_ATTEND_ACKNOWLEDGED_THAT_THEY_WILL_ATTEND, buildPayloadQuestions(payload.getString(HAVE_THE_PROSECUTION_WITNESSES_REQUIRED_TO_ATTEND_ACKNOWLEDGED_THAT_THEY_WILL_ATTEND), getDetails(payload, HAVE_THE_PROSECUTION_WITNESSES_REQUIRED_TO_ATTEND_ACKNOWLEDGED_THAT_THEY_WILL_ATTEND_DETAILS)))
+                .add(HAVE_ANY_WITNESS_SUMMONSES_REQUIRED_BEEN_RECEIVED_AND_SERVED, buildPayloadQuestions(payload.getString(HAVE_ANY_WITNESS_SUMMONSES_REQUIRED_BEEN_RECEIVED_AND_SERVED), getDetails(payload, HAVE_ANY_WITNESS_SUMMONSES_REQUIRED_BEEN_RECEIVED_AND_SERVED_DETAILS)))
+                .add(HAVE_SPECIAL_MEASURES_OR_REMOTE_ATTENDANCE_ISSUES_FOR_WITNESSES_BEEN_RESOLVED, buildPayloadQuestions(payload.getString(HAVE_SPECIAL_MEASURES_OR_REMOTE_ATTENDANCE_ISSUES_FOR_WITNESSES_BEEN_RESOLVED), getDetails(payload, HAVE_SPECIAL_MEASURES_OR_REMOTE_ATTENDANCE_ISSUES_FOR_WITNESSES_BEEN_RESOLVED_DETAILS)))
+                .add(HAVE_INTERPRETERS_FOR_WITNESSES_BEEN_ARRANGED, buildPayloadQuestions(payload.getString(HAVE_INTERPRETERS_FOR_WITNESSES_BEEN_ARRANGED), getDetails(payload, HAVE_INTERPRETERS_FOR_WITNESSES_BEEN_ARRANGED_DETAILS)))
+                .add(HAVE_EDITED_ABE_INTERVIEWS_BEEN_PREPARED_AND_AGREED, buildPayloadQuestions(payload.getString(HAVE_EDITED_ABE_INTERVIEWS_BEEN_PREPARED_AND_AGREED), getDetails(payload, HAVE_EDITED_ABE_INTERVIEWS_BEEN_PREPARED_AND_AGREED_DETAILS)))
+                .add(HAVE_ARRANGEMENTS_BEEN_MADE_FOR_STATEMENT_OF_POINTS_OF_AGREEMENT_AND_DISAGREEMENT, buildPayloadQuestions(payload.getString(HAVE_ARRANGEMENTS_BEEN_MADE_FOR_STATEMENT_OF_POINTS_OF_AGREEMENT_AND_DISAGREEMENT), getDetails(payload, HAVE_ARRANGEMENTS_BEEN_MADE_FOR_STATEMENT_OF_POINTS_OF_AGREEMENT_AND_DISAGREEMENT_DETAILS)))
+                .add(IS_THE_CASE_READY_TO_PROCEED_WITHOUT_DELAY_BEFORE_THE_JURY, buildPayloadQuestions(payload.getString(IS_THE_CASE_READY_TO_PROCEED_WITHOUT_DELAY_BEFORE_THE_JURY), getDetails(payload, IS_THE_CASE_READY_TO_PROCEED_WITHOUT_DELAY_BEFORE_THE_JURY_DETAILS)))
+                .add(IS_THE_TIME_ESTIMATE_CORRECT, buildPayloadQuestions(payload.getString(IS_THE_TIME_ESTIMATE_CORRECT), getDetails(payload, IS_THE_TIME_ESTIMATE_CORRECT_DETAILS)))
+                .add(CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY, buildPayloadQuestions(payload.getString(CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY), getDetails(payload, CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY_DETAILS)))
+                .add(APPLY_FOR_THE_PTR_TO_BE_VACATED, buildPayloadQuestions(payload.getString(APPLY_FOR_THE_PTR_TO_BE_VACATED), getDetails(payload, APPLY_FOR_THE_PTR_TO_BE_VACATED_DETAILS)))
+                .add(FORM_COMPLETED_ON_BEHALF_OF_THE_PROSECUTION_BY, buildPayloadQuestions(StringUtils.EMPTY, getDetails(payload, FORM_COMPLETED_ON_BEHALF_OF_THE_PROSECUTION_BY)))
+                .add(CERTIFICATION_DATE, buildPayloadQuestions(StringUtils.EMPTY, payload.getString(CERTIFICATION_DATE)))
+                .add(FURTHER_INFORMATION_TO_ASSIST_THE_COURT, buildPayloadQuestions(StringUtils.EMPTY, getDetails(payload, FURTHER_INFORMATION_TO_ASSIST_THE_COURT)))
+                .add(FORM_DEFENDANTS, payload.getJsonArray(FORM_DEFENDANTS));
 
+        if (payload.containsKey(LAST_RECORDED_TIME_ESTIMATE)) {
+            createCotrBuilder.add(LAST_RECORDED_TIME_ESTIMATE, payload.getInt(LAST_RECORDED_TIME_ESTIMATE));
+        }
+
+        return createCotrBuilder.build();
     }
 
     @Handles("public.prosecutioncasefile.cps-serve-cotr-submitted")
     public void handleServeCotrReceivedPublicEvent(final JsonEnvelope envelope) {
-
-        LOGGER.info("public.prosecutioncasefile.cps-serve-cotr-submitted");
         final JsonObject payload = envelope.payloadAsJsonObject();
+        LOGGER.info("public.prosecutioncasefile.cps-serve-cotr-submitted payload : {}", payload);
+
         final String submissionId = payload.getString(SUBMISSION_ID);
         final UUID cotrId = UUID.fromString(submissionId);
-        final Optional<Hearings> hearings = getCaseHearing(payload);
+        final Optional<Hearings> hearings = getCaseHearing(payload.getString(CASE_ID));
 
         if (hearings.isPresent()) {
             final String courtCenterName = hearings.get().getCourtCentre().getName();
@@ -491,38 +542,15 @@ public class CotrEventsProcessor {
             this.sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
                     .withName(PROGRESSION_COMMAND_CREATE_COTR)
                     .build(), creatCotrPayload));
-
-            sleep();
-
-            LOGGER.info(PROGRESSION_COMMAND_SERVE_COTR);
-            final JsonObject serveCotrPayload = buildServeCotrPayload(hearingId, cotrId, payload);
-            LOGGER.info("serveCotrPayload - {}", serveCotrPayload);
-
-            this.sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
-                    .withName(PROGRESSION_COMMAND_SERVE_COTR)
-                    .build(), serveCotrPayload));
-
-            final List<JsonObject> formDefendantList = payload.getJsonArray(FORM_DEFENDANTS).getValuesAs(JsonObject.class);
-            if (isNotEmpty(formDefendantList)) {
-                formDefendantList.forEach(defendant -> updateCpsDefendantId(envelope, payload.getString(CASE_ID), defendant));
-            }
-
         } else {
-            sendOperationFailed(envelope, payload, HEARING_ID_NOT_FOUND, CREATE_COTR_FORM);
+            LOGGER.info("CoTR didn't get created for the id - {}", cotrId);
+            sendOperationFailed(envelope.metadata(), payload, HEARING_ID_NOT_FOUND, CREATE_COTR_FORM);
         }
     }
 
-    private static void sleep() {
-        try {
-            Thread.sleep(1000);
-        } catch (final InterruptedException e) {
-            //ignore
-        }
-    }
-
-    private Optional<Hearings> getCaseHearing(final JsonObject payload) {
+    private Optional<Hearings> getCaseHearing(final String caseId) {
         List<Hearings> hearingList;
-        final Optional<JsonObject> caseHearingsResponse = this.getCaseHearings(payload.getString(CASE_ID));
+        final Optional<JsonObject> caseHearingsResponse = this.getCaseHearings(caseId);
         if (caseHearingsResponse.isPresent()) {
             hearingList = caseHearingsResponse.get().getJsonArray(HEARINGS).
                     getValuesAs(JsonObject.class).stream().map(hearing ->
@@ -541,11 +569,11 @@ public class CotrEventsProcessor {
 
     public Optional<JsonObject> getCaseHearings(final String caseId) {
         final JsonObject payload = Json.createObjectBuilder().add(CASE_ID, caseId).build();
-        final UUID systemUser = nonNull(serviceContextSystemUserProvider.getContextSystemUserId()) && serviceContextSystemUserProvider.getContextSystemUserId().isPresent()?serviceContextSystemUserProvider.getContextSystemUserId().get() : null;
+        final UUID systemUser = nonNull(serviceContextSystemUserProvider.getContextSystemUserId()) && serviceContextSystemUserProvider.getContextSystemUserId().isPresent() ? serviceContextSystemUserProvider.getContextSystemUserId().get() : null;
 
         final MetadataBuilder metadataBuilder = metadataBuilder().withId(UUID.randomUUID())
                 .withName(PROGRESSION_QUERY_CASE_HEARINGS)
-                .withUserId(nonNull(systemUser)? systemUser.toString():null);
+                .withUserId(nonNull(systemUser) ? systemUser.toString() : null);
 
         final JsonObject caseHearings = requester.request(envelopeFrom(metadataBuilder, payload)).payloadAsJsonObject();
 
@@ -571,23 +599,23 @@ public class CotrEventsProcessor {
         JsonObjectBuilder serveCotrBuilder = createObjectBuilder()
                 .add(COTR_ID, String.valueOf(cotrId))
                 .add(HEARING_ID, String.valueOf(hearingId))
-                .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
-                .add(HAS_ALL_EVIDENCE_TO_BE_RELIED_ON_BEEN_SERVED, buildPayloadQuestions(payload.getString(HAS_ALL_EVIDENCE_TO_BE_RELIED_ON_BEEN_SERVED), getDetails(payload, HAS_ALL_EVIDENCE_TO_BE_RELIED_ON_BEEN_SERVED_DETAILS)))
-                .add(HAS_ALL_DISCLOSURE_BEEN_PROVIDED, buildPayloadQuestions(payload.getString(HAS_ALL_DISCLOSURE_BEEN_PROVIDED), getDetails(payload,HAS_ALL_DISCLOSURE_BEEN_PROVIDED_DETAILS)))
-                .add(HAVE_OTHER_DIRECTIONS_BEEN_COMPLIED_WITH, buildPayloadQuestions(payload.getString(HAVE_OTHER_DIRECTIONS_BEEN_COMPLIED_WITH), getDetails(payload,HAVE_OTHER_DIRECTIONS_BEEN_COMPLIED_WITH_DETAILS)))
-                .add(HAVE_THE_PROSECUTION_WITNESSES_REQUIRED_TO_ATTEND_ACKNOWLEDGED_THAT_THEY_WILL_ATTEND, buildPayloadQuestions(payload.getString(HAVE_THE_PROSECUTION_WITNESSES_REQUIRED_TO_ATTEND_ACKNOWLEDGED_THAT_THEY_WILL_ATTEND), getDetails(payload,HAVE_THE_PROSECUTION_WITNESSES_REQUIRED_TO_ATTEND_ACKNOWLEDGED_THAT_THEY_WILL_ATTEND_DETAILS)))
-                .add(HAVE_ANY_WITNESS_SUMMONSES_REQUIRED_BEEN_RECEIVED_AND_SERVED, buildPayloadQuestions(payload.getString(HAVE_ANY_WITNESS_SUMMONSES_REQUIRED_BEEN_RECEIVED_AND_SERVED), getDetails(payload,HAVE_ANY_WITNESS_SUMMONSES_REQUIRED_BEEN_RECEIVED_AND_SERVED_DETAILS)))
-                .add(HAVE_SPECIAL_MEASURES_OR_REMOTE_ATTENDANCE_ISSUES_FOR_WITNESSES_BEEN_RESOLVED, buildPayloadQuestions(payload.getString(HAVE_SPECIAL_MEASURES_OR_REMOTE_ATTENDANCE_ISSUES_FOR_WITNESSES_BEEN_RESOLVED), getDetails(payload,HAVE_SPECIAL_MEASURES_OR_REMOTE_ATTENDANCE_ISSUES_FOR_WITNESSES_BEEN_RESOLVED_DETAILS)))
-                .add(HAVE_INTERPRETERS_FOR_WITNESSES_BEEN_ARRANGED, buildPayloadQuestions(payload.getString(HAVE_INTERPRETERS_FOR_WITNESSES_BEEN_ARRANGED), getDetails(payload,HAVE_INTERPRETERS_FOR_WITNESSES_BEEN_ARRANGED_DETAILS)))
-                .add(HAVE_EDITED_ABE_INTERVIEWS_BEEN_PREPARED_AND_AGREED, buildPayloadQuestions(payload.getString(HAVE_EDITED_ABE_INTERVIEWS_BEEN_PREPARED_AND_AGREED), getDetails(payload,HAVE_EDITED_ABE_INTERVIEWS_BEEN_PREPARED_AND_AGREED_DETAILS)))
-                .add(HAVE_ARRANGEMENTS_BEEN_MADE_FOR_STATEMENT_OF_POINTS_OF_AGREEMENT_AND_DISAGREEMENT, buildPayloadQuestions(payload.getString(HAVE_ARRANGEMENTS_BEEN_MADE_FOR_STATEMENT_OF_POINTS_OF_AGREEMENT_AND_DISAGREEMENT), getDetails(payload,HAVE_ARRANGEMENTS_BEEN_MADE_FOR_STATEMENT_OF_POINTS_OF_AGREEMENT_AND_DISAGREEMENT_DETAILS)))
-                .add(IS_THE_CASE_READY_TO_PROCEED_WITHOUT_DELAY_BEFORE_THE_JURY, buildPayloadQuestions(payload.getString(IS_THE_CASE_READY_TO_PROCEED_WITHOUT_DELAY_BEFORE_THE_JURY), getDetails(payload,IS_THE_CASE_READY_TO_PROCEED_WITHOUT_DELAY_BEFORE_THE_JURY_DETAILS)))
-                .add(IS_THE_TIME_ESTIMATE_CORRECT, buildPayloadQuestions(payload.getString(IS_THE_TIME_ESTIMATE_CORRECT), getDetails(payload,IS_THE_TIME_ESTIMATE_CORRECT_DETAILS)))
-                .add(CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY, buildPayloadQuestions(payload.getString(CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY), getDetails(payload,CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY_DETAILS)))
-                .add(APPLY_FOR_THE_PTR_TO_BE_VACATED, buildPayloadQuestions(payload.getString(APPLY_FOR_THE_PTR_TO_BE_VACATED), getDetails(payload,APPLY_FOR_THE_PTR_TO_BE_VACATED_DETAILS)))
-                .add(FORM_COMPLETED_ON_BEHALF_OF_THE_PROSECUTION_BY, buildPayloadQuestions(StringUtils.EMPTY, getDetails(payload,FORM_COMPLETED_ON_BEHALF_OF_THE_PROSECUTION_BY)))
-                .add(CERTIFICATION_DATE, buildPayloadQuestions(StringUtils.EMPTY, payload.getString(CERTIFICATION_DATE)))
-                .add(FURTHER_INFORMATION_TO_ASSIST_THE_COURT, buildPayloadQuestions(StringUtils.EMPTY, getDetails(payload,FURTHER_INFORMATION_TO_ASSIST_THE_COURT)));
+                .add(SUBMISSION_ID, getDetails(payload, SUBMISSION_ID))
+                .add(HAS_ALL_EVIDENCE_TO_BE_RELIED_ON_BEEN_SERVED, getJsonObject(payload,HAS_ALL_EVIDENCE_TO_BE_RELIED_ON_BEEN_SERVED))
+                .add(HAS_ALL_DISCLOSURE_BEEN_PROVIDED, getJsonObject(payload,HAS_ALL_DISCLOSURE_BEEN_PROVIDED))
+                .add(HAVE_OTHER_DIRECTIONS_BEEN_COMPLIED_WITH, getJsonObject(payload,HAVE_OTHER_DIRECTIONS_BEEN_COMPLIED_WITH))
+                .add(HAVE_THE_PROSECUTION_WITNESSES_REQUIRED_TO_ATTEND_ACKNOWLEDGED_THAT_THEY_WILL_ATTEND, getJsonObject(payload,HAVE_THE_PROSECUTION_WITNESSES_REQUIRED_TO_ATTEND_ACKNOWLEDGED_THAT_THEY_WILL_ATTEND))
+                .add(HAVE_ANY_WITNESS_SUMMONSES_REQUIRED_BEEN_RECEIVED_AND_SERVED, getJsonObject(payload,HAVE_ANY_WITNESS_SUMMONSES_REQUIRED_BEEN_RECEIVED_AND_SERVED))
+                .add(HAVE_SPECIAL_MEASURES_OR_REMOTE_ATTENDANCE_ISSUES_FOR_WITNESSES_BEEN_RESOLVED, getJsonObject(payload,HAVE_SPECIAL_MEASURES_OR_REMOTE_ATTENDANCE_ISSUES_FOR_WITNESSES_BEEN_RESOLVED))
+                .add(HAVE_INTERPRETERS_FOR_WITNESSES_BEEN_ARRANGED, getJsonObject(payload,HAVE_INTERPRETERS_FOR_WITNESSES_BEEN_ARRANGED))
+                .add(HAVE_EDITED_ABE_INTERVIEWS_BEEN_PREPARED_AND_AGREED, getJsonObject(payload,HAVE_EDITED_ABE_INTERVIEWS_BEEN_PREPARED_AND_AGREED))
+                .add(HAVE_ARRANGEMENTS_BEEN_MADE_FOR_STATEMENT_OF_POINTS_OF_AGREEMENT_AND_DISAGREEMENT, getJsonObject(payload,HAVE_ARRANGEMENTS_BEEN_MADE_FOR_STATEMENT_OF_POINTS_OF_AGREEMENT_AND_DISAGREEMENT))
+                .add(IS_THE_CASE_READY_TO_PROCEED_WITHOUT_DELAY_BEFORE_THE_JURY, getJsonObject(payload,IS_THE_CASE_READY_TO_PROCEED_WITHOUT_DELAY_BEFORE_THE_JURY))
+                .add(IS_THE_TIME_ESTIMATE_CORRECT, getJsonObject(payload,IS_THE_TIME_ESTIMATE_CORRECT))
+                .add(CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY, getJsonObject(payload,CERTIFY_THAT_THE_PROSECUTION_IS_TRIAL_READY))
+                .add(APPLY_FOR_THE_PTR_TO_BE_VACATED, getJsonObject(payload,APPLY_FOR_THE_PTR_TO_BE_VACATED))
+                .add(FORM_COMPLETED_ON_BEHALF_OF_THE_PROSECUTION_BY, getJsonObject(payload,FORM_COMPLETED_ON_BEHALF_OF_THE_PROSECUTION_BY))
+                .add(CERTIFICATION_DATE, getJsonObject(payload,CERTIFICATION_DATE))
+                .add(FURTHER_INFORMATION_TO_ASSIST_THE_COURT, getJsonObject(payload,FURTHER_INFORMATION_TO_ASSIST_THE_COURT));
 
         if (payload.containsKey(LAST_RECORDED_TIME_ESTIMATE)){
             serveCotrBuilder.add(LAST_RECORDED_TIME_ESTIMATE, payload.getInt(LAST_RECORDED_TIME_ESTIMATE));
@@ -596,14 +624,18 @@ public class CotrEventsProcessor {
         return serveCotrBuilder.build();
     }
 
-    private String getDetails(final JsonObject payload, final String key){
-        return payload.containsKey(key)? payload.getString(key):StringUtils.EMPTY;
+    private JsonObject getJsonObject(final JsonObject payload, final String key) {
+        return payload.containsKey(key) ? payload.getJsonObject(key) : createObjectBuilder().build();
+    }
+
+    private String getDetails(final JsonObject payload, final String key) {
+        return payload.containsKey(key) ? payload.getString(key) : StringUtils.EMPTY;
     }
 
     private JsonObject buildPayloadQuestions(final String answer, final String details) {
         String response = StringUtils.EMPTY;
 
-        if(nonNull(answer)) {
+        if (nonNull(answer)) {
             if (Y.equalsIgnoreCase(answer)) {
                 response = YES;
             } else if (N.equalsIgnoreCase(answer)) {
@@ -631,15 +663,15 @@ public class CotrEventsProcessor {
                     .build(), updateCotRFormPayload));
         } else {
             LOGGER.info("sendOperationFailed");
-            sendOperationFailed(envelope, payload, COTR_ID_NOT_FOUND, UPDATE_COTR_FORM);
+            sendOperationFailed(envelope.metadata(), payload, COTR_ID_NOT_FOUND, UPDATE_COTR_FORM);
         }
     }
 
-    private void sendOperationFailed(final JsonEnvelope envelope, final JsonObject payload, final String message, final String command) {
+    private void sendOperationFailed(final Metadata metadata, final JsonObject payload, final String message, final String command) {
 
         LOGGER.info("progression.progression.cotr-operation-failed event received: {}", payload);
 
-        final Metadata metadata = JsonEnvelope.metadataFrom(envelope.metadata())
+        final Metadata metadata1 = JsonEnvelope.metadataFrom(metadata)
                 .withName(PROGRESSION_OPERATION_FAILED)
                 .build();
 
@@ -650,7 +682,7 @@ public class CotrEventsProcessor {
 
         LOGGER.info("cpsServeMaterialStatusUpdated - {}", cpsServeMaterialStatusUpdated);
 
-        this.sender.send(Envelope.envelopeFrom(metadata, cpsServeMaterialStatusUpdated));
+        this.sender.send(Envelope.envelopeFrom(metadata1, cpsServeMaterialStatusUpdated));
     }
 
     @Handles("progression.event.prosecution-cotr-updated")
@@ -693,10 +725,10 @@ public class CotrEventsProcessor {
         return ofNullable(caseHearings);
     }
 
-    private void updateCpsDefendantId(final JsonEnvelope envelope, final String caseId, final JsonObject defendant) {
-        if (StringUtils.isNotEmpty(defendant.getString(CPS_DEFENDANT_ID, null))) {
-            final String defendantId = defendant.getString(DEFENDANT_ID);
-            final String cpsDefendantId = defendant.getString(CPS_DEFENDANT_ID);
+    private void updateCpsDefendantId(final Metadata metadata, final String caseId, final FormDefendants defendant) {
+        if (StringUtils.isNotEmpty(defendant.getCpsDefendantId())) {
+            final String defendantId = defendant.getDefendantId().toString();
+            final String cpsDefendantId = defendant.getCpsDefendantId();
             LOGGER.info("updating defendant {} with cpsDefendantId {} in case {}", defendantId, cpsDefendantId, caseId);
             final UpdateCpsDefendantId updateCpsDefendantId = UpdateCpsDefendantId.updateCpsDefendantId()
                     .withCpsDefendantId(fromString(cpsDefendantId))
@@ -704,7 +736,7 @@ public class CotrEventsProcessor {
                     .withDefendantId(fromString(defendantId))
                     .build();
 
-            sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata()).withName("progression.command.update-cps-defendant-id").build(), updateCpsDefendantId));
+            sender.send(Envelope.envelopeFrom(metadataFrom(metadata).withName("progression.command.update-cps-defendant-id").build(), updateCpsDefendantId));
         }
     }
 

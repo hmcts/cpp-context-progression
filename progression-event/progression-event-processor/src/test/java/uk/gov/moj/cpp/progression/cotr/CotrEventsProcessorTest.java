@@ -22,6 +22,7 @@ import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
 import static uk.gov.moj.cpp.progression.utils.FileUtil.jsonFromString;
 
 import uk.gov.justice.core.courts.CotrPdfContent;
@@ -53,9 +54,9 @@ import uk.gov.moj.cpp.progression.service.MaterialService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
-import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.COTRDetailsEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.COTRDetailsRepository;
+import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -214,7 +215,7 @@ public class CotrEventsProcessorTest {
     }
 
     @Test
-    public void shouldTestProcessCotrCreatedEvent() {
+    public void shouldTestProcessCotrCreatedEvent() throws IOException {
         final UUID hearingId = randomUUID();
         final UUID cotrId = randomUUID();
         final UUID submissionId = randomUUID();
@@ -232,19 +233,34 @@ public class CotrEventsProcessorTest {
                         .withHearingId(hearingId)
                         .withHearingDate(hearingDate)
                         .withSubmissionId(submissionId)
+                        .withCaseId(randomUUID())
                         .build());
+
+        String caseHearingpayload = Resources.toString(getResource("progression-case-latest-hearings.json"), defaultCharset());
+
+        final JsonObject caseHearingjsonPayload = jsonFromString(caseHearingpayload);
+
+        when(queryResponseEnvelope.payloadAsJsonObject()).thenReturn(caseHearingjsonPayload);
+        when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
+
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
+        when(cotrDetailsRepository.findBy(any())).thenReturn(new COTRDetailsEntity(randomUUID(),randomUUID(),randomUUID(),false, null, null, null, null));
+
+        final Metadata metadata = metadataWithNewActionName(eventEnvelopeMetadata, "progression.query.cotr.details.prosecutioncase");
+        final Envelope envelope1 = Envelope.envelopeFrom(metadata, createCotrDetails().get());
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope1);
 
         processor.cotrCreated(eventEnvelope);
 
-        verify(this.sender).send(this.envelopeArgumentCaptor.capture());
+        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(2)).send(captor.capture());
 
-        final Envelope<JsonObject> command = this.envelopeArgumentCaptor.getValue();
+        List<Envelope> currentEvents = captor.getAllValues();
+        assertThat(currentEvents.get(0).metadata().name(), Matchers.is("progression.command.serve-prosecution-cotr"));
+        assertThat(currentEvents.get(1).metadata().name(), Matchers.is("public.progression.cotr-created"));
 
-        assertThat(command.metadata().name(), is("public.progression.cotr-created"));
-
-        assertThat(command.payload().toString(), isJson(allOf(
-                withJsonPath("$.cotrId", is(cotrId.toString()))
-        )));
+        assertThat(currentEvents.get(0).payload().toString(), notNullValue());
+        assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(COTR_ID), Matchers.is(cotrId.toString()));
     }
 
     @Test
@@ -533,15 +549,19 @@ public class CotrEventsProcessorTest {
                 metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-pet-submitted"),
                 jsonPayload);
         when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
+        when(cotrDetailsRepository.findBy(any())).thenReturn(new COTRDetailsEntity(randomUUID(),randomUUID(),randomUUID(),false, null, null, null, null));
+
+        final Metadata metadata = metadataWithNewActionName(envelope.metadata(), "progression.query.cotr.details.prosecutioncase");
+        final Envelope envelope1 = Envelope.envelopeFrom(metadata, createCotrDetails().get());
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope1);
 
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);
         //Then
         ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender, times(2)).send(captor.capture());
+        verify(sender, times(1)).send(captor.capture());
         List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), Matchers.is(PROGRESSION_COMMAND_CREATE_COTR));
-        assertThat(currentEvents.get(1).metadata().name(), Matchers.is(PROGRESSION_COMMAND_SERVE_COTR));
 
         assertThat(currentEvents.get(0).payload().toString(), notNullValue());
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(CASE_ID), Matchers.is(notNullValue()));
@@ -552,12 +572,6 @@ public class CotrEventsProcessorTest {
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(HEARING_DATE), Matchers.is(notNullValue()));
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(COURT_CENTER), Matchers.is(notNullValue()));
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getJsonArray(DEFENDANT_IDS).size(), is(1));
-
-        assertThat(currentEvents.get(1).payload().toString(), notNullValue());
-        assertThat(objectToJsonObjectConverter.convert(currentEvents.get(1).payload()).getString(HEARING_ID), Matchers.is(notNullValue()));
-        assertThat(objectToJsonObjectConverter.convert(currentEvents.get(1).payload()).getString(SUBMISSION_ID), Matchers.is(notNullValue()));
-        assertThat(objectToJsonObjectConverter.convert(currentEvents.get(1).payload()).getString(COTR_ID), Matchers.is(notNullValue()));
-        assertThat(objectToJsonObjectConverter.convert(currentEvents.get(1).payload()).getJsonObject(HAS_ALL_EVIDENCE_TO_BE_RELIED_ON_BEEN_SERVED).getString("answer"),Matchers.is("Yes"));
     }
 
     @Test
@@ -579,15 +593,18 @@ public class CotrEventsProcessorTest {
                 jsonPayload);
 
         when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
+        when(cotrDetailsRepository.findBy(any())).thenReturn(new COTRDetailsEntity(randomUUID(),randomUUID(),randomUUID(),false, null, null, null, null));
+
+        final Metadata metadata = metadataWithNewActionName(envelope.metadata(), "progression.query.cotr.details.prosecutioncase");
+        final Envelope envelope1 = Envelope.envelopeFrom(metadata, createCotrDetails().get());when(requester.requestAsAdmin(any(), any())).thenReturn(envelope1);
 
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);
         //Then
         ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender, times(2)).send(captor.capture());
+        verify(sender, times(1)).send(captor.capture());
         List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), Matchers.is(PROGRESSION_COMMAND_CREATE_COTR));
-        assertThat(currentEvents.get(1).metadata().name(), Matchers.is(PROGRESSION_COMMAND_SERVE_COTR));
 
         assertThat(currentEvents.get(0).payload().toString(), notNullValue());
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(CASE_ID), Matchers.is(notNullValue()));
@@ -598,12 +615,6 @@ public class CotrEventsProcessorTest {
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(HEARING_DATE), Matchers.is(notNullValue()));
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(COURT_CENTER), Matchers.is(notNullValue()));
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getJsonArray(DEFENDANT_IDS).size(), is(1));
-
-        assertThat(currentEvents.get(1).payload().toString(), notNullValue());
-        assertThat(objectToJsonObjectConverter.convert(currentEvents.get(1).payload()).getString(HEARING_ID), Matchers.is(notNullValue()));
-        assertThat(objectToJsonObjectConverter.convert(currentEvents.get(1).payload()).getString(SUBMISSION_ID), Matchers.is(notNullValue()));
-        assertThat(objectToJsonObjectConverter.convert(currentEvents.get(1).payload()).getString(COTR_ID), Matchers.is(notNullValue()));
-
     }
 
     @Test
@@ -625,15 +636,19 @@ public class CotrEventsProcessorTest {
                 jsonPayload);
 
         when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
+        when(cotrDetailsRepository.findBy(any())).thenReturn(new COTRDetailsEntity(randomUUID(),randomUUID(),randomUUID(),false, null, null, null, null));
+
+        final Metadata metadata = metadataWithNewActionName(envelope.metadata(), "progression.query.cotr.details.prosecutioncase");
+        final Envelope envelope1 = Envelope.envelopeFrom(metadata, createCotrDetails().get());
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope1);
 
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);
         //Then
         ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender, times(2)).send(captor.capture());
+        verify(sender, times(1)).send(captor.capture());
         List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), Matchers.is(PROGRESSION_COMMAND_CREATE_COTR));
-        assertThat(currentEvents.get(1).metadata().name(), Matchers.is(PROGRESSION_COMMAND_SERVE_COTR));
 
         assertThat(currentEvents.get(0).payload().toString(), notNullValue());
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(CASE_ID), Matchers.is(notNullValue()));
@@ -644,12 +659,6 @@ public class CotrEventsProcessorTest {
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(HEARING_DATE), Matchers.is(notNullValue()));
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(COURT_CENTER), Matchers.is(notNullValue()));
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getJsonArray(DEFENDANT_IDS).size(), is(1));
-
-        assertThat(currentEvents.get(1).payload().toString(), notNullValue());
-        assertThat(objectToJsonObjectConverter.convert(currentEvents.get(1).payload()).getString(HEARING_ID), Matchers.is(notNullValue()));
-        assertThat(objectToJsonObjectConverter.convert(currentEvents.get(1).payload()).getString(SUBMISSION_ID), Matchers.is(notNullValue()));
-        assertThat(objectToJsonObjectConverter.convert(currentEvents.get(1).payload()).getString(COTR_ID), Matchers.is(notNullValue()));
-
     }
 
     @Test

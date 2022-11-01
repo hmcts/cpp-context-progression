@@ -472,6 +472,11 @@ public class CotrIT extends AbstractIT {
                 .withJurisdictionType(JurisdictionType.CROWN)
                 .withCourtCenter("Lavender hill mags")
                 .withDefendantIds(Arrays.asList(defendantId1))
+                .withSubmissionId(cotrId)
+                .withHasAllEvidenceToBeReliedOnBeenServed(PolarQuestion.polarQuestion()
+                        .withDetails("HasAllEvidenceToBeReliedOnBeenServed")
+                        .withAnswer("Yes")
+                        .build())
                 .build();
 
         mockDefenceUserCotrAccessControl(DEFENCE_USER_ID);
