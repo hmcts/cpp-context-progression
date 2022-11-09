@@ -258,10 +258,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188"})
+@SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188", "squid:S134"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = -4933049804196421467L;
+    private static final long serialVersionUID = -4933049804196421468L;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -1499,7 +1499,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> receiveRepresentationOrderForDefendant(final ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant, final LaaReference laaReference,
-                                                                 final OrganisationDetails organisationDetails, final String associatedOrganisationId, final uk.gov.justice.core.courts.Defendant defendant, final ProsecutionCase prosecutionCase) {
+                                                                 final OrganisationDetails organisationDetails, final String associatedOrganisationId) {
         LOGGER.debug("Receive Representation Order for Defendant.");
         final UUID defendantId = receiveRepresentationOrderForDefendant.getDefendantId();
         final UUID prosecutionCaseId = receiveRepresentationOrderForDefendant.getProsecutionCaseId();
@@ -1541,24 +1541,28 @@ public class CaseAggregate implements Aggregate {
                     .withAssociationStartDate(receiveRepresentationOrderForDefendant.getEffectiveStartDate())
                     .withAssociationEndDate(receiveRepresentationOrderForDefendant.getEffectiveEndDate())
                     .build();
+            final uk.gov.justice.core.courts.Defendant defendant = defendantsMap.get(defendantId);
             if (offencesForDefendantChanged.isPresent()) {
-                 UpdatedOrganisation updatedOrganisation = updatedOrganisation()
-                        .withAddressLine1(organisationDetails.getAddressLine1())
-                        .withAddressLine2(organisationDetails.getAddressLine2())
-                        .withAddressLine3(organisationDetails.getAddressLine3())
-                        .withAddressLine4(organisationDetails.getAddressLine4())
-                        .withId(organisationDetails.getId())
-                        .withAddressPostcode(organisationDetails.getAddressPostcode())
-                        .withEmail(organisationDetails.getEmail())
-                        .withLaaContractNumber(organisationDetails.getLaaContractNumber())
-                        .withPhoneNumber(organisationDetails.getPhoneNumber())
-                        .withName(organisationDetails.getName())
-                        .build();
+                UpdatedOrganisation updatedOrganisation = null;
+                if(nonNull(organisationDetails.getId())) {
+                     updatedOrganisation = updatedOrganisation()
+                            .withAddressLine1(organisationDetails.getAddressLine1())
+                            .withAddressLine2(organisationDetails.getAddressLine2())
+                            .withAddressLine3(organisationDetails.getAddressLine3())
+                            .withAddressLine4(organisationDetails.getAddressLine4())
+                            .withId(organisationDetails.getId())
+                            .withAddressPostcode(organisationDetails.getAddressPostcode())
+                            .withEmail(organisationDetails.getEmail())
+                            .withLaaContractNumber(organisationDetails.getLaaContractNumber())
+                            .withPhoneNumber(organisationDetails.getPhoneNumber())
+                            .withName(organisationDetails.getName())
+                            .build();
 
-                streamBuilder.add(prosecutionCaseDefendantOrganisationUpdatedByLaa().
-                        withDefendantId(defendantId).withUpdatedOrganisation(updatedOrganisation).build());
-                if(this.defendantLAAUpdatedOrganisation.containsKey(defendantId) && updatedOrganisation.getId().equals(this.defendantLAAUpdatedOrganisation.get(defendantId))) {
-                    updatedOrganisation = null;
+                    streamBuilder.add(prosecutionCaseDefendantOrganisationUpdatedByLaa().
+                            withDefendantId(defendantId).withUpdatedOrganisation(updatedOrganisation).build());
+                    if (this.defendantLAAUpdatedOrganisation.containsKey(defendantId) && updatedOrganisation.getId().equals(this.defendantLAAUpdatedOrganisation.get(defendantId))) {
+                        updatedOrganisation = null;
+                    }
                 }
 
                 streamBuilder.add(ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()

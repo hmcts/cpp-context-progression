@@ -10,6 +10,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 import java.util.List;
@@ -35,6 +36,9 @@ public class HearingMarkedAsDuplicateEventListener {
     @Inject
     private MatchDefendantCaseHearingRepository matchDefendantCaseHearingRepository;
 
+    @Inject
+    private HearingApplicationRepository hearingApplicationRepository;
+
     @Handles("progression.event.hearing-marked-as-duplicate")
     public void hearingMarkedAsDuplicate(final Envelope<HearingMarkedAsDuplicate> event) {
         final UUID hearingId = event.payload().getHearingId();
@@ -48,11 +52,14 @@ public class HearingMarkedAsDuplicateEventListener {
         final HearingEntity hearingEntity = hearingRepository.findBy(hearingId);
         if (nonNull(hearingEntity)) {
             hearingRepository.remove(hearingEntity);
+            hearingApplicationRepository.removeByHearingId(hearingId);
+
             if(nonNull(caseIds) && nonNull(defendantIds)) {
                 caseIds.forEach(caseId ->
                     defendantIds.forEach(defendantId ->
                         matchDefendantCaseHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId)
-                    ));
+                    )
+                );
             }
         }
     }

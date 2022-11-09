@@ -13,6 +13,7 @@ import javax.json.Json;
 import java.util.List;
 import java.util.UUID;
 
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -20,21 +21,24 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * DB integration tests for {@link HearingApplicationRepositoryTest} class
  */
 
-
 @RunWith(CdiTestRunner.class)
 public class HearingApplicationRepositoryTest {
 
-    private static final UUID HEARING_ID = UUID.randomUUID();
-    private static final UUID RESULT_ID = UUID.randomUUID();
-    private static final UUID APPLICATION_ID = UUID.randomUUID();
+    private static UUID HEARING_ID;
+    private static UUID RESULT_ID;
+    private static UUID APPLICATION_ID;
 
     @Inject
     private HearingApplicationRepository hearingApplicationRepository;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         //given
-        final HearingResultLineEntity hearingResultLineEntity= new HearingResultLineEntity();
+        HEARING_ID = randomUUID();
+        RESULT_ID = randomUUID();
+        APPLICATION_ID = randomUUID();
+
+        final HearingResultLineEntity hearingResultLineEntity = new HearingResultLineEntity();
         hearingResultLineEntity.setPayload(Json.createObjectBuilder().build().toString());
         hearingResultLineEntity.setId(RESULT_ID);
 
@@ -52,11 +56,10 @@ public class HearingApplicationRepositoryTest {
     }
 
     @Test
-    public void shouldFindHearingApplicationEntityByHearingId() throws Exception {
-
+    public void shouldFindHearingApplicationEntityByHearingId() {
         final List<HearingApplicationEntity> actual = hearingApplicationRepository.findByHearingId(HEARING_ID);
         assertThat(actual.size(), is(1));
-        assertThat(actual.get(0).getId().getApplicationId() , is(APPLICATION_ID));
+        assertThat(actual.get(0).getId().getApplicationId(), is(APPLICATION_ID));
         assertThat(actual.get(0).getId().getHearingId(), is(HEARING_ID));
         assertThat(actual.get(0).getHearing().getHearingId(), is(HEARING_ID));
         assertThat(actual.get(0).getHearing().getResultLines().size(), is(1));
@@ -64,12 +67,11 @@ public class HearingApplicationRepositoryTest {
     }
 
     @Test
-    public void shouldFindHearingApplicationEntityByApplicationId() throws Exception {
-
+    public void shouldFindHearingApplicationEntityByApplicationId() {
         final List<HearingApplicationEntity> actual = hearingApplicationRepository.findByApplicationId(APPLICATION_ID);
 
         assertThat(actual.size(), is(1));
-        assertThat(actual.get(0).getId().getApplicationId() , is(APPLICATION_ID));
+        assertThat(actual.get(0).getId().getApplicationId(), is(APPLICATION_ID));
         assertThat(actual.get(0).getId().getHearingId(), is(HEARING_ID));
         assertThat(actual.get(0).getHearing().getHearingId(), is(HEARING_ID));
         assertThat(actual.get(0).getHearing().getResultLines().size(), is(1));
@@ -77,19 +79,36 @@ public class HearingApplicationRepositoryTest {
     }
 
     @Test
-    public void shouldNotFailWhenHearingHasNoApplication() throws Exception {
-        final List<HearingApplicationEntity> actual = hearingApplicationRepository.findByApplicationId(UUID.randomUUID());
+    public void shouldNotFailWhenHearingHasNoApplication() {
+        final List<HearingApplicationEntity> actual = hearingApplicationRepository.findByApplicationId(randomUUID());
         assertThat(actual.size(), is(0));
     }
 
     @Test
-    public void shouldRemoveByHearingId() {
-
+    public void shouldRemoveByHearingIdAndApplicationId() {
         List<HearingApplicationEntity> actual = hearingApplicationRepository.findByApplicationId(APPLICATION_ID);
         assertThat(actual.size(), is(1));
         hearingApplicationRepository.removeByHearingIdAndCourtApplicationId(HEARING_ID, APPLICATION_ID);
         actual = hearingApplicationRepository.findByApplicationId(APPLICATION_ID);
         assertThat(actual.size(), is(0));
+    }
 
+    @Test
+    public void shouldRemoveByHearingId() {
+        List<HearingApplicationEntity> actual = hearingApplicationRepository.findByHearingId(HEARING_ID);
+        assertThat(actual.size(), is(1));
+        hearingApplicationRepository.removeByHearingId(HEARING_ID);
+        actual = hearingApplicationRepository.findByHearingId(HEARING_ID);
+        assertThat(actual.size(), is(0));
+    }
+
+    @Test
+    public void shouldNotThrownExceptionWhenHearingApplicationEntityNotFound() {
+        final UUID hearingId = randomUUID();
+        List<HearingApplicationEntity> actual = hearingApplicationRepository.findByHearingId(hearingId);
+        assertThat(actual.size(), is(0));
+        hearingApplicationRepository.removeByHearingId(hearingId);
+        actual = hearingApplicationRepository.findByHearingId(hearingId);
+        assertThat(actual.size(), is(0));
     }
 }

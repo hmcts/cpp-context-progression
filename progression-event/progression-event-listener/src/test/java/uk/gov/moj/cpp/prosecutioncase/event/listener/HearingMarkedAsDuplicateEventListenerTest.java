@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,12 +19,11 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEnt
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
-import java.util.Arrays;
 import java.util.UUID;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -34,7 +32,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class HearingMarkedAsDuplicateEventListenerTest {
@@ -49,6 +46,9 @@ public class HearingMarkedAsDuplicateEventListenerTest {
     private HearingRepository hearingRepository;
 
     @Mock
+    private HearingApplicationRepository hearingApplicationRepository;
+
+    @Mock
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
 
     @Mock
@@ -59,7 +59,6 @@ public class HearingMarkedAsDuplicateEventListenerTest {
 
     @InjectMocks
     private HearingMarkedAsDuplicateEventListener hearingMarkedAsDuplicateEventListener;
-
 
     @Test
     public void shouldDeleteHearingWhenMarkedAsDuplicate() {
@@ -79,6 +78,7 @@ public class HearingMarkedAsDuplicateEventListenerTest {
         hearingMarkedAsDuplicateEventListener.hearingMarkedAsDuplicate(envelope);
 
         verify(hearingRepository).remove(hearingEntity);
+        verify(hearingApplicationRepository).removeByHearingId(hearingEntity.getHearingId());
         verify(matchDefendantCaseHearingRepository, times(1)).removeByHearingIdAndCaseIdAndDefendantId(eq(hearingIdToBeDeleted), eq(caseId), eq(defendantId));
 
     }
@@ -97,7 +97,7 @@ public class HearingMarkedAsDuplicateEventListenerTest {
         hearingMarkedAsDuplicateEventListener.hearingMarkedAsDuplicate(envelope);
 
         verify(hearingRepository, never()).remove(hearingEntity);
-
+        verify(hearingApplicationRepository, never()).removeByHearingId(hearingEntity.getHearingId());
     }
 
     @Test
@@ -125,8 +125,5 @@ public class HearingMarkedAsDuplicateEventListenerTest {
         verify(matchDefendantCaseHearingRepository, times(2)).removeByHearingIdAndCaseIdAndDefendantId(eq(hearingId), eq(caseId), any());
         assertThat(defendantArgumentCaptor.getAllValues().get(0), is(defendant1Id));
         assertThat(defendantArgumentCaptor.getAllValues().get(1), is(defendant2Id));
-
-
     }
-
 }

@@ -9,6 +9,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
 
@@ -38,6 +39,9 @@ public class HearingDeletedEventListener {
     @Inject
     private MatchDefendantCaseHearingRepository matchDefendantCaseHearingRepository;
 
+    @Inject
+    private HearingApplicationRepository hearingApplicationRepository;
+
     @Handles(PROGRESSION_EVENT_HEARING_DELETED)
     public void handleHearingDeletedEvent(final Envelope<HearingDeleted> event) {
         final UUID hearingId = event.payload().getHearingId();
@@ -57,6 +61,7 @@ public class HearingDeletedEventListener {
 
         caseDefendantHearingRepository.removeByHearingId(hearingId);
         matchDefendantCaseHearingRepository.removeByHearingId(hearingId);
+        hearingApplicationRepository.removeByHearingId(hearingId);
     }
 
     @Handles(PROGRESSION_EVENT_HEARING_DELETED_FOR_PROSECUTION_CASE)

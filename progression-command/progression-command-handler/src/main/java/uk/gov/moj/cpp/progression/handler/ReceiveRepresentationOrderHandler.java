@@ -1,12 +1,8 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import static java.util.Objects.nonNull;
-import static java.util.UUID.fromString;
-import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
-
-import uk.gov.justice.core.courts.Defendant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.LaaReference;
-import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReceiveRepresentationOrderForDefendant;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -24,23 +20,21 @@ import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
 import uk.gov.moj.cpp.progression.service.LegalStatusReferenceDataService;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.UUID.fromString;
+import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class ReceiveRepresentationOrderHandler {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ReceiveRepresentationOrderHandler.class.getName());
-    private static final String PROSECUTION_CASE = "prosecutionCase";
-
     @Inject
     private EventSource eventSource;
 
@@ -74,13 +68,7 @@ public class ReceiveRepresentationOrderHandler {
         }
         final Optional<JsonObject> optionalLegalStatus = legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode
                 (jsonEnvelope, statusCode);
-        final Optional<JsonObject> optionalProsecutionCase = prosecutionCaseQueryService.getProsecutionCase(jsonEnvelope, receiveRepresentationOrderForDefendant.getProsecutionCaseId().toString());
-        if (optionalLegalStatus.isPresent() && optionalProsecutionCase.isPresent()) {
-            final JsonObject prosecutionCaseJson = optionalProsecutionCase.get().getJsonObject(PROSECUTION_CASE);
-            final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-            final Optional<Defendant> optionalDefendant = prosecutionCase.getDefendants().stream().filter(def -> def.getId().equals(receiveRepresentationOrderForDefendant.getDefendantId()))
-                    .findFirst();
-            if (optionalDefendant.isPresent()) {
+        if (optionalLegalStatus.isPresent()) {
                 final JsonObject legalStatus = optionalLegalStatus.get();
                 final LaaReference laaReference = LaaReference.laaReference()
                         .withStatusCode(statusCode)
@@ -96,9 +84,9 @@ public class ReceiveRepresentationOrderHandler {
                 final UUID prosecutionCaseId = receiveRepresentationOrderForDefendant.getProsecutionCaseId();
                 final EventStream eventStream = eventSource.getStreamById(prosecutionCaseId);
                 final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-                final Stream<Object> events = caseAggregate.receiveRepresentationOrderForDefendant(receiveRepresentationOrderForDefendant, laaReference, organisationDetails , associatedOrganisationId, optionalDefendant.get(), prosecutionCase);
+                final Stream<Object> events = caseAggregate.receiveRepresentationOrderForDefendant(receiveRepresentationOrderForDefendant, laaReference, organisationDetails , associatedOrganisationId);
                 appendEventsToStream(envelope, eventStream, events);
-            }
+
         } else {
             LOGGER.error("Unable to get Ref Data for Legal Status by Status Code {}", statusCode);
         }

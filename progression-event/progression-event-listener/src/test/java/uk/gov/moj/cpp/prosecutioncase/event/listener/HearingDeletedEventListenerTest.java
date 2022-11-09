@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-
 import static java.util.UUID.randomUUID;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -15,6 +14,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEnt
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
 
@@ -30,7 +30,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-
 @RunWith(MockitoJUnitRunner.class)
 public class HearingDeletedEventListenerTest {
 
@@ -45,6 +44,9 @@ public class HearingDeletedEventListenerTest {
 
     @Mock
     private CaseDefendantHearingRepository caseDefendantHearingRepository;
+
+    @Mock
+    private HearingApplicationRepository hearingApplicationRepository;
 
     @Mock
     private MatchDefendantCaseHearingRepository matchDefendantCaseHearingRepository;
@@ -69,6 +71,8 @@ public class HearingDeletedEventListenerTest {
         hearingDeletedEventListener.handleHearingDeletedEvent(hearingDeletedEnvelope);
 
         verify(hearingRepository).remove(hearingEntity);
+
+        verify(hearingApplicationRepository).removeByHearingId(eq(hearingIdToBeDeleted));
         verify(caseDefendantHearingRepository).removeByHearingId(eq(hearingIdToBeDeleted));
         verify(matchDefendantCaseHearingRepository).removeByHearingId(eq(hearingIdToBeDeleted));
     }
@@ -87,7 +91,6 @@ public class HearingDeletedEventListenerTest {
         hearingDeletedEventListener.handleHearingDeletedEvent(hearingDeletedEnvelope);
 
         verify(hearingRepository, never()).remove(hearingEntity);
-
     }
 
     @Test
