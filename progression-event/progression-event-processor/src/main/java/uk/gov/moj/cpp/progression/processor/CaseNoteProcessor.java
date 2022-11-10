@@ -23,24 +23,43 @@ public class CaseNoteProcessor {
 
     @Handles("progression.event.case-note-added")
     public void processCaseNoteAdded(final JsonEnvelope event) {
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn("recieved private  event progression.event.case-note-added correlationId: {}", event.metadata().clientCorrelationId().orElse(null));
+        }
+
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(LOG_OUTPUT_FORMAT, "progression.event.case-note-added", event.toObfuscatedDebugString());
+        }
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn("raising public  event public.progression.case-note-added correlationId: {}", event.metadata().clientCorrelationId().orElse(null));
         }
         sender.send(
                 envelop(event.payloadAsJsonObject())
                         .withName("public.progression.case-note-added")
                         .withMetadataFrom(event));
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn("raised public  event public.progression.case-note-added correlationId: {}", event.metadata().clientCorrelationId().orElse(null));
+        }
     }
 
     @Handles("progression.event.case-note-added-v2")
     public void processCaseNoteAddedV2(final JsonEnvelope event) {
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn("recieved private  event progression.event.case-note-added-v2 correlationId: {}", event.metadata().clientCorrelationId().orElse(null));
+        }
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(LOG_OUTPUT_FORMAT, "progression.event.case-note-added-v2", event.toObfuscatedDebugString());
+        }
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn("raising public  event public.progression.case-note-added-v2 correlationId: {}", event.metadata().clientCorrelationId().orElse(null));
         }
         sender.send(
                 envelop(event.payloadAsJsonObject())
                         .withName("public.progression.case-note-added")
                         .withMetadataFrom(event));
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn("raised public  event public.progression.case-note-added-v2 correlationId: {}", event.metadata().clientCorrelationId().orElse(null));
+        }
     }
 
     @Handles("progression.event.case-note-edited")
