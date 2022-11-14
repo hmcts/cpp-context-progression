@@ -194,8 +194,8 @@ public class CourtProceedingsInitiatedProcessor {
 
     private boolean isNewCase(final JsonEnvelope jsonEnvelope, final String reference) {
         if (StringUtils.isNotEmpty(reference)) {
-            final Optional<JsonObject> jsonObject = progressionService.searchCaseDetailByReference(jsonEnvelope, reference);
-            if (jsonObject.isPresent() && !jsonObject.get().getJsonArray("searchResults").isEmpty()) {
+            final Optional<JsonObject> jsonObject = progressionService.caseExistsByCaseUrn(jsonEnvelope, reference);
+            if (jsonObject.isPresent() && !jsonObject.get().isEmpty()) {
                 LOGGER.info("Prosecution case {} already exists ", reference);
                 return false;
             }

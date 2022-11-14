@@ -131,11 +131,11 @@ public class CaseReferredToCourtEventProcessorTest {
     @Test
     public void shouldHandleCasesReferredToCourtEventMessage() throws Exception {
         // Setup
-        SjpCourtReferral sjpCourtReferral = getCourtReferral();
+        final SjpCourtReferral sjpCourtReferral = getCourtReferral();
 
-        ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing().build();
-        ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().build();
-        CourtDocument courtDocument = CourtDocument.courtDocument().build();
+        final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing().build();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().build();
+        final CourtDocument courtDocument = CourtDocument.courtDocument().build();
 
         //Given
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
@@ -143,9 +143,8 @@ public class CaseReferredToCourtEventProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, SjpCourtReferral.class))
                 .thenReturn(sjpCourtReferral);
 
-        when(progressionService.searchCaseDetailByReference(any(), any())).thenReturn(Optional.of
-                (Json.createObjectBuilder().add("searchResults", Json.createArrayBuilder().build
-                        ()).build()));
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
+                (Json.createObjectBuilder().build()));
         when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any
                 (JsonEnvelope.class))).thenReturn(prosecutionCase);
         when(referredCourtDocumentTransformer.transform(any(ReferredCourtDocument.class), any
@@ -176,16 +175,15 @@ public class CaseReferredToCourtEventProcessorTest {
     @Test
     public void shouldHandleExceptionsOnMissingRequiredData() throws Exception {
         // Setup
-        SjpCourtReferral sjpCourtReferral = getCourtReferral();
+        final SjpCourtReferral sjpCourtReferral = getCourtReferral();
         //Given
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
         when(jsonObjectToObjectConverter.convert(courtReferralJson, SjpCourtReferral.class))
                 .thenReturn(sjpCourtReferral);
 
-        when(progressionService.searchCaseDetailByReference(any(), any())).thenReturn(Optional.of
-                (Json.createObjectBuilder().add("searchResults", Json.createArrayBuilder().build
-                        ()).build()));
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
+                (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
 
         when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any
                 (JsonEnvelope.class))).thenThrow(new MissingRequiredFieldException("value"));
@@ -201,16 +199,15 @@ public class CaseReferredToCourtEventProcessorTest {
     @Test
     public void shouldHandleExceptionsOnRefData() throws Exception {
         // Setup
-        SjpCourtReferral sjpCourtReferral = getCourtReferral();
+        final SjpCourtReferral sjpCourtReferral = getCourtReferral();
         //Given
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
         when(jsonObjectToObjectConverter.convert(courtReferralJson, SjpCourtReferral.class))
                 .thenReturn(sjpCourtReferral);
 
-        when(progressionService.searchCaseDetailByReference(any(), any())).thenReturn(Optional.of
-                (Json.createObjectBuilder().add("searchResults", Json.createArrayBuilder().build
-                        ()).build()));
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
+                (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
 
         when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any
                 (JsonEnvelope.class))).thenThrow(new ReferenceDataNotFoundException("Key", "value"));
@@ -227,16 +224,15 @@ public class CaseReferredToCourtEventProcessorTest {
     @Test
     public void shouldHandleExceptionsOnSearch() throws Exception {
         // Setup
-        SjpCourtReferral sjpCourtReferral = getCourtReferral();
+        final SjpCourtReferral sjpCourtReferral = getCourtReferral();
         //Given
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
         when(jsonObjectToObjectConverter.convert(courtReferralJson, SjpCourtReferral.class))
                 .thenReturn(sjpCourtReferral);
 
-        when(progressionService.searchCaseDetailByReference(any(), any())).thenReturn(Optional.of
-                (Json.createObjectBuilder().add("searchResults", Json.createArrayBuilder().add("some value").build
-                        ()).build()));
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
+                (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
 
         //When
         this.eventProcessor.process(jsonEnvelope);

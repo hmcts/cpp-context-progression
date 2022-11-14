@@ -131,7 +131,7 @@ public class CasesReferredToCourtProcessor {
             sjpCourtReferral.getProsecutionCases().forEach(referredProsecutionCase -> {
                 searchForDuplicateCases(jsonEnvelope, referredProsecutionCase
                         .getProsecutionCaseIdentifier().getProsecutionAuthorityReference());
-                searchForDuplicateCases(jsonEnvelope, referredProsecutionCase
+                searchForDuplicateCasesByUrn(jsonEnvelope, referredProsecutionCase
                         .getProsecutionCaseIdentifier().getCaseURN());
             });
             prosecutionCases = new ArrayList<>(convertToCourtReferral(jsonEnvelope, sjpCourtReferral));
@@ -139,7 +139,7 @@ public class CasesReferredToCourtProcessor {
             listCourtHearing = prepareListCourtHearing(jsonEnvelope, sjpCourtReferral, prosecutionCases, hearingId);
 
 
-        } catch (MissingRequiredFieldException | DataValidationException | ReferenceDataNotFoundException e) {
+        } catch (final MissingRequiredFieldException | DataValidationException | ReferenceDataNotFoundException e) {
             //Raise public event
             LOGGER.error("### Transformation and enrichment exception", e);
             final ReferProsecutionCasesToCourtRejected referProsecutionCasesToCourtRejected = ReferProsecutionCasesToCourtRejected
@@ -186,6 +186,16 @@ public class CasesReferredToCourtProcessor {
                 .build();
 
         messageService.sendMessage(jsonEnvelope, caseReferredForCourtAcceptedJson, REFER_PROSECUTION_CASES_TO_COURT_ACCEPTED);
+    }
+
+    private void searchForDuplicateCasesByUrn(final JsonEnvelope jsonEnvelope, final String reference) {
+        if (StringUtils.isNotEmpty(reference)) {
+            LOGGER.info("searchForDuplicateCasesByUrn {} : ", reference);
+            final Optional<JsonObject> jsonObject = progressionService.caseExistsByCaseUrn(jsonEnvelope, reference);
+            if (jsonObject.isPresent() && !jsonObject.get().isEmpty()) {
+                throw new DataValidationException("Case has been already referred");
+            }
+        }
     }
 
     private void searchForDuplicateCases(final JsonEnvelope jsonEnvelope, final String reference) {

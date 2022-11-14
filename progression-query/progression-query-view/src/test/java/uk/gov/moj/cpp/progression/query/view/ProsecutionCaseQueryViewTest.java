@@ -993,7 +993,7 @@ public class ProsecutionCaseQueryViewTest {
         searchCaseEntity.setStatus("SJP Referral");
         searchCaseEntity.setStandaloneApplication(false);
         searchProsecutionCaseEntities.add(searchCaseEntity);
-        when(searchCaseRepository.findBySearchCriteria(prepareSearch(searchCriteria))).thenReturn(searchProsecutionCaseEntities);
+        when(searchCaseRepository.findBySearchCriteria(prepareSearch(searchCriteria.toLowerCase()))).thenReturn(searchProsecutionCaseEntities);
         final JsonEnvelope response = prosecutionCaseQuery.searchCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().getJsonArray("searchResults").size(), is(1));
     }
@@ -1007,7 +1007,7 @@ public class ProsecutionCaseQueryViewTest {
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.search-cases").build(),
                 jsonObject);
 
-        when(searchCaseRepository.findBySearchCriteria(searchCriteria)).thenReturn(new ArrayList<>());
+        when(searchCaseRepository.findBySearchCriteria(searchCriteria.toLowerCase())).thenReturn(new ArrayList<>());
         final JsonEnvelope response = prosecutionCaseQuery.searchCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().getJsonArray("searchResults").size(), is(0));
     }

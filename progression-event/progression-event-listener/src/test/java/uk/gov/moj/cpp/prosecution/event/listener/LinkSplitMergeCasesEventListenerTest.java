@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.prosecution.event.listener;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -81,7 +81,7 @@ public class LinkSplitMergeCasesEventListenerTest {
         searchProsecutionCaseEntity.setCaseId(caseId);
         searchProsecutionCaseEntity.setReference(caseUrns.get(0));
 
-        when(searchCaseRepository.findBySearchCriteria(any())).thenReturn(Arrays.asList(searchProsecutionCaseEntity));
+        when(searchCaseRepository.findByCaseUrn(any())).thenReturn(Arrays.asList(searchProsecutionCaseEntity));
 
         when(caseLinkSplitMergeRepository.findByCaseIdAndLinkedCaseIdAndType(any(), any(), any())).thenReturn(new ArrayList<>());
 
@@ -122,7 +122,7 @@ public class LinkSplitMergeCasesEventListenerTest {
         leadCaseEntity.setCaseId(prosecutionCaseId.toString());
         leadCaseEntity.setReference("leadCaseUrn");
 
-        when(searchCaseRepository.findBySearchCriteria(any())).thenReturn(Arrays.asList(entityToMerge)); //to get case id with given urn (queried to get case ids for the given case urns to merge)
+        when(searchCaseRepository.findByCaseUrn(any())).thenReturn(Arrays.asList(entityToMerge)); //to get case id with given urn (queried to get case ids for the given case urns to merge)
         when(searchCaseRepository.findByCaseId(any())).thenReturn(Arrays.asList(leadCaseEntity)); //to get urn with given case id (used in giving lead case id and returning lead case's urn)
 
         when(caseLinkSplitMergeRepository.findByCaseIdAndLinkedCaseIdAndType(any(), any(), any())).thenReturn(new ArrayList<>()); // to check existing links/merges
@@ -169,7 +169,7 @@ public class LinkSplitMergeCasesEventListenerTest {
         assertThat(savedEntity.getLinkedCaseId(), is(prosecutionCaseId));
         assertThat(savedEntity.getType(), is(LinkType.SPLIT));
         final String references = String.join(",", caseUrns);
-        assertTrue(savedEntity.getReference().equals(references));
+        assertEquals(savedEntity.getReference(), references);
 
     }
 

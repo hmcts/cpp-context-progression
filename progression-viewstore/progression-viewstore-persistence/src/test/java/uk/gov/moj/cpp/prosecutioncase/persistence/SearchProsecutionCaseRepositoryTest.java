@@ -36,7 +36,7 @@ public class SearchProsecutionCaseRepositoryTest {
     @Before
     public void setUp() {
         defedantId = UUID.fromString("e1d32d9d-29ec-4934-a932-22a50f223966");
-        searchCriteria = "%JOHN% %smith% %1977-01-01%";
+        searchCriteria = "%JOHN% %smith% %1977-01-01%".toLowerCase();
         caseId = "5002d600-af66-11e8-b568-0800200c9a66";
     }
 
@@ -50,9 +50,33 @@ public class SearchProsecutionCaseRepositoryTest {
 
         //then
         assertNotNull("Should not be null", actual);
-        assertEquals(1,actual.size());
-        assertEquals(defedantId,actual.get(0).getDefendantId());
-        assertEquals(searchTarget,actual.get(0).getSearchTarget());
+        assertEquals(1, actual.size());
+        assertEquals(defedantId, actual.get(0).getDefendantId());
+        assertEquals(searchTarget, actual.get(0).getSearchTarget());
+        assertEquals("5002d600-af66-11e8-b568-0800200c9a66", actual.get(0).getCaseId());
+        assertEquals("PAR-100", actual.get(0).getReference());
+        assertEquals("John", actual.get(0).getDefendantFirstName());
+        assertEquals("S", actual.get(0).getDefendantMiddleName());
+        assertEquals("Smith", actual.get(0).getDefendantLastName());
+        assertEquals("01-01-1977", actual.get(0).getDefendantDob());
+        assertEquals("TFL", actual.get(0).getProsecutor());
+        assertEquals("SJP Referral", actual.get(0).getStatus());
+    }
+
+
+    @Test
+    public void shouldFindFirstByreference() {
+        //given
+        repository.save(searchProsecutionCase());
+
+        //when
+        final List<SearchProsecutionCaseEntity> actual = repository.findByCaseUrn("PAR-100"); //"%John%"
+
+        //then
+        assertNotNull("Should not be null", actual);
+        assertEquals(1, actual.size());
+        assertEquals(defedantId, actual.get(0).getDefendantId());
+        assertEquals(searchTarget, actual.get(0).getSearchTarget());
         assertEquals("5002d600-af66-11e8-b568-0800200c9a66", actual.get(0).getCaseId());
         assertEquals("PAR-100", actual.get(0).getReference());
         assertEquals("John", actual.get(0).getDefendantFirstName());

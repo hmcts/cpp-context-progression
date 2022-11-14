@@ -4,10 +4,10 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesByCaseUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesForSearchCriteria;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 
-import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicationRandomValues;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
@@ -19,7 +19,6 @@ import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings({"squid:S1607"})
@@ -60,8 +59,9 @@ public class SearchCourtApplicationsIT extends AbstractIT {
     public void shouldGetApplicationByReferenceNumber() throws Exception {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
-        String applicationReferenceNumber = message.get().getJsonObject("courtApplication").getString("applicationReference");
-        verifyCasesForSearchCriteria(applicationReferenceNumber, new Matcher[]{withJsonPath("$.searchResults[0].reference", containsString(applicationReferenceNumber))});
+        final String applicationReferenceNumber = message.get().getJsonObject("courtApplication").getString("applicationReference");
+        verifyCasesByCaseUrn(applicationReferenceNumber, new Matcher[]{withJsonPath("$.searchResults[0].reference", containsString(applicationReferenceNumber))})
+        ;
     }
 
 

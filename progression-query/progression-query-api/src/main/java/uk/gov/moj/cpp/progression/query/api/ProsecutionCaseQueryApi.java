@@ -149,6 +149,16 @@ public class ProsecutionCaseQueryApi {
         return prosecutionCaseQuery.searchProsecutionAuthorityId(query);
     }
 
+    @Handles("progression.query.search-cases-by-caseurn")
+    public JsonEnvelope searchCaseByUrn(final JsonEnvelope query) {
+        return prosecutionCaseQuery.searchCaseByCaseUrn(query);
+    }
+
+    @Handles("progression.query.case-exist-by-caseurn")
+    public JsonEnvelope searchCaseExistsByCaseUrn(final JsonEnvelope query) {
+        return prosecutionCaseQuery.caseExistsByCaseUrn(query);
+    }
+
 
     /**
      * Handler returns document details and not document content. This is consequence of non

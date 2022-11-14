@@ -11,7 +11,7 @@ import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.PUBLIC_EVENT_DOCUMENT_REVIEW_REQUIRED;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseWithUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesForSearchCriteria;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesByCaseUrn;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
@@ -22,7 +22,6 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupOrganisation;
 
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
-import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -61,7 +60,7 @@ public class RaiseDocumentReviewRequiredPublicEventIT extends AbstractIT {
         stubUserGroupOrganisation(organisation);
 
         addProsecutionCaseWithUrn(caseId.toString(), defendantId.toString(), urn);
-        verifyCasesForSearchCriteria(urn, new Matcher[]{withJsonPath("$.searchResults[0].caseId", equalTo(caseId.toString()))});
+        verifyCasesByCaseUrn(urn, new Matcher[]{withJsonPath("$.searchResults[0].caseId", equalTo(caseId.toString()))});
 
         final String addCourtDocumentPayload = getPayload("progression.add-court-document.json")
                 .replaceAll("%RANDOM_DOCUMENT_ID%", documentId.toString())

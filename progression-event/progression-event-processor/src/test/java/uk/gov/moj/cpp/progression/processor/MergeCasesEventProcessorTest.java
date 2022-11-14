@@ -1,8 +1,9 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -14,7 +15,6 @@ import static uk.gov.moj.cpp.progression.events.LinkResponseResults.REFERENCE_NO
 import static uk.gov.moj.cpp.progression.events.LinkResponseResults.REFERENCE_NOT_VALID;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.MERGED_CASES;
-import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.SEARCH_RESULTS;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -75,9 +75,9 @@ public class MergeCasesEventProcessorTest {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
         setField(this.jsonObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
 
-        leadCaseId = UUID.randomUUID();
+        leadCaseId = randomUUID();
         leadCaseUrn = "caseUrn1";
-        caseIdToLink = UUID.randomUUID();
+        caseIdToLink = randomUUID();
         caseUrnToLink = "caseUrn2";
 
     }
@@ -96,7 +96,7 @@ public class MergeCasesEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.validate-link-cases"),
                 validatePayload);
 
-        when(progressionService.searchCaseDetailByReference(any(), any())).thenReturn(Optional.of(Json.createObjectBuilder().add(SEARCH_RESULTS, Json.createArrayBuilder().build()).build()));
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(Json.createObjectBuilder().build()));
         processor.handleMergeCasesValidations(requestMessage);
 
         verify(sender).send(envelopeCaptor.capture());
@@ -104,7 +104,7 @@ public class MergeCasesEventProcessorTest {
 
         assertThat(publicEvent.metadata(),
                 withMetadataEnvelopedFrom(requestMessage).withName("public.progression.link-cases-response"));
-        assertTrue(publicEvent.payload().getString("linkResponseResults").equals(REFERENCE_NOT_FOUND.toString()));
+        assertEquals(publicEvent.payload().getString("linkResponseResults"), REFERENCE_NOT_FOUND.toString());
 
     }
 
@@ -122,8 +122,8 @@ public class MergeCasesEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.validate-link-cases"),
                 validatePayload);
 
-        when(progressionService.searchCaseDetailByReference(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(SEARCH_RESULTS, Json.createArrayBuilder().add(Json.createObjectBuilder().add(CASE_ID, leadCaseId.toString())).build()).build()
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(
+                Json.createObjectBuilder().add(CASE_ID, leadCaseId.toString()).build()
         ));
         processor.handleMergeCasesValidations(requestMessage);
 
@@ -132,7 +132,7 @@ public class MergeCasesEventProcessorTest {
 
         assertThat(publicEvent.metadata(),
                 withMetadataEnvelopedFrom(requestMessage).withName("public.progression.link-cases-response"));
-        assertTrue(publicEvent.payload().getString("linkResponseResults").equals(REFERENCE_NOT_VALID.toString()));
+        assertEquals(publicEvent.payload().getString("linkResponseResults"), REFERENCE_NOT_VALID.toString());
 
     }
 
@@ -150,8 +150,8 @@ public class MergeCasesEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.validate-link-cases"),
                 casesUnlinkedPayload);
 
-        when(progressionService.searchCaseDetailByReference(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(SEARCH_RESULTS, Json.createArrayBuilder().add(Json.createObjectBuilder().add(CASE_ID, caseIdToLink.toString()).add("reference", caseUrnToLink)).build()).build()
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(
+                Json.createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
         ));
         when(progressionService.searchLinkedCases(any(), any())).thenReturn(Optional.of(
                 Json.createObjectBuilder().add(MERGED_CASES, Json.createArrayBuilder().build()).build()
@@ -166,8 +166,8 @@ public class MergeCasesEventProcessorTest {
         final Envelope<JsonObject> commandEnvelope = allEvents.get(0);
         assertThat(commandEnvelope.metadata(),
                 withMetadataEnvelopedFrom(requestMessage).withName("progression.command.link-cases"));
-        assertTrue(commandEnvelope.payload().getString("prosecutionCaseId").equals(leadCaseId.toString()));
-        assertTrue(commandEnvelope.payload().getJsonArray("casesToLink").getJsonObject(0).getJsonArray("caseUrns").getString(0).equals(caseUrnToLink));
+        assertEquals(commandEnvelope.payload().getString("prosecutionCaseId"), leadCaseId.toString());
+        assertEquals(commandEnvelope.payload().getJsonArray("casesToLink").getJsonObject(0).getJsonArray("caseUrns").getString(0), caseUrnToLink);
 
         final Envelope<JsonObject> caseLinkedEnvelope = allEvents.get(1);
         assertThat(caseLinkedEnvelope.metadata(),
@@ -176,7 +176,7 @@ public class MergeCasesEventProcessorTest {
 
         final Envelope<JsonObject> responseEnvelope = allEvents.get(2);
         assertThat(responseEnvelope.metadata(), withMetadataEnvelopedFrom(requestMessage).withName("public.progression.link-cases-response"));
-        assertTrue(responseEnvelope.payload().getString("linkResponseResults").equals("SUCCESS"));
+        assertEquals("SUCCESS", responseEnvelope.payload().getString("linkResponseResults"));
 
     }
 }

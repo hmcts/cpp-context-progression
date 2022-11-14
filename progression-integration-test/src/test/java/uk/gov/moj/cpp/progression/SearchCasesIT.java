@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseWithUrn;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesByCaseUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesForSearchCriteria;
 
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
@@ -40,8 +41,8 @@ public class SearchCasesIT extends AbstractIT {
 
     @BeforeClass
     public static void setUpCommonData() throws IOException {
-        String caseId = randomUUID().toString();
-        String defendantId = randomUUID().toString();
+        final String caseId = randomUUID().toString();
+        final String defendantId = randomUUID().toString();
         helper = new ProsecutionCaseUpdateDefendantHelper(randomUUID().toString(), randomUUID().toString());
         addProsecutionCaseToCrownCourt(caseId, defendantId);
     }
@@ -99,12 +100,12 @@ public class SearchCasesIT extends AbstractIT {
     @Test
     public void shouldGetProsecutionCaseByReference() throws IOException {
         addProsecutionCaseWithUrn(randomUUID().toString(), randomUUID().toString(), "URN12345");
-        verifyCasesForSearchCriteria("URN12345", new Matcher[]{withJsonPath("$.searchResults[0].reference", equalTo("URN12345"))});
+        verifyCasesByCaseUrn("URN12345", new Matcher[]{withJsonPath("$.searchResults[0].reference", equalTo("URN12345"))});
     }
 
     @Test
     public void shouldGetProsecutionCaseByDobDDMMMyy() {
-        verifyCasesForSearchCriteria("1-Jan-2010", new Matcher[]{withJsonPath(JSON_RESULTS_DOB, equalTo(DOB))});
+        verifyCasesForSearchCriteria("01/01/10", new Matcher[]{withJsonPath(JSON_RESULTS_DOB, equalTo(DOB))});
     }
 
     @Test

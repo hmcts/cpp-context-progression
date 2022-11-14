@@ -121,6 +121,8 @@ public class ProgressionService {
     private static final String PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE = "progression.command.create-prosecution-case";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
     private static final String PROGRESSION_QUERY_SEARCH_CASES = "progression.query.search-cases";
+    private static final String PROGRESSION_QUERY_SEARCH_CASES_BY_CASEURN = "progression.query.search-cases-by-caseurn";
+    private static final String PROGRESSION_QUERY_CASE_EXISTS_BY_CASEURN = "progression.query.case-exist-by-caseurn";
     private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
     private static final String PROGRESSION_QUERY_HEARING = "progression.query.hearing";
     private static final String PROGRESSION_QUERY_LINKED_CASES = "progression.query.case-lsm-info";
@@ -645,6 +647,36 @@ public class ProgressionService {
         return Optional.of(response.payloadAsJsonObject());
     }
 
+    public Optional<JsonObject> searchCaseDetailByURN(final JsonEnvelope envelope, final String reference) {
+
+        final JsonObject requestParameter = createObjectBuilder().add("caseUrn", reference).build();
+
+        LOGGER.info("search for case detail with reference {} ", reference);
+
+        final JsonEnvelope response = requester.request(enveloper.withMetadataFrom(envelope, PROGRESSION_QUERY_SEARCH_CASES_BY_CASEURN).apply(requestParameter));
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("search for case detail response {}", response.toObfuscatedDebugString());
+        }
+
+        return Optional.of(response.payloadAsJsonObject());
+    }
+
+    public Optional<JsonObject> caseExistsByCaseUrn(final JsonEnvelope envelope, final String reference) {
+
+        final JsonObject requestParameter = createObjectBuilder().add("caseUrn", reference).build();
+
+        LOGGER.info("search for case detail with reference {} ", reference);
+
+        final JsonEnvelope response = requester.request(enveloper.withMetadataFrom(envelope, PROGRESSION_QUERY_CASE_EXISTS_BY_CASEURN).apply(requestParameter));
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("search for case detail response {}", response.toObfuscatedDebugString());
+        }
+
+        return Optional.of(response.payloadAsJsonObject());
+    }
+
     public Optional<JsonObject> getProsecutionCaseDetailById(final JsonEnvelope envelope, final String caseId) {
         Optional<JsonObject> result = Optional.empty();
 
@@ -666,7 +698,7 @@ public class ProgressionService {
             if (!prosecutioncase.payloadAsJsonObject().isEmpty()) {
                 result = Optional.of(prosecutioncase.payloadAsJsonObject());
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
 
             LOGGER.debug(String.format("Prosecution case detail not found for case id : %s", caseId), e.getCause());
 
@@ -796,7 +828,7 @@ public class ProgressionService {
         });
     }
 
-    public void recordUnlistedHearing(final JsonEnvelope jsonEnvelope, final UUID originalHearingId, List<Hearing> newHearingIds) {
+    public void recordUnlistedHearing(final JsonEnvelope jsonEnvelope, final UUID originalHearingId, final List<Hearing> newHearingIds) {
         final JsonArrayBuilder newHearingIdArrays = createArrayBuilder();
         newHearingIds.stream().forEach(s -> newHearingIdArrays.add(s.getId().toString()));
 
@@ -949,7 +981,7 @@ public class ProgressionService {
         if (hearingPayloadOptional.isPresent()) {
             return jsonObjectConverter.convert(hearingPayloadOptional.get().getJsonObject("hearing"), Hearing.class);
         }
-        throw new IllegalStateException("Hearing not found for hearingId:" + hearingId.toString());
+        throw new IllegalStateException("Hearing not found for hearingId:" + hearingId);
     }
 
 
@@ -1062,7 +1094,7 @@ public class ProgressionService {
         return null;
     }
 
-    private void updateCourtOrder(CourtApplication courtApplication, CourtApplication.Builder builder) {
+    private void updateCourtOrder(final CourtApplication courtApplication, final CourtApplication.Builder builder) {
         if (nonNull(courtApplication.getCourtOrder())) {
             final CourtOrder courtOrder = ofNullable(courtApplication.getCourtOrder())
                     .map(order -> CourtOrder.courtOrder().withValuesFrom(order)
@@ -1077,7 +1109,7 @@ public class ProgressionService {
         }
     }
 
-    private void updateCourtApplicationCases(CourtApplication courtApplication, CourtApplication.Builder builder) {
+    private void updateCourtApplicationCases(final CourtApplication courtApplication, final CourtApplication.Builder builder) {
         if (isNotEmpty(courtApplication.getCourtApplicationCases())) {
             final List<CourtApplicationCase> courtApplicationCases = courtApplication.getCourtApplicationCases().stream()
                     .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase()
@@ -1329,7 +1361,7 @@ public class ProgressionService {
         return Optional.empty();
     }
 
-    public void prepareSummonsDataForExtendHearing(JsonEnvelope jsonEnvelope, HearingConfirmed hearingConfirmed) {
+    public void prepareSummonsDataForExtendHearing(final JsonEnvelope jsonEnvelope, final HearingConfirmed hearingConfirmed) {
         final PrepareSummonsDataForExtendedHearing prepareSummonsDataForExtendedHearing =
                 prepareSummonsDataForExtendedHearing()
                         .withConfirmedHearing(hearingConfirmed.getConfirmedHearing())
@@ -1344,7 +1376,7 @@ public class ProgressionService {
         sender.send(prepareSummonsDataJsonEnvelope);
     }
 
-    public void updateHearingForPartialAllocation(JsonEnvelope jsonEnvelope, UpdateHearingForPartialAllocation updateHearingForPartialAllocation) {
+    public void updateHearingForPartialAllocation(final JsonEnvelope jsonEnvelope, final UpdateHearingForPartialAllocation updateHearingForPartialAllocation) {
 
         final JsonEnvelope updateHearingForPartialAllocationEnvelope = enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION)
                 .apply(updateHearingForPartialAllocation);
