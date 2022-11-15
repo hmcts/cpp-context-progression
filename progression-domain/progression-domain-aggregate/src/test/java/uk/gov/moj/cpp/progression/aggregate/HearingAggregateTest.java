@@ -1642,6 +1642,116 @@ public class HearingAggregateTest {
 
     }
 
+
+    @Test
+    public void shouldUpdatePleaWhenCourtApplicationIsLinkedWithHearing() {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID caseId = randomUUID();
+        ZonedDateTime sittingDay = ZonedDateTime.now();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(sittingDay).build()))
+                        .withType(HearingType.hearingType().withDescription("Statement").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("A001").build())
+                        .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
+                                .withId(caseId)
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                        .withId(offenceId1)
+                                                        .withPlea(Plea.plea().withOffenceId(offenceId1).build())
+                                                        .build(),
+                                                Offence.offence()
+                                                        .withId(offenceId2)
+                                                        .withListingNumber(11)
+                                                        .build())))
+                                        .build()
+                                )))
+                                .build()
+                        )))
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .build())
+                .build());
+        sittingDay = ZonedDateTime.now().plusDays(1);
+        hearingAggregate.updateAllocationFields(UpdateHearingForAllocationFields.updateHearingForAllocationFields()
+                .withType(HearingType.hearingType().withDescription("Application").build())
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(sittingDay).build()))
+                .withHearingLanguage(HearingLanguage.WELSH)
+                .withCourtCentre(CourtCentre.courtCentre().withCode("A002").build())
+                .withCourtApplication(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withApplicationReference("A")
+                        .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                        .build())
+                .build()
+
+        ).collect(toList());
+
+        final List<Object> events = hearingAggregate.updateHearingWithPlea(PleaModel.pleaModel()
+                .withOffenceId(offenceId2)
+                .withApplicationId(applicationId)
+                .withPlea(Plea.plea().withOffenceId(offenceId2).withApplicationId(applicationId).withPleaValue(GUILTY).build())
+                .build()).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getPlea().getOffenceId(), is(offenceId1));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getId(), is(applicationId));
+
+
+    }
+
+
+    @Test
+    public void shouldNotUpdatePleaWhenCourtApplicationIsNotLinkedWithHearing() {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID caseId = randomUUID();
+        ZonedDateTime sittingDay = ZonedDateTime.now();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(sittingDay).build()))
+                        .withType(HearingType.hearingType().withDescription("Statement").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("A001").build())
+                        .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
+                                .withId(caseId)
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                        .withId(offenceId1)
+                                                        .withPlea(Plea.plea().withOffenceId(offenceId1).build())
+                                                        .build(),
+                                                Offence.offence()
+                                                        .withId(offenceId2)
+                                                        .withListingNumber(11)
+                                                        .build())))
+                                        .build()
+                                )))
+                                .build()
+                        )))
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .build())
+                .build());
+
+        final List<Object> events = hearingAggregate.updateHearingWithPlea(PleaModel.pleaModel()
+                .withOffenceId(offenceId2)
+                .withApplicationId(applicationId)
+                .withPlea(Plea.plea().withOffenceId(offenceId2).withApplicationId(applicationId).withPleaValue(GUILTY).build())
+                .build()).collect(toList());
+
+        assertThat(events.size(), is(0));
+
+    }
+
     @Test
     public void shouldUpdatePleaOfOffencesOfCourtOrderOfCourtApplication() {
         final UUID hearingId = randomUUID();

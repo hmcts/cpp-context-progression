@@ -1468,15 +1468,20 @@ public class HearingAggregate implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         final Hearing hearingWithNewPlea = ofNullable(pleaModel.getApplicationId()).map(applicationId -> getHearingWithNewPleaForApplication(applicationId, pleaModel.getPlea())).orElseGet(() -> getHearingWithNewPleaForOffences(pleaModel));
 
-        streamBuilder.add(HearingPleaUpdated.hearingPleaUpdated().withHearingId(this.hearing.getId()).withPleaModel(pleaModel).build());
+        if(!hearingWithNewPlea.equals(this.hearing)) {
 
-        streamBuilder.add(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
-                .withHearingListingStatus(this.hearingListingStatus)
-                .withNotifyNCES(this.notifyNCES)
-                .withHearing(hearingWithNewPlea)
-                .build());
+            streamBuilder.add(HearingPleaUpdated.hearingPleaUpdated().withHearingId(this.hearing.getId()).withPleaModel(pleaModel).build());
 
-        return apply(streamBuilder.build());
+            streamBuilder.add(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
+                    .withHearingListingStatus(this.hearingListingStatus)
+                    .withNotifyNCES(this.notifyNCES)
+                    .withHearing(hearingWithNewPlea)
+                    .build());
+
+            return apply(streamBuilder.build());
+        } else {
+            return empty();
+        }
     }
 
     public Stream<Object> updateIndex(final Hearing newHearing, final HearingListingStatus hearingListingStatus, final Boolean notifyNCES){
@@ -1492,11 +1497,11 @@ public class HearingAggregate implements Aggregate {
 
     private Hearing getHearingWithNewPleaForApplication(final UUID applicationId, final Plea plea) {
         return Hearing.hearing().withValuesFrom(hearing)
-                .withCourtApplications(hearing.getCourtApplications().stream()
+                .withCourtApplications(ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
                         .map(courtApplication -> ! courtApplication.getId().equals(applicationId) ? courtApplication : CourtApplication.courtApplication()
                                 .withValuesFrom(courtApplication)
                                 .withPlea(plea)
-                                .build()).collect(toList()))
+                                .build()).collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                 .build();
     }
 
