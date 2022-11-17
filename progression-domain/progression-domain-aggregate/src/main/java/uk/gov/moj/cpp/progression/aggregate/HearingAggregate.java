@@ -1520,7 +1520,7 @@ public class HearingAggregate implements Aggregate {
     private CourtOrder getCourtOrderWithNewPlea(final PleaModel pleaModel, final CourtApplication courtApplication) {
         return ofNullable(courtApplication.getCourtOrder())
                 .map(courtOrder -> CourtOrder.courtOrder().withValuesFrom(courtOrder)
-                        .withCourtOrderOffences(courtOrder.getCourtOrderOffences().stream()
+                        .withCourtOrderOffences(ofNullable(courtOrder.getCourtOrderOffences()).map(Collection ::stream).orElseGet(Stream::empty)
                                 .map(courtOrderOffence -> CourtOrderOffence.courtOrderOffence().withValuesFrom(courtOrderOffence)
                                         .withOffence(getOffenceWithNewPlea(courtOrderOffence.getOffence(), pleaModel))
                                         .build())
