@@ -20,6 +20,7 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
 
 @ServiceComponent(EVENT_LISTENER)
@@ -42,8 +43,6 @@ public class HearingMarkedAsDuplicateEventListener {
     @Handles("progression.event.hearing-marked-as-duplicate")
     public void hearingMarkedAsDuplicate(final Envelope<HearingMarkedAsDuplicate> event) {
         final UUID hearingId = event.payload().getHearingId();
-        final List<UUID> defendantIds = event.payload().getDefendantIds();
-        final List<UUID> caseIds = event.payload().getCaseIds();
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("received event progression.event.hearing-marked-as-duplicate hearingId: {} ", hearingId);
@@ -52,15 +51,9 @@ public class HearingMarkedAsDuplicateEventListener {
         final HearingEntity hearingEntity = hearingRepository.findBy(hearingId);
         if (nonNull(hearingEntity)) {
             hearingRepository.remove(hearingEntity);
+            //Deletes the hearing linked rows from other tables where this hearing_id has the entries
             hearingApplicationRepository.removeByHearingId(hearingId);
-
-            if(nonNull(caseIds) && nonNull(defendantIds)) {
-                caseIds.forEach(caseId ->
-                    defendantIds.forEach(defendantId ->
-                        matchDefendantCaseHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId)
-                    )
-                );
-            }
+            matchDefendantCaseHearingRepository.removeByHearingId(hearingId);
         }
     }
 
@@ -75,8 +68,8 @@ public class HearingMarkedAsDuplicateEventListener {
         }
 
         defendantIds.forEach(defendantId -> {
-                caseDefendantHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
-                matchDefendantCaseHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
+            caseDefendantHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
+            matchDefendantCaseHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
         });
     }
 
