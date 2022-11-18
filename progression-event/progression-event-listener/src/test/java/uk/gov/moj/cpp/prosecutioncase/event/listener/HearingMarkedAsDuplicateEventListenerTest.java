@@ -31,6 +31,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -79,8 +80,7 @@ public class HearingMarkedAsDuplicateEventListenerTest {
 
         verify(hearingRepository).remove(hearingEntity);
         verify(hearingApplicationRepository).removeByHearingId(hearingEntity.getHearingId());
-        verify(matchDefendantCaseHearingRepository, times(1)).removeByHearingIdAndCaseIdAndDefendantId(eq(hearingIdToBeDeleted), eq(caseId), eq(defendantId));
-
+        verify(matchDefendantCaseHearingRepository).removeByHearingId(hearingEntity.getHearingId());
     }
 
     @Test
