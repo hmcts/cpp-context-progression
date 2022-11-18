@@ -12,6 +12,7 @@ import static uk.gov.justice.core.courts.HearingApplicationLinkCreated.hearingAp
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
@@ -305,6 +306,43 @@ public class HearingApplicationLinkCreatedListenerTest {
 
         assertThat(hearingIdArgumentCaptor.getValue(), is(HEARING_ID));
         assertThat(courtApplicationIdArgumentCaptor.getValue(), is(APPLICATION_ID));
+    }
+
+    @Test
+    public void shouldNotSaveHearingApplication_whenHearingListingStatus_isHearingResulted() {
+
+        final Hearing hearingFromDb = Hearing.hearing()
+                .withId(HEARING_ID)
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(CASE_ID)
+                        .build()))
+                .build();
+
+        final Hearing hearing = Hearing.hearing().withId(HEARING_ID)
+                .withCourtApplications(singletonList(courtApplication()
+                        .withId(APPLICATION_ID)
+                        .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                .withProsecutionCaseId(CASE_ID).build())).build()))
+                .build();
+
+        HearingApplicationLinkCreated hearingApplicationLinkCreated
+                = hearingApplicationLinkCreated()
+                .withApplicationId(APPLICATION_ID)
+                .withHearing(hearing)
+                .build();
+
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(HEARING_ID);
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearingFromDb).toString());
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(hearingApplicationLinkCreated);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
+
+        eventListener.process(envelope);
+
+        verify(repository, times(0)).save(argumentCaptor.capture());
     }
 
     private List<CourtApplication> getCourtApplications(final List<JudicialResult> judicialResults) {
