@@ -49,7 +49,7 @@
         <defence.version>8.0.10</defence.version>
         <referencedata.offence.version>8.0.0</referencedata.offence.version>
         <coredomain.version>1.0.194-SNAPSHOT</coredomain.version>
-        <directionsmanagement.version>8.0.8</directionsmanagement.version>
+        <directionsmanagement.version>8.0.9</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
         <results.version>8.0.8</results.version>

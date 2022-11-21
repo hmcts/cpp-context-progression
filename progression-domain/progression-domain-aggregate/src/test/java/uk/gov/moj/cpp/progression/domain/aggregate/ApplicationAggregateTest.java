@@ -5,7 +5,6 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -53,7 +52,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.moj.cpp.progression.events.NotificationCreateHearingApplicationLinkFailed;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationAggregateTest {
@@ -91,7 +89,7 @@ public class ApplicationAggregateTest {
 
     @Test
     public void shouldReturnApplicationStatusChanged() {
-        final List<Object> eventStream = aggregate.updateApplicationStatus(randomUUID(), ApplicationStatus.LISTED).collect(toList());
+        final List<Object> eventStream = aggregate.updateApplicationStatus(UUID.randomUUID(), ApplicationStatus.LISTED).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(CourtApplicationStatusChanged.class)));
@@ -123,46 +121,10 @@ public class ApplicationAggregateTest {
     @Test
     public void shouldReturnHearingApplicationLinkCreated() {
         final List<Object> eventStream = aggregate.createHearingApplicationLink
-                (Hearing.hearing().build(), randomUUID(), HearingListingStatus.HEARING_INITIALISED).collect(toList());
+                (Hearing.hearing().build(), UUID.randomUUID(), HearingListingStatus.HEARING_INITIALISED).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(HearingApplicationLinkCreated.class)));
-    }
-
-    @Test
-    public void shouldReturnErrorMessage_whenHearingApplicationLinkCreated_withApplicationStatus_isFinalised() {
-        Whitebox.setInternalState(this.aggregate, "applicationStatus", ApplicationStatus.FINALISED);
-        assertCreateHearingApplicationLinkErrorMessage();
-    }
-
-    @Test
-    public void shouldReturnErrorMessage_whenHearingApplicationLinkCreated_withApplicationStatus_isEjected() {
-        Whitebox.setInternalState(this.aggregate, "applicationStatus", ApplicationStatus.EJECTED);
-        assertCreateHearingApplicationLinkErrorMessage();
-    }
-
-    @Test
-    public void shouldNotReturnErrorMessage_whenHearingApplicationLinkCreated_withApplicationStatus_isListed() {
-        Whitebox.setInternalState(this.aggregate, "applicationStatus", ApplicationStatus.LISTED);
-        final List<Object> eventStream = aggregate.createHearingApplicationLink
-                (Hearing.hearing().withId(randomUUID()).build(), randomUUID(), HearingListingStatus.HEARING_RESULTED).collect(toList());
-
-        assertThat(eventStream.size(), is(1));
-        final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(equalTo(HearingApplicationLinkCreated.class)));
-    }
-
-
-    private void assertCreateHearingApplicationLinkErrorMessage() {
-        final List<Object> eventStream = aggregate.createHearingApplicationLink
-                (Hearing.hearing().withId(randomUUID()).build(), randomUUID(), HearingListingStatus.HEARING_RESULTED).collect(toList());
-
-        assertThat(eventStream.size(), is(1));
-
-        final NotificationCreateHearingApplicationLinkFailed applicationLinkFailed = (NotificationCreateHearingApplicationLinkFailed) eventStream.get(0);
-        assertThat(applicationLinkFailed.getClass(), is(equalTo(NotificationCreateHearingApplicationLinkFailed.class)));
-        assertThat(applicationLinkFailed.getApplicationStatus(),anyOf( is(ApplicationStatus.FINALISED),is(ApplicationStatus.EJECTED)));
-        assertThat(applicationLinkFailed.getErrorMessage(), is(equalTo(ApplicationAggregate.CREATE_HEARING_APPLICATION_LINK_ERROR)));
     }
 
     @Test
