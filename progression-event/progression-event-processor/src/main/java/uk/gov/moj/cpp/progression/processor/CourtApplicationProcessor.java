@@ -215,7 +215,7 @@ public class CourtApplicationProcessor {
     public void processCourtApplicationInitiated(final JsonEnvelope event) {
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class);
 
-        if (courtApplicationProceedingsInitiated.getIsSJP()) {
+        if (Boolean.TRUE.equals(courtApplicationProceedingsInitiated.getIsSJP())) {
             initiateSJPCase(event, courtApplicationProceedingsInitiated);
         } else {
             initiateCourtApplication(event, courtApplicationProceedingsInitiated.getCourtApplication());
@@ -609,7 +609,7 @@ public class CourtApplicationProcessor {
     }
 
 
-    private List<ProsecutionCase> getProsecutionCases(JsonEnvelope event, CourtApplication application) {
+    private List<ProsecutionCase> getProsecutionCases(final JsonEnvelope event, final CourtApplication application) {
         final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
         final Stream<CourtApplicationCase> courtApplicationCases = ofNullable(application.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty);
         final List<MasterDefendant> masterDefendantList = getDistinctMasterDefendants(application);
@@ -641,7 +641,7 @@ public class CourtApplicationProcessor {
         return prosecutionCase().withValuesFrom(prosecutionCase).withDefendants(defendantList).build();
     }
 
-    private Defendant updatedDefendant(Defendant defendant) {
+    private Defendant updatedDefendant(final Defendant defendant) {
         final Predicate<Offence> offencePredicate = offence -> isNull(offence.getProceedingsConcluded()) || !offence.getProceedingsConcluded();
         final List<Offence> offences = defendant.getOffences().stream().filter(offencePredicate)
                 .map(offence -> Offence.offence().withValuesFrom(offence).withJudicialResults(null).build())
@@ -653,7 +653,7 @@ public class CourtApplicationProcessor {
         return masterDefendantList.stream().anyMatch(masterDefendant -> masterDefendant.getMasterDefendantId().equals(defendant.getMasterDefendantId()));
     }
 
-    public List<MasterDefendant> getDistinctMasterDefendants(CourtApplication application) {
+    public List<MasterDefendant> getDistinctMasterDefendants(final CourtApplication application) {
 
         final Optional<MasterDefendant> applicant = ofNullable(application.getApplicant().getMasterDefendant());
 
@@ -673,12 +673,12 @@ public class CourtApplicationProcessor {
         return masterDefendants.stream().filter(distinctByKey(MasterDefendant::getMasterDefendantId)).collect(toList());
     }
 
-    private <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
+    private <T> Predicate<T> distinctByKey(final Function<? super T, Object> keyExtractor) {
         final Map<Object, Boolean> map = new ConcurrentHashMap<>();
         return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
-    private boolean isAllActiveCases(Stream<CourtApplicationCase> courtApplicationCases) {
+    private boolean isAllActiveCases(final Stream<CourtApplicationCase> courtApplicationCases) {
         return courtApplicationCases
                 .allMatch(courtApplicationCase -> nonNull(courtApplicationCase.getCaseStatus())
                         && !"INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus())
@@ -699,7 +699,7 @@ public class CourtApplicationProcessor {
                 .findFirst();
     }
 
-    private void initiateSJPCase(JsonEnvelope event, CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated) {
+    private void initiateSJPCase(final JsonEnvelope event, final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated) {
 
         final CourtApplication courtApplication = courtApplicationProceedingsInitiated.getCourtApplication();
 
@@ -728,7 +728,7 @@ public class CourtApplicationProcessor {
         initiateCourtApplication(event, courtApplication);
     }
 
-    private void initiateCourtApplication(JsonEnvelope event, final CourtApplication courtApplication) {
+    private void initiateCourtApplication(final JsonEnvelope event, final CourtApplication courtApplication) {
         final JsonObject command = createObjectBuilder()
                 .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
                 .build();
@@ -841,10 +841,17 @@ public class CourtApplicationProcessor {
                 .build();
     }
 
-    private boolean isCaseNotFoundInCC(JsonEnvelope event, ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
-        final String reference = nonNull(prosecutionCaseIdentifier.getCaseURN()) ? prosecutionCaseIdentifier.getCaseURN() : prosecutionCaseIdentifier.getProsecutionAuthorityReference();
-        final Optional<JsonObject> jsonObject = progressionService.searchCaseDetailByReference(event, reference);
-        return jsonObject.isPresent() && jsonObject.get().getJsonArray("searchResults").isEmpty();
+    private boolean isCaseNotFoundInCC(final JsonEnvelope event, final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
+        final String reference;
+        if (nonNull(prosecutionCaseIdentifier.getCaseURN())) {
+            reference = prosecutionCaseIdentifier.getCaseURN();
+            LOGGER.info("referecence is caseURN: {}", reference);
+        } else {
+            reference = prosecutionCaseIdentifier.getProsecutionAuthorityReference();
+            LOGGER.info("referecence is ProsecutionAuthority {}", reference);
+        }
+        final Optional<JsonObject> jsonObject = progressionService.caseExistsByCaseUrn(event, reference);
+        return jsonObject.isPresent() && jsonObject.get().isEmpty();
     }
 
     private CreateHearingApplicationRequest buildApplicationHearingRequest(final InitiateCourtHearingAfterSummonsApproved initiateCourtHearingAfterSummonsApproved, final CourtApplication application, final UUID courtHearingId, final SummonsTemplateType summonsTemplateType) {

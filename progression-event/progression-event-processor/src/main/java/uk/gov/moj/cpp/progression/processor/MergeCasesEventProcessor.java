@@ -77,13 +77,13 @@ public class MergeCasesEventProcessor {
         validateMergeCases.getCaseUrns().forEach(
                 e -> {
                     //check if given URN actually exists in a case
-                    final Optional<JsonObject> existingCase = progressionService.searchCaseDetailByReference(envelope, e);
-                    if (existingCase.get().getJsonArray(SEARCH_RESULTS).isEmpty()) {
+                    final Optional<JsonObject> existingCase = progressionService.caseExistsByCaseUrn(envelope, e);
+                    if (existingCase.get().isEmpty()) {
                         sender.send(Enveloper.envelop(createResponsePayload(LinkResponseResults.REFERENCE_NOT_FOUND)).withName(PUBLIC_PROGRESSION_LINK_CASES_RESPONSE).withMetadataFrom(envelope));
                         failed.set(true);
                         LOGGER.error("Merge cases failed. Reference not found - {}", envelope.payloadAsJsonObject());
                     } else {
-                        if (existingCase.get().getJsonArray(SEARCH_RESULTS).getJsonObject(0).getString(CASE_ID).equals(validateMergeCases.getProsecutionCaseId().toString())) { //get(0) is safe here
+                        if (existingCase.get().getString(CASE_ID).equals(validateMergeCases.getProsecutionCaseId().toString())) { //get(0) is safe here
                             sender.send(Enveloper.envelop(createResponsePayload(LinkResponseResults.REFERENCE_NOT_VALID)).withName(PUBLIC_PROGRESSION_LINK_CASES_RESPONSE).withMetadataFrom(envelope));
                             failed.set(true);
                             LOGGER.error("Merge cases failed. Reference not valid, can not merge case to itself - {}", envelope.payloadAsJsonObject());
@@ -144,7 +144,7 @@ public class MergeCasesEventProcessor {
         caseUrns.forEach(
                 mergeCaseUrn -> {
                     //find caseId for given caseURN in the request
-                    final String mergeCaseId = progressionService.searchCaseDetailByReference(envelope, mergeCaseUrn).get().getJsonArray(SEARCH_RESULTS).getJsonObject(0).getString(CASE_ID);
+                    final String mergeCaseId = progressionService.caseExistsByCaseUrn(envelope, mergeCaseUrn).get().getString(CASE_ID);
                     final JsonObject previousMergeSearchResult = progressionService.searchLinkedCases(envelope, mergeCaseId).get();
                     buildCaseLinkedOrUnlinkedEventJson(arrayBuilder, leadCaseId, leadCaseUrn, mergeCaseId, mergeCaseUrn);
 

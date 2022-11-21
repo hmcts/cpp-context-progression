@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "searchResults": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "caseId": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "string"
+            },
+            "defendantName": {
+              "type": "string"
+            },
+            "dob": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "prosecutor": {
+              "type": "string"
+            },
+            "isStandaloneApplication": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "caseId",
+            "reference",
+            "defendant",
+            "dob",
+            "status",
+            "prosecutor"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "searchResults"
+  ]
+}

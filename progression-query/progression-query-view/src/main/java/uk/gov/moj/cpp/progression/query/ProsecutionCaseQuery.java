@@ -76,6 +76,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.NoResultException;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +90,7 @@ public class ProsecutionCaseQuery {
     private static final String CASE_ID = "caseId";
     private static final String DEFENDANT_ID = "defendantId";
     private static final String FIELD_QUERY = "q";
+    private static final String FIELD_CASE_URN = "caseUrn";
     private static final String SEARCH_RESULT = "searchResults";
     public static final String OLD_PROSECUTION_AUTHORITY_CODE = "oldProsecutionAuthorityCode";
     public static final String HEARINGS_AT_A_GLANCE = "hearingsAtAGlance";
@@ -376,7 +378,7 @@ public class ProsecutionCaseQuery {
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         if (StringUtils.isNotBlank(searchCriteria)) {
             final List<SearchProsecutionCaseEntity> cases = searchCaseRepository.findBySearchCriteria(prepareSearch
-                    (searchCriteria));
+                    (searchCriteria.toLowerCase()));
             final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
             cases.forEach(caseEntity ->
                     jsonArrayBuilder.add(stringToJsonObjectConverter.convert(SearchCaseBuilder.searchCaseBuilder()
@@ -392,16 +394,54 @@ public class ProsecutionCaseQuery {
                 jsonObjectBuilder.build());
     }
 
+    @Handles("progression.query.search-cases-by-caseurn")
+    public JsonEnvelope searchCaseByCaseUrn(final JsonEnvelope envelope) {
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        if (envelope.payloadAsJsonObject().containsKey(FIELD_CASE_URN) && StringUtils.isNotBlank(envelope.payloadAsJsonObject().getString(FIELD_CASE_URN))) {
+            final List<SearchProsecutionCaseEntity> cases = searchCaseRepository.findByCaseUrn(envelope.payloadAsJsonObject().getString(FIELD_CASE_URN));
+            final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+            cases.forEach(caseEntity ->
+                    jsonArrayBuilder.add(stringToJsonObjectConverter.convert(SearchCaseBuilder.searchCaseBuilder()
+                            .withSearchCaseEntity(caseEntity)
+                            .withDefendantFullName()
+                            .withResultPayload()
+                            .build().getResultPayload())));
+            jsonObjectBuilder.add(SEARCH_RESULT, jsonArrayBuilder.build());
+        }
+
+        return JsonEnvelope.envelopeFrom(
+                envelope.metadata(),
+                jsonObjectBuilder.build());
+    }
+
+    @Handles("progression.query.case-exist-by-caseurn")
+    public JsonEnvelope caseExistsByCaseUrn(final JsonEnvelope envelope) {
+        final String caseUrn = envelope.payloadAsJsonObject().getString(FIELD_CASE_URN);
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+
+        if (StringUtils.isNotBlank(caseUrn)) {
+            final List<SearchProsecutionCaseEntity> searchResult = searchCaseRepository.findByCaseUrn(caseUrn);
+            if (CollectionUtils.isNotEmpty(searchResult)) {
+                jsonObjectBuilder.add(CASE_ID, searchResult.get(0).getCaseId());
+            }
+        }
+
+        return JsonEnvelope.envelopeFrom(
+                envelope.metadata(),
+                jsonObjectBuilder.build());
+    }
+
+
     @Handles("progression.query.prosecutionauthorityid-by-case-id")
     public JsonEnvelope searchProsecutionAuthorityId(final JsonEnvelope envelope) {
-        JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
-        JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
         final String strCaseIds =
                 JsonObjects.getString(envelope.payloadAsJsonObject(), CASE_IDS_SEARCH_PARAM)
                         .orElse(null);
         if (StringUtils.isNotEmpty(strCaseIds)) {
             final List<UUID> caseIdList = commaSeparatedUuidParam2UUIDs(strCaseIds);
-            List<ProsecutionCaseEntity> prosecutionCaseEntities = prosecutionCaseRepository.findByProsecutionCaseIds(caseIdList);
+            final List<ProsecutionCaseEntity> prosecutionCaseEntities = prosecutionCaseRepository.findByProsecutionCaseIds(caseIdList);
             prosecutionCaseEntities.forEach(prosecutionCaseEntity -> {
                 final JsonObject payloadEntity = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
                 final JsonObject prosecutionCaseIdentifier = payloadEntity.getJsonObject(PROSECUTION_CASE_IDENTIFIER);

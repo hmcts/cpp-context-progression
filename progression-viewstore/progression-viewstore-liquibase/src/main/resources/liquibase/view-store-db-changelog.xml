@@ -104,4 +104,5 @@
     <include file="liquibase/alter-pet-case-add-column-lastupdated-datetime.xml"/>
     <include file="liquibase/drop-process-event-index.xml"/>
     <include file="liquibase/create-tables-certificate-of-trial-readiness.xml"/>
+    <include file="liquibase/add-index-search-prosecution-case-reference.xml"/>
 </databaseChangeLog>

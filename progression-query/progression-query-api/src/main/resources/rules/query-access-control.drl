@@ -140,6 +140,24 @@ rule "Query - Access control for  progression.query.search-cases"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.search-cases-by-caseurn"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.search-cases-by-caseurn");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin", "Court Associate", "Magistrates", "Online Plea System Users"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for  progression.query.case-exist-by-caseurn"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.case-exist-by-caseurn");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin", "Court Associate", "Magistrates", "Online Plea System Users"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.caseprogressiondetail"
   when
     $outcome: Outcome();

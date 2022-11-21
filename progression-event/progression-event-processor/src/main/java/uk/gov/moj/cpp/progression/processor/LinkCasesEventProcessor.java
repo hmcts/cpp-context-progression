@@ -75,13 +75,13 @@ public class LinkCasesEventProcessor {
         validateLinkCases.getCaseUrns().stream().forEach(
                 e -> {
                     //check if given URN actually exists in a case
-                    final Optional<JsonObject> existingCase = progressionService.searchCaseDetailByReference(envelope, e);
-                    if (existingCase.get().getJsonArray(SEARCH_RESULTS).isEmpty()) {
+                    final Optional<JsonObject> existingCase = progressionService.caseExistsByCaseUrn(envelope, e);
+                    if (existingCase.get().isEmpty()) {
                         sender.send(Enveloper.envelop(createResponsePayload(LinkResponseResults.REFERENCE_NOT_FOUND)).withName(PUBLIC_PROGRESSION_LINK_CASES_RESPONSE).withMetadataFrom(envelope));
                         failed.set(true);
                         LOGGER.error("Link cases failed. Reference not found - {}", envelope.payloadAsJsonObject());
                     } else {
-                        if (existingCase.get().getJsonArray(SEARCH_RESULTS).getJsonObject(0).getString(CASE_ID).equals(validateLinkCases.getProsecutionCaseId().toString())) { //get(0) is safe here
+                        if (existingCase.get().getString(CASE_ID).equals(validateLinkCases.getProsecutionCaseId().toString())) {
                             sender.send(Enveloper.envelop(createResponsePayload(LinkResponseResults.REFERENCE_NOT_VALID)).withName(PUBLIC_PROGRESSION_LINK_CASES_RESPONSE).withMetadataFrom(envelope));
                             failed.set(true);
                             LOGGER.error("Link cases failed. Reference not valid, can not link case to itself - {}", envelope.payloadAsJsonObject());
@@ -142,7 +142,7 @@ public class LinkCasesEventProcessor {
         caseUrns.forEach(
                 linkCaseUrn -> {
                     //find caseId for given caseURN in the request
-                    final String linkedCaseId = progressionService.searchCaseDetailByReference(envelope, linkCaseUrn).get().getJsonArray(SEARCH_RESULTS).getJsonObject(0).getString(CASE_ID);
+                    final String linkedCaseId = progressionService.caseExistsByCaseUrn(envelope, linkCaseUrn).get().getString(CASE_ID);
                     buildCaseLinkedOrUnlinkedEventJson(arrayBuilder, leadCaseId, leadCaseUrn, linkedCaseId, linkCaseUrn);
                 }
         );

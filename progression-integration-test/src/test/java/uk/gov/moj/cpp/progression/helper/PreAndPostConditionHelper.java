@@ -39,8 +39,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.util.Objects;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -98,7 +98,7 @@ public class PreAndPostConditionHelper {
     }
 
     public static Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId, final String materialIdOne,
-                                                          final String materialIdTwo, final String courtDocumentId, final String referralId, String caseUrn) throws IOException {
+                                                          final String materialIdTwo, final String courtDocumentId, final String referralId, final String caseUrn) throws IOException {
         return postCommand(getWriteUrl("/refertocourt"),
                 "application/vnd.progression.refer-cases-to-court+json",
                 createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne, materialIdTwo, courtDocumentId, referralId, caseUrn));
@@ -286,7 +286,7 @@ public class PreAndPostConditionHelper {
 
     }
 
-    public static Response initiateCourtProceedings(String commandPayload) throws IOException {
+    public static Response initiateCourtProceedings(final String commandPayload) throws IOException {
         return postCommand(getWriteUrl("/initiatecourtproceedings"), "application/vnd.progression.initiate-court-proceedings+json", commandPayload);
 
     }
@@ -363,23 +363,23 @@ public class PreAndPostConditionHelper {
     }
 
     public static Response initiateCourtProceedingsWithoutCourtDocument(final String caseId, final String defendantId) throws IOException {
-        String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
-        String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
-        String defendantDOB = LocalDate.now().minusYears(15).toString();
+        final String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
+        final String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
+        final String defendantDOB = LocalDate.now().minusYears(15).toString();
         return initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId, listedStartDateTime, earliestStartDateTime, defendantDOB);
     }
 
     public static Response initiateCourtProceedingsWithoutCourtDocument(final String resource, final String caseId, final String defendantId) throws IOException {
-        String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
-        String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
-        String defendantDOB = LocalDate.now().minusYears(15).toString();
+        final String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
+        final String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
+        final String defendantDOB = LocalDate.now().minusYears(15).toString();
         return initiateCourtProceedingsWithoutCourtDocument(resource, caseId, defendantId, listedStartDateTime, earliestStartDateTime, defendantDOB);
     }
 
     public static Response initiateCourtProceedingsWithoutCourtDocumentAndCpsOrganisation(final String caseId, final String defendantId) throws IOException {
-        String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
-        String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
-        String defendantDOB = LocalDate.now().minusYears(15).toString();
+        final String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
+        final String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
+        final String defendantDOB = LocalDate.now().minusYears(15).toString();
         return initiateCourtProceedingsWithoutCourtDocumentAndCpsOrganisation(caseId, defendantId, listedStartDateTime, earliestStartDateTime, defendantDOB);
     }
 
@@ -471,7 +471,7 @@ public class PreAndPostConditionHelper {
                 .replaceAll("DEFENDANT_ID",defendantId)
                 .replaceAll("CASE_ID",caseId);
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
-        String request = jsonObjectPayload.toString();
+        final String request = jsonObjectPayload.toString();
        return postCommand(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), "application/vnd.progression.update-offences-for-prosecution-case+json", request);
     }
 
@@ -592,7 +592,7 @@ public class PreAndPostConditionHelper {
                 .replace("\"ATTENDANCE_DAYS\"", convertToJsonList(attendanceDays));
     }
 
-    private static String convertToJsonList(List<String> stringList) {
+    private static String convertToJsonList(final List<String> stringList) {
         final String join = StringUtils.join(stringList, "\",\"");
         return StringUtils.wrap(join, "\"");
     }
@@ -981,6 +981,16 @@ public class PreAndPostConditionHelper {
 
     public static void verifyCasesForSearchCriteria(final String searchCriteria, final Matcher<? super ReadContext>[] matchers) {
         poll(requestParams(getReadUrl(join("", "/search?q=", searchCriteria)), "application/vnd.progression.query.search-cases+json").withHeader(USER_ID, UUID.randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                matchers
+                        ))).getPayload();
+    }
+
+    public static void verifyCasesByCaseUrn(final String caseUrn, final Matcher<? super ReadContext>[] matchers) {
+        poll(requestParams(getReadUrl(join("", "/search?caseUrn=", caseUrn)), "application/vnd.progression.query.search-cases-by-caseurn+json").withHeader(USER_ID, UUID.randomUUID()))
                 .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),

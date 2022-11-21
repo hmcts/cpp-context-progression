@@ -138,17 +138,17 @@ public class CourtApplicationProcessorTest {
     private Enveloper enveloper;
 
     @Spy
-    private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     @Spy
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @Spy
     @InjectMocks
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
     @Spy
-    private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @Mock
     private ListingService listingService;
@@ -192,7 +192,7 @@ public class CourtApplicationProcessorTest {
     public void processCourtApplicationCreatedWithoutCpsDefendantId() {
         //Given
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-created");
-        CourtApplicationCreated courtApplicationCreated = courtApplicationCreated()
+        final CourtApplicationCreated courtApplicationCreated = courtApplicationCreated()
                 .withCourtApplication(courtApplication()
                         .withApplicationReference(STRING.next())
                         .withId(randomUUID())
@@ -209,7 +209,7 @@ public class CourtApplicationProcessorTest {
         courtApplicationProcessor.processCourtApplicationCreated(event);
 
         //Then
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender, times(2)).send(captor.capture());
         assertThat(captor.getAllValues().get(0).payload(), notNullValue());
         assertThat(captor.getAllValues().get(1).payload(), notNullValue());
@@ -219,11 +219,11 @@ public class CourtApplicationProcessorTest {
     public void processCourtApplicationCreatedWithCpsDefendantId() {
         //Given
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-created");
-        CourtApplicationCreated courtApplicationCreated = courtApplicationCreated()
+        final CourtApplicationCreated courtApplicationCreated = courtApplicationCreated()
                 .withCourtApplication(courtApplication()
                         .withApplicationReference(STRING.next())
                         .withId(randomUUID())
-                        .withRespondents(Arrays.asList(buildMasterDefendant(),buildMasterDefendant()))
+                        .withRespondents(Arrays.asList(buildMasterDefendant(), buildMasterDefendant()))
                         .build())
                 .build();
 
@@ -237,7 +237,7 @@ public class CourtApplicationProcessorTest {
         courtApplicationProcessor.processCourtApplicationCreated(event);
 
         //Then
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender, times(4)).send(captor.capture());
         assertThat(captor.getAllValues().get(0).payload(), notNullValue());
         assertThat(captor.getAllValues().get(0).metadata().name(), is("public.progression.court-application-created"));
@@ -275,7 +275,7 @@ public class CourtApplicationProcessorTest {
                 .withReasons(reasons)
                 .withProsecutorEmailAddress("test@test.com")
                 .build();
-        CourtApplicationSummonsRejected courtApplicationSummonsRejected = courtApplicationSummonsRejected()
+        final CourtApplicationSummonsRejected courtApplicationSummonsRejected = courtApplicationSummonsRejected()
                 .withCourtApplication(courtApplication)
                 .withCaseIds(singletonList(prosecutionCaseId))
                 .withSummonsRejectedOutcome(summonsRejectedOutcome)
@@ -317,7 +317,7 @@ public class CourtApplicationProcessorTest {
         courtApplicationProcessor.processCourtApplicationChanged(event);
 
         //Then
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender).send(captor.capture());
         assertThat(captor.getValue().payload(), notNullValue());
     }
@@ -333,7 +333,7 @@ public class CourtApplicationProcessorTest {
         courtApplicationProcessor.processCourtApplicationUpdated(event);
 
         //Then
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender).send(captor.capture());
         assertThat(captor.getValue().payload(), notNullValue());
     }
@@ -375,9 +375,9 @@ public class CourtApplicationProcessorTest {
         courtApplicationProcessor.processBoxWorkApplication(event);
 
         //Then
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender, times(2)).send(captor.capture());
-        List<Envelope> currentEvents = captor.getAllValues();
+        final List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), is("hearing.initiate"));
         assertThat(currentEvents.get(1).metadata().name(), is("public.progression.boxwork-application-referred"));
 
@@ -503,9 +503,9 @@ public class CourtApplicationProcessorTest {
         courtApplicationProcessor.processBoxWorkApplication(event);
 
         //Then
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender, times(2)).send(captor.capture());
-        List<Envelope> currentEvents = captor.getAllValues();
+        final List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), is("hearing.initiate"));
         assertThat(currentEvents.get(1).metadata().name(), is("public.progression.boxwork-application-referred"));
 
@@ -523,7 +523,7 @@ public class CourtApplicationProcessorTest {
     @Test
     public void shouldProcessEventWhenApplicationReferredToCourtHearing() throws IOException {
 
-        UUID applicationId = randomUUID();
+        final UUID applicationId = randomUUID();
 
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-court-hearing");
 
@@ -563,9 +563,9 @@ public class CourtApplicationProcessorTest {
         courtApplicationProcessor.processCourtApplicationReferredToCourtHearing(event);
 
         //Then
-        ArgumentCaptor<ListCourtHearing> captor = forClass(ListCourtHearing.class);
+        final ArgumentCaptor<ListCourtHearing> captor = forClass(ListCourtHearing.class);
         verify(listingService).listCourtHearing(any(), captor.capture());
-        ListCourtHearing expectedListCourtHearing = captor.getValue();
+        final ListCourtHearing expectedListCourtHearing = captor.getValue();
         String expectedPayload = Resources.toString(getResource("expected.progression.event.application-referred-to-court-hearing.json"), defaultCharset());
         expectedPayload = expectedPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
                 .replace("CASE_ID_1", caseId_1).replace("CASE_ID_2", caseId_2)
@@ -578,7 +578,7 @@ public class CourtApplicationProcessorTest {
 
         ));
 
-        ArgumentCaptor<Hearing> hearingArgumentCaptor = forClass(Hearing.class);
+        final ArgumentCaptor<Hearing> hearingArgumentCaptor = forClass(Hearing.class);
         verify(progressionService).linkApplicationToHearing(any(JsonEnvelope.class),
                 hearingArgumentCaptor.capture(), eq(HearingListingStatus.HEARING_INITIALISED));
         final Hearing hearingArgumentCaptorValue = hearingArgumentCaptor.getValue();
@@ -589,14 +589,14 @@ public class CourtApplicationProcessorTest {
 
     @Test
     public void shouldProcessEventWhenApplicationReferredToExistingHearing() {
-        Function<Object, JsonEnvelope> enveloperFunction = mock(Function.class);
-        JsonEnvelope finalEnvelope = mock(JsonEnvelope.class);
+        final Function<Object, JsonEnvelope> enveloperFunction = mock(Function.class);
+        final JsonEnvelope finalEnvelope = mock(JsonEnvelope.class);
 
-        UUID hearingId = randomUUID();
+        final UUID hearingId = randomUUID();
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referral-to-existing-hearing");
         final UUID caseId_1 = randomUUID();
         final UUID caseId_2 = randomUUID();
-        ApplicationReferredToExistingHearing applicationReferredToExistingHearing = applicationReferredToExistingHearing()
+        final ApplicationReferredToExistingHearing applicationReferredToExistingHearing = applicationReferredToExistingHearing()
                 .withApplication(courtApplication()
                         .withApplicationReference(STRING.next())
                         .withType(courtApplicationType()
@@ -633,22 +633,22 @@ public class CourtApplicationProcessorTest {
                 .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId_2.toString()).build()).build()));
 
         courtApplicationProcessor.processCourtApplicationReferredToExistingHearing(event);
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender).send(captor.capture());
-        List<Envelope> currentEvents = captor.getAllValues();
+        final List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), is("public.progression.events.hearing-extended"));
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).containsKey("prosecutionCases"), is(false));
 
         verify(progressionService, never()).linkApplicationsToHearing(any(JsonEnvelope.class),
                 any(Hearing.class), any(List.class), eq(HearingListingStatus.SENT_FOR_LISTING));
 
-        verify(progressionService).populateHearingToProbationCaseworker(eq(event), eq(hearingId));
+        verify(progressionService).populateHearingToProbationCaseworker(event, hearingId);
     }
 
     @Test
     public void shouldProcessEventWhenApplicationReferredToExistingHearingGenericBreach() {
-        Function<Object, JsonEnvelope> enveloperFunction = mock(Function.class);
-        JsonEnvelope finalEnvelope = mock(JsonEnvelope.class);
+        final Function<Object, JsonEnvelope> enveloperFunction = mock(Function.class);
+        final JsonEnvelope finalEnvelope = mock(JsonEnvelope.class);
 
         final UUID hearingId = randomUUID();
         final UUID caseId_1 = randomUUID();
@@ -659,7 +659,7 @@ public class CourtApplicationProcessorTest {
         final String OFFENCE_ID_2 = randomUUID().toString();
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referral-to-existing-hearing");
         final CourtApplicationParty masterDefendant = courtApplicationParty().withId(applicantId).withMasterDefendant(masterDefendant().withMasterDefendantId(masterDefendantId).build()).build();
-        ApplicationReferredToExistingHearing applicationReferredToExistingHearing = applicationReferredToExistingHearing()
+        final ApplicationReferredToExistingHearing applicationReferredToExistingHearing = applicationReferredToExistingHearing()
                 .withApplication(courtApplication()
                         .withApplicationReference(STRING.next())
                         .withType(courtApplicationType()
@@ -706,13 +706,13 @@ public class CourtApplicationProcessorTest {
                         .build()));
 
         courtApplicationProcessor.processCourtApplicationReferredToExistingHearing(event);
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender).send(captor.capture());
-        List<Envelope> currentEvents = captor.getAllValues();
+        final List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), is("public.progression.events.hearing-extended"));
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getJsonArray("prosecutionCases").size(), is(1));
 
-        ArgumentCaptor<Hearing> hearingArgumentCaptor = forClass(Hearing.class);
+        final ArgumentCaptor<Hearing> hearingArgumentCaptor = forClass(Hearing.class);
         verify(progressionService).linkApplicationsToHearing(any(JsonEnvelope.class),
                 hearingArgumentCaptor.capture(), any(List.class), eq(HearingListingStatus.SENT_FOR_LISTING));
         final Hearing hearingArgumentCaptorValue = hearingArgumentCaptor.getValue();
@@ -742,20 +742,20 @@ public class CourtApplicationProcessorTest {
         courtApplicationProcessor.processCourtApplicationInitiated(event);
 
         //Then
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender, times(2)).send(captor.capture());
-        List<Envelope> currentEvents = captor.getAllValues();
+        final List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), is("progression.command.create-court-application"));
     }
 
     @Test
     public void shouldProcessCourtApplicationProceedingsInitiatedWithSjpCase() {
         //Given
-        UUID caseId = randomUUID();
+        final UUID caseId = randomUUID();
 
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-proceedings-initiated");
 
-        CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = courtApplicationProceedingsInitiated()
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = courtApplicationProceedingsInitiated()
                 .withCourtApplication(courtApplication()
                         .withCourtApplicationCases(Arrays.asList(courtApplicationCase()
                                 .withProsecutionCaseId(caseId)
@@ -771,9 +771,8 @@ public class CourtApplicationProcessorTest {
 
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class)).thenReturn(courtApplicationProceedingsInitiated);
         //When
-        when(progressionService.searchCaseDetailByReference(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("searchResults", Json.createArrayBuilder().build
-                        ()).build()));
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
+                (createObjectBuilder().build()));
         when(sjpService.getProsecutionCase(event, caseId)).thenReturn(prosecutionCase()
                 .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
                         .withProsecutionAuthorityReference("prosecutionCaseIdentifier")
@@ -787,18 +786,18 @@ public class CourtApplicationProcessorTest {
         courtApplicationProcessor.processCourtApplicationInitiated(event);
 
         //Then
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender, times(3)).send(captor.capture());
     }
 
     @Test
     public void shouldProcessCourtApplicationProceedingsWithAlreadyInitiatedSjpCase() {
         //Given
-        UUID caseId = randomUUID();
+        final UUID caseId = randomUUID();
 
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-proceedings-initiated");
 
-        CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = courtApplicationProceedingsInitiated()
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = courtApplicationProceedingsInitiated()
                 .withCourtApplication(courtApplication()
                         .withCourtApplicationCases(Arrays.asList(courtApplicationCase()
                                 .withProsecutionCaseId(caseId)
@@ -814,9 +813,8 @@ public class CourtApplicationProcessorTest {
 
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class)).thenReturn(courtApplicationProceedingsInitiated);
         //When
-        when(progressionService.searchCaseDetailByReference(any(), any())).thenReturn(Optional.of
-                (createObjectBuilder().add("searchResults", Json.createArrayBuilder().add("some value").build
-                        ()).build()));
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
+                (createObjectBuilder().add("caseId", randomUUID().toString()).build()));
         when(sjpService.getProsecutionCase(event, caseId)).thenReturn(prosecutionCase()
                 .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
                         .withProsecutionAuthorityReference("prosecutionCaseIdentifier")
@@ -830,7 +828,7 @@ public class CourtApplicationProcessorTest {
         courtApplicationProcessor.processCourtApplicationInitiated(event);
 
         //Then
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender, times(2)).send(captor.capture());
     }
 
@@ -851,7 +849,7 @@ public class CourtApplicationProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class)).thenReturn(courtApplicationProceedingsEdited);
         courtApplicationProcessor.processCourtApplicationEdited(event);
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender).send(captor.capture());
         final JsonObject jsonObject = objectToJsonObjectConverter.convert(captor.getValue().payload());
         assertThat(jsonObject.getString("hearingId"), is(hearingId.toString()));
@@ -876,7 +874,7 @@ public class CourtApplicationProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class)).thenReturn(courtApplicationProceedingsEdited);
         courtApplicationProcessor.processCourtApplicationEdited(event);
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender, times(2)).send(captor.capture());
 
         assertThat(captor.getAllValues().get(0).metadata().name(), is("progression.command.update-court-application-to-hearing"));
@@ -905,7 +903,7 @@ public class CourtApplicationProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class)).thenReturn(courtApplicationProceedingsEdited);
         courtApplicationProcessor.processCourtApplicationEdited(event);
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender, times(2)).send(captor.capture());
 
         assertThat(captor.getAllValues().get(0).metadata().name(), is("progression.command.update-court-application-to-hearing"));
@@ -930,9 +928,9 @@ public class CourtApplicationProcessorTest {
 
         courtApplicationProcessor.processHearingResultedApplicationUpdated(event);
 
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender).send(captor.capture());
-        List<Envelope> currentEvents = captor.getAllValues();
+        final List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), is(PUBLIC_PROGRESSION_HEARING_RESULTED_APPLICATION_UPDATED));
     }
 

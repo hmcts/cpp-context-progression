@@ -1,8 +1,9 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -14,7 +15,6 @@ import static uk.gov.moj.cpp.progression.events.LinkResponseResults.REFERENCE_NO
 import static uk.gov.moj.cpp.progression.events.LinkResponseResults.REFERENCE_NOT_VALID;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.LINKED_CASES;
-import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.SEARCH_RESULTS;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -72,7 +72,7 @@ public class LinkCasesEventProcessorTest {
 
     @Test
     public void shouldRaiseReferenceNotFound() {
-        final UUID leadCaseId = UUID.randomUUID();
+        final UUID leadCaseId = randomUUID();
         final String caseUrnToLink = "caseUrn2";
 
         final ValidateLinkCases event = ValidateLinkCases.validateLinkCases()
@@ -86,7 +86,7 @@ public class LinkCasesEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.validate-link-cases"),
                 casesUnlinkedPayload);
 
-        when(progressionService.searchCaseDetailByReference(any(), any())).thenReturn(Optional.of(Json.createObjectBuilder().add(SEARCH_RESULTS, Json.createArrayBuilder().build()).build()));
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(Json.createObjectBuilder().build()));
         processor.handleLinkCasesValidations(requestMessage);
 
         verify(sender).send(envelopeCaptor.capture());
@@ -94,13 +94,13 @@ public class LinkCasesEventProcessorTest {
 
         assertThat(publicEvent.metadata(),
                 withMetadataEnvelopedFrom(requestMessage).withName("public.progression.link-cases-response"));
-        assertTrue(publicEvent.payload().getString("linkResponseResults").equals(REFERENCE_NOT_FOUND.toString()));
+        assertEquals(publicEvent.payload().getString("linkResponseResults"), REFERENCE_NOT_FOUND.toString());
 
     }
 
     @Test
     public void shouldRaiseReferenceNotValid() {
-        final UUID leadCaseId = UUID.randomUUID();
+        final UUID leadCaseId = randomUUID();
         final String leadCaseUrn = "caseUrn2";
 
         final ValidateLinkCases event = ValidateLinkCases.validateLinkCases()
@@ -114,8 +114,8 @@ public class LinkCasesEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.validate-link-cases"),
                 validatePayload);
 
-        when(progressionService.searchCaseDetailByReference(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(SEARCH_RESULTS, Json.createArrayBuilder().add(Json.createObjectBuilder().add(CASE_ID, leadCaseId.toString())).build()).build()
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(
+                Json.createObjectBuilder().add(CASE_ID, leadCaseId.toString()).build()
         ));
         processor.handleLinkCasesValidations(requestMessage);
 
@@ -124,15 +124,15 @@ public class LinkCasesEventProcessorTest {
 
         assertThat(publicEvent.metadata(),
                 withMetadataEnvelopedFrom(requestMessage).withName("public.progression.link-cases-response"));
-        assertTrue(publicEvent.payload().getString("linkResponseResults").equals(REFERENCE_NOT_VALID.toString()));
+        assertEquals(publicEvent.payload().getString("linkResponseResults"), REFERENCE_NOT_VALID.toString());
 
     }
 
     @Test
     public void shouldProcessLinkCases() {
-        final UUID leadCaseId = UUID.randomUUID();
+        final UUID leadCaseId = randomUUID();
         final String leadCaseUrn = "caseUrn1";
-        final UUID caseIdToLink = UUID.randomUUID();
+        final UUID caseIdToLink = randomUUID();
         final String caseUrnToLink = "caseUrn2";
 
         final ValidateLinkCases event = ValidateLinkCases.validateLinkCases()
@@ -146,8 +146,8 @@ public class LinkCasesEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.validate-link-cases"),
                 validatePayload);
 
-        when(progressionService.searchCaseDetailByReference(any(), any())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(SEARCH_RESULTS, Json.createArrayBuilder().add(Json.createObjectBuilder().add(CASE_ID, caseIdToLink.toString()).add("reference", caseUrnToLink)).build()).build()
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(
+                Json.createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
         ));
         when(progressionService.searchLinkedCases(any(), any())).thenReturn(Optional.of(
                 Json.createObjectBuilder().add(LINKED_CASES, Json.createArrayBuilder().build()).build()
@@ -162,8 +162,8 @@ public class LinkCasesEventProcessorTest {
         final Envelope<JsonObject> commandEnvelope = allEvents.get(0);
         assertThat(commandEnvelope.metadata(),
                 withMetadataEnvelopedFrom(requestMessage).withName("progression.command.link-cases"));
-        assertTrue(commandEnvelope.payload().getString("prosecutionCaseId").equals(leadCaseId.toString()));
-        assertTrue(commandEnvelope.payload().getJsonArray("casesToLink").getJsonObject(0).getJsonArray("caseUrns").getString(0).equals(caseUrnToLink));
+        assertEquals(commandEnvelope.payload().getString("prosecutionCaseId"), leadCaseId.toString());
+        assertEquals(commandEnvelope.payload().getJsonArray("casesToLink").getJsonObject(0).getJsonArray("caseUrns").getString(0), caseUrnToLink);
 
         final Envelope<JsonObject> caseLinkedEnvelope = allEvents.get(1);
         assertThat(caseLinkedEnvelope.metadata(),
@@ -172,7 +172,7 @@ public class LinkCasesEventProcessorTest {
 
         final Envelope<JsonObject> responseEnvelope = allEvents.get(2);
         assertThat(responseEnvelope.metadata(), withMetadataEnvelopedFrom(requestMessage).withName("public.progression.link-cases-response"));
-        assertTrue(responseEnvelope.payload().getString("linkResponseResults").equals("SUCCESS"));
+        assertEquals("SUCCESS", responseEnvelope.payload().getString("linkResponseResults"));
 
     }
 }

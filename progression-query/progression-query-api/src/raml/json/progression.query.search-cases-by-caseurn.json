@@ -1,0 +1,13 @@
+{
+  "searchResults": [
+    {
+      "caseId": "b6fdad89-b010-4522-afec-529476696475",
+      "reference": "TFL-1020",
+      "defendantName": "John S Smith",
+      "dob": "1977-01-01",
+      "status": "In court",
+      "prosecutor": "SJP",
+      "isStandaloneApplication": false
+    }
+  ]
+}
