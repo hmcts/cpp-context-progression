@@ -8,7 +8,6 @@ import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.LINK_ACTION
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.PROGRESSION_COMMAND_PROCESS_LINK_CASES;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.PUBLIC_PROGRESSION_CASE_LINKED;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.PUBLIC_PROGRESSION_LINK_CASES_RESPONSE;
-import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.SEARCH_RESULTS;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.buildCaseLinkedOrUnlinkedEventJson;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.buildLSMCommandPayload;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.createResponsePayload;
@@ -95,7 +94,7 @@ public class LinkCasesEventProcessor {
                             alreadyLinkedCases.get().getJsonArray(LINKED_CASES).stream().forEach(
                                     lc -> {
                                         final JsonObject linkedCase = Json.createObjectBuilder().add("linkedCase", lc).build();
-                                        if (linkedCase.getJsonObject("linkedCase").getString(CASE_ID).equals(existingCase.get().getJsonArray(SEARCH_RESULTS).getJsonObject(0).getString(CASE_ID))) {
+                                        if (linkedCase.getJsonObject("linkedCase").getString(CASE_ID).equals(existingCase.get().getString(CASE_ID))) {
                                             sender.send(Enveloper.envelop(createResponsePayload(LinkResponseResults.REFERENCE_ALREADY_LINKED)).withName(PUBLIC_PROGRESSION_LINK_CASES_RESPONSE).withMetadataFrom(envelope));
                                             failed.set(true);
                                             LOGGER.error("Link cases failed. Reference already linked - {}", envelope.payloadAsJsonObject());
