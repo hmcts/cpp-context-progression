@@ -96,7 +96,7 @@ public class MergeCasesEventProcessor {
                             alreadyMergedCases.get().getJsonArray(MERGED_CASES).stream().forEach(
                                     mc -> {
                                         final JsonObject mergedCase = Json.createObjectBuilder().add("mergedCase", mc).build();
-                                        if (mergedCase.getJsonObject("mergedCase").getString(CASE_ID).equals(existingCase.get().getJsonArray(SEARCH_RESULTS).getJsonObject(0).getString(CASE_ID))) {
+                                        if (mergedCase.getJsonObject("mergedCase").getString(CASE_ID).equals(existingCase.get().getString(CASE_ID))) {
                                             sender.send(Enveloper.envelop(createResponsePayload(LinkResponseResults.REFERENCE_ALREADY_LINKED)).withName(PUBLIC_PROGRESSION_LINK_CASES_RESPONSE).withMetadataFrom(envelope));
                                             failed.set(true);
                                             LOGGER.error("Merge cases failed. Reference already merged - {}", envelope.payloadAsJsonObject());
