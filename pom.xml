@@ -50,7 +50,7 @@
         <hearing.version>8.0.34</hearing.version>
         <usersgroups.version>8.0.7</usersgroups.version>
         <defence.version>8.0.10</defence.version>
-        <referencedata.offence.version>8.0.1</referencedata.offence.version>
+        <referencedata.offence.version>8.0.2</referencedata.offence.version>
         <coredomain.version>1.0.194-SNAPSHOT</coredomain.version>
         <directionsmanagement.version>8.0.9</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
