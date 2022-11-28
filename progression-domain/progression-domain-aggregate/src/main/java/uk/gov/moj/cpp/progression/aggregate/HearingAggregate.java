@@ -1399,11 +1399,11 @@ public class HearingAggregate implements Aggregate {
 
     private Hearing getHearingWithNewVerdictForApplication(final UUID applicationId, final Verdict verdict) {
         return Hearing.hearing().withValuesFrom(hearing)
-                .withCourtApplications(hearing.getCourtApplications().stream()
+                .withCourtApplications(ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
                         .map(courtApplication -> ! courtApplication.getId().equals(applicationId) ? courtApplication : CourtApplication.courtApplication()
                                 .withValuesFrom(courtApplication)
                                 .withVerdict(verdict)
-                                .build()).collect(toList()))
+                                .build()).collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                 .build();
     }
     private Hearing getHearingWithNewVerdictForOffences(final Verdict verdict) {
@@ -1421,11 +1421,11 @@ public class HearingAggregate implements Aggregate {
     private CourtOrder getCourtOrderWithNewVerdict(final Verdict verdict, final CourtApplication courtApplication) {
         return ofNullable(courtApplication.getCourtOrder())
                 .map(courtOrder -> CourtOrder.courtOrder().withValuesFrom(courtOrder)
-                        .withCourtOrderOffences(courtOrder.getCourtOrderOffences().stream()
+                        .withCourtOrderOffences(ofNullable(courtOrder.getCourtOrderOffences()).map(Collection::stream).orElseGet(Stream::empty)
                                 .map(courtOrderOffence -> CourtOrderOffence.courtOrderOffence().withValuesFrom(courtOrderOffence)
                                         .withOffence(getOffenceWithNewVerdict(courtOrderOffence.getOffence(), verdict))
                                         .build())
-                                .collect(toList()))
+                                .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                         .build())
                 .orElse(courtApplication.getCourtOrder());
     }
@@ -1433,9 +1433,9 @@ public class HearingAggregate implements Aggregate {
     private List<CourtApplicationCase> getCourtApplicationCasesWithNewVerdict(final Verdict verdict, final CourtApplication courtApplication) {
         return ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase().withValuesFrom(courtApplicationCase)
-                        .withOffences(courtApplicationCase.getOffences().stream()
+                        .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection :: stream).orElseGet(Stream ::empty)
                                 .map(offence -> getOffenceWithNewVerdict(offence, verdict))
-                                .collect(toList()))
+                                .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                         .build())
                 .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
     }
@@ -1468,15 +1468,20 @@ public class HearingAggregate implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         final Hearing hearingWithNewPlea = ofNullable(pleaModel.getApplicationId()).map(applicationId -> getHearingWithNewPleaForApplication(applicationId, pleaModel.getPlea())).orElseGet(() -> getHearingWithNewPleaForOffences(pleaModel));
 
-        streamBuilder.add(HearingPleaUpdated.hearingPleaUpdated().withHearingId(this.hearing.getId()).withPleaModel(pleaModel).build());
+        if(!hearingWithNewPlea.equals(this.hearing)) {
 
-        streamBuilder.add(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
-                .withHearingListingStatus(this.hearingListingStatus)
-                .withNotifyNCES(this.notifyNCES)
-                .withHearing(hearingWithNewPlea)
-                .build());
+            streamBuilder.add(HearingPleaUpdated.hearingPleaUpdated().withHearingId(this.hearing.getId()).withPleaModel(pleaModel).build());
 
-        return apply(streamBuilder.build());
+            streamBuilder.add(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
+                    .withHearingListingStatus(this.hearingListingStatus)
+                    .withNotifyNCES(this.notifyNCES)
+                    .withHearing(hearingWithNewPlea)
+                    .build());
+
+            return apply(streamBuilder.build());
+        } else {
+            return empty();
+        }
     }
 
     public Stream<Object> updateIndex(final Hearing newHearing, final HearingListingStatus hearingListingStatus, final Boolean notifyNCES){
@@ -1492,11 +1497,11 @@ public class HearingAggregate implements Aggregate {
 
     private Hearing getHearingWithNewPleaForApplication(final UUID applicationId, final Plea plea) {
         return Hearing.hearing().withValuesFrom(hearing)
-                .withCourtApplications(hearing.getCourtApplications().stream()
+                .withCourtApplications(ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
                         .map(courtApplication -> ! courtApplication.getId().equals(applicationId) ? courtApplication : CourtApplication.courtApplication()
                                 .withValuesFrom(courtApplication)
                                 .withPlea(plea)
-                                .build()).collect(toList()))
+                                .build()).collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                 .build();
     }
 
@@ -1515,22 +1520,23 @@ public class HearingAggregate implements Aggregate {
     private CourtOrder getCourtOrderWithNewPlea(final PleaModel pleaModel, final CourtApplication courtApplication) {
         return ofNullable(courtApplication.getCourtOrder())
                 .map(courtOrder -> CourtOrder.courtOrder().withValuesFrom(courtOrder)
-                        .withCourtOrderOffences(courtOrder.getCourtOrderOffences().stream()
+                        .withCourtOrderOffences(ofNullable(courtOrder.getCourtOrderOffences()).map(Collection ::stream).orElseGet(Stream::empty)
                                 .map(courtOrderOffence -> CourtOrderOffence.courtOrderOffence().withValuesFrom(courtOrderOffence)
                                         .withOffence(getOffenceWithNewPlea(courtOrderOffence.getOffence(), pleaModel))
                                         .build())
-                                .collect(toList()))
+                                .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                         .build())
                 .orElse(courtApplication.getCourtOrder());
     }
+
 
     private List<CourtApplicationCase> getCourtApplicationCasesWithNewPlea(final PleaModel pleaModel, final CourtApplication courtApplication) {
         ofNullable(hearing.getDefenceCounsels()).map(Collection::stream).orElseGet(Stream::empty).collect(toList());
         return ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase().withValuesFrom(courtApplicationCase)
-                        .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
+                        .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection ::stream).orElseGet(Stream::empty)
                                 .map(offence -> getOffenceWithNewPlea(offence, pleaModel))
-                                .collect(toList()))
+                                .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                         .build())
                 .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
     }
