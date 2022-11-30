@@ -28,5 +28,8 @@ RUN chown -R ${wildfly_user}:${wildfly_user} /tmp/liquibase
 RUN chmod -R 755 /tmp/liquibase
 COPY scripts/liquibase.sh /tmp/liquibase/liquibase.sh
 RUN chown ${wildfly_user}:${wildfly_user} /tmp/liquibase/liquibase.sh && chmod 755 /tmp/liquibase/liquibase.sh
+RUN mkdir /opt/cpp-tools
+ADD ${repo_loc}/uk/gov/justice/services/framework-jmx-command-client/${framework_version}/framework-jmx-command-client-${framework_version}.jar /opt/cpp-tools/framework-jmx-command-client.jar
+RUN chown ${wildfly_user}:${wildfly_user} /opt/cpp-tools/framework-jmx-command-client.jar && chmod 755 /opt/cpp-tools/framework-jmx-command-client.jar
 USER ${wildfly_user}
 LABEL base_image {base_image}
