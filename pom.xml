@@ -34,6 +34,16 @@
         <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
+        <sonar.exclusions>
+            **/uk/gov/moj/cpp/progression/domain/*.java,
+            **/uk/gov/moj/cpp/progression/domain/**/*.java,
+            **/uk/gov/moj/cpp/progression/test/*.java,
+            **/uk/gov/moj/cpp/progression/test/matchers/*.java,
+            **/uk/gov/moj/cpp/progression/CreateJsonSampleUtil.java,
+            **/uk/gov/moj/cpp/progression/query/view/response/nowresponse/*.java,
+            **/uk/gov/moj/cpp/progression/query/view/response/*.java,
+            **/query/view/progression/ctl/model/*.java
+        </sonar.exclusions>
         <file-alfresco.version>2.3.0</file-alfresco.version>
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
@@ -42,12 +52,12 @@
         <material.version>8.0.9</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>8.0.18</referencedata.version>
+        <referencedata.version>8.0.21</referencedata.version>
         <listing.version>8.0.22</listing.version>
         <hearing.version>8.0.34</hearing.version>
         <usersgroups.version>8.0.7</usersgroups.version>
         <defence.version>8.0.10</defence.version>
-        <referencedata.offence.version>8.0.0</referencedata.offence.version>
+        <referencedata.offence.version>8.0.4</referencedata.offence.version>
         <coredomain.version>1.0.194</coredomain.version>
         <directionsmanagement.version>8.0.8</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
