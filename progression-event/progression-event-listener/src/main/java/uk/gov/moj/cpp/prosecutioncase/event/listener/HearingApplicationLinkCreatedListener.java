@@ -1,12 +1,15 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 
 import java.util.ArrayList;
+
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -56,9 +59,14 @@ public class HearingApplicationLinkCreatedListener {
     public void process(final JsonEnvelope event) {
         final HearingApplicationLinkCreated hearingApplicationLinkCreated
                 = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingApplicationLinkCreated.class);
-        repository.save(transformHearingApplicationEntity
-                (hearingApplicationLinkCreated.getHearing(), hearingApplicationLinkCreated.getApplicationId(),
-                        hearingApplicationLinkCreated.getHearingListingStatus()));
+
+        final HearingEntity hearingEntity = hearingRepository.findBy(hearingApplicationLinkCreated.getHearing().getId());
+
+        if (isNull(hearingEntity) || !HEARING_RESULTED.equals(hearingEntity.getListingStatus())) {
+            repository.save(transformHearingApplicationEntity
+                    (hearingApplicationLinkCreated.getHearing(), hearingApplicationLinkCreated.getApplicationId(),
+                            hearingApplicationLinkCreated.getHearingListingStatus()));
+        }
     }
 
     @Handles("progression.event.hearing-deleted-for-court-application")

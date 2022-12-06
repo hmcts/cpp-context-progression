@@ -8,6 +8,10 @@ import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
+import static uk.gov.justice.core.courts.ApplicationStatus.EJECTED;
+import static uk.gov.justice.core.courts.ApplicationStatus.IN_PROGRESS;
+import static uk.gov.justice.core.courts.ApplicationStatus.LISTED;
+import static uk.gov.justice.core.courts.ApplicationStatus.DRAFT;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationCreated.courtApplicationCreated;
 import static uk.gov.justice.core.courts.CourtApplicationSummonsApproved.courtApplicationSummonsApproved;
@@ -76,6 +80,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.moj.cpp.progression.events.NotificationCreateHearingApplicationLinkFailed;
 
 @SuppressWarnings({"squid:S1948"})
 public class ApplicationAggregate implements Aggregate {
@@ -84,18 +89,19 @@ public class ApplicationAggregate implements Aggregate {
     private static final long serialVersionUID = 1331113876243908495L;
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80527";
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
-    private ApplicationStatus applicationStatus = ApplicationStatus.DRAFT;
+    private ApplicationStatus applicationStatus = DRAFT;
     private InitiateCourtApplicationProceedings initiateCourtApplicationProceedings;
     private CourtApplication courtApplication;
     private UUID boxHearingId;
     private boolean applicationReferredToNewHearing;
+    public static final String CREATE_HEARING_APPLICATION_LINK_ERROR = "Hearing application link failed because application status is either finalized or ejected!";
 
     @Override
     public Object apply(final Object event) {
         return match(event).with(
                 when(CourtApplicationProceedingsInitiated.class).apply(this::handleCourtApplicationProceedings),
-                when(ApplicationReferredToCourt.class).apply(e -> this.applicationStatus = ApplicationStatus.LISTED),
-                when(CourtApplicationCreated.class).apply(e -> this.applicationStatus = ApplicationStatus.DRAFT),
+                when(ApplicationReferredToCourt.class).apply(e -> this.applicationStatus = LISTED),
+                when(CourtApplicationCreated.class).apply(e -> this.applicationStatus = DRAFT),
                 when(HearingApplicationLinkCreated.class).apply(
                         e -> {
                             if (isBoxWorkHearing(e)) {
@@ -103,8 +109,8 @@ public class ApplicationAggregate implements Aggregate {
                             }
                         }
                 ),
-                when(ApplicationReferredToBoxwork.class).apply(e -> this.applicationStatus = ApplicationStatus.IN_PROGRESS),
-                when(ApplicationReferredToExistingHearing.class).apply(e -> this.applicationStatus = ApplicationStatus.LISTED),
+                when(ApplicationReferredToBoxwork.class).apply(e -> this.applicationStatus = IN_PROGRESS),
+                when(ApplicationReferredToExistingHearing.class).apply(e -> this.applicationStatus = LISTED),
                 when(CourtApplicationProceedingsEdited.class).apply(this::handleEditCourtApplicationProceedings),
                 when(ConvictionDateAdded.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), e.getConvictionDate())),
                 when(ConvictionDateRemoved.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), null)),
@@ -115,7 +121,7 @@ public class ApplicationAggregate implements Aggregate {
                 }),
                 when(ApplicationEjected.class).apply(
                         e ->
-                                this.applicationStatus = ApplicationStatus.EJECTED
+                                this.applicationStatus = EJECTED
 
                 ),
                 otherwiseDoNothing());
@@ -155,6 +161,7 @@ public class ApplicationAggregate implements Aggregate {
                         .withApplicationStatus(applicationStatus)
                         .build()));
     }
+
     @SuppressWarnings({"squid:S1067"})
     public Stream<Object> createCourtApplication(final CourtApplication courtApplication) {
         LOGGER.debug("Court application has been created");
@@ -163,16 +170,16 @@ public class ApplicationAggregate implements Aggregate {
                 courtApplicationCreated()
                         .withCourtApplication(courtApplication)
                         .build());
-        final BoxHearingRequest boxHearingRequest = nonNull(initiateCourtApplicationProceedings) ? initiateCourtApplicationProceedings.getBoxHearing(): null;
+        final BoxHearingRequest boxHearingRequest = nonNull(initiateCourtApplicationProceedings) ? initiateCourtApplicationProceedings.getBoxHearing() : null;
 
-        if(nonNull(courtApplication.getType()) && isNotBlank(courtApplication.getType().getCode())
+        if (nonNull(courtApplication.getType()) && isNotBlank(courtApplication.getType().getCode())
                 && (APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE.equalsIgnoreCase(courtApplication.getType().getCode())
                 || APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP.equalsIgnoreCase(courtApplication.getType().getCode()))
                 && nonNull(boxHearingRequest) && TRUE.equals(boxHearingRequest.getSendAppointmentLetter())) {
-                streamBuilder.add(sendStatdecAppointmentLetter()
-                        .withCourtApplication(courtApplication)
-                        .withBoxHearing(boxHearingRequest)
-                        .build());
+            streamBuilder.add(sendStatdecAppointmentLetter()
+                    .withCourtApplication(courtApplication)
+                    .withBoxHearing(boxHearingRequest)
+                    .build());
 
         }
         return apply(streamBuilder.build());
@@ -184,7 +191,7 @@ public class ApplicationAggregate implements Aggregate {
     }
 
     public Stream<Object> ejectApplication(final UUID courtApplicationId, final String removalReason) {
-        if (ApplicationStatus.EJECTED.equals(applicationStatus)) {
+        if (EJECTED.equals(applicationStatus)) {
             LOGGER.info("Application with id {} already ejected", courtApplicationId);
             return empty();
         }
@@ -195,12 +202,23 @@ public class ApplicationAggregate implements Aggregate {
 
     public Stream<Object> createHearingApplicationLink(final Hearing hearing, final UUID applicationId, final HearingListingStatus hearingListingStatus) {
         LOGGER.debug("Hearing Application link been created");
-        return apply(Stream.of(
-                HearingApplicationLinkCreated.hearingApplicationLinkCreated()
-                        .withHearing(hearing)
-                        .withApplicationId(applicationId)
-                        .withHearingListingStatus(hearingListingStatus)
-                        .build()));
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (!FINALISED.equals(this.applicationStatus) && !EJECTED.equals(this.applicationStatus)) {
+            streamBuilder.add(HearingApplicationLinkCreated.hearingApplicationLinkCreated()
+                    .withHearing(hearing)
+                    .withApplicationId(applicationId)
+                    .withHearingListingStatus(hearingListingStatus)
+                    .build());
+        } else {
+            streamBuilder.add(NotificationCreateHearingApplicationLinkFailed.notificationCreateHearingApplicationLinkFailed()
+                    .withHearingId(hearing.getId())
+                    .withHearingListingStatus(hearingListingStatus)
+                    .withApplicationStatus(this.applicationStatus)
+                    .withErrorMessage(CREATE_HEARING_APPLICATION_LINK_ERROR)
+                    .build());
+        }
+        return apply(streamBuilder.build());
     }
 
     public Stream<Object> recordEmailRequest(final UUID applicationId, final UUID materialId, final List<Notification> notifications) {
@@ -228,7 +246,7 @@ public class ApplicationAggregate implements Aggregate {
 
     public Stream<Object> initiateCourtApplicationProceedings(final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings, final boolean applicationReferredToNewHearing, final boolean applicationCreatedForSJPCase) {
         LOGGER.debug("Initiated Court Application Proceedings");
-        if(isNull(this.courtApplication)) {
+        if (isNull(this.courtApplication)) {
             CourtApplication updatedCourtApplication = updateCourtApplicationReference(initiateCourtApplicationProceedings.getCourtApplication());
             if (initiateCourtApplicationProceedings.getSummonsApprovalRequired() && nonNull(initiateCourtApplicationProceedings.getCourtHearing())) {
                 updatedCourtApplication = updateCourtApplicationWithFutureSummonsHearing(updatedCourtApplication, initiateCourtApplicationProceedings.getCourtHearing());
@@ -288,21 +306,21 @@ public class ApplicationAggregate implements Aggregate {
         if (nonNull(boxHearing)) {
             streams.add(ApplicationReferredToBoxwork.applicationReferredToBoxwork()
                     .withApplication(courtApplication().withValuesFrom(courtApplication)
-                            .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
+                            .withApplicationStatus(IN_PROGRESS)
                             .build())
                     .withBoxHearing(boxHearing)
                     .build());
         } else if (applicationReferredToNewHearing) {
             streams.add(ApplicationReferredToCourtHearing.applicationReferredToCourtHearing()
                     .withApplication(courtApplication().withValuesFrom(courtApplication)
-                            .withApplicationStatus(ApplicationStatus.LISTED)
+                            .withApplicationStatus(LISTED)
                             .build())
                     .withCourtHearing(courtHearing)
                     .build());
         } else if (isApplicationReferredToExistingHearing(courtHearing)) {
             streams.add(ApplicationReferredToExistingHearing.applicationReferredToExistingHearing()
                     .withApplication(courtApplication().withValuesFrom(courtApplication)
-                            .withApplicationStatus(ApplicationStatus.LISTED)
+                            .withApplicationStatus(LISTED)
                             .build())
                     .withCourtHearing(courtHearing)
                     .build());
@@ -334,7 +352,7 @@ public class ApplicationAggregate implements Aggregate {
         if (courtApplication.getType().getLinkType() != LinkType.FIRST_HEARING && nonNull(courtHearing)) {
             streams.add(initiateCourtHearingAfterSummonsApproved()
                     .withApplication(courtApplication().withValuesFrom(courtApplication)
-                            .withApplicationStatus(ApplicationStatus.LISTED)
+                            .withApplicationStatus(LISTED)
                             .withFutureSummonsHearing(null)
                             .build())
                     .withCourtHearing(courtHearing)
@@ -425,13 +443,13 @@ public class ApplicationAggregate implements Aggregate {
 
         if (isNotEmpty(courtApplication.getCourtApplicationCases())) {
             return courtApplication.getCourtApplicationCases().stream().map(courtApplicationCase ->
-                    nonNull(courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN()) ? courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN() : courtApplicationCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
+                            nonNull(courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN()) ? courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN() : courtApplicationCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
                     .distinct().collect(Collectors.joining(","));
         }
 
         if (nonNull(courtApplication.getCourtOrder())) {
             return courtApplication.getCourtOrder().getCourtOrderOffences().stream().map(courtOrderOffence ->
-                    nonNull(courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN()) ? courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN() : courtOrderOffence.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
+                            nonNull(courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN()) ? courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN() : courtOrderOffence.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
                     .distinct().collect(Collectors.joining(","));
         }
 
