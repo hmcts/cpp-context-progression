@@ -261,7 +261,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188", "squid:S134"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = -4933049804196421468L;
+    private static final long serialVersionUID = -2092381865833271618L;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -293,6 +293,8 @@ public class CaseAggregate implements Aggregate {
     private final Map<UUID, String> defendantLegalAidStatus = new HashMap<>();
     private final Set<UUID> matchedDefendantIds = new HashSet<>();
     private final Map<UUID, UUID> defendantAssociatedDefenceOrganisation = new HashMap<>();
+
+    private final Map<UUID, Boolean> defendantOrganisationAsscociatedByRepOrder = new HashMap<>();
 
     private final Map<UUID, UUID> defendantLAAUpdatedOrganisation = new HashMap<>();
 
@@ -2226,8 +2228,7 @@ public class CaseAggregate implements Aggregate {
                         .withRepresentationType(RepresentationType.REPRESENTATION_ORDER)
                         .build());
             } else {
-                if (!isAlreadyAssociatedToOrganisation(defendantId, organisationId)) {
-                    // Handle wrong payload case, when it is not actually associated by payload says organisation is associated.
+                if (!isAlreadyAssociatedToOrganisation(defendantId, organisationId) || !(defendantOrganisationAsscociatedByRepOrder.getOrDefault(defendantId, false))) {                    // Handle wrong payload case, when it is not actually associated by payload says organisation is associated.
                     streamBuilder.add(DefendantDefenceOrganisationAssociated.defendantDefenceOrganisationAssociated()
                             .withDefendantId(defendantId)
                             .withLaaContractNumber(laaContractNumber)
@@ -2243,7 +2244,7 @@ public class CaseAggregate implements Aggregate {
         } else {
             if (organisationId != null) {
                 // Associate the one which is linked with one from payload
-                if (!isAlreadyAssociatedToOrganisation(defendantId, organisationId)) {
+                if (!isAlreadyAssociatedToOrganisation(defendantId, organisationId) || !(defendantOrganisationAsscociatedByRepOrder.getOrDefault(defendantId, false))) {
                     streamBuilder.add(DefendantDefenceOrganisationAssociated.defendantDefenceOrganisationAssociated()
                             .withDefendantId(defendantId)
                             .withLaaContractNumber(laaContractNumber)
@@ -2273,11 +2274,11 @@ public class CaseAggregate implements Aggregate {
         if (defendantLevelStatusList.stream().anyMatch
                 (defendantLevelStatus -> defendantLevelStatus != null && defendantLevelStatus.equals(GRANTED.getDescription()))) {
             return GRANTED.getDescription();
-        } else if (defendantLevelStatusList.stream().allMatch(defendantLevelStatus -> defendantLevelStatus != null && defendantLevelStatus.equals(REFUSED.getDescription()))) {
+        } else if (defendantLevelStatusList.stream().anyMatch(defendantLevelStatus -> defendantLevelStatus != null && defendantLevelStatus.equals(REFUSED.getDescription()))) {
             return REFUSED.getDescription();
-        } else if (defendantLevelStatusList.stream().allMatch(defendantLevelStatus -> defendantLevelStatus != null && defendantLevelStatus.equals(WITHDRAWN.getDescription()))) {
+        } else if (defendantLevelStatusList.stream().anyMatch(defendantLevelStatus -> defendantLevelStatus != null && defendantLevelStatus.equals(WITHDRAWN.getDescription()))) {
             return WITHDRAWN.getDescription();
-        } else if (defendantLevelStatusList.stream().allMatch(defendantLevelStatus -> defendantLevelStatus != null && defendantLevelStatus.equals(PENDING.getDescription()))) {
+        } else if (defendantLevelStatusList.stream().anyMatch(defendantLevelStatus -> defendantLevelStatus != null && defendantLevelStatus.equals(PENDING.getDescription()))) {
             return PENDING.getDescription();
         } else {
             return NO_VALUE.getDescription();
@@ -2313,6 +2314,8 @@ public class CaseAggregate implements Aggregate {
 
     private void updateDefendantAssociatedDefenceOrganisation(final DefendantDefenceOrganisationAssociated defendantDefenceOrganisationAssociated) {
         this.defendantAssociatedDefenceOrganisation.put(defendantDefenceOrganisationAssociated.getDefendantId(), defendantDefenceOrganisationAssociated.getOrganisationId());
+        final boolean byRepOrder = defendantDefenceOrganisationAssociated.getRepresentationType() == RepresentationType.REPRESENTATION_ORDER ? true : false;
+        this.defendantOrganisationAsscociatedByRepOrder.put(defendantDefenceOrganisationAssociated.getDefendantId(), byRepOrder) ;
     }
 
     private void updateDefendantAssociatedDefenceOrganisation(final DefenceOrganisationAssociatedByDefenceContext defenceOrganisationAssociatedByDefenceContext) {

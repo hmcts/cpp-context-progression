@@ -1428,7 +1428,7 @@ public class CaseAggregateTest {
         final Object object1 = eventStream.get(0);
         assertThat(object1.getClass(), is(equalTo(ProsecutionCaseOffencesUpdated.class)));
         assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getLegalAidStatus(),
-                is(NO_VALUE.getDescription()));
+                is(REFUSED.getDescription()));
         final Object object2 = eventStream.get(1);
         assertThat(object2.getClass(), is(equalTo(OffencesForDefendantChanged.class)));
         assertThat(((OffencesForDefendantChanged) object2).getAddedOffences(), is(nullValue()));
