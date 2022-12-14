@@ -3,12 +3,11 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
-
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.AllHearingOffencesUpdated;
@@ -35,7 +34,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-
+@SuppressWarnings("squid:S1168")
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingUpdatedEventProcessor {
 
@@ -161,8 +160,8 @@ public class HearingUpdatedEventProcessor {
     }
 
     private List<ProsecutionCase> removeJudicialResults(List<ProsecutionCase> prosecutionCases){
-        if(Objects.isNull(prosecutionCases)){
-            return prosecutionCases;
+        if(isEmpty(prosecutionCases)){
+            return null;
         }
         return prosecutionCases.stream().map(prosecutionCase ->
                 ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
