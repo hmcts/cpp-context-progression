@@ -9,6 +9,7 @@ import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.ProsecutionCaseVer
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.VerificationUtil.initializeJolt;
 
 import uk.gov.justice.json.jolt.JoltTransformer;
+import uk.gov.justice.services.unifiedsearch.client.validation.JsonDocumentValidator;
 
 import java.io.IOException;
 
@@ -23,6 +24,8 @@ import org.junit.Test;
 public class ProsecutionCaseCreatedTransformationTest {
 
     private final JoltTransformer joltTransformer = new JoltTransformer();
+
+    private JsonDocumentValidator jsonValidator = new JsonDocumentValidator();
 
     @Before
     public void setUp() {
@@ -73,5 +76,20 @@ public class ProsecutionCaseCreatedTransformationTest {
 
         final JsonObject outputCase = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
         verifyCaseCreated(inputProsecutionCase, outputCase, 3, false);
+    }
+
+    @Test
+    public void shouldTransformProsecutionCaseCreatedJsonWithPlea() throws IOException {
+        final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.prosecution-case-created-spec.json");
+        assertNotNull(specJson);
+
+        final JsonObject inputJson = readJson("/progression.event.prosecution-case-created-with-plea.json");
+        final DocumentContext inputProsecutionCase = JsonPath.parse(inputJson);
+
+        final JsonObject outputCase = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
+
+        jsonValidator.validate(outputCase, "/json/schema/crime-case-index-schema.json");
+
+        verifyCaseCreated(inputProsecutionCase, outputCase, 1, true);
     }
 }
