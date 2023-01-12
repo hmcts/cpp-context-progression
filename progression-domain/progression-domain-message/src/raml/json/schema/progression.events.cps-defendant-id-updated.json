@@ -10,7 +10,9 @@
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "cpsDefendantId": {
-      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      "description": "A unique reference to a defendant within a prosecution. Provided by cps when CPS are prosecuting the case",
+      "type": "string",
+      "maxLength": 36
     }
   },
   "required": [

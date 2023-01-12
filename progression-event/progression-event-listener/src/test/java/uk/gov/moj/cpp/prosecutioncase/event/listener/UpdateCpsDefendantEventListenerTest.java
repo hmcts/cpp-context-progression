@@ -1,17 +1,16 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.mockito.Mockito.when;
-import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -30,6 +29,7 @@ import java.util.UUID;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -97,7 +97,7 @@ public class UpdateCpsDefendantEventListenerTest {
         ProsecutionCaseEntity actual = entityArgumentCaptor.getValue();
         ProsecutionCase actualCase = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(actual.getPayload()), ProsecutionCase.class);
         assertThat(actualCase.getDefendants().get(0).getId(), is(defendantId1));
-        assertThat(actualCase.getDefendants().get(0).getCpsDefendantId(), is(newCpsDefendantId));
+        assertThat(actualCase.getDefendants().get(0).getCpsDefendantId(), is(newCpsDefendantId.toString()));
     }
 
     @Test
@@ -141,9 +141,9 @@ public class UpdateCpsDefendantEventListenerTest {
         ProsecutionCaseEntity actual = entityArgumentCaptor.getValue();
         ProsecutionCase actualCase = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(actual.getPayload()), ProsecutionCase.class);
         assertThat(actualCase.getDefendants().get(0).getId(), is(defendantId1));
-        assertThat(actualCase.getDefendants().get(0).getCpsDefendantId(), is(cpsDefendantId1));
+        assertThat(actualCase.getDefendants().get(0).getCpsDefendantId(), is(cpsDefendantId1.toString()));
         assertThat(actualCase.getDefendants().get(1).getId(), is(defendantId2));
-        assertThat(actualCase.getDefendants().get(1).getCpsDefendantId(), is(cpsDefendantId2));
+        assertThat(actualCase.getDefendants().get(1).getCpsDefendantId(), is(cpsDefendantId2.toString()));
     }
 
     @Test
@@ -164,9 +164,9 @@ public class UpdateCpsDefendantEventListenerTest {
         ProsecutionCaseEntity actual = entityArgumentCaptor.getValue();
         ProsecutionCase actualCase = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(actual.getPayload()), ProsecutionCase.class);
         assertThat(actualCase.getDefendants().get(0).getId(), is(defendantId1));
-        assertThat(actualCase.getDefendants().get(0).getCpsDefendantId(), is(cpsDefendantId1));
+        assertThat(actualCase.getDefendants().get(0).getCpsDefendantId(), is(cpsDefendantId1.toString()));
         assertThat(actualCase.getDefendants().get(1).getId(), is(defendantId2));
-        assertThat(actualCase.getDefendants().get(1).getCpsDefendantId(), is(cpsDefendantId2));
+        assertThat(actualCase.getDefendants().get(1).getCpsDefendantId(), is(cpsDefendantId2.toString()));
         assertThat(actualCase.getCpsOrganisation(), is(cpsOrganisation));
     }
 
@@ -188,9 +188,9 @@ public class UpdateCpsDefendantEventListenerTest {
         ProsecutionCaseEntity actual = entityArgumentCaptor.getValue();
         ProsecutionCase actualCase = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(actual.getPayload()), ProsecutionCase.class);
         assertThat(actualCase.getDefendants().get(0).getId(), is(defendantId1));
-        assertThat(actualCase.getDefendants().get(0).getCpsDefendantId(), is(cpsDefendantId1));
+        assertThat(actualCase.getDefendants().get(0).getCpsDefendantId(), is(cpsDefendantId1.toString()));
         assertThat(actualCase.getDefendants().get(1).getId(), is(defendantId2));
-        assertThat(actualCase.getDefendants().get(1).getCpsDefendantId(), is(cpsDefendantId2));
+        assertThat(actualCase.getDefendants().get(1).getCpsDefendantId(), is(cpsDefendantId2.toString()));
         assertThat(actualCase.getCpsOrganisation(), is(nullValue()));
     }
 
@@ -215,7 +215,7 @@ public class UpdateCpsDefendantEventListenerTest {
     private CpsDefendantIdUpdated createCpsDefendantIdUpdated(final UUID defendantId, final UUID cpsDefendantId) {
         return CpsDefendantIdUpdated.cpsDefendantIdUpdated()
                 .withCaseId(prosecutionCaseId)
-                .withCpsDefendantId(cpsDefendantId)
+                .withCpsDefendantId(cpsDefendantId.toString())
                 .withDefendantId(defendantId)
                 .build();
     }

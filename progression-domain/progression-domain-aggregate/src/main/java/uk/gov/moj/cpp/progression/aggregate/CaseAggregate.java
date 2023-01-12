@@ -583,7 +583,7 @@ public class CaseAggregate implements Aggregate {
                         .map(defendant -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(defendant)
                                 .withCpsDefendantId(defendant.getId().equals(caseCpsDetailsUpdatedFromCourtDocument.getDefendantId()) &&
                                         !isNull(caseCpsDetailsUpdatedFromCourtDocument.getCpsDefendantId()) ?
-                                        fromString(caseCpsDetailsUpdatedFromCourtDocument.getCpsDefendantId()) : defendant.getCpsDefendantId())
+                                        caseCpsDetailsUpdatedFromCourtDocument.getCpsDefendantId() : defendant.getCpsDefendantId())
                                 .build())
                         .collect(toList()))
                 .build();
@@ -2014,7 +2014,7 @@ public class CaseAggregate implements Aggregate {
                 .build()));
     }
 
-    public Stream<Object> updateCpsDefendantId(final UUID caseId, final UUID defendantId, final UUID cpsDefendantId) {
+    public Stream<Object> updateCpsDefendantId(final UUID caseId, final UUID defendantId, final String cpsDefendantId) {
         return apply(Stream.of(CpsDefendantIdUpdated.cpsDefendantIdUpdated()
                 .withCaseId(caseId)
                 .withCpsDefendantId(cpsDefendantId)

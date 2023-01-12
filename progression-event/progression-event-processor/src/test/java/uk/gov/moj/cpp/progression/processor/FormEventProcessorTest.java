@@ -707,7 +707,7 @@ public class FormEventProcessorTest {
         final List<Defendant> defendants = new ArrayList<>();
         final Defendant def1 = Defendant.defendant()
                 .withId(DEF_ID1)
-                .withCpsDefendantId(cpsDefendantId1)
+                .withCpsDefendantId(cpsDefendantId1.toString())
                 .withPersonDefendant(PersonDefendant.personDefendant()
                         .withArrestSummonsNumber("arrestSummonsNo1")
                         .build())

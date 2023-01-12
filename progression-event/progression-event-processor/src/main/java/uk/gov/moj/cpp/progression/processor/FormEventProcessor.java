@@ -268,13 +268,13 @@ public class FormEventProcessor {
         LOGGER.info("Defendant ASN: {}", asn);
 
         if (nonNull(defendantId) && defendantId.toString().equals(formDefendant.getString(DEFENDANT_ID))) {
-            final UUID cpsDefendantId = caseDefendant.getCpsDefendantId();
+            final String cpsDefendantId = caseDefendant.getCpsDefendantId();
             LOGGER.info("cpsDefendantid {} for defendantId {}", cpsDefendantId, defendantId);
 
             if (nonNull(asn)) {
                 defendantSubjectBuilder.add(ASN, asn);
             } else if (nonNull(cpsDefendantId)) {
-                defendantSubjectBuilder.add(CPS_DEFENDANT_ID, cpsDefendantId.toString());
+                defendantSubjectBuilder.add(CPS_DEFENDANT_ID, cpsDefendantId);
             } else {
                 LOGGER.error("asn or cpsDefendantId not found for defendant {}", defendantId);
             }
@@ -458,7 +458,7 @@ public class FormEventProcessor {
                         final String asn = nonNull(defendant.getPersonDefendant()) ? defendant.getPersonDefendant().getArrestSummonsNumber() : null;
                         LOGGER.info("Defendant ASN: {}", asn);
 
-                        final UUID cpsDefendantId = defendant.getCpsDefendantId();
+                        final String cpsDefendantId = defendant.getCpsDefendantId();
                         LOGGER.info("cpsDefendantid {} for defendantId {}", cpsDefendantId, defendantId);
 
                         if (nonNull(defendantId) && nonNull(formDefendant) && (formDefendant.size() > 0) && defendantId.equals(formDefendant.getString(ID))) {
@@ -466,7 +466,7 @@ public class FormEventProcessor {
                             if (nonNull(asn)) {
                                 defendantSubjectBuilder.add(ASN, asn);
                             } else if (nonNull(cpsDefendantId)) {
-                                defendantSubjectBuilder.add(CPS_DEFENDANT_ID, cpsDefendantId.toString());
+                                defendantSubjectBuilder.add(CPS_DEFENDANT_ID, cpsDefendantId);
                             } else {
                                 LOGGER.error("asn or cpsDefendantId not found for defendant {}", defendantId);
                             }
@@ -769,7 +769,7 @@ public class FormEventProcessor {
             final String cpsDefendantId = defendant.getString(CPS_DEFENDANT_ID);
             LOGGER.info("updating defendant {} with cpsDefendantId {} in case {}", defendantId, cpsDefendantId, caseId);
             final UpdateCpsDefendantId updateCpsDefendantId = UpdateCpsDefendantId.updateCpsDefendantId()
-                    .withCpsDefendantId(fromString(cpsDefendantId))
+                    .withCpsDefendantId(cpsDefendantId)
                     .withCaseId(fromString(caseId))
                     .withDefendantId(fromString(defendantId))
                     .build();

@@ -3490,7 +3490,7 @@ public class CaseAggregateTest {
 
         final ProsecutionCase updatedProsecutionCase = this.caseAggregate.getProsecutionCase();
         assertThat(updatedProsecutionCase.getCpsOrganisation(), is("AB12345"));
-        assertThat(updatedProsecutionCase.getDefendants().get(0).getCpsDefendantId(), is(cpsDefendantId));
+        assertThat(updatedProsecutionCase.getDefendants().get(0).getCpsDefendantId(), is(cpsDefendantId.toString()));
 
     }
 
@@ -3520,7 +3520,7 @@ public class CaseAggregateTest {
 
         final ProsecutionCase updatedProsecutionCase = this.caseAggregate.getProsecutionCase();
         assertThat(updatedProsecutionCase.getCpsOrganisation(), is("AB12345"));
-        assertThat(updatedProsecutionCase.getDefendants().get(0).getCpsDefendantId(), is(cpsDefendantId));
+        assertThat(updatedProsecutionCase.getDefendants().get(0).getCpsDefendantId(), is(cpsDefendantId.toString()));
 
     }
 

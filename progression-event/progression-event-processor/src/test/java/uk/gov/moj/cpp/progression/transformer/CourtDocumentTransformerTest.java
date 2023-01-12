@@ -386,7 +386,7 @@ public class CourtDocumentTransformerTest {
         final Defendant.Builder defendantBuilder = Defendant.defendant();
         defendantBuilder.withId(prosecutionCaseDocumentId);
         defendantBuilder.withProsecutionAuthorityReference("ProsecutionAuthorityReference_123");
-        defendantBuilder.withCpsDefendantId(UUID.fromString("0c10e736-3387-4044-85ed-e962e78caf0a"));
+        defendantBuilder.withCpsDefendantId("0c10e736-3387-4044-85ed-e962e78caf0a");
         final PersonDefendant.Builder personDefendant = PersonDefendant.personDefendant();
         personDefendant.withArrestSummonsNumber("ASN-1234");
         defendantBuilder.withPersonDefendant(personDefendant.build());

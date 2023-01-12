@@ -183,7 +183,7 @@ public class CourtApplicationProcessor {
                 .filter(masterDefendant -> nonNull(masterDefendant.getDefendantCase()))
                 .forEach(masterDefendant -> masterDefendant.getDefendantCase().stream().findFirst().ifPresent(defendantCase -> {
                     final UpdateCpsDefendantId updateCpsDefendantId = UpdateCpsDefendantId.updateCpsDefendantId()
-                            .withCpsDefendantId(masterDefendant.getCpsDefendantId())
+                            .withCpsDefendantId(masterDefendant.getCpsDefendantId().toString())
                             .withCaseId(defendantCase.getCaseId())
                             .withDefendantId(masterDefendant.getMasterDefendantId())
                             .build();

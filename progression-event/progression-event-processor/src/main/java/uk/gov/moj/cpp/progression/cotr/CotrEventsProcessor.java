@@ -731,7 +731,7 @@ public class CotrEventsProcessor {
             final String cpsDefendantId = defendant.getCpsDefendantId();
             LOGGER.info("updating defendant {} with cpsDefendantId {} in case {}", defendantId, cpsDefendantId, caseId);
             final UpdateCpsDefendantId updateCpsDefendantId = UpdateCpsDefendantId.updateCpsDefendantId()
-                    .withCpsDefendantId(fromString(cpsDefendantId))
+                    .withCpsDefendantId(cpsDefendantId)
                     .withCaseId(fromString(caseId))
                     .withDefendantId(fromString(defendantId))
                     .build();

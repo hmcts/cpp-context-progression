@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.UUID.fromString;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
@@ -13,10 +12,9 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.events.CpsDefendantIdUpdated;
-
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
@@ -77,7 +75,7 @@ public class UpdateCpsDefendantEventListener {
             if (nonNull(prosecutionCaseEntity)) {
                 final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload()), ProsecutionCase.class);
 
-                final List<Defendant> updatedDefendants = updateCpsDefendantId(prosecutionCase, caseCpsDetailsUpdatedFromCourtDocument.getDefendantId(), fromString(caseCpsDetailsUpdatedFromCourtDocument.getCpsDefendantId()));
+                final List<Defendant> updatedDefendants = updateCpsDefendantId(prosecutionCase, caseCpsDetailsUpdatedFromCourtDocument.getDefendantId(), caseCpsDetailsUpdatedFromCourtDocument.getCpsDefendantId());
 
                 updateProsecutionCase(updatedDefendants, prosecutionCaseEntity, prosecutionCase, caseCpsDetailsUpdatedFromCourtDocument.getCpsOrganisation());
             }
@@ -96,13 +94,13 @@ public class UpdateCpsDefendantEventListener {
 
     }
 
-    private List<Defendant> updateCpsDefendantId(ProsecutionCase prosecutionCase, final UUID defendantId, final UUID cpsDefendantId) {
+    private List<Defendant> updateCpsDefendantId(ProsecutionCase prosecutionCase, final UUID defendantId, final String cpsDefendantId) {
         return prosecutionCase.getDefendants().stream()
                 .map(defendant -> updateCpsDefendantId(defendant, defendantId, cpsDefendantId))
                 .collect(Collectors.toList());
     }
 
-    private Defendant updateCpsDefendantId(final Defendant defendant, final UUID defendantId, final UUID cpsDefendantId) {
+    private Defendant updateCpsDefendantId(final Defendant defendant, final UUID defendantId, final String cpsDefendantId) {
         final Defendant.Builder updatedDefendant = Defendant.defendant();
         if (defendant.getId().equals(defendantId) && (isNull(defendant.getCpsDefendantId()) || !cpsDefendantId.equals(defendant.getCpsDefendantId()))) {
             updatedDefendant.withValuesFrom(defendant).withCpsDefendantId(cpsDefendantId);
