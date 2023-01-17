@@ -7,8 +7,6 @@ import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static uk.gov.justice.core.courts.AddMaterialV2.addMaterialV2;
 import static uk.gov.justice.core.courts.CourtApplicationSubject.courtApplicationSubject;
-import static uk.gov.justice.core.courts.CpsOrganisationDefendantDetails.cpsOrganisationDefendantDetails;
-import static uk.gov.justice.core.courts.CpsPersonDefendantDetails.cpsPersonDefendantDetails;
 import static uk.gov.justice.core.courts.DefendantSubject.defendantSubject;
 import static uk.gov.justice.core.courts.EventNotification.eventNotification;
 import static uk.gov.justice.core.courts.ProsecutionCaseSubject.prosecutionCaseSubject;
@@ -17,12 +15,9 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import uk.gov.justice.core.courts.AddMaterialV2;
 import uk.gov.justice.core.courts.CourtApplicationSubject;
 import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.CpsOrganisationDefendantDetails;
-import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantSubject;
 import uk.gov.justice.core.courts.EventNotification;
-import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCaseSubject;
@@ -93,10 +88,10 @@ public class CourtDocumentTransformer {
             final List<Defendant> defendantLinkedToDocument = prosecutionCaseOptional.get().getDefendants().stream().filter(defendant -> subjectBusinessObjectId.contains(defendant.getId())).collect(Collectors.toList());
 
             if (defendantLinkedToDocument.size()==1) {
-                final DefendantSubject defendantSubject = buildDefendantSubject(defendantLinkedToDocument.get(0), defendantLinkedToDocument.get(0));
+                final DefendantSubject defendantSubject = buildDefendantSubject(defendantLinkedToDocument.get(0));
                 prosecutionCaseSubjectBuilder.withDefendantSubject(defendantSubject);
             }else{
-                additionalDefendantSubject= defendantLinkedToDocument.stream().map(v->buildDefendantSubject(v,v)).collect(Collectors.toList());
+                additionalDefendantSubject= defendantLinkedToDocument.stream().map(v->buildDefendantSubject(v)).collect(Collectors.toList());
             }
 
             buildProsecutionCaseSubject(prosecutionCaseSubjectBuilder, prosecutionCaseOptional.get(), envelope);
@@ -160,53 +155,21 @@ public class CourtDocumentTransformer {
     }
 
 
-    private DefendantSubject buildDefendantSubject(final Defendant defendant, final Defendant defendantLinkedToDocument) {
+    private DefendantSubject buildDefendantSubject(final Defendant defendant) {
         final DefendantSubject.Builder defendantSubjectBuilder = defendantSubject();
-        boolean isEmptyDefendantSubject = true;
 
         if (nonNull(defendant.getProsecutionAuthorityReference())) {
             defendantSubjectBuilder.withProsecutorDefendantId(defendant.getProsecutionAuthorityReference());
-            isEmptyDefendantSubject = false;
         }
 
         if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getArrestSummonsNumber())) {
             defendantSubjectBuilder.withAsn(defendant.getPersonDefendant().getArrestSummonsNumber());
-            isEmptyDefendantSubject = false;
         }
 
-        if (isEmptyDefendantSubject) {
-            final CpsOrganisationDefendantDetails cpsOrganisationDefendant = buildCpsOrganisationDefendantDetails(defendantLinkedToDocument);
-            final CpsPersonDefendantDetails cpsPersonDefendantDetails = buildCpsPersonDefendantDetails(defendantLinkedToDocument);
-            defendantSubjectBuilder.withCpsOrganisationDefendantDetails(cpsOrganisationDefendant);
-            defendantSubjectBuilder.withCpsPersonDefendantDetails(cpsPersonDefendantDetails);
-        }
         if(nonNull(defendant.getCpsDefendantId())){
-            defendantSubjectBuilder.withCpsDefendantId(defendant.getCpsDefendantId().toString());
+            defendantSubjectBuilder.withCpsDefendantId(defendant.getCpsDefendantId());
         }
         return defendantSubjectBuilder.build();
-    }
-
-    private CpsOrganisationDefendantDetails buildCpsOrganisationDefendantDetails(final Defendant defendant) {
-        final CpsOrganisationDefendantDetails.Builder cpsOrganisationDefendantBuilder = cpsOrganisationDefendantDetails();
-        if (nonNull(defendant.getLegalEntityDefendant())) {
-            return cpsOrganisationDefendantBuilder.withOrganisationName(defendant.getLegalEntityDefendant().getOrganisation().getName()).build();
-        }
-        return null;
-    }
-
-    private CpsPersonDefendantDetails buildCpsPersonDefendantDetails(final Defendant defendant) {
-        final CpsPersonDefendantDetails.Builder cpsPersonDefendantDetailsBuilder = cpsPersonDefendantDetails();
-        if (nonNull(defendant.getPersonDefendant())) {
-            final Person person = defendant.getPersonDefendant().getPersonDetails();
-            cpsPersonDefendantDetailsBuilder.withForename(person.getFirstName());
-            cpsPersonDefendantDetailsBuilder.withForename2(person.getMiddleName());
-            cpsPersonDefendantDetailsBuilder.withSurname(person.getLastName());
-            cpsPersonDefendantDetailsBuilder.withDateOfBirth(person.getDateOfBirth());
-            cpsPersonDefendantDetailsBuilder.withTitle(person.getTitle());
-            return cpsPersonDefendantDetailsBuilder.build();
-        }
-
-        return null;
     }
 
     private Optional<ProsecutionCase> getProsecutionCase(final Optional<JsonObject> prosecutionCaseOptional) {

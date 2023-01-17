@@ -227,13 +227,7 @@ public class CourtDocumentTransformerTest {
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(
-                withJsonPath("$.subjectDetails.prosecutionCaseSubject.caseUrn", is("URN-123")),
-                withJsonPath("$.subjectDetails.prosecutionCaseSubject.defendantSubject.cpsOrganisationDefendantDetails.organisationName", is("Organisation_name")),
-                withJsonPath("$.subjectDetails.prosecutionCaseSubject.defendantSubject.cpsPersonDefendantDetails.forename", is("firstName")),
-                withJsonPath("$.subjectDetails.prosecutionCaseSubject.defendantSubject.cpsPersonDefendantDetails.forename2", is("middleName")),
-                withJsonPath("$.subjectDetails.prosecutionCaseSubject.defendantSubject.cpsPersonDefendantDetails.surname", is("lastName")),
-                withJsonPath("$.subjectDetails.prosecutionCaseSubject.defendantSubject.cpsPersonDefendantDetails.dateOfBirth", is("2021-10-10")),
-                withJsonPath("$.subjectDetails.prosecutionCaseSubject.defendantSubject.cpsPersonDefendantDetails.title", is("Mrs"))
+                withJsonPath("$.subjectDetails.prosecutionCaseSubject.caseUrn", is("URN-123"))
         )));
     }
 
