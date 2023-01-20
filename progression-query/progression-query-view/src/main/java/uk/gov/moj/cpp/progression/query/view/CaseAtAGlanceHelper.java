@@ -226,6 +226,10 @@ public class CaseAtAGlanceHelper {
                             .withAmendmentReason(jr.getAmendmentReason())
                             .withAmendmentDate(jr.getAmendmentDate());
 
+                    if (nonNull(jr.getResultText())) {
+                        caagResultsBuilder.withResultText(jr.getResultText());
+                    }
+
                     if (nonNull(jr.getJudicialResultPrompts())) {
                         caagResultsBuilder.withCaagResultPrompts(extractResultPrompts(jr.getJudicialResultPrompts()));
                     }
