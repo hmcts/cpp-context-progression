@@ -274,9 +274,6 @@
         },
         "amendedBy": {
           "type": "string"
-        },
-        "resultText": {
-          "type": "string"
         }
       },
       "required": [

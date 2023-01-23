@@ -9,12 +9,6 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 
-
-import java.util.function.Function;
-import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtApplicationCase;
-import uk.gov.justice.core.courts.CourtOrder;
-import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
@@ -290,50 +284,7 @@ public class HearingResultEventListener {
         if (isNotEmpty(hearingFromPayload.getProsecutionCases())) {
             builder.withProsecutionCases(getUpdatedProsecutionCases(hearingFromPayload, hearingFromDatabase, hearingDay));
         }
-        if (isNotEmpty(hearingFromPayload.getCourtApplications())) {
-            builder.withCourtApplications(getUpdatedCourtApplications(hearingFromPayload.getCourtApplications()));
-        }
         return builder.withDefendantJudicialResults(resultsToBeAdded)
-                .build();
-    }
-
-    private List<CourtApplication> getUpdatedCourtApplications(final List<CourtApplication> courtApplications) {
-        return courtApplications.stream()
-                .map(getCourtApplicationCourtApplicationWithOutNowResults())
-                .collect(toList());
-    }
-
-    private Function<CourtApplication, CourtApplication> getCourtApplicationCourtApplicationWithOutNowResults() {
-        return courtApplication -> CourtApplication.courtApplication()
-                .withValuesFrom(courtApplication)
-                .withJudicialResults(getNonNowsResults(courtApplication.getJudicialResults()))
-                .withCourtApplicationCases(getCourtApplicationCasesWithOutNowResults(courtApplication))
-                .withCourtOrder(ofNullable(courtApplication.getCourtOrder()).map(courtOrder ->
-                        CourtOrder.courtOrder().withValuesFrom(courtOrder)
-                                .withCourtOrderOffences(courtOrder.getCourtOrderOffences().stream()
-                                        .map(courtOrderOffence -> CourtOrderOffence.courtOrderOffence()
-                                                .withValuesFrom(courtOrderOffence)
-                                                .withOffence(getOffenceWithoutNowResults(courtOrderOffence.getOffence()))
-                                                .build())
-                                        .collect(toList()))
-                                .build()).orElse(null))
-                .build();
-    }
-
-    private List<CourtApplicationCase> getCourtApplicationCasesWithOutNowResults(final CourtApplication courtApplication) {
-        return ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
-                .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase()
-                        .withValuesFrom(courtApplicationCase)
-                        .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
-                                .map(offence -> getOffenceWithoutNowResults(offence))
-                                .collect(Collectors.collectingAndThen(toList(), list -> list.isEmpty() ? null : list)))
-                        .build())
-                .collect(Collectors.collectingAndThen(toList(), list -> list.isEmpty() ? null : list));
-    }
-
-    private Offence getOffenceWithoutNowResults(final Offence offence) {
-        return Offence.offence().withValuesFrom(offence)
-                .withJudicialResults(getNonNowsResults(offence.getJudicialResults()))
                 .build();
     }
 

@@ -133,7 +133,6 @@ public class ApplicationAtAGlanceHelper {
         aagResultBuilder.withLastSharedDateTime(judicialResult.getLastSharedDateTime());
         aagResultBuilder.withAmendmentDate(judicialResult.getAmendmentDate());
         aagResultBuilder.withAmendmentReason(judicialResult.getAmendmentReason());
-        aagResultBuilder.withResultText(judicialResult.getResultText());
         ofNullable(judicialResult.getDelegatedPowers()).map(delegatedPower -> format(FIRST_LAST_NAME_FORMAT, delegatedPower.getFirstName(), delegatedPower.getLastName()))
                 .ifPresent(aagResultBuilder::withAmendedBy);
         ofNullable(judicialResult.getJudicialResultPrompts()).ifPresent(judicialResultPrompts -> {

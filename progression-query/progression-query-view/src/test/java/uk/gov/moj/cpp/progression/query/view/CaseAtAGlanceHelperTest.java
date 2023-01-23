@@ -123,9 +123,6 @@ public class CaseAtAGlanceHelperTest {
     private static final LocalDate VERDICT_DATE = LocalDate.of(2020, 9, 29);
     private static final String ORG_NAME = "Org name";
 
-    private static final String CAAG_RESULT_TEXT = "Result Text For Caag";
-    private static final String JUDICIAL_RESULT_TEXT = "Result Text For Judicial";
-
     private CaseAtAGlanceHelper caseAtAGlanceHelper;
 
     @Mock
@@ -295,7 +292,6 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().isEmpty(), is(false));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().get(0).getLabel(), is(OFFENCE_RESULT_LABEL_1));
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().get(1).getLabel(), is(OFFENCE_RESULT_LABEL_2));
-        assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().get(0).getResultText(), is(CAAG_RESULT_TEXT));
         assertThat(defendantSmith.getDefendantCaseJudicialResults().get(0).getLabel(), is(CASE_RESULT_LABEL));
         assertThat(defendantSmith.getDefendantCaseJudicialResults().get(0).getJudicialResultId(), is(CASE_JUDICIAL_RESULT_ID));
         assertThat(defendantSmith.getDefendantCaseJudicialResults().get(0).getResultWording(), is(RESULT_WORDING));
@@ -343,7 +339,6 @@ public class CaseAtAGlanceHelperTest {
         assertThat(caagResults.isEmpty(), is(false));
         assertThat(caagResults.get(0).getAmendmentReason(), is(OTHER_AMEND_REASON));
         assertThat(caagResults.get(1).getAmendmentReason(), is(AMEND_REASON));
-        assertThat(caagResults.get(1).getResultText(), is(CAAG_RESULT_TEXT));
         assertThat(caagResults.get(0).getId(), is(RECENT_JUDICIAL_RESULT_ID));
     }
 
@@ -673,7 +668,6 @@ public class CaseAtAGlanceHelperTest {
                                 .withId(JOHN_SMITH_ID)
                                 .withJudicialResults(asList(judicialResult().withLabel(CASE_RESULT_LABEL)
                                         .withJudicialResultId(CASE_JUDICIAL_RESULT_ID)
-                                        .withResultText(JUDICIAL_RESULT_TEXT)
                                         .withResultWording(RESULT_WORDING).build()))
                                 .withOffences(asList(offences()
                                         .withId(OFFENCE_ID)
@@ -701,7 +695,6 @@ public class CaseAtAGlanceHelperTest {
                                                         .withJudicialResultId(RECENT_JUDICIAL_RESULT_ID)
                                                         .withOrderedDate(LocalDate.now().plusDays(1))
                                                         .withAmendmentReason(OTHER_AMEND_REASON)
-                                                        .withResultText(CAAG_RESULT_TEXT)
                                                         .build(),
                                                 judicialResult()
                                                         .withJudicialResultId(randomUUID())
@@ -711,7 +704,6 @@ public class CaseAtAGlanceHelperTest {
                                                         .withAmendmentReason(AMEND_REASON)
                                                         .withLastSharedDateTime(LocalDate.now().toString())
                                                         .withLabel(OFFENCE_RESULT_LABEL_2)
-                                                        .withResultText(CAAG_RESULT_TEXT)
                                                         .withJudicialResultPrompts(singletonList(JudicialResultPrompt.judicialResultPrompt().withLabel(OFFENCE_RESULT_LABEL_1).withValue(VALUE).build()))
                                                         .build()))
                                         .build()))
@@ -729,7 +721,6 @@ public class CaseAtAGlanceHelperTest {
                                 .withId(JOHN_SMITH_ID)
                                 .withJudicialResults(asList(judicialResult().withLabel(ANOTHER_CASE_RESULT_LABEL)
                                         .withJudicialResultId(CASE_JUDICIAL_RESULT_ID)
-                                        .withResultText(CAAG_RESULT_TEXT)
                                         .withResultWording(RESULT_WORDING).build()))
                                 .withOffences(asList(offences()
                                         .withId(OFFENCE_ID)
@@ -742,7 +733,6 @@ public class CaseAtAGlanceHelperTest {
                                                         .withAmendmentReason(AMEND_REASON)
                                                         .withLastSharedDateTime(LocalDate.now().toString())
                                                         .withLabel(ANOTHER_OFFENCE_RESULT_LABEL)
-                                                        .withResultText(CAAG_RESULT_TEXT)
                                                         .withJudicialResultPrompts(singletonList(JudicialResultPrompt.judicialResultPrompt().withLabel(OFFENCE_RESULT_LABEL_1).withValue(VALUE).build()))
                                                         .build()))
                                         .build()))
