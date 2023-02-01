@@ -102,10 +102,10 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/courts-document-added.json
 
         - name: public.progression.case-note-added
-          schema_uri: http://justice.gov.uk/core/courts/case-note-added.json
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.case-note-added.json
 
         - name: public.progression.case-note-edited
-          schema_uri: http://justice.gov.uk/core/courts/case-note-edited.json
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.case-note-edited.json
 
         - name: public.progression.defendant-matched
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.defendant-matched.json

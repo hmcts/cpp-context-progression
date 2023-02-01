@@ -77,12 +77,6 @@ public class CaseNoteProcessorTest {
         final Envelope<JsonObject> publicEvent = envelopeCaptor.getValue();
         assertThat(publicEvent.metadata(),
                 withMetadataEnvelopedFrom(requestMessage).withName("public.progression.case-note-added"));
-        JsonObject actualPayload = publicEvent.payload();
-        assertThat(actualPayload.getString("note"), equalTo(caseNoteAdded.getNote()));
-        assertThat(actualPayload.getString("caseId"), equalTo(caseNoteAdded.getCaseId().toString()));
-        assertThat(actualPayload.getString("firstName"), equalTo(caseNoteAdded.getFirstName()));
-        assertThat(actualPayload.getString("lastName"), equalTo(caseNoteAdded.getLastName()));
-        assertThat(actualPayload.getString("createdDateTime"), equalTo(caseNoteAddedPayload.getString("createdDateTime")));
     }
 
     @Test
@@ -110,12 +104,6 @@ public class CaseNoteProcessorTest {
         assertThat(publicEvent.metadata(),
                 withMetadataEnvelopedFrom(requestMessage).withName("public.progression.case-note-added"));
         JsonObject actualPayload = publicEvent.payload();
-        assertThat(actualPayload.getString("note"), equalTo(caseNoteAdded.getNote()));
-        assertThat(actualPayload.getString("caseNoteId"), equalTo(caseNoteAdded.getCaseNoteId().toString()));
-        assertThat(actualPayload.getString("caseId"), equalTo(caseNoteAdded.getCaseId().toString()));
-        assertThat(actualPayload.getString("firstName"), equalTo(caseNoteAdded.getFirstName()));
-        assertThat(actualPayload.getString("lastName"), equalTo(caseNoteAdded.getLastName()));
-        assertThat(actualPayload.getString("createdDateTime"), equalTo(caseNoteAddedPayload.getString("createdDateTime")));
     }
 
     @Test
@@ -139,10 +127,6 @@ public class CaseNoteProcessorTest {
         final Envelope<JsonObject> publicEvent = envelopeCaptor.getValue();
         assertThat(publicEvent.metadata(),
                 withMetadataEnvelopedFrom(requestMessage).withName("public.progression.case-note-edited"));
-        JsonObject actualPayload = publicEvent.payload();
-        assertThat(actualPayload.getString("caseId"), equalTo(caseNoteEdited.getCaseId().toString()));
-        assertThat(actualPayload.getString("caseNoteId"), equalTo(caseNoteEdited.getCaseNoteId().toString()));
-        assertThat(actualPayload.getBoolean("isPinned"), equalTo(caseNoteEdited.getIsPinned()));
     }
 
     @Test
@@ -166,9 +150,5 @@ public class CaseNoteProcessorTest {
         final Envelope<JsonObject> publicEvent = envelopeCaptor.getValue();
         assertThat(publicEvent.metadata(),
                 withMetadataEnvelopedFrom(requestMessage).withName("public.progression.case-note-edited"));
-        JsonObject actualPayload = publicEvent.payload();
-        assertThat(actualPayload.getString("caseId"), equalTo(caseNoteEdited.getCaseId().toString()));
-        assertThat(actualPayload.getString("caseNoteId"), equalTo(caseNoteEdited.getCaseNoteId().toString()));
-        assertThat(actualPayload.getBoolean("isPinned"), equalTo(caseNoteEdited.getIsPinned()));
     }
 }

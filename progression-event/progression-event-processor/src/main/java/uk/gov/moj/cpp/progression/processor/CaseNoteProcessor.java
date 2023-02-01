@@ -9,6 +9,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
+import javax.json.Json;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ public class CaseNoteProcessor {
             LOGGER.warn("raising public  event public.progression.case-note-added correlationId: {}", event.metadata().clientCorrelationId().orElse(null));
         }
         sender.send(
-                envelop(event.payloadAsJsonObject())
+                envelop(Json.createObjectBuilder().build())
                         .withName("public.progression.case-note-added")
                         .withMetadataFrom(event));
         if (LOGGER.isWarnEnabled()) {
@@ -44,22 +45,13 @@ public class CaseNoteProcessor {
 
     @Handles("progression.event.case-note-added-v2")
     public void processCaseNoteAddedV2(final JsonEnvelope event) {
-        if (LOGGER.isWarnEnabled()) {
-            LOGGER.warn("recieved private  event progression.event.case-note-added-v2 correlationId: {}", event.metadata().clientCorrelationId().orElse(null));
-        }
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(LOG_OUTPUT_FORMAT, "progression.event.case-note-added-v2", event.toObfuscatedDebugString());
         }
-        if (LOGGER.isWarnEnabled()) {
-            LOGGER.warn("raising public  event public.progression.case-note-added-v2 correlationId: {}", event.metadata().clientCorrelationId().orElse(null));
-        }
         sender.send(
-                envelop(event.payloadAsJsonObject())
+                envelop(Json.createObjectBuilder().build())
                         .withName("public.progression.case-note-added")
                         .withMetadataFrom(event));
-        if (LOGGER.isWarnEnabled()) {
-            LOGGER.warn("raised public  event public.progression.case-note-added-v2 correlationId: {}", event.metadata().clientCorrelationId().orElse(null));
-        }
     }
 
     @Handles("progression.event.case-note-edited")
@@ -68,7 +60,7 @@ public class CaseNoteProcessor {
             LOGGER.info(LOG_OUTPUT_FORMAT, "progression.event.case-note-edited", event.toObfuscatedDebugString());
         }
         sender.send(
-                envelop(event.payloadAsJsonObject())
+                envelop(Json.createObjectBuilder().build())
                         .withName("public.progression.case-note-edited")
                         .withMetadataFrom(event));
     }
@@ -79,7 +71,7 @@ public class CaseNoteProcessor {
             LOGGER.info(LOG_OUTPUT_FORMAT, "progression.event.case-note-edited-v2", event.toObfuscatedDebugString());
         }
         sender.send(
-                envelop(event.payloadAsJsonObject())
+                envelop(Json.createObjectBuilder().build())
                         .withName("public.progression.case-note-edited")
                         .withMetadataFrom(event));
     }

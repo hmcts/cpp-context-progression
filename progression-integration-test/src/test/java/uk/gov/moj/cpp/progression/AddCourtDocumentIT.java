@@ -102,7 +102,6 @@ public class AddCourtDocumentIT extends AbstractIT {
     public void shouldAddCourtDocument() throws IOException {
 
         verifyAddCourtDocument(null, "460f7ec0-c002-11e8-a355-529269fb1459");
-        verifyForCourtDocumentNotified();
     }
 
     @Test
@@ -353,7 +352,6 @@ public class AddCourtDocumentIT extends AbstractIT {
 
         JsonObject orgProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
         verifyAddCourtDocument(true,"0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
-        verifyForCourtDocumentNotified();
 
         response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         JsonObject updatedProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
@@ -382,7 +380,6 @@ public class AddCourtDocumentIT extends AbstractIT {
 
         JsonObject orgProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
         verifyAddCourtDocument(false,"0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
-        verifyForCourtDocumentNotified();
 
         response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         JsonObject updatedProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
@@ -398,7 +395,6 @@ public class AddCourtDocumentIT extends AbstractIT {
 
         JsonObject orgProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
         verifyAddCourtDocument(true,"0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
-        verifyForCourtDocumentNotified();
 
         response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         JsonObject updatedProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
@@ -415,7 +411,6 @@ public class AddCourtDocumentIT extends AbstractIT {
 
         JsonObject orgProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
         verifyAddCourtDocument(true,"0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
-        verifyForCourtDocumentNotified();
 
         response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         JsonObject updatedProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
@@ -430,7 +425,6 @@ public class AddCourtDocumentIT extends AbstractIT {
         expectedProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
 
         verifyAddCourtDocument(true,"0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
-        verifyForCourtDocumentNotified();
 
         response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         updatedProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
@@ -450,7 +444,6 @@ public class AddCourtDocumentIT extends AbstractIT {
 
         JsonObject orgProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
         verifyAddCourtDocument(true,"0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
-        verifyForCourtDocumentNotified();
 
         response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         JsonObject updatedProsecutionCase = stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");

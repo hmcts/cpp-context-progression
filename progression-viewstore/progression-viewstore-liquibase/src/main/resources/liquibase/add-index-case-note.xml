@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="add-index-case-note" author="baris.ozturkmen">
+
+        <sql>
+            create index case_note_idx_desc on case_note (case_id asc, created_date_time desc);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
