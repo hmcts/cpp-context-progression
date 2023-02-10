@@ -57,17 +57,29 @@ public abstract class BaseCourtApplicationTransformer implements Transform {
             //linked application
             for (final CourtApplicationCase courtApplicationCase : courtApplicationCases) {
                 final UUID caseId = courtApplicationCase.getProsecutionCaseId();
-                final CaseDetails caseDetails = new CaseDetails();
-                caseDetails.setCaseId(caseId.toString());
-                caseDetails.setApplications(applications);
-                caseDetails.setCaseStatus(courtApplicationCase.getCaseStatus());
-                caseDetails.set_case_type(PROSECUTION);
-                caseDocumentsMap.put(caseId, caseDetails);
+                caseDocumentsMap.put(caseId, getCaseDetails(applications, caseId, courtApplicationCase.getCaseStatus()));
+            }
+        } else if (nonNull(courtApplication.getCourtOrder())) {
+            //Handle courtOrder
+            final CourtOrder courtOrder = courtApplication.getCourtOrder();
+            final List<CourtOrderOffence> offences = courtOrder.getCourtOrderOffences();
+            for (final CourtOrderOffence courtOrderOffence : offences) {
+                final UUID caseId = courtOrderOffence.getProsecutionCaseId();
+                caseDocumentsMap.put(caseId, getCaseDetails(applications, caseId, getDefaultCaseStatus()));
             }
         } else {
             LOGGER.error("Unexpected state .... expecting at least linked cases or only one courtApplication");
         }
         return caseDocumentsMap;
+    }
+
+    private CaseDetails getCaseDetails(final List<Application> applications, final UUID caseId, final String caseStatus) {
+        final CaseDetails caseDetails = new CaseDetails();
+        caseDetails.setCaseId(caseId.toString());
+        caseDetails.setApplications(applications);
+        caseDetails.setCaseStatus(caseStatus);
+        caseDetails.set_case_type(PROSECUTION);
+        return caseDetails;
     }
 
     protected Map<UUID, CaseDetails> transformCourtApplication(final CourtApplication courtApplication, final Map<UUID, CaseDetails> caseDocumentsMap) {

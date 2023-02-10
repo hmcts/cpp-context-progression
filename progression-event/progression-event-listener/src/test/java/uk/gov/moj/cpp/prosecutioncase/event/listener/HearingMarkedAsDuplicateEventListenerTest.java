@@ -81,6 +81,7 @@ public class HearingMarkedAsDuplicateEventListenerTest {
         verify(hearingRepository).remove(hearingEntity);
         verify(hearingApplicationRepository).removeByHearingId(hearingEntity.getHearingId());
         verify(matchDefendantCaseHearingRepository).removeByHearingId(hearingEntity.getHearingId());
+        verify(caseDefendantHearingRepository).removeByHearingId(hearingEntity.getHearingId());
     }
 
     @Test
@@ -98,6 +99,8 @@ public class HearingMarkedAsDuplicateEventListenerTest {
 
         verify(hearingRepository, never()).remove(hearingEntity);
         verify(hearingApplicationRepository, never()).removeByHearingId(hearingEntity.getHearingId());
+        verify(matchDefendantCaseHearingRepository, never()).removeByHearingId(hearingEntity.getHearingId());
+        verify(caseDefendantHearingRepository, never()).removeByHearingId(hearingEntity.getHearingId());
     }
 
     @Test

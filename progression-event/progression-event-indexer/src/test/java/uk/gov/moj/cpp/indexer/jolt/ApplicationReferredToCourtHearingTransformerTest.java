@@ -10,6 +10,7 @@ import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJso
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.VerificationUtil.initializeJolt;
 
 import uk.gov.justice.json.jolt.JoltTransformer;
+import uk.gov.justice.services.unifiedsearch.client.validation.JsonDocumentValidator;
 
 import java.io.IOException;
 
@@ -22,6 +23,8 @@ import org.junit.Test;
 public class ApplicationReferredToCourtHearingTransformerTest {
 
     private final JoltTransformer joltTransformer = new JoltTransformer();
+
+    private JsonDocumentValidator jsonValidator = new JsonDocumentValidator();
 
     @Before
     public void setUp() {
@@ -36,6 +39,18 @@ public class ApplicationReferredToCourtHearingTransformerTest {
         final JsonObject inputJson = readJson("/progression.event.application-referred-to-court-hearing.json");
         final DocumentContext inputDocumentContext = parse(inputJson);
         final JsonObject transformedJson = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
+        verifyCourtApplication(inputDocumentContext, transformedJson);
+    }
+
+    @Test
+    public void shouldTransformApplicationReferredToCourtHearingForCourtOrder() throws IOException {
+        final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.application-referred-to-court-hearing-spec.json");
+        assertThat(specJson, is(notNullValue()));
+
+        final JsonObject inputJson = readJson("/progression.event.application-referred-to-court-hearing-for-court-order.json");
+        final DocumentContext inputDocumentContext = parse(inputJson);
+        final JsonObject transformedJson = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
+        jsonValidator.validate(transformedJson, "/json/schema/crime-case-index-schema.json");
         verifyCourtApplication(inputDocumentContext, transformedJson);
     }
 

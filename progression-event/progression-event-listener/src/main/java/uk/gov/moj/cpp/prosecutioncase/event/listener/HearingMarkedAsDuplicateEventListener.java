@@ -54,6 +54,7 @@ public class HearingMarkedAsDuplicateEventListener {
             //Deletes the hearing linked rows from other tables where this hearing_id has the entries
             hearingApplicationRepository.removeByHearingId(hearingId);
             matchDefendantCaseHearingRepository.removeByHearingId(hearingId);
+            caseDefendantHearingRepository.removeByHearingId(hearingId);
         }
     }
 
