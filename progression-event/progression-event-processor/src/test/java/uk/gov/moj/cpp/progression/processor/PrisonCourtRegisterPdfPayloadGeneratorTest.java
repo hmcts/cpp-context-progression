@@ -5,6 +5,14 @@ import org.hamcrest.core.Is;
 import org.junit.Test;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.AllOf.allOf;
+
+
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import java.nio.charset.Charset;
@@ -12,7 +20,6 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 
-import static org.junit.Assert.assertThat;
 
 public class PrisonCourtRegisterPdfPayloadGeneratorTest {
 
@@ -81,6 +88,17 @@ public class PrisonCourtRegisterPdfPayloadGeneratorTest {
         assertThat(responseBody.toString(), Is.is(getPayload("prisonCourtRegisterPdfPayload-min.json")
                 .toString().replace("%CURRENT_DATE%", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
         ));
+    }
+
+    @Test
+    public void shouldReplaceWhiteSpace(){
+        final JsonObject body = getPayload("progression.add-prison-court-register-payload-with-whitespaces.json");
+        final PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator = new PrisonCourtRegisterPdfPayloadGenerator();
+        final JsonObject responseBody = prisonCourtRegisterPdfPayloadGenerator.mapPayload(body);
+
+        assertThat(responseBody.toString(), isJson(allOf(
+                withJsonPath("$.cases[0].offences[0].results[0].resultText", is("IMP - description\nAbsolute discharge\n O10 17"))
+        )));
     }
 
     public static JsonObject getPayload(final String path) {

@@ -25,33 +25,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
-import static com.jayway.jsonassert.JsonAssert.with;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.format.DateTimeFormatter.ofPattern;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.UUID.fromString;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.slf4j.LoggerFactory.getLogger;
-import static uk.gov.justice.core.courts.Defendant.defendant;
-import static uk.gov.justice.progression.courts.GetHearingsAtAGlance.getHearingsAtAGlance;
-import static uk.gov.justice.progression.courts.Hearings.hearings;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
-import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
 
 
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -93,6 +68,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonMetadata;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
+import uk.gov.moj.cpp.progression.query.utils.ResultTextFlagBuilder;
 import uk.gov.moj.cpp.progression.query.view.service.CotrQueryService;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
@@ -132,21 +108,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
-
-import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.Logger;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -244,6 +205,9 @@ public class ProsecutionCaseQueryViewTest {
     private ListToJsonArrayConverter jsonConverter;
     @Mock
     private CotrQueryService cotrQueryService;
+
+    @Spy
+    private ResultTextFlagBuilder resultTextFlagBuilder;
 
     @Before
     public void setup() {
@@ -504,6 +468,8 @@ public class ProsecutionCaseQueryViewTest {
         assertThat(defendantJudicialResults.size(), is(4));
         assertThat(defendantJudicialResults.getJsonObject(0).getJsonString("label").getString(), is(LABEL1));
         assertThat(defendantJudicialResults.getJsonObject(1).getJsonString("label").getString(), is(LABEL2));
+        assertThat(defendantJudicialResults.getJsonObject(0).getBoolean("useResultText"), is(true));
+        assertThat(defendantJudicialResults.getJsonObject(1).getBoolean("useResultText"), is(false));
         assertThat(defendantJudicialResults.getJsonObject(2).getJsonString("label").getString(), is(LABEL3));
         assertThat(defendantJudicialResults.getJsonObject(3).getJsonString("label").getString(), is(LABEL4));
     }
@@ -1458,12 +1424,14 @@ public class ProsecutionCaseQueryViewTest {
                                 DefendantJudicialResult.defendantJudicialResult()
                                         .withJudicialResult(JudicialResult.judicialResult()
                                                 .withLabel(LABEL1)
+                                                .withResultText("code - " + LABEL1)
                                                 .build())
                                         .withMasterDefendantId(masterDefendantId)
                                         .build(),
                                 DefendantJudicialResult.defendantJudicialResult()
                                         .withJudicialResult(JudicialResult.judicialResult()
                                                 .withLabel(LABEL2)
+                                                .withResultText(LABEL2)
                                                 .build())
                                         .withMasterDefendantId(masterDefendantId)
                                         .build()

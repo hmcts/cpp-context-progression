@@ -1,8 +1,13 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.AllOf.allOf;
 
+
+import org.hamcrest.Matchers;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
 import java.nio.charset.Charset;
@@ -35,6 +40,16 @@ public class CourtRegisterPdfPayloadGeneratorTest {
         final CourtRegisterPdfPayloadGenerator courtRegisterPdfPayloadGenerator = new CourtRegisterPdfPayloadGenerator();
         final JsonObject responseBody = courtRegisterPdfPayloadGenerator.mapPayload(body);
         assertThat(responseBody.toString(), is(getPayload("courtRegisterPdfPayload-min.json").toString()));
+    }
+
+    @Test
+    public void shouldReplaceWhiteSpace() {
+        final JsonObject body = getPayload("progression.add-court-register-document-payload-with-whitespaces.json");
+        final CourtRegisterPdfPayloadGenerator courtRegisterPdfPayloadGenerator = new CourtRegisterPdfPayloadGenerator();
+        final JsonObject responseBody = courtRegisterPdfPayloadGenerator.mapPayload(body);
+        assertThat(responseBody.toString(), isJson(allOf(
+                withJsonPath("$.cases[0].defendantResults[0].resultText", Matchers.is("IMP - label\nsome result\n with whitespaces"))
+        )));
     }
 
     public static JsonObject getPayload(final String path) {

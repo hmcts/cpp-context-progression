@@ -238,7 +238,12 @@
               "defendantId": "5f080fe7-7020-4c38-ac9a-88681ad05a5e"
             },
             "id": "5f080fe7-7020-4c38-ac9a-88681ad05a5e",
-            "judicialResults": [],
+            "judicialResults": [
+              {
+                "resultText" : "code - resultText",
+                "isAvailableForCourtExtract" : true
+              }
+            ],
             "name": "Harry Jack Kane Junior",
             "offences": [
               {
