@@ -38,9 +38,6 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
     private static final String RESULT_TEXT = "resultText";
     private static final String RESULTS = "results";
     private static final String CONVICTION_DATE = "convictionDate";
-    public static final String BLANK = " ";
-    public static final String NEW_LINE = "\n";
-    public static final String DESIRED_NEW_LINE = "####";
 
     @SuppressWarnings({"squid:S1188", "squid:S1192"})
     public JsonObject mapPayload(final JsonObject jsonObject) {
@@ -109,7 +106,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
             resultList.forEach(result -> {
                 final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
                         .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
-                        .add(RESULT_TEXT, prepareResultText(result.getString(RESULT_TEXT, "")));
+                        .add(RESULT_TEXT, clearUndesiredCharacters(result.getString(RESULT_TEXT, "")));
                 jsonArrayBuilder.add(resultBuilder.build());
             });
         });
@@ -126,7 +123,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
             ofNullable(pcoa.getJsonArray(RESULTS)).ifPresent(results -> results.stream().map(JsonObject.class::cast).forEach(result -> {
                 final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
                         .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
-                        .add(RESULT_TEXT, prepareResultText(result.getString(RESULT_TEXT, "")));
+                        .add(RESULT_TEXT, clearUndesiredCharacters(result.getString(RESULT_TEXT, "")));
                 jsonArrayBuilder.add(resultBuilder.build());
             }));
 
@@ -199,7 +196,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
                     .map(a -> Stream.of(
                             a.getString("title", ""), a.getString("firstName", ""), a.getString("middleName", ""), a.getString("lastName", ""))
                             .filter(next -> !Strings.isNullOrEmpty(next))
-                            .collect(Collectors.joining(BLANK)))
+                            .collect(Collectors.joining(" ")))
                     .filter(next -> !Strings.isNullOrEmpty(next))
                     .collect(Collectors.joining(SEPARATOR));
         } else {
@@ -247,7 +244,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
             IntStream
                     .range(0,pcoaJson.getJsonArray(RESULTS).size())
                     .mapToObj(i -> pcoaJson.getJsonArray(RESULTS).getJsonObject(i))
-                    .map(result -> prepareResultText(result.getString(RESULT_TEXT, DASH)))
+                    .map(result -> clearUndesiredCharacters(result.getString(RESULT_TEXT, DASH)))
                     .collect(Collectors.toList());
             final JsonArrayBuilder resultJsonArrayBuilder  = Json.createArrayBuilder();
             resultList.stream().forEach(resultJsonArrayBuilder::add);
@@ -310,7 +307,7 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
             resultList.forEach(result -> {
                 final JsonObjectBuilder resultBuilder = Json.createObjectBuilder()
                         .add(RESULT_CODE, result.getString(CJS_RESULT_CODE, DASH))
-                        .add(RESULT_TEXT, prepareResultText(result.getString(RESULT_TEXT, "")));
+                        .add(RESULT_TEXT, clearUndesiredCharacters(result.getString(RESULT_TEXT, "")));
                 jsonArrayBuilder.add(resultBuilder.build());
             });
             offenceBuilder.add(RESULTS, jsonArrayBuilder);
@@ -358,16 +355,10 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
     }
 
     private String clearUndesiredCharacters(final String input) {
-        return input.replaceAll("\\s+", BLANK).trim();
+        return input.replaceAll("\\s+", " ").trim();
     }
 
     private String addNewLineIfDesired(final String input) {
-        return input.replaceAll(DESIRED_NEW_LINE, NEW_LINE).trim();
-    }
-
-    private String prepareResultText(final String resultText){
-        String updateResultText =  resultText.replaceAll(NEW_LINE, DESIRED_NEW_LINE).trim();
-        updateResultText = clearUndesiredCharacters(updateResultText);
-        return addNewLineIfDesired(updateResultText);
+        return input.replaceAll("####", "\n").trim();
     }
 }

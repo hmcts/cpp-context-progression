@@ -35,7 +35,6 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.domain.pojo.Prosecutor;
-import uk.gov.moj.cpp.progression.query.utils.ResultTextFlagBuilder;
 import uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper;
 import uk.gov.moj.cpp.progression.query.view.service.CotrQueryService;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
@@ -147,9 +146,6 @@ public class ProsecutionCaseQuery {
     @Inject
     private CotrQueryService cotrQueryService;
 
-    @Inject
-    private ResultTextFlagBuilder resultTextFlagBuilder;
-
     @Handles("progression.query.prosecutioncase")
     public JsonEnvelope getProsecutionCase(final JsonEnvelope envelope) {
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
@@ -231,7 +227,7 @@ public class ProsecutionCaseQuery {
             jsonObjectBuilder.add(CASE_ID, caseId.get().toString());
             jsonObjectBuilder.add("caseDetails", caseDetailsJson);
             jsonObjectBuilder.add("prosecutorDetails", prosecutorDetailsJson);
-            jsonObjectBuilder.add("defendants", resultTextFlagBuilder.rebuildWithResultTextFlag(caseDefendantsJsonArray));
+            jsonObjectBuilder.add("defendants", caseDefendantsJsonArray);
 
             if (!courtApplicationCaseEntities.isEmpty()) {
                 final JsonArrayBuilder jsonApplicationBuilder = Json.createArrayBuilder();

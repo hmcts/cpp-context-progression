@@ -14,10 +14,6 @@ import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
 import static uk.gov.justice.progression.courts.CaagDefendants.caagDefendants;
 import static uk.gov.justice.progression.courts.LegalEntityDefendant.legalEntityDefendant;
 
-import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
@@ -230,8 +226,6 @@ public class CaseAtAGlanceHelper {
                             .withAmendmentReason(jr.getAmendmentReason())
                             .withAmendmentDate(jr.getAmendmentDate());
 
-                    setResultText(jr, caagResultsBuilder);
-
                     if (nonNull(jr.getJudicialResultPrompts())) {
                         caagResultsBuilder.withCaagResultPrompts(extractResultPrompts(jr.getJudicialResultPrompts()));
                     }
@@ -242,13 +236,6 @@ public class CaseAtAGlanceHelper {
                 })
                 .sorted(comparing(CaagResults::getOrderedDate).reversed())
                 .collect(toList());
-    }
-
-    private void setResultText(final JudicialResult jr, final CaagResults.Builder caagResultsBuilder) {
-        if (nonNull(jr.getResultText())) {
-            caagResultsBuilder.withResultText(jr.getResultText());
-            caagResultsBuilder.withUseResultText(isUseResultText(jr.getResultText()));
-        }
     }
 
     private List<CaagResultPrompts> extractResultPrompts(final List<JudicialResultPrompt> judicialResultPrompts) {
@@ -397,12 +384,5 @@ public class CaseAtAGlanceHelper {
     private Stream<Hearings> getResultedHearings() {
         return hearingsList.stream()
                 .filter(hearings -> HEARING_RESULTED.equals(hearings.getHearingListingStatus()));
-    }
-
-    private boolean isUseResultText(final String resultText){
-        final String checkValue = Arrays.stream(resultText.split(" ")).limit(3).collect(Collectors.joining(" "));
-        final Pattern pattern = Pattern.compile("\\w - \\w", Pattern.CASE_INSENSITIVE);
-        final Matcher matcher = pattern.matcher(checkValue);
-        return matcher.find();
     }
 }

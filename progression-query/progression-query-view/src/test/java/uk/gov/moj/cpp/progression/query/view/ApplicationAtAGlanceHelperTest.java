@@ -19,15 +19,12 @@ import static uk.gov.justice.core.courts.Organisation.organisation;
 import static uk.gov.justice.core.courts.Person.person;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 
-
-import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
@@ -65,9 +62,6 @@ public class ApplicationAtAGlanceHelperTest {
                 .withApplicationReceivedDate(now())
                 .withApplicationParticulars(STRING_GENERATOR.next())
                 .withCourtApplicationPayment(courtApplicationPayment().withIsFeeExempt(BOOLEAN_GENERATOR.next()).withPaymentReference(STRING_GENERATOR.next()).build())
-                .withJudicialResults(Collections.singletonList(JudicialResult.judicialResult()
-                        .withResultText("REVU - Further review of court order")
-                        .build()))
                 .build();
 
         final ApplicationDetails applicationDetails = applicationAtAGlanceHelper.getApplicationDetails(courtApplication);
@@ -80,8 +74,6 @@ public class ApplicationAtAGlanceHelperTest {
         assertThat(applicationDetails.getApplicationParticulars(), is(courtApplication.getApplicationParticulars()));
         assertThat(applicationDetails.getFeePayable(), is(FALSE.equals(courtApplication.getCourtApplicationPayment().getIsFeeExempt())));
         assertThat(applicationDetails.getPaymentReference(), is(courtApplication.getCourtApplicationPayment().getPaymentReference()));
-        assertThat(applicationDetails.getAagResults().get(0).getResultText(), is("REVU - Further review of court order"));
-        assertThat(applicationDetails.getAagResults().get(0).getUseResultText(), is(true));
     }
 
     @Test

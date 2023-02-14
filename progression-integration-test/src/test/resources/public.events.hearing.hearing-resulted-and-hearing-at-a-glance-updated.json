@@ -244,7 +244,7 @@
                     "alwaysPublished" : false,
                     "urgent" : false,
                     "d20" : false,
-                    "resultText" : "code - resultText",
+                    "resultText" : "resultText",
                     "resultWording": "resultWording",
                     "judicialResultPrompts": [
                       {

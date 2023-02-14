@@ -11,10 +11,6 @@ import static uk.gov.justice.courts.progression.query.ThirdParties.thirdParties;
 import static uk.gov.justice.progression.courts.ApplicantDetails.applicantDetails;
 import static uk.gov.justice.progression.courts.RespondentDetails.respondentDetails;
 
-
-import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.BailStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -137,8 +133,6 @@ public class ApplicationAtAGlanceHelper {
         aagResultBuilder.withLastSharedDateTime(judicialResult.getLastSharedDateTime());
         aagResultBuilder.withAmendmentDate(judicialResult.getAmendmentDate());
         aagResultBuilder.withAmendmentReason(judicialResult.getAmendmentReason());
-        aagResultBuilder.withResultText(judicialResult.getResultText());
-        aagResultBuilder.withUseResultText(isUseResultText(judicialResult.getResultText()));
         ofNullable(judicialResult.getDelegatedPowers()).map(delegatedPower -> format(FIRST_LAST_NAME_FORMAT, delegatedPower.getFirstName(), delegatedPower.getLastName()))
                 .ifPresent(aagResultBuilder::withAmendedBy);
         ofNullable(judicialResult.getJudicialResultPrompts()).ifPresent(judicialResultPrompts -> {
@@ -315,12 +309,5 @@ public class ApplicationAtAGlanceHelper {
         final List<ThirdPartyRepresentatives> thirdPartyRepresentatives = new ArrayList<>();
         thirdPartyRepresentatives.add(respondentRepresentatives);
         return thirdPartyRepresentatives;
-    }
-
-    private boolean isUseResultText(final String resultText){
-        final String checkValue = Arrays.stream(resultText.split(" ")).limit(3).collect(Collectors.joining(" "));
-        final Pattern pattern = Pattern.compile("\\w - \\w", Pattern.CASE_INSENSITIVE);
-        final Matcher matcher = pattern.matcher(checkValue);
-        return matcher.find();
     }
 }

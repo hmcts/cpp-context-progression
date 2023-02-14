@@ -16,7 +16,6 @@ import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.api.resource.utils.CourtExtractTransformer;
 import uk.gov.justice.api.resource.utils.TransformationHelper;
 import uk.gov.justice.api.resource.utils.payload.PleaValueDescriptionBuilder;
-import uk.gov.justice.api.resource.utils.payload.ResultTextFlagBuilder;
 import uk.gov.justice.services.adapter.rest.mapping.ActionMapper;
 import uk.gov.justice.services.adapter.rest.multipart.FileInputDetailsFactory;
 import uk.gov.justice.services.adapter.rest.parameter.ParameterCollectionBuilderFactory;
@@ -98,9 +97,6 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
 
     @Spy
     private PleaValueDescriptionBuilder pleaValueDescriptionBuilder;
-
-    @Spy
-    private ResultTextFlagBuilder resultTextFlagBuilder;
 
     @Mock
     private ReferenceDataService referenceDataService;

@@ -1,8 +1,5 @@
 package uk.gov.moj.cpp.application.event.listener;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,18 +7,14 @@ import uk.gov.justice.core.courts.ApplicationEjected;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
-import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
-import uk.gov.justice.core.courts.CourtOrder;
-import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
-import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -53,9 +46,7 @@ import java.util.UUID;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
@@ -193,8 +184,7 @@ public class CourtApplicationEventListener {
         if (nonNull(applicationEntity)) {
             final CourtApplication updatedCourtApplication = dedupAllReportingRestrictions(hearingResultedApplicationUpdated.getCourtApplication());
             deDupAllOffencesForCourtApplication(updatedCourtApplication);
-            final CourtApplication courtApplicationWithoutNows = getCourtApplicationCourtApplicationWithOutNowResults(updatedCourtApplication);
-            applicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplicationWithoutNows).toString());
+            applicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedCourtApplication).toString());
             courtApplicationRepository.save(applicationEntity);
         }
     }
@@ -310,51 +300,5 @@ public class CourtApplicationEventListener {
         final Set<UUID> offenceIds = new HashSet<>();
         offences.removeIf(e -> !offenceIds.add(e.getId()));
         LOGGER.info("Removing duplicate offence, offences count:{} and offences count after filtering:{} ", offences.size(), offenceIds.size());
-    }
-
-    private CourtApplication getCourtApplicationCourtApplicationWithOutNowResults(final CourtApplication courtApplication) {
-        return CourtApplication.courtApplication()
-                .withValuesFrom(courtApplication)
-                .withJudicialResults(getNonNowsResults(courtApplication.getJudicialResults()))
-                .withCourtApplicationCases(getCourtApplicationCasesWithOutNowResults(courtApplication))
-                .withCourtOrder(ofNullable(courtApplication.getCourtOrder()).map(courtOrder ->
-                        CourtOrder.courtOrder().withValuesFrom(courtOrder)
-                                .withCourtOrderOffences(courtOrder.getCourtOrderOffences().stream()
-                                        .map(courtOrderOffence -> CourtOrderOffence.courtOrderOffence()
-                                                .withValuesFrom(courtOrderOffence)
-                                                .withOffence(getOffenceWithoutNowResults(courtOrderOffence.getOffence()))
-                                                .build())
-                                        .collect(toList()))
-                                .build()).orElse(null))
-                .build();
-    }
-
-
-    private List<CourtApplicationCase> getCourtApplicationCasesWithOutNowResults(final CourtApplication courtApplication) {
-        return ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
-                .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase()
-                        .withValuesFrom(courtApplicationCase)
-                        .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
-                                .map(this::getOffenceWithoutNowResults)
-                                .collect(Collectors.collectingAndThen(toList(), list -> list.isEmpty() ? null : list)))
-                        .build())
-                .collect(Collectors.collectingAndThen(toList(), list -> list.isEmpty() ? null : list));
-    }
-
-    private Offence getOffenceWithoutNowResults(final Offence offence) {
-        return Offence.offence().withValuesFrom(offence)
-                .withJudicialResults(getNonNowsResults(offence.getJudicialResults()))
-                .build();
-    }
-
-    private List<JudicialResult> getNonNowsResults(final List<JudicialResult> judicialResults) {
-        if (isNull(judicialResults) || judicialResults.isEmpty()) {
-            return judicialResults;
-        }
-
-        return judicialResults.stream()
-                .filter(Objects::nonNull)
-                .filter(jr -> !Boolean.TRUE.equals(jr.getPublishedForNows()))
-                .collect(Collectors.collectingAndThen(toList(), list -> list.isEmpty() ? null : list));
     }
 }

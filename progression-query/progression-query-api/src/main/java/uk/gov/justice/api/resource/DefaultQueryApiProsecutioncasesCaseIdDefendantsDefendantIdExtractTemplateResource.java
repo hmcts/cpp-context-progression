@@ -12,7 +12,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.api.resource.utils.CourtExtractTransformer;
 import uk.gov.justice.api.resource.utils.payload.PleaValueDescriptionBuilder;
-import uk.gov.justice.api.resource.utils.payload.ResultTextFlagBuilder;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.exract.CourtExtractRequested;
@@ -110,9 +109,6 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
     @Inject
     private PleaValueDescriptionBuilder pleaValueDescriptionBuilder;
 
-    @Inject
-    private ResultTextFlagBuilder resultTextFlagBuilder;
-
     private UUID userId;
 
     @Override
@@ -165,8 +161,7 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
             LOGGER.info("transform court extract payload : {}", document.payloadAsJsonObject());
             final JsonObject payload = transformToTemplateConvert(document.payloadAsJsonObject(), defendantId, extractType, hearingIdList);
             LOGGER.info("create court extract with payload : {}", payload);
-            JsonObject newPayload = pleaValueDescriptionBuilder.rebuildWithPleaValueDescription(payload);
-            newPayload = resultTextFlagBuilder.rebuildWithResultTextFlag(newPayload);
+            final JsonObject newPayload = pleaValueDescriptionBuilder.rebuildWithPleaValueDescription(payload);
             resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(newPayload, COURT_EXTRACT, systemUser);
             documentInputStream = new ByteArrayInputStream(resultOrderAsByteArray);
         } catch (IOException e) {
