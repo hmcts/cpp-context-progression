@@ -154,7 +154,7 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupRe
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 9128521802762667388L;
+    private static final long serialVersionUID = 9128521802762667389L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -1197,15 +1197,57 @@ public class HearingAggregate implements Aggregate {
                                                final Boolean isPartiallyAllocated,
                                                final SeedingHearing seedingHearing,
                                                final List<UUID> shadowListedOffences) {
-        return apply(Stream.of(
-                RelatedHearingUpdated.relatedHearingUpdated()
-                        .withExtendedHearingFrom(extendHearingFrom)
-                        .withHearingRequest(hearingListingNeeds)
-                        .withIsAdjourned(isAdjourned)
-                        .withIsPartiallyAllocated(isPartiallyAllocated)
-                        .withSeedingHearing(seedingHearing)
-                        .withShadowListedOffences(shadowListedOffences)
-                        .build()));
+
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (HearingListingStatus.HEARING_INITIALISED == this.hearingListingStatus) {
+
+            final Optional<ProsecutionCase> caseOptional = hearingListingNeeds.getProsecutionCases().stream()
+                    .filter(Objects::nonNull)
+                    .filter(prosecutionCase -> listDefendantRequests.stream().filter(Objects::nonNull)
+                            .anyMatch(listDefendantRequest -> listDefendantRequest.getProsecutionCaseId().equals(prosecutionCase.getId())))
+                    .findAny();
+
+            if (!caseOptional.isPresent()) {
+
+                final List<ProsecutionCase> prosecutionCases = this.hearing.getProsecutionCases();
+
+                if(nonNull(this.hearing.getProsecutionCases()) && nonNull(hearingListingNeeds.getProsecutionCases())) {
+                    hearingListingNeeds.getProsecutionCases().addAll(prosecutionCases);
+                }
+
+                final Hearing prosecutionCaseDefendantListingHearing = Hearing.hearing()
+                        .withId(hearingListingNeeds.getId())
+                        .withCourtApplications(hearingListingNeeds.getCourtApplications())
+                        .withCourtCentre(hearingListingNeeds.getCourtCentre())
+                        .withJurisdictionType(hearingListingNeeds.getJurisdictionType())
+                        .withType(hearingListingNeeds.getType())
+                        .withReportingRestrictionReason(hearingListingNeeds.getReportingRestrictionReason())
+                        .withJudiciary(hearingListingNeeds.getJudiciary())
+                        .withBookingType(hearingListingNeeds.getBookingType())
+                        .withProsecutionCases(hearingListingNeeds.getProsecutionCases()).build();
+
+                final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = prosecutionCaseDefendantListingStatusChangedV2()
+                        .withHearing(prosecutionCaseDefendantListingHearing)
+                        .withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED)
+                        .build();
+
+                streamBuilder.add(prosecutionCaseDefendantListingStatusChangedV2);
+            }
+        }
+
+        final RelatedHearingUpdated relatedHearingUpdated = RelatedHearingUpdated.relatedHearingUpdated()
+                .withExtendedHearingFrom(extendHearingFrom)
+                .withHearingRequest(hearingListingNeeds)
+                .withIsAdjourned(isAdjourned)
+                .withIsPartiallyAllocated(isPartiallyAllocated)
+                .withSeedingHearing(seedingHearing)
+                .withShadowListedOffences(shadowListedOffences)
+                .build();
+
+        streamBuilder.add(relatedHearingUpdated);
+
+        return apply(streamBuilder.build());
     }
 
     public Stream<Object> addCasesForUpdatedRelatedHearing(final UUID seedingHearingId) {

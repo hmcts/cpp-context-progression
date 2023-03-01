@@ -1,17 +1,21 @@
 package uk.gov.moj.cpp.progression.domain.aggregate;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.core.courts.SeedingHearing.seedingHearing;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 
 import java.time.ZonedDateTime;
 import java.util.Collections;
 
+import com.google.common.collect.Lists;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
@@ -21,6 +25,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingLanguage;
+import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
@@ -30,6 +35,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
+import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingDeleted;
@@ -37,6 +43,7 @@ import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.OffenceInHearingDeleted;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
+import uk.gov.justice.progression.courts.RelatedHearingUpdated;
 import uk.gov.justice.progression.courts.UnscheduledHearingAllocationNotified;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
@@ -150,7 +157,7 @@ public class HearingAggregateTest {
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withDefendants(asList(Defendant.defendant()
-                                                .withOffences(Collections.singletonList(Offence.offence()
+                                                .withOffences(singletonList(Offence.offence()
                                                         .withId(offenceId)
                                                         .build()))
                                                 .build()))
@@ -407,7 +414,7 @@ public class HearingAggregateTest {
                 ProsecutionCase.prosecutionCase()
                         .withId(prosecutionCaseId)
                         .withDefendants(asList(Defendant.defendant()
-                                .withOffences(Collections.singletonList(Offence.offence()
+                                .withOffences(singletonList(Offence.offence()
                                         .withId(offenceId)
                                         .build()))
                                 .build()))
@@ -605,6 +612,44 @@ public class HearingAggregateTest {
         assertThat(hearingDays, is(hearingUpdatedForAllocationFields.getHearingDays()));
         HearingPopulatedToProbationCaseworker hearingPopulatedToProbationCaseworker = (HearingPopulatedToProbationCaseworker) eventStream1.get(1);
         assertThat(hearingId, is(hearingPopulatedToProbationCaseworker.getHearing().getId()));
+    }
+
+
+    @Test
+    public void shouldRaiseRelatedHearingUpdatedMapEventForHearingListingStatusIsInitialised() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID seedingHearingId = randomUUID();
+        final Hearing hearing = getHearingForVej(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
+        final HearingListingStatus hearingListingStatus = HearingListingStatus.HEARING_INITIALISED;
+
+        setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", hearingListingStatus);
+
+        HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
+                .withId(hearingId)
+                .withProsecutionCases(newArrayList(ProsecutionCase.prosecutionCase().withId(caseId).withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
+                        .withId(defendantId)
+                        .build()))).build()))
+                .build();
+        final SeedingHearing seedingHearing = seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build();
+        final List<Object> eventStream = hearingAggregate.updateRelatedHearing(hearingListingNeeds, true, randomUUID(),false, seedingHearing, null).collect(toList());
+
+        assertThat(eventStream.size(), is(2));
+
+        ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = (ProsecutionCaseDefendantListingStatusChangedV2) eventStream.get(0);
+
+        assertThat(hearingId, is(prosecutionCaseDefendantListingStatusChangedV2.getHearing().getId()));
+        RelatedHearingUpdated relatedHearingUpdated = (RelatedHearingUpdated) eventStream.get(1);
+        assertThat(relatedHearingUpdated.getSeedingHearing().getSeedingHearingId(), is(seedingHearingId));
+        assertThat(relatedHearingUpdated.getHearingRequest().getProsecutionCases().size(), is(2));
     }
 
     private HearingType getHearingType(UUID hearingTypeId) {
