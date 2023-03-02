@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Objects.nonNull;
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
@@ -9,27 +11,35 @@ import uk.gov.justice.core.courts.CreateHearingDefendantRequest;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReferProsecutionCasesToCourtRejected;
+import uk.gov.justice.core.courts.ReferredDefendant;
 import uk.gov.justice.core.courts.ReferredListHearingRequest;
+import uk.gov.justice.core.courts.ReferredProsecutionCase;
 import uk.gov.justice.core.courts.SjpCourtReferral;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
+import uk.gov.moj.cpp.progression.exception.DocumentGeneratorException;
 import uk.gov.moj.cpp.progression.exception.MissingRequiredFieldException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
+import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.MessageService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+import uk.gov.moj.cpp.progression.service.disqualificationreferral.ReferralDisqualifyWarningGenerationService;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 import uk.gov.moj.cpp.progression.transformer.ReferredCourtDocumentTransformer;
 import uk.gov.moj.cpp.progression.transformer.ReferredProsecutionCaseTransformer;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -38,7 +48,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -49,10 +58,13 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:CommentedOutCodeLine", "squid:S2789", "squid:S1135"})
 public class CasesReferredToCourtProcessor {
 
+    public static final String MATERIAL_ID = "materialId";
+    public static final String COURT_DOCUMENT = "courtDocument";
     private static final String REFER_PROSECUTION_CASES_TO_COURT_REJECTED = "public.progression.refer-prosecution-cases-to-court-rejected";
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST = "progression.command.create-hearing-defendant-request";
     private static final String REFER_PROSECUTION_CASES_TO_COURT_ACCEPTED = "public.progression.refer-prosecution-cases-to-court-accepted";
-
+    private static final String FOR_DISQUALIFICATION = "For disqualification";
+    private static final String REASON = "reason";
     private static final Logger LOGGER = LoggerFactory.getLogger(CasesReferredToCourtProcessor.class.getCanonicalName());
 
     @Inject
@@ -79,6 +91,12 @@ public class CasesReferredToCourtProcessor {
     private ListCourtHearingTransformer listCourtHearingTransformer;
     @Inject
     private SummonsHearingRequestService summonsHearingRequestService;
+    @Inject
+    private DocumentGeneratorService documentGeneratorService;
+    @Inject
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
+    @Inject
+    private ReferralDisqualifyWarningGenerationService referralDisqualifyWarningGenerationService;
 
     /**
      * The inbound progression.event.cases-referred-to-court should be enriched  before it is
@@ -126,7 +144,7 @@ public class CasesReferredToCourtProcessor {
         final SjpCourtReferral sjpCourtReferral = jsonObjectToObjectConverter.convert(privateEventPayload.getJsonObject("courtReferral"), SjpCourtReferral.class);
         final List<ProsecutionCase> prosecutionCases;
         final List<CourtDocument> courtDocuments;
-        ListCourtHearing listCourtHearing = null;
+        ListCourtHearing listCourtHearing;
         try {
             sjpCourtReferral.getProsecutionCases().forEach(referredProsecutionCase -> {
                 searchForDuplicateCases(jsonEnvelope, referredProsecutionCase
@@ -138,8 +156,9 @@ public class CasesReferredToCourtProcessor {
             courtDocuments = new ArrayList<>(convertToCourtDocument(jsonEnvelope, sjpCourtReferral));
             listCourtHearing = prepareListCourtHearing(jsonEnvelope, sjpCourtReferral, prosecutionCases, hearingId);
 
+            generateDisqualificationWarning(jsonEnvelope, sjpCourtReferral);
 
-        } catch (final MissingRequiredFieldException | DataValidationException | ReferenceDataNotFoundException e) {
+        } catch (final MissingRequiredFieldException | DataValidationException | ReferenceDataNotFoundException | DocumentGeneratorException e) {
             //Raise public event
             LOGGER.error("### Transformation and enrichment exception", e);
             final ReferProsecutionCasesToCourtRejected referProsecutionCasesToCourtRejected = ReferProsecutionCasesToCourtRejected
@@ -180,12 +199,48 @@ public class CasesReferredToCourtProcessor {
                                 .build())));
 
         //This is a temporary fix to update PCF that SJP case is referred to CC until ATCM has permanent fix. Referral reason has taken from first defendant as SJP deals with only one defendant.
-        final JsonObject caseReferredForCourtAcceptedJson = Json.createObjectBuilder()
+        final JsonObject caseReferredForCourtAcceptedJson = createObjectBuilder()
                 .add("caseId", listDefendantRequests.get(0).getProsecutionCaseId().toString())
                 .add("referralReasonId", listDefendantRequests.get(0).getReferralReason().getId().toString())
                 .build();
 
         messageService.sendMessage(jsonEnvelope, caseReferredForCourtAcceptedJson, REFER_PROSECUTION_CASES_TO_COURT_ACCEPTED);
+    }
+
+    private void generateDisqualificationWarning(final JsonEnvelope jsonEnvelope, final SjpCourtReferral sjpCourtReferral) {
+        for (final ReferredListHearingRequest listHearingRequest : sjpCourtReferral.getListHearingRequests()) {
+            listHearingRequest.getListDefendantRequests().forEach(listDefendantRequest ->
+                    {
+                        try {
+                            processDisqualificationWarning(jsonEnvelope, sjpCourtReferral, listDefendantRequest);
+                        } catch (IOException e) {
+                            LOGGER.error("Referral DisqualificationWarning generate Pdf document failed ", e);
+                            throw new DocumentGeneratorException();
+                        }
+                    }
+            );
+        }
+    }
+
+    private void processDisqualificationWarning(final JsonEnvelope jsonEnvelope, final SjpCourtReferral sjpCourtReferral, final ListDefendantRequest listDefendantRequest) throws IOException {
+        final JsonObject referralReason = searchForReferralReason(jsonEnvelope, listDefendantRequest.getReferralReason().getId());
+        if (nonNull(referralReason) && FOR_DISQUALIFICATION.equals(referralReason.getString(REASON))) {
+                final String courtHouseCode = sjpCourtReferral.getSjpReferral().getReferringJudicialDecision().getCourtHouseCode();
+                final Optional<ReferredProsecutionCase> prosecutionCase = sjpCourtReferral.getProsecutionCases().stream().filter(pc -> pc.getId().equals(listDefendantRequest.getProsecutionCaseId())).findFirst();
+                if (prosecutionCase.isPresent()) {
+                    processDisqualificationDocument(jsonEnvelope, listDefendantRequest, prosecutionCase.get(), courtHouseCode);
+                }
+        }
+    }
+
+    private void processDisqualificationDocument(final JsonEnvelope jsonEnvelope, final ListDefendantRequest listDefendantRequest, final ReferredProsecutionCase prosecutionCase, final String courtHouseCode) throws IOException {
+        final Optional<ReferredDefendant> defendant = prosecutionCase.getDefendants().stream().filter(referredDefendant -> referredDefendant.getId().equals(listDefendantRequest.getReferralReason().getDefendantId())).findFirst();
+        final String caseUrn = getCaseUrn(prosecutionCase.getProsecutionCaseIdentifier());
+        final UUID caseId = prosecutionCase.getId();
+        if (defendant.isPresent()) {
+            LOGGER.info("ReferralDisqualifyWarning :::::::");
+            referralDisqualifyWarningGenerationService.generateReferralDisqualifyWarning(jsonEnvelope, caseUrn, caseId, defendant.get(), courtHouseCode);
+        }
     }
 
     private void searchForDuplicateCasesByUrn(final JsonEnvelope jsonEnvelope, final String reference) {
@@ -228,4 +283,13 @@ public class CasesReferredToCourtProcessor {
                 .map(referredProsecutionCase -> referredProsecutionCaseTransformer
                         .transform(referredProsecutionCase, jsonEnvelope)).collect(Collectors.toList());
     }
+
+    private JsonObject searchForReferralReason(final JsonEnvelope jsonEnvelope, final UUID referenceId) {
+        return progressionService.getReferralReasonByReferralReasonId(jsonEnvelope, referenceId);
+    }
+
+    private String getCaseUrn(final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
+        return nonNull(prosecutionCaseIdentifier.getProsecutionAuthorityReference()) ? prosecutionCaseIdentifier.getProsecutionAuthorityReference() : null;
+    }
+
 }

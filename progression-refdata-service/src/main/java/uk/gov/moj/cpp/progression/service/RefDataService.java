@@ -204,7 +204,6 @@ public class RefDataService {
         final JsonEnvelope response = requester.request(envelop(payload)
                 .withName(REFERENCEDATA_GET_DOCUMENT_ACCESS)
                 .withMetadataFrom(event));
-
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(" '{}' by id {} received with payload {} ", REFERENCEDATA_GET_DOCUMENT_ACCESS, documentTypeId, response.toObfuscatedDebugString());
         }
@@ -391,12 +390,15 @@ public class RefDataService {
 
     private void populateCourtCenter(final CourtCentre.Builder courtCentreBuilder,
                                      final Optional<JsonObject> courtOptional) {
+        final LjaDetails.Builder ljaDetails = LjaDetails.ljaDetails();
+
         if (courtOptional.isPresent()) {
             final JsonObject court = courtOptional.get();
             courtCentreBuilder
                     .withId(extractUUID(court, ID))
                     .withName(court.getString("oucodeL3Name", null))
-                    .withCode(court.getString(OUCODE, null));
+                    .withCode(court.getString(OUCODE, null))
+                    .withLja(ljaDetails.withLjaCode(court.getString("lja")).build());
             if (court.getBoolean("isWelsh", false)) {
                 courtCentreBuilder
                         .withWelshName(court.getString("oucodeL3WelshName", null))

@@ -9,13 +9,19 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static com.jayway.awaitility.Awaitility.await;
+import static java.util.Optional.empty;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static uk.gov.moj.cpp.progression.helper.PdfTestHelper.asPdf;
 
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
@@ -23,6 +29,7 @@ import javax.json.JsonObject;
 
 import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.json.JSONObject;
 
 public class DocumentGeneratorStub {
@@ -71,5 +78,31 @@ public class DocumentGeneratorStub {
                 .stream()
                 .map(LoggedRequest::getBodyAsString)
                 .collect(Collectors.toList());
+    }
+
+    public static Optional<JSONObject> pollDocumentGenerationRequest(final Predicate<JSONObject> requestPayloadPredicate) {
+        try {
+            return await().until(() ->
+                            findAll(postRequestedFor(urlPathMatching(PATH)))
+                                    .stream()
+                                    .map(LoggedRequest::getBodyAsString)
+                                    .map(JSONObject::new)
+                                    .filter(requestPayloadPredicate).findFirst(),
+                    is(not(empty())));
+        } catch (final ConditionTimeoutException timeoutException) {
+            return Optional.empty();
+        }
+    }
+
+    public static Optional<JSONObject> pollDocumentGenerationRequest(final String templateName) {
+        return pollDocumentGenerationRequest(request -> request.getString("templateName").equals(templateName));
+    }
+
+    public static void stubDocumentGeneration(final String templateName) {
+        stubFor(post(urlPathMatching(PATH))
+                .withRequestBody(containing(String.format("\"%s\"", templateName)))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withBody(asPdf(templateName))
+                        .withHeader(CONTENT_TYPE, "application/pdf")));
     }
 }

@@ -6,6 +6,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.lang.String.join;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -104,6 +105,12 @@ public class PreAndPostConditionHelper {
                 createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne, materialIdTwo, courtDocumentId, referralId, caseUrn));
     }
 
+    public static Response addProsecutionCaseToMagsCourt(final String caseId, final String defendantId, final String referralId, final String caseUrn, final String postCode) throws IOException {
+        return postCommand(getWriteUrl("/refertocourt"),
+                "application/vnd.progression.refer-cases-to-court+json",
+                createReferProsecutionCaseToMagsCourtJsonBody(caseId, defendantId, referralId, caseUrn, postCode));
+    }
+
     public static Response addRemoveCourtDocument(final String courtDocumentId, final String materialId, final boolean isRemoved, final UUID userId) throws IOException {
         return postCommandWithUserId(getWriteUrl(String.format("/courtdocument/%s/material/%s", courtDocumentId, materialId)),
                 "application/vnd.progression.remove-court-document+json",
@@ -154,6 +161,14 @@ public class PreAndPostConditionHelper {
     public static Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId, final String caseUrn) throws IOException {
         final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(),
                 randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), caseUrn));
+        jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
+        return postCommand(getWriteUrl("/refertocourt"),
+                "application/vnd.progression.refer-cases-to-court+json",
+                jsonPayload.toString());
+    }
+
+    public static Response addProsecutionCaseToMagsCourt(final String caseId, final String defendantId, final String caseUrn, final String postCode) throws IOException {
+        final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToMagsCourtJsonBody(caseId, defendantId, randomUUID().toString(), caseUrn, postCode));
         jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
         return postCommand(getWriteUrl("/refertocourt"),
                 "application/vnd.progression.refer-cases-to-court+json",
@@ -556,6 +571,21 @@ public class PreAndPostConditionHelper {
                 .replace("RR_ORDERED_DATE", LocalDate.now().toString());
     }
 
+    public static String createReferProsecutionCaseToMagsCourtJsonBody(final String caseId, final String defendantId, final String referralId,
+                                                                        final String caseUrn, final String postCode, final String filePath) {
+        String payload = null;
+        payload = getPayload(filePath)
+                    .replaceAll("RANDOM_CASE_ID", caseId)
+                    .replace("RANDOM_REFERENCE", caseUrn)
+                    .replaceAll("RANDOM_DEFENDANT_ID", defendantId)
+                    .replace("RANDOM_REFERRAL_ID", referralId).toString();
+
+        if(nonNull(postCode)) {
+            payload =  payload.replace("POST_CODE", postCode);
+        }
+        return payload;
+    }
+
     public static String createUpdateDefendantListingStatusJsonBody(final String hearingId,
                                                                     final String filePath) {
         return getPayload(filePath)
@@ -582,6 +612,12 @@ public class PreAndPostConditionHelper {
                                                                          final String caseUrn) {
         return createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne,
                 materialIdTwo, courtDocumentId, referralId, caseUrn, "progression.command.prosecution-case-refer-to-court.json");
+    }
+
+    private static String createReferProsecutionCaseToMagsCourtJsonBody(final String caseId, final String defendantId, final String referralId,
+                                                                          final String caseUrn, final String postCode) {
+        String filePath = "W1T 1JY".equals(postCode) ? "progression.case-disqualification-refer-to-court.json" : "progression.case-disqualification-refer-to-court-welsh.json";
+        return createReferProsecutionCaseToMagsCourtJsonBody(caseId, defendantId, referralId, caseUrn, postCode, filePath);
     }
 
     public static String createDefenseCounselRequestJsonBody(final String hearingId, final String defenseCounselId, final List<String> defendants, final List<String> attendanceDays, final String filePath) {
@@ -1005,6 +1041,10 @@ public class PreAndPostConditionHelper {
 
     public static String getCourtDocumentsByCase(final String userId, final String caseId) {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments+json", userId);
+    }
+
+    public static String getCourtDocumentsPerCase(final String userId, final String... caseId) { //clarify
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments-all+json", userId);
     }
 
     public static String getUploadCourtDocumentsByCase(final String userId, final String caseId) {

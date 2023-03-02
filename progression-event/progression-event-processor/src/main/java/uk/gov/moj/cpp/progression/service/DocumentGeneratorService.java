@@ -169,7 +169,6 @@ public class DocumentGeneratorService {
         }
     }
 
-
     @Transactional(REQUIRES_NEW)
     public String generatePetDocument(final JsonEnvelope originatingEnvelope, final JsonObject petForm, final UUID materialId) {
         try {
@@ -261,9 +260,9 @@ public class DocumentGeneratorService {
     }
 
     @Transactional(REQUIRES_NEW)
-    public String generateCotrDocument(final JsonEnvelope envelope, final JsonObject documentPayload, String templateName, final UUID materialId,final String filleNameOfPdf) {
+    public String generateCotrDocument(final JsonEnvelope envelope, final JsonObject documentPayload, String templateName, final UUID materialId, final String filleNameOfPdf) {
 
-        final String fileName = filleNameOfPdf+".pdf";
+        final String fileName = filleNameOfPdf + ".pdf";
         try {
             final byte[] resultOrderAsByteArray = documentGeneratorClientProducer
                     .documentGeneratorClient()
@@ -390,7 +389,7 @@ public class DocumentGeneratorService {
         }
 
         final List<String> emailAddresses = Stream.of(orderAddressee.getAddress().getEmailAddress1(),
-                orderAddressee.getAddress().getEmailAddress2())
+                        orderAddressee.getAddress().getEmailAddress2())
                 .filter(StringUtils::isNoneBlank)
                 .collect(Collectors.toList());
 
@@ -518,5 +517,18 @@ public class DocumentGeneratorService {
                 .findFirst()
                 .map(ProsecutionCase::getIsCps)
                 .orElse(false);
+    }
+
+    @Transactional(REQUIRES_NEW)
+    public UUID generateDisqualificationDocument(final JsonEnvelope originatingEnvelope, String filename, final byte[] referralDisqualifyWarningContent) {
+        try {
+            final UUID materialId = randomUUID();
+            addDocumentToMaterial(originatingEnvelope, filename, new ByteArrayInputStream(referralDisqualifyWarningContent), materialId);
+            return materialId;
+
+        } catch (RuntimeException e) {
+            LOGGER.error("DocumentGenerationException Exception happened during Referral Disqualify Warning generation {}", e.getMessage());
+            throw new DocumentGenerationException(e);
+        }
     }
 }

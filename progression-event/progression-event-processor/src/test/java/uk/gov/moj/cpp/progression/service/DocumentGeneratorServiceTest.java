@@ -6,6 +6,7 @@ import static java.lang.Boolean.TRUE;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.mockito.Matchers.any;
@@ -291,6 +292,29 @@ public class DocumentGeneratorServiceTest {
         assertThat(fileNameLast, anyOf(is("Jane JOHNSON, 22 May 1976, created on 22 December 10:45 2022.pdf"),
                 is("Kris kidman, 14 June 1981, created on 22 December 10:45 2022.pdf")));
 
+    }
+
+    @Test
+    public void shouldGenerateDisqualificationWarning() throws Exception {
+
+        final byte[] documentData = {34, 56, 78, 90};
+        final String fileName = "filename";
+
+        when(fileStorer.store(any(), any())).thenReturn(randomUUID());
+        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn("http://materialUrl");
+
+        documentGeneratorService.generateDisqualificationDocument(originatingEnvelope, fileName, documentData);
+        verify(fileStorer, times(1)).store(fileStorerMetaDataCaptor.capture(), fileStorerInputStreamCaptor.capture());
+
+        byte[] dataSent = new byte[documentData.length];
+        fileStorerInputStreamCaptor.getValue().read(dataSent, 0, documentData.length);
+        assertThat(documentData, is(dataSent));
+
+        verify(materialService, times(1)).uploadMaterial(fileIdmaterialServiceCaptor.capture(), materialIdmaterialServiceCaptor.capture(), (JsonEnvelope) any());
+        final UUID capturedFileId = fileIdmaterialServiceCaptor.getValue();
+        final UUID capturedMaterialId = materialIdmaterialServiceCaptor.getValue();
+        assertThat(capturedFileId, is(notNullValue()));
+        assertThat(capturedMaterialId, is(notNullValue()));
     }
 
 }

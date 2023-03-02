@@ -9,19 +9,24 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.fromStatusCode;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
+import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
+import uk.gov.moj.cpp.progression.helper.FileHelper;
 import uk.gov.moj.cpp.progression.util.Pair;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -35,6 +40,9 @@ public class ReferenceDataStub {
     public static final String ENGLISH_COURT_ID = "e3114db1-1683-483e-afb3-b87fde5a7777";
     private static final String REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_QUERY_URL = "/referencedata-service/query/api/rest/referencedata/documents-type-access/" + LocalDate.now().toString();
     private static final String REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_MEDIA_TYPE = "application/vnd.referencedata.get-all-document-type-access+json";
+    private static final String COUNTRY_BY_POSTCODE_CONTENT_TYPE = "application/vnd.referencedata.query.country-by-postcode+json";
+    private static final String COUNTRY_BY_POSTCODE_ENDPOINT = "/referencedata-service/query/api/rest/referencedata/country-by-postcode";
+
 
     private static final List<Pair<String, String>> COURT_ID_LIST = Lists.newArrayList(Pair.p(".*", "/restResource/referencedata.ou-courtroom.json"), Pair.p(ENGLISH_COURT_ID, "/restResource/referencedata.ou-courtroom-english.json"));
 
@@ -527,4 +535,18 @@ public class ReferenceDataStub {
 
         waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.cluster-org-units+json");
     }
+
+    public static void stubGetCountryByPostCode(final String... postCode) {
+        Stream.of(postCode)
+                .forEach(
+                         postcode -> stubFor(get(urlMatching(COUNTRY_BY_POSTCODE_ENDPOINT + ".*")) // we'd expect it to work without the ".*" but it doesn't
+                        .willReturn(aResponse()
+                                .withStatus(OK.getStatusCode())
+                                .withHeader(ID, UUID.randomUUID().toString())
+                                .withHeader(CONTENT_TYPE, COUNTRY_BY_POSTCODE_CONTENT_TYPE)
+                                .withBody(FileHelper.read(format("stub-data/referencedata-country-post-code-%s.json", postcode))))));
+
+        waitForStubToBeReady(COUNTRY_BY_POSTCODE_ENDPOINT+ ".*", COUNTRY_BY_POSTCODE_CONTENT_TYPE);
+    }
+
 }

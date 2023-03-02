@@ -76,6 +76,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.Country;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
@@ -676,6 +677,24 @@ public class ProgressionService {
         }
 
         return Optional.of(response.payloadAsJsonObject());
+    }
+
+    public JsonObject getReferralReasonByReferralReasonId(final JsonEnvelope jsonEnvelope, final UUID referralId) {
+
+        LOGGER.info("search for Referral reason detail with reference {} ", referralId);
+
+        return referenceDataService.getReferralReasonByReferralReasonId(jsonEnvelope, referralId, requester)
+                .orElseThrow(() -> new ReferenceDataNotFoundException("Referral Reason ", referralId.toString()));
+    }
+
+
+    public Country getCountryByPostcode(final String postCode, final JsonEnvelope envelope) {
+        final String upperCasePostCodeWithoutWhiteSpaces = postCode.replaceAll("\\s+", "").toUpperCase();
+        final JsonObject payload = createObjectBuilder().add("postCode", upperCasePostCodeWithoutWhiteSpaces).build();
+        final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "referencedata.query.country-by-postcode").apply(payload);
+        final JsonEnvelope response = requester.requestAsAdmin(request);
+        return Country.getCountryByName(response.payloadAsJsonObject().getString("country"));
+
     }
 
     public Optional<JsonObject> getProsecutionCaseDetailById(final JsonEnvelope envelope, final String caseId) {

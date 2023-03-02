@@ -1,0 +1,62 @@
+{
+  "documentIndices": [
+    {
+      "caseIds": [
+        "CASE-ID"
+      ],
+      "category": "Defendant level",
+      "defendantIds": [
+        "DEFENTDANT-ID"
+      ],
+      "document": {
+        "containsFinancialMeans": false,
+        "courtDocumentId": "COURT-DOCUMENT-ID1",
+        "documentCategory": {
+          "defendantDocument": {
+            "defendants": [
+              "DEFENTDANT-ID"
+            ],
+            "prosecutionCaseId": "CASE-ID"
+          }
+        },
+        "documentTypeDescription": "Magistrate's Sending sheet",
+        "documentTypeId": "460f7ec0-c002-11e8-a355-529269fb1459",
+        "documentTypeRBAC": {
+          "deleteUserGroups": [
+            "Crown Court"
+          ],
+          "downloadUserGroups": [
+            "Listing Officers",
+            "Legal advisors",
+            "Magistrates"
+          ],
+          "readUserGroups": [
+            "Listing Officers",
+            "Legal advisors",
+            "Magistrates"
+          ],
+          "uploadUserGroups": [
+            "Listing Officers",
+            "Legal advisors"
+          ]
+        },
+        "seqNum": 10,
+        "materials": [
+          {
+            "id": "MATERIAL-ID",
+            "name": "ReferralDisqualifyWarning.pdf",
+            "uploadDateTime": "2018-03-20T16:14:29.000Z",
+            "userGroups": [
+              "Listing Officers",
+              "Legal advisors",
+              "Magistrates"
+            ]
+          }
+        ],
+        "mimeType": "application/pdf",
+        "name": "Orders, Notices & Warning"
+      },
+      "hearingIds": []
+    }
+  ]
+}
