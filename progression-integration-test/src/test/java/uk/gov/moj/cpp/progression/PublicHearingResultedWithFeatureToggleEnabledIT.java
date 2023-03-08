@@ -49,6 +49,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.AzureScheduleServiceStub;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.LaaAPIMServiceStub;
 import uk.gov.moj.cpp.progression.util.FileUtil;
@@ -151,6 +152,8 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
 
             hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         }
+
+        LaaAPIMServiceStub.stubPostLaaAPI();
 
         final Metadata metadata = metadataBuilder()
                 .withId(randomUUID())
@@ -773,6 +776,8 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
             hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         }
 
+        LaaAPIMServiceStub.stubPostLaaAPI();
+
         final Metadata metadata = metadataBuilder()
                 .withId(randomUUID())
                 .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
@@ -1133,6 +1138,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     }
 
     private static void verifyInMessagingQueueForProceedingConcludedPrivateEvent() {
+
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProceedingConcludedPrivateEvent);
         assertTrue(message.isPresent());
         final JsonObject proceedingConcludedEvent = message.get();
@@ -1140,12 +1146,6 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         assertThat(defendantArray.size(), is(1));
         final JsonObject defendantObject = defendantArray.getJsonObject(0);
         assertThat(defendantObject.get("proceedingsConcluded").toString(), is("true"));
-
-        final String requestPayload = FileUtil.getPayload("stub-data/laa-api-proceeding-concluded-request.json")
-                .replace("DEFENDANT_ID", defendantObject.getString("id"))
-                .replace("HEARING_ID", proceedingConcludedEvent.getString("hearingId"))
-                .replace("IS_CONCLUDED",defendantObject.get("proceedingsConcluded").toString() );
-        LaaAPIMServiceStub.stubPostLaaAPI(requestPayload);
     }
 
     private static void verifyInMessagingQueueForProceedingConcludedPrivateEventNotPresentWhenNotLAA() {

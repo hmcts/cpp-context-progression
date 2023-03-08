@@ -20,9 +20,9 @@ public class LaaAPIMServiceStub {
         configureFor(HOST, 8080);
     }
 
-    public static void stubPostLaaAPI(final String requestPayload) {
+    public static void stubPostLaaAPI() {
         stubFor(post(urlPathMatching(format("%s", LAA_API_ENDPOINT_URL)))
-                .withRequestBody(containing(requestPayload))
+                .withRequestBody(containing("prosecutionConcluded"))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 ));

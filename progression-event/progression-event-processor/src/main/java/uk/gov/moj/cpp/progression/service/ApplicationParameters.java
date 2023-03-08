@@ -150,6 +150,14 @@ public class ApplicationParameters {
     @Value(key = "onlinePleaProsecutorTemplateId", defaultValue = "fae48a1e-612a-4e98-9a95-e650754e9f6c")
     public String onlinePleaProsecutorTemplateId;
 
+    @Inject
+    @Value(key = "laa.azure.apim.invocation.retryTimes", defaultValue = "3")
+    private String retryTimes;
+
+    @Inject
+    @Value(key = "laa.azure.apim.invocation.retryInterval", defaultValue = "1000")
+    public String retryInterval;
+
     public String getOnlineGuiltyPleaCourtHearingEnglishTemplateId() {
         return onlineGuiltyPleaCourtHearingEnglishTemplateId;
     }
@@ -264,6 +272,14 @@ public class ApplicationParameters {
 
     public String getOnlinePleaProsecutorTemplateId() {
         return onlinePleaProsecutorTemplateId;
+    }
+
+    public String getRetryTimes() {
+        return retryTimes;
+    }
+
+    public String getRetryInterval() {
+        return retryInterval;
     }
 
     public String getEmailTemplateId(final String templateName) {
