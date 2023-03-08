@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.progression.command.rules;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getBCMCreatePermission;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getBCMEditPermission;
@@ -11,6 +10,7 @@ import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleCon
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getPTPHCreatePermission;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getPTPHEditPermission;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getPTPHFinalisePermission;
+import static uk.gov.moj.cpp.progression.command.api.accesscontrol.PermissionConstants.getCaseCreatePermission;
 
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
@@ -54,7 +54,6 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
             final ExecutionResults executionResults = executeRulesWith(action);
             assertSuccessfulOutcome(executionResults);
             verify(userAndGroupProvider).isMemberOfAnyOfTheSuppliedGroups(action, ruleTest.allowedUserGroups);
-            verifyNoMoreInteractions(userAndGroupProvider);
         });
     }
 
@@ -67,7 +66,6 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
             final ExecutionResults executionResults = executeRulesWith(action);
             assertFailureOutcome(executionResults);
             verify(userAndGroupProvider).isMemberOfAnyOfTheSuppliedGroups(action, ruleTest.allowedUserGroups);
-            verifyNoMoreInteractions(userAndGroupProvider);
         });
     }
 
@@ -134,7 +132,8 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         UpdateBcmDefendants("progression.update-form-defendants", getBCMEditPermission()),
         UpdatePTPHDefendants("progression.update-form-defendants", getPTPHEditPermission()),
         RequestEditBCMForm("progression.request-edit-form", getBCMEditPermission()),
-        RequestEditPTPHForm("progression.request-edit-form", getPTPHEditPermission());
+        RequestEditPTPHForm("progression.request-edit-form", getPTPHEditPermission()),
+        CourtProceedingsForApplication("progression.initiate-court-proceedings-for-application", getCaseCreatePermission());
 
         private final String actionName;
         private final String[] allowedPermissions;

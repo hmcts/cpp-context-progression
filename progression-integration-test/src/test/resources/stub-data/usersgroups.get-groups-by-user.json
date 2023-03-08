@@ -46,6 +46,17 @@
     {
       "groupId": "90a40773-daa8-417c-84de-edac0598e2a8",
       "groupName": "Online Plea System Users"
+    },
+    {
+      "groupId": "b3771470-723f-11ed-a1eb-0242ac120002",
+      "groupName": "Non Police Prosecutors"
+    }
+  ],
+  "permissions": [
+    {
+      "object": "Case",
+      "action": "Create",
+      "permissionId": "7516ffa8-7242-11ed-a1eb-0242ac120002"
     }
   ]
 }
