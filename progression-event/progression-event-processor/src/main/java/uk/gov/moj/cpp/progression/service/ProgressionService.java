@@ -89,6 +89,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -818,12 +819,12 @@ public class ProgressionService {
 
     public void sendUpdateDefendantListingStatusForUnscheduledListing(final JsonEnvelope jsonEnvelope, final List<Hearing> unscheduledHearings, final Set<UUID> hearingsToBeSentNotification) {
         unscheduledHearings.forEach(unscheduledHearing -> {
-                final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
-                        .add(UNSCHEDULED, true)
-                        .add(NOTIFY_NCES, hearingsToBeSentNotification.contains(unscheduledHearing.getId()))
-                        .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
-                        .add(HEARING, objectToJsonObjectConverter.convert(unscheduledHearing))
-                        .build();
+            final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
+                    .add(UNSCHEDULED, true)
+                    .add(NOTIFY_NCES, hearingsToBeSentNotification.contains(unscheduledHearing.getId()))
+                    .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
+                    .add(HEARING, objectToJsonObjectConverter.convert(unscheduledHearing))
+                    .build();
             sender.send(Enveloper.envelop(hearingListingStatusCommand).withName(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).withMetadataFrom(jsonEnvelope));
         });
     }
@@ -1141,7 +1142,7 @@ public class ProgressionService {
 
         final LjaDetails ljaDetails = referenceDataService.getLjaDetails(jsonEnvelope, courtCentreJson.getString("lja"), requester);
         final String code = ofNullable(courtCentre.getRoomId())
-                .map( roomId -> referenceDataService.getOuCourtRoomCode(roomId.toString(), requester).map(obj -> obj.getJsonArray("ouCourtRoomCodes")).map(codes -> codes.isEmpty() ? null : codes.getString(0)).orElse(null))
+                .map(roomId -> referenceDataService.getOuCourtRoomCode(roomId.toString(), requester).map(obj -> obj.getJsonArray("ouCourtRoomCodes")).map(codes -> codes.isEmpty() ? null : codes.getString(0)).orElse(null))
                 .orElseGet(() -> courtCentreJson.getString("oucode", null));
 
         return CourtCentre.courtCentre()
@@ -1171,37 +1172,55 @@ public class ProgressionService {
                 .map(JudicialRole::getJudicialId)
                 .collect(Collectors.toList());
 
-        final JsonObject judiciariesJson = referenceDataService.getJudiciariesByJudiciaryIdList(judiciaryIds, jsonEnvelope, requester)
-                .orElseThrow(() -> new ReferenceDataNotFoundException("Judiciaries ",
-                        judiciaryIds.stream().map(UUID::toString).collect(Collectors.joining(","))));
+        final Optional<JsonObject> optionalJudiciariesJson = referenceDataService.getJudiciariesByJudiciaryIdList(judiciaryIds, jsonEnvelope, requester);
+        if (optionalJudiciariesJson.isPresent()) {
+            final JsonObject judiciariesJson = optionalJudiciariesJson.get();
+            return judiciaryList.stream()
+                    .map(e -> mapJudiciaryRefDataToJudiciary(e, judiciariesJson))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        } else {
+            if(LOGGER.isErrorEnabled()) {
+                LOGGER.error("Reference data not for Judiciaries with id's {}  ",
+                        judiciaryIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
+            }
+            return null;
+        }
 
-        return judiciaryList.stream()
-                .map(e -> mapJudiciaryRefDataToJudiciary(e, judiciariesJson))
-                .collect(Collectors.toList());
     }
 
     private JudicialRole mapJudiciaryRefDataToJudiciary(final JudicialRole judicialRole, final JsonObject judiciariesJson) {
 
-        final JsonObject judiciaryJson = judiciariesJson.getJsonArray("judiciaries").getValuesAs(JsonObject.class).stream()
+        final Optional<JsonObject> optionalJudiciaryJson = judiciariesJson.getJsonArray("judiciaries").getValuesAs(JsonObject.class).stream()
                 .filter(e -> judicialRole.getJudicialId().toString().equals(e.getString("id")))
-                .findFirst()
-                .orElseThrow(() -> new ReferenceDataNotFoundException("Judiciary ", judicialRole.getJudicialId().toString()));
+                .findFirst();
+        if (optionalJudiciaryJson.isPresent()) {
 
-        return JudicialRole.judicialRole()
-                .withJudicialId(judicialRole.getJudicialId())
-                .withTitle(judiciaryJson.getString("titlePrefix", EMPTY_STRING))
-                .withFirstName(judiciaryJson.getString("forenames", EMPTY_STRING))
-                .withLastName(judiciaryJson.getString("surname", EMPTY_STRING))
-                .withJudicialRoleType(
-                        JudicialRoleType.judicialRoleType()
-                                .withJudicialRoleTypeId(UUID.fromString(judiciaryJson.getString("id")))
-                                .withJudiciaryType(judiciaryJson.getString("judiciaryType"))
-                                .build()
-                )
-                .withIsBenchChairman(judicialRole.getIsBenchChairman())
-                .withIsDeputy(judicialRole.getIsDeputy())
-                .withUserId(judiciaryJson.containsKey("cpUserId") ? fromString(judiciaryJson.getString("cpUserId")) : null)
-                .build();
+            final JsonObject judiciaryJson = optionalJudiciaryJson.get();
+            return JudicialRole.judicialRole()
+                    .withJudicialId(judicialRole.getJudicialId())
+                    .withTitle(judiciaryJson.getString("titlePrefix", EMPTY_STRING))
+                    .withFirstName(judiciaryJson.getString("forenames", EMPTY_STRING))
+                    .withLastName(judiciaryJson.getString("surname", EMPTY_STRING))
+                    .withJudicialRoleType(
+                            JudicialRoleType.judicialRoleType()
+                                    .withJudicialRoleTypeId(UUID.fromString(judiciaryJson.getString("id")))
+                                    .withJudiciaryType(judiciaryJson.getString("judiciaryType"))
+                                    .build()
+                    )
+                    .withIsBenchChairman(judicialRole.getIsBenchChairman())
+                    .withIsDeputy(judicialRole.getIsDeputy())
+                    .withUserId(judiciaryJson.containsKey("cpUserId") ? fromString(judiciaryJson.getString("cpUserId")) : null)
+                    .build();
+
+        } else {
+            if(LOGGER.isErrorEnabled()) {
+                LOGGER.error("Reference data not for Judiciary with id {}  ",
+                        judicialRole.getJudicialId());
+            }
+            return judicialRole;
+        }
+
     }
 
     private String enrichCourtRoomName(final UUID courtCentreId, final UUID courtRoomId, final JsonEnvelope jsonEnvelope) {
@@ -1519,9 +1538,9 @@ public class ProgressionService {
 
     private String getApplicationParticulars(final NextHearing nextHearing) {
         return Stream.of(nextHearing.getOrderName(),
-                    nonNull(nextHearing.getSuspendedPeriod()) ? "Suspended Period: " + nextHearing.getSuspendedPeriod() : null,
-                    nonNull(nextHearing.getTotalCustodialPeriod()) ? "Total Custodial Period: " + nextHearing.getTotalCustodialPeriod() : null,
-                    getEndDateString(nextHearing))
+                nonNull(nextHearing.getSuspendedPeriod()) ? "Suspended Period: " + nextHearing.getSuspendedPeriod() : null,
+                nonNull(nextHearing.getTotalCustodialPeriod()) ? "Total Custodial Period: " + nextHearing.getTotalCustodialPeriod() : null,
+                getEndDateString(nextHearing))
                 .filter(applicationParticulars -> applicationParticulars != null && !applicationParticulars.isEmpty())
                 .collect(Collectors.joining(", "));
     }

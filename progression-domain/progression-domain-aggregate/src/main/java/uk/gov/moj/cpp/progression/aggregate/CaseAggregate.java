@@ -18,7 +18,6 @@ import static java.util.stream.Stream.of;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.core.courts.Address.address;
-import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged;
 import static uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument.caseCpsDetailsUpdatedFromCourtDocument;
 import static uk.gov.justice.core.courts.EditFormRequested.editFormRequested;
 import static uk.gov.justice.core.courts.FormCreated.formCreated;
@@ -27,6 +26,7 @@ import static uk.gov.justice.core.courts.FormDefendantsUpdated.formDefendantsUpd
 import static uk.gov.justice.core.courts.FormFinalised.formFinalised;
 import static uk.gov.justice.core.courts.FormOperationFailed.formOperationFailed;
 import static uk.gov.justice.core.courts.FormUpdated.formUpdated;
+import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged;
 import static uk.gov.justice.core.courts.LockStatus.lockStatus;
 import static uk.gov.justice.core.courts.Organisation.organisation;
 import static uk.gov.justice.core.courts.ProsecutionCaseDefendantOrganisationUpdatedByLaa.prosecutionCaseDefendantOrganisationUpdatedByLaa;
@@ -42,7 +42,7 @@ import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendants;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendantsForOnlinePlea;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hearingCaseDefendantsProceedingsConcluded;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isAllDefendantProceedingConcluded;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isConcluded;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isProceedingConcludedEventTriggered;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.offenceWithSexualOffenceReportingRestriction;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.sendEmailNotificationToDefendant;
@@ -391,9 +391,7 @@ public class CaseAggregate implements Aggregate {
                         })
                 ),
                 when(uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt.class)
-                        .apply(e ->
-                                this.courtCentreId = e.getCourtCentreId()
-                        ),
+                        .apply(e ->this.courtCentreId = e.getCourtCentreId()),
                 when(CaseEjected.class)
                         .apply(e ->
                                 this.caseStatus = CASE_STATUS_EJECTED
@@ -426,12 +424,9 @@ public class CaseAggregate implements Aggregate {
                                     e.getProsecutionCase().getDefendants().forEach(d -> defendantsMap.put(d.getId(), d));
                                 }
                         ),
-                when(ProsecutionCaseDefendantUpdated.class).apply(e ->
-                        defendantsMap.put(e.getDefendant().getId(), updateDefendantFrom(e.getDefendant()))
-                ),
+                when(ProsecutionCaseDefendantUpdated.class).apply(e -> defendantsMap.put(e.getDefendant().getId(), updateDefendantFrom(e.getDefendant()))),
                 when(ProsecutionCaseUpdateDefendantsWithMatchedRequested.class).apply(e ->
-                        defendantsMap.put(e.getDefendant().getId(), updateDefendantFrom(e.getDefendant()))
-                ),
+                            defendantsMap.put(e.getDefendant().getId(), updateDefendantFrom(e.getDefendant()))),
 
                 when(ProsecutionCaseOffencesUpdated.class).apply(e -> {
                             if (e.getDefendantCaseOffences().getOffences() != null && !e.getDefendantCaseOffences().getOffences().isEmpty()) {
@@ -504,9 +499,7 @@ public class CaseAggregate implements Aggregate {
                             this.listHearingRequestsToBeAdded.addAll(e.getListHearingRequests());
                         }
                 ),
-                when(ProsecutionCaseCreatedInHearing.class).apply(
-                        e -> this.hasProsecutionCaseBeenCreated = true
-                ),
+                when(ProsecutionCaseCreatedInHearing.class).apply(e -> this.hasProsecutionCaseBeenCreated = true),
                 when(ProsecutionCaseListingNumberUpdated.class).apply(this::handleListingNumberUpdated),
                 when(ProsecutionCaseListingNumberIncreased.class).apply(this::handleListingNumberIncreased),
                 when(ProsecutionCaseListingNumberDecreased.class).apply(this::handleListingNumberDecreased),
@@ -540,7 +533,7 @@ public class CaseAggregate implements Aggregate {
                 when(FormFinalised.class).apply(this::addFormFinalisedDocument),
                 when(OnlinePleaRecorded.class).apply(this::updateOffenceForOnlinePlea),
                 when(ProsecutionCaseDefendantOrganisationUpdatedByLaa.class).apply(e ->
-                    this.defendantLAAUpdatedOrganisation.put(e.getDefendantId(), e.getUpdatedOrganisation().getId())
+                        this.defendantLAAUpdatedOrganisation.put(e.getDefendantId(), e.getUpdatedOrganisation().getId())
                 ),
                 otherwiseDoNothing());
 
@@ -714,15 +707,15 @@ public class CaseAggregate implements Aggregate {
     }
 
     public List<UUID> getPetFormFinalisedDocuments() {
-        return petFormFinalisedDocuments;
+        return new ArrayList<>(petFormFinalisedDocuments);
     }
 
     public List<UUID> getBcmFormFinalisedDocuments() {
-        return bcmFormFinalisedDocuments;
+        return new ArrayList<>(bcmFormFinalisedDocuments);
     }
 
     public List<UUID> getPtphFormFinalisedDocuments() {
-        return ptphFormFinalisedDocuments;
+        return new ArrayList<>(ptphFormFinalisedDocuments);
     }
 
     public Map<UUID, List<uk.gov.justice.core.courts.Offence>> getDefendantCaseOffences() {
@@ -739,7 +732,6 @@ public class CaseAggregate implements Aggregate {
     }
 
     private void updateDefendantProceedingConcludedAndCaseStatus(final HearingResultedCaseUpdated hearingResultedCaseUpdated) {
-
         final ProsecutionCase pc = hearingResultedCaseUpdated.getProsecutionCase();
         final String currentProsecutionCaseStatus = pc.getCaseStatus();
         hearingResultedCaseUpdated.getProsecutionCase().getDefendants().stream().forEach(defendant -> {
@@ -759,7 +751,7 @@ public class CaseAggregate implements Aggregate {
 
         });
 
-        if (pc.getCaseStatus() != null && !currentProsecutionCaseStatus.equalsIgnoreCase(INACTIVE.getDescription())) {
+        if (nonNull(currentProsecutionCaseStatus) && !currentProsecutionCaseStatus.equalsIgnoreCase(INACTIVE.getDescription())) {
             previousNotInactiveCaseStatus = pc.getCaseStatus();
         }
 
@@ -1172,15 +1164,14 @@ public class CaseAggregate implements Aggregate {
 
         LOGGER.debug(" ProsecutionCase is being updated ");
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        final List<uk.gov.justice.core.courts.Defendant> updatedDefendants = new ArrayList<>();
         final List<uk.gov.justice.core.courts.Defendant> defendantListForProceedingsConcludedEventTrigger = new ArrayList<>();
         final List<uk.gov.justice.core.courts.Defendant> updatedDefendantsForProceedingsConcludedEvent = new ArrayList<>();
 
-        isAllDefendantProceedingConcluded(prosecutionCase, defendantJudicialResults, updatedDefendants);
         updatedDefendantsWithProceedingConcludedState(prosecutionCase, offenceProceedingConcluded, updatedDefendantsForProceedingsConcludedEvent, defendantJudicialResults);
 
         updatedDefendantsForProceedingsConcludedEvent.stream().forEach(defendant -> {
-            final uk.gov.justice.core.courts.Defendant updatedDefendant = uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(defendant).withProceedingsConcluded(isConcludedAtDefendantLevel(defendant)).build();
+            final uk.gov.justice.core.courts.Defendant updatedDefendant =
+                    uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(defendant).withProceedingsConcluded(isConcludedAtDefendantLevel(defendant)).build();
             if (isProceedingConcludedEventTriggered(defendant, offenceProceedingConcluded, defendantProceedingConcluded.get(prosecutionCase.getId()))) {
                 defendantListForProceedingsConcludedEventTrigger.add(updatedDefendant);
             }
@@ -1193,7 +1184,6 @@ public class CaseAggregate implements Aggregate {
                     .withProsecutionCaseId(prosecutionCase.getId())
                     .build());
         }
-
         final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase()
                 .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
                 .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())
@@ -1245,7 +1235,12 @@ public class CaseAggregate implements Aggregate {
 
         String updatedCaseStatus = currentProsecutionCaseStatus;
         final boolean currentHearingProceedingsConcluded = hearingCaseDefendantsProceedingsConcluded(prosecutionCase, defendantJudicialResults);
-        if (isOtherCaseDefendantsProceedingsConcludedValue(otherCaseDefendantsNotRepresentedOnCurrentHearing) && currentHearingProceedingsConcluded) {
+
+        // Check for each defendant from the Map of defendantProceedingConcluded if defendant are concluded
+        final boolean isAllDefendantsOffencesConcludedAsFinal = isAllOffencesForEachDefendantResultedFinal(prosecutionCase);
+        final boolean otherDefendantProceedingConcluded = isNotEmpty(defendantJudicialResults) && isOtherCaseDefendantsProceedingsConcludedValue(otherCaseDefendantsNotRepresentedOnCurrentHearing);
+
+        if (isAllDefendantsOffencesConcludedAsFinal || (otherDefendantProceedingConcluded && currentHearingProceedingsConcluded)) {
             updatedCaseStatus = INACTIVE.getDescription();
         }
 
@@ -1253,8 +1248,86 @@ public class CaseAggregate implements Aggregate {
                 && INACTIVE.getDescription().equalsIgnoreCase(currentProsecutionCaseStatus) && nonNull(previousNotInactiveCaseStatus)) {
             updatedCaseStatus = previousNotInactiveCaseStatus;
         }
-
         return updatedCaseStatus;
+    }
+
+    /**
+     * Function to check if all defendants offences on this case are resulted to final
+     *
+     * @param prosecutionCase The incoming input payload
+     * @return true if all offences for each defendant are resulted FINAL on this case
+     */
+    private boolean isAllOffencesForEachDefendantResultedFinal(final ProsecutionCase prosecutionCase) {
+        final Map<UUID, Boolean> defendantsConcludedMap = defendantProceedingConcluded.get(prosecutionCase.getId());
+        if(isNull(defendantsConcludedMap) || defendantsConcludedMap.isEmpty()){
+            // Execution should not arrive here.
+            return false;
+        }
+        //Check for each defendant
+        final Set<UUID> defendantsIds = defendantsConcludedMap.keySet();
+        for(final UUID defId: defendantsIds) {
+            final List<uk.gov.justice.core.courts.Offence> defendantAllOffences = defendantCaseOffences.get(defId);
+            final List<uk.gov.justice.core.courts.Offence> defendantOffencesFromPayload = getCurrentDefendantOffencesFromProsecutionCase(prosecutionCase, defId);
+            final boolean isDefendantProceedingConcluded = checkIfDefendantConcludedTrue(defendantAllOffences, defendantOffencesFromPayload);
+            if(!isDefendantProceedingConcluded){
+               return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Check for defendant all offences are resulted to FINAL or not.
+     * @param previousOffences - All the offences to a defendant, with status before executing this event
+     * @param currentHearingOffences - All the updated offences to a defendant, with the status user has resulted under this event
+     * @return True if all the offences are resulted to FINAL.
+     */
+    private boolean checkIfDefendantConcludedTrue(final List<uk.gov.justice.core.courts.Offence> previousOffences,
+                                                  final List<uk.gov.justice.core.courts.Offence> currentHearingOffences) {
+        // Check if any offences in current hearing is marked not concluded (Category is not Final)
+        if(isNotEmpty(currentHearingOffences) && currentHearingOffences.stream()
+                .anyMatch(offence -> (Boolean.FALSE).equals(isConcluded(offence)))){
+            return false;
+        }
+
+        // Compare with all the offences
+        for(final uk.gov.justice.core.courts.Offence prevOffence: previousOffences){
+            // If offence not concluded previously
+            if(!isConcluded(prevOffence)){
+                //Check currently if concluded
+                if(isNotEmpty(currentHearingOffences)){
+                    final uk.gov.justice.core.courts.Offence currentOffence = currentHearingOffences.stream()
+                            .filter(offence -> offence.getId().equals(prevOffence.getId()))
+                            .findAny()
+                            .orElse(null);
+                    if(isNull(currentOffence) || !isConcluded(currentOffence)){
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns the list of offences from the payload by defendant ID
+     * @param prosecutionCase The incoming input payload
+     * @param defId           The Defendant ID
+     * @return The list of offences from the payload by defendant ID
+     */
+    private List<uk.gov.justice.core.courts.Offence> getCurrentDefendantOffencesFromProsecutionCase(final ProsecutionCase prosecutionCase, final UUID defId) {
+
+        List<uk.gov.justice.core.courts.Offence> currentOffences = new ArrayList<>();
+        final uk.gov.justice.core.courts.Defendant updatedDefendant = prosecutionCase.getDefendants().stream()
+                .filter(def -> def.getId().equals(defId))
+                .findAny()
+                .orElse(null);
+        if(nonNull(updatedDefendant)){
+            currentOffences = updatedDefendant.getOffences();
+        }
+        return currentOffences;
     }
 
     public Stream<Object> updateOffences(final List<uk.gov.justice.core.courts.Offence> offences, final UUID prosecutionCaseId, final UUID defendantId, final Optional<List<JsonObject>> referenceDataOffences) {
@@ -1547,7 +1620,7 @@ public class CaseAggregate implements Aggregate {
             if (offencesForDefendantChanged.isPresent()) {
                 UpdatedOrganisation updatedOrganisation = null;
                 if(nonNull(organisationDetails.getId())) {
-                     updatedOrganisation = updatedOrganisation()
+                    updatedOrganisation = updatedOrganisation()
                             .withAddressLine1(organisationDetails.getAddressLine1())
                             .withAddressLine2(organisationDetails.getAddressLine2())
                             .withAddressLine3(organisationDetails.getAddressLine3())
@@ -2314,7 +2387,7 @@ public class CaseAggregate implements Aggregate {
 
     private void updateDefendantAssociatedDefenceOrganisation(final DefendantDefenceOrganisationAssociated defendantDefenceOrganisationAssociated) {
         this.defendantAssociatedDefenceOrganisation.put(defendantDefenceOrganisationAssociated.getDefendantId(), defendantDefenceOrganisationAssociated.getOrganisationId());
-        final boolean byRepOrder = defendantDefenceOrganisationAssociated.getRepresentationType() == RepresentationType.REPRESENTATION_ORDER ? true : false;
+        final boolean byRepOrder = defendantDefenceOrganisationAssociated.getRepresentationType() == RepresentationType.REPRESENTATION_ORDER;
         this.defendantOrganisationAsscociatedByRepOrder.put(defendantDefenceOrganisationAssociated.getDefendantId(), byRepOrder) ;
     }
 
@@ -2455,7 +2528,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     /**
-     * Returns a map of Deferdants who are not part of the current hearing and their related
+     * Returns a map of Defendants who are not part of the current hearing and their related
      * Proceedings concluded status
      *
      * @param caseDefendantsFromDefendantProceedingsConcluded
@@ -2465,6 +2538,7 @@ public class CaseAggregate implements Aggregate {
     private Map<UUID, Boolean> getOtherCaseDefendantsNotRepresentedOnCurrentHearing(final Map<UUID, Boolean> caseDefendantsFromDefendantProceedingsConcluded,
                                                                                     final List<UUID> caseDefendantsFromCurrentHearing) {
         Map<UUID, Boolean> otherCaseDefendantsNotRepresentedOnCurrentHearing = null;
+
         if (nonNull(caseDefendantsFromDefendantProceedingsConcluded)) {
             otherCaseDefendantsNotRepresentedOnCurrentHearing = caseDefendantsFromDefendantProceedingsConcluded.entrySet().stream()
                     .filter(defendantId -> !caseDefendantsFromCurrentHearing.contains(defendantId.getKey()))
@@ -2472,6 +2546,8 @@ public class CaseAggregate implements Aggregate {
         }
         return otherCaseDefendantsNotRepresentedOnCurrentHearing;
     }
+
+
 
     private boolean isOtherCaseDefendantsProceedingsConcludedValue(final Map<UUID, Boolean> otherCaseDefendantsNotRepresentedOnCurrentHearing) {
         if (nonNull(otherCaseDefendantsNotRepresentedOnCurrentHearing)) {
@@ -2690,13 +2766,13 @@ public class CaseAggregate implements Aggregate {
         return apply(streamBuilder.build());
     }
 
-   public Stream<Object> createOnlinePleaPcqVisited(final PleadOnlinePcqVisited pleadOnlinePcqVisited) {
+    public Stream<Object> createOnlinePleaPcqVisited(final PleadOnlinePcqVisited pleadOnlinePcqVisited) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         streamBuilder.add(OnlinePleaPcqVisitedRecorded.onlinePleaPcqVisitedRecorded()
                 .withCaseId(pleadOnlinePcqVisited.getCaseId())
                 .withPleadOnlinePcqVisited(pleadOnlinePcqVisited)
                 .build());
-       return apply(streamBuilder.build());
+        return apply(streamBuilder.build());
     }
 
     private Optional<uk.gov.justice.core.courts.Defendant> buildDefendantForPet(final uk.gov.justice.core.courts.Defendant defendant) {

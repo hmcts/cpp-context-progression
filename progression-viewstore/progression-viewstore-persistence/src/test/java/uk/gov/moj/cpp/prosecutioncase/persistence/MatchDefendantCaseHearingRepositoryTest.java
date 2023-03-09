@@ -18,6 +18,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseH
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -138,6 +139,15 @@ public class MatchDefendantCaseHearingRepositoryTest {
 
         assertTrue(actual1.isPresent());
         assertTrue(actual2.isPresent());
+    }
+
+    @Test
+    public void shouldListByMasterDefendantIdWithNoDuplicates() {
+        saveEntity(DEFENDANT_ID, MASTER_DEFENDANT_ID, PROSECUTION_CASE_ID, HEARING_ID, RESULT_ID);
+        final List<MatchDefendantCaseHearingEntity> actual = matchDefendantCaseHearingRepository.findByMasterDefendantId(MASTER_DEFENDANT_ID);
+        final HashSet<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntities = new HashSet<>(actual);
+        assertThat(matchDefendantCaseHearingEntities, is(notNullValue()));
+        assertThat(matchDefendantCaseHearingEntities.size(), is(1));
     }
 
     @Test

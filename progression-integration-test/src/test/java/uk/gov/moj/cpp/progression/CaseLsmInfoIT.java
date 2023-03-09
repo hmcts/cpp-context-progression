@@ -23,6 +23,8 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
@@ -106,21 +108,13 @@ public class CaseLsmInfoIT extends AbstractIT {
                 .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
-                        payload().isJson(anyOf(allOf(withJsonPath("$.matchedDefendantCases[0].caseId", equalTo(prosecutionCaseId_2)),
-                                withJsonPath("$.matchedDefendantCases[0].defendants[0].firstName", equalTo("Harry")),
-                                withJsonPath("$.matchedDefendantCases[0].defendants[0].middleName", equalTo("Jack")),
-                                withJsonPath("$.matchedDefendantCases[0].defendants[0].lastName", equalTo("Kane Junior")),
-                                withJsonPath("$.matchedDefendantCases[0].defendants[0].id", equalTo(defendantId_2)),
-                                withJsonPath("$.matchedDefendantCases[0].defendants[0].masterDefendantId", equalTo(masterDefendantId_1)),
-                                withJsonPath("$.matchedDefendantCases[0].defendants[0].offences[0].offenceTitle", equalTo("ROBBERY"))),
-
-                                allOf(withJsonPath("$.matchedDefendantCases[1].caseId", equalTo(prosecutionCaseId_2)),
-                                        withJsonPath("$.matchedDefendantCases[1].defendants[0].firstName", equalTo("Harry")),
-                                        withJsonPath("$.matchedDefendantCases[1].defendants[0].middleName", equalTo("Jack")),
-                                        withJsonPath("$.matchedDefendantCases[1].defendants[0].lastName", equalTo("Kane Junior")),
-                                        withJsonPath("$.matchedDefendantCases[1].defendants[0].id", equalTo(defendantId_2)),
-                                        withJsonPath("$.matchedDefendantCases[1].defendants[0].masterDefendantId", equalTo(masterDefendantId_1)),
-                                        withJsonPath("$.matchedDefendantCases[1].defendants[0].offences[0].offenceTitle", equalTo("ROBBERY")))
+                        payload().isJson(allOf(withJsonPath("$.matchedDefendantCases[*].caseId", hasItems(prosecutionCaseId_1, prosecutionCaseId_2)),
+                                withJsonPath("$.matchedDefendantCases[*].defendants[0].firstName", hasItem(equalTo("Harry"))),
+                                withJsonPath("$.matchedDefendantCases[*].defendants[0].middleName", hasItem(equalTo("Jack"))),
+                                withJsonPath("$.matchedDefendantCases[*].defendants[0].lastName", hasItem(equalTo("Kane Junior"))),
+                                withJsonPath("$.matchedDefendantCases[*].defendants[0].id", hasItems(defendantId_1, defendantId_2)),
+                                withJsonPath("$.matchedDefendantCases[*].defendants[0].masterDefendantId", hasItem(equalTo(masterDefendantId_1))),
+                                withJsonPath("$.matchedDefendantCases[*].defendants[0].offences[0].offenceTitle", hasItem(equalTo("ROBBERY")))
                         ))
                 );
     }

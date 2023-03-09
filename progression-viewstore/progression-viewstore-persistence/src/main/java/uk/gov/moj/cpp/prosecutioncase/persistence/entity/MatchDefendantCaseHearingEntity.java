@@ -8,6 +8,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -94,5 +95,26 @@ public class MatchDefendantCaseHearingEntity implements Serializable {
 
     public void setProsecutionCase(ProsecutionCaseEntity prosecutionCase) {
         this.prosecutionCase = prosecutionCase;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = (MatchDefendantCaseHearingEntity) o;
+        return Objects.equals(defendantId, matchDefendantCaseHearingEntity.defendantId) &&
+                Objects.equals(masterDefendantId, matchDefendantCaseHearingEntity.masterDefendantId) &&
+                Objects.equals(prosecutionCaseId, matchDefendantCaseHearingEntity.prosecutionCaseId) &&
+                Objects.equals(hearingId, matchDefendantCaseHearingEntity.hearingId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(defendantId, masterDefendantId, prosecutionCaseId, hearingId);
     }
 }

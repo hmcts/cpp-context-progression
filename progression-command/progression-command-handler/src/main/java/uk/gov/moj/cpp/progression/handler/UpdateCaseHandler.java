@@ -42,7 +42,7 @@ public class UpdateCaseHandler {
 
     @Handles("progression.command.hearing-resulted-update-case")
     public void handle(final Envelope<HearingResultedUpdateCase> hearingResultedUpdateCaseEnvelope) throws EventStreamException {
-        if(LOGGER.isDebugEnabled()) {
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("progression.command.hearing-resulted-update-case {}", hearingResultedUpdateCaseEnvelope.payload());
         }
         final HearingResultedUpdateCase hearingUpdate = hearingResultedUpdateCaseEnvelope.payload();
@@ -54,9 +54,9 @@ public class UpdateCaseHandler {
         appendEventsToStream(hearingResultedUpdateCaseEnvelope, eventStream, events);
     }
 
-    @Handles("progression.command.update-listing-number-to-prosecution-case")
+   @Handles("progression.command.update-listing-number-to-prosecution-case")
     public void handleUpdateListingNumber(final Envelope<UpdateListingNumberToProsecutionCase> updateListingNumberToProsecutionCaseEnvelope) throws EventStreamException {
-        if(LOGGER.isDebugEnabled()) {
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("progression.command.update-listing-number-to-prosecution-case {}", updateListingNumberToProsecutionCaseEnvelope.payload());
         }
         final UpdateListingNumberToProsecutionCase updateListingNumberToProsecutionCase = updateListingNumberToProsecutionCaseEnvelope.payload();
@@ -70,7 +70,7 @@ public class UpdateCaseHandler {
 
     @Handles("progression.command.increase-listing-number-to-prosecution-case")
     public void handleIncreaseListingNumber(final Envelope<IncreaseListingNumberToProsecutionCase> increaseListingNumberForProsecutionCaseEnvelope) throws EventStreamException {
-        if(LOGGER.isDebugEnabled()) {
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("progression.command.increase-listing-number-to-prosecution-case {}", increaseListingNumberForProsecutionCaseEnvelope.payload());
         }
         final IncreaseListingNumberToProsecutionCase increaseListingNumberForProsecutionCase = increaseListingNumberForProsecutionCaseEnvelope.payload();
@@ -81,7 +81,6 @@ public class UpdateCaseHandler {
 
         appendEventsToStream(increaseListingNumberForProsecutionCaseEnvelope, eventStream, events);
     }
-
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
