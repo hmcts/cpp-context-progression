@@ -335,7 +335,7 @@
         "alwaysPublished": false,
         "urgent": false,
         "d20": false,
-        "resultText": "resultText",
+        "resultText": "code - resultText",
         "courtClerk": {
           "userId": "00000000-0000-0000-0000-000000000000",
           "firstName": "courtClerk a",
@@ -419,7 +419,7 @@
                 "alwaysPublished": false,
                 "urgent": false,
                 "d20": false,
-                "resultText": "resultText",
+                "resultText": "code - resultText",
                 "courtClerk": {
                   "userId": "00000000-0000-0000-0000-000000000000",
                   "firstName": "courtClerk a",

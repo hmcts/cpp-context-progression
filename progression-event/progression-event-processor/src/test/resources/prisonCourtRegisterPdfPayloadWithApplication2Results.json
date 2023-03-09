@@ -44,7 +44,7 @@
           "results": [
             {
               "resultCode": "1002",
-              "resultText": "Imprisonment Total custodial period 8 Weeks Prison organisation name HMP/YOI Eastwood Park Prison email address 1 Custody.Eastwoodpark@justice.gov.uk Prison email address 2 Reception.EastwoodPark@justice.gov.uk Conveyor / custodian name organisation name City of London Magistrates' Court: PECS Conveyor / custodian name email address 1 PECSCityofLondonMags@serco.com Probation team to be notified organisation name South West and Central Division NPS Probation team to be notified email address 1 SWSCNPS.Court@justice.gov.uk Imprisonment Period 4 Weeks Bail remand days to count (tagged days) 0"
+              "resultText": "Imprisonment\nTotal custodial period 8 Weeks\nPrison organisation name HMP/YOI Eastwood Park\nPrison email address 1 Custody.Eastwoodpark@justice.gov.uk\nPrison email address 2 Reception.EastwoodPark@justice.gov.uk\nConveyor / custodian name organisation name City of London Magistrates' Court: PECS\nConveyor / custodian name email address 1 PECSCityofLondonMags@serco.com\nProbation team to be notified organisation name South West and Central Division NPS\nProbation team to be notified email address 1 SWSCNPS.Court@justice.gov.uk\nImprisonment Period 4 Weeks\nBail remand days to count (tagged days) 0"
             }
           ],
           "pleaValue": "GUILTY, 05/05/2022",
@@ -92,7 +92,7 @@
           "results": [
             {
               "resultCode": "1002",
-              "resultText": "Imprisonment Imprisonment Period 4 Weeks Bail remand days to count (tagged days) 0"
+              "resultText": "Imprisonment\nImprisonment Period 4 Weeks\nBail remand days to count (tagged days) 0"
             }
           ],
           "pleaValue": "GUILTY, 03/05/2022",
@@ -104,7 +104,7 @@
           "type": "Conviction of an offence while a community order is in force",
           "result": [
             "No adjudication - dealt with for original offence",
-            "Order revoked Date original order made 03/05/2022 Order revoked community order Court that made the original order City of London Magistrates' Court"
+            "Order revoked\nDate original order made 03/05/2022\nOrder revoked community order\nCourt that made the original order City of London Magistrates' Court"
           ]
         }
       ]

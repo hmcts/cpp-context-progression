@@ -3,14 +3,24 @@ package uk.gov.moj.cpp.progression;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
+import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
+import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_APPLICATION_AAAG_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
@@ -23,6 +33,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verify
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
@@ -45,7 +56,6 @@ import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -54,12 +64,10 @@ import java.util.UUID;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -499,9 +507,21 @@ public class HearingResultedIT extends AbstractIT {
         final JsonObject hearingJsonObject = getJsonObject(hearingIdQueryResult);
         JsonObject courtApplicationInHearing = hearingJsonObject.getJsonObject("hearing").getJsonArray("courtApplications").getJsonObject(0);
         assertThat(courtApplicationInHearing.getString("id"), equalTo(applicationId));
+        assertThat(courtApplicationInHearing.getJsonArray("judicialResults").size(), equalTo(1));
+        assertThat(courtApplicationInHearing.getJsonArray("judicialResults").getJsonObject(0).getString("resultText"), equalTo("resultText For Non Nows"));
         final JsonObject hearingCourtCentre = hearingJsonObject.getJsonObject("hearing").getJsonObject("courtCentre");
         assertThat(hearingCourtCentre.getString("id"), equalTo(courtCentreId));
 
+        poll(requestParams(getReadUrl("/applications/" + applicationId), PROGRESSION_QUERY_APPLICATION_AAAG_JSON)
+                .withHeader(USER_ID, randomUUID()))
+                .timeout(TIMEOUT, SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.applicationId", equalTo(applicationId)),
+                                withJsonPath("$.applicationDetails.aagResults.length()", equalTo(1)),
+                                withJsonPath("$.applicationDetails.aagResults[0].resultText", equalTo("resultText For Non Nows"))
+                        )));
     }
 
     @Test

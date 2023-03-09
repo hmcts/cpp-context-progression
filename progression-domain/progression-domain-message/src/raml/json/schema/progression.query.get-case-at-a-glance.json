@@ -274,6 +274,12 @@
         },
         "amendedBy": {
           "type": "string"
+        },
+        "resultText": {
+          "type": "string"
+        },
+        "useResultText": {
+          "type": "boolean"
         }
       },
       "required": [

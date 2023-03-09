@@ -108,7 +108,7 @@
                 "publishedAsAPrompt":false,
                 "publishedForNows":false,
                 "rank":10800,
-                "resultText":"Costs to Crown Prosecution Service\nAmount of costs £60",
+                "resultText":"Costs to Crown Prosecution Service Amount of costs £60",
                 "resultWording":"Cost of Crown from result wording \nAmount of costs £70",
                 "rollUpPrompts":true,
                 "terminatesOffenceProceedings":false,
@@ -236,7 +236,7 @@
                     "alwaysPublished" : false,
                     "urgent" : false,
                     "d20" : false,
-                    "resultText" : "resultText",
+                    "resultText" : "code - resultText",
                     "resultWording": "resultWording",
                     "judicialResultPrompts": [
                       {
@@ -458,7 +458,7 @@
           "publishedAsAPrompt":false,
           "publishedForNows":false,
           "rank":10400,
-          "resultText":"Surcharge\nAmount of surcharge £50",
+          "resultText":"code - Surcharge Amount of surcharge £50",
           "resultWording":"Surcharge result wording \nAmount of surcharge £80",
           "rollUpPrompts":true,
           "terminatesOffenceProceedings":false,

@@ -218,7 +218,125 @@
           "summonsRequired" : false,
           "notificationRequired" : false
         },
-        "applicationStatus": "LISTED"
+        "applicationStatus": "LISTED",
+        "judicialResults": [
+          {
+            "isAvailableForCourtExtract": true,
+            "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
+            "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+            "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+            "label": "a",
+            "welshLabel": "a",
+            "isAdjournmentResult": true,
+            "isFinancialResult": true,
+            "isConvictedResult": true,
+            "amendmentDate": "2019-01-01",
+            "amendmentReason": "a",
+            "cjsCode": "a",
+            "rank": 0.1,
+            "orderedDate": "2019-01-01",
+            "lastSharedDateTime": "a",
+            "courtClerk": {
+              "userId": "00000000-0000-0000-0000-000000000000",
+              "firstName": "courtClerk a",
+              "lastName": "courtClerk a"
+            },
+            "delegatedPowers": {
+              "userId": "00000000-0000-0000-0000-000000000000",
+              "firstName": "delegatedPowers a",
+              "lastName": "delegatedPowers a"
+            },
+            "fourEyesApproval": {
+              "userId": "00000000-0000-0000-0000-000000000000",
+              "firstName": "fourEyesApproval a",
+              "lastName": "fourEyesApproval a"
+            },
+            "approvedDate": "2019-01-01",
+            "usergroups": [
+              "a"
+            ],
+            "category": "FINAL",
+            "terminatesOffenceProceedings": false,
+            "lifeDuration" : false,
+            "rollUpPrompts": false,
+            "publishedForNows" : true,
+            "publishedAsAPrompt" : false,
+            "excludedFromResults" : false,
+            "alwaysPublished" : false,
+            "urgent" : false,
+            "d20" : false,
+            "resultText" : "resultText For Nows",
+            "judicialResultPrompts": [
+              {
+                "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
+                "label": "a",
+                "welshLabel": "a",
+                "value": "a",
+                "promptSequence": 0.1,
+                "promptReference": "a",
+                "courtExtract" : "Y"
+              }
+            ]
+          },
+          {
+            "isAvailableForCourtExtract": true,
+            "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
+            "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+            "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+            "label": "a",
+            "welshLabel": "a",
+            "isAdjournmentResult": true,
+            "isFinancialResult": true,
+            "isConvictedResult": true,
+            "amendmentDate": "2019-01-01",
+            "amendmentReason": "a",
+            "cjsCode": "a",
+            "rank": 0.1,
+            "orderedDate": "2019-01-01",
+            "lastSharedDateTime": "a",
+            "courtClerk": {
+              "userId": "00000000-0000-0000-0000-000000000000",
+              "firstName": "courtClerk a",
+              "lastName": "courtClerk a"
+            },
+            "delegatedPowers": {
+              "userId": "00000000-0000-0000-0000-000000000000",
+              "firstName": "delegatedPowers a",
+              "lastName": "delegatedPowers a"
+            },
+            "fourEyesApproval": {
+              "userId": "00000000-0000-0000-0000-000000000000",
+              "firstName": "fourEyesApproval a",
+              "lastName": "fourEyesApproval a"
+            },
+            "approvedDate": "2019-01-01",
+            "usergroups": [
+              "a"
+            ],
+            "category": "FINAL",
+            "terminatesOffenceProceedings": false,
+            "lifeDuration" : false,
+            "rollUpPrompts": false,
+            "publishedForNows" : false,
+            "publishedAsAPrompt" : false,
+            "excludedFromResults" : false,
+            "alwaysPublished" : false,
+            "urgent" : false,
+            "d20" : false,
+            "resultText" : "resultText For Non Nows",
+            "judicialResultPrompts": [
+              {
+                "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
+                "label": "a",
+                "welshLabel": "a",
+                "value": "a",
+                "promptSequence": 0.1,
+                "promptReference": "a",
+                "courtExtract" : "Y"
+              }
+            ]
+          }
+        ]
       }
     ]
   },
