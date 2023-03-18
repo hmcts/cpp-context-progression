@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/handler/courts/resend-laa-outcome-concluded.json",
+  "type": "object",
+  "description": "Resend outcome conluded update to LAA for existing progression.event.laa-defendant-proceeding-concluded-changed event",
+  "properties": {
+    "caseId": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+
+  },
+  "required": [
+    "caseId"
+  ],
+  "additionalProperties": false
+}

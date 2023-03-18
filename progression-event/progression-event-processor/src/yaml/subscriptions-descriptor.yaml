@@ -499,6 +499,9 @@ subscriptions_descriptor:
         - name: progression.event.laa-defendant-proceeding-concluded-changed
           schema_uri: http://justice.gov.uk/core/courts/progression.event.laa-defendant-proceeding-concluded-changed.json
 
+        - name: progression.event.laa-defendant-proceeding-concluded-resent
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.laa-defendant-proceeding-concluded-resent.json
+
         - name: progression.event.form-created
           schema_uri: http://justice.gov.uk/core/courts/form-created.json
 

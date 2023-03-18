@@ -105,6 +105,7 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
 import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
+import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedResent;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.LockStatus;
@@ -1217,6 +1218,17 @@ public class CaseAggregate implements Aggregate {
         streamBuilder.add(HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(updatedProsecutionCase).build());
 
         return apply(streamBuilder.build());
+    }
+
+    /**
+     * Resend LAA defendant proceedings concluded outcome to LAA using BDF in case LAA system is not updated.
+     * @param laaDefendantProceedingConcludedChanged
+     * @param caseId
+     * @return
+     */
+    public Stream<Object> resendLaaOutcomeConcluded(final LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged) {
+        final LaaDefendantProceedingConcludedResent laaDefendantProceedingConcludedResent = LaaDefendantProceedingConcludedResent.laaDefendantProceedingConcludedResent().withLaaDefendantProceedingConcludedChanged(laaDefendantProceedingConcludedChanged).build();
+        return Stream.builder().add(laaDefendantProceedingConcludedResent).build();
     }
 
     /**
