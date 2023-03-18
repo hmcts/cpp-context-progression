@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
+import static java.time.LocalDate.now;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -9,7 +10,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.LaaReference.laaReference;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
@@ -36,6 +39,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum;
 import uk.gov.moj.cpp.prosecutioncase.event.listener.ProsecutionCaseDefendantUpdatedEventListener;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseKey;
@@ -531,8 +535,73 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         assertThat(defendant.get().getOffences().get(0).getProceedingsConcluded(), equalTo(true));
         assertThat(prosecutionCase.getCaseStatus(), equalTo(CaseStatusEnum.INACTIVE.getDescription()));
         assertThat(prosecutionCase.getTrialReceiptType(), equalTo("Transfer"));
+    }
 
+    @Test
+    public void shouldHandleDefendantWithLegalAid_ProsecutionCaseUpdatedEvent() throws Exception {
 
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, HearingResultedCaseUpdated.class)).thenReturn(hearingResultedCaseUpdated);
+        when(envelope.metadata()).thenReturn(metadata);
+        when(defendant.getId()).thenReturn(randomUUID());
+
+        final UUID def1 = randomUUID();
+        final UUID def2 = randomUUID();
+        final UUID def3 = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final UUID of1 = randomUUID();
+        final UUID of2 = randomUUID();
+
+        final List<Defendant> defendantsWithLegalAid = getDefendantWithLegalAid(def1, def2, def3, prosecutionCaseId, Arrays.asList(of1, of2));
+
+        when(hearingResultedCaseUpdated.getProsecutionCase()).thenReturn(prosecutionCase);
+        when(prosecutionCase.getDefendants()).thenReturn(defendantsWithLegalAid);
+
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("payload", Json.createObjectBuilder()
+                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+                                        .add("id", def1.toString()).build())
+                                .build())
+                        .build()).build();
+
+        final ProsecutionCase prosCase = ProsecutionCase.prosecutionCase()
+                .withDefendants(getDefendantWithLegalAid(def1, def2, def3, prosecutionCaseId, Arrays.asList(of1, of2)))
+                .withCaseStatus(CaseStatusEnum.ACTIVE.getDescription())
+                .withCpsOrganisationId(randomUUID())
+                .withCpsOrganisation("A01")
+                .withTrialReceiptType("Transfer")
+                .build();
+        when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosCase);
+
+        when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
+
+        when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
+
+        when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
+        when(prosecutionCaseEntity.getCaseId()).thenReturn(prosecutionCaseId);
+        when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
+        when(repository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
+
+        eventListener.processProsecutionCaseUpdated(envelope);
+        verify(repository).save(argumentCaptor.capture());
+        final ProsecutionCase prosecutionCase = this.jsonObjectToObjectConverter.convert
+                (jsonFromString(argumentCaptor.getValue().getPayload()), ProsecutionCase.class);
+        assertThat(prosecutionCase.getCpsOrganisation(), is("A01"));
+        assertThat(prosecutionCase.getCpsOrganisationId(), is(prosCase.getCpsOrganisationId()));
+        final Optional<Defendant> defendant = prosecutionCase.getDefendants().stream().filter(def -> def.getId().equals(def1)).findFirst();
+        assertThat(defendant.isPresent(), is(true));
+        assertThat(defendant.get().getOffences().size(), is(2));
+
+        assertThat(defendant.get().getLegalAidStatus(), equalTo(LegalAidStatusEnum.GRANTED.getDescription()));
+
+        assertThat(prosecutionCase.getCaseStatus(), equalTo(CaseStatusEnum.ACTIVE.getDescription()));
+        assertThat(defendant.get().getOffences().get(0).getProceedingsConcluded(), equalTo(false));
+
+        assertThat(defendant.get().getOffences().get(0).getLaaApplnReference().getStatusCode(), equalTo("GR"));
+        assertThat(defendant.get().getOffences().get(0).getLaaApplnReference().getStatusDescription(), equalTo("Granted (One Advocate)"));
+        assertThat(defendant.get().getOffences().get(0).getLaaApplnReference().getLaaContractNumber(), equalTo("LAA1234"));
+        assertThat(defendant.get().getOffences().get(0).getLaaApplnReference().getOffenceLevelStatus(), equalTo(LegalAidStatusEnum.GRANTED.getDescription()));
     }
 
     @Test
@@ -591,6 +660,38 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         defsList.add(defendant1);
         defsList.add(defendant2);
         defsList.add(defendant3);
+        return defsList;
+    }
+
+    private List<Defendant> getDefendantWithLegalAid(final UUID defendantId1, final UUID defendantId2, final UUID defendantId3, final UUID prosecutionCaseId, final List<UUID> offenceIds) {
+        final List<Offence> offences = offenceIds.stream().map(id -> Offence.offence()
+                .withId(id)
+                .withProceedingsConcluded(false)
+                .withLaaApplnReference(laaReference()
+                        .withStatusId(UUID.randomUUID())
+                        .withStatusCode("GR")
+                        .withOffenceLevelStatus(GRANTED.getDescription())
+                        .withStatusDescription("Granted (One Advocate)")
+                        .withLaaContractNumber("LAA1234")
+                        .withStatusDate(now())
+                        .build())
+                .build()).collect(Collectors.toList());
+        final Defendant defendant1 = Defendant.defendant().withId(defendantId1).withProceedingsConcluded(false)
+                .withOffences(offences)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withAssociationLockedByRepOrder(true)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withLegalAidStatus(GRANTED.getDescription())
+                .build();
+        final Defendant defendant2 = Defendant.defendant().withId(defendantId2).withProsecutionCaseId(prosecutionCaseId).build();
+        final Defendant defendant3 = Defendant.defendant().withId(defendantId3).withProsecutionCaseId(prosecutionCaseId).build();
+
+
+        final List<Defendant> defsList = new ArrayList<>();
+        defsList.add(defendant1);
+        defsList.add(defendant2);
+        defsList.add(defendant3);
+
         return defsList;
     }
 

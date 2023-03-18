@@ -315,13 +315,13 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
     @Test
     public void shouldAllowUserInAuthorisedGroupToGetCourtProceedingsForApplication() {
         assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.court-proceedings-for-application", "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin",
-                "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin", "Court Associate", "Eject Case Group", "Deputies" , "Recorders");
+                "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin", "Court Associate", "Eject Case Group", "Deputies" , "Recorders", "Crown Court Admin", "Court Administrators");
     }
 
     @Test
     public void shouldNotAllowUserInAuthorisedGroupToGetCourtProceedingsForApplication() {
         assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.court-proceedings-for-application", "System Users", "Listing Officers", "Court Clerks", "Legal Advisers", "Prison Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin",
-                "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin", "Court Associate", "Eject Case Group", "Deputies" , "Recorders");
+                "Youth Offending Service Admin", "Legal Aid Agency Admin", "Probation Admin", "Court Associate", "Eject Case Group", "Deputies" , "Recorders", "Crown Court Admin", "Court Administrators");
     }
 
     @Test

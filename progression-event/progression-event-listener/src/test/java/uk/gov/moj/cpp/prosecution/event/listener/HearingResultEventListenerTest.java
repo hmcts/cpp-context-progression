@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.prosecution.event.listener;
 
 import static com.google.common.collect.Lists.asList;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.time.LocalDate.now;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -15,11 +16,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtOrderOffence.courtOrderOffence;
+import static uk.gov.justice.core.courts.LaaReference.laaReference;
 import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.READY_FOR_REVIEW;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -44,6 +47,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum;
 import uk.gov.moj.cpp.prosecutioncase.event.listener.HearingResultEventListener;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
@@ -57,12 +61,14 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1218,6 +1224,116 @@ public class HearingResultEventListenerTest {
     }
 
     @Test
+    public void shouldNotUpdateDefendantLegalAidStatusOnAddingAndSharingDefendantJudicialResult() {
+
+        final UUID hearingId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final LocalDate hearingDay = LocalDate.of(2021, 04, 05);
+        final Defendant defendantWithResults = Defendant.defendant()
+                .withId(defendantId)
+                .withProceedingsConcluded(true)
+                .withOffences(Arrays.asList(Offence.offence()
+                        .withId(offenceId)
+                        .withWording("offence wording")
+                        .build()))
+                .build();
+        final Defendant defendantWithoutResults = Defendant.defendant()
+                .withId(defendantId)
+                .withProceedingsConcluded(true)
+                .withLegalAidStatus(GRANTED.getDescription())
+                .withOffences(Arrays.asList(Offence.offence()
+                        .withId(offenceId)
+                        .build()))
+                .build();
+
+        final HearingResulted hearingResulted = HearingResulted.hearingResulted()
+                .withHearingDay(hearingDay)
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withJurisdictionType(JurisdictionType.CROWN)
+                        .withDefendantJudicialResults(Arrays.asList(DefendantJudicialResult.defendantJudicialResult()
+                                .withMasterDefendantId(defendantId)
+                                .withJudicialResult(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay))
+                                .build()))
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .withHasSharedResults(true)
+                        .withCourtCentre(CourtCentre.courtCentre()
+                                .withId(courtCentreId)
+                                .build())
+                        .withProsecutionCases(
+                                Arrays.asList(
+                                        ProsecutionCase.prosecutionCase()
+                                                .withId(prosecutionCaseId)
+                                                .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
+                                                .withDefendants(Arrays.asList(defendantWithResults))
+                                                .build()
+                                )
+                        )
+                        .build()
+                )
+                .build();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(
+                        Arrays.asList(
+                                ProsecutionCase.prosecutionCase()
+                                        .withId(prosecutionCaseId)
+                                        .withCaseStatus(READY_FOR_REVIEW.getDescription())
+                                        .withDefendants(Arrays.asList(defendantWithoutResults))
+                                        .build()
+                        )
+                )
+                .withHasSharedResults(true)
+                .build();
+
+        HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+
+        final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity.setHearing(hearingEntity);
+        caseDefendantHearingEntity.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId, hearingId));
+
+        final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity);
+
+        when(caseDefendantHearingRepository.findByCaseId(prosecutionCaseId)).thenReturn(caseDefendantHearingEntities);
+
+        hearingEventEventListener.updateHearingResult(envelopeFrom(metadataWithRandomUUID("progression.event.hearing-resulted"),
+                objectToJsonObjectConverter.convert(hearingResulted)));
+
+
+        verify(this.hearingRepository, times(1)).save(hearingEntityArgumentCaptor.capture());
+
+        List<HearingEntity> savedHearingEntities = hearingEntityArgumentCaptor.getAllValues();
+
+        HearingEntity savedHearingEntity = savedHearingEntities.stream()
+                .filter(entity -> entity.getHearingId().equals(hearingId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Found Invalid Hearing"));
+
+        final Hearing savedHearing = this.jsonObjectToObjectConverter.convert(jsonFromString(savedHearingEntity.getPayload()), Hearing.class);
+
+        assertThat(savedHearing, notNullValue());
+        assertThat(savedHearing.getProsecutionCases().get(0).getCaseStatus(), is(READY_FOR_REVIEW.getDescription()));
+        assertThat(savedHearingEntity.getListingStatus(), equalTo(HearingListingStatus.HEARING_RESULTED));
+        assertThat(savedHearing.getDefendantJudicialResults().size(), is(1));
+        assertThat(savedHearing.getDefendantJudicialResults().get(0).getMasterDefendantId(), is(defendantId));
+        assertThat(savedHearing.getDefendantJudicialResults().get(0).getJudicialResult().getLabel(), is(OFFENCE_RESULT_LABEL_1));
+
+        final Optional<Defendant> defendant = savedHearing.getProsecutionCases().get(0).getDefendants().stream().filter(def -> def.getId().equals(defendantId)).findFirst();
+        assertThat(defendant.isPresent(), CoreMatchers.is(true));
+        assertThat(defendant.get().getLegalAidStatus(), equalTo(LegalAidStatusEnum.GRANTED.getDescription()));
+        assertThat(defendant.get().getOffences().size(), CoreMatchers.is(1));
+    }
+
+    @Test
     public void shouldUpdateWithLatestDefendantJudicialResultOnReshareForTheSameDay() {
 
         final UUID hearingId = randomUUID();
@@ -1941,12 +2057,12 @@ public class HearingResultEventListenerTest {
                                         Arrays.asList(JudicialResult.judicialResult()
                                                         .withLabel("PublishedForNowsTRUE")
                                                         .withPublishedForNows(Boolean.TRUE)
-                                                        .withOrderedDate(LocalDate.now())
+                                                        .withOrderedDate(now())
                                                         .build(),
                                                 JudicialResult.judicialResult()
                                                         .withLabel("PublishedForNowsFALSE")
                                                         .withPublishedForNows(Boolean.FALSE)
-                                                        .withOrderedDate(LocalDate.now())
+                                                        .withOrderedDate(now())
                                                         .build())
                                 )
                                 .withOffenceDateCode(4)
