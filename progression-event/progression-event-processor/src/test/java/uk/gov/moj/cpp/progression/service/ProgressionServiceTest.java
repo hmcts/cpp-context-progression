@@ -18,6 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -116,6 +117,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -333,6 +335,89 @@ public class ProgressionServiceTest {
                                         withJsonPath("$.hearing.judiciary[1].isBenchChairman", is(updatedHearing.getJudiciary().get(1).getIsBenchChairman()))
                                 )
                         )
+                )
+        );
+    }
+
+    @Test
+    public void testPublishHearingDetailChangedPublicEventShouldNotRaiseExceptionWhenJudiciaryNotFoundInRefData() throws Exception {
+        final HearingUpdatedProcessed hearingUpdatedProcessed = generateHearingUpdated();
+        final ConfirmedHearing updatedHearing = hearingUpdatedProcessed.getConfirmedHearing();
+        final JsonEnvelope envelope = getEnvelope(PUBLIC_EVENT_HEARING_DETAIL_CHANGED);
+
+        when(referenceDataService.getOrganisationUnitById(updatedHearing.getCourtCentre().getId(), envelope, requester))
+                .thenReturn(of(generateCourtCentreJson()));
+        when(referenceDataService.getJudiciariesByJudiciaryIdList(asList(JUDICIARY_ID_1, JUDICIARY_ID_2), envelope, requester))
+                .thenReturn(of(generateJudiciariesJsonWithMissingJudiciary()));
+
+        progressionService.publishHearingDetailChangedPublicEvent(envelope, hearingUpdatedProcessed.getConfirmedHearing());
+
+        verify(sender).send(envelopeArgumentCaptor.capture());
+
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
+                metadata().withName(PUBLIC_EVENT_HEARING_DETAIL_CHANGED),
+                payloadIsJson(
+                        allOf(
+                                withJsonPath("$.hearing.id", is(updatedHearing.getId().toString())),
+                                withJsonPath("$.hearing.type.description", is(updatedHearing.getType().getDescription())),
+                                withJsonPath("$.hearing.type.id", is(updatedHearing.getType().getId().toString())),
+                                withJsonPath("$.hearing.jurisdictionType", is(updatedHearing.getJurisdictionType().toString())),
+                                withJsonPath("$.hearing.reportingRestrictionReason", is(updatedHearing.getReportingRestrictionReason())),
+                                withJsonPath("$.hearing.hearingLanguage", is(updatedHearing.getHearingLanguage().toString())),
+                                withJsonPath("$.hearing.hearingDays[0].sittingDay", is(HEARING_DATE_1)),
+                                withJsonPath("$.hearing.hearingDays[1].sittingDay", is(HEARING_DATE_2)),
+                                withJsonPath("$.hearing.hearingDays[2].sittingDay", is(HEARING_DATE_3)),
+                                withJsonPath("$.hearing.courtCentre.id", is(COURT_CENTRE_ID.toString())),
+                                withJsonPath("$.hearing.courtCentre.name", is(COURT_CENTRE_NAME)),
+                                withJsonPath("$.hearing.judiciary[0].judicialId", is(JUDICIARY_ID_1.toString())),
+                                withJsonPath("$.hearing.judiciary[0].title", is(JUDICIARY_TITLE_1)),
+                                withJsonPath("$.hearing.judiciary[0].firstName", is(JUDICIARY_FIRST_NAME_1)),
+                                withJsonPath("$.hearing.judiciary[0].lastName", is(JUDICIARY_LAST_NAME_1)),
+                                withJsonPath("$.hearing.judiciary[0].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(0).getJudicialRoleType().getJudiciaryType())),
+                                withJsonPath("$.hearing.judiciary[0].isDeputy", is(updatedHearing.getJudiciary().get(0).getIsDeputy())),
+                                withJsonPath("$.hearing.judiciary[0].isBenchChairman", is(updatedHearing.getJudiciary().get(0).getIsBenchChairman())),
+                                withJsonPath("$.hearing.judiciary[1].judicialId", is(JUDICIARY_ID_2.toString())),
+                                withJsonPath("$.hearing.judiciary[1].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(1).getJudicialRoleType().getJudiciaryType())),
+                                withJsonPath("$.hearing.judiciary[1].isDeputy", is(updatedHearing.getJudiciary().get(1).getIsDeputy())),
+                                withJsonPath("$.hearing.judiciary[1].isBenchChairman", is(updatedHearing.getJudiciary().get(1).getIsBenchChairman()))
+                        )
+                )
+                )
+        );
+    }
+
+    @Test
+    public void testPublishHearingDetailChangedPublicEventShouldNotRaiseExceptionWhenNoJudiciaryNotFoundInRefData() throws Exception {
+        final HearingUpdatedProcessed hearingUpdatedProcessed = generateHearingUpdated();
+        final ConfirmedHearing updatedHearing = hearingUpdatedProcessed.getConfirmedHearing();
+        final JsonEnvelope envelope = getEnvelope(PUBLIC_EVENT_HEARING_DETAIL_CHANGED);
+
+        when(referenceDataService.getOrganisationUnitById(updatedHearing.getCourtCentre().getId(), envelope, requester))
+                .thenReturn(of(generateCourtCentreJson()));
+        when(referenceDataService.getJudiciariesByJudiciaryIdList(asList(JUDICIARY_ID_1, JUDICIARY_ID_2), envelope, requester))
+                .thenReturn(Optional.ofNullable(null));
+
+        progressionService.publishHearingDetailChangedPublicEvent(envelope, hearingUpdatedProcessed.getConfirmedHearing());
+
+        verify(sender).send(envelopeArgumentCaptor.capture());
+
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
+                metadata().withName(PUBLIC_EVENT_HEARING_DETAIL_CHANGED),
+                payloadIsJson(
+                        allOf(
+                                withJsonPath("$.hearing.id", is(updatedHearing.getId().toString())),
+                                withJsonPath("$.hearing.type.description", is(updatedHearing.getType().getDescription())),
+                                withJsonPath("$.hearing.type.id", is(updatedHearing.getType().getId().toString())),
+                                withJsonPath("$.hearing.jurisdictionType", is(updatedHearing.getJurisdictionType().toString())),
+                                withJsonPath("$.hearing.reportingRestrictionReason", is(updatedHearing.getReportingRestrictionReason())),
+                                withJsonPath("$.hearing.hearingLanguage", is(updatedHearing.getHearingLanguage().toString())),
+                                withJsonPath("$.hearing.hearingDays[0].sittingDay", is(HEARING_DATE_1)),
+                                withJsonPath("$.hearing.hearingDays[1].sittingDay", is(HEARING_DATE_2)),
+                                withJsonPath("$.hearing.hearingDays[2].sittingDay", is(HEARING_DATE_3)),
+                                withJsonPath("$.hearing.courtCentre.id", is(COURT_CENTRE_ID.toString())),
+                                withJsonPath("$.hearing.courtCentre.name", is(COURT_CENTRE_NAME))
+                        )
+                )
                 )
         );
     }
@@ -667,6 +752,17 @@ public class ProgressionServiceTest {
                 .replace("JUDICIARY_LAST_NAME_2", JUDICIARY_LAST_NAME_2)
                 .replace("JUDICIARY_TYPE_1", JUDICIARY_TYPE_1)
                 .replace("JUDICIARY_TYPE_2", JUDICIARY_TYPE_2);
+
+        return returnAsJson(jsonString);
+    }
+
+    private JsonObject generateJudiciariesJsonWithMissingJudiciary() throws IOException {
+        final String jsonString = Resources.toString(Resources.getResource("referenceData.getJudiciariesByIdListWithJudiciaryNotFoundInRefData.json"), Charset.defaultCharset())
+                .replace("JUDICIARY_ID_1", JUDICIARY_ID_1.toString())
+                .replace("JUDICIARY_TITLE_1", JUDICIARY_TITLE_1)
+                .replace("JUDICIARY_FIRST_NAME_1", JUDICIARY_FIRST_NAME_1)
+                .replace("JUDICIARY_LAST_NAME_1", JUDICIARY_LAST_NAME_1)
+                .replace("JUDICIARY_TYPE_1", JUDICIARY_TYPE_1);
 
         return returnAsJson(jsonString);
     }

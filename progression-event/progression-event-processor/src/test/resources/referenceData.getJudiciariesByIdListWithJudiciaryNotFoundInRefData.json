@@ -1,0 +1,19 @@
+{
+  "judiciaries": [
+    {
+      "id": "JUDICIARY_ID_1",
+      "seqId": 1,
+      "titlePrefix": "JUDICIARY_TITLE_1",
+      "titleJudiciaryPrefix" : "Recorder",
+      "titleSuffix" : "",
+      "titlePrefixWelsh": "Mr",
+      "titleJudiciaryPrefixWelsh" : "Recorder",
+      "titleSuffixWelsh" : "",
+      "surname" : "JUDICIARY_LAST_NAME_1",
+      "forenames" : "JUDICIARY_FIRST_NAME_1",
+      "judiciaryType" : "JUDICIARY_TYPE_1",
+      "validFrom": "2017-08-01",
+      "validTo": "2017-08-01"
+    }
+  ]
+}
