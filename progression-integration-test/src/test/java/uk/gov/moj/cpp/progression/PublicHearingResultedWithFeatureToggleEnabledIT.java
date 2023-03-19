@@ -10,10 +10,12 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.jboss.resteasy.util.HttpResponseCodes.SC_ACCEPTED;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences;
@@ -24,6 +26,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearingV2ForHmiSlots;
@@ -33,6 +36,7 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.path.json.JsonPath;
+import com.jayway.restassured.response.Response;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -81,6 +85,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     private static final MessageConsumer messageConsumerHearingResultedPrivateEvent = privateEvents.createPrivateConsumer("progression.event.hearing-resulted");
     private static final MessageConsumer messageConsumerProsecutionCasesResultedV2PrivateEvent = privateEvents.createPrivateConsumer("progression.event.prosecution-cases-resulted-v2");
     private static final MessageConsumer messageConsumerProceedingConcludedPrivateEvent = privateEvents.createPrivateConsumer("progression.event.laa-defendant-proceeding-concluded-changed");
+    private static final MessageConsumer messageConsumerProceedingConcludedResentPrivateEvent = privateEvents.createPrivateConsumer("progression.event.laa-defendant-proceeding-concluded-resent");
     private static final MessageConsumer messageConsumerNextHearingsRequestedPrivateEvent = privateEvents.createPrivateConsumer("progression.event.next-hearings-requested");
     private static final MessageConsumer messageConsumerDeleteNextHearingsRequestedPrivateEvent = privateEvents.createPrivateConsumer("progression.event.delete-next-hearings-requested");
     private static final MessageConsumer messageConsumerRelatedHearingRequestedPrivateEvent = privateEvents.createPrivateConsumer("progression.event.related-hearing-requested");
@@ -185,6 +190,9 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
             verifyInMessagingQueueForHearingResultedPrivateEvent();
             verifyInMessagingQueueForProsecutionCasesResultedV2PrivateEvent();
             verifyInMessagingQueueForProceedingConcludedPrivateEvent();
+
+
+
         }
 
         final Hearing hearing = getHearingFromQuery();
@@ -192,6 +200,14 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         assertThat(offence.getJudicialResults().size(), equalTo(1));
         assertThat(offence.getJudicialResults().get(0).getOrderedDate(), equalTo(LocalDate.of(2021, 03, 29)));
 
+        // resend defendant proceeding concluded update to LAA
+        final String commandPayload = getPayload("progression.command.resend-laa-outcome-concluded.json").replace("CASE_ID", caseId);
+        final Response writeResponse = postCommandWithUserId(getWriteUrl("/laa/caseOutcome"),
+                "application/vnd.progression.command.resend-laa-outcome-concluded+json",
+                commandPayload, USER_ID_VALUE_AS_ADMIN.toString());
+
+        assertThat(writeResponse.getStatusCode(), is(SC_ACCEPTED));
+        verifyInMessagingQueueForProceedingConcludedResentPrivateEvent();
     }
 
     @Test
@@ -1146,6 +1162,18 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
                 .replace("HEARING_ID", proceedingConcludedEvent.getString("hearingId"))
                 .replace("IS_CONCLUDED",defendantObject.get("proceedingsConcluded").toString() );
         LaaAPIMServiceStub.stubPostLaaAPI(requestPayload);
+    }
+
+    private void verifyInMessagingQueueForProceedingConcludedResentPrivateEvent() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProceedingConcludedResentPrivateEvent);
+        assertTrue(message.isPresent());
+        final JsonObject laaDefendantProceedingConcludedChanged = message.get().getJsonObject("laaDefendantProceedingConcludedChanged");
+        final String prosecutionCaseId = laaDefendantProceedingConcludedChanged.getJsonString("prosecutionCaseId").getString();
+        assertThat(prosecutionCaseId, is(caseId));
+        final String hearingId = laaDefendantProceedingConcludedChanged.getJsonString("hearingId").getString();
+        assertThat(hearingId, is(hearingId));
+
+
     }
 
     private static void verifyInMessagingQueueForProceedingConcludedPrivateEventNotPresentWhenNotLAA() {
