@@ -341,7 +341,7 @@ public class HearingResultEventListener {
                 .withId(defendantFromPayload.getId())
                 .withMasterDefendantId(defendantFromPayload.getMasterDefendantId())
                 .withCourtProceedingsInitiated(defendantFromPayload.getCourtProceedingsInitiated())
-                .withLegalAidStatus(defendantFromDatabase.getLegalAidStatus())
+                .withLegalAidStatus(defendantFromPayload.getLegalAidStatus())
                 .withMitigation(defendantFromPayload.getMitigation())
                 .withMitigationWelsh(defendantFromPayload.getMitigationWelsh())
                 .withNumberOfPreviousConvictionsCited(defendantFromPayload.getNumberOfPreviousConvictionsCited())

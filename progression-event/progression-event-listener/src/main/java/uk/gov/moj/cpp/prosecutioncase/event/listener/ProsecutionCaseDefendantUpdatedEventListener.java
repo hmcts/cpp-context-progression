@@ -285,7 +285,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 .withOffences(offences)
                 .withCpsDefendantId(originalDefendant.getCpsDefendantId())
                 .withPersonDefendant(updatedPersonDefendant)
-                .withLegalAidStatus(originalDefendant.getLegalAidStatus())
+                .withLegalAidStatus(defendant.getLegalAidStatus())
                 .withProceedingsConcluded(defendant.getProceedingsConcluded())
                 .withDefendantCaseJudicialResults(getNonNowsResults(defendant.getDefendantCaseJudicialResults()))
                 .withWitnessStatement(defendant.getWitnessStatement())
