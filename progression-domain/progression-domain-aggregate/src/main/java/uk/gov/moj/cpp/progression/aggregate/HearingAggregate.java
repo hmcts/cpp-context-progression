@@ -886,6 +886,10 @@ public class HearingAggregate implements Aggregate {
             return empty();
         }
 
+        return populateHearingObjectStream(hearingId);
+    }
+
+    private Stream<Object> populateHearingObjectStream(final UUID hearingId) {
         final List<UUID> prosecutionCaseIds = isNotEmpty(hearing.getProsecutionCases()) ? getProsecutionCaseIds(hearing) : null;
         final List<UUID> offenceIds = isNotEmpty(hearing.getProsecutionCases()) ? getProsecutionCaseOffenceIds(hearing) : null;
         final List<UUID> courtApplicationIds = isNotEmpty(hearing.getCourtApplications()) ? getCourtApplicationIds(hearing) : null;
@@ -904,6 +908,18 @@ public class HearingAggregate implements Aggregate {
         }
         final Stream<Object> deleteEvent = apply(builder.build());
         return Stream.concat(Stream.concat(deleteEvent, populateHearingToProbationCaseWorker()), populateHearingToVEP());
+    }
+
+    /**
+     * DO NOT USE THIS FUNCTION EXCEPT FOR THE PURPOSE MENTIONED BELOW.
+     * The aggregate function is being added to be invoked only by the BDF, purpose of this function to raise 'progression.event.hearing-deleted'
+     * event to remove any child entries of deleted hearing entity from the view store.
+     * @param hearingId The already deleted hearing id
+     * @return The Stream object
+     */
+    public Stream<Object> deleteHearingOnlyByBdf(final UUID hearingId) {
+
+        return populateHearingObjectStream(hearingId);
     }
 
     public Stream<Object> hearingTrialVacated(final UUID hearingId, final UUID vacatedTrialReasonId) {
