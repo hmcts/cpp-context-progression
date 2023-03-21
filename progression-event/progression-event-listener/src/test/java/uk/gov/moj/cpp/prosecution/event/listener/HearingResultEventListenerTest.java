@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -51,7 +52,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,6 +78,8 @@ public class HearingResultEventListenerTest {
     private static final String OFFENCE_RESULT_LABEL_2 = "offence result label 2";
     private static final String DEFENDANT_RESULT_LABEL = "defendant result label";
     private static final String OFFENCE_RESULT_LABEL_3 = "offence result label 3";
+    public static final String FOR_NOWS = "for Nows";
+    public static final String FOR_NOT_NOWS = "for Not Nows";
 
     @Mock
     private HearingRepository hearingRepository;
@@ -119,7 +121,7 @@ public class HearingResultEventListenerTest {
                 .withId(defendantId)
                 .withDefendantCaseJudicialResults(newArrayList(getJudicialResult(randomUUID(), CASE_RESULT_LABEL_1)))
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(offence()
+                .withOffences(asList(offence()
                         .withId(offenceId)
                         .withJudicialResults(newArrayList(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1)))
                         .build()))
@@ -128,7 +130,7 @@ public class HearingResultEventListenerTest {
                 .withId(defendantId2)
                 .withDefendantCaseJudicialResults(newArrayList(getJudicialResult(randomUUID(), CASE_RESULT_LABEL_2)))
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(offence()
+                .withOffences(asList(offence()
                         .withId(offenceId2)
                         .withJudicialResults(newArrayList(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_2)))
                         .build()))
@@ -147,7 +149,7 @@ public class HearingResultEventListenerTest {
                         .withCourtCentre(CourtCentre.courtCentre()
                                 .withId(courtCentreId)
                                 .build())
-                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                        .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
                                 .withId(prosecutionCaseId)
                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
                                 .withDefendants(defendants)
@@ -157,7 +159,7 @@ public class HearingResultEventListenerTest {
 
         final Hearing hearing = Hearing.hearing()
                 .withId(firstHearingId)
-                .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
                         .withId(prosecutionCaseId)
                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
                         .withDefendants(defendants)
@@ -167,7 +169,7 @@ public class HearingResultEventListenerTest {
 
         final Hearing hearing2 = Hearing.hearing()
                 .withId(secondHearingId)
-                .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
                         .withId(prosecutionCaseId)
                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
                         .withDefendants(defendants)
@@ -312,6 +314,86 @@ public class HearingResultEventListenerTest {
     }
 
     @Test
+    public void shouldUpdateHearingResultForCourtApplicationWithForNowsOnlyResults() {
+        final UUID hearingId = randomUUID();
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
+                .withId(randomUUID())
+                .withApplicant(CourtApplicationParty.courtApplicationParty().build())
+                .withCourtApplicationCases(
+                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(randomUUID())
+                                .withOffences(singletonList(offence()
+                                        .withJudicialResults(asList(JudicialResult.judicialResult()
+                                                .withResultText(FOR_NOWS)
+                                                .withPublishedForNows(true)
+                                                .build(), JudicialResult.judicialResult()
+                                                .withResultText(FOR_NOT_NOWS)
+                                                .build()))
+                                        .build()))
+                                .build()))
+                .withCourtOrder(CourtOrder.courtOrder().withId(randomUUID())
+                        .withOrderingCourt(CourtCentre.courtCentre().withId(randomUUID()).build())
+                        .withCourtOrderOffences(singletonList(courtOrderOffence().withOffence(offence()
+                                .withJudicialResults(asList(JudicialResult.judicialResult()
+                                        .withPublishedForNows(true)
+                                        .withResultText(FOR_NOWS)
+                                        .build(), JudicialResult.judicialResult()
+                                        .withResultText(FOR_NOT_NOWS)
+                                        .build()))
+                                .build())
+                                .build()))
+                        .build())
+                .withRespondents(singletonList(CourtApplicationParty.courtApplicationParty().build()))
+                .withJudicialResults(asList(JudicialResult.judicialResult()
+                        .withPublishedForNows(true)
+                        .withResultText(FOR_NOWS)
+                        .build(), JudicialResult.judicialResult()
+                        .withResultText(FOR_NOT_NOWS)
+                        .build()))
+                .build();
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withHearingLanguage(HearingLanguage.ENGLISH)
+                .withHasSharedResults(true)
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(randomUUID())
+                        .build())
+                .withCourtApplications(singletonList(courtApplication))
+                .build();
+        final HearingResulted hearingResulted = HearingResulted.hearingResulted()
+                .withHearing(hearing)
+                .build();
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+
+        hearingEventEventListener.updateHearingResult(envelopeFrom(metadataWithRandomUUID("progression.event.hearing-resulted"),
+                objectToJsonObjectConverter.convert(hearingResulted)));
+
+        verify(this.hearingRepository, times(1)).save(hearingEntityArgumentCaptor.capture());
+
+        final List<HearingEntity> savedHearingEntities = hearingEntityArgumentCaptor.getAllValues();
+        final HearingEntity savedHearingEntity1 = savedHearingEntities.stream().filter(savedHearingEntity -> savedHearingEntity.getHearingId().equals(hearingId))
+                .findFirst().get();
+
+        final Hearing savedHearing1 = this.jsonObjectToObjectConverter.convert(jsonFromString(savedHearingEntity1.getPayload()), Hearing.class);
+
+        assertThat(savedHearing1, notNullValue());
+        assertThat(savedHearing1.getId(), is(hearingId));
+        assertThat(savedHearing1.getCourtApplications(), notNullValue());
+        assertThat(savedHearing1.getCourtApplications().get(0).getApplicationStatus(), is(ApplicationStatus.IN_PROGRESS));
+        assertThat(savedHearing1.getCourtApplications().get(0).getJudicialResults().size(), is(1));
+        assertThat(savedHearing1.getCourtApplications().get(0).getJudicialResults().get(0).getResultText(), is(FOR_NOT_NOWS));
+        assertThat(savedHearing1.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getJudicialResults().size(), is(1));
+        assertThat(savedHearing1.getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences().get(0).getJudicialResults().get(0).getResultText(), is(FOR_NOT_NOWS));
+        assertThat(savedHearing1.getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(0).getOffence().getJudicialResults().size(), is(1));
+        assertThat(savedHearing1.getCourtApplications().get(0).getCourtOrder().getCourtOrderOffences().get(0).getOffence().getJudicialResults().get(0).getResultText(), is(FOR_NOT_NOWS));
+    }
+
+    @Test
     public void shouldUpdateHearingResultForProsecutionCases() {
         final UUID hearingId = randomUUID();
         final UUID prosecutionCaseId = randomUUID();
@@ -399,8 +481,8 @@ public class HearingResultEventListenerTest {
         assertThat(savedHearing1.getId(), is(hearingId));
         assertThat(savedHearing1.getCourtApplications(), notNullValue());
         assertThat(savedHearing1.getCourtApplications().get(0).getId(), is(courtApplicationId));
-        assertThat(savedHearing1.getCourtApplications().get(0).getJudicialResults().size(), is(2));
-        assertThat(savedHearing1.getCourtApplications().get(0).getJudicialResults().get(0).getLabel(), is("PublishedForNowsTRUE"));
+        assertThat(savedHearing1.getCourtApplications().get(0).getJudicialResults().size(), is(1));
+        assertThat(savedHearing1.getCourtApplications().get(0).getJudicialResults().get(0).getLabel(), is("PublishedForNowsFALSE"));
 
         assertThat(savedHearing1.getProsecutionCases(), notNullValue());
         assertThat(savedHearing1.getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
@@ -426,7 +508,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantWithResults = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withWording("offence wording")
                         .withJudicialResults(
@@ -440,7 +522,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantWithoutResults = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .build()))
                 .build();
@@ -456,11 +538,11 @@ public class HearingResultEventListenerTest {
                                 .withId(courtCentreId)
                                 .build())
                         .withProsecutionCases(
-                                Arrays.asList(
+                                asList(
                                         ProsecutionCase.prosecutionCase()
                                                 .withId(prosecutionCaseId)
                                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
-                                                .withDefendants(Arrays.asList(defendantWithResults))
+                                                .withDefendants(asList(defendantWithResults))
                                                 .build()
                                 )
                         )
@@ -471,11 +553,11 @@ public class HearingResultEventListenerTest {
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
                 .withProsecutionCases(
-                        Arrays.asList(
+                        asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
-                                        .withDefendants(Arrays.asList(defendantWithoutResults))
+                                        .withDefendants(asList(defendantWithoutResults))
                                         .build()
                         )
                 )
@@ -543,7 +625,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForEvent = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withWording("offence wording")
                         .withJudicialResults(
@@ -556,7 +638,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForDatabase = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withJudicialResults(
                                 newArrayList(
@@ -577,11 +659,11 @@ public class HearingResultEventListenerTest {
                                 .withId(courtCentreId)
                                 .build())
                         .withProsecutionCases(
-                                Arrays.asList(
+                                asList(
                                         ProsecutionCase.prosecutionCase()
                                                 .withId(prosecutionCaseId)
                                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
-                                                .withDefendants(Arrays.asList(defendantForEvent))
+                                                .withDefendants(asList(defendantForEvent))
                                                 .build()
                                 )
                         )
@@ -592,11 +674,11 @@ public class HearingResultEventListenerTest {
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
                 .withProsecutionCases(
-                        Arrays.asList(
+                        asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
-                                        .withDefendants(Arrays.asList(defendantForDatabase))
+                                        .withDefendants(asList(defendantForDatabase))
                                         .build()
                         )
                 )
@@ -662,7 +744,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForEvent = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withWording("offence wording")
                         .build()))
@@ -670,7 +752,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForDatabase = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withJudicialResults(
                                 newArrayList(
@@ -692,11 +774,11 @@ public class HearingResultEventListenerTest {
                                 .withId(courtCentreId)
                                 .build())
                         .withProsecutionCases(
-                                Arrays.asList(
+                                asList(
                                         ProsecutionCase.prosecutionCase()
                                                 .withId(prosecutionCaseId)
                                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
-                                                .withDefendants(Arrays.asList(defendantForEvent))
+                                                .withDefendants(asList(defendantForEvent))
                                                 .build()
                                 )
                         )
@@ -707,11 +789,11 @@ public class HearingResultEventListenerTest {
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
                 .withProsecutionCases(
-                        Arrays.asList(
+                        asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
-                                        .withDefendants(Arrays.asList(defendantForDatabase))
+                                        .withDefendants(asList(defendantForDatabase))
                                         .build()
                         )
                 )
@@ -774,7 +856,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForEvent = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withWording("offence wording")
                         .withJudicialResults(
@@ -787,7 +869,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForDatabase = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withJudicialResults(
                                 newArrayList(
@@ -809,11 +891,11 @@ public class HearingResultEventListenerTest {
                                 .withId(courtCentreId)
                                 .build())
                         .withProsecutionCases(
-                                Arrays.asList(
+                                asList(
                                         ProsecutionCase.prosecutionCase()
                                                 .withId(prosecutionCaseId)
                                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
-                                                .withDefendants(Arrays.asList(defendantForEvent))
+                                                .withDefendants(asList(defendantForEvent))
                                                 .build()
                                 )
                         )
@@ -824,11 +906,11 @@ public class HearingResultEventListenerTest {
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
                 .withProsecutionCases(
-                        Arrays.asList(
+                        asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
-                                        .withDefendants(Arrays.asList(defendantForDatabase))
+                                        .withDefendants(asList(defendantForDatabase))
                                         .build()
                         )
                 )
@@ -896,7 +978,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForEvent = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withWording("offence wording")
                         .build()))
@@ -904,7 +986,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForDatabase = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withJudicialResults(
                                 newArrayList(
@@ -927,11 +1009,11 @@ public class HearingResultEventListenerTest {
                                 .withId(courtCentreId)
                                 .build())
                         .withProsecutionCases(
-                                Arrays.asList(
+                                asList(
                                         ProsecutionCase.prosecutionCase()
                                                 .withId(prosecutionCaseId)
                                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
-                                                .withDefendants(Arrays.asList(defendantForEvent))
+                                                .withDefendants(asList(defendantForEvent))
                                                 .build()
                                 )
                         )
@@ -942,11 +1024,11 @@ public class HearingResultEventListenerTest {
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
                 .withProsecutionCases(
-                        Arrays.asList(
+                        asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
-                                        .withDefendants(Arrays.asList(defendantForDatabase))
+                                        .withDefendants(asList(defendantForDatabase))
                                         .build()
                         )
                 )
@@ -1014,7 +1096,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForEvent = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withWording("offence wording")
                         .withJudicialResults(
@@ -1036,11 +1118,11 @@ public class HearingResultEventListenerTest {
                                 .withId(courtCentreId)
                                 .build())
                         .withProsecutionCases(
-                                Arrays.asList(
+                                asList(
                                         ProsecutionCase.prosecutionCase()
                                                 .withId(prosecutionCaseId)
                                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
-                                                .withDefendants(Arrays.asList(defendantForEvent))
+                                                .withDefendants(asList(defendantForEvent))
                                                 .build()
                                 )
                         )
@@ -1051,7 +1133,7 @@ public class HearingResultEventListenerTest {
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
                 .withProsecutionCases(
-                        Arrays.asList(
+                        asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
@@ -1120,7 +1202,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantWithResults = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withWording("offence wording")
                         .build()))
@@ -1128,7 +1210,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantWithoutResults = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .build()))
                 .build();
@@ -1138,7 +1220,7 @@ public class HearingResultEventListenerTest {
                 .withHearing(Hearing.hearing()
                         .withId(hearingId)
                         .withJurisdictionType(JurisdictionType.CROWN)
-                        .withDefendantJudicialResults(Arrays.asList(DefendantJudicialResult.defendantJudicialResult()
+                        .withDefendantJudicialResults(asList(DefendantJudicialResult.defendantJudicialResult()
                                 .withMasterDefendantId(defendantId)
                                 .withJudicialResult(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay))
                                 .build()))
@@ -1148,11 +1230,11 @@ public class HearingResultEventListenerTest {
                                 .withId(courtCentreId)
                                 .build())
                         .withProsecutionCases(
-                                Arrays.asList(
+                                asList(
                                         ProsecutionCase.prosecutionCase()
                                                 .withId(prosecutionCaseId)
                                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
-                                                .withDefendants(Arrays.asList(defendantWithResults))
+                                                .withDefendants(asList(defendantWithResults))
                                                 .build()
                                 )
                         )
@@ -1163,11 +1245,11 @@ public class HearingResultEventListenerTest {
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
                 .withProsecutionCases(
-                        Arrays.asList(
+                        asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
-                                        .withDefendants(Arrays.asList(defendantWithoutResults))
+                                        .withDefendants(asList(defendantWithoutResults))
                                         .build()
                         )
                 )
@@ -1225,7 +1307,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForEvent = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withWording("offence wording")
                         .build()))
@@ -1233,7 +1315,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForDatabase = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .build()))
                 .build();
@@ -1242,7 +1324,7 @@ public class HearingResultEventListenerTest {
                 .withHearingDay(hearingDay)
                 .withHearing(Hearing.hearing()
                         .withId(hearingId)
-                        .withDefendantJudicialResults(Arrays.asList(DefendantJudicialResult.defendantJudicialResult()
+                        .withDefendantJudicialResults(asList(DefendantJudicialResult.defendantJudicialResult()
                                 .withMasterDefendantId(defendantId)
                                 .withJudicialResult(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay))
                                 .build()))
@@ -1253,11 +1335,11 @@ public class HearingResultEventListenerTest {
                                 .withId(courtCentreId)
                                 .build())
                         .withProsecutionCases(
-                                Arrays.asList(
+                                asList(
                                         ProsecutionCase.prosecutionCase()
                                                 .withId(prosecutionCaseId)
                                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
-                                                .withDefendants(Arrays.asList(defendantForEvent))
+                                                .withDefendants(asList(defendantForEvent))
                                                 .build()
                                 )
                         )
@@ -1267,16 +1349,16 @@ public class HearingResultEventListenerTest {
 
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
-                .withDefendantJudicialResults(Arrays.asList(DefendantJudicialResult.defendantJudicialResult()
+                .withDefendantJudicialResults(asList(DefendantJudicialResult.defendantJudicialResult()
                         .withMasterDefendantId(defendantId)
                         .withJudicialResult(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_2, hearingDay))
                         .build()))
                 .withProsecutionCases(
-                        Arrays.asList(
+                        asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
-                                        .withDefendants(Arrays.asList(defendantForDatabase))
+                                        .withDefendants(asList(defendantForDatabase))
                                         .build()
                         )
                 )
@@ -1334,7 +1416,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForEvent = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withWording("offence wording")
                         .build()))
@@ -1342,7 +1424,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForDatabase = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .build()))
                 .build();
@@ -1358,11 +1440,11 @@ public class HearingResultEventListenerTest {
                                 .withId(courtCentreId)
                                 .build())
                         .withProsecutionCases(
-                                Arrays.asList(
+                                asList(
                                         ProsecutionCase.prosecutionCase()
                                                 .withId(prosecutionCaseId)
                                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
-                                                .withDefendants(Arrays.asList(defendantForEvent))
+                                                .withDefendants(asList(defendantForEvent))
                                                 .build()
                                 )
                         )
@@ -1372,16 +1454,16 @@ public class HearingResultEventListenerTest {
 
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
-                .withDefendantJudicialResults(Arrays.asList(DefendantJudicialResult.defendantJudicialResult()
+                .withDefendantJudicialResults(asList(DefendantJudicialResult.defendantJudicialResult()
                         .withMasterDefendantId(defendantId)
                         .withJudicialResult(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay))
                         .build()))
                 .withProsecutionCases(
-                        Arrays.asList(
+                        asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
-                                        .withDefendants(Arrays.asList(defendantForDatabase))
+                                        .withDefendants(asList(defendantForDatabase))
                                         .build()
                         )
                 )
@@ -1425,6 +1507,105 @@ public class HearingResultEventListenerTest {
     }
 
     @Test
+    public void shouldRemoveDefendantJudicialResultWhenDefendantJudicialResultIsforNows() {
+
+        final UUID hearingId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final LocalDate hearingDay = LocalDate.of(2021, 04, 05);
+        final Defendant defendantForEvent = Defendant.defendant()
+                .withId(defendantId)
+                .withProceedingsConcluded(true)
+                .withOffences(asList(Offence.offence()
+                        .withId(offenceId)
+                        .withWording("offence wording")
+                        .build()))
+                .build();
+        final Defendant defendantForDatabase = Defendant.defendant()
+                .withId(defendantId)
+                .withProceedingsConcluded(true)
+                .withOffences(asList(Offence.offence()
+                        .withId(offenceId)
+                        .build()))
+                .build();
+
+        final HearingResulted hearingResulted = HearingResulted.hearingResulted()
+                .withHearingDay(hearingDay)
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withJurisdictionType(JurisdictionType.CROWN)
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .withHasSharedResults(true)
+                        .withDefendantJudicialResults(singletonList(DefendantJudicialResult.defendantJudicialResult()
+                                .withJudicialResult(JudicialResult.judicialResult().withPublishedForNows(true).build())
+                                .build()))
+                        .withCourtCentre(CourtCentre.courtCentre()
+                                .withId(courtCentreId)
+                                .build())
+                        .withProsecutionCases(
+                                asList(
+                                        ProsecutionCase.prosecutionCase()
+                                                .withId(prosecutionCaseId)
+                                                .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
+                                                .withDefendants(asList(defendantForEvent))
+                                                .build()
+                                )
+                        )
+                        .build()
+                )
+                .build();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(
+                        asList(
+                                ProsecutionCase.prosecutionCase()
+                                        .withId(prosecutionCaseId)
+                                        .withCaseStatus(READY_FOR_REVIEW.getDescription())
+                                        .withDefendants(asList(defendantForDatabase))
+                                        .build()
+                        )
+                )
+                .withHasSharedResults(true)
+                .build();
+
+        HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+
+        final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity.setHearing(hearingEntity);
+        caseDefendantHearingEntity.setId(new CaseDefendantHearingKey(prosecutionCaseId, defendantId, hearingId));
+
+        final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity);
+
+        when(caseDefendantHearingRepository.findByCaseId(prosecutionCaseId)).thenReturn(caseDefendantHearingEntities);
+
+        hearingEventEventListener.updateHearingResult(envelopeFrom(metadataWithRandomUUID("progression.event.hearing-resulted"),
+                objectToJsonObjectConverter.convert(hearingResulted)));
+
+        verify(this.hearingRepository, times(1)).save(hearingEntityArgumentCaptor.capture());
+
+        List<HearingEntity> savedHearingEntities = hearingEntityArgumentCaptor.getAllValues();
+
+        HearingEntity savedHearingEntity = savedHearingEntities.stream()
+                .filter(entity -> entity.getHearingId().equals(hearingId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Found Invalid Hearing"));
+
+        final Hearing savedHearing = this.jsonObjectToObjectConverter.convert(jsonFromString(savedHearingEntity.getPayload()), Hearing.class);
+
+        assertThat(savedHearing, notNullValue());
+        assertThat(savedHearing.getDefendantJudicialResults(), nullValue());
+
+    }
+
+    @Test
     public void shouldUpdateDefendantJudicialResultOnlyForTheHearingDayAndShouldNotUpdateDefendantJudicialResultOnReshareForNonSharingDays() {
 
         final UUID hearingId = randomUUID();
@@ -1436,7 +1617,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForEvent = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withWording("offence wording")
                         .withJudicialResults(
@@ -1449,7 +1630,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForDatabase = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withJudicialResults(
                                 newArrayList(
@@ -1464,7 +1645,7 @@ public class HearingResultEventListenerTest {
                 .withHearingDay(hearingDay)
                 .withHearing(Hearing.hearing()
                         .withId(hearingId)
-                        .withDefendantJudicialResults(Arrays.asList(DefendantJudicialResult.defendantJudicialResult()
+                        .withDefendantJudicialResults(asList(DefendantJudicialResult.defendantJudicialResult()
                                 .withMasterDefendantId(defendantId)
                                 .withJudicialResult(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay))
                                 .build()))
@@ -1475,11 +1656,11 @@ public class HearingResultEventListenerTest {
                                 .withId(courtCentreId)
                                 .build())
                         .withProsecutionCases(
-                                Arrays.asList(
+                                asList(
                                         ProsecutionCase.prosecutionCase()
                                                 .withId(prosecutionCaseId)
                                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
-                                                .withDefendants(Arrays.asList(defendantForEvent))
+                                                .withDefendants(asList(defendantForEvent))
                                                 .build()
                                 )
                         )
@@ -1490,7 +1671,7 @@ public class HearingResultEventListenerTest {
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
                 .withDefendantJudicialResults(
-                        Arrays.asList(
+                        asList(
                                 DefendantJudicialResult.defendantJudicialResult()
                                         .withMasterDefendantId(defendantId)
                                         .withJudicialResult(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_2, hearingDay))
@@ -1502,11 +1683,11 @@ public class HearingResultEventListenerTest {
                         )
                 )
                 .withProsecutionCases(
-                        Arrays.asList(
+                        asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
-                                        .withDefendants(Arrays.asList(defendantForDatabase))
+                                        .withDefendants(asList(defendantForDatabase))
                                         .build()
                         )
                 )
@@ -1568,7 +1749,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForEvent = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withWording("offence wording")
                         .build()))
@@ -1576,7 +1757,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantForDatabase = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .build()))
                 .build();
@@ -1592,11 +1773,11 @@ public class HearingResultEventListenerTest {
                                 .withId(courtCentreId)
                                 .build())
                         .withProsecutionCases(
-                                Arrays.asList(
+                                asList(
                                         ProsecutionCase.prosecutionCase()
                                                 .withId(prosecutionCaseId)
                                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
-                                                .withDefendants(Arrays.asList(defendantForEvent))
+                                                .withDefendants(asList(defendantForEvent))
                                                 .build()
                                 )
                         )
@@ -1607,7 +1788,7 @@ public class HearingResultEventListenerTest {
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
                 .withDefendantJudicialResults(
-                        Arrays.asList(
+                        asList(
                                 DefendantJudicialResult.defendantJudicialResult()
                                         .withMasterDefendantId(defendantId)
                                         .withJudicialResult(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay.minusDays(1)))
@@ -1623,11 +1804,11 @@ public class HearingResultEventListenerTest {
                         )
                 )
                 .withProsecutionCases(
-                        Arrays.asList(
+                        asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
-                                        .withDefendants(Arrays.asList(defendantForDatabase))
+                                        .withDefendants(asList(defendantForDatabase))
                                         .build()
                         )
                 )
@@ -1694,7 +1875,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantWithResults = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withWording("offence wording")
                         .withJudicialResults(
@@ -1708,7 +1889,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantWithoutResults = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .build()))
                 .build();
@@ -1723,11 +1904,11 @@ public class HearingResultEventListenerTest {
                                 .withId(courtCentreId)
                                 .build())
                         .withProsecutionCases(
-                                Arrays.asList(
+                                asList(
                                         ProsecutionCase.prosecutionCase()
                                                 .withId(prosecutionCaseId)
                                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
-                                                .withDefendants(Arrays.asList(defendantWithResults))
+                                                .withDefendants(asList(defendantWithResults))
                                                 .build()
                                 )
                         )
@@ -1738,11 +1919,11 @@ public class HearingResultEventListenerTest {
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
                 .withProsecutionCases(
-                        Arrays.asList(
+                        asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
-                                        .withDefendants(Arrays.asList(defendantWithoutResults))
+                                        .withDefendants(asList(defendantWithoutResults))
                                         .build()
                         )
                 )
@@ -1815,7 +1996,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantWithResults = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .withWording("offence wording")
                         .build()))
@@ -1823,7 +2004,7 @@ public class HearingResultEventListenerTest {
         final Defendant defendantWithoutResults = Defendant.defendant()
                 .withId(defendantId)
                 .withProceedingsConcluded(true)
-                .withOffences(Arrays.asList(Offence.offence()
+                .withOffences(asList(Offence.offence()
                         .withId(offenceId)
                         .build()))
                 .build();
@@ -1832,7 +2013,7 @@ public class HearingResultEventListenerTest {
                 .withHearing(Hearing.hearing()
                         .withId(hearingId)
                         .withJurisdictionType(JurisdictionType.CROWN)
-                        .withDefendantJudicialResults(Arrays.asList(DefendantJudicialResult.defendantJudicialResult()
+                        .withDefendantJudicialResults(asList(DefendantJudicialResult.defendantJudicialResult()
                                 .withMasterDefendantId(defendantId)
                                 .withJudicialResult(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay))
                                 .build()))
@@ -1842,11 +2023,11 @@ public class HearingResultEventListenerTest {
                                 .withId(courtCentreId)
                                 .build())
                         .withProsecutionCases(
-                                Arrays.asList(
+                                asList(
                                         ProsecutionCase.prosecutionCase()
                                                 .withId(prosecutionCaseId)
                                                 .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
-                                                .withDefendants(Arrays.asList(defendantWithResults))
+                                                .withDefendants(asList(defendantWithResults))
                                                 .build()
                                 )
                         )
@@ -1857,11 +2038,11 @@ public class HearingResultEventListenerTest {
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
                 .withProsecutionCases(
-                        Arrays.asList(
+                        asList(
                                 ProsecutionCase.prosecutionCase()
                                         .withId(prosecutionCaseId)
                                         .withCaseStatus(READY_FOR_REVIEW.getDescription())
-                                        .withDefendants(Arrays.asList(defendantWithoutResults))
+                                        .withDefendants(asList(defendantWithoutResults))
                                         .build()
                         )
                 )
@@ -1919,7 +2100,7 @@ public class HearingResultEventListenerTest {
                         .withCourtOrderOffences(singletonList(courtOrderOffence().withOffence(offence().build()).build()))
                         .build())
                 .withRespondents(singletonList(CourtApplicationParty.courtApplicationParty().build()))
-                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult().withLabel("PublishedForNowsTRUE").withPublishedForNows(Boolean.TRUE).build(),
+                .withJudicialResults(asList(JudicialResult.judicialResult().withLabel("PublishedForNowsTRUE").withPublishedForNows(Boolean.TRUE).build(),
                         JudicialResult.judicialResult().withLabel("PublishedForNowsFALSE").withPublishedForNows(Boolean.FALSE).build()))
                 .build());
     }
@@ -1928,13 +2109,13 @@ public class HearingResultEventListenerTest {
         final Defendant defendant = Defendant.defendant()
                 .withId(randomUUID())
                 .withProceedingsConcluded(true)
-                .withDefendantCaseJudicialResults(Arrays.asList(JudicialResult.judicialResult().withLabel("PublishedForNowsTRUE").withPublishedForNows(Boolean.TRUE).build(),
+                .withDefendantCaseJudicialResults(asList(JudicialResult.judicialResult().withLabel("PublishedForNowsTRUE").withPublishedForNows(Boolean.TRUE).build(),
                         JudicialResult.judicialResult().withLabel("PublishedForNowsFALSE").withPublishedForNows(Boolean.FALSE).build()))
                 .withOffences(singletonList(
                         offence()
                                 .withId(randomUUID())
                                 .withJudicialResults(
-                                        Arrays.asList(JudicialResult.judicialResult()
+                                        asList(JudicialResult.judicialResult()
                                                         .withLabel("PublishedForNowsTRUE")
                                                         .withPublishedForNows(Boolean.TRUE)
                                                         .withOrderedDate(LocalDate.now())

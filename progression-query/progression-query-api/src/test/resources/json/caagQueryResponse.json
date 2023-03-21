@@ -50,6 +50,7 @@
               "amendedBy": "a a",
               "amendmentDate": "2000-01-01",
               "amendmentReason": "a",
+              "resultText": "Summons Result",
               "caagResultPrompts": [
                 {
                   "label": "a",

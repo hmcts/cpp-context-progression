@@ -248,7 +248,7 @@ public class DefendantHelper {
                 .anyMatch(judicialResult -> judicialResult.getCategory().equals(JudicialResultCategory.FINAL));
     }
 
-    private static boolean isConcluded(Offence offence) {
+    public static boolean isConcluded(Offence offence) {
         return isNotEmpty(offence.getJudicialResults()) && offence.getJudicialResults().stream()
                 .anyMatch(judicialResult -> judicialResult.getCategory().equals(JudicialResultCategory.FINAL));
     }

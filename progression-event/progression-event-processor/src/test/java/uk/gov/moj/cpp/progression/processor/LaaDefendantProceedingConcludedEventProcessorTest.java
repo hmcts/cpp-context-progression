@@ -18,11 +18,12 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
+import uk.gov.moj.cpp.progression.exception.LaaAzureApimInvocationException;
+import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.AzureFunctionService;
 import uk.gov.moj.cpp.progression.transformer.DefendantProceedingConcludedTransformer;
 import uk.gov.moj.cpp.progression.utils.FileUtil;
 
-import java.util.Collections;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -34,8 +35,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.OngoingStubbing;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LaaDefendantProceedingConcludedEventProcessorTest {
@@ -55,6 +56,9 @@ public class LaaDefendantProceedingConcludedEventProcessorTest {
     @Mock
     private DefendantProceedingConcludedTransformer defendantProceedingConcludedTransformer;
 
+    @Mock
+    private ApplicationParameters applicationParameters;
+
     @Before
     public void setUp() {
         final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
@@ -63,10 +67,12 @@ public class LaaDefendantProceedingConcludedEventProcessorTest {
         ReflectionUtil.setField(laaDefendantProceedingConcludedEventProcessor, "jsonObjectToObjectConverter", jsonObjectToObjectConverter);
         ReflectionUtil.setField(laaDefendantProceedingConcludedEventProcessor, "objectToJsonObjectConverter", objectToJsonObjectConverter);
         when(defendantProceedingConcludedTransformer.getProsecutionConcludedRequest(anyListOf(Defendant.class), any(UUID.class), any(UUID.class))).thenReturn(new ProsecutionConcludedForLAA(emptyList()));
+        Mockito.when(applicationParameters.getRetryTimes()).thenReturn("3");
+        Mockito.when(applicationParameters.getRetryInterval()).thenReturn("1000");
     }
 
     @Test
-    public void shouldHandleDefendantProceedingConcludedEventMessage() {
+    public void shouldHandleDefendantProceedingConcludedEventMessage() throws InterruptedException {
         final JsonObject proceedingConcludedPayload = new StringToJsonObjectConverter().convert(getProceedingConcludedPayload());
         final JsonEnvelope event = envelopeFrom(metadataWithRandomUUID("progression.event.defendant-proceeding-concluded-changed"),
                 proceedingConcludedPayload);
@@ -76,6 +82,17 @@ public class LaaDefendantProceedingConcludedEventProcessorTest {
         laaDefendantProceedingConcludedEventProcessor.processEvent(event);
 
         verify(azureFunctionService).concludeDefendantProceeding(anyString());
+    }
+
+    @Test(expected = LaaAzureApimInvocationException.class)
+    public void shouldHandleDefendantProceedingConcludedEventAndThrowDefendantProceedingConcludedExceptionAfterAllRetries() throws InterruptedException {
+        final JsonObject proceedingConcludedPayload = new StringToJsonObjectConverter().convert(getProceedingConcludedPayload());
+        final JsonEnvelope event = envelopeFrom(metadataWithRandomUUID("progression.event.defendant-proceeding-concluded-changed"),
+                proceedingConcludedPayload);
+
+        when(azureFunctionService.concludeDefendantProceeding(anyString())).thenReturn(HttpStatus.SC_GATEWAY_TIMEOUT);
+
+        laaDefendantProceedingConcludedEventProcessor.processEvent(event);
     }
 
     private String getProceedingConcludedPayload() {

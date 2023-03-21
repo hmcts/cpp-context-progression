@@ -223,7 +223,7 @@ public class UpdateCaseHandlerTest {
                                                 withJsonPath("$.prosecutionCase.defendants[0].proceedingsConcluded", is(true)),
                                                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].proceedingsConcluded", is(true)),
                                                 withJsonPath("$.prosecutionCase.defendants[0].offences[1].proceedingsConcluded", is(true)),
-                                                withJsonPath("$.prosecutionCase.caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())),
+                                                withJsonPath("$.prosecutionCase.caseStatus", is(CaseStatusEnum.READY_FOR_REVIEW.getDescription())),
                                                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.fundingType", notNullValue())
 
 

@@ -25,8 +25,10 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseLinkSplitMergeR
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -91,10 +93,23 @@ public class CaseLsmInfoQuery {
         try {
             final List<UUID> masterDefendantIds = retrieveMasterDefendantIdList(caseId);
             final List<MatchDefendantCaseHearingEntity> matchedCases = matchDefendantCaseHearingRepository.findByMasterDefendantId(masterDefendantIds);
+            final HashSet<MatchDefendantCaseHearingEntity> uniqueMatchedCases = new HashSet<>(matchedCases);
 
-            if (!matchedCases.isEmpty()) {
+            if (!uniqueMatchedCases.isEmpty()) {
+                //There will be 2 records for case one with hearing id and other null, the logic below removes the record with null hearing id,
+                //as the query does't need to return record with null hearing id.
+                final List<MatchDefendantCaseHearingEntity> nullHearingIdDefendantCaseHearing = uniqueMatchedCases.stream()
+                        .filter(matchDefendantCaseHearingEntity -> Objects.isNull(matchDefendantCaseHearingEntity.getHearingId())).collect(Collectors.toList());
+                final List<UUID> defendantCaseHearingEntityToBeRemoved = nullHearingIdDefendantCaseHearing.stream().filter(e ->
+                    uniqueMatchedCases.stream().filter(matchDefendantCaseHearingEntity -> matchDefendantCaseHearingEntity.getDefendantId().equals(e.getDefendantId())
+                    && matchDefendantCaseHearingEntity.getMasterDefendantId().equals(e.getMasterDefendantId())
+                            && matchDefendantCaseHearingEntity.getProsecutionCaseId().equals(e.getProsecutionCaseId())).count() > 1
+                ).map(e -> e.getId()).collect(Collectors.toList());
+                defendantCaseHearingEntityToBeRemoved.stream().forEach(e ->
+                    uniqueMatchedCases.removeIf(matchDefendantCaseHearingEntity -> matchDefendantCaseHearingEntity.getId().equals(e))
+                );
                 final JsonArrayBuilder matchedCasesArrayBuilder = Json.createArrayBuilder();
-                matchedCases.stream().forEach(e -> matchedCasesArrayBuilder.add(buildMatchedDefendantCase(e.getProsecutionCase(), e.getMasterDefendantId(), Optional.ofNullable(e.getHearing()))));
+                uniqueMatchedCases.stream().forEach(e -> matchedCasesArrayBuilder.add(buildMatchedDefendantCase(e.getProsecutionCase(), e.getMasterDefendantId(), Optional.ofNullable(e.getHearing()))));
                 responseBuilder.add(MATCHED_DEFENDANT_CASES, matchedCasesArrayBuilder);
             }
         } catch (final NoResultException e) {

@@ -40,7 +40,6 @@ import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAdvocateRole
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 
 import java.time.LocalDate;
 
@@ -48,7 +47,6 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ApplicationAtAGlanceIT extends AbstractIT {
@@ -255,6 +253,8 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                                 withJsonPath("$.applicationDetails.aagResults[0].amendmentDate", equalTo("2019-03-01")),
                                 withJsonPath("$.applicationDetails.aagResults[0].amendmentReason", equalTo("wording for amendment")),
                                 withJsonPath("$.applicationDetails.aagResults[0].amendedBy", equalTo("delegatedPowers a delegatedPowers b")),
+                                withJsonPath("$.applicationDetails.aagResults[0].resultText", equalTo("code - resultText")),
+                                withJsonPath("$.applicationDetails.aagResults[0].useResultText", equalTo(true)),
                                 withJsonPath("$.applicationDetails.paymentReference", equalTo(paymentReference)),
                                 withJsonPath("$.applicantDetails.address.address1", equalTo(applicantAddress1)),
                                 withJsonPath("$.applicantDetails.address.address2", equalTo(applicantAddress2)),

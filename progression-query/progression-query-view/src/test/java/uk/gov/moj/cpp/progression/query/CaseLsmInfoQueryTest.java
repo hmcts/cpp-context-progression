@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.query;
 
+import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -224,6 +225,63 @@ public class CaseLsmInfoQueryTest {
         assertThat(mergedCasesArray.getJsonObject(0).getString("caseUrn"), is(CASE_URN_M));
     }
 
+    @Test
+    public void shouldReturnCasesWithoutDuplicatesEvenWhenOneHearingIsNull() {
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntities = Arrays.asList(
+                buildMatchDefendantCaseEntity(MASTER_DEFENDANT_1, hearingId, prosecutionCaseId, true),
+                buildMatchDefendantCaseEntity(MASTER_DEFENDANT_1, null, prosecutionCaseId, false)
+        );
+
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList()))
+                .thenReturn(matchDefendantCaseHearingEntities);
+
+        when(caseLinkSplitMergeRepository.findByCaseId(any()))
+                .thenReturn(new ArrayList<>());
+
+        when(caseDefendantHearingRepository.findByCaseId(any()))
+                .thenReturn(new ArrayList<>());
+
+        JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
+        JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
+        JsonArray matchedDefendantCasesArray = responsePayload.getJsonArray("matchedDefendantCases");
+        assertNotNull(matchedDefendantCasesArray);
+        assertThat(matchedDefendantCasesArray.size(), is(1));
+        assertThat(matchedDefendantCasesArray.getJsonObject(0).getString("caseUrn"), is(CASE_URN));
+
+        JsonArray linkedCasesArray = responsePayload.getJsonArray("linkedCases");
+        assertNull(linkedCasesArray);
+    }
+
+    @Test
+    public void shouldReturnCasesWithoutDuplicatesWithUniqueHearingIds() {
+        final UUID prosecutionCaseId = randomUUID();
+        final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntities = Arrays.asList(
+                buildMatchDefendantCaseEntity(MASTER_DEFENDANT_1, randomUUID(), prosecutionCaseId, true),
+                buildMatchDefendantCaseEntity(MASTER_DEFENDANT_1, randomUUID(), prosecutionCaseId, false)
+        );
+
+        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList()))
+                .thenReturn(matchDefendantCaseHearingEntities);
+
+        when(caseLinkSplitMergeRepository.findByCaseId(any()))
+                .thenReturn(new ArrayList<>());
+
+        when(caseDefendantHearingRepository.findByCaseId(any()))
+                .thenReturn(new ArrayList<>());
+
+        JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
+        JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
+        JsonArray matchedDefendantCasesArray = responsePayload.getJsonArray("matchedDefendantCases");
+        assertNotNull(matchedDefendantCasesArray);
+        assertThat(matchedDefendantCasesArray.size(), is(2));
+        assertThat(matchedDefendantCasesArray.getJsonObject(0).getString("caseUrn"), is(CASE_URN));
+
+        JsonArray linkedCasesArray = responsePayload.getJsonArray("linkedCases");
+        assertNull(linkedCasesArray);
+    }
+
     private MatchDefendantCaseHearingEntity buildMatchDefendantCaseEntity(UUID masterDefendantId, boolean hearingExists) {
         MatchDefendantCaseHearingEntity entity = new MatchDefendantCaseHearingEntity();
         entity.setId(randomUUID());
@@ -231,6 +289,18 @@ public class CaseLsmInfoQueryTest {
         entity.setHearingId(randomUUID());
         entity.setDefendantId(randomUUID());
         entity.setHearing(hearingExists ? new HearingEntity() : null);
+        entity.setProsecutionCase(new ProsecutionCaseEntity());
+        return entity;
+    }
+
+    private MatchDefendantCaseHearingEntity buildMatchDefendantCaseEntity(final UUID masterDefendantId, final UUID hearingId, final UUID prosecutionCaseId, boolean hearingExists) {
+        MatchDefendantCaseHearingEntity entity = new MatchDefendantCaseHearingEntity();
+        entity.setId(randomUUID());
+        entity.setMasterDefendantId(masterDefendantId);
+        entity.setHearingId(hearingId);
+        entity.setDefendantId(masterDefendantId);
+        entity.setHearing(hearingExists ? new HearingEntity() : null);
+        entity.setProsecutionCaseId(prosecutionCaseId);
         entity.setProsecutionCase(new ProsecutionCaseEntity());
         return entity;
     }

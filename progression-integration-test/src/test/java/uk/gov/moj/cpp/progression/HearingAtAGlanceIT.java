@@ -4,11 +4,20 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
+import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
+import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
+import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_CAAG_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
@@ -26,11 +35,13 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -103,7 +114,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
         assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
                 .getJsonArray("judicialResults").getJsonObject(0).getBoolean("urgent"), equalTo(false));
         assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
-                .getJsonArray("judicialResults").getJsonObject(0).getString("resultText"), equalTo("resultText"));
+                .getJsonArray("judicialResults").getJsonObject(0).getString("resultText"), equalTo("code - resultText"));
 
     }
 
@@ -250,6 +261,8 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
         pollProsecutionCasesProgressionForCAAG(caseId, getCaseAtAGlanceMatchers());
         verifyInMessagingQueueForHearingResultedCaseUpdated();
+
+        verifResultTextForCaag();
     }
 
 
@@ -274,6 +287,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
         pollProsecutionCasesProgressionForCAAG(caseId, getCaseAtAGlanceMatchers());
         verifyInMessagingQueueForHearingResultedCaseUpdated();
     }
+
     private String doVerifyProsecutionCaseDefendantListingStatusChanged() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
@@ -332,5 +346,20 @@ public class HearingAtAGlanceIT extends AbstractIT {
         );
     }
 
+    private void verifResultTextForCaag() {
+        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_CAAG_JSON)
+                .withHeader(USER_ID, randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.defendants[0].caagDefendantOffences[0].caagResults[0].resultText", equalTo("code - resultText")),
+                                withJsonPath("$.defendants[0].caagDefendantOffences[0].caagResults[0].useResultText", equalTo(true)),
+                                withJsonPath("$.defendants[0].defendantJudicialResults[0].resultText", equalTo("code - Surcharge Amount of surcharge £50")),
+                                withJsonPath("$.defendants[0].defendantJudicialResults[0].useResultText", equalTo(true)),
+                                withJsonPath("$.defendants[0].defendantCaseJudicialResults[0].resultText", equalTo("Costs to Crown Prosecution Service Amount of costs £60")),
+                                withJsonPath("$.defendants[0].defendantCaseJudicialResults[0].useResultText", equalTo(false))
+                        )));
+    }
 }
 
