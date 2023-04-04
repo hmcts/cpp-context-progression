@@ -1,14 +1,18 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static com.google.common.io.Resources.getResource;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.times;
@@ -369,6 +373,9 @@ public class PetFormEventProcessorTest {
         verify(sender, times(2)).send(envelopeArgumentCaptor.capture());
         final List<JsonEnvelope> envelopeList = envelopeArgumentCaptor.getAllValues();
         assertThat(((Envelope) envelopeList.get(0)).metadata().name(), is(PROGRESSION_COMMAND_CREATE_PET_FORM));
+        assertThat(((Envelope) envelopeList.get(0)).payload().toString(), isJson(allOf(
+                withJsonPath("$.isYouth", equalTo(true))
+        )));
         verifyUpdateCpsDefendantIdCommand("1a8fe782-a287-11eb-bcbc-0242ac130077", "8f8fe782-a287-11eb-bcbc-0242ac130002", "915d2c62-af1f-4674-863a-0891e67e323a", ((Envelope) envelopeList.get(1)));
     }
 

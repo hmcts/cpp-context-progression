@@ -344,6 +344,7 @@ public class PetFormEventProcessor {
                 .add(PET_DEFENDANTS, defendantIdArray.build())
                 .add(PET_FORM_DATA, appendDataElement(payload.getString(PET_FORM_DATA)))
                 .add(USER_NAME, payload.getString(USER_NAME))
+                .add(IS_YOUTH, payload.getBoolean(IS_YOUTH))
                 .build();
 
         this.sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
