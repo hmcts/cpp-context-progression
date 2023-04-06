@@ -5,7 +5,9 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
 
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.HearingDay;
@@ -25,6 +27,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
+import uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
@@ -46,12 +49,15 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 @SuppressWarnings({"squid:S3457", "squid:S3655"})
 @ServiceComponent(EVENT_PROCESSOR)
@@ -62,6 +68,12 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseDefendantUpdatedProcessor.class.getCanonicalName());
     private static final String HEARING_ID = "hearingId";
     private static final String CPS_FLAG = "cpsFlag";
+    public static final String MATCHED_DEFENDANT_CASES = "matchedDefendantCases";
+    public static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION = "progression.command.update-matched-defendant-custodial-information";
+    public static final String MASTER_DEFENDANT_ID = "masterDefendantId";
+    public static final String MATCHED_MASTER_DEFENDANT_ID = "matchedMasterDefendantId";
+    public static final String DEFENDANTS = "defendants";
+    public static final String CUSTODIAL_ESTABLISHMENT = "custodialEstablishment";
 
     @Inject
     private Sender sender;
@@ -115,6 +127,20 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
                 if (isCpsProsecutor) {
                     sendDefendantAssociationCPSNotification(jsonEnvelope, prosecutionCaseDefendantUpdated, EmailTemplateType.ASSOCIATION);
                 }
+            }
+        }
+    }
+
+    @Handles("progression.event.defendant-custodial-information-update-requested")
+    public void handleDefendantCustodialInformationUpdatedEvent(final JsonEnvelope jsonEnvelope) {
+        final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), DefendantCustodialInformationUpdateRequested.class);
+        final Optional<JsonObject> matchedCases = progressionService.searchLinkedCases(jsonEnvelope, defendantCustodialInformationUpdateRequested.getProsecutionCaseId().toString());
+        if (matchedCases.isPresent() && nonNull(matchedCases.get())) {
+            final JsonObject matchedCasesJsonObject = matchedCases.get();
+            if (matchedCasesJsonObject.containsKey(MATCHED_DEFENDANT_CASES)) {
+                matchedCasesJsonObject.getJsonArray(MATCHED_DEFENDANT_CASES).getValuesAs(JsonObject.class).stream()
+                        .filter(matchedCase -> defendantCustodialInformationUpdateRequested.getMasterDefendantId().toString().equalsIgnoreCase(matchedCase.getString(MATCHED_MASTER_DEFENDANT_ID)))
+                        .forEach(matchedCase -> updateMatchedDefendantCustodialInformation(jsonEnvelope, defendantCustodialInformationUpdateRequested, matchedCase));
             }
         }
     }
@@ -317,6 +343,37 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
 
     private Optional<JsonObject> getProsecutorById(final UUID prosecutorId, final JsonEnvelope envelope) {
         return referenceDataService.getProsecutor(envelope, prosecutorId, requester);
+    }
+
+    private void updateMatchedDefendantCustodialInformation(final JsonEnvelope jsonEnvelope, final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested, final JsonObject matchedCases) {
+        final JsonObjectBuilder updateMatchedDefendantCustodialInformationBuilder = Json.createObjectBuilder();
+        final String matchedCaseIdString = matchedCases.getString(CASE_ID);
+        updateMatchedDefendantCustodialInformationBuilder.add(CASE_ID, matchedCaseIdString);
+        updateMatchedDefendantCustodialInformationBuilder.add(MASTER_DEFENDANT_ID, matchedCases.getString(MATCHED_MASTER_DEFENDANT_ID));
+        if (nonNull(defendantCustodialInformationUpdateRequested.getCustodialEstablishment())) {
+            updateMatchedDefendantCustodialInformationBuilder.add(CUSTODIAL_ESTABLISHMENT, objectToJsonObjectConverter.convert(defendantCustodialInformationUpdateRequested.getCustodialEstablishment()));
+        }
+        final JsonArrayBuilder defendantsArrayBuilder = Json.createArrayBuilder();
+        matchedCases.getJsonArray(DEFENDANTS).getValuesAs(JsonObject.class).stream()
+                .filter(defendant -> defendantCustodialInformationUpdateRequested.getMasterDefendantId().toString().equalsIgnoreCase(defendant.getString(MASTER_DEFENDANT_ID)))
+                .filter(defendant -> shouldAvoidSameCaseSameDefendantId(matchedCaseIdString, defendant.getString("id"), defendantCustodialInformationUpdateRequested))
+                .forEach(filteredDefendant -> defendantsArrayBuilder.add(filteredDefendant.getString("id")));
+        final JsonArray defendantArray = defendantsArrayBuilder.build();
+        if (isNotEmpty(defendantArray)) {
+            updateMatchedDefendantCustodialInformationBuilder.add(DEFENDANTS, defendantArray);
+            final JsonObject payload = updateMatchedDefendantCustodialInformationBuilder.build();
+            sender.send(
+                    Enveloper.envelop(payload)
+                            .withName(PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION)
+                            .withMetadataFrom(jsonEnvelope));
+        }
+    }
+
+    private boolean shouldAvoidSameCaseSameDefendantId(final String matchedCaseIdString, final String matchedDefendantIdString, final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested) {
+        if (defendantCustodialInformationUpdateRequested.getProsecutionCaseId().toString().equalsIgnoreCase(matchedCaseIdString)) {
+            return !matchedDefendantIdString.equalsIgnoreCase(defendantCustodialInformationUpdateRequested.getDefendantId().toString());
+        }
+        return true;
     }
 
 }

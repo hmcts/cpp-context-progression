@@ -3,17 +3,29 @@ package uk.gov.moj.cpp.progression.processor;
 import static com.google.common.io.Resources.getResource;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated;
 import static uk.gov.justice.core.courts.UpdatedOrganisation.updatedOrganisation;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested.defendantCustodialInformationUpdateRequested;
+import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
+import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_URN;
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.COMMAND_UPDATE_DEFENDANT_FOR_HEARING;
+import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.DEFENDANTS;
+import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.MASTER_DEFENDANT_ID;
+import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.MATCHED_MASTER_DEFENDANT_ID;
+import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION;
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.PUBLIC_CASE_DEFENDANT_CHANGED;
 
 import uk.gov.justice.core.courts.CustodialEstablishment;
@@ -27,7 +39,9 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
@@ -40,6 +54,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
@@ -104,14 +119,224 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
     @Captor
     private ArgumentCaptor<CPSNotificationVO> notificationServiceCPSNotificationVOArgumentCaptor;
 
+    @Captor
+    ArgumentCaptor<Envelope<JsonObject>> envelopeArgumentCaptor;
+
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    public static final String MATCHED_DEFENDANT_CASES = "matchedDefendantCases";
 
 
     @Before
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
+    }
+
+    @Test
+    public void shouldHandleDefendantCustodialInformationUpdatedEvent_WhenDifferentCase_DifferentDefendantId() {
+
+        final String caseIdProsecutionCaseService = "01702930-c1c8-4cfb-8f1c-1df9a58f4e5b";
+        final String defendantIdProsecutionCaseService = "924cbf53-0b51-4633-9e99-2682be854af4";
+        final String masterDefendantIdProsecutionCaseService = "976017a3-abfc-40fc-8ea2-ea0804716d61";
+
+        final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested = defendantCustodialInformationUpdateRequested()
+                .withCustodialEstablishment(uk.gov.moj.cpp.progression.events.CustodialEstablishment.custodialEstablishment()
+                        .withName("name")
+                        .withCustody("custody")
+                        .withId(randomUUID())
+                        .build())
+                .withDefendantId(UUID.fromString(defendantIdProsecutionCaseService))
+                .withMasterDefendantId(UUID.fromString(masterDefendantIdProsecutionCaseService))
+                .withProsecutionCaseId(UUID.fromString(caseIdProsecutionCaseService))
+                .build();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverterMock.convert(payload, DefendantCustodialInformationUpdateRequested.class))
+                .thenReturn(defendantCustodialInformationUpdateRequested);
+        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
+                Json.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add(CASE_ID, randomUUID().toString())
+                                .add(CASE_URN, "caseIdProsecutionCaseService")
+                                .add(MATCHED_MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                .add(DEFENDANTS, createArrayBuilder().add(createObjectBuilder()
+                                        .add("id", randomUUID().toString())
+                                        .add("firstName", "firstName")
+                                        .add(MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                        .build())
+                                        .build())
+                                .build())
+                        .build())
+                        .build()
+        ));
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
+                        .withUserId(randomUUID().toString())
+                        .withId(randomUUID())
+                        .withName("progression.event.defendant-custodial-information-update-requested")
+                        .build(),
+                objectToJsonObjectConverter.convert(defendantCustodialInformationUpdateRequested));
+
+        this.eventProcessor.handleDefendantCustodialInformationUpdatedEvent(jsonEnvelope);
+
+        verify(sender).send(envelopeArgumentCaptor.capture());
+        assertThat(envelopeArgumentCaptor.getValue().metadata().name(), is(PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION));
+
+    }
+
+    @Test
+    public void shouldHandleDefendantCustodialInformationUpdatedEvent_WhenSameCase_DifferentDefendantId() {
+
+        final String caseIdProsecutionCaseService = "01702930-c1c8-4cfb-8f1c-1df9a58f4e5b";
+        final String defendantIdProsecutionCaseService = "924cbf53-0b51-4633-9e99-2682be854af4";
+        final String masterDefendantIdProsecutionCaseService = "976017a3-abfc-40fc-8ea2-ea0804716d61";
+
+        final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested = defendantCustodialInformationUpdateRequested()
+                .withCustodialEstablishment(uk.gov.moj.cpp.progression.events.CustodialEstablishment.custodialEstablishment()
+                        .withName("name")
+                        .withCustody("custody")
+                        .withId(randomUUID())
+                        .build())
+                .withDefendantId(UUID.fromString(defendantIdProsecutionCaseService))
+                .withMasterDefendantId(UUID.fromString(masterDefendantIdProsecutionCaseService))
+                .withProsecutionCaseId(UUID.fromString(caseIdProsecutionCaseService))
+                .build();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverterMock.convert(payload, DefendantCustodialInformationUpdateRequested.class))
+                .thenReturn(defendantCustodialInformationUpdateRequested);
+        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
+                Json.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add(CASE_ID, caseIdProsecutionCaseService)
+                                .add(CASE_URN, "caseIdProsecutionCaseService")
+                                .add(MATCHED_MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                .add(DEFENDANTS, createArrayBuilder().add(createObjectBuilder()
+                                        .add("id", randomUUID().toString())
+                                        .add("firstName", "firstName")
+                                        .add(MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                        .build())
+                                        .build())
+                                .build())
+                        .build())
+                        .build()
+        ));
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
+                        .withUserId(randomUUID().toString())
+                        .withId(randomUUID())
+                        .withName("progression.event.defendant-custodial-information-update-requested")
+                        .build(),
+                objectToJsonObjectConverter.convert(defendantCustodialInformationUpdateRequested));
+
+        this.eventProcessor.handleDefendantCustodialInformationUpdatedEvent(jsonEnvelope);
+
+        verify(sender).send(envelopeArgumentCaptor.capture());
+        assertThat(envelopeArgumentCaptor.getValue().metadata().name(), is(PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION));
+
+    }
+
+    @Test
+    public void shouldHandleDefendantCustodialInformationUpdatedEvent_WhenSameCase_SameDefendantId() {
+
+        final String caseIdProsecutionCaseService = "01702930-c1c8-4cfb-8f1c-1df9a58f4e5b";
+        final String defendantIdProsecutionCaseService = "924cbf53-0b51-4633-9e99-2682be854af4";
+        final String masterDefendantIdProsecutionCaseService = "976017a3-abfc-40fc-8ea2-ea0804716d61";
+
+        final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested = defendantCustodialInformationUpdateRequested()
+                .withCustodialEstablishment(uk.gov.moj.cpp.progression.events.CustodialEstablishment.custodialEstablishment()
+                        .withName("name")
+                        .withCustody("custody")
+                        .withId(randomUUID())
+                        .build())
+                .withDefendantId(UUID.fromString(defendantIdProsecutionCaseService))
+                .withMasterDefendantId(UUID.fromString(masterDefendantIdProsecutionCaseService))
+                .withProsecutionCaseId(UUID.fromString(caseIdProsecutionCaseService))
+                .build();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverterMock.convert(payload, DefendantCustodialInformationUpdateRequested.class))
+                .thenReturn(defendantCustodialInformationUpdateRequested);
+        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
+                Json.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add(CASE_ID, caseIdProsecutionCaseService)
+                                .add(CASE_URN, "caseIdProsecutionCaseService")
+                                .add(MATCHED_MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                .add(DEFENDANTS, createArrayBuilder().add(createObjectBuilder()
+                                        .add("id", defendantIdProsecutionCaseService)
+                                        .add("firstName", "firstName")
+                                        .add(MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                        .build())
+                                        .build())
+                                .build())
+                        .build())
+                        .build()
+        ));
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
+                        .withUserId(randomUUID().toString())
+                        .withId(randomUUID())
+                        .withName("progression.event.defendant-custodial-information-update-requested")
+                        .build(),
+                objectToJsonObjectConverter.convert(defendantCustodialInformationUpdateRequested));
+
+        this.eventProcessor.handleDefendantCustodialInformationUpdatedEvent(jsonEnvelope);
+
+        verifyNoMoreInteractions(sender);
+
+    }
+
+    @Test
+    public void shouldHandleDefendantCustodialInformationUpdatedEvent_WhenNoMatchingMasterDefendantIdFound() {
+
+        final String caseIdProsecutionCaseService = "01702930-c1c8-4cfb-8f1c-1df9a58f4e5b";
+        final String defendantIdProsecutionCaseService = "924cbf53-0b51-4633-9e99-2682be854af4";
+        final String masterDefendantIdProsecutionCaseService = "976017a3-abfc-40fc-8ea2-ea0804716d61";
+
+        final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested = defendantCustodialInformationUpdateRequested()
+                .withCustodialEstablishment(uk.gov.moj.cpp.progression.events.CustodialEstablishment.custodialEstablishment()
+                        .withName("name")
+                        .withCustody("custody")
+                        .withId(randomUUID())
+                        .build())
+                .withDefendantId(UUID.fromString(defendantIdProsecutionCaseService))
+                .withMasterDefendantId(randomUUID())
+                .withProsecutionCaseId(UUID.fromString(caseIdProsecutionCaseService))
+                .build();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverterMock.convert(payload, DefendantCustodialInformationUpdateRequested.class))
+                .thenReturn(defendantCustodialInformationUpdateRequested);
+        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
+                Json.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add(CASE_ID, caseIdProsecutionCaseService)
+                                .add(CASE_URN, "caseIdProsecutionCaseService")
+                                .add(MATCHED_MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                .add(DEFENDANTS, createArrayBuilder().add(createObjectBuilder()
+                                        .add("id", defendantIdProsecutionCaseService)
+                                        .add("firstName", "firstName")
+                                        .build())
+                                        .build())
+                                .build())
+                        .build())
+                        .build()
+        ));
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
+                        .withUserId(randomUUID().toString())
+                        .withId(randomUUID())
+                        .withName("progression.event.defendant-custodial-information-update-requested")
+                        .build(),
+                objectToJsonObjectConverter.convert(defendantCustodialInformationUpdateRequested));
+
+        this.eventProcessor.handleDefendantCustodialInformationUpdatedEvent(jsonEnvelope);
+
+        verifyNoMoreInteractions(sender);
+
     }
 
     @Test

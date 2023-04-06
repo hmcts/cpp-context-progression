@@ -13,6 +13,7 @@ import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -76,6 +77,7 @@ import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
 import uk.gov.justice.core.courts.CpsProsecutorUpdated;
+import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.CustodyTimeLimit;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
@@ -149,6 +151,7 @@ import uk.gov.justice.progression.courts.HearingMarkedAsDuplicateForCase;
 import uk.gov.justice.progression.courts.HearingRemovedForProsecutionCase;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.command.UpdateMatchedDefendantCustodialInformation;
 import uk.gov.moj.cpp.progression.command.defendant.AddDefendant;
 import uk.gov.moj.cpp.progression.command.defendant.UpdateDefendantCommand;
 import uk.gov.moj.cpp.progression.command.handler.HandleOnlinePleaDocumentCreation;
@@ -193,6 +196,7 @@ import uk.gov.moj.cpp.progression.events.CasesUnlinked;
 import uk.gov.moj.cpp.progression.events.CpsDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationAssociatedByDefenceContext;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationDissociatedByDefenceContext;
+import uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationAssociated;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated;
 import uk.gov.moj.cpp.progression.events.DefendantLaaAssociated;
@@ -239,6 +243,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -739,10 +744,10 @@ public class CaseAggregate implements Aggregate {
             final List<uk.gov.justice.core.courts.Offence> existingOffences = this.defendantCaseOffences.get(defendant.getId());
             this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
             updateDefendantProceedingConcluded(defendant, defendant.getProceedingsConcluded());
-            if(existingOffences != null) {
-                final List<UUID> updatedDefendantOffences =  defendant.getOffences().stream().map(i -> i.getId()).collect(toList());
+            if (existingOffences != null) {
+                final List<UUID> updatedDefendantOffences = defendant.getOffences().stream().map(i -> i.getId()).collect(toList());
                 final List<uk.gov.justice.core.courts.Offence> noLongerInHearing = existingOffences.stream().filter(x -> !updatedDefendantOffences.contains(x.getId())).collect(toList());
-                final List<uk.gov.justice.core.courts.Offence> concludedPlusOngoingOffences =  new ArrayList<>();
+                final List<uk.gov.justice.core.courts.Offence> concludedPlusOngoingOffences = new ArrayList<>();
                 concludedPlusOngoingOffences.addAll(defendant.getOffences());
                 concludedPlusOngoingOffences.addAll(noLongerInHearing);
                 this.defendantCaseOffences.put(defendant.getId(), concludedPlusOngoingOffences);
@@ -771,12 +776,13 @@ public class CaseAggregate implements Aggregate {
             this.petFormFinalisedDocuments.add(petFormFinalised.getMaterialId());
         }
     }
+
     private void addFormFinalisedDocument(final FormFinalised formFinalised) {
         if (formFinalised.getMaterialId() != null) {
-            if(FormType.BCM.equals(formFinalised.getFormType())) {
+            if (FormType.BCM.equals(formFinalised.getFormType())) {
                 this.bcmFormFinalisedDocuments.add(formFinalised.getMaterialId());
             }
-            if(FormType.PTPH.equals(formFinalised.getFormType())) {
+            if (FormType.PTPH.equals(formFinalised.getFormType())) {
                 this.ptphFormFinalisedDocuments.add(formFinalised.getMaterialId());
             }
         }
@@ -1119,6 +1125,7 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> updateDefendantDetails(final DefendantUpdate updatedDefendant) {
         LOGGER.debug("Defendant information is being updated.");
+        final Stream.Builder<Object> builder = builder();
         // keep title if new title is blank.
         final uk.gov.justice.core.courts.Defendant orgDefendant = defendantsMap.get(updatedDefendant.getId());
         final Optional<String> orgTitle = ofNullable(orgDefendant)
@@ -1144,12 +1151,71 @@ public class CaseAggregate implements Aggregate {
                     .build();
         }
 
-        return apply(Stream.of(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
+        builder.add(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
                 .withDefendant(newDefendant)
                 .withHearingIds(CollectionUtils.isNotEmpty(hearingIds) ? new ArrayList<>(this.hearingIds) : emptyList())
-                .build()));
+                .build());
+
+        if (shouldUpdateCustodialEstablishment(newDefendant.getId(), newDefendant.getPersonDefendant(), defendantsMap)) {
+
+            final DefendantCustodialInformationUpdateRequested.Builder defendantCustodialInformationUpdateRequestedBuilder = DefendantCustodialInformationUpdateRequested.defendantCustodialInformationUpdateRequested()
+                    .withDefendantId(newDefendant.getId())
+                    .withMasterDefendantId(newDefendant.getMasterDefendantId())
+                    .withProsecutionCaseId(newDefendant.getProsecutionCaseId());
+
+            if (nonNull(newDefendant.getPersonDefendant()) && nonNull(newDefendant.getPersonDefendant().getCustodialEstablishment())) {
+                defendantCustodialInformationUpdateRequestedBuilder.withCustodialEstablishment(uk.gov.moj.cpp.progression.events.CustodialEstablishment.custodialEstablishment()
+                        .withName(newDefendant.getPersonDefendant().getCustodialEstablishment().getName())
+                        .withId(newDefendant.getPersonDefendant().getCustodialEstablishment().getId())
+                        .withCustody(newDefendant.getPersonDefendant().getCustodialEstablishment().getCustody()).build());
+            }
+
+            builder.add(defendantCustodialInformationUpdateRequestedBuilder.build());
+        }
+
+        return apply(builder.build());
     }
 
+    public Stream<Object> updateDefendantCustodialInformationDetails(final UpdateMatchedDefendantCustodialInformation updateMatchedDefendantCustodialInformation) {
+        LOGGER.info("Defendant Custodial Information to be updated for defendants {} and case {}", updateMatchedDefendantCustodialInformation.getDefendants(), updateMatchedDefendantCustodialInformation.getCaseId());
+        final Stream.Builder<Object> builder = builder();
+        final UUID caseId = updateMatchedDefendantCustodialInformation.getCaseId();
+
+        for (final UUID defendantId : updateMatchedDefendantCustodialInformation.getDefendants()) {
+
+            if (!defendantsMap.containsKey(defendantId)
+                    || (nonNull(defendantProceedingConcluded.get(caseId)) && defendantProceedingConcluded.get(caseId).get(defendantId))) {
+                continue;
+            }
+
+            final uk.gov.justice.core.courts.Defendant originalDefendant = defendantsMap.get(defendantId);
+
+            final PersonDefendant.Builder updatedPersonDefendantBuilder = PersonDefendant.personDefendant();
+            updatedPersonDefendantBuilder
+                    .withValuesFrom(originalDefendant.getPersonDefendant())
+                    .withCustodialEstablishment(null);
+            if (nonNull(updateMatchedDefendantCustodialInformation.getCustodialEstablishment())) {
+                updatedPersonDefendantBuilder.withCustodialEstablishment(buildCoreCourtCustodialEstablishment(updateMatchedDefendantCustodialInformation.getCustodialEstablishment()));
+            }
+            final PersonDefendant updatedPersonDefendant = updatedPersonDefendantBuilder.build();
+            final uk.gov.justice.core.courts.Defendant updatedDefendant = uk.gov.justice.core.courts.Defendant.defendant()
+                    .withValuesFrom(originalDefendant)
+                    .withMasterDefendantId(updateMatchedDefendantCustodialInformation.getMasterDefendantId())
+                    .withPersonDefendant(updatedPersonDefendant)
+                    .build();
+
+            if (shouldUpdateCustodialEstablishment(defendantId, updatedPersonDefendant, defendantsMap)) {
+                final DefendantUpdate newDefendantUpdate = buildDefendantUpdateFromDefendant(updatedDefendant);
+
+                builder.add(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
+                        .withDefendant(newDefendantUpdate)
+                        .withHearingIds(CollectionUtils.isNotEmpty(hearingIds) ? new ArrayList<>(this.hearingIds) : emptyList())
+                        .build());
+                LOGGER.info("Prosecution case defendant updated for defendant {} with caseId {} ", newDefendantUpdate.getId(), newDefendantUpdate.getProsecutionCaseId());
+            }
+        }
+        return apply(builder.build());
+    }
 
     /**
      * If All the offences of a defendant was given a final result then the proceedings of the
@@ -1631,7 +1697,7 @@ public class CaseAggregate implements Aggregate {
             final uk.gov.justice.core.courts.Defendant defendant = defendantsMap.get(defendantId);
             if (offencesForDefendantChanged.isPresent()) {
                 UpdatedOrganisation updatedOrganisation = null;
-                if(nonNull(organisationDetails.getId())) {
+                if (nonNull(organisationDetails.getId())) {
                     updatedOrganisation = updatedOrganisation()
                             .withAddressLine1(organisationDetails.getAddressLine1())
                             .withAddressLine2(organisationDetails.getAddressLine2())
@@ -2255,7 +2321,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     private List<MatchedDefendants> transform(final List<MatchedDefendant> matchedDefendants) {
-        return matchedDefendants.stream().filter(s->s.getCourtProceedingsInitiated()!=null)
+        return matchedDefendants.stream().filter(s -> s.getCourtProceedingsInitiated() != null)
                 .map(matchedDefendant -> MatchedDefendants.matchedDefendants()
                         .withDefendantId(matchedDefendant.getDefendantId())
                         .withProsecutionCaseId(matchedDefendant.getProsecutionCaseId())
@@ -2268,7 +2334,7 @@ public class CaseAggregate implements Aggregate {
     private List<MatchedDefendants> transformToExactMatchedDefendants(final List<Cases> casesList) {
         final List<MatchedDefendants> matchedDefendantsList = new ArrayList<>();
         casesList
-                .forEach(cases -> cases.getDefendants().stream().filter(s->s.getCourtProceedingsInitiated()!=null)
+                .forEach(cases -> cases.getDefendants().stream().filter(s -> s.getCourtProceedingsInitiated() != null)
                         .forEach(def -> matchedDefendantsList.add(MatchedDefendants.matchedDefendants()
                                 .withProsecutionCaseId(UUID.fromString(cases.getProsecutionCaseId()))
                                 .withDefendantId(UUID.fromString(def.getDefendantId()))
@@ -2917,7 +2983,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> requestEditForm(final UUID caseId, final UUID courtFormId, final UUID userId, final Map<FormType, Integer> durationMapByFormType,
-                                          final ZonedDateTime requestEditTime, final boolean extend ,final  int extendTime) {
+                                          final ZonedDateTime requestEditTime, final boolean extend, final int extendTime) {
         if (!formMap.containsKey(courtFormId)) {
             return apply(Stream.of(formOperationFailed()
                     .withCaseId(caseId)
@@ -2958,7 +3024,7 @@ public class CaseAggregate implements Aggregate {
         return apply(Stream.of(editFormRequested.withLockStatus(lockStatusBuilder.build()).build()));
     }
 
-    private ZonedDateTime calculateExpiryTimeWithExtension(final ZonedDateTime fromTime , final int extendTime){
+    private ZonedDateTime calculateExpiryTimeWithExtension(final ZonedDateTime fromTime, final int extendTime) {
         return fromTime.plusMinutes(extendTime);
     }
 
@@ -3097,6 +3163,58 @@ public class CaseAggregate implements Aggregate {
 
         final Form form = formMap.get(petDetailUpdated.getPetId());
         form.setPetDefendants(petDetailUpdated.getPetDefendants());
+    }
+
+    private DefendantUpdate buildDefendantUpdateFromDefendant(final uk.gov.justice.core.courts.Defendant defendant) {
+        return DefendantUpdate.defendantUpdate()
+                .withId(defendant.getId())
+                .withMasterDefendantId(defendant.getMasterDefendantId())
+                .withAliases(defendant.getAliases())
+                .withAssociatedDefenceOrganisation(defendant.getAssociatedDefenceOrganisation())
+                .withAssociatedPersons(defendant.getAssociatedPersons())
+                .withCroNumber(defendant.getCroNumber())
+                .withDefenceOrganisation(defendant.getDefenceOrganisation())
+                .withIsYouth(defendant.getIsYouth())
+                .withJudicialResults(defendant.getDefendantCaseJudicialResults())
+                .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
+                .withMitigation(defendant.getMitigation())
+                .withMitigationWelsh(defendant.getMitigationWelsh())
+                .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
+                .withOffences(defendant.getOffences())
+                .withPersonDefendant(defendant.getPersonDefendant())
+                .withPncId(defendant.getPncId())
+                .withProceedingsConcluded(defendant.getProceedingsConcluded())
+                .withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference())
+                .withProsecutionCaseId(defendant.getProsecutionCaseId())
+                .withWitnessStatement(defendant.getWitnessStatement())
+                .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
+                .build();
+    }
+
+    private boolean shouldUpdateCustodialEstablishment(final UUID defendantId, final PersonDefendant updatedPersonDefendant, Map<UUID, uk.gov.justice.core.courts.Defendant> defendantsMap) {
+
+        if (isNull(updatedPersonDefendant) || isNull(defendantsMap.get(defendantId))) {
+            return false;
+        }
+
+        final CustodialEstablishment updatedCustodialEstablishment = updatedPersonDefendant.getCustodialEstablishment();
+        final uk.gov.justice.core.courts.Defendant defendant = defendantsMap.get(defendantId);
+
+        if (isNull(defendant.getPersonDefendant())) {
+            return false;
+        }
+
+        final CustodialEstablishment originalCustodialEstablishment = defendant.getPersonDefendant().getCustodialEstablishment();
+
+        return !Objects.equals(originalCustodialEstablishment, updatedCustodialEstablishment);
+    }
+
+    private CustodialEstablishment buildCoreCourtCustodialEstablishment(uk.gov.moj.cpp.progression.command.CustodialEstablishment custodialEstablishment) {
+        return CustodialEstablishment.custodialEstablishment()
+                .withName(custodialEstablishment.getName())
+                .withId(custodialEstablishment.getId())
+                .withCustody(custodialEstablishment.getCustody())
+                .build();
     }
 
 }

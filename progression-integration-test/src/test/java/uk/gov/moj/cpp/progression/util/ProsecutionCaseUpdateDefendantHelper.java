@@ -33,6 +33,8 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
     private static final String WRITE_MEDIA_TYPE = "application/vnd.progression.update-defendant-for-prosecution-case+json";
 
     private static final String TEMPLATE_UPDATE_DEFENDANT_PAYLOAD = "progression.update-defendant-for-prosecution-case.json";
+    private static final String TEMPLATE_UPDATE_DEFENDANT_WITH_CUSTODY_ESTABLISHMENT_PAYLOAD = "progression.update-defendant-with-custody-establishment-for-prosecution-case.json";
+    private static final String TEMPLATE_UPDATE_DEFENDANT_WITH_EMPTY_CUSTODY_ESTABLISHMENT_PAYLOAD = "progression.update-defendant-with-empty-custody-establishment-for-prosecution-case.json";
     private static final String TEMPLATE_UNCHANGED_DEFENDANT_PAYLOAD = "progression.update-unchanged-defendant-for-prosecution-case.json";
     private static final String TEMPLATE_UPDATE_YOUTH_FLAG_PAYLOAD = "progression.update-youth-flag-for-defendant.json";
 
@@ -61,6 +63,22 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
     public void updateDefendantWithCustody() {
         final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
         updateDefendantWithCustody(jsonString);
+    }
+
+    public void updateDefendantWithCustodyEstablishmentInfo(final String caseId, final String defendantId, final String masterDefendantId) {
+        final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_WITH_CUSTODY_ESTABLISHMENT_PAYLOAD)
+                .replaceAll("%DEFENDANT_ID%", defendantId)
+                .replaceAll("%MASTER_DEFENDANT_ID%", masterDefendantId)
+                .replaceAll("%PROSECUTION_CASE_ID%", caseId);
+        updateDefendantWithCustodyEstablishment(caseId, defendantId, jsonString);
+    }
+
+    public void updateDefendantWithEmptyCustodyEstablishmentInfo(final String caseId, final String defendantId, final String masterDefendantId) {
+        final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_WITH_EMPTY_CUSTODY_ESTABLISHMENT_PAYLOAD)
+                .replaceAll("%DEFENDANT_ID%", defendantId)
+                .replaceAll("%MASTER_DEFENDANT_ID%", masterDefendantId)
+                .replaceAll("%PROSECUTION_CASE_ID%", caseId);
+        updateDefendantWithEmptyCustodyEstablishment(caseId, defendantId, jsonString);
     }
 
     public void updateDefendantWithHearingLanguageNeeds(final String hearingLanguage) {
@@ -105,6 +123,26 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
         jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("custodialEstablishment").put("name","HMP Croydon Category A");
         jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("custodialEstablishment").put("id", UUID.randomUUID());
+
+        request = jsonObjectPayload.toString();
+        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+    }
+
+    public void updateDefendantWithCustodyEstablishment(final String caseId, final String defendantId, final String jsonString) {
+        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
+        jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("custodialEstablishment").put("name","HMP Croydon Category A");
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("custodialEstablishment").put("id", UUID.randomUUID());
+
+        request = jsonObjectPayload.toString();
+        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+    }
+
+    public void updateDefendantWithEmptyCustodyEstablishment(final String caseId, final String defendantId, final String jsonString) {
+        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
+        jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
 
         request = jsonObjectPayload.toString();
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);

@@ -23,6 +23,9 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearin
 import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +37,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static java.time.ZonedDateTime.now;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
@@ -44,7 +48,7 @@ public class CaseLsmInfoConverterTest {
     private static final UUID DEFENDANT_ID1 = randomUUID();
     private static final UUID DEFENDANT_ID2 = randomUUID();
     private static final UUID HEARING_ID = randomUUID();
-    private static final String HEARING_DAY = "2023-04-06T09:30:00Z";
+    private static final ZonedDateTime HEARING_DAY = now().plusDays(1);
 
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
@@ -122,7 +126,7 @@ public class CaseLsmInfoConverterTest {
             assertNotNull(nextHearing);
             assertThat(nextHearing.getString("hearingId"), is(HEARING_ID.toString()));
             assertThat(nextHearing.getString("type"), is(hearing.getType().getDescription()));
-            assertThat(nextHearing.getString("hearingDay"), is(HEARING_DAY));
+            assertThat(nextHearing.getString("hearingDay"), is(HEARING_DAY.format(DateTimeFormatter.ISO_INSTANT)));
         }
     }
 
@@ -154,7 +158,7 @@ public class CaseLsmInfoConverterTest {
                 .withHearingDays(
                         Arrays.asList(
                                 HearingDay.hearingDay()
-                                        .withSittingDay(ZonedDateTimes.fromString(HEARING_DAY))
+                                        .withSittingDay(ZonedDateTimes.fromString(HEARING_DAY.toString()))
                                         .build()
                         ))
                 .build();

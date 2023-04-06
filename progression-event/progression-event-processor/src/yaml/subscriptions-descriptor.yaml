@@ -523,6 +523,9 @@ subscriptions_descriptor:
         - name: progression.event.prosecutionCase-defendant-listing-status-changed-v2
           schema_uri: http://justice.gov.uk/core/courts/prosecutionCase-defendant-listing-status-changed-v2.json
 
+        - name: progression.event.defendant-custodial-information-update-requested
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-custodial-information-update-requested.json
+
           # Deprecated API  - End
       event_source_name: progression
 

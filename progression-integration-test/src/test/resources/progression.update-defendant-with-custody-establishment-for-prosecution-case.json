@@ -1,0 +1,145 @@
+{
+  "defendant": {
+    "id": "%DEFENDANT_ID%",
+    "prosecutionCaseId": "%PROSECUTION_CASE_ID%",
+    "masterDefendantId": "%MASTER_DEFENDANT_ID%",
+    "numberOfPreviousConvictionsCited": 5,
+    "prosecutionAuthorityReference": "TFL12345-ABC",
+    "associatedPersons": [
+      {
+        "person": {
+          "title": "DR",
+          "firstName": "Harry",
+          "middleName": "Jack",
+          "lastName": "Kane",
+          "dateOfBirth": "1995-01-01",
+          "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+          "nationalityCode": "GBR",
+          "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+          "additionalNationalityCode": "USA",
+          "disabilityStatus": "a",
+          "ethnicity": {
+          	"selfDefinedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+          	"selfDefinedEthnicityCode": "IC1"
+          },
+          "gender": "MALE",
+          "interpreterLanguageNeeds": "Welsh",
+          "documentationLanguageNeeds": "WELSH",
+          "nationalInsuranceNumber": "NH222222B",
+          "occupation": "Footballer",
+          "occupationCode": "F",
+          "address": {
+            "address1": "22",
+            "address2": "Acacia Avenue",
+            "address3": "Acacia Town",
+            "address4": "Acacia City",
+            "address5": "Acacia Country",
+            "postcode": "GIR 0AA"
+          },
+          "contact": {
+            "home": "123456",
+            "work": "7891011",
+            "mobile": "45678910",
+            "primaryEmail": "harry.kane@spurs.co.uk",
+            "secondaryEmail": "harry.kane@hotmail.com",
+            "fax": "3425678"
+          }
+        },
+        "role": "parent"
+      }
+    ],
+    "personDefendant": {
+      "personDetails": {
+        "title": "DR",
+        "firstName": "updatedName",
+        "middleName": "Jack",
+        "lastName": "Kane Junior",
+        "dateOfBirth": "2010-01-01",
+        "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+        "nationalityCode": "GBR",
+        "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+        "additionalNationalityCode": "USA",
+        "disabilityStatus": "a",
+      	"ethnicity": {
+      		"selfDefinedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+      		"selfDefinedEthnicityCode": "IC1"
+      	},
+        "gender": "MALE",
+        "interpreterLanguageNeeds": "Welsh",
+        "documentationLanguageNeeds": "WELSH",
+        "nationalInsuranceNumber": "NH323232B",
+        "occupation": "Kid",
+        "occupationCode": "F",
+        "specificRequirements": "Screen",
+        "address": {
+          "address1": "22",
+          "address2": "Acacia Avenue",
+          "address3": "Acacia Town",
+          "address4": "Acacia City",
+          "address5": "Acacia Country",
+          "postcode": "GIR 0AA"
+        },
+        "contact": {
+          "home": "123456",
+          "work": "7891011",
+          "mobile": "45678910",
+          "primaryEmail": "harry.kanejunior@spurs.co.uk",
+          "secondaryEmail": "harry.kanejunior@hotmail.com",
+          "fax": "3425678"
+        }
+      },
+      "bailStatus": {
+        "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5",
+        "code": "C",
+        "description": "Remanded into Custody",
+        "custodyTimeLimit": {
+          "timeLimit": "2018-09-10",
+          "daysSpent": 44
+        }
+      },
+      "policeBailStatus": {
+        "id": "008d74b4-d92a-4134-969e-a00d111f7aab",
+        "code": "C",
+        "description": "bail status desc..."
+      },
+      "policeBailConditions": "bail conditions...",
+      "custodyTimeLimit": "2018-01-01",
+      "perceivedBirthYear": 2015,
+      "driverNumber": "AACC12345",
+      "custodialEstablishment": {
+        "id": "a8254db1-1483-483e-cfb3-b87fde5a0a47",
+        "name": "HMP Belmarsh",
+        "custody": "Prison"
+      },
+      "arrestSummonsNumber": "arrest123",
+      "employerOrganisation": {
+        "name": "Disneyland Paris",
+        "incorporationNumber": "Mickeymouse1",
+        "address": {
+          "address1": "Disney Road",
+          "address2": "Disney Town",
+          "address3": "Disney District",
+          "address4": "Paris",
+          "address5": "France",
+          "postcode": "CR7 0AA"
+        },
+        "contact": {
+          "home": "0208 688 8888",
+          "work": "0207 654 3246 extn 1234",
+          "mobile": "07803 654567",
+          "primaryEmail": "person@hotmail.com",
+          "secondaryEmail": "associate@hotmail.com",
+          "fax": "a"
+        }
+      },
+      "employerPayrollReference": "payyou1234"
+    },
+	"pncId": "1234567",
+	"aliases": [
+      {
+	   	"firstName": "johnny",
+	   	"lastName": "robber"
+	  }
+	]
+  }
+}

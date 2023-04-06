@@ -32,6 +32,7 @@ import static uk.gov.justice.core.courts.LaaReference.laaReference;
 import static uk.gov.justice.core.courts.PetDefendants.petDefendants;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.command.UpdateMatchedDefendantCustodialInformation.updateMatchedDefendantCustodialInformation;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.READY_FOR_REVIEW;
@@ -55,12 +56,14 @@ import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
+import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DefendantPartialMatchCreated;
 import uk.gov.justice.core.courts.DefendantSubject;
+import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Defendants;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
@@ -103,6 +106,7 @@ import uk.gov.justice.core.courts.PetOperationFailed;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseCreatedInHearing;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
@@ -121,6 +125,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.command.UpdateMatchedDefendantCustodialInformation;
 import uk.gov.moj.cpp.progression.command.handler.HandleOnlinePleaDocumentCreation;
 import uk.gov.moj.cpp.progression.domain.MatchDefendant;
 import uk.gov.moj.cpp.progression.domain.MatchedDefendant;
@@ -145,6 +150,7 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.Offence;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Person;
 import uk.gov.moj.cpp.progression.domain.helper.JsonHelper;
 import uk.gov.moj.cpp.progression.events.CaseNotFound;
+import uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated;
 import uk.gov.moj.cpp.progression.events.DefendantNotFound;
 import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
@@ -179,6 +185,7 @@ import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1253,6 +1260,7 @@ public class CaseAggregateTest {
 
 
     }
+
     @Test
     public void shouldLAAReferenceUpdatedForOffence_whenOneOfTheOffenceIsGranted_expectGrantedInDefendantLevelLegalAidStatus() {
         final UUID caseId = fromString(CASE_ID);
@@ -3229,6 +3237,614 @@ public class CaseAggregateTest {
 
     }
 
+
+    @Test
+    public void shouldUpdateDefendantDetails_WhenPersonDefendantIsNull_CustodialInformationIsAbsent() {
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final DefendantUpdate payload = DefendantUpdate.defendantUpdate()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantDetails(payload).collect(toList());
+        assertThat(eventList, hasSize(1));
+        assertThat(eventList.get(0), Matchers.instanceOf(ProsecutionCaseDefendantUpdated.class));
+        final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = (uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated) eventList.get(0);
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant(), Matchers.notNullValue());
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getId(), is(defendantId1));
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getPersonDefendant(), nullValue());
+
+    }
+
+    @Test
+    public void shouldUpdateDefendantDetails_WhenPersonDefendantIsNonNull_CustodialInformationIsAbsent() {
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final DefendantUpdate payload = DefendantUpdate.defendantUpdate()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .build())
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantDetails(payload).collect(toList());
+        assertThat(eventList, hasSize(1));
+        assertThat(eventList.get(0), Matchers.instanceOf(ProsecutionCaseDefendantUpdated.class));
+        final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = (uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated) eventList.get(0);
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant(), Matchers.notNullValue());
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getId(), is(defendantId1));
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getPersonDefendant(), notNullValue());
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getPersonDefendant().getCustodialEstablishment(), nullValue());
+
+    }
+
+    @Test
+    public void shouldUpdateDefendantDetails_WhenOriginalMasterDefendantIdIsNull_CustodialInformationIsAbsent() {
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name1")
+                                .withId(randomUUID())
+                                .withCustody("custody1")
+                                .build())
+                        .build())
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name2")
+                                .withId(randomUUID())
+                                .withCustody("custody2")
+                                .build())
+                        .build())
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final DefendantUpdate payload = DefendantUpdate.defendantUpdate()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantDetails(payload).collect(toList());
+        assertThat(eventList, hasSize(1));
+        assertThat(eventList.get(0), Matchers.instanceOf(ProsecutionCaseDefendantUpdated.class));
+        final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = (uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated) eventList.get(0);
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant(), Matchers.notNullValue());
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getId(), is(defendantId1));
+
+    }
+
+    @Test
+    public void shouldUpdateDefendantDetails_CustodialInformationIsAbsent() {
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID custodialId = randomUUID();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name1")
+                                .withId(randomUUID())
+                                .withCustody("custody1")
+                                .build())
+                        .build())
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name2")
+                                .withId(randomUUID())
+                                .withCustody("custody2")
+                                .build())
+                        .build())
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final CustodialEstablishment custodialEstablishment = CustodialEstablishment.custodialEstablishment()
+                .withName("name")
+                .withId(custodialId)
+                .withCustody("custody")
+                .build();
+
+        final DefendantUpdate payload = DefendantUpdate.defendantUpdate()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(custodialEstablishment)
+                        .build())
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantDetails(payload).collect(toList());
+        assertThat(eventList, hasSize(2));
+        assertThat(eventList.get(0), Matchers.instanceOf(ProsecutionCaseDefendantUpdated.class));
+        final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = (uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated) eventList.get(0);
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant(), Matchers.notNullValue());
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getId(), is(defendantId1));
+
+        assertThat(eventList.get(1), Matchers.instanceOf(DefendantCustodialInformationUpdateRequested.class));
+        final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested = (DefendantCustodialInformationUpdateRequested) eventList.get(1);
+        assertThat(defendantCustodialInformationUpdateRequested.getDefendantId(), is(defendantId1));
+        assertThat(defendantCustodialInformationUpdateRequested.getCustodialEstablishment().getCustody(), is(custodialEstablishment.getCustody()));
+        assertThat(defendantCustodialInformationUpdateRequested.getCustodialEstablishment().getId(), is(custodialEstablishment.getId()));
+        assertThat(defendantCustodialInformationUpdateRequested.getCustodialEstablishment().getName(), is(custodialEstablishment.getName()));
+        assertThat(defendantCustodialInformationUpdateRequested.getMasterDefendantId(), is(masterDefendantId));
+        assertThat(defendantCustodialInformationUpdateRequested.getProsecutionCaseId(), is(caseId));
+
+    }
+
+    @Test
+    public void shouldUpdateDefendantDetails_WhenSameCustodialInformationIsPresent() {
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID custodialId = randomUUID();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name1")
+                                .withId(custodialId)
+                                .withCustody("custody1")
+                                .build())
+                        .build())
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name2")
+                                .withId(randomUUID())
+                                .withCustody("custody2")
+                                .build())
+                        .build())
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final CustodialEstablishment custodialEstablishment = CustodialEstablishment.custodialEstablishment()
+                .withName("name1")
+                .withId(custodialId)
+                .withCustody("custody1")
+                .build();
+
+        final DefendantUpdate payload = DefendantUpdate.defendantUpdate()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(custodialEstablishment)
+                        .build())
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantDetails(payload).collect(toList());
+        assertThat(eventList, hasSize(1));
+        assertThat(eventList.get(0), Matchers.instanceOf(ProsecutionCaseDefendantUpdated.class));
+        final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = (uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated) eventList.get(0);
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant(), Matchers.notNullValue());
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getId(), is(defendantId1));
+    }
+
+
+    @Test
+    public void shouldUpdateDefendantCustodialInformationDetails_CustodialInformationIsAbsentInViewStore() {
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .build())
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .build())
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final UpdateMatchedDefendantCustodialInformation updateMatchedDefendantCustodialInformation = updateMatchedDefendantCustodialInformation()
+                .withCaseId(caseId)
+                .withCustodialEstablishment(uk.gov.moj.cpp.progression.command.CustodialEstablishment.custodialEstablishment()
+                        .withCustody("custody")
+                        .withId(randomUUID())
+                        .withName("name")
+                        .build())
+                .withDefendants(Arrays.asList(defendantId1))
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantCustodialInformationDetails(updateMatchedDefendantCustodialInformation).collect(toList());
+        assertThat(eventList, hasSize(1));
+        assertThat(eventList.get(0), Matchers.instanceOf(ProsecutionCaseDefendantUpdated.class));
+        final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = (uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated) eventList.get(0);
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant(), Matchers.notNullValue());
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getId(), is(defendantId1));
+    }
+
+    @Test
+    public void shouldUpdateDefendantCustodialInformationDetails_EmptyCustodialInformationIsUpdated() {
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withCustody("custody")
+                                .withId(randomUUID())
+                                .withName("name")
+                                .build())
+                        .build())
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withCustody("custody")
+                                .withId(randomUUID())
+                                .withName("name")
+                                .build())
+                        .build())
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final UpdateMatchedDefendantCustodialInformation updateMatchedDefendantCustodialInformation = updateMatchedDefendantCustodialInformation()
+                .withCaseId(caseId)
+                .withDefendants(Arrays.asList(defendantId1))
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantCustodialInformationDetails(updateMatchedDefendantCustodialInformation).collect(toList());
+        assertThat(eventList, hasSize(1));
+        assertThat(eventList.get(0), Matchers.instanceOf(ProsecutionCaseDefendantUpdated.class));
+        final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = (uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated) eventList.get(0);
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant(), Matchers.notNullValue());
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getId(), is(defendantId1));
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getPersonDefendant(), notNullValue());
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getPersonDefendant().getCustodialEstablishment(), nullValue());
+    }
+
+    @Test
+    public void shouldUpdateDefendantCustodialInformationDetails_WhenMatchingCustodialInformationIsPresent() {
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID custodialId = randomUUID();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name1")
+                                .withId(custodialId)
+                                .withCustody("custody1")
+                                .build())
+                        .build())
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name2")
+                                .withId(randomUUID())
+                                .withCustody("custody2")
+                                .build())
+                        .build())
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final UpdateMatchedDefendantCustodialInformation updateMatchedDefendantCustodialInformation = updateMatchedDefendantCustodialInformation()
+                .withCaseId(caseId)
+                .withCustodialEstablishment(uk.gov.moj.cpp.progression.command.CustodialEstablishment.custodialEstablishment()
+                        .withCustody("custody1")
+                        .withId(custodialId)
+                        .withName("name1")
+                        .build())
+                .withDefendants(Arrays.asList(defendantId1))
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantCustodialInformationDetails(updateMatchedDefendantCustodialInformation).collect(toList());
+        assertThat(eventList, hasSize(0));
+    }
+
+    @Test
+    public void shouldUpdateDefendantCustodialInformationDetails_WhenEmptyCustodialInformationPresentOnBothSide() {
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID custodialId = randomUUID();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .build())
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .build())
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final UpdateMatchedDefendantCustodialInformation updateMatchedDefendantCustodialInformation = updateMatchedDefendantCustodialInformation()
+                .withCaseId(caseId)
+                .withDefendants(Arrays.asList(defendantId1))
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantCustodialInformationDetails(updateMatchedDefendantCustodialInformation).collect(toList());
+        assertThat(eventList, hasSize(0));
+    }
+
+    @Test
+    public void shouldUpdateDefendantCustodialInformationDetails_WhenDefendantNotPresentInMap() {
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID custodialId = randomUUID();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(randomUUID())
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name1")
+                                .withId(custodialId)
+                                .withCustody("custody1")
+                                .build())
+                        .build())
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name2")
+                                .withId(randomUUID())
+                                .withCustody("custody2")
+                                .build())
+                        .build())
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final UpdateMatchedDefendantCustodialInformation updateMatchedDefendantCustodialInformation = updateMatchedDefendantCustodialInformation()
+                .withCaseId(caseId)
+                .withCustodialEstablishment(uk.gov.moj.cpp.progression.command.CustodialEstablishment.custodialEstablishment()
+                        .withCustody("custody1")
+                        .withId(custodialId)
+                        .withName("name1")
+                        .build())
+                .withDefendants(Arrays.asList(defendantId1))
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantCustodialInformationDetails(updateMatchedDefendantCustodialInformation).collect(toList());
+        assertThat(eventList, hasSize(0));
+    }
+
+
+    @Test
+    public void shouldUpdateDefendantCustodialInformationDetails_WhenMasterDefendantIdMismatching() {
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID custodialId = randomUUID();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name1")
+                                .withId(custodialId)
+                                .withCustody("custody1")
+                                .build())
+                        .build())
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name2")
+                                .withId(randomUUID())
+                                .withCustody("custody2")
+                                .build())
+                        .build())
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final UpdateMatchedDefendantCustodialInformation updateMatchedDefendantCustodialInformation = updateMatchedDefendantCustodialInformation()
+                .withCaseId(caseId)
+                .withCustodialEstablishment(uk.gov.moj.cpp.progression.command.CustodialEstablishment.custodialEstablishment()
+                        .withCustody("custody1")
+                        .withId(custodialId)
+                        .withName("name1")
+                        .build())
+                .withDefendants(Arrays.asList(defendantId1))
+                .withMasterDefendantId(randomUUID())
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantCustodialInformationDetails(updateMatchedDefendantCustodialInformation).collect(toList());
+        assertThat(eventList, hasSize(0));
+    }
+
+    @Test
+    public void shouldUpdateDefendantCustodialInformationDetails_WhenDefendantProceedingIsConcluded() {
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID custodialId = randomUUID();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name1")
+                                .withId(custodialId)
+                                .withCustody("custody1")
+                                .build())
+                        .build())
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name2")
+                                .withId(randomUUID())
+                                .withCustody("custody2")
+                                .build())
+                        .build())
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+        final Map<UUID, Boolean> defendantsConcludedMap = new HashMap<>();
+        defendantsConcludedMap.put(defendantId1, true);
+        defendantsConcludedMap.put(defendantId2, true);
+        final Map<UUID, Map<UUID, Boolean>> defendantProceedingConcluded = new HashMap<>();
+        defendantProceedingConcluded.put(caseId, defendantsConcludedMap);
+        setField(caseAggregate, "defendantProceedingConcluded", defendantProceedingConcluded);
+
+        final UpdateMatchedDefendantCustodialInformation updateMatchedDefendantCustodialInformation = updateMatchedDefendantCustodialInformation()
+                .withCaseId(caseId)
+                .withCustodialEstablishment(uk.gov.moj.cpp.progression.command.CustodialEstablishment.custodialEstablishment()
+                        .withCustody("custody1")
+                        .withId(custodialId)
+                        .withName("name1")
+                        .build())
+                .withDefendants(Arrays.asList(defendantId1))
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantCustodialInformationDetails(updateMatchedDefendantCustodialInformation).collect(toList());
+        assertThat(eventList, hasSize(0));
+    }
+
     private void assertEditFormRequestedFromEventStream(final UUID caseId, final UUID courtFormId, final UUID lockedBy, final UUID lockRequestedBy, final boolean isLocked, final ZonedDateTime expiryTime, final List<Object> eventStream) {
         final Object object = eventStream.get(0);
         assertThat(object, instanceOf(EditFormRequested.class));
@@ -3783,6 +4399,7 @@ public class CaseAggregateTest {
         assertThat(isOffenceAlreadyPlead, is(false));
 
     }
+
     private DefendantsAddedToCourtProceedings buildDefendantsAddedToCourtProceedings(
             final UUID caseId, final UUID defendantId, final UUID defendantId2, final UUID offenceId) {
 

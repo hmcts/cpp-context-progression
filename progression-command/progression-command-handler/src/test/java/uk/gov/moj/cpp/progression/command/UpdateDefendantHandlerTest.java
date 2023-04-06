@@ -15,25 +15,17 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.command.UpdateMatchedDefendantCustodialInformation.updateMatchedDefendantCustodialInformation;
 
-import com.google.common.collect.Lists;
-import java.util.stream.Collectors;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDefendantUpdated;
-import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequested;
@@ -60,8 +52,20 @@ import uk.gov.moj.cpp.progression.handler.UpdateDefendantHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.google.common.collect.Lists;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateDefendantHandlerTest {
@@ -72,7 +76,9 @@ public class UpdateDefendantHandlerTest {
             ProsecutionCaseUpdateDefendantsWithMatchedRequested.class,
             ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2.class,
             HearingDefendantUpdated.class,
-            NewDefendantAddedToHearing.class);
+            NewDefendantAddedToHearing.class,
+            UpdateMatchedDefendantCustodialInformation.class
+    );
     @Mock
     private EventSource eventSource;
     @Mock
@@ -100,6 +106,79 @@ public class UpdateDefendantHandlerTest {
                 .with(method("handle")
                         .thatHandles("progression.command.update-defendant-for-prosecution-case")
                 ));
+    }
+
+    @Test
+    public void shouldHandleCommandUpdateMatchedDefendantCustodialInformation() throws Exception {
+
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID custodialId = randomUUID();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment()
+                                .withName("name1")
+                                .withId(randomUUID())
+                                .withCustody("custody1")
+                                .build())
+                        .build())
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withCustodialEstablishment(uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment()
+                                .withName("name2")
+                                .withId(custodialId)
+                                .withCustody("custody2")
+                                .build())
+                        .build())
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(aggregate, "defendantsMap", defendantsMap);
+        final UpdateMatchedDefendantCustodialInformation updateMatchedDefendantCustodialInformation = updateMatchedDefendantCustodialInformation()
+                .withCaseId(caseId)
+                .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                        .withCustody("custody")
+                        .withId(randomUUID())
+                        .withName("name")
+                        .build())
+                .withDefendants(Arrays.asList(defendantId1))
+                .withMasterDefendantId(masterDefendantId)
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-matched-defendant-custodial-information")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<UpdateMatchedDefendantCustodialInformation> envelope = envelopeFrom(metadata, updateMatchedDefendantCustodialInformation);
+
+        updateDefendantHandler.handleCommandUpdateMatchedDefendantCustodialInformation(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.prosecution-case-defendant-updated"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.defendant.id", is(defendantId1.toString()))
+                                )
+                        ))
+
+                )
+        );
     }
 
     @Test

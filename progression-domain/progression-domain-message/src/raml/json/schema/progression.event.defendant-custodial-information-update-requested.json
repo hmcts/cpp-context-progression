@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/progression.event.defendant-custodial-information-update-requested.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "masterDefendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "custodialEstablishment": {
+      "description": "The custodial establishment for Defendant",
+      "$ref": "http://justice.gov.uk/core/courts/personDefendant.json#/definitions/custodyEstablishment"
+    }
+  },
+  "required": [
+    "prosecutionCaseId",
+    "defendantId",
+    "masterDefendantId"
+  ],
+  "additionalProperties": false
+}
