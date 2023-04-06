@@ -7,9 +7,6 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
-
-import java.util.ArrayList;
-
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -28,6 +25,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;

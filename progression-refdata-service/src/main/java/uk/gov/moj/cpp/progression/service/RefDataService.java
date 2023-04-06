@@ -1,5 +1,36 @@
 package uk.gov.moj.cpp.progression.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.justice.core.courts.CourtApplicationType;
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.LjaDetails;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.moj.cpp.progression.domain.pojo.PrisonCustodySuite;
+import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Objects.nonNull;
@@ -13,38 +44,6 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
-
-import uk.gov.justice.core.courts.CourtApplicationType;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.LjaDetails;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.justice.services.messaging.MetadataBuilder;
-import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
-
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S00112", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class RefDataService {
@@ -75,8 +74,10 @@ public class RefDataService {
     private static final String REFERENCEDATA_QUERY_COUNTRY_BY_POSTCODE = "referencedata.query.country-by-postcode";
     private static final String REFERENCE_DATA_QUERY_CPS_PROSECUTORS = "referencedata.query.get.prosecutor.by.cpsflag";
     private static final String PROSECUTORS = "prosecutors";
-    private static final String  REFERENCEDATA_QUERY_COURT_APPLICATION_TYPES = "referencedata.query.application-types";
+    private static final String REFERENCEDATA_QUERY_COURT_APPLICATION_TYPES = "referencedata.query.application-types";
+    private static final String REFERENCEDATA_QUERY_PRISONS_CUSTODY_SUITES = "referencedata.query.prisons-custody-suites";
     private static final String FIELD_APPLICATION_TYPES = "courtApplicationTypes";
+    private static final String FIELD_PRISONS_CUSTODY_SUITES = "prisons-custody-suites";
     public static final String PROSECUTOR = "shortName";
     public static final String NATIONALITY_CODE = "isoCode";
     public static final String NATIONALITY = "nationality";
@@ -692,7 +693,13 @@ public class RefDataService {
     public CourtApplicationType retrieveApplicationType(final String applicationCode, final Requester requester) {
         final List<CourtApplicationType> courtApplicationTypes = getRefDataStream(requester, REFERENCEDATA_QUERY_COURT_APPLICATION_TYPES, FIELD_APPLICATION_TYPES, createObjectBuilder()).map(asApplicationTypeRefData()).collect(Collectors.toList());
         final Optional<CourtApplicationType> courtApplicationTypeOptional = courtApplicationTypes.stream().filter(courtApplicationType -> applicationCode.equals(courtApplicationType.getCode())).findFirst();
-        return courtApplicationTypeOptional.isPresent() ? courtApplicationTypeOptional.get(): null;
+        return courtApplicationTypeOptional.isPresent() ? courtApplicationTypeOptional.get() : null;
+    }
+
+    public List<PrisonCustodySuite> getPrisonsCustodySuites(final Requester requester) {
+        return getRefDataStream(requester, REFERENCEDATA_QUERY_PRISONS_CUSTODY_SUITES, FIELD_PRISONS_CUSTODY_SUITES, createObjectBuilder())
+                .map(asPrisonCustodySuite())
+                .collect(Collectors.toList());
     }
 
     private Stream<JsonValue> getRefDataStream(final Requester requester, final String queryName, final String fieldName, final JsonObjectBuilder jsonObjectBuilder) {
@@ -715,6 +722,17 @@ public class RefDataService {
                 return new ObjectMapperProducer().objectMapper().readValue(jsonValue.toString(), CourtApplicationType.class);
             } catch (IOException e) {
                 LOGGER.error("Unable to unmarshal CourtApplicationType. Payload :{}", jsonValue, e);
+                return null;
+            }
+        };
+    }
+
+    private static Function<JsonValue, PrisonCustodySuite> asPrisonCustodySuite() {
+        return jsonValue -> {
+            try {
+                return new ObjectMapperProducer().objectMapper().readValue(jsonValue.toString(), PrisonCustodySuite.class);
+            } catch (IOException e) {
+                LOGGER.error("Unable to unmarshal PrisonCustodySuites. Payload :{}", jsonValue, e);
                 return null;
             }
         };

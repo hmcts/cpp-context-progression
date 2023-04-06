@@ -8,8 +8,6 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.AllHearingOffencesUpdated;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.Defendant;
@@ -27,12 +25,16 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("squid:S1168")
 @ServiceComponent(EVENT_PROCESSOR)

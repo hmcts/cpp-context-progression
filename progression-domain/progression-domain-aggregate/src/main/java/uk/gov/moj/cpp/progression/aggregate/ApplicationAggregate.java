@@ -7,11 +7,11 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
+import static uk.gov.justice.core.courts.ApplicationStatus.DRAFT;
 import static uk.gov.justice.core.courts.ApplicationStatus.EJECTED;
+import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
 import static uk.gov.justice.core.courts.ApplicationStatus.IN_PROGRESS;
 import static uk.gov.justice.core.courts.ApplicationStatus.LISTED;
-import static uk.gov.justice.core.courts.ApplicationStatus.DRAFT;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationCreated.courtApplicationCreated;
 import static uk.gov.justice.core.courts.CourtApplicationSummonsApproved.courtApplicationSummonsApproved;
@@ -67,6 +67,7 @@ import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestSucceeded;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
+import uk.gov.moj.cpp.progression.events.NotificationCreateHearingApplicationLinkFailed;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -80,7 +81,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.moj.cpp.progression.events.NotificationCreateHearingApplicationLinkFailed;
 
 @SuppressWarnings({"squid:S1948"})
 public class ApplicationAggregate implements Aggregate {

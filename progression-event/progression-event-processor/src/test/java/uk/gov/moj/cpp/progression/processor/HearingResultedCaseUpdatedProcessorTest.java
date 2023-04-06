@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,17 +9,38 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.core.courts.CustodialEstablishment;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.CustodialEstablishmentUpdateHelper;
+import uk.gov.moj.cpp.progression.service.RefDataService;
+import uk.gov.moj.cpp.progression.service.UpdateDefendantService;
 
+import javax.json.Json;
 import javax.json.JsonObject;
+import java.util.UUID;
 import java.util.function.Function;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.Optional.of;
+import static java.util.UUID.randomUUID;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment;
+import static uk.gov.justice.core.courts.Defendant.defendant;
+import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -45,6 +67,23 @@ public class HearingResultedCaseUpdatedProcessorTest {
     @Mock
     private Function<Object, JsonEnvelope> enveloperFunction;
 
+    @Mock
+    private CustodialEstablishmentUpdateHelper custodialEstablishmentUpdateHelper;
+
+    @Mock
+    private UpdateDefendantService updateDefendantService;
+
+    @Mock
+    private RefDataService referenceDataService;
+    @Mock
+    private Requester requester;
+    @Spy
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    @Spy
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    @Spy
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+
     @Before
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
@@ -53,7 +92,8 @@ public class HearingResultedCaseUpdatedProcessorTest {
     @Test
     public void shouldHandleProsecutionCaseOffencesUpdatedEventMessage() throws Exception {
         //Given
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(envelope.payload()).thenReturn(payload);
+        when(envelope.payloadAsJsonObject()).thenReturn(Json.createObjectBuilder().build());
         when(enveloper.withMetadataFrom(envelope, "public.progression.hearing-resulted-case-updated")).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
 
@@ -62,7 +102,27 @@ public class HearingResultedCaseUpdatedProcessorTest {
 
         //Then
         verify(sender).send(finalEnvelope);
+    }
 
+    @Test
+    public void shouldIssueCommandsToUpdateCustodialEstablishmentWhenDefendantHearingResultedInPrisonCustody() {
+        final UUID caseId = randomUUID();
+        final Defendant defendant1 = defendant().withId(randomUUID()).build();
+        final CustodialEstablishment custodialEstablishment1 = custodialEstablishment().withId(randomUUID()).withCustody("HMP Birmingham").build();
+
+        final HearingResultedCaseUpdated hearingResultedCaseUpdated = HearingResultedCaseUpdated.hearingResultedCaseUpdated()
+                .withProsecutionCase(prosecutionCase().withId(caseId).withDefendants(singletonList(defendant1)).build())
+                .build();
+
+        when(custodialEstablishmentUpdateHelper.getDefendantsResultedWithCustodialEstablishmentUpdate(defendant1, emptyList())).thenReturn(of(custodialEstablishment1));
+
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("progression.event.hearing-resulted-case-updated"),
+                objectToJsonObjectConverter.convert(hearingResultedCaseUpdated));
+
+        this.eventProcessor.process(event);
+
+        verify(updateDefendantService).updateDefendantCustodialEstablishment(event.metadata(), defendant1, custodialEstablishment1);
     }
 
 

@@ -10,9 +10,6 @@ import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationCase.courtApplicationCase;
 import static uk.gov.justice.core.courts.HearingApplicationLinkCreated.hearingApplicationLinkCreated;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
@@ -34,11 +31,11 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;

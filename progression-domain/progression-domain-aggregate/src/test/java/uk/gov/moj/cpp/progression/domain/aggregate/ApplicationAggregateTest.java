@@ -42,6 +42,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.justice.progression.courts.SendStatdecAppointmentLetter;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
+import uk.gov.moj.cpp.progression.events.NotificationCreateHearingApplicationLinkFailed;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -53,7 +54,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.moj.cpp.progression.events.NotificationCreateHearingApplicationLinkFailed;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationAggregateTest {

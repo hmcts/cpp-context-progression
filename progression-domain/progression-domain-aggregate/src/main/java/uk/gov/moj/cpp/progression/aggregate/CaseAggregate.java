@@ -243,7 +243,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -1182,9 +1181,18 @@ public class CaseAggregate implements Aggregate {
         final UUID caseId = updateMatchedDefendantCustodialInformation.getCaseId();
 
         for (final UUID defendantId : updateMatchedDefendantCustodialInformation.getDefendants()) {
+            LOGGER.info("CaseAggregateInfo: updateDefendantCustodialInformationDetails case {} defendant {} : in loop", caseId, defendantId);
 
             if (!defendantsMap.containsKey(defendantId)
                     || (nonNull(defendantProceedingConcluded.get(caseId)) && defendantProceedingConcluded.get(caseId).get(defendantId))) {
+
+                if (!defendantsMap.containsKey(defendantId)){
+                    LOGGER.info("CaseAggregateInfo: updateDefendantCustodialInformationDetails case {} defendant {} condition failed [defendantsMap.containsKey()]", caseId, defendantId);
+                }
+
+                if (nonNull(defendantProceedingConcluded.get(caseId)) && defendantProceedingConcluded.get(caseId).get(defendantId)) {
+                    LOGGER.info("CaseAggregateInfo: updateDefendantCustodialInformationDetails defendant {} : defendantProceedingConcluded.get(caseId).get(defendantId) is true", defendantId);
+                }
                 continue;
             }
 
@@ -1207,11 +1215,11 @@ public class CaseAggregate implements Aggregate {
             if (shouldUpdateCustodialEstablishment(defendantId, updatedPersonDefendant, defendantsMap)) {
                 final DefendantUpdate newDefendantUpdate = buildDefendantUpdateFromDefendant(updatedDefendant);
 
+                LOGGER.info("Prosecution case defendant updated for defendant {} with caseId {} ", newDefendantUpdate.getId(), newDefendantUpdate.getProsecutionCaseId());
                 builder.add(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
                         .withDefendant(newDefendantUpdate)
                         .withHearingIds(CollectionUtils.isNotEmpty(hearingIds) ? new ArrayList<>(this.hearingIds) : emptyList())
                         .build());
-                LOGGER.info("Prosecution case defendant updated for defendant {} with caseId {} ", newDefendantUpdate.getId(), newDefendantUpdate.getProsecutionCaseId());
             }
         }
         return apply(builder.build());
@@ -3192,8 +3200,11 @@ public class CaseAggregate implements Aggregate {
     }
 
     private boolean shouldUpdateCustodialEstablishment(final UUID defendantId, final PersonDefendant updatedPersonDefendant, Map<UUID, uk.gov.justice.core.courts.Defendant> defendantsMap) {
+        LOGGER.info("CaseAggregateInfo: shouldUpdateCustodialEstablishment defendant {} : in shouldUpdateCustodialEstablishment-start", defendantId);
 
         if (isNull(updatedPersonDefendant) || isNull(defendantsMap.get(defendantId))) {
+            LOGGER.info("CaseAggregateInfo: shouldUpdateCustodialEstablishment defendant {} : null check failed. Either updatedPersonDefendant is null ", defendantId);
+            LOGGER.info("CaseAggregateInfo: shouldUpdateCustodialEstablishment defendant {} : defendantsMap.get(defendantId) is null", defendantId);
             return false;
         }
 
@@ -3201,12 +3212,22 @@ public class CaseAggregate implements Aggregate {
         final uk.gov.justice.core.courts.Defendant defendant = defendantsMap.get(defendantId);
 
         if (isNull(defendant.getPersonDefendant())) {
+            LOGGER.info("CaseAggregateInfo: shouldUpdateCustodialEstablishment defendant {} : defendant.getPersonDefendant() is null", defendantId);
             return false;
         }
 
         final CustodialEstablishment originalCustodialEstablishment = defendant.getPersonDefendant().getCustodialEstablishment();
 
-        return !Objects.equals(originalCustodialEstablishment, updatedCustodialEstablishment);
+        if (isNull(updatedCustodialEstablishment) && isNull(originalCustodialEstablishment)) {
+            return false;
+        } else if (nonNull(originalCustodialEstablishment) && isNull(updatedCustodialEstablishment)) {
+            return true;
+        } else if (!updatedCustodialEstablishment.equals(originalCustodialEstablishment)) {
+            return true;
+        } else {
+            LOGGER.info("CaseAggregateInfo: shouldUpdateCustodialEstablishment defendant {} : updatedCustodialEstablishment.equals(originalCustodialEstablishment) is same", defendantId);
+        }
+        return false;
     }
 
     private CustodialEstablishment buildCoreCourtCustodialEstablishment(uk.gov.moj.cpp.progression.command.CustodialEstablishment custodialEstablishment) {
