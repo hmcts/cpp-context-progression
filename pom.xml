@@ -68,7 +68,7 @@
         <unifiedsearch.version>7.0.24</unifiedsearch.version>
         <systemdocgenerator.version>8.0.2</systemdocgenerator.version>
         <applicationscourtorders.version>7.0.17</applicationscourtorders.version>
-        <sjp.version>8.0.32</sjp.version>
+        <sjp.version>8.0.39</sjp.version>
         <jackson-data-format.version>2.8.8</jackson-data-format.version>
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>8.0.1</stagingpubhub.version>

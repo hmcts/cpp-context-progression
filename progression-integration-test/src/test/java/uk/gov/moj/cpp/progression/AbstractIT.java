@@ -25,6 +25,7 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryLocalJu
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryNationalityData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryOrganisation;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryOrganisationUnitsData;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryPrisonSuites;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryReferralReasons;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
@@ -119,6 +120,7 @@ public class AbstractIT {
         stubQueryHearingTypeData("/restResource/ref-data-hearing-types.json", randomUUID());
         stubQueryReferralReasons("/restResource/referencedata.query.referral-reasons.json", randomUUID());
         stubQueryJudiciaries("/restResource/referencedata.query.judiciaries.json", randomUUID());
+        stubQueryPrisonSuites("/restResource/ref-data.prisons-custody-suites.json");
         stubEnforcementArea("/restResource/referencedata.query.enforcement-area.json");
         stubQueryProsecutorData("/restResource/referencedata.query.prosecutor.json", randomUUID());
         stubQueryCourtOURoom();

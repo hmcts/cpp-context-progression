@@ -294,6 +294,24 @@ public class ReferenceDataStub {
         waitForStubToBeReady(urlPath, "application/vnd.reference-data.judiciaries+json");
     }
 
+    public static void stubQueryPrisonSuites(final String resourceName) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final JsonObject referralReasonsJson = Json.createReader(ReferenceDataStub.class
+                        .getResourceAsStream(resourceName))
+                .readObject();
+
+        final String responseBody = referralReasonsJson.toString();
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/prisons-custody-suites";
+        stubFor(get(urlPathEqualTo(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(responseBody)));
+
+        waitForStubToBeReady(urlPath, "application/vnd.reference-data.prisons-custody-suites+json");
+    }
+
     public static void stubQueryEthinicityData(final String resourceName, final UUID id) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject documentType = Json.createReader(ReferenceDataStub.class
