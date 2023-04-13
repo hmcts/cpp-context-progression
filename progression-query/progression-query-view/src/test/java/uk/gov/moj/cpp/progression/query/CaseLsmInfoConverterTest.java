@@ -1,10 +1,12 @@
 package uk.gov.moj.cpp.progression.query;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.time.ZonedDateTime.now;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
@@ -22,26 +24,22 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEnt
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static java.time.ZonedDateTime.now;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseLsmInfoConverterTest {
@@ -89,7 +87,7 @@ public class CaseLsmInfoConverterTest {
     }
 
     @Test
-    public void shouldReturnLegalEntityDefendant() {
+    public void shouldReturnLegalEntityDefendant(){
         final List<Defendant> defendants = Stream.generate(() -> createLegalEntityDefendant())
                 .limit(1)
                 .collect(Collectors.toList());
@@ -99,12 +97,12 @@ public class CaseLsmInfoConverterTest {
         validate(jsonArray.getJsonObject(0), defendants.get(0), null);
     }
 
-    private void validate(final JsonObject actual, final Defendant expected, final Hearing hearing) {
+    private void validate(final JsonObject actual, final Defendant expected, final Hearing hearing){
         assertThat(actual.getString("id"), is(expected.getId().toString()));
         assertThat(actual.getString("masterDefendantId"), is(expected.getMasterDefendantId().toString()));
         final boolean actualHasBeenResulted = actual.getBoolean("hasBeenResulted", false);
 
-        if (expected.getProceedingsConcluded() == null) {
+        if (expected.getProceedingsConcluded() == null){
             assertThat(actualHasBeenResulted, is(false));
         } else {
             assertThat(actualHasBeenResulted, is(expected.getProceedingsConcluded()));
@@ -132,8 +130,8 @@ public class CaseLsmInfoConverterTest {
         }
     }
 
-    private CaseDefendantHearingEntity createCaseDefendantHearingEntity() {
-        final List<Defendant> defendants = Arrays.asList(createDefendant(DEFENDANT_ID1, MASTER_DEFENDANT_ID1, true), createDefendant(DEFENDANT_ID2, MASTER_DEFENDANT_ID1, null));
+    private CaseDefendantHearingEntity createCaseDefendantHearingEntity(){
+        final List<Defendant> defendants = Arrays.asList(createDefendant(DEFENDANT_ID1, MASTER_DEFENDANT_ID1,true), createDefendant(DEFENDANT_ID2, MASTER_DEFENDANT_ID1, null));
         final Hearing hearing = createHearing(defendants);
         final JsonObject hearingPayload = objectToJsonObjectConverter.convert(hearing);
         final HearingEntity hearingEntity = new HearingEntity();
@@ -145,7 +143,7 @@ public class CaseLsmInfoConverterTest {
         return caseDefendantHearingEntity;
     }
 
-    private Hearing createHearing(final List<Defendant> defendants) {
+    private Hearing createHearing(final List<Defendant> defendants){
 
         return Hearing.hearing()
                 .withId(HEARING_ID)

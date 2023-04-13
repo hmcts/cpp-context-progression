@@ -5,6 +5,7 @@ import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
@@ -36,7 +37,9 @@ import uk.gov.moj.cpp.progression.command.handler.courts.ResendLaaOutcomeConclud
 import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.io.Resources;
@@ -72,11 +75,16 @@ public class ResendLaaCaseOutcomeHandlerTest {
     @Test
     public void testResendDefendantProceedingConludedToLaa() throws EventStreamException, IOException {
         final UUID caseId = randomUUID();
+        final UUID hearingId1 = randomUUID();
+        final UUID hearingId2 = randomUUID();
 
         ResendLaaOutcomeConcluded resendLaaOutcomeConcluded = ResendLaaOutcomeConcluded.resendLaaOutcomeConcluded().withCaseId(caseId).build();
         final MetadataBuilder metadataBuilder = metadataFrom(metadataWithRandomUUID("progression.command.handler.resend-laa-outcome-concluded").withUserId(randomUUID().toString()).build());
         Envelope<ResendLaaOutcomeConcluded> resendLaaOutcomeConcludedEnvelope = envelopeFrom(metadataBuilder, resendLaaOutcomeConcluded);
-        Stream<JsonEnvelope> jsonEnvelopeStream = Stream.<JsonEnvelope>builder().add(getJsonEnvelope()).build();
+        Stream<JsonEnvelope> jsonEnvelopeStream = Stream.<JsonEnvelope>builder()
+                .add(getJsonEnvelope(hearingId1))
+                .add(getJsonEnvelope(hearingId2))
+                .build();
 
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(eventStream.read()).thenReturn(jsonEnvelopeStream);
@@ -84,10 +92,17 @@ public class ResendLaaCaseOutcomeHandlerTest {
 
         resendLaaCaseOutcomeHandler.handle(resendLaaOutcomeConcludedEnvelope);
 
-        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-        String laaDefendantProceedingConcludedResentPayload = envelopeStream.findFirst().get().payloadAsJsonObject().toString();
-        String expectedPayload = Resources.toString(getResource("json/expected.progression.event.laa-defendant-proceeding-concluded-resent.json"), defaultCharset());
-        assertEquals(expectedPayload, laaDefendantProceedingConcludedResentPayload, JSONCompareMode.STRICT);
+        final List<JsonEnvelope> eventList = verifyAppendAndGetArgumentFrom(eventStream).collect(toList());
+        String laaDefendantProceedingConcludedResentPayload1 = eventList.get(0).payloadAsJsonObject().toString();
+        String expectedPayload1 = Resources.toString(getResource("json/expected.progression.event.laa-defendant-proceeding-concluded-resent.json"), defaultCharset())
+                .replace("HEARING_ID", hearingId1.toString());
+        assertEquals(expectedPayload1, laaDefendantProceedingConcludedResentPayload1, JSONCompareMode.STRICT);
+
+
+        String laaDefendantProceedingConcludedResentPayload2 = eventList.get(1).payloadAsJsonObject().toString();
+        String expectedPayload = Resources.toString(getResource("json/expected.progression.event.laa-defendant-proceeding-concluded-resent.json"), defaultCharset())
+                .replace("HEARING_ID", hearingId2.toString());
+        assertEquals(expectedPayload, laaDefendantProceedingConcludedResentPayload2, JSONCompareMode.STRICT);
 
     }
 
@@ -115,14 +130,18 @@ public class ResendLaaCaseOutcomeHandlerTest {
 
     }
 
-    private JsonEnvelope getJsonEnvelope() throws IOException {
+    private JsonEnvelope getJsonEnvelope(UUID hearingId) throws IOException {
 
         final Metadata eventMetadata = metadataBuilder().withName("progression.event.laa-defendant-proceeding-concluded-changed")
                 .withClientCorrelationId(randomUUID().toString())
                 .withId(randomUUID())
                 .build();
 
-        final LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = handlerTestHelper.convertFromFile("json/progression.event.laa-defendant-proceeding-concluded-changed.json", LaaDefendantProceedingConcludedChanged.class);
+        final LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged =
+        LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged()
+                .withValuesFrom(handlerTestHelper.convertFromFile("json/progression.event.laa-defendant-proceeding-concluded-changed.json", LaaDefendantProceedingConcludedChanged.class))
+                .withHearingId(hearingId)
+                .build();
 
         final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 

@@ -44,7 +44,7 @@
             "motReasonDescription": "Summary-only offence",
             "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
             "offenceId": "9b06561b-087a-41ce-bb44-494866a88f4e",
-            "originatingHearingId": "80233669-6cad-4ccc-9c29-d9d765c9d761",
+            "originatingHearingId": "HEARING_ID",
             "sequenceNumber": 90
           },
           "arrestDate": "2022-10-02",
@@ -94,7 +94,7 @@
               "level": "O",
               "lifeDuration": false,
               "orderedDate": "2023-03-17",
-              "orderedHearingId": "80233669-6cad-4ccc-9c29-d9d765c9d761",
+              "orderedHearingId": "HEARING_ID",
               "postHearingCustodyStatus": "A",
               "publishedAsAPrompt": false,
               "publishedForNows": false,
@@ -125,7 +125,7 @@
           "orderIndex": 502,
           "plea": {
             "offenceId": "9b06561b-087a-41ce-bb44-494866a88f4e",
-            "originatingHearingId": "80233669-6cad-4ccc-9c29-d9d765c9d761",
+            "originatingHearingId": "HEARING_ID",
             "pleaDate": "2023-03-17",
             "pleaValue": "GUILTY"
           },
@@ -140,7 +140,7 @@
             "motReasonDescription": "Indictable-only offence",
             "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
             "offenceId": "a29624ea-d824-467a-acc6-6c52ee711ca0",
-            "originatingHearingId": "80233669-6cad-4ccc-9c29-d9d765c9d761",
+            "originatingHearingId": "HEARING_ID",
             "sequenceNumber": 100
           },
           "arrestDate": "2022-10-02",
@@ -189,7 +189,7 @@
               "level": "O",
               "lifeDuration": false,
               "orderedDate": "2023-03-17",
-              "orderedHearingId": "80233669-6cad-4ccc-9c29-d9d765c9d761",
+              "orderedHearingId": "HEARING_ID",
               "postHearingCustodyStatus": "A",
               "publishedAsAPrompt": false,
               "publishedForNows": false,
@@ -230,7 +230,7 @@
           "orderIndex": 501,
           "plea": {
             "offenceId": "a29624ea-d824-467a-acc6-6c52ee711ca0",
-            "originatingHearingId": "80233669-6cad-4ccc-9c29-d9d765c9d761",
+            "originatingHearingId": "HEARING_ID",
             "pleaDate": "2023-03-17",
             "pleaValue": "GUILTY"
           },
@@ -273,6 +273,6 @@
       "prosecutionCaseId": "ca28b8ce-eeef-424a-be91-5ae93b48b144"
     }
   ],
-  "hearingId": "80233669-6cad-4ccc-9c29-d9d765c9d761",
+  "hearingId": "HEARING_ID",
   "prosecutionCaseId": "ca28b8ce-eeef-424a-be91-5ae93b48b144"
 }

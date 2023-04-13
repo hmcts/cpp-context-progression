@@ -7,12 +7,12 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingExtended;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -25,10 +25,12 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
+import javax.json.Json;
 import javax.json.JsonObject;
-
+import javax.json.JsonReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,6 +39,7 @@ import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.UUID.randomUUID;
+import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -66,6 +69,7 @@ public class HearingExtendedEventListenerTest {
     private UUID prosecutionCaseId;
     private UUID defendantId;
     private String hearingPayload;
+    private String hearingPayloadWithSameCaseWithDifferentDefendant;
 
 
     @Before
@@ -74,6 +78,7 @@ public class HearingExtendedEventListenerTest {
         prosecutionCaseId = randomUUID();
         defendantId = randomUUID();
         hearingPayload = createPayload("/json/hearingDataProsecutionCase.json");
+        hearingPayloadWithSameCaseWithDifferentDefendant = createPayload("/json/hearingDataWithSameCaseWithDifferentDefendant.json");
     }
 
     @Test
@@ -90,11 +95,11 @@ public class HearingExtendedEventListenerTest {
         when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
         when(caseDefendantHearingRepository.findByCaseIdAndDefendantId(any(UUID.class), any(UUID.class))).thenReturn(caseDefendantHearingEntityList);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
 
         verify(hearingRepository, times(1)).findBy(hearingId);
         verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
-        verify(objectToJsonObjectConverter, times(1)).convert(hearing);
         verify(caseDefendantHearingRepository, times(1)).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId, prosecutionCaseId, defendantId);
         verify(caseDefendantHearingRepository, times(1)).remove(any(CaseDefendantHearingEntity.class));
         verify(caseDefendantHearingRepository, times(1)).save(any(CaseDefendantHearingEntity.class));
@@ -113,11 +118,11 @@ public class HearingExtendedEventListenerTest {
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingExtended).thenReturn(hearing);
         when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
 
         verify(hearingRepository, times(1)).findBy(hearingId);
         verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
-        verify(objectToJsonObjectConverter, times(1)).convert(hearing);
         verify(caseDefendantHearingRepository, never()).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId, prosecutionCaseId, defendantId);
         verify(caseDefendantHearingRepository, never()).remove(any(CaseDefendantHearingEntity.class));
         verify(caseDefendantHearingRepository, times(1)).save(any(CaseDefendantHearingEntity.class));
@@ -136,11 +141,11 @@ public class HearingExtendedEventListenerTest {
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingExtended).thenReturn(hearing);
         when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
 
         verify(hearingRepository, times(1)).findBy(hearingId);
         verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
-        verify(objectToJsonObjectConverter, times(1)).convert(hearing);
         verify(caseDefendantHearingRepository, never()).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId, prosecutionCaseId, defendantId);
         verify(caseDefendantHearingRepository, never()).remove(any(CaseDefendantHearingEntity.class));
         verify(caseDefendantHearingRepository, times(1)).save(any(CaseDefendantHearingEntity.class));
@@ -159,11 +164,11 @@ public class HearingExtendedEventListenerTest {
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingExtended).thenReturn(hearing);
         when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
 
         verify(hearingRepository, times(1)).findBy(hearingId);
         verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
-        verify(objectToJsonObjectConverter, times(1)).convert(hearing);
         verify(caseDefendantHearingRepository, never()).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId, prosecutionCaseId, defendantId);
         verify(caseDefendantHearingRepository, never()).remove(any(CaseDefendantHearingEntity.class));
         verify(caseDefendantHearingRepository, times(1)).save(any(CaseDefendantHearingEntity.class));
@@ -182,11 +187,11 @@ public class HearingExtendedEventListenerTest {
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingExtended).thenReturn(hearing);
         when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
 
         verify(hearingRepository, times(1)).findBy(hearingId);
         verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
-        verify(objectToJsonObjectConverter, times(1)).convert(hearing);
         verify(caseDefendantHearingRepository, never()).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId, prosecutionCaseId, defendantId);
         verify(caseDefendantHearingRepository, never()).remove(any(CaseDefendantHearingEntity.class));
         verify(caseDefendantHearingRepository, times(1)).save(any(CaseDefendantHearingEntity.class));
@@ -205,17 +210,143 @@ public class HearingExtendedEventListenerTest {
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingExtended).thenReturn(hearing);
         when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
 
         verify(hearingRepository, times(1)).findBy(hearingId);
         verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
-        verify(objectToJsonObjectConverter, times(1)).convert(hearing);
         verify(caseDefendantHearingRepository, never()).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId, prosecutionCaseId, defendantId);
         verify(caseDefendantHearingRepository, never()).remove(any(CaseDefendantHearingEntity.class));
         verify(caseDefendantHearingRepository, times(1)).save(any(CaseDefendantHearingEntity.class));
     }
 
+    @Test
+    public void shouldHandleHearingExtendedForCaseWithAddedOffencesInSameDefendantAndCaseWhenCaseSplitAtOffenceLevelWithMultipleOffencesAndMergedBack() {
+
+        final UUID caseId = UUID.fromString("d8161e2b-4aa7-4a8e-992a-11ff01c471e6");
+
+        final UUID extendedFromHearingId = randomUUID();
+        final HearingExtended hearingExtended = createHearingExtended(hearingId, extendedFromHearingId, caseId, defendantId, false, false);
+        final HearingEntity hearingEntity = createHearingEntity(hearingPayloadWithSameCaseWithDifferentDefendant);
+        final List<CaseDefendantHearingEntity> caseDefendantHearingEntityList = new ArrayList<>();
+        caseDefendantHearingEntityList.add(createCaseDefendantHearingEntity(hearingPayloadWithSameCaseWithDifferentDefendant));
+
+        final Hearing dbHearing = Hearing.hearing()
+                .withProsecutionCases(asList(
+                        ProsecutionCase.prosecutionCase()
+                                .withId(UUID.fromString("d8161e2b-4aa7-4a8e-992a-11ff01c471e6"))
+                                .withDefendants(asList(Defendant.defendant().withId(defendantId)
+                                        .withOffences(asList(Offence.offence().withId(randomUUID()).build()))
+                                        .build()))
+
+                                .build())).build();
+
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(jsonObjectToObjectConverter.convert(jsonObject, HearingExtended.class)).thenReturn(hearingExtended);
+        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
+        when(caseDefendantHearingRepository.findByCaseIdAndDefendantId(any(UUID.class), any(UUID.class))).thenReturn(caseDefendantHearingEntityList);
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(jsonObjectToObjectConverter.convert(jsonFromString(hearingEntity.getPayload()), Hearing.class)).thenReturn(dbHearing);
+        when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
+        hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
+
+        verify(hearingRepository, times(1)).findBy(hearingId);
+        verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
+        verify(caseDefendantHearingRepository, times(1)).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId,  caseId, defendantId);
+        verify(caseDefendantHearingRepository, times(1)).remove(any(CaseDefendantHearingEntity.class));
+        verify(caseDefendantHearingRepository, times(1)).save(any(CaseDefendantHearingEntity.class));
+    }
+
+    @Test
+    public void shouldHandleHearingExtendedForCaseWithAddedDefendantsInSameDefendantAndCaseWhenCaseSplitAtDefendantLevelAndMergedBack() {
+
+        final UUID caseId = UUID.fromString("d8161e2b-4aa7-4a8e-992a-11ff01c471e6");
+        final UUID defendantId2 = randomUUID();
+
+        final UUID extendedFromHearingId = randomUUID();
+        final HearingExtended hearingExtended = createHearingExtended(hearingId, extendedFromHearingId, caseId, defendantId2, false, false);
+        final HearingEntity hearingEntity = createHearingEntity(hearingPayloadWithSameCaseWithDifferentDefendant);
+        final List<CaseDefendantHearingEntity> caseDefendantHearingEntityList = new ArrayList<>();
+        caseDefendantHearingEntityList.add(createCaseDefendantHearingEntity(hearingPayloadWithSameCaseWithDifferentDefendant));
+
+        final Hearing dbHearing = Hearing.hearing()
+                .withProsecutionCases(asList(
+                        ProsecutionCase.prosecutionCase()
+                                .withId(UUID.fromString("d8161e2b-4aa7-4a8e-992a-11ff01c471e6"))
+                                .withDefendants(asList(Defendant.defendant().withId(defendantId)
+                                        .withOffences(asList(Offence.offence().withId(randomUUID()).build()))
+                                        .build()))
+
+                                .build())).build();
+
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(jsonObjectToObjectConverter.convert(jsonObject, HearingExtended.class)).thenReturn(hearingExtended);
+        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
+        when(caseDefendantHearingRepository.findByCaseIdAndDefendantId(any(UUID.class), any(UUID.class))).thenReturn(caseDefendantHearingEntityList);
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(jsonObjectToObjectConverter.convert(jsonFromString(hearingEntity.getPayload()), Hearing.class)).thenReturn(dbHearing);
+        when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
+        hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
+
+        verify(hearingRepository, times(1)).findBy(hearingId);
+        verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
+        verify(caseDefendantHearingRepository, times(1)).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId,  caseId, defendantId2);
+        verify(caseDefendantHearingRepository, times(1)).remove(any(CaseDefendantHearingEntity.class));
+        verify(caseDefendantHearingRepository, times(1)).save(any(CaseDefendantHearingEntity.class));
+    }
+
+    @Test
+    public void shouldHandleHearingExtendedForCaseWithAddedDefendantsInDifferentCaseWhenHearingSplitAtCaseLevelAndMergedBack() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID extendedFromHearingId = randomUUID();
+        final HearingExtended hearingExtended = createHearingExtended(hearingId, extendedFromHearingId, prosecutionCaseId, defendantId, false, false);
+        final HearingEntity hearingEntity = createHearingEntity(hearingPayloadWithSameCaseWithDifferentDefendant);
+        final List<CaseDefendantHearingEntity> caseDefendantHearingEntityList = new ArrayList<>();
+        caseDefendantHearingEntityList.add(createCaseDefendantHearingEntity(hearingPayloadWithSameCaseWithDifferentDefendant));
+
+        final Hearing dbHearing = Hearing.hearing()
+                .withProsecutionCases(asList(
+                        ProsecutionCase.prosecutionCase()
+                                .withId(caseId)
+                                .withDefendants(asList(Defendant.defendant().withId(defendantId2)
+                                        .withOffences(asList(Offence.offence().withId(randomUUID()).build()))
+                                        .build()))
+
+                                .build())).build();
+
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(jsonObjectToObjectConverter.convert(jsonObject, HearingExtended.class)).thenReturn(hearingExtended);
+        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
+        when(caseDefendantHearingRepository.findByCaseIdAndDefendantId(any(UUID.class), any(UUID.class))).thenReturn(caseDefendantHearingEntityList);
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(jsonObjectToObjectConverter.convert(jsonFromString(hearingEntity.getPayload()), Hearing.class)).thenReturn(dbHearing);
+        when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
+        hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
+
+        verify(hearingRepository, times(1)).findBy(hearingId);
+        verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
+        verify(caseDefendantHearingRepository, times(1)).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId,  prosecutionCaseId, defendantId);
+        verify(caseDefendantHearingRepository, times(1)).remove(any(CaseDefendantHearingEntity.class));
+        verify(caseDefendantHearingRepository, times(1)).save(any(CaseDefendantHearingEntity.class));
+    }
+
+
     private HearingEntity createHearingEntity() {
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        hearingEntity.setHearingId(UUID.randomUUID());
+        hearingEntity.setResultLines(new HashSet<>());
+        hearingEntity.setPayload(hearingPayload);
+        return hearingEntity;
+
+    }
+
+    private HearingEntity createHearingEntity(final String  hearingPayload) {
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         hearingEntity.setHearingId(UUID.randomUUID());
@@ -229,6 +360,7 @@ public class HearingExtendedEventListenerTest {
                                                   final Boolean isAdjourned, final Boolean isPartiallyAllocated) {
         final Defendant defendant = Defendant.defendant()
                 .withId(defendantId)
+                .withOffences(asList(Offence.offence().withId(randomUUID()).build()))
                 .build();
 
         final List<Defendant> defendantList = new ArrayList<>();
@@ -271,5 +403,20 @@ public class HearingExtendedEventListenerTest {
         caseDefendantHearingEntity.setHearing(createHearingEntity());
         caseDefendantHearingEntity.setId(caseDefendantHearingKey);
         return caseDefendantHearingEntity;
+    }
+
+    private CaseDefendantHearingEntity createCaseDefendantHearingEntity(final String hearingPayload) {
+        final CaseDefendantHearingKey caseDefendantHearingKey = new CaseDefendantHearingKey();
+        final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity.setHearing(createHearingEntity(hearingPayload));
+        caseDefendantHearingEntity.setId(caseDefendantHearingKey);
+        return caseDefendantHearingEntity;
+    }
+
+    private static JsonObject jsonFromString(final String jsonObjectStr) {
+        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonObject object = jsonReader.readObject();
+        jsonReader.close();
+        return object;
     }
 }

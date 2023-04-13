@@ -1,7 +1,9 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 import static javax.json.JsonValue.NULL;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
@@ -20,6 +22,7 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.command.handler.courts.ResendLaaOutcomeConcluded;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -42,7 +45,7 @@ public class ResendLaaCaseOutcomeHandler {
 
 
     @Handles("progression.command.handler.resend-laa-outcome-concluded")
-    public void handle(final Envelope<ResendLaaOutcomeConcluded> resendLaaOutcomeConcludedEnvelope) throws EventStreamException, IOException {
+    public void handle(final Envelope<ResendLaaOutcomeConcluded> resendLaaOutcomeConcludedEnvelope) throws EventStreamException {
         LOGGER.debug("progression.command.handler.resend-laa-outcome-concluded {}", resendLaaOutcomeConcludedEnvelope);
 
 
@@ -51,22 +54,30 @@ public class ResendLaaCaseOutcomeHandler {
         final UUID caseId = resendLaaOutcomeConcluded.getCaseId();
         EventStream eventStream = eventSource.getStreamById(caseId);
         final Stream<JsonEnvelope> jsonEnvelopeStream = eventStream.read();
-        final JsonEnvelope jsonEnvelope = jsonEnvelopeStream.filter(e -> "progression.event.laa-defendant-proceeding-concluded-changed".equals(e.metadata().name())).findFirst().orElse(null);
+        final Stream<JsonEnvelope> filteredJsonEvenlopeEventStream = jsonEnvelopeStream.filter(e -> "progression.event.laa-defendant-proceeding-concluded-changed".equals(e.metadata().name()));
 
         eventStream = eventSource.getStreamById(caseId);
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
 
-        LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = null;
-        if (jsonEnvelope != null) {
-            laaDefendantProceedingConcludedChanged = new ObjectMapperProducer().objectMapper().readValue(jsonEnvelope.payloadAsJsonObject().toString(), LaaDefendantProceedingConcludedChanged.class);
+        final List<LaaDefendantProceedingConcludedChanged> laaDefendantProceedingConcludedChangedList = filteredJsonEvenlopeEventStream.map(jsonEnvelope -> {
+                    try {
+                        return new ObjectMapperProducer().objectMapper().readValue(jsonEnvelope.payloadAsJsonObject().toString(), LaaDefendantProceedingConcludedChanged.class);
+                    } catch (IOException e) {
+                        LOGGER.error("Error reading event stream.", e);
+                        throw new IllegalArgumentException(format("event progression.event.laa-defendant-proceeding-concluded-changed not found for caseId : %s", caseId));
+                    }
+                }
+        ).collect(toList());
+
+        if (isNotEmpty(laaDefendantProceedingConcludedChangedList)) {
+
+            final Stream<Object> events = caseAggregate.resendLaaOutcomeConcluded(laaDefendantProceedingConcludedChangedList);
+            appendEventsToStream(resendLaaOutcomeConcludedEnvelope, eventStream, events);
+
         } else {
             throw new IllegalArgumentException(format("event progression.event.laa-defendant-proceeding-concluded-changed not found for caseId : %s", caseId));
         }
 
-        final Stream<Object> events = caseAggregate.resendLaaOutcomeConcluded(laaDefendantProceedingConcludedChanged);
-
-
-        appendEventsToStream(resendLaaOutcomeConcludedEnvelope, eventStream, events);
 
     }
 

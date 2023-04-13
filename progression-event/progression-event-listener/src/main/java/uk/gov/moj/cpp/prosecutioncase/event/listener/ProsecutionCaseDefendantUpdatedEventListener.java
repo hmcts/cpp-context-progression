@@ -127,7 +127,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 if (defendantFromRepository.isPresent()) {
                     final Defendant originalDefendant = defendantFromRepository.get();
                     prosecutionCaseInRepository.getDefendants().remove(defendantFromRepository.get());
-                    // GPE-12381 . This has been done explicitly  not to loose  progression flag associationLockedByRepOrder when we receive result from hearing
+                    // GPE-12381 . This has been done explicitly  not to lose  progression flag associationLockedByRepOrder when we receive result from hearing
                     final Defendant updatedDefendant = getUpdatedDefendant(originalDefendant, defendant);
                     filterDuplicateOffencesById(updatedDefendant.getOffences());
                     prosecutionCaseInRepository.getDefendants().add(updatedDefendant);
@@ -270,8 +270,9 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 if(isNotEmpty(updatedOffence.getReportingRestrictions())) {
                     updateReportingRestriction(offences, updatedOffence);
                 }
-                if (offences.removeIf(offence -> offence.getId().equals(updatedOffence.getId()))) {
-                    offences.add(updatedOffence);
+                final Offence offence = maintainLaaReferenceFromPersistedOffence(offences, updatedOffence);
+                if (offences.removeIf(anOffence -> anOffence.getId().equals(offence.getId()))) {
+                    offences.add(offence);
                 }
             });
         }
@@ -285,7 +286,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 .withOffences(offences)
                 .withCpsDefendantId(originalDefendant.getCpsDefendantId())
                 .withPersonDefendant(updatedPersonDefendant)
-                .withLegalAidStatus(defendant.getLegalAidStatus())
+                .withLegalAidStatus(originalDefendant.getLegalAidStatus())
                 .withProceedingsConcluded(defendant.getProceedingsConcluded())
                 .withDefendantCaseJudicialResults(getNonNowsResults(defendant.getDefendantCaseJudicialResults()))
                 .withWitnessStatement(defendant.getWitnessStatement())
@@ -305,6 +306,12 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                 .withCroNumber(originalDefendant.getCroNumber())
                 .withAssociationLockedByRepOrder(originalDefendant.getAssociationLockedByRepOrder())
                 .build();
+    }
+
+    private Offence maintainLaaReferenceFromPersistedOffence(final List<Offence> persistedOffences, final Offence updatedOffence) {
+        final Optional<Offence>  persistedOffence = persistedOffences.stream().filter(offence -> offence.getId().equals(updatedOffence.getId())).findFirst();
+        return persistedOffence.isPresent() && nonNull(persistedOffence.get().getLaaApplnReference()) ?
+                Offence.offence().withValuesFrom(updatedOffence).withLaaApplnReference(persistedOffence.get().getLaaApplnReference()).build() : updatedOffence;
     }
 
     private void updateReportingRestriction(final List<Offence> offences, final Offence updatedOffence) {

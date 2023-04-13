@@ -28,6 +28,7 @@ import static uk.gov.justice.core.courts.FormFinalised.formFinalised;
 import static uk.gov.justice.core.courts.FormOperationFailed.formOperationFailed;
 import static uk.gov.justice.core.courts.FormUpdated.formUpdated;
 import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged;
+import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedResent.laaDefendantProceedingConcludedResent;
 import static uk.gov.justice.core.courts.LockStatus.lockStatus;
 import static uk.gov.justice.core.courts.Organisation.organisation;
 import static uk.gov.justice.core.courts.ProsecutionCaseDefendantOrganisationUpdatedByLaa.prosecutionCaseDefendantOrganisationUpdatedByLaa;
@@ -107,7 +108,6 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
 import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
-import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedResent;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.LockStatus;
@@ -1286,13 +1286,15 @@ public class CaseAggregate implements Aggregate {
 
     /**
      * Resend LAA defendant proceedings concluded outcome to LAA using BDF in case LAA system is not updated.
-     * @param laaDefendantProceedingConcludedChanged
-     * @param caseId
-     * @return
+     * @param laaDefendantProceedingConcludedChangedList List of laaDefendantProceedingConcludedChanged events
+     * @return Stream of events
      */
-    public Stream<Object> resendLaaOutcomeConcluded(final LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged) {
-        final LaaDefendantProceedingConcludedResent laaDefendantProceedingConcludedResent = LaaDefendantProceedingConcludedResent.laaDefendantProceedingConcludedResent().withLaaDefendantProceedingConcludedChanged(laaDefendantProceedingConcludedChanged).build();
-        return Stream.builder().add(laaDefendantProceedingConcludedResent).build();
+    public Stream<Object> resendLaaOutcomeConcluded(final List<LaaDefendantProceedingConcludedChanged> laaDefendantProceedingConcludedChangedList) {
+        final Stream.Builder<Object> builder = Stream.builder();
+        laaDefendantProceedingConcludedChangedList.stream()
+                .map(laaDefendantProceedingConcludedChanged -> laaDefendantProceedingConcludedResent().withLaaDefendantProceedingConcludedChanged(laaDefendantProceedingConcludedChanged).build())
+                .forEach(builder::add);
+        return builder.build();
     }
 
     /**

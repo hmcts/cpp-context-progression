@@ -390,7 +390,7 @@ public class HearingResultEventListener {
                 .withId(defendantFromPayload.getId())
                 .withMasterDefendantId(defendantFromPayload.getMasterDefendantId())
                 .withCourtProceedingsInitiated(defendantFromPayload.getCourtProceedingsInitiated())
-                .withLegalAidStatus(defendantFromPayload.getLegalAidStatus())
+                .withLegalAidStatus(defendantFromDatabase.getLegalAidStatus())
                 .withMitigation(defendantFromPayload.getMitigation())
                 .withMitigationWelsh(defendantFromPayload.getMitigationWelsh())
                 .withNumberOfPreviousConvictionsCited(defendantFromPayload.getNumberOfPreviousConvictionsCited())
@@ -440,6 +440,7 @@ public class HearingResultEventListener {
             resultsToBeAdded.addAll(offenceFromPayload.getJudicialResults());
         }
         return Offence.offence().withValuesFrom(offenceFromPayload)
+                .withLaaApplnReference(offenceFromDatabase.getLaaApplnReference())
                 .withJudicialResults(getNonNowsResults(resultsToBeAdded))
                 .build();
     }
