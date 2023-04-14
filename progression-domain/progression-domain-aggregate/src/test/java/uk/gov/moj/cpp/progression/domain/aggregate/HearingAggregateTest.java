@@ -760,6 +760,50 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldRaiseRelatedHearingWithDifferentCasetAndMergedBack() {
+
+        final UUID defendantId = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID prosecutionCaseId2 = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID seedingHearingId = randomUUID();
+        final Hearing hearing = getHearingForVej(prosecutionCaseId, courtApplicationId, hearingId, defendantId, offenceId);
+        final HearingListingStatus hearingListingStatus = HearingListingStatus.HEARING_INITIALISED;
+
+        setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", hearingListingStatus);
+
+        HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
+                .withId(hearingId)
+                .withProsecutionCases(newArrayList(ProsecutionCase.prosecutionCase().withId(prosecutionCaseId2).withDefendants(new ArrayList<>(singletonList(Defendant.defendant()
+                        .withId(defendantId2)
+                        .withOffences(asList(Offence.offence().withId(offenceId2).build()))
+                        .build()))).build()))
+                .build();
+        final SeedingHearing seedingHearing = seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build();
+        final List<Object> eventStream = hearingAggregate.updateRelatedHearing(hearingListingNeeds, true, randomUUID(),false, seedingHearing, null).collect(toList());
+
+        assertThat(eventStream.size(), is(2));
+
+        ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = (ProsecutionCaseDefendantListingStatusChangedV2) eventStream.get(0);
+
+        assertThat(hearingId, is(prosecutionCaseDefendantListingStatusChangedV2.getHearing().getId()));
+        RelatedHearingUpdated relatedHearingUpdated = (RelatedHearingUpdated) eventStream.get(1);
+        assertThat(relatedHearingUpdated.getSeedingHearing().getSeedingHearingId(), is(seedingHearingId));
+        assertThat(relatedHearingUpdated.getHearingRequest().getProsecutionCases().size(), is(2));
+        assertThat(relatedHearingUpdated.getHearingRequest().getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(relatedHearingUpdated.getHearingRequest().getProsecutionCases().get(1).getDefendants().size(), is(1));
+
+
+    }
+
+    @Test
     public void shouldRaiseRelatedHearingWithAddedMultipleDefendantsInSameCaseWhenCaseSplitAtDefendantLevelAndMergedBack() {
 
         final UUID defendantId = randomUUID();

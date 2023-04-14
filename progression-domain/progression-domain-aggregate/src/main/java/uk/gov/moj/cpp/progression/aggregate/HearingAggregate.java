@@ -1302,11 +1302,12 @@ public class HearingAggregate implements Aggregate {
                         return Defendant.defendant().withValuesFrom(defendant).withOffences(new ArrayList<>(offenceList)).build();
                     }).collect(toSet());
                     resultDefendants.addAll(newDefendantList);
+                    return ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase).withDefendants(new ArrayList<>(resultDefendants)).build();
 
                 } else {
                     newHearingCases.addAll(this.hearing.getProsecutionCases());
+                    return ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase).build();
                 }
-                return ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase).withDefendants(new ArrayList<>(resultDefendants)).build();
 
             }).collect(toSet());
             resultCases.addAll(newHearingCases);
