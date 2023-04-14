@@ -4,7 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -18,6 +18,17 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.command.UpdateMatchedDefendantCustodialInformation.updateMatchedDefendantCustodialInformation;
 
+import com.google.common.collect.Lists;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
@@ -30,6 +41,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequested;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2;
+import uk.gov.justice.core.courts.UpdateCaseDefendantWithDriverNumber;
 import uk.gov.justice.core.courts.UpdateDefendantForHearing;
 import uk.gov.justice.core.courts.UpdateDefendantForMatchedDefendant;
 import uk.gov.justice.core.courts.UpdateDefendantForProsecutionCase;
@@ -77,8 +89,8 @@ public class UpdateDefendantHandlerTest {
             ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2.class,
             HearingDefendantUpdated.class,
             NewDefendantAddedToHearing.class,
-            UpdateMatchedDefendantCustodialInformation.class
-    );
+            UpdateMatchedDefendantCustodialInformation.class,
+            CaseDefendantUpdatedWithDriverNumber.class);
     @Mock
     private EventSource eventSource;
     @Mock
@@ -519,6 +531,63 @@ public class UpdateDefendantHandlerTest {
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.defendants[0].id", is(masterDefendantId.toString())),
                                 withJsonPath("$.hearingId", is(hearingId.toString()))
+                                )
+                        ))
+
+                )
+        );
+    }
+
+    @Test
+    @SuppressWarnings("squid:S00112")
+    public void shouldUpdatedriverNumber() throws Exception {
+
+        UUID defendantId = randomUUID();
+
+        UpdateCaseDefendantWithDriverNumber updateDefendant = UpdateCaseDefendantWithDriverNumber.updateCaseDefendantWithDriverNumber()
+                .withDefendantId(defendantId)
+                .withProsecutionCaseId(randomUUID())
+                .withDriverNumber("DVL1234")
+                .build();
+
+        aggregate.apply(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
+                .withDefendant(getDefendantUpdate(defendantId, "Mr"))
+                .build());
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.update-case-defendant-with-driver-number")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<UpdateCaseDefendantWithDriverNumber> envelope = envelopeFrom(metadata, updateDefendant);
+
+        updateDefendantHandler.handlerUpdateDefendantWithDriverNumber(envelope);
+
+        List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+
+        assertThat(Stream.of(envelopeStream.get(0)), streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.prosecution-case-defendant-updated"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.defendant.id", is(defendantId.toString())),
+                                withJsonPath("$.defendant.personDefendant.personDetails.title", is("Mr")),
+                                withJsonPath("$.defendant.personDefendant.personDetails.firstName", is("FirstName")),
+                                withJsonPath("$.defendant.personDefendant.driverNumber", is("DVL1234"))
+                                )
+                        ))
+
+                )
+        );
+
+        assertThat(Stream.of(envelopeStream.get(1)), streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.case-defendant-updated-with-driver-number"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.defendantId", is(defendantId.toString())),
+                                withJsonPath("$.driverNumber", is("DVL1234"))
                                 )
                         ))
 

@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.event;
 
+import java.util.Objects;
+import java.util.function.Function;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +13,7 @@ import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ListUnscheduledNextHearings;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -55,6 +58,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -124,6 +128,8 @@ public class HearingResultedEventProcessor {
 
         final Hearing hearing = jsonObjectToObjectConverter.convert(hearingJson, Hearing.class);
         summonsHelper.initiateSummonsProcess(event, hearing);
+
+        commandUpdateDefendantWithDriverNumber(hearing, event);
     }
 
     @Handles("progression.event.prosecution-cases-resulted-v2")
@@ -311,6 +317,47 @@ public class HearingResultedEventProcessor {
                 .build();
 
         progressionService.storeBookingReferencesWithCourtScheduleIds(event, command);
+    }
+
+    private void commandUpdateDefendantWithDriverNumber(final Hearing hearing, final JsonEnvelope event) {
+        if(isNotEmpty(hearing.getProsecutionCases()) ){
+            return;
+        }
+
+        if(isEmpty(hearing.getCourtApplications())){
+            return;
+        }
+        final List<MasterDefendant> defendants = new ArrayList<>();
+
+        hearing.getCourtApplications()
+                .forEach(application -> {
+                    ofNullable(application.getApplicant().getMasterDefendant()).ifPresent(defendants::add);
+                    ofNullable(application.getSubject().getMasterDefendant()).ifPresent(defendants::add);
+                    ofNullable(application.getThirdParties()).map(Collection::stream).orElseGet(Stream::empty).forEach(thirdParty -> defendants.add(thirdParty.getMasterDefendant()));
+                    ofNullable(application.getRespondents()).map(Collection::stream).orElseGet(Stream::empty).forEach(respondent -> defendants.add(respondent.getMasterDefendant()));
+                });
+
+        defendants.stream()
+                .filter(Objects::nonNull)
+                .filter(masterDefendant -> nonNull(masterDefendant.getPersonDefendant()))
+                .filter(masterDefendant -> nonNull(masterDefendant.getPersonDefendant().getDriverNumber()))
+                .filter(masterDefendant -> isNotEmpty(masterDefendant.getDefendantCase()))
+                .collect(toMap(MasterDefendant::getMasterDefendantId, Function.identity(), (existing, replacement) -> existing))
+                .values().forEach(masterDefendant -> commandUpdateDriveNumber(masterDefendant, event));
+    }
+
+    private void commandUpdateDriveNumber(final MasterDefendant masterDefendant, final JsonEnvelope event ){
+
+        masterDefendant.getDefendantCase().stream().forEach(defendantCase -> {
+            final JsonObjectBuilder commandPayloadBuilder = createObjectBuilder()
+                    .add("defendantId", defendantCase.getDefendantId().toString())
+                    .add("prosecutionCaseId", defendantCase.getCaseId().toString())
+                    .add("driverNumber", masterDefendant.getPersonDefendant().getDriverNumber());
+
+            this.sender.send(Enveloper.envelop(commandPayloadBuilder.build())
+                    .withName("progression.update-case-defendant-with-driver-number")
+                    .withMetadataFrom(event));
+        });
     }
 
 }

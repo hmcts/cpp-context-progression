@@ -68,6 +68,7 @@ import uk.gov.justice.core.courts.AllHearingOffencesUpdated;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
+import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CaseMarkersSharedWithHearings;
@@ -1225,6 +1226,29 @@ public class CaseAggregate implements Aggregate {
         return apply(builder.build());
     }
 
+    public Stream<Object> updateDefendantWithDriverNumber(final UUID defendantId, final UUID caseId, final String driverNumber) {
+        final uk.gov.justice.core.courts.Defendant orgDefendant = defendantsMap.get(defendantId);
+        final uk.gov.justice.core.courts.Defendant updatedDefendant = uk.gov.justice.core.courts.Defendant.defendant()
+                .withValuesFrom(orgDefendant)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withValuesFrom(orgDefendant.getPersonDefendant())
+                        .withDriverNumber(driverNumber)
+                        .build())
+                .build();
+
+        final DefendantUpdate newDefendant = getDefendantUpdateFromDefendant(updatedDefendant);
+
+        return apply(Stream.of(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
+                        .withDefendant(newDefendant)
+                        .withHearingIds(CollectionUtils.isNotEmpty(hearingIds) ? new ArrayList<>(this.hearingIds) : emptyList())
+                        .build(),
+                CaseDefendantUpdatedWithDriverNumber.caseDefendantUpdatedWithDriverNumber()
+                        .withDefendantId(defendantId)
+                        .withProsecutionCaseId(caseId)
+                        .withDriverNumber(driverNumber)
+                        .build()));
+
+    }
     /**
      * If All the offences of a defendant was given a final result then the proceedings of the
      * defendant is complete. All defendant proceedings completed then Case Status is INACTIVE If
@@ -1775,6 +1799,32 @@ public class CaseAggregate implements Aggregate {
 
         }
         return apply(streamBuilder.build());
+    }
+
+    private DefendantUpdate getDefendantUpdateFromDefendant(final uk.gov.justice.core.courts.Defendant defendant) {
+        return DefendantUpdate.defendantUpdate()
+                .withId(defendant.getId())
+                .withMasterDefendantId(defendant.getMasterDefendantId())
+                .withProsecutionCaseId(defendant.getProsecutionCaseId())
+                .withProceedingsConcluded(defendant.getProceedingsConcluded())
+                .withIsYouth(defendant.getIsYouth())
+                .withOffences(defendant.getOffences())
+                .withJudicialResults(defendant.getDefendantCaseJudicialResults())
+                .withCroNumber(defendant.getCroNumber())
+                .withWitnessStatementWelsh(defendant.getWitnessStatementWelsh())
+                .withWitnessStatement(defendant.getWitnessStatement())
+                .withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference())
+                .withPncId(defendant.getPncId())
+                .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
+                .withMitigationWelsh(defendant.getMitigationWelsh())
+                .withMitigation(defendant.getMitigation())
+                .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
+                .withDefenceOrganisation(defendant.getDefenceOrganisation())
+                .withAssociatedPersons(defendant.getAssociatedPersons())
+                .withAliases(defendant.getAliases())
+                .withPersonDefendant(defendant.getPersonDefendant())
+                .withAssociatedDefenceOrganisation(defendant.getAssociatedDefenceOrganisation())
+                .build();
     }
 
     public Stream<Object> receiveAssociateDefenceOrganisation(final String organisationName, final UUID defendantId, final UUID prosecutionCaseId, final String laaContractNumber, final ZonedDateTime startTime, final String representationType, final OrganisationDetails organisationDetails) {

@@ -13,7 +13,9 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
+import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
@@ -24,6 +26,7 @@ import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ListUnscheduledNextHearings;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
@@ -180,6 +183,63 @@ public class HearingResultedEventProcessorTest {
         verify(sender).send(envelopeArgumentCaptor.capture());
         assertThat(envelopeArgumentCaptor.getValue().metadata().name(), is("progression.command.process-hearing-results"));
         verify(summonsHelper).initiateSummonsProcess(event, hearing);
+    }
+
+    @Test
+    public void shouldUpdateDriveNumberWhenHearingResultedReceived() {
+        final CourtApplicationParty courtApplicationParty = CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(randomUUID())
+                        .withDefendantCase(Arrays.asList(DefendantCase.defendantCase()
+                                .withCaseId(randomUUID())
+                                .withDefendantId(randomUUID())
+                                .withCaseReference("URN1")
+                                .build(),DefendantCase.defendantCase()
+                                .withCaseId(randomUUID())
+                                .withDefendantId(randomUUID())
+                                .withCaseReference("URN2")
+                                .build())
+                                )
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withDriverNumber("DVL1234")
+                                .build())
+                        .build())
+                .build();
+
+        final Hearing hearing = Hearing.hearing().withId(randomUUID())
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withApplicant(courtApplicationParty)
+                        .withSubject(courtApplicationParty)
+                        .build())).build();
+        final JsonObject publicEventPayload = Json.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing))
+                .add("sharedTime", new UtcClock().now().toString())
+                .add("hearingDay", LocalDate.now().toString()).build();
+
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("public.events.hearing.hearing-resulted"),
+                objectToJsonObjectConverter.convert(publicEventPayload));
+
+        this.eventProcessor.handlePublicHearingResulted(event);
+
+        verify(sender, times(3)).send(envelopeArgumentCaptor.capture());
+
+        Envelope command = envelopeArgumentCaptor.getAllValues().get(0);
+        assertThat(command.metadata().name(), is("progression.command.process-hearing-results"));
+        verify(summonsHelper).initiateSummonsProcess(event, hearing);
+
+        command = envelopeArgumentCaptor.getAllValues().get(1);
+        JsonObject payload = (JsonObject) command.payload();
+        assertThat(command.metadata().name(), is("progression.update-case-defendant-with-driver-number"));
+        assertThat(payload.getString("prosecutionCaseId"), is(hearing.getCourtApplications().get(0).getApplicant().getMasterDefendant().getDefendantCase().get(0).getCaseId().toString()));
+        assertThat(payload.getString("defendantId"), is(hearing.getCourtApplications().get(0).getApplicant().getMasterDefendant().getDefendantCase().get(0).getDefendantId().toString()));
+        assertThat(payload.getString("driverNumber"), is("DVL1234"));
+
+        command = envelopeArgumentCaptor.getAllValues().get(2);
+        payload = (JsonObject) command.payload();
+        assertThat(command.metadata().name(), is("progression.update-case-defendant-with-driver-number"));
+        assertThat(payload.getString("prosecutionCaseId"), is(hearing.getCourtApplications().get(0).getApplicant().getMasterDefendant().getDefendantCase().get(1).getCaseId().toString()));
+        assertThat(payload.getString("defendantId"), is(hearing.getCourtApplications().get(0).getApplicant().getMasterDefendant().getDefendantCase().get(1).getDefendantId().toString()));
+        assertThat(payload.getString("driverNumber"), is("DVL1234"));
     }
 
     @Test

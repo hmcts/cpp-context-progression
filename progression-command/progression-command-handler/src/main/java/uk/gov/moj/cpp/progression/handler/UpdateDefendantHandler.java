@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import uk.gov.justice.core.courts.DefendantUpdate;
+import uk.gov.justice.core.courts.UpdateCaseDefendantWithDriverNumber;
 import uk.gov.justice.core.courts.UpdateDefendantForHearing;
 import uk.gov.justice.core.courts.UpdateDefendantForMatchedDefendant;
 import uk.gov.justice.core.courts.UpdateDefendantForProsecutionCase;
@@ -117,6 +118,19 @@ public class UpdateDefendantHandler {
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
         final Stream<Object> events = hearingAggregate.addDefendant(hearingId, defendantDetailsToUpdate.getProsecutionCaseId(), defendantDetailsToUpdate.getDefendants());
         appendEventsToStream(updateHearingWithNewDefendantEnvelope, eventStream, events);
+    }
+
+    @Handles("progression.update-case-defendant-with-driver-number")
+    public void handlerUpdateDefendantWithDriverNumber(final Envelope<UpdateCaseDefendantWithDriverNumber> updateCaseDefendantWithDriverNumberEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.update-case-defendant-with-driver-number {}", updateCaseDefendantWithDriverNumberEnvelope.payload());
+
+        final UpdateCaseDefendantWithDriverNumber updateCaseDefendantWithDriverNumber = updateCaseDefendantWithDriverNumberEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(updateCaseDefendantWithDriverNumber.getProsecutionCaseId());
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+        final Stream<Object> events = caseAggregate.updateDefendantWithDriverNumber(updateCaseDefendantWithDriverNumber.getDefendantId(), updateCaseDefendantWithDriverNumber.getProsecutionCaseId(), updateCaseDefendantWithDriverNumber.getDriverNumber());
+
+        appendEventsToStream(updateCaseDefendantWithDriverNumberEnvelope, eventStream, events);
+
     }
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {

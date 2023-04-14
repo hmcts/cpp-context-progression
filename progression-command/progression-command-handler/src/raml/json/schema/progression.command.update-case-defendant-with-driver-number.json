@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/update-case-defendant-with-driver-number.json",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "driverNumber": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "defendantId",
+    "prosecutionCaseId",
+    "driverNumber"
+  ],
+  "additionalProperties": false
+}
