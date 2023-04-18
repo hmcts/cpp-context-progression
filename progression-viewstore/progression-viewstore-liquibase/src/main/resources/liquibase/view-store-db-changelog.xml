@@ -106,5 +106,4 @@
     <include file="liquibase/create-tables-certificate-of-trial-readiness.xml"/>
     <include file="liquibase/add-index-search-prosecution-case-reference.xml"/>
     <include file="liquibase/add-index-case-note.xml"/>
-    <include file="liquibase/add-index-court-application-case.xml"/>
 </databaseChangeLog>
