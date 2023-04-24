@@ -289,7 +289,7 @@ public class CasesReferredToCourtProcessor {
     }
 
     private String getCaseUrn(final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
-        return nonNull(prosecutionCaseIdentifier.getProsecutionAuthorityReference()) ? prosecutionCaseIdentifier.getProsecutionAuthorityReference() : null;
+        return nonNull(prosecutionCaseIdentifier.getProsecutionAuthorityReference()) ? prosecutionCaseIdentifier.getProsecutionAuthorityReference() : prosecutionCaseIdentifier.getCaseURN();
     }
 
 }
