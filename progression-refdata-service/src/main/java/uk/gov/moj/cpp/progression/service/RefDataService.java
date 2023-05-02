@@ -1,8 +1,20 @@
 package uk.gov.moj.cpp.progression.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static uk.gov.justice.services.common.converter.LocalDates.to;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
+
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.LjaDetails;
@@ -16,14 +28,10 @@ import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.progression.domain.pojo.PrisonCustodySuite;
 import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,19 +39,15 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.fromString;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static uk.gov.justice.services.common.converter.LocalDates.to;
-import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
-import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S00112", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class RefDataService {
@@ -77,6 +81,7 @@ public class RefDataService {
     private static final String REFERENCEDATA_QUERY_COURT_APPLICATION_TYPES = "referencedata.query.application-types";
     private static final String REFERENCEDATA_QUERY_PRISONS_CUSTODY_SUITES = "referencedata.query.prisons-custody-suites";
     private static final String FIELD_APPLICATION_TYPES = "courtApplicationTypes";
+    public static final String CP_RESULT_ACTION_MAPPING = "referencedata.query.result-action-mapping";
     private static final String FIELD_PRISONS_CUSTODY_SUITES = "prisons-custody-suites";
     public static final String PROSECUTOR = "shortName";
     public static final String NATIONALITY_CODE = "isoCode";
@@ -700,6 +705,25 @@ public class RefDataService {
         return getRefDataStream(requester, REFERENCEDATA_QUERY_PRISONS_CUSTODY_SUITES, FIELD_PRISONS_CUSTODY_SUITES, createObjectBuilder())
                 .map(asPrisonCustodySuite())
                 .collect(Collectors.toList());
+    }
+
+    public List<CpResultActionMapping> getResultIdsByActionCode(final String resultActionCode, final Requester requester) {
+        final Metadata metadata = metadataBuilder()
+                .withId(randomUUID())
+                .withName(CP_RESULT_ACTION_MAPPING).build();
+
+        final JsonObject payload = createObjectBuilder()
+                .add("resultActionCode", resultActionCode)
+                .build();
+
+        final Envelope<CpResultActionMappingResponse> jsonEnvelope = requester.requestAsAdmin(
+                envelopeFrom(metadata, payload), CpResultActionMappingResponse.class);
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("'{}' received with payload {}", CP_RESULT_ACTION_MAPPING, jsonEnvelope);
+        }
+
+        return isNull(jsonEnvelope.payload()) ? new ArrayList<>() : jsonEnvelope.payload().getResultActionMapping();
     }
 
     private Stream<JsonValue> getRefDataStream(final Requester requester, final String queryName, final String fieldName, final JsonObjectBuilder jsonObjectBuilder) {

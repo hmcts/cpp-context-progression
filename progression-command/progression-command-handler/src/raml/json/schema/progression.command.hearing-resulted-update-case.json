@@ -13,6 +13,28 @@
         "$ref": "http://justice.gov.uk/core/courts/courtApplication.json"
       }
     },
+    "courtCentre": {
+      "description": "The court centre venue for the hearing",
+      "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "hearingType": {
+      "type": "string"
+    },
+    "jurisdictionType": {
+      "$ref": "http://justice.gov.uk/core/courts/jurisdictionType.json"
+    },
+    "isBoxHearing": {
+      "type": "boolean"
+    },
+    "remitResultIds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "defendantJudicialResults": {
       "type": "array",
       "minItems": 0,

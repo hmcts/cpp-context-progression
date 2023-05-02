@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.domain.aggregate.utils;
 
 
 import static java.lang.Boolean.TRUE;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -66,7 +67,8 @@ public class DefendantHelper {
 
 
     public static boolean hearingCaseDefendantsProceedingsConcluded(final ProsecutionCase prosecutionCase, final List<DefendantJudicialResult> defendantJudicialResults) {
-        return getUpdatedDefendants(prosecutionCase, defendantJudicialResults).stream().allMatch(defendant -> TRUE.equals(defendant.getProceedingsConcluded()));
+        return getUpdatedDefendants(prosecutionCase, defendantJudicialResults).stream()
+                .allMatch(defendant -> TRUE.equals(defendant.getProceedingsConcluded()));
     }
 
     public static boolean isAllDefendantProceedingConcluded(final ProsecutionCase prosecutionCase, List<DefendantJudicialResult> hearingdefendantJudicialResults, final List<Defendant> updatedDefendants) {
@@ -131,6 +133,34 @@ public class DefendantHelper {
                 }
             }
         });
+    }
+
+    public static List<Offence> getAllDefendantsOffences(final List<Defendant> defendants) {
+        if (isNull(defendants) || defendants.isEmpty()) {
+            return emptyList();
+        }
+
+        return defendants.stream()
+                .filter(defendant -> nonNull(defendant.getOffences()))
+                .flatMap(defendant -> defendant.getOffences().stream())
+                .collect(Collectors.toList());
+    }
+
+    public static List<DefendantJudicialResult> getDefendantJudicialResultsOfDefendantsAssociatedToTheCase(final List<Defendant> defendants,
+                                                                                                           final List<DefendantJudicialResult> defendantJudicialResults) {
+        if (isEmpty(defendants) || isEmpty(defendantJudicialResults)) {
+            return emptyList();
+        }
+
+        final List<UUID> masterDefendantIdList = defendants.stream()
+                .map(Defendant::getMasterDefendantId)
+                .filter(Objects::nonNull)
+                .collect(toList());
+
+        return defendantJudicialResults.stream()
+                .filter(djr -> nonNull(djr.getMasterDefendantId()))
+                .filter(djr -> masterDefendantIdList.contains(djr.getMasterDefendantId()))
+                .collect(Collectors.toList());
     }
 
     private static void getDefendantsWithLAAAndProceedingConcluded(ProsecutionCase prosecutionCase, List<Defendant> updatedDefendants, Map<UUID, List<uk.gov.justice.core.courts.Offence>> offenceProceedingConcluded) {

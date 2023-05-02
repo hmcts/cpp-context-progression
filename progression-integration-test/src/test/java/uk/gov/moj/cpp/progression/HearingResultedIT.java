@@ -32,6 +32,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
@@ -46,8 +47,6 @@ import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHea
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-
-import org.hamcrest.Matchers;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -68,6 +67,7 @@ import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,6 +83,8 @@ public class HearingResultedIT extends AbstractIT {
     private static final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents
             .createPublicConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
     private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private static final MessageConsumer messageConsumerCaseRetentionPolicyRecorded = privateEvents.createPrivateConsumer("progression.event.case-retention-policy-recorded");
+    private static final MessageConsumer messageConsumerCaseRetentionLengthCalculated = privateEvents.createPrivateConsumer("progression.events.case-retention-length-calculated");
 
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -98,12 +100,13 @@ public class HearingResultedIT extends AbstractIT {
     private String reportingRestrictionId;
 
 
-
     @AfterClass
     public static void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerClientPublicForReferToCourtOnHearingInitiated.close();
         messageConsumerHearingPopulatedToProbationCaseWorker.close();
+        messageConsumerCaseRetentionPolicyRecorded.close();
+        messageConsumerCaseRetentionLengthCalculated.close();
     }
 
     private static String getPayloadForCreatingRequest(final String ramlPath) {
@@ -343,7 +346,6 @@ public class HearingResultedIT extends AbstractIT {
 
     @Test
     public void shouldKeepCpsOrganisationUpdateCaseAtAGlance() throws Exception {
-
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
                 .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
             initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);
@@ -566,7 +568,7 @@ public class HearingResultedIT extends AbstractIT {
                             .withName(PUBLIC_HEARING_RESULTED)
                             .withUserId(userId)
                             .build());
-            final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseResulted);
+            final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerProsecutionCaseResulted);
             final JsonObject prosecutionCaseResulted = message.get();
             assertThat(prosecutionCaseResulted.getJsonObject("hearing").getString("id"), is(hearingId));
             assertThat(prosecutionCaseResulted.getJsonObject("committingCourt").getString("courtHouseType"), is("MAGISTRATES"));
@@ -576,8 +578,86 @@ public class HearingResultedIT extends AbstractIT {
         verifyPostListCourtHearingWithCommittingCourt(caseId, defendantId, "MAGISTRATES");
     }
 
+    @Test
+    public void shouldRecordCaseRetentionPolicyAndRaiseRetentionLengthCalculatedEvents() throws Exception {
+        stubGetProvisionalBookedSlotsForExistingBookingId();
+        removeAnyExistingCaseRetentionMessagesFromQueue();
+
+        final String listedStartDateTime = ZonedDateTimes.fromString("2020-12-15T18:32:04.238Z").toString();
+        final String earliestStartDateTime = ZonedDateTimes.fromString("2020-12-15T18:32:04.238Z").toString();
+        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+            initiateCourtProceedingsWithCommittingCourt(caseId, defendantId, listedStartDateTime, earliestStartDateTime);
+            pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+            hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        }
+
+        final Metadata metadata = metadataBuilder()
+                .withId(randomUUID())
+                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
+                .withUserId(userId)
+                .build();
+
+        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
+
+        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+
+            sendMessage(messageProducerClientPublic,
+                    PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
+
+            doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        }
+
+        verifyInMessagingQueueForCasesReferredToCourts();
+        try (final MessageConsumer messageConsumerProsecutionCaseResulted = privateEvents
+                .createPrivateConsumer("progression.event.prosecution-cases-resulted")) {
+
+            sendMessage(messageProducerClientPublic,
+                    PUBLIC_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted-with-crown-committing-court.json", caseId,
+                            hearingId, defendantId, newCourtCentreId, newCourtCentreName, reportingRestrictionId), metadataBuilder()
+                            .withId(randomUUID())
+                            .withName(PUBLIC_HEARING_RESULTED)
+                            .withUserId(userId)
+                            .build());
+            final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerProsecutionCaseResulted);
+            final JsonObject prosecutionCaseResulted = message.get();
+            assertThat(prosecutionCaseResulted.getJsonObject("hearing").getString("id"), is(hearingId));
+            verifyCaseRetentionPolicyRecorded();
+            verifyCaseRetentionLengthCalculated();
+        }
+    }
+
+    private void removeAnyExistingCaseRetentionMessagesFromQueue() {
+        retrieveMessageAsJsonObject(messageConsumerCaseRetentionPolicyRecorded);
+        retrieveMessageAsJsonObject(messageConsumerCaseRetentionLengthCalculated);
+    }
+
+    private void verifyCaseRetentionPolicyRecorded() {
+        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerCaseRetentionPolicyRecorded);
+        assertTrue(message.isPresent());
+        assertThat("a", is(message.get().getString("caseURN")));
+        assertThat(hearingId, is(message.get().getString("hearingId")));
+        assertThat("7Y0M0D", is(message.get().getString("period")));
+        assertThat("NON_CUSTODIAL", is(message.get().getString("policyType")));
+    }
+
+    private void verifyCaseRetentionLengthCalculated() {
+        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerCaseRetentionLengthCalculated);
+        assertTrue(message.isPresent());
+        assertThat("INACTIVE", is(message.get().getString("caseStatus")));
+        assertThat("a", is(message.get().getString("caseURN")));
+        assertThat("999bdd2a-6b7a-4002-bc8c-5c6f93844f40", is(message.get().getString("courtCentreId")));
+        assertThat("Narnia Magistrate's Court", is(message.get().getString("courtCentreName")));
+        assertThat("Sentence", is(message.get().getString("hearingType")));
+        assertThat("CROWN", is(message.get().getString("jurisdictionType")));
+        assertThat("7Y0M0D", is(message.get().getJsonObject("retentionPolicy").getString("period")));
+        assertThat("2", is(message.get().getJsonObject("retentionPolicy").getString("policyType")));
+    }
+
     private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
         return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
     }
@@ -607,7 +687,6 @@ public class HearingResultedIT extends AbstractIT {
 
         return stringToJsonObjectConverter.convert(payload);
     }
-
 
     private JsonObject getHearingWithStandAloneApplicationJsonObject(final String path, final String applicationId, final String hearingId, final String caseId, final String defendantId, final String courtCentreId) {
         final String strPayload = getPayloadForCreatingRequest(path)

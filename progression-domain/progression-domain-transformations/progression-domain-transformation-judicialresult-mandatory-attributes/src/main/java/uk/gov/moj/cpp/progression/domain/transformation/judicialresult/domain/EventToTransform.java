@@ -11,6 +11,7 @@ public enum EventToTransform {
     PROSECUTION_CASE_OFFENCES_UPDATED("progression.event.prosecution-case-offences-updated"),
     PROSECUTION_CASE_DEFENDANT_UPDATED("progression.event.prosecution-case-defendant-updated"),
     HEARING_RESULTED_CASE_UPDATED("progression.event.hearing-resulted-case-updated"),
+    CASE_RETENTION_LENGTH_CALCULATED("progression.events.case-retention-length-calculated"),
     HEARING_INITIATE_ENRICHED("progression.hearing-initiate-enriched"),
     COURT_APPLICATION_CREATED("progression.event.court-application-created"),
     COURT_APPLICATION_ADDED_TO_CASE("progression.event.court-application-added-to-case"),

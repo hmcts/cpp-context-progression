@@ -172,7 +172,10 @@ public class HearingResultEventProcessor {
     }
 
     private void updateProsecutionCase(JsonEnvelope event, Hearing hearing) {
-        ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty).forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications(), hearing.getDefendantJudicialResults()));
+        ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications(),
+                        hearing.getDefendantJudicialResults(), hearing.getCourtCentre(),
+                        hearing.getId(), hearing.getType(), hearing.getJurisdictionType(), hearing.getIsBoxHearing()));
     }
 
     private void updateApplications(final JsonEnvelope event, final Hearing hearing) {
@@ -231,8 +234,8 @@ public class HearingResultEventProcessor {
     private boolean hasCommittingCourt(final JudicialResult judicialResult) {
         if (Objects.nonNull(judicialResult.getResultDefinitionGroup())) {
             return Arrays.asList(judicialResult.getResultDefinitionGroup()
-                    .toLowerCase().replace(" ", "")
-                    .split(","))
+                            .toLowerCase().replace(" ", "")
+                            .split(","))
                     .stream()
                     .anyMatch(value -> COMMITTED_TO_CC.equalsIgnoreCase(value) || SENT_TO_CC.equalsIgnoreCase(value));
         }

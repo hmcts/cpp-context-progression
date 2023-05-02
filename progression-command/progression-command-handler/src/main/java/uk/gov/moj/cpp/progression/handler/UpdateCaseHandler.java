@@ -1,7 +1,9 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.util.Collections.emptyList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
+import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.HearingResultedUpdateCase;
 import uk.gov.justice.core.courts.UpdateListingNumberToProsecutionCase;
 import uk.gov.justice.progression.courts.IncreaseListingNumberToProsecutionCase;
@@ -17,7 +19,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -49,7 +51,12 @@ public class UpdateCaseHandler {
         final EventStream eventStream = eventSource.getStreamById(hearingUpdate.getProsecutionCase().getId());
 
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-        final Stream<Object> events = caseAggregate.updateCase(hearingUpdate.getProsecutionCase(), isNotEmpty(hearingUpdate.getDefendantJudicialResults()) ? hearingUpdate.getDefendantJudicialResults() : Collections.emptyList());
+        final List<DefendantJudicialResult> defendantJudicialResults = isNotEmpty(hearingUpdate.getDefendantJudicialResults()) ? hearingUpdate.getDefendantJudicialResults() : emptyList();
+
+        final Stream<Object> events = caseAggregate.updateCase(hearingUpdate.getProsecutionCase(),
+                defendantJudicialResults, hearingUpdate.getCourtCentre(),
+                hearingUpdate.getHearingId(), hearingUpdate.getHearingType(),
+                hearingUpdate.getJurisdictionType(), hearingUpdate.getIsBoxHearing(), hearingUpdate.getRemitResultIds());
 
         appendEventsToStream(hearingResultedUpdateCaseEnvelope, eventStream, events);
     }

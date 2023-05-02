@@ -22,11 +22,11 @@
       "aliases": [
         {
           "firstName": "johnny",
-          "lastName" : "robber"
+          "lastName": "robber"
         },
         {
           "firstName": "jack the",
-          "lastName" : "knife"
+          "lastName": "knife"
         }
       ],
       "pncId": "1234567",
@@ -67,10 +67,9 @@
             "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
             "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
             "disabilityStatus": "a",
-            "ethnicity":{
+            "ethnicity": {
               "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
             },
-
             "gender": "MALE",
             "interpreterLanguageNeeds": "Hindi",
             "documentationLanguageNeeds": "WELSH",
@@ -130,7 +129,7 @@
             "secondaryEmail": "harry.kanejunior@hotmail.com",
             "fax": "3425678"
           },
-          "ethnicity":{
+          "ethnicity": {
             "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
             "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
           }

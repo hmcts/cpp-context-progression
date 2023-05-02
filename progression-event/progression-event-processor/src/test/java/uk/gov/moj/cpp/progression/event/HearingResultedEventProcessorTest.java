@@ -1,19 +1,24 @@
 package uk.gov.moj.cpp.progression.event;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
@@ -21,7 +26,9 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
@@ -58,13 +65,12 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
-import javax.json.Json;
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -74,21 +80,21 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Collections.singletonList;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.core.courts.Defendant.defendant;
-import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.hamcrest.CoreMatchers;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 
@@ -138,6 +144,9 @@ public class HearingResultedEventProcessorTest {
     private ArgumentCaptor<ProsecutionCase> prosecutionCaseArgumentCaptor;
 
     @Captor
+    private ArgumentCaptor<CourtCentre> courtCentreArgumentCaptor;
+
+    @Captor
     private ArgumentCaptor<List<CourtApplication>> courtApplicationsArgumentCaptor;
 
     @Captor
@@ -166,6 +175,14 @@ public class HearingResultedEventProcessorTest {
 
     @Captor
     private ArgumentCaptor<ListCourtHearing> listCourtHearingCaptor;
+    @Captor
+    private ArgumentCaptor<UUID> hearingIdCaptor;
+    @Captor
+    private ArgumentCaptor<HearingType> hearingTypeCaptor;
+    @Captor
+    private ArgumentCaptor<JurisdictionType> jurisdictionTypeCaptor;
+    @Captor
+    private ArgumentCaptor<Boolean> isBoxHearingCaptor;
 
     @Test
     public void shouldIssueCommandToProcessHearingResultsWhenHearingResultedReceived() {
@@ -244,17 +261,19 @@ public class HearingResultedEventProcessorTest {
 
     @Test
     public void shouldIssueCommandsToUpdateCasesWhenProsecutionCaseResultedReceived() {
-        final UUID applicationId = randomUUID();
-        final UUID caseId1 = randomUUID();
-        final UUID caseId2 = randomUUID();
+        final UUID applicationId = UUID.randomUUID();
+        final UUID caseId1 = UUID.randomUUID();
+        final UUID caseId2 = UUID.randomUUID();
+        final UUID hearingId = randomUUID();
         final ProsecutionCasesResultedV2 hearingResulted = ProsecutionCasesResultedV2.prosecutionCasesResultedV2().withHearing(
-                        Hearing.hearing()
-                                .withId(randomUUID())
-                                .withProsecutionCases(Arrays.asList(
-                                        prosecutionCase().withId(caseId1).withDefendants(singletonList(defendant().build())).build(),
-                                        prosecutionCase().withId(caseId2).withDefendants(singletonList(defendant().build())).build()))
-                                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication().withId(applicationId).build()))
-                                .build())
+                Hearing.hearing()
+                        .withId(hearingId)
+                        .withJurisdictionType(JurisdictionType.CROWN)
+                        .withProsecutionCases(Arrays.asList(
+                                ProsecutionCase.prosecutionCase().withId(caseId1).withDefendants(Collections.singletonList(Defendant.defendant().build())).build(),
+                                ProsecutionCase.prosecutionCase().withId(caseId2).withDefendants(Collections.singletonList(Defendant.defendant().build())).build()))
+                        .withCourtApplications(Arrays.asList(CourtApplication.courtApplication().withId(applicationId).build()))
+                        .build())
                 .build();
 
         final JsonEnvelope event = envelopeFrom(
@@ -264,13 +283,17 @@ public class HearingResultedEventProcessorTest {
         this.eventProcessor.handleProsecutionCasesResultedV2(event);
 
         verifyNoMoreInteractions(sender);
-        verify(progressionService, times(2)).updateCase(Mockito.eq(event), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture());
+        verify(progressionService, times(2)).updateCase(Mockito.eq(event), prosecutionCaseArgumentCaptor.capture(),
+                courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(),
+                courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
 
         final List<ProsecutionCase> capturedCases = prosecutionCaseArgumentCaptor.getAllValues();
         assertTrue(capturedCases.stream().anyMatch(c -> caseId1.equals(c.getId())));
         assertTrue(capturedCases.stream().anyMatch(c -> caseId2.equals(c.getId())));
 
         assertThat(courtApplicationsArgumentCaptor.getValue().get(0).getId(), is(applicationId));
+        assertThat(hearingIdCaptor.getValue(), CoreMatchers.is(hearingId));
+        assertThat(jurisdictionTypeCaptor.getValue(), CoreMatchers.is(JurisdictionType.CROWN));
     }
 
     @Test

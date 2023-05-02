@@ -1,0 +1,1189 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "1 English Grounds",
+        "address2": "(Off Battlebridge Lane)",
+        "address3": "Southwark",
+        "address4": "London",
+        "address5": "",
+        "postcode": "SE1 2HU"
+      },
+      "code": "C01SW00",
+      "courtHearingLocation": "C01SW00",
+      "courtLocationCode": "0471",
+      "id": "63c1045a-7e41-3b6f-b2ae-df49086ac34e",
+      "lja": {
+        "ljaCode": "2576",
+        "ljaName": "South London Magistrates' Court"
+      },
+      "name": "Southwark Crown Court",
+      "roomId": "4492eac0-4978-3775-987b-534adb056ad5",
+      "roomName": "Courtroom 01"
+    },
+    "defendantJudicialResults": [
+      {
+        "judicialResult": {
+          "alwaysPublished": false,
+          "amendmentDate": "2022-11-15",
+          "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+          "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "category": "ANCILLARY",
+          "courtClerk": {
+            "firstName": "Emma",
+            "lastName": "Cleaner",
+            "userId": "2781b565-4514-4805-8744-a3e827f0f611"
+          },
+          "d20": false,
+          "durationElement": {
+            "secondaryDurationUnit": "Y",
+            "secondaryDurationValue": 1
+          },
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": true,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "29479194-0938-41c9-b41c-baaecdbc3f22",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+              "label": "Total custodial period",
+              "promptReference": "totalCustodialPeriod",
+              "promptSequence": 100,
+              "type": "INT",
+              "usergroups": [],
+              "value": "1 Years",
+              "welshValue": "1 Years"
+            },
+            {
+              "courtExtract": "Y",
+              "durationSequence": 2,
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "95618691-0742-417e-82b9-c4d4bff94585",
+              "label": "Suspended period",
+              "promptReference": "suspendedPeriod",
+              "promptSequence": 200,
+              "type": "INT",
+              "usergroups": [],
+              "value": "1 Years",
+              "welshLabel": "Cyfnod Gohiriedig",
+              "welshValue": "1 Years"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+              "label": "Probation team to be notified organisation name",
+              "promptReference": "probationteamtobenotifiedOrganisationName",
+              "promptSequence": 700,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "South West and Central Division NPS",
+              "welshValue": "South West and Central Division NPS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+              "label": "Probation team to be notified email address 1",
+              "promptReference": "probationteamtobenotifiedEmailAddress1",
+              "promptSequence": 700,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "SWSCNPS.Court@justice.gov.uk",
+              "welshValue": "SWSCNPS.Court@justice.gov.uk"
+            }
+          ],
+          "judicialResultTypeId": "b65fb5f1-b11d-4a95-a198-3b81333c7cf9",
+          "label": "Total suspended custodial period",
+          "lastSharedDateTime": "2022-11-15",
+          "level": "D",
+          "lifeDuration": false,
+          "offenceId": "1c5430f3-c16e-4e5a-ac59-2cb65524dd28",
+          "orderedDate": "2022-11-14",
+          "orderedHearingId": "1cd2cce8-0a76-469f-9c64-bd642323e3b9",
+          "parentJudicialResultId": "d69defd8-7a3f-4561-8ed5-0ab836961941",
+          "parentJudicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+          "postHearingCustodyStatus": "A",
+          "publishedAsAPrompt": false,
+          "publishedForNows": true,
+          "rank": 28200,
+          "resultText": "Total suspended custodial period\nTotal custodial period 1 Years\nSuspended period 1 Years\nProbation team to be notified organisation name South West and Central Division NPS\nProbation team to be notified email address 1 SWSCNPS.Court@justice.gov.uk",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "d69defd8-7a3f-4561-8ed5-0ab836961941",
+          "rootJudicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [],
+          "welshLabel": "Cyfanswm y cyfnod gohiriedig yn y ddalfa"
+        },
+        "masterDefendantId": "0995bead-152b-4f12-90dc-3e489124d758"
+      },
+      {
+        "judicialResult": {
+          "alwaysPublished": false,
+          "amendmentDate": "2022-11-15",
+          "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+          "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "category": "ANCILLARY",
+          "courtClerk": {
+            "firstName": "Emma",
+            "lastName": "Cleaner",
+            "userId": "2781b565-4514-4805-8744-a3e827f0f611"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "5d3a4174-ad6a-4080-ac35-974430f9624d",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+              "label": "Total custodial period",
+              "promptReference": "totalCustodialPeriod",
+              "promptSequence": 100,
+              "type": "INT",
+              "usergroups": [],
+              "value": "2 Years",
+              "welshValue": "2 Years"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "83b92cfe-9160-4e46-baa1-b9a1e99b41cc",
+              "label": "Consecutive to sentence imposed on",
+              "promptReference": "consecutiveToSentenceImposedOn",
+              "promptSequence": 300,
+              "qualifier": "F",
+              "type": "DATE",
+              "usergroups": [],
+              "value": "15/11/2022",
+              "welshLabel": "Yn dilyn y ddedfryd a osodwyd ar",
+              "welshValue": "15/11/2022"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "3e7dab34-bb9d-46df-9a45-139113ee0b09",
+              "label": "which was imposed by",
+              "promptReference": "whichWasImpBy",
+              "promptSequence": 400,
+              "type": "FIXL",
+              "usergroups": [],
+              "value": "Southwark Crown Court",
+              "welshLabel": "a orfodwyd gan",
+              "welshValue": "Southwark Crown Court"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "8f2984fe-9270-4175-9f2e-79d1ec7d3a38",
+              "label": "Minimum term",
+              "promptReference": "minimumTerm",
+              "promptSequence": 500,
+              "type": "INT",
+              "usergroups": [],
+              "value": "2 Years",
+              "welshValue": "2 Years"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "10ec0c03-a0a9-41fc-9314-1cec010e12cf",
+              "label": "Early release provisions apply",
+              "promptReference": "earlyReleaseProvisionsApply",
+              "promptSequence": 600,
+              "type": "BOOLEAN",
+              "usergroups": [],
+              "value": "false",
+              "welshValue": "false"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "ddaa31d2-352a-47ca-95c4-6588faabf099",
+              "label": "Early release provisions do not apply - sentence is a whole life order",
+              "promptReference": "earlyReleaseProvisionsDoNotApply",
+              "promptSequence": 700,
+              "type": "BOOLEAN",
+              "usergroups": [],
+              "value": "false",
+              "welshValue": "false"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+              "label": "Prison organisation name",
+              "promptReference": "prisonOrganisationName",
+              "promptSequence": 800,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "HMP/YOI Hatfield",
+              "welshValue": "HMP/YOI Hatfield"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+              "label": "Prison email address 1",
+              "promptReference": "prisonEmailAddress1",
+              "promptSequence": 800,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "OMUHatfield@justice.gov.uk",
+              "welshValue": "OMUHatfield@justice.gov.uk"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "6927b6ac-4c85-4532-838d-88ac00ea83f9",
+              "label": "Conveyor / custodian name organisation name",
+              "promptReference": "conveyorcustodiannameOrganisationName",
+              "promptSequence": 900,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "Southwark Crown Court: PECS",
+              "welshValue": "Southwark Crown Court: PECS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "6927b6ac-4c85-4532-838d-88ac00ea83f9",
+              "label": "Conveyor / custodian name email address 1",
+              "promptReference": "conveyorcustodiannameEmailAddress1",
+              "promptSequence": 900,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "PECSSouthwarkCrown@serco.com",
+              "welshValue": "PECSSouthwarkCrown@serco.com"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "21549bc3-5be9-4a91-abc7-57d8ed1b1676",
+              "label": "Reason for sentence without PSR",
+              "promptReference": "reasonForSentenceWithoutPSR",
+              "promptSequence": 1000,
+              "type": "TXT",
+              "usergroups": [],
+              "value": "Testing",
+              "welshLabel": "Rheswm dros ddedfryd heb PSR",
+              "welshValue": "Testing"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+              "label": "Probation team to be notified organisation name",
+              "promptReference": "probationteamtobenotifiedOrganisationName",
+              "promptSequence": 1100,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "South West and Central Division NPS",
+              "welshValue": "South West and Central Division NPS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+              "label": "Probation team to be notified email address 1",
+              "promptReference": "probationteamtobenotifiedEmailAddress1",
+              "promptSequence": 1100,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "SWSCNPS.Court@justice.gov.uk",
+              "welshValue": "SWSCNPS.Court@justice.gov.uk"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "2395831b-5044-451f-acaf-259d00e01bea",
+              "label": "Sentenced in absence",
+              "promptReference": "sentencedInAbsence",
+              "promptSequence": 1200,
+              "qualifier": "FH",
+              "type": "BOOLEAN",
+              "usergroups": [],
+              "value": "false",
+              "welshValue": "false"
+            }
+          ],
+          "judicialResultTypeId": "6cb15971-c945-4398-b7c9-3f8b743a4de3",
+          "label": "Total custodial period",
+          "lastSharedDateTime": "2022-11-15",
+          "level": "D",
+          "lifeDuration": false,
+          "offenceId": "dd184595-e002-4c7a-a1a2-ef4aed258616",
+          "orderedDate": "2022-11-14",
+          "orderedHearingId": "1cd2cce8-0a76-469f-9c64-bd642323e3b9",
+          "postHearingCustodyStatus": "A",
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "qualifier": "F,FH",
+          "rank": 3400,
+          "resultText": "Total custodial period\nTotal custodial period 2 Years\nConsecutive to sentence imposed on 15/11/2022\nwhich was imposed by Southwark Crown Court\nMinimum term 2 Years\nEarly release provisions apply false\nEarly release provisions do not apply - sentence is a whole life order false\nPrison organisation name HMP/YOI Hatfield\nPrison email address 1 OMUHatfield@justice.gov.uk\nConveyor / custodian name organisation name Southwark Crown Court: PECS\nConveyor / custodian name email address 1 PECSSouthwarkCrown@serco.com\nReason for sentence without PSR Testing\nProbation team to be notified organisation name South West and Central Division NPS\nProbation team to be notified email address 1 SWSCNPS.Court@justice.gov.uk\nSentenced in absence false",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "5d3a4174-ad6a-4080-ac35-974430f9624d",
+          "rootJudicialResultTypeId": "6cb15971-c945-4398-b7c9-3f8b743a4de3",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": []
+        },
+        "masterDefendantId": "f861a59a-a2a2-4701-b1fc-c4ecb728bb18"
+      }
+    ],
+    "estimatedDuration": "2 HOURS",
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "courtCentreId": "63c1045a-7e41-3b6f-b2ae-df49086ac34e",
+        "courtRoomId": "4492eac0-4978-3775-987b-534adb056ad5",
+        "hasSharedResults": true,
+        "isCancelled": false,
+        "listedDurationMinutes": 120,
+        "listingSequence": 0,
+        "sittingDay": "2022-11-14T10:00:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "1cd2cce8-0a76-469f-9c64-bd642323e3b9",
+    "judiciary": [
+      {
+        "firstName": "Hannah Gillian",
+        "judicialId": "6a264434-9030-3fca-b9b0-8d661f51e332",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "6a264434-9030-3fca-b9b0-8d661f51e332",
+          "judiciaryType": "Circuit Judge"
+        },
+        "lastName": "Duncan",
+        "title": ""
+      }
+    ],
+    "jurisdictionType": "CROWN",
+    "prosecutionCases": [
+      {
+        "caseStatus": "INACTIVE",
+        "cpsOrganisation": "A30AB00",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2022-11-14T07:39:12.321Z",
+            "id": "0995bead-152b-4f12-90dc-3e489124d758",
+            "isYouth": false,
+            "masterDefendantId": "0995bead-152b-4f12-90dc-3e489124d758",
+            "offences": [
+              {
+                "arrestDate": "2019-12-01",
+                "chargeDate": "2019-12-02",
+                "convictingCourt": {
+                  "code": "C01SW00",
+                  "courtLocationCode": "0471",
+                  "id": "63c1045a-7e41-3b6f-b2ae-df49086ac34e",
+                  "name": "Southwark Crown Court",
+                  "roomId": "4492eac0-4978-3775-987b-534adb056ad5"
+                },
+                "convictionDate": "2022-11-14",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "1c5430f3-c16e-4e5a-ac59-2cb65524dd28",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": true,
+                    "amendmentDate": "2022-11-15",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "cjsCode": "3106",
+                    "courtClerk": {
+                      "firstName": "Emma",
+                      "lastName": "Cleaner",
+                      "userId": "2781b565-4514-4805-8744-a3e827f0f611"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "7b18510c-fbb3-4aed-bd39-199aae37fc1e",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "2fcf2607-6619-4072-a348-77f6afb500f3",
+                        "label": "Place / area",
+                        "promptReference": "placeArea",
+                        "promptSequence": 100,
+                        "type": "TXT",
+                        "usergroups": [],
+                        "value": "Public places",
+                        "welshLabel": "Lleoliad / ardal",
+                        "welshValue": "Public places"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "ac46c9c8-976d-40ef-a913-85c64a6859bc",
+                        "label": "From date",
+                        "promptReference": "fromDate",
+                        "promptSequence": 200,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "15/11/2022",
+                        "welshLabel": "O'r dyddiad",
+                        "welshValue": "15/11/2022"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "9e41b95c-c776-4d95-b057-05b7fcb155aa",
+                        "label": "Until date",
+                        "promptReference": "untilDate",
+                        "promptSequence": 300,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "14/11/2023",
+                        "welshLabel": "Tan y dyddiad",
+                        "welshValue": "14/11/2023"
+                      }
+                    ],
+                    "judicialResultTypeId": "959dfbc9-5fc5-4aa1-ac26-135f28b09e23",
+                    "label": "Exclusion not to enter with between dates",
+                    "lastSharedDateTime": "2022-11-15",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2022-11-14",
+                    "orderedHearingId": "1cd2cce8-0a76-469f-9c64-bd642323e3b9",
+                    "parentJudicialResultId": "fbfb616d-cfdb-448a-9743-d2efbffe4c3b",
+                    "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 27500,
+                    "resultDefinitionGroup": "Community Requirement",
+                    "resultText": "Exclusion not to enter with between dates\nPlace / area Public places\nFrom date 15/11/2022\nUntil date 14/11/2023",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "d69defd8-7a3f-4561-8ed5-0ab836961941",
+                    "rootJudicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Cau allan rhwng dyddiadau penodol"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2022-11-15",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": true,
+                    "canBeSubjectOfVariation": true,
+                    "category": "FINAL",
+                    "cjsCode": "1115",
+                    "courtClerk": {
+                      "firstName": "Emma",
+                      "lastName": "Cleaner",
+                      "userId": "2781b565-4514-4805-8744-a3e827f0f611"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "primaryDurationUnit": "Y",
+                      "primaryDurationValue": 1,
+                      "secondaryDurationUnit": "Y",
+                      "secondaryDurationValue": 1
+                    },
+                    "dvlaCode": "C",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "d69defd8-7a3f-4561-8ed5-0ab836961941",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+                        "label": "Total custodial period",
+                        "promptReference": "totalCustodialPeriod",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "1 Years",
+                        "welshValue": "1 Years"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 2,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "95618691-0742-417e-82b9-c4d4bff94585",
+                        "label": "Suspended period",
+                        "promptReference": "suspendedPeriod",
+                        "promptSequence": 200,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "1 Years",
+                        "welshLabel": "Cyfnod Gohiriedig",
+                        "welshValue": "1 Years"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified organisation name",
+                        "promptReference": "probationteamtobenotifiedOrganisationName",
+                        "promptSequence": 700,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "South West and Central Division NPS",
+                        "welshValue": "South West and Central Division NPS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified email address 1",
+                        "promptReference": "probationteamtobenotifiedEmailAddress1",
+                        "promptSequence": 700,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "SWSCNPS.Court@justice.gov.uk",
+                        "welshValue": "SWSCNPS.Court@justice.gov.uk"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 1,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+                        "label": "Imprisonment Period",
+                        "promptReference": "imprisonmentPeriod",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "1 Years",
+                        "welshLabel": "Cyfnod Carcharu",
+                        "welshValue": "1 Years"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+                        "label": "Bail remand days to count (tagged days)",
+                        "promptReference": "bailRemandDaysToCountTaggedDays",
+                        "promptSequence": 700,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "0",
+                        "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+                        "welshValue": "0"
+                      }
+                    ],
+                    "judicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+                    "label": "Suspended sentence order - imprisonment",
+                    "lastSharedDateTime": "2022-11-15",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2022-11-14",
+                    "orderedHearingId": "1cd2cce8-0a76-469f-9c64-bd642323e3b9",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 29500,
+                    "resultText": "Suspended sentence order - imprisonment\nTotal custodial period 1 Years\nSuspended period 1 Years\nProbation team to be notified organisation name South West and Central Division NPS\nProbation team to be notified email address 1 SWSCNPS.Court@justice.gov.uk\nImprisonment Period 1 Years\nBail remand days to count (tagged days) 0",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "d69defd8-7a3f-4561-8ed5-0ab836961941",
+                    "rootJudicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gorchymyn dedfryd ohiriedig - carcharu"
+                  }
+                ],
+                "lastAdjournDate": "2022-11-14",
+                "lastAdjournedHearingType": "For a pre-sentence report to be prepared",
+                "listingNumber": 2,
+                "modeOfTrial": "Either Way",
+                "offenceCode": "CE79034",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "4f88921a-d0f1-46ec-bbd4-0077ab02cc3b",
+                "offenceLegislation": "Contrary to section 50(3) and (4) of the Customs and Excise Management Act 1979.",
+                "offenceTitle": "Improperly import a controlled drug of Class A to which a prohibition / restriction applies into the United Kingdom",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "1c5430f3-c16e-4e5a-ac59-2cb65524dd28",
+                  "originatingHearingId": "1cd2cce8-0a76-469f-9c64-bd642323e3b9",
+                  "pleaDate": "2022-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": false,
+                "startDate": "2019-11-28",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "CE79034",
+                    "offenceDefinitionId": "4f88921a-d0f1-46ec-bbd4-0077ab02cc3b",
+                    "offenceLegislation": "Contrary to section 50(3) and (4) of the Customs and Excise Management Act 1979.",
+                    "offenceTitle": "Improperly import a controlled drug of Class A to which a prohibition / restriction applies into the United Kingdom"
+                  },
+                  "offenceId": "1c5430f3-c16e-4e5a-ac59-2cb65524dd28",
+                  "originatingHearingId": "1cd2cce8-0a76-469f-9c64-bd642323e3b9",
+                  "verdictDate": "2022-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_BY_JURY_CONVICTED",
+                    "cjsVerdictCode": "G",
+                    "description": "Found guilty",
+                    "id": "dfd71ee7-039d-3d93-ae37-98ef38aec6e4",
+                    "sequence": 10,
+                    "verdictCode": "G"
+                  }
+                },
+                "wording": "Improperly import a controlled drug of Class A to which a prohibition / restriction applies into the United Kingdom."
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "D28GC01123537140",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "CRIME709136TC9GZ",
+              "personDetails": {
+                "address": {
+                  "address1": "m",
+                  "address2": "Evans Glens",
+                  "address3": "Schowalterport",
+                  "address4": "Avon",
+                  "postcode": "DA6 7ND"
+                },
+                "contact": {
+                  "home": "559-508-7068"
+                },
+                "dateOfBirth": "1975-10-10",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Hillard",
+                "gender": "FEMALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Monahan",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "proceedingsConcluded": true,
+            "prosecutionAuthorityReference": "D28GC01123537140",
+            "prosecutionCaseId": "cdbc7fdb-a05b-4d93-98e1-be195a1e51fa"
+          },
+          {
+            "courtProceedingsInitiated": "2022-11-14T07:39:12.340Z",
+            "id": "27252c5b-c559-4ab7-8a68-21c18d16c54b",
+            "isYouth": false,
+            "masterDefendantId": "27252c5b-c559-4ab7-8a68-21c18d16c54b",
+            "offences": [
+              {
+                "aquittalDate": "2022-11-14",
+                "arrestDate": "2019-12-01",
+                "chargeDate": "2019-12-02",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "ef395189-9026-4dc3-88d0-6bf57a9a0288",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "FINAL",
+                    "cjsCode": "1017",
+                    "courtClerk": {
+                      "firstName": "Emma",
+                      "lastName": "Cleaner",
+                      "userId": "2781b565-4514-4805-8744-a3e827f0f611"
+                    },
+                    "d20": false,
+                    "dvlaCode": "J",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": false,
+                    "isUnscheduled": false,
+                    "judicialResultId": "c085c7c5-b97e-4105-a39f-5662d6c5192f",
+                    "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "label": "Absolute discharge",
+                    "lastSharedDateTime": "2022-11-15",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2022-11-14",
+                    "orderedHearingId": "1cd2cce8-0a76-469f-9c64-bd642323e3b9",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 33500,
+                    "resultText": "Absolute discharge\n",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "c085c7c5-b97e-4105-a39f-5662d6c5192f",
+                    "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Rhyddhad diamod"
+                  }
+                ],
+                "lastAdjournDate": "2022-11-14",
+                "lastAdjournedHearingType": "For a pre-sentence report to be prepared",
+                "listingNumber": 2,
+                "modeOfTrial": "Either Way",
+                "offenceCode": "CE79034",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "4f88921a-d0f1-46ec-bbd4-0077ab02cc3b",
+                "offenceLegislation": "Contrary to section 50(3) and (4) of the Customs and Excise Management Act 1979.",
+                "offenceTitle": "Improperly import a controlled drug of Class A to which a prohibition / restriction applies into the United Kingdom",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "ef395189-9026-4dc3-88d0-6bf57a9a0288",
+                  "originatingHearingId": "1cd2cce8-0a76-469f-9c64-bd642323e3b9",
+                  "pleaDate": "2022-11-14",
+                  "pleaValue": "NOT_GUILTY"
+                },
+                "proceedingsConcluded": false,
+                "startDate": "2019-11-28",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "CE79034",
+                    "offenceDefinitionId": "4f88921a-d0f1-46ec-bbd4-0077ab02cc3b",
+                    "offenceLegislation": "Contrary to section 50(3) and (4) of the Customs and Excise Management Act 1979.",
+                    "offenceTitle": "Improperly import a controlled drug of Class A to which a prohibition / restriction applies into the United Kingdom"
+                  },
+                  "offenceId": "ef395189-9026-4dc3-88d0-6bf57a9a0288",
+                  "originatingHearingId": "1cd2cce8-0a76-469f-9c64-bd642323e3b9",
+                  "verdictDate": "2022-11-14",
+                  "verdictType": {
+                    "category": "Not Guilty",
+                    "categoryType": "NOT_GUILTY",
+                    "cjsVerdictCode": "N",
+                    "description": "Found not guilty",
+                    "id": "c3d85040-c090-3150-898c-0532b926282f",
+                    "sequence": 20,
+                    "verdictCode": "N"
+                  }
+                },
+                "wording": "Improperly import a controlled drug of Class A to which a prohibition / restriction applies into the United Kingdom."
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "E28GC01123537140",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "CRIME709136TC8GZ",
+              "personDetails": {
+                "address": {
+                  "address1": "c",
+                  "address2": "Kaylie Fields",
+                  "address3": "Karliview",
+                  "address4": "Avon",
+                  "postcode": "DA6 7ND"
+                },
+                "contact": {
+                  "home": "309-930-4161"
+                },
+                "dateOfBirth": "1976-09-09",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Shane",
+                "gender": "FEMALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Schultz",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "proceedingsConcluded": true,
+            "prosecutionAuthorityReference": "E28GC01123537140",
+            "prosecutionCaseId": "cdbc7fdb-a05b-4d93-98e1-be195a1e51fa"
+          },
+          {
+            "courtProceedingsInitiated": "2022-11-14T07:39:12.340Z",
+            "id": "f861a59a-a2a2-4701-b1fc-c4ecb728bb18",
+            "isYouth": false,
+            "masterDefendantId": "f861a59a-a2a2-4701-b1fc-c4ecb728bb18",
+            "offences": [
+              {
+                "arrestDate": "2019-12-01",
+                "chargeDate": "2019-12-02",
+                "convictingCourt": {
+                  "code": "C01SW00",
+                  "courtLocationCode": "0471",
+                  "id": "63c1045a-7e41-3b6f-b2ae-df49086ac34e",
+                  "name": "Southwark Crown Court",
+                  "roomId": "4492eac0-4978-3775-987b-534adb056ad5"
+                },
+                "convictionDate": "2022-11-14",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "dd184595-e002-4c7a-a1a2-ef4aed258616",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2022-11-15",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "FINAL",
+                    "cjsCode": "1024",
+                    "courtClerk": {
+                      "firstName": "Emma",
+                      "lastName": "Cleaner",
+                      "userId": "2781b565-4514-4805-8744-a3e827f0f611"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "primaryDurationUnit": "Y",
+                      "primaryDurationValue": 4
+                    },
+                    "dvlaCode": "A",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "c1ded4ab-a02a-4f95-8163-5c2c42565712",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+                        "label": "Total custodial period",
+                        "promptReference": "totalCustodialPeriod",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "4 Years",
+                        "welshValue": "4 Years"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+                        "label": "Prison organisation name",
+                        "promptReference": "prisonOrganisationName",
+                        "promptSequence": 800,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "HMP/YOI Hatfield",
+                        "welshValue": "HMP/YOI Hatfield"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+                        "label": "Prison email address 1",
+                        "promptReference": "prisonEmailAddress1",
+                        "promptSequence": 800,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "OMUHatfield@justice.gov.uk",
+                        "welshValue": "OMUHatfield@justice.gov.uk"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "6927b6ac-4c85-4532-838d-88ac00ea83f9",
+                        "label": "Conveyor / custodian name organisation name",
+                        "promptReference": "conveyorcustodiannameOrganisationName",
+                        "promptSequence": 900,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Southwark Crown Court: PECS",
+                        "welshValue": "Southwark Crown Court: PECS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "6927b6ac-4c85-4532-838d-88ac00ea83f9",
+                        "label": "Conveyor / custodian name email address 1",
+                        "promptReference": "conveyorcustodiannameEmailAddress1",
+                        "promptSequence": 900,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "PECSSouthwarkCrown@serco.com",
+                        "welshValue": "PECSSouthwarkCrown@serco.com"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified organisation name",
+                        "promptReference": "probationteamtobenotifiedOrganisationName",
+                        "promptSequence": 1100,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "South West and Central Division NPS",
+                        "welshValue": "South West and Central Division NPS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified email address 1",
+                        "promptReference": "probationteamtobenotifiedEmailAddress1",
+                        "promptSequence": 1100,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "SWSCNPS.Court@justice.gov.uk",
+                        "welshValue": "SWSCNPS.Court@justice.gov.uk"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 1,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "b3fda42d-f0d0-4c0e-811e-cfe283a400f1",
+                        "label": "Appropriate custodial term",
+                        "promptReference": "appropriateCustodialTerm",
+                        "promptSequence": 300,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "4 Years",
+                        "welshValue": "4 Years"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "fd0188b2-abb7-4559-8193-28fd3ad488dc",
+                        "label": "Extension period",
+                        "promptReference": "extensionPeriod",
+                        "promptSequence": 400,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "2 Years",
+                        "welshValue": "2 Years"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+                        "label": "Bail remand days to count (tagged days)",
+                        "promptReference": "bailRemandDaysToCountTaggedDays",
+                        "promptSequence": 900,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "0",
+                        "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+                        "welshValue": "0"
+                      }
+                    ],
+                    "judicialResultTypeId": "1dd2e245-a9af-4d04-84b6-92f64dc312fe",
+                    "label": "Extended sentence of detention for violent, sexual or terrorism offence (under 18)(S.254 SA 2020 / S.226B CJA 2003)",
+                    "lastSharedDateTime": "2022-11-15",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2022-11-14",
+                    "orderedHearingId": "1cd2cce8-0a76-469f-9c64-bd642323e3b9",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "AF",
+                    "rank": 36900,
+                    "resultText": "Extended sentence of detention for violent, sexual or terrorism offence (under 18)(S.254 SA 2020 / S.226B CJA 2003)\nTotal custodial period 4 Years\nPrison organisation name HMP/YOI Hatfield\nPrison email address 1 OMUHatfield@justice.gov.uk\nConveyor / custodian name organisation name Southwark Crown Court: PECS\nConveyor / custodian name email address 1 PECSSouthwarkCrown@serco.com\nProbation team to be notified organisation name South West and Central Division NPS\nProbation team to be notified email address 1 SWSCNPS.Court@justice.gov.uk\nAppropriate custodial term 4 Years\nExtension period 2 Years\nBail remand days to count (tagged days) 0",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "c1ded4ab-a02a-4f95-8163-5c2c42565712",
+                    "rootJudicialResultTypeId": "1dd2e245-a9af-4d04-84b6-92f64dc312fe",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  }
+                ],
+                "lastAdjournDate": "2022-11-14",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 2,
+                "modeOfTrial": "Either Way",
+                "offenceCode": "CE79034",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "4f88921a-d0f1-46ec-bbd4-0077ab02cc3b",
+                "offenceLegislation": "Contrary to section 50(3) and (4) of the Customs and Excise Management Act 1979.",
+                "offenceTitle": "Improperly import a controlled drug of Class A to which a prohibition / restriction applies into the United Kingdom",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "dd184595-e002-4c7a-a1a2-ef4aed258616",
+                  "originatingHearingId": "1cd2cce8-0a76-469f-9c64-bd642323e3b9",
+                  "pleaDate": "2022-11-14",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": false,
+                "startDate": "2019-11-28",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "CE79034",
+                    "offenceDefinitionId": "4f88921a-d0f1-46ec-bbd4-0077ab02cc3b",
+                    "offenceLegislation": "Contrary to section 50(3) and (4) of the Customs and Excise Management Act 1979.",
+                    "offenceTitle": "Improperly import a controlled drug of Class A to which a prohibition / restriction applies into the United Kingdom"
+                  },
+                  "offenceId": "dd184595-e002-4c7a-a1a2-ef4aed258616",
+                  "originatingHearingId": "1cd2cce8-0a76-469f-9c64-bd642323e3b9",
+                  "verdictDate": "2022-11-14",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY_BY_JURY_CONVICTED",
+                    "cjsVerdictCode": "G",
+                    "description": "Found guilty",
+                    "id": "dfd71ee7-039d-3d93-ae37-98ef38aec6e4",
+                    "sequence": 10,
+                    "verdictCode": "G"
+                  }
+                },
+                "wording": "Improperly import a controlled drug of Class A to which a prohibition / restriction applies into the United Kingdom."
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "F28GC01123537140",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "CRIME709136TC7GZ",
+              "personDetails": {
+                "address": {
+                  "address1": "v",
+                  "address2": "Beahan Estate",
+                  "address3": "Laurianeville",
+                  "address4": "Avon",
+                  "postcode": "DA6 7ND"
+                },
+                "contact": {
+                  "home": "738-456-9041"
+                },
+                "dateOfBirth": "1977-05-15",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Marques",
+                "gender": "FEMALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Mohr",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "proceedingsConcluded": true,
+            "prosecutionAuthorityReference": "F28GC01123537140",
+            "prosecutionCaseId": "cdbc7fdb-a05b-4d93-98e1-be195a1e51fa"
+          }
+        ],
+        "id": "cdbc7fdb-a05b-4d93-98e1-be195a1e51fa",
+        "initiationCode": "C",
+        "originatingOrganisation": "0300000",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Criminal Justice Department",
+            "address2": "Derbyshire Constabulary",
+            "address3": "Butterley Hall",
+            "address4": "Ripley",
+            "address5": "Derby",
+            "postcode": "DE5 3RS"
+          },
+          "contact": {
+            "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+          },
+          "majorCreditorCode": "PO30",
+          "prosecutionAuthorityCode": "DERPF",
+          "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+          "prosecutionAuthorityName": "Derbyshire Police",
+          "prosecutionAuthorityOUCode": "0300000",
+          "caseURN": "30JP1411220"
+        }
+      }
+    ],
+    "shadowListedOffences": [],
+    "type": {
+      "description": "Sentence",
+      "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
+    }
+  },
+  "hearingDay": "2022-11-14"
+}

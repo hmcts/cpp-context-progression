@@ -1,25 +1,4 @@
 {
-  "courtCentre": {
-    "address": {
-      "address1": "The Law Courts",
-      "address2": "Altyre Road",
-      "address3": "Croydon",
-      "address4": "",
-      "address5": "",
-      "postcode": "CR9 5AB"
-    },
-    "code": "C01CY00",
-    "courtHearingLocation": "C01CY00",
-    "courtLocationCode": "0418",
-    "id": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
-    "lja": {
-      "ljaCode": "2576",
-      "ljaName": "South London Magistrates' Court"
-    },
-    "name": "Croydon Crown Court",
-    "roomId": "731816c1-5ee4-373a-9bda-840e13a5bcb0",
-    "roomName": "Courtroom 01"
-  },
   "prosecutionCase": {
     "id": "779d4540-d0ae-11e9-bb65-2a2ae2dbcce4",
     "prosecutionCaseIdentifier": {
@@ -29,7 +8,7 @@
     },
     "originatingOrganisation": "a",
     "initiationCode": "J",
-    "caseStatus": "INACTIVE",
+    "caseStatus": "a",
     "statementOfFacts": "a",
     "statementOfFactsWelsh": "a",
     "defendants": [
@@ -154,6 +133,129 @@
                   "a"
                 ],
                 "category": "FINAL",
+                "judicialResultPrompts": [
+                  {
+                    "label": "a",
+                    "welshLabel": "a",
+                    "value": "a",
+                    "promptSequence": 0.1,
+                    "promptReference": "a"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "00000000-0000-0000-0000-000000000000",
+            "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+            "offenceCode": "a",
+            "offenceTitle": "a",
+            "offenceTitleWelsh": "a",
+            "offenceLegislation": "a",
+            "offenceLegislationWelsh": "a",
+            "modeOfTrial": "a",
+            "wording": "a",
+            "wordingWelsh": "a",
+            "startDate": "2018-01-01",
+            "endDate": "2018-01-01",
+            "arrestDate": "2018-01-01",
+            "chargeDate": "2018-01-01",
+            "dateOfInformation": "2018-01-01",
+            "orderIndex": 0,
+            "count": 0,
+            "convictionDate": "2018-01-01",
+            "notifiedPlea": {
+              "offenceId": "00000000-0000-0000-0000-000000000000",
+              "notifiedPleaDate": "2018-01-01",
+              "notifiedPleaValue": "NOTIFIED_GUILTY"
+            },
+            "indicatedPlea": {
+              "offenceId": "00000000-0000-0000-0000-000000000000",
+              "indicatedPleaDate": "2018-01-01",
+              "indicatedPleaValue": "INDICATED_GUILTY",
+              "source": "ONLINE",
+              "allocationDecision": {
+                "courtDecision": "CONSENT_SUMMARY_TRIAL",
+                "prosecutionRepresentation": "CONSENT_SUMMARY_TRIAL",
+                "defendantRepresentation": "CONSENT_SUMMARY_TRIAL",
+                "indicationOfSentence": "a"
+              }
+            },
+            "plea": {
+              "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+              "delegatedPowers": {
+                "userId": "00000000-0000-0000-0000-000000000000",
+                "firstName": "a",
+                "lastName": "a"
+              },
+              "offenceId": "00000000-0000-0000-0000-000000000000",
+              "pleaDate": "2018-01-01",
+              "pleaValue": "GUILTY"
+            },
+            "verdict": {
+              "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+              "offenceId": "00000000-0000-0000-0000-000000000000",
+              "verdictDate": "2018-01-01",
+              "verdictType": {
+                "id": "00000000-0000-0000-0000-000000000000",
+                "sequence": 0,
+                "description": "a",
+                "category": "a",
+                "categoryType": "a"
+              },
+              "jurors": {
+                "numberOfJurors": 1,
+                "numberOfSplitJurors": 1,
+                "unanimous": true
+              },
+              "lesserOrAlternativeOffence": {
+                "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+                "offenceCode": "a",
+                "offenceTitle": "a",
+                "offenceTitleWelsh": "a",
+                "offenceLegislation": "a",
+                "offenceLegislationWelsh": "a"
+              }
+            },
+            "offenceFacts": {
+              "vehicleRegistration": "a",
+              "alcoholReadingAmount": 123
+            },
+            "judicialResults": [
+              {
+                "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                "label": "a",
+                "welshLabel": "a",
+                "isAdjournmentResult": true,
+                "isFinancialResult": true,
+                "isConvictedResult": true,
+                "isAvailableForCourtExtract": true,
+                "amendmentDate": "0000-01-01",
+                "amendmentReason": "a",
+                "cjsCode": "a",
+                "rank": 0.1,
+                "orderedDate": "0000-01-01",
+                "lastSharedDateTime": "a",
+                "courtClerk": {
+                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "firstName": "a",
+                  "lastName": "a"
+                },
+                "delegatedPowers": {
+                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "firstName": "a",
+                  "lastName": "a"
+                },
+                "fourEyesApproval": {
+                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "firstName": "a",
+                  "lastName": "a"
+                },
+                "approvedDate": "0000-01-01",
+                "usergroups": [
+                  "a"
+                ],
+                "category": "ANCILLARY",
                 "judicialResultPrompts": [
                   {
                     "label": "a",
@@ -840,7 +942,7 @@
               "usergroups": [
                 "a"
               ],
-              "category": "FINAL",
+              "category": "ANCILLARY",
               "judicialResultPrompts": [
                 {
                   "label": "a",
@@ -938,7 +1040,7 @@
           "usergroups": [
             "a"
           ],
-          "category": "FINAL",
+          "category": "ANCILLARY",
           "judicialResultPrompts": [
             {
               "label": "a",

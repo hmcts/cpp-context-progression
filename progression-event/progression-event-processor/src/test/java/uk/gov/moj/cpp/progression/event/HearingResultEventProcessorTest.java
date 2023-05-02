@@ -23,6 +23,7 @@ import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationTy
 import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.DefendantAttendance.defendantAttendance;
 import static uk.gov.justice.core.courts.Hearing.hearing;
+import static uk.gov.justice.core.courts.HearingType.hearingType;
 import static uk.gov.justice.core.courts.JudicialResult.judicialResult;
 import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
@@ -40,6 +41,7 @@ import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationType;
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
@@ -48,8 +50,10 @@ import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.NextHearing;
@@ -165,6 +169,9 @@ public class HearingResultEventProcessorTest {
     private ArgumentCaptor<ProsecutionCase> prosecutionCaseArgumentCaptor;
 
     @Captor
+    private ArgumentCaptor<CourtCentre> courtCentreArgumentCaptor;
+
+    @Captor
     private ArgumentCaptor<ListCourtHearing> listCourtHearingArgumentCaptor;
 
     @Mock
@@ -199,6 +206,15 @@ public class HearingResultEventProcessorTest {
 
     @Mock
     private FeatureControlGuard featureControlGuard;
+
+    @Captor
+    private ArgumentCaptor<UUID> hearingIdCaptor;
+    @Captor
+    private ArgumentCaptor<HearingType> hearingTypeCaptor;
+    @Captor
+    private ArgumentCaptor<JurisdictionType> jurisdictionTypeCaptor;
+    @Captor
+    private ArgumentCaptor<Boolean> isBoxHearingCaptor;
 
     @Before
     public void initMocks() {
@@ -453,9 +469,12 @@ public class HearingResultEventProcessorTest {
         final UUID offenceUuid2 = randomUUID();
         final List<UUID> shadowListedOffences = Arrays.asList(offenceUuid1, offenceUuid2);
 
+        final UUID hearingId = randomUUID();
         final ProsecutionCasesResulted prosecutionCasesResulted = prosecutionCasesResulted()
                 .withHearing(hearing()
-                        .withId(randomUUID())
+                        .withId(hearingId)
+                        .withType(hearingType().withDescription("Trial").build())
+                        .withJurisdictionType(JurisdictionType.CROWN)
                         .withProsecutionCases(prosecutionCases)
                         .build())
                 .withShadowListedOffences(shadowListedOffences)
@@ -479,12 +498,17 @@ public class HearingResultEventProcessorTest {
         this.eventProcessor.handleProsecutionCasesResulted(event);
 
         verify(this.sender).send(this.envelopeArgumentCaptor.capture());
-        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(),
+                courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(),
+                hearingIdCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
         verify(listingService, atLeastOnce()).listCourtHearing(envelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(1));
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(defendantUuid1));
         assertThat(listCourtHearingArgumentCaptor.getValue().getShadowListedOffences().size(), is(2));
         assertThat(listCourtHearingArgumentCaptor.getValue().getShadowListedOffences(), hasItems(offenceUuid1, offenceUuid2));
+        assertThat(hearingIdCaptor.getValue(), is(hearingId));
+        assertThat(hearingTypeCaptor.getValue().getDescription(), is("Trial"));
+        assertThat(jurisdictionTypeCaptor.getValue(), is(JurisdictionType.CROWN));
     }
 
     @Test
@@ -675,10 +699,13 @@ public class HearingResultEventProcessorTest {
 
     private void sendToCrownCourt(final List<ProsecutionCase> prosecutionCases, final UUID defendantUUUID) throws IOException {
         final CommittingCourt committingCourt = TestHelper.buildCommittingCourt();
+        final UUID hearingId = randomUUID();
         final ProsecutionCasesResulted prosecutionCasesResulted = prosecutionCasesResulted()
                 .withHearing(hearing()
-                        .withId(randomUUID())
+                        .withId(hearingId)
+                        .withType(hearingType().withDescription("Trial").build())
                         .withProsecutionCases(prosecutionCases)
+                        .withJurisdictionType(JurisdictionType.CROWN)
                         .build())
                 .withCommittingCourt(committingCourt)
                 .build();
@@ -704,11 +731,16 @@ public class HearingResultEventProcessorTest {
 
         verify(this.sender).send(this.envelopeArgumentCaptor.capture());
         verify(nextHearingService, atLeastOnce()).getNextHearingDetails(any(), Mockito.eq(true), any());
-        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(),
+                defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(),
+                hearingIdCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
         verify(listingService, atLeastOnce()).listCourtHearing(envelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
 
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(1));
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(defendantUUUID));
+        assertThat(hearingIdCaptor.getValue(), is(hearingId));
+        assertThat(hearingTypeCaptor.getValue().getDescription(), is("Trial"));
+        assertThat(jurisdictionTypeCaptor.getValue(), is(JurisdictionType.CROWN));
     }
 
     private List<ProsecutionCase> mockPublicHearingResultedWithSendingCourtOffenceResult(final UUID defendantUUUID, final UUID offenceUUID, final String cjsCode, final String resultDefinitionGroup) {
@@ -747,7 +779,7 @@ public class HearingResultEventProcessorTest {
                 .withName(REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS);
 
         final JsonObject payload = Json.createReader(
-                new ByteArrayInputStream(jsonString.getBytes()))
+                        new ByteArrayInputStream(jsonString.getBytes()))
                 .readObject();
 
         return envelopeFrom(metadataBuilder, payload);

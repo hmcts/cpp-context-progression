@@ -18,13 +18,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
+import static uk.gov.justice.core.courts.CourtApplicationCase.courtApplicationCase;
 import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationType;
 import static uk.gov.justice.listing.events.PublicListingNewDefendantAddedForCourtProceedings.publicListingNewDefendantAddedForCourtProceedings;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -37,7 +38,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -49,7 +49,6 @@ import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationPartyAttendance;
 import uk.gov.justice.core.courts.CourtApplicationPartyCounsel;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -248,26 +247,9 @@ public class ProgressionServiceTest {
 
         verify(sender).send(envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                        metadata().withName(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA),
-                        payloadIsJson(
-                                allOf(
-                                        withJsonPath("$.courtCentre.id", is(confirmedHearing.getCourtCentre().getId().toString())),
-                                        withJsonPath("$.courtCentre.name", is(confirmedHearing.getCourtCentre().getName())),
-                                        withJsonPath("$.courtCentre.roomId", is(confirmedHearing.getCourtCentre().getRoomId().toString())),
-                                        withJsonPath("$.courtCentre.roomName", is(confirmedHearing.getCourtCentre().getRoomName())),
-                                        withJsonPath("$.courtCentre.welshName", is(confirmedHearing.getCourtCentre().getWelshName())),
-                                        withJsonPath("$.courtCentre.welshRoomName", is(confirmedHearing.getCourtCentre().getWelshRoomName())),
-                                        withJsonPath("$.hearingDateTime", is(HEARING_DATE_1)),
-                                        withJsonPath("$.confirmedProsecutionCaseIds[0].id", is(CASE_ID_1.toString())),
-                                        withJsonPath("$.confirmedProsecutionCaseIds[0].confirmedDefendantIds[0]", is(DEFENDANT_ID_1.toString())),
-                                        withJsonPath("$.confirmedProsecutionCaseIds[1].id", is(CASE_ID_2.toString())),
-                                        withJsonPath("$.confirmedProsecutionCaseIds[1].confirmedDefendantIds[0]", is(DEFENDANT_ID_2.toString()))
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(metadata().withName(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA), payloadIsJson(allOf(withJsonPath("$.courtCentre.id", is(confirmedHearing.getCourtCentre().getId().toString())), withJsonPath("$.courtCentre.name", is(confirmedHearing.getCourtCentre().getName())), withJsonPath("$.courtCentre.roomId", is(confirmedHearing.getCourtCentre().getRoomId().toString())), withJsonPath("$.courtCentre.roomName", is(confirmedHearing.getCourtCentre().getRoomName())), withJsonPath("$.courtCentre.welshName", is(confirmedHearing.getCourtCentre().getWelshName())), withJsonPath("$.courtCentre.welshRoomName", is(confirmedHearing.getCourtCentre().getWelshRoomName())), withJsonPath("$.hearingDateTime", is(HEARING_DATE_1)), withJsonPath("$.confirmedProsecutionCaseIds[0].id", is(CASE_ID_1.toString())), withJsonPath("$.confirmedProsecutionCaseIds[0].confirmedDefendantIds[0]", is(DEFENDANT_ID_1.toString())), withJsonPath("$.confirmedProsecutionCaseIds[1].id", is(CASE_ID_2.toString())), withJsonPath("$.confirmedProsecutionCaseIds[1].confirmedDefendantIds[0]", is(DEFENDANT_ID_2.toString()))
 
-                                )
-                        )
-                )
-        );
+        ))));
     }
 
     @Test
@@ -295,48 +277,14 @@ public class ProgressionServiceTest {
         final ConfirmedHearing updatedHearing = hearingUpdatedProcessed.getConfirmedHearing();
         final JsonEnvelope envelope = getEnvelope(PUBLIC_EVENT_HEARING_DETAIL_CHANGED);
 
-        when(referenceDataService.getOrganisationUnitById(updatedHearing.getCourtCentre().getId(), envelope, requester))
-                .thenReturn(of(generateCourtCentreJson()));
-        when(referenceDataService.getJudiciariesByJudiciaryIdList(asList(JUDICIARY_ID_1, JUDICIARY_ID_2), envelope, requester))
-                .thenReturn(of(generateJudiciariesJson()));
+        when(referenceDataService.getOrganisationUnitById(updatedHearing.getCourtCentre().getId(), envelope, requester)).thenReturn(of(generateCourtCentreJson()));
+        when(referenceDataService.getJudiciariesByJudiciaryIdList(asList(JUDICIARY_ID_1, JUDICIARY_ID_2), envelope, requester)).thenReturn(of(generateJudiciariesJson()));
 
         progressionService.publishHearingDetailChangedPublicEvent(envelope, hearingUpdatedProcessed.getConfirmedHearing());
 
         verify(sender).send(envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                        metadata().withName(PUBLIC_EVENT_HEARING_DETAIL_CHANGED),
-                        payloadIsJson(
-                                allOf(
-                                        withJsonPath("$.hearing.id", is(updatedHearing.getId().toString())),
-                                        withJsonPath("$.hearing.type.description", is(updatedHearing.getType().getDescription())),
-                                        withJsonPath("$.hearing.type.id", is(updatedHearing.getType().getId().toString())),
-                                        withJsonPath("$.hearing.jurisdictionType", is(updatedHearing.getJurisdictionType().toString())),
-                                        withJsonPath("$.hearing.reportingRestrictionReason", is(updatedHearing.getReportingRestrictionReason())),
-                                        withJsonPath("$.hearing.hearingLanguage", is(updatedHearing.getHearingLanguage().toString())),
-                                        withJsonPath("$.hearing.hearingDays[0].sittingDay", is(HEARING_DATE_1)),
-                                        withJsonPath("$.hearing.hearingDays[1].sittingDay", is(HEARING_DATE_2)),
-                                        withJsonPath("$.hearing.hearingDays[2].sittingDay", is(HEARING_DATE_3)),
-                                        withJsonPath("$.hearing.courtCentre.id", is(COURT_CENTRE_ID.toString())),
-                                        withJsonPath("$.hearing.courtCentre.name", is(COURT_CENTRE_NAME)),
-                                        withJsonPath("$.hearing.judiciary[0].judicialId", is(JUDICIARY_ID_1.toString())),
-                                        withJsonPath("$.hearing.judiciary[0].title", is(JUDICIARY_TITLE_1)),
-                                        withJsonPath("$.hearing.judiciary[0].firstName", is(JUDICIARY_FIRST_NAME_1)),
-                                        withJsonPath("$.hearing.judiciary[0].lastName", is(JUDICIARY_LAST_NAME_1)),
-                                        withJsonPath("$.hearing.judiciary[0].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(0).getJudicialRoleType().getJudiciaryType())),
-                                        withJsonPath("$.hearing.judiciary[0].isDeputy", is(updatedHearing.getJudiciary().get(0).getIsDeputy())),
-                                        withJsonPath("$.hearing.judiciary[0].isBenchChairman", is(updatedHearing.getJudiciary().get(0).getIsBenchChairman())),
-                                        withJsonPath("$.hearing.judiciary[1].judicialId", is(JUDICIARY_ID_2.toString())),
-                                        withJsonPath("$.hearing.judiciary[1].title", is(JUDICIARY_TITLE_2)),
-                                        withJsonPath("$.hearing.judiciary[1].firstName", is(JUDICIARY_FIRST_NAME_2)),
-                                        withJsonPath("$.hearing.judiciary[1].lastName", is(JUDICIARY_LAST_NAME_2)),
-                                        withJsonPath("$.hearing.judiciary[1].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(1).getJudicialRoleType().getJudiciaryType())),
-                                        withJsonPath("$.hearing.judiciary[1].isDeputy", is(updatedHearing.getJudiciary().get(1).getIsDeputy())),
-                                        withJsonPath("$.hearing.judiciary[1].isBenchChairman", is(updatedHearing.getJudiciary().get(1).getIsBenchChairman()))
-                                )
-                        )
-                )
-        );
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(metadata().withName(PUBLIC_EVENT_HEARING_DETAIL_CHANGED), payloadIsJson(allOf(withJsonPath("$.hearing.id", is(updatedHearing.getId().toString())), withJsonPath("$.hearing.type.description", is(updatedHearing.getType().getDescription())), withJsonPath("$.hearing.type.id", is(updatedHearing.getType().getId().toString())), withJsonPath("$.hearing.jurisdictionType", is(updatedHearing.getJurisdictionType().toString())), withJsonPath("$.hearing.reportingRestrictionReason", is(updatedHearing.getReportingRestrictionReason())), withJsonPath("$.hearing.hearingLanguage", is(updatedHearing.getHearingLanguage().toString())), withJsonPath("$.hearing.hearingDays[0].sittingDay", is(HEARING_DATE_1)), withJsonPath("$.hearing.hearingDays[1].sittingDay", is(HEARING_DATE_2)), withJsonPath("$.hearing.hearingDays[2].sittingDay", is(HEARING_DATE_3)), withJsonPath("$.hearing.courtCentre.id", is(COURT_CENTRE_ID.toString())), withJsonPath("$.hearing.courtCentre.name", is(COURT_CENTRE_NAME)), withJsonPath("$.hearing.judiciary[0].judicialId", is(JUDICIARY_ID_1.toString())), withJsonPath("$.hearing.judiciary[0].title", is(JUDICIARY_TITLE_1)), withJsonPath("$.hearing.judiciary[0].firstName", is(JUDICIARY_FIRST_NAME_1)), withJsonPath("$.hearing.judiciary[0].lastName", is(JUDICIARY_LAST_NAME_1)), withJsonPath("$.hearing.judiciary[0].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(0).getJudicialRoleType().getJudiciaryType())), withJsonPath("$.hearing.judiciary[0].isDeputy", is(updatedHearing.getJudiciary().get(0).getIsDeputy())), withJsonPath("$.hearing.judiciary[0].isBenchChairman", is(updatedHearing.getJudiciary().get(0).getIsBenchChairman())), withJsonPath("$.hearing.judiciary[1].judicialId", is(JUDICIARY_ID_2.toString())), withJsonPath("$.hearing.judiciary[1].title", is(JUDICIARY_TITLE_2)), withJsonPath("$.hearing.judiciary[1].firstName", is(JUDICIARY_FIRST_NAME_2)), withJsonPath("$.hearing.judiciary[1].lastName", is(JUDICIARY_LAST_NAME_2)), withJsonPath("$.hearing.judiciary[1].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(1).getJudicialRoleType().getJudiciaryType())), withJsonPath("$.hearing.judiciary[1].isDeputy", is(updatedHearing.getJudiciary().get(1).getIsDeputy())), withJsonPath("$.hearing.judiciary[1].isBenchChairman", is(updatedHearing.getJudiciary().get(1).getIsBenchChairman()))))));
     }
 
     @Test
@@ -435,61 +383,12 @@ public class ProgressionServiceTest {
 
     @Test
     public void shouldReturnMixHearingWhenUpdateHearingForHearingUpdatedCalled() throws IOException {
-        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
-                .withHearingDays(singletonList(HearingDay.hearingDay().withCourtRoomId(randomUUID()).build()))
-                .withCourtCentre(CourtCentre.courtCentre()
-                        .withId(randomUUID())
-                        .build())
-                .withJurisdictionType(JurisdictionType.CROWN)
-                .withId(randomUUID())
-                .withHearingLanguage(HearingLanguage.ENGLISH)
-                .withReportingRestrictionReason("reportingRestrictionReason")
-                .withType(HearingType.hearingType().withId(randomUUID()).build())
-                .build();
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing().withHearingDays(singletonList(HearingDay.hearingDay().withCourtRoomId(randomUUID()).build())).withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).build()).withJurisdictionType(JurisdictionType.CROWN).withId(randomUUID()).withHearingLanguage(HearingLanguage.ENGLISH).withReportingRestrictionReason("reportingRestrictionReason").withType(HearingType.hearingType().withId(randomUUID()).build()).build();
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND);
-        final Hearing hearing = Hearing.hearing()
-                .withIsVacatedTrial(true)
-                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase().withId(randomUUID()).build()))
-                .withIsBoxHearing(false)
-                .withHearingDays(singletonList(HearingDay.hearingDay().withCourtRoomId(randomUUID()).build()))
-                .withId(randomUUID())
-                .withType(HearingType.hearingType().withId(randomUUID()).build())
-                .withHearingLanguage(HearingLanguage.WELSH)
-                .withCourtApplications(singletonList(CourtApplication.courtApplication().withId(randomUUID()).build()))
-                .withPanel("panel")
-                .withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withRoomId(randomUUID()).build())
-                .withApplicantCounsels(singletonList(ApplicantCounsel.applicantCounsel().withId(randomUUID()).build()))
-                .withApplicationPartyCounsels(singletonList(CourtApplicationPartyCounsel.courtApplicationPartyCounsel().withId(randomUUID()).build()))
-                .withApprovalsRequested(singletonList(ApprovalRequest.approvalRequest().withHearingId(randomUUID()).build()))
-                .withCompanyRepresentatives(singletonList(CompanyRepresentative.companyRepresentative().withId(randomUUID()).build()))
-                .withCourtApplicationPartyAttendance(singletonList(CourtApplicationPartyAttendance.courtApplicationPartyAttendance().withCourtApplicationPartyId(randomUUID()).build()))
-                .withCrackedIneffectiveTrial(CrackedIneffectiveTrial.crackedIneffectiveTrial().withId(randomUUID()).build())
-                .withDefenceCounsels(singletonList(DefenceCounsel.defenceCounsel().withId(randomUUID()).build()))
-                .withDefendantAttendance(singletonList(DefendantAttendance.defendantAttendance().withDefendantId(randomUUID()).build()))
-                .withDefendantJudicialResults(singletonList(DefendantJudicialResult.defendantJudicialResult().withMasterDefendantId(randomUUID()).build()))
-                .withReportingRestrictionReason("ReportingRestrictionReason")
-                .withEarliestNextHearingDate(ZonedDateTime.now())
-                .withDefendantReferralReasons(singletonList(ReferralReason.referralReason().withId(randomUUID()).build()))
-                .withHasSharedResults(true)
-                .withHearingCaseNotes(singletonList(HearingCaseNote.hearingCaseNote().withId(randomUUID()).build()))
-                .withIntermediaries(singletonList(InterpreterIntermediary.interpreterIntermediary().withId(randomUUID()).build()))
-                .withIsEffectiveTrial(true)
-                .withIsSJPHearing(false)
-                .withIsVirtualBoxHearing(false)
-                .withJudiciary(singletonList(JudicialRole.judicialRole().withJudicialId(randomUUID()).build()))
-                .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .withProsecutionCounsels(singletonList(ProsecutionCounsel.prosecutionCounsel().withId(randomUUID()).build()))
-                .withRespondentCounsels(singletonList(RespondentCounsel.respondentCounsel().withId(randomUUID()).build()))
-                .withSeedingHearing(SeedingHearing.seedingHearing().withSeedingHearingId(randomUUID()).build())
-                .withShadowListedOffences(singletonList(randomUUID()))
-                .withYouthCourt(YouthCourt.youthCourt().withYouthCourtId(randomUUID()).build())
-                .withYouthCourtDefendantIds(singletonList(randomUUID()))
-                .build();
+        final Hearing hearing = Hearing.hearing().withIsVacatedTrial(true).withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase().withId(randomUUID()).build())).withIsBoxHearing(false).withHearingDays(singletonList(HearingDay.hearingDay().withCourtRoomId(randomUUID()).build())).withId(randomUUID()).withType(HearingType.hearingType().withId(randomUUID()).build()).withHearingLanguage(HearingLanguage.WELSH).withCourtApplications(singletonList(courtApplication().withId(randomUUID()).build())).withPanel("panel").withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withRoomId(randomUUID()).build()).withApplicantCounsels(singletonList(ApplicantCounsel.applicantCounsel().withId(randomUUID()).build())).withApplicationPartyCounsels(singletonList(CourtApplicationPartyCounsel.courtApplicationPartyCounsel().withId(randomUUID()).build())).withApprovalsRequested(singletonList(ApprovalRequest.approvalRequest().withHearingId(randomUUID()).build())).withCompanyRepresentatives(singletonList(CompanyRepresentative.companyRepresentative().withId(randomUUID()).build())).withCourtApplicationPartyAttendance(singletonList(CourtApplicationPartyAttendance.courtApplicationPartyAttendance().withCourtApplicationPartyId(randomUUID()).build())).withCrackedIneffectiveTrial(CrackedIneffectiveTrial.crackedIneffectiveTrial().withId(randomUUID()).build()).withDefenceCounsels(singletonList(DefenceCounsel.defenceCounsel().withId(randomUUID()).build())).withDefendantAttendance(singletonList(DefendantAttendance.defendantAttendance().withDefendantId(randomUUID()).build())).withDefendantJudicialResults(singletonList(DefendantJudicialResult.defendantJudicialResult().withMasterDefendantId(randomUUID()).build())).withReportingRestrictionReason("ReportingRestrictionReason").withEarliestNextHearingDate(ZonedDateTime.now()).withDefendantReferralReasons(singletonList(ReferralReason.referralReason().withId(randomUUID()).build())).withHasSharedResults(true).withHearingCaseNotes(singletonList(HearingCaseNote.hearingCaseNote().withId(randomUUID()).build())).withIntermediaries(singletonList(InterpreterIntermediary.interpreterIntermediary().withId(randomUUID()).build())).withIsEffectiveTrial(true).withIsSJPHearing(false).withIsVirtualBoxHearing(false).withJudiciary(singletonList(JudicialRole.judicialRole().withJudicialId(randomUUID()).build())).withJurisdictionType(JurisdictionType.MAGISTRATES).withProsecutionCounsels(singletonList(ProsecutionCounsel.prosecutionCounsel().withId(randomUUID()).build())).withRespondentCounsels(singletonList(RespondentCounsel.respondentCounsel().withId(randomUUID()).build())).withSeedingHearing(SeedingHearing.seedingHearing().withSeedingHearingId(randomUUID()).build()).withShadowListedOffences(singletonList(randomUUID())).withYouthCourt(YouthCourt.youthCourt().withYouthCourtId(randomUUID()).build()).withYouthCourtDefendantIds(singletonList(randomUUID())).build();
 
-        when(referenceDataService.getOrganisationUnitById(confirmedHearing.getCourtCentre().getId(), jsonEnvelope, requester))
-                .thenReturn(of(generateCourtCentreJson()));
-        when(referenceDataService.getJudiciariesByJudiciaryIdList(asList(JUDICIARY_ID_1, JUDICIARY_ID_2), jsonEnvelope, requester))
-                .thenReturn(of(generateJudiciariesJson()));
+        when(referenceDataService.getOrganisationUnitById(confirmedHearing.getCourtCentre().getId(), jsonEnvelope, requester)).thenReturn(of(generateCourtCentreJson()));
+        when(referenceDataService.getJudiciariesByJudiciaryIdList(asList(JUDICIARY_ID_1, JUDICIARY_ID_2), jsonEnvelope, requester)).thenReturn(of(generateJudiciariesJson()));
 
         final Hearing mixHearing = progressionService.updateHearingForHearingUpdated(confirmedHearing, jsonEnvelope, hearing);
 
@@ -548,13 +447,8 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void shouldSendUpdateDefendantListingStatusForUnscheduledListing(){
-        final List<Hearing> hearings = Arrays.asList(Hearing.hearing()
-                .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
-                        .withId(randomUUID())
-                        .build()))
-                .withId(randomUUID())
-                .build());
+    public void shouldSendUpdateDefendantListingStatusForUnscheduledListing() {
+        final List<Hearing> hearings = Arrays.asList(Hearing.hearing().withProsecutionCases(asList(ProsecutionCase.prosecutionCase().withId(randomUUID()).build())).withId(randomUUID()).build());
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND);
         progressionService.sendUpdateDefendantListingStatusForUnscheduledListing(envelope, hearings, new HashSet<>());
         verify(sender).send(envelopeCaptor.capture());
@@ -568,35 +462,35 @@ public class ProgressionServiceTest {
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_HEARING_RESULTED_UPDATED_CASE);
 
         final UUID caseId = randomUUID();
-        final DefendantJudicialResult defendantJudicialResult = DefendantJudicialResult.defendantJudicialResult()
-                .withJudicialResult(JudicialResult.judicialResult()
-                        .withCategory(JudicialResultCategory.FINAL)
-                        .build())
-                .withMasterDefendantId(randomUUID())
-                .build();
+        final DefendantJudicialResult defendantJudicialResult = DefendantJudicialResult.defendantJudicialResult().withJudicialResult(JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).build()).withMasterDefendantId(randomUUID()).build();
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult);
-        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
-                .withDefendants(generateDefendantsForCase(randomUUID()))
-                .withId(caseId).build();
-        final CourtApplication courtApplication = CourtApplication.courtApplication()
-                .withCourtApplicationCases(
-                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(caseId).build()))
-                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).build()))
-                .build();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withDefendants(generateDefendantsForCase(randomUUID())).withId(caseId).build();
+        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(randomUUID()).withCode("code").build();
+        final CourtApplication courtApplication = courtApplication()
+                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                        .withProsecutionCaseId(caseId).build()))
+                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).build())).build();
         final List<CourtApplication> courtApplications = singletonList(courtApplication);
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase))
-                .add("courtApplications", listToJsonArrayConverter.convert(courtApplications))
-                .add("defendantJudicialResults", resultListToJsonArrayConverter.convert(defendantJudicialResults))
+        final UUID hearingId = randomUUID();
+        final HearingType hearingType = HearingType.hearingType().withDescription("Trial").build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("courtApplications", listToJsonArrayConverter.convert(courtApplications))
+                .add("defendantJudicialResults", resultListToJsonArrayConverter.convert(defendantJudicialResults)).add("courtCentre", objectToJsonObjectConverter.convert(courtCentre))
+                .add("hearingId", hearingId.toString())
+                .add("hearingType", "Trial")
+                .add("jurisdictionType", "CROWN")
+                .add("isBoxHearing", Boolean.FALSE)
+                .add("remitResultIds", createArrayBuilder().build())
                 .build();
 
-        when(enveloper.withMetadataFrom
-                (envelope, PROGRESSION_COMMAND_HEARING_RESULTED_UPDATED_CASE)).thenReturn(enveloperFunction);
-
+        when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_HEARING_RESULTED_UPDATED_CASE)).thenReturn(enveloperFunction);
+        when(referenceDataService.getResultIdsByActionCode("REM", requester)).thenReturn(emptyList());
         when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
 
-        progressionService.updateCase(envelope, prosecutionCase, courtApplications, defendantJudicialResults);
+
+        progressionService.updateCase(envelope, prosecutionCase, courtApplications,
+                defendantJudicialResults, courtCentre, hearingId, hearingType, JurisdictionType.CROWN, Boolean.FALSE);
+
         verify(sender).send(finalEnvelope);
     }
 
@@ -604,32 +498,16 @@ public class ProgressionServiceTest {
     public void testUpdateCaseStatus() {
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS);
         final UUID prosecutionCaseId = randomUUID();
-        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
-                .withCaseStatus("INACTIVE")
-                .withDefendants(generateDefendantsForCase(randomUUID()))
-                .withId(prosecutionCaseId)
-                .build();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withCaseStatus("INACTIVE").withDefendants(generateDefendantsForCase(randomUUID())).withId(prosecutionCaseId).build();
 
         final UUID courtApplicationId = randomUUID();
-        final CourtApplication courtApplication = CourtApplication.courtApplication()
-                .withCourtApplicationCases(
-                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(prosecutionCaseId).build()))
-                .withId(courtApplicationId)
-                .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
-                .build();
-        final Hearing hearing = Hearing.hearing()
-                .withProsecutionCases(singletonList(prosecutionCase))
-                .withCourtApplications(singletonList(courtApplication))
-                .build();
+        final CourtApplication courtApplication = courtApplication().withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseId(prosecutionCaseId).build())).withId(courtApplicationId).withApplicationStatus(ApplicationStatus.IN_PROGRESS).build();
+        final Hearing hearing = Hearing.hearing().withProsecutionCases(singletonList(prosecutionCase)).withCourtApplications(singletonList(courtApplication)).build();
 
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase))
-                .add("caseStatus", "ACTIVE")
-                .build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("caseStatus", "ACTIVE").build();
 
-        when(enveloper.withMetadataFrom
-                (envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
 
         when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
         progressionService.updateCaseStatus(envelope, hearing, singletonList(courtApplicationId));
@@ -640,32 +518,16 @@ public class ProgressionServiceTest {
     public void testShouldNotRaiseEventForUpdateCaseStatus() {
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS);
         final UUID prosecutionCaseId = randomUUID();
-        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
-                .withCaseStatus("LISTED")
-                .withDefendants(generateDefendantsForCase(randomUUID()))
-                .withId(prosecutionCaseId)
-                .build();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withCaseStatus("LISTED").withDefendants(generateDefendantsForCase(randomUUID())).withId(prosecutionCaseId).build();
 
         final UUID courtApplicationId = randomUUID();
-        final CourtApplication courtApplication = CourtApplication.courtApplication()
-                .withCourtApplicationCases(
-                        singletonList(CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(prosecutionCaseId).build()))
-                .withId(courtApplicationId)
-                .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
-                .build();
-        final Hearing hearing = Hearing.hearing()
-                .withProsecutionCases(singletonList(prosecutionCase))
-                .withCourtApplications(singletonList(courtApplication))
-                .build();
+        final CourtApplication courtApplication = courtApplication().withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseId(prosecutionCaseId).build())).withId(courtApplicationId).withApplicationStatus(ApplicationStatus.IN_PROGRESS).build();
+        final Hearing hearing = Hearing.hearing().withProsecutionCases(singletonList(prosecutionCase)).withCourtApplications(singletonList(courtApplication)).build();
 
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase))
-                .add("caseStatus", "SJP_REFERRAL")
-                .build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("caseStatus", "SJP_REFERRAL").build();
 
-        when(enveloper.withMetadataFrom
-                (envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
 
         when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
         progressionService.updateCaseStatus(envelope, hearing, singletonList(courtApplicationId));
@@ -673,28 +535,16 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void shouldCreateCourtCenterWithCourtRoomOuCode(){
+    public void shouldCreateCourtCenterWithCourtRoomOuCode() {
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS);
-        when(enveloper.withMetadataFrom
-                (envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
         final String address1 = "ADDRESS1";
         final UUID courtCentreId = randomUUID();
         final UUID courtRoomId = randomUUID();
         final String oucode = STRING.next();
-        final JsonObject courtCentreJson = createObjectBuilder()
-                .add("oucodeL3Name", "Lavender Hill Magistrates Court")
-                .add("address1", address1)
-                .add("oucode", oucode)
-                .add("lja", "ljaCode")
-                .build();
+        final JsonObject courtCentreJson = createObjectBuilder().add("oucodeL3Name", "Lavender Hill Magistrates Court").add("address1", address1).add("oucode", oucode).add("lja", "ljaCode").build();
         final JsonObject courtRoomOuJson = createObjectBuilder().add("ouCourtRoomCodes", createArrayBuilder().add("B46IR03").build()).build();
-        final JsonObject courtRoomJson = createObjectBuilder()
-                .add("courtrooms", createArrayBuilder()
-                        .add(createObjectBuilder().add("id", courtRoomId.toString())
-                                .add("courtroomName", "room name 1")
-                                .build())
-                        .build())
-                .build();
+        final JsonObject courtRoomJson = createObjectBuilder().add("courtrooms", createArrayBuilder().add(createObjectBuilder().add("id", courtRoomId.toString()).add("courtroomName", "room name 1").build()).build()).build();
         final CourtCentre courtCentre = CourtCentre.courtCentre().withId(courtCentreId).withRoomId(courtRoomId).build();
         when(referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester)).thenReturn(of(courtCentreJson));
         when(referenceDataService.getOuCourtRoomCode(courtRoomId.toString(), requester)).thenReturn(of(courtRoomOuJson));
@@ -707,28 +557,16 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void shouldCreateCourtCenterWithCourtRoomOuCodeWhenDefinitionNotExist(){
+    public void shouldCreateCourtCenterWithCourtRoomOuCodeWhenDefinitionNotExist() {
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS);
-        when(enveloper.withMetadataFrom
-                (envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
         final String address1 = "ADDRESS1";
         final UUID courtCentreId = randomUUID();
         final UUID courtRoomId = randomUUID();
         final String oucode = STRING.next();
-        final JsonObject courtCentreJson = createObjectBuilder()
-                .add("oucodeL3Name", "Lavender Hill Magistrates Court")
-                .add("address1", address1)
-                .add("oucode", oucode)
-                .add("lja", "ljaCode")
-                .build();
+        final JsonObject courtCentreJson = createObjectBuilder().add("oucodeL3Name", "Lavender Hill Magistrates Court").add("address1", address1).add("oucode", oucode).add("lja", "ljaCode").build();
         final JsonObject courtRoomOuJson = createObjectBuilder().add("ouCourtRoomCodes", createArrayBuilder().build()).build();
-        final JsonObject courtRoomJson = createObjectBuilder()
-                .add("courtrooms", createArrayBuilder()
-                        .add(createObjectBuilder().add("id", courtRoomId.toString())
-                                .add("courtroomName", "room name 1")
-                                .build())
-                        .build())
-                .build();
+        final JsonObject courtRoomJson = createObjectBuilder().add("courtrooms", createArrayBuilder().add(createObjectBuilder().add("id", courtRoomId.toString()).add("courtroomName", "room name 1").build()).build()).build();
         final CourtCentre courtCentre = CourtCentre.courtCentre().withId(courtCentreId).withRoomId(courtRoomId).build();
         when(referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester)).thenReturn(of(courtCentreJson));
         when(referenceDataService.getOuCourtRoomCode(courtRoomId.toString(), requester)).thenReturn(of(courtRoomOuJson));
@@ -741,17 +579,7 @@ public class ProgressionServiceTest {
     }
 
     private JsonObject generateJudiciariesJson() throws IOException {
-        final String jsonString = Resources.toString(Resources.getResource("referenceData.getJudiciariesByIdList.json"), Charset.defaultCharset())
-                .replace("JUDICIARY_ID_1", JUDICIARY_ID_1.toString())
-                .replace("JUDICIARY_TITLE_1", JUDICIARY_TITLE_1)
-                .replace("JUDICIARY_FIRST_NAME_1", JUDICIARY_FIRST_NAME_1)
-                .replace("JUDICIARY_LAST_NAME_1", JUDICIARY_LAST_NAME_1)
-                .replace("JUDICIARY_ID_2", JUDICIARY_ID_2.toString())
-                .replace("JUDICIARY_TITLE_2", JUDICIARY_TITLE_2)
-                .replace("JUDICIARY_FIRST_NAME_2", JUDICIARY_FIRST_NAME_2)
-                .replace("JUDICIARY_LAST_NAME_2", JUDICIARY_LAST_NAME_2)
-                .replace("JUDICIARY_TYPE_1", JUDICIARY_TYPE_1)
-                .replace("JUDICIARY_TYPE_2", JUDICIARY_TYPE_2);
+        final String jsonString = Resources.toString(Resources.getResource("referenceData.getJudiciariesByIdList.json"), Charset.defaultCharset()).replace("JUDICIARY_ID_1", JUDICIARY_ID_1.toString()).replace("JUDICIARY_TITLE_1", JUDICIARY_TITLE_1).replace("JUDICIARY_FIRST_NAME_1", JUDICIARY_FIRST_NAME_1).replace("JUDICIARY_LAST_NAME_1", JUDICIARY_LAST_NAME_1).replace("JUDICIARY_ID_2", JUDICIARY_ID_2.toString()).replace("JUDICIARY_TITLE_2", JUDICIARY_TITLE_2).replace("JUDICIARY_FIRST_NAME_2", JUDICIARY_FIRST_NAME_2).replace("JUDICIARY_LAST_NAME_2", JUDICIARY_LAST_NAME_2).replace("JUDICIARY_TYPE_1", JUDICIARY_TYPE_1).replace("JUDICIARY_TYPE_2", JUDICIARY_TYPE_2);
 
         return returnAsJson(jsonString);
     }
@@ -768,9 +596,7 @@ public class ProgressionServiceTest {
     }
 
     private JsonObject generateCourtCentreJson() throws IOException {
-        final String jsonString = Resources.toString(Resources.getResource("referencedata.query.organisationunits.json"), Charset.defaultCharset())
-                .replace("COURT_CENTRE_ID", COURT_CENTRE_ID.toString())
-                .replace("COURT_CENTRE_NAME", COURT_CENTRE_NAME);
+        final String jsonString = Resources.toString(Resources.getResource("referencedata.query.organisationunits.json"), Charset.defaultCharset()).replace("COURT_CENTRE_ID", COURT_CENTRE_ID.toString()).replace("COURT_CENTRE_NAME", COURT_CENTRE_NAME);
 
         return returnAsJson(jsonString);
     }
@@ -782,142 +608,55 @@ public class ProgressionServiceTest {
     }
 
     private HearingUpdatedProcessed generateHearingUpdated() {
-        return HearingUpdatedProcessed.hearingUpdatedProcessed()
-                .withConfirmedHearing(generateConfirmedHearingForHearingUpdated())
-                .build();
+        return HearingUpdatedProcessed.hearingUpdatedProcessed().withConfirmedHearing(generateConfirmedHearingForHearingUpdated()).build();
     }
 
     private ConfirmedHearing generateConfirmedHearingForHearingUpdated() {
-        return ConfirmedHearing.confirmedHearing()
-                .withId(randomUUID())
-                .withType(generateHearingType())
-                .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .withReportingRestrictionReason(STRING.next())
-                .withHearingLanguage(HearingLanguage.ENGLISH)
-                .withHearingDays(generateHearingDays())
-                .withCourtCentre(generateBasicCourtCentre())
-                .withJudiciary(generateBasicJudiciaryList())
-                .withProsecutionCases(generateProsecutionCases())
-                .build();
+        return ConfirmedHearing.confirmedHearing().withId(randomUUID()).withType(generateHearingType()).withJurisdictionType(JurisdictionType.MAGISTRATES).withReportingRestrictionReason(STRING.next()).withHearingLanguage(HearingLanguage.ENGLISH).withHearingDays(generateHearingDays()).withCourtCentre(generateBasicCourtCentre()).withJudiciary(generateBasicJudiciaryList()).withProsecutionCases(generateProsecutionCases()).build();
     }
 
     private HearingType generateHearingType() {
-        return HearingType.hearingType()
-                .withId(randomUUID())
-                .withDescription("Sentence")
-                .build();
+        return HearingType.hearingType().withId(randomUUID()).withDescription("Sentence").build();
     }
 
     private ConfirmedHearing generateConfirmedHearingForPrepareSummons() {
-        return ConfirmedHearing.confirmedHearing()
-                .withId(randomUUID())
-                .withCourtCentre(generateFullCourtCentre())
-                .withHearingDays(generateHearingDays())
-                .withProsecutionCases(generateProsecutionCases())
-                .build();
+        return ConfirmedHearing.confirmedHearing().withId(randomUUID()).withCourtCentre(generateFullCourtCentre()).withHearingDays(generateHearingDays()).withProsecutionCases(generateProsecutionCases()).build();
     }
 
     private List<ConfirmedProsecutionCase> generateProsecutionCases() {
-        return asList(
-                ConfirmedProsecutionCase.confirmedProsecutionCase()
-                        .withId(CASE_ID_1)
-                        .withDefendants(generateDefendants(DEFENDANT_ID_1))
-                        .build(),
-                ConfirmedProsecutionCase.confirmedProsecutionCase()
-                        .withId(CASE_ID_2)
-                        .withDefendants(generateDefendants(DEFENDANT_ID_2))
-                        .build()
-        );
+        return asList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(CASE_ID_1).withDefendants(generateDefendants(DEFENDANT_ID_1)).build(), ConfirmedProsecutionCase.confirmedProsecutionCase().withId(CASE_ID_2).withDefendants(generateDefendants(DEFENDANT_ID_2)).build());
     }
 
     private List<ConfirmedDefendant> generateDefendants(final UUID defendantId) {
-        return singletonList(
-                ConfirmedDefendant.confirmedDefendant()
-                        .withId(defendantId)
-                        .build()
-        );
+        return singletonList(ConfirmedDefendant.confirmedDefendant().withId(defendantId).build());
     }
 
     private List<Defendant> generateDefendantsForCase(final UUID defendantId) {
-        return singletonList(
-                Defendant.defendant()
-                        .withId(defendantId)
-                        .withProsecutionCaseId(CASE_ID_1)
-                        .build()
-        );
+        return singletonList(Defendant.defendant().withId(defendantId).withProsecutionCaseId(CASE_ID_1).build());
     }
 
     private List<HearingDay> generateHearingDays() {
-        return asList(
-                HearingDay.hearingDay()
-                        .withSittingDay(ZonedDateTimes.fromString(HEARING_DATE_1))
-                        .build(),
-                HearingDay.hearingDay()
-                        .withSittingDay(ZonedDateTimes.fromString(HEARING_DATE_2))
-                        .build(),
-                HearingDay.hearingDay()
-                        .withSittingDay(ZonedDateTimes.fromString(HEARING_DATE_3))
-                        .build()
-        );
+        return asList(HearingDay.hearingDay().withSittingDay(ZonedDateTimes.fromString(HEARING_DATE_1)).build(), HearingDay.hearingDay().withSittingDay(ZonedDateTimes.fromString(HEARING_DATE_2)).build(), HearingDay.hearingDay().withSittingDay(ZonedDateTimes.fromString(HEARING_DATE_3)).build());
     }
 
     private JsonEnvelope getEnvelope(final String name) {
-        return envelopeFrom(
-                metadataBuilder().withId(randomUUID()).withName(name).build(),
-                Json.createObjectBuilder().build());
+        return envelopeFrom(metadataBuilder().withId(randomUUID()).withName(name).build(), Json.createObjectBuilder().build());
     }
 
     private <T> Envelope<T> getTypedEnvelope(final String name, final T payload) {
-        return envelopeFrom(
-                metadataBuilder().withId(randomUUID()).withName(name).build(),
-                payload);
+        return envelopeFrom(metadataBuilder().withId(randomUUID()).withName(name).build(), payload);
     }
 
     private CourtCentre generateFullCourtCentre() {
-        return CourtCentre.courtCentre()
-                .withId(UUID.fromString("89b10041-b44d-43c8-9b1e-d1b9fee15c93"))
-                .withName("00ObpXuu51")
-                .withRoomId(UUID.fromString("d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a"))
-                .withRoomName("JK2Y7hu0Tc")
-                .withWelshName("3IpJDfdfhS")
-                .withWelshRoomName("hm60SAXokc")
-                .withAddress(Address.address()
-                        .withAddress1("Address1")
-                        .build())
-                .build();
+        return CourtCentre.courtCentre().withId(UUID.fromString("89b10041-b44d-43c8-9b1e-d1b9fee15c93")).withName("00ObpXuu51").withRoomId(UUID.fromString("d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a")).withRoomName("JK2Y7hu0Tc").withWelshName("3IpJDfdfhS").withWelshRoomName("hm60SAXokc").withAddress(Address.address().withAddress1("Address1").build()).build();
     }
 
     private CourtCentre generateBasicCourtCentre() {
-        return CourtCentre.courtCentre()
-                .withId(COURT_CENTRE_ID)
-                .build();
+        return CourtCentre.courtCentre().withId(COURT_CENTRE_ID).build();
     }
 
     private List<JudicialRole> generateBasicJudiciaryList() {
-        return asList(
-                JudicialRole.judicialRole()
-                        .withIsDeputy(Boolean.TRUE)
-                        .withJudicialId(JUDICIARY_ID_1)
-                        .withJudicialRoleType(
-                                JudicialRoleType.judicialRoleType()
-                                        .withJudicialRoleTypeId(randomUUID())
-                                        .withJudiciaryType(JUDICIARY_TYPE_1)
-                                        .build()
-                        )
-                        .withIsBenchChairman(Boolean.TRUE)
-                        .build(),
-                JudicialRole.judicialRole()
-                        .withIsDeputy(Boolean.TRUE)
-                        .withJudicialId(JUDICIARY_ID_2)
-                        .withJudicialRoleType(
-                                JudicialRoleType.judicialRoleType()
-                                        .withJudicialRoleTypeId(randomUUID())
-                                        .withJudiciaryType(JUDICIARY_TYPE_2)
-                                        .build()
-                        )
-                        .withIsBenchChairman(Boolean.TRUE)
-                        .build()
-        );
+        return asList(JudicialRole.judicialRole().withIsDeputy(Boolean.TRUE).withJudicialId(JUDICIARY_ID_1).withJudicialRoleType(JudicialRoleType.judicialRoleType().withJudicialRoleTypeId(randomUUID()).withJudiciaryType(JUDICIARY_TYPE_1).build()).withIsBenchChairman(Boolean.TRUE).build(), JudicialRole.judicialRole().withIsDeputy(Boolean.TRUE).withJudicialId(JUDICIARY_ID_2).withJudicialRoleType(JudicialRoleType.judicialRoleType().withJudicialRoleTypeId(randomUUID()).withJudiciaryType(JUDICIARY_TYPE_2).build()).withIsBenchChairman(Boolean.TRUE).build());
     }
 
     @Test
@@ -926,13 +665,8 @@ public class ProgressionServiceTest {
         final UUID hearingId = randomUUID();
         final List<UUID> applicationId = asList(randomUUID());
         final Hearing hearing = Hearing.hearing().withId(hearingId).build();
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("hearing", objectToJsonObjectConverter.convert(hearing))
-                .add("hearingListingStatus", "HEARING_INITIALISED")
-                .add("applicationId", applicationId.get(0).toString())
-                .build();
-        when(enveloper.withMetadataFrom
-                (envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
+        final JsonObject jsonObject = Json.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).add("hearingListingStatus", "HEARING_INITIALISED").add("applicationId", applicationId.get(0).toString()).build();
+        when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
         progressionService.linkApplicationsToHearing(envelope, hearing, applicationId, HearingListingStatus.HEARING_INITIALISED);
         verify(sender).send(finalEnvelope);
@@ -943,15 +677,10 @@ public class ProgressionServiceTest {
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
         final UUID hearingId = randomUUID();
         final UUID applicationId = randomUUID();
-        final List<UUID> applicationIds = asList(applicationId, applicationId,applicationId);
+        final List<UUID> applicationIds = asList(applicationId, applicationId, applicationId);
         final Hearing hearing = Hearing.hearing().withId(hearingId).build();
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("hearing", objectToJsonObjectConverter.convert(hearing))
-                .add("hearingListingStatus", "HEARING_INITIALISED")
-                .add("applicationId", applicationId.toString())
-                .build();
-        when(enveloper.withMetadataFrom
-                (envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
+        final JsonObject jsonObject = Json.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).add("hearingListingStatus", "HEARING_INITIALISED").add("applicationId", applicationId.toString()).build();
+        when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
         progressionService.linkApplicationsToHearing(envelope, hearing, applicationIds, HearingListingStatus.HEARING_INITIALISED);
         verify(sender).send(finalEnvelope);
@@ -962,26 +691,9 @@ public class ProgressionServiceTest {
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
         final UUID hearingId = randomUUID();
         final UUID applicationId = randomUUID();
-        final Hearing hearing = Hearing.hearing().withId(hearingId)
-                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
-                        .withId(applicationId)
-                        .withType(courtApplicationType()
-                                .withLinkType(LinkType.LINKED)
-                                .build())
-                        .build(),CourtApplication.courtApplication()
-                        .withId(applicationId)
-                        .withType(courtApplicationType()
-                                .withLinkType(LinkType.LINKED)
-                                .build())
-                        .build()))
-                .build();
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("hearing", objectToJsonObjectConverter.convert(hearing))
-                .add("hearingListingStatus", "HEARING_INITIALISED")
-                .add("applicationId", applicationId.toString())
-                .build();
-        when(enveloper.withMetadataFrom
-                (envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
+        final Hearing hearing = Hearing.hearing().withId(hearingId).withCourtApplications(Arrays.asList(courtApplication().withId(applicationId).withType(courtApplicationType().withLinkType(LinkType.LINKED).build()).build(), courtApplication().withId(applicationId).withType(courtApplicationType().withLinkType(LinkType.LINKED).build()).build())).build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).add("hearingListingStatus", "HEARING_INITIALISED").add("applicationId", applicationId.toString()).build();
+        when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
         progressionService.linkApplicationToHearing(envelope, hearing, HearingListingStatus.HEARING_INITIALISED);
         verify(sender).send(finalEnvelope);
@@ -994,12 +706,8 @@ public class ProgressionServiceTest {
         final UUID hearingId = randomUUID();
         final List<UUID> caseIds = asList(randomUUID());
         final Hearing hearing = Hearing.hearing().withId(hearingId).build();
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("hearingId", hearingId.toString())
-                .add("caseId", caseIds.get(0).toString())
-                .build();
-        when(enveloper.withMetadataFrom
-                (envelope, PROGRESSION_COMMAND_CREATE_HEARING_PROSECUTION_CASE_LINK)).thenReturn(enveloperFunction);
+        final JsonObject jsonObject = Json.createObjectBuilder().add("hearingId", hearingId.toString()).add("caseId", caseIds.get(0).toString()).build();
+        when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_CREATE_HEARING_PROSECUTION_CASE_LINK)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
         progressionService.linkProsecutionCasesToHearing(envelope, hearingId, caseIds);
         verify(sender).send(finalEnvelope);
@@ -1010,24 +718,12 @@ public class ProgressionServiceTest {
 
         final UUID applicationId = UUID.randomUUID();
 
-        final Hearing expectedHearing = Hearing.hearing()
-                .withIsBoxHearing(true).withId(UUID.randomUUID())
-                .withCourtApplications(asList(CourtApplication.courtApplication()
-                        .withId(applicationId).build()))
-                .withHearingDays(asList(HearingDay.hearingDay()
-                        .withListedDurationMinutes(10)
-                        .withSittingDay(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z")).build()))
-                .build();
+        final Hearing expectedHearing = Hearing.hearing().withIsBoxHearing(true).withId(UUID.randomUUID()).withCourtApplications(asList(courtApplication().withId(applicationId).build())).withHearingDays(asList(HearingDay.hearingDay().withListedDurationMinutes(10).withSittingDay(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z")).build())).build();
 
 
-        final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
-                .withCourtApplications(asList(CourtApplication.courtApplication()
-                        .withId(applicationId).build()))
-                .withListedStartDateTime(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z"))
-                .build();
+        final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds().withCourtApplications(asList(courtApplication().withId(applicationId).build())).withListedStartDateTime(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z")).build();
 
-        final BoxworkApplicationReferred boxworkApplicationReferred = BoxworkApplicationReferred.boxworkApplicationReferred()
-                .withHearingRequest(hearingListingNeeds).build();
+        final BoxworkApplicationReferred boxworkApplicationReferred = BoxworkApplicationReferred.boxworkApplicationReferred().withHearingRequest(hearingListingNeeds).build();
 
         final Hearing actualHearing = progressionService.transformBoxWorkApplication(boxworkApplicationReferred);
 
@@ -1042,32 +738,14 @@ public class ProgressionServiceTest {
     public void shouldSendPrepareSummonsForExtendedHearingCommand() {
 
         final ConfirmedHearing confirmedHearing = generateConfirmedHearingForPrepareSummons();
-        final HearingConfirmed hearingConfirmed = HearingConfirmed.hearingConfirmed()
-                .withConfirmedHearing(confirmedHearing)
-                .build();
+        final HearingConfirmed hearingConfirmed = HearingConfirmed.hearingConfirmed().withConfirmedHearing(confirmedHearing).build();
         final JsonEnvelope prepareSummonsEnvelope = getEnvelope(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTENDED_HEARING);
         progressionService.prepareSummonsDataForExtendHearing(prepareSummonsEnvelope, hearingConfirmed);
         verify(sender).send(envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                        metadata().withName(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTENDED_HEARING),
-                        payloadIsJson(
-                                allOf(
-                                        withJsonPath("$.confirmedHearing.courtCentre.id", is(confirmedHearing.getCourtCentre().getId().toString())),
-                                        withJsonPath("$.confirmedHearing.courtCentre.name", is(confirmedHearing.getCourtCentre().getName())),
-                                        withJsonPath("$.confirmedHearing.courtCentre.roomId", is(confirmedHearing.getCourtCentre().getRoomId().toString())),
-                                        withJsonPath("$.confirmedHearing.courtCentre.roomName", is(confirmedHearing.getCourtCentre().getRoomName())),
-                                        withJsonPath("$.confirmedHearing.courtCentre.welshName", is(confirmedHearing.getCourtCentre().getWelshName())),
-                                        withJsonPath("$.confirmedHearing.courtCentre.welshRoomName", is(confirmedHearing.getCourtCentre().getWelshRoomName())),
-                                        withJsonPath("$.confirmedHearing.prosecutionCases[0].id", is(CASE_ID_1.toString())),
-                                        withJsonPath("$.confirmedHearing.prosecutionCases[0].defendants[0].id", is(DEFENDANT_ID_1.toString())),
-                                        withJsonPath("$.confirmedHearing.prosecutionCases[1].id", is(CASE_ID_2.toString())),
-                                        withJsonPath("$.confirmedHearing.prosecutionCases[1].defendants[0].id", is(DEFENDANT_ID_2.toString()))
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(metadata().withName(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTENDED_HEARING), payloadIsJson(allOf(withJsonPath("$.confirmedHearing.courtCentre.id", is(confirmedHearing.getCourtCentre().getId().toString())), withJsonPath("$.confirmedHearing.courtCentre.name", is(confirmedHearing.getCourtCentre().getName())), withJsonPath("$.confirmedHearing.courtCentre.roomId", is(confirmedHearing.getCourtCentre().getRoomId().toString())), withJsonPath("$.confirmedHearing.courtCentre.roomName", is(confirmedHearing.getCourtCentre().getRoomName())), withJsonPath("$.confirmedHearing.courtCentre.welshName", is(confirmedHearing.getCourtCentre().getWelshName())), withJsonPath("$.confirmedHearing.courtCentre.welshRoomName", is(confirmedHearing.getCourtCentre().getWelshRoomName())), withJsonPath("$.confirmedHearing.prosecutionCases[0].id", is(CASE_ID_1.toString())), withJsonPath("$.confirmedHearing.prosecutionCases[0].defendants[0].id", is(DEFENDANT_ID_1.toString())), withJsonPath("$.confirmedHearing.prosecutionCases[1].id", is(CASE_ID_2.toString())), withJsonPath("$.confirmedHearing.prosecutionCases[1].defendants[0].id", is(DEFENDANT_ID_2.toString()))
 
-                                )
-                        )
-                )
-        );
+        ))));
 
     }
 
@@ -1078,36 +756,15 @@ public class ProgressionServiceTest {
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();
 
-        final UpdateHearingForPartialAllocation updateHearingForPartialAllocation = UpdateHearingForPartialAllocation.updateHearingForPartialAllocation()
-                .withHearingId(hearingId)
-                .withProsecutionCasesToRemove(asList(ProsecutionCasesToRemove.prosecutionCasesToRemove()
-                        .withCaseId(caseId)
-                        .withDefendantsToRemove(asList(DefendantsToRemove.defendantsToRemove()
-                                .withDefendantId(defendantId)
-                                .withOffencesToRemove(asList(OffencesToRemove.offencesToRemove()
-                                        .withOffenceId(offenceId)
-                                        .build()))
-                                .build()))
-                        .build()))
-                .build();
+        final UpdateHearingForPartialAllocation updateHearingForPartialAllocation = UpdateHearingForPartialAllocation.updateHearingForPartialAllocation().withHearingId(hearingId).withProsecutionCasesToRemove(asList(ProsecutionCasesToRemove.prosecutionCasesToRemove().withCaseId(caseId).withDefendantsToRemove(asList(DefendantsToRemove.defendantsToRemove().withDefendantId(defendantId).withOffencesToRemove(asList(OffencesToRemove.offencesToRemove().withOffenceId(offenceId).build())).build())).build())).build();
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION);
 
         progressionService.updateHearingForPartialAllocation(envelope, updateHearingForPartialAllocation);
         verify(sender).send(envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                        metadata().withName(PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION),
-                        payloadIsJson(
-                                allOf(
-                                        withJsonPath("$.hearingId", is(hearingId.toString())),
-                                        withJsonPath("$.prosecutionCasesToRemove[0].caseId", is(caseId.toString())),
-                                        withJsonPath("$.prosecutionCasesToRemove[0].defendantsToRemove[0].defendantId", is(defendantId.toString())),
-                                        withJsonPath("$.prosecutionCasesToRemove[0].defendantsToRemove[0].offencesToRemove[0].offenceId", is(offenceId.toString()))
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(metadata().withName(PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION), payloadIsJson(allOf(withJsonPath("$.hearingId", is(hearingId.toString())), withJsonPath("$.prosecutionCasesToRemove[0].caseId", is(caseId.toString())), withJsonPath("$.prosecutionCasesToRemove[0].defendantsToRemove[0].defendantId", is(defendantId.toString())), withJsonPath("$.prosecutionCasesToRemove[0].defendantsToRemove[0].offencesToRemove[0].offenceId", is(offenceId.toString()))
 
-                                )
-                        )
-                )
-        );
+        ))));
     }
 
     @Test
@@ -1120,23 +777,11 @@ public class ProgressionServiceTest {
         final UUID defendant1sOffence2 = randomUUID();
         final UUID defendant2sOffence1 = randomUUID();
         final UUID defendant2sOffence2 = randomUUID();
-        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
-                .withId(caseId)
-                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
-                        .withId(defendant2)
-                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
-                                .withId(defendant2sOffence1)
-                                .build()))
-                        .build()))
-                .build());
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(caseId).withDefendants(asList(ConfirmedDefendant.confirmedDefendant().withId(defendant2).withOffences(asList(ConfirmedOffence.confirmedOffence().withId(defendant2sOffence1).build())).build())).build());
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false)
-                )).build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
 
@@ -1159,47 +804,18 @@ public class ProgressionServiceTest {
         final UUID defendant1sOffence2 = randomUUID();
         final UUID defendant2sOffence1 = randomUUID();
         final UUID defendant2sOffence2 = randomUUID();
-        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
-                .withId(caseId)
-                .withDefendants(asList(Defendant.defendant()
-                        .withId(defendant2)
-                        .withIsYouth(true)
-                        .withOffences(asList(Offence.offence()
-                                .withId(defendant2sOffence1)
-                                .build()))
-                        .build())
-                )
-                .build();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withId(caseId).withDefendants(asList(Defendant.defendant().withId(defendant2).withIsYouth(true).withOffences(asList(Offence.offence().withId(defendant2sOffence1).build())).build())).build();
 
-        final Initiate hearingInitiate = Initiate.initiate()
-                .withHearing(Hearing.hearing()
-                        .withProsecutionCases(Arrays.asList(prosecutionCase))
-                        .build())
-                .build();
+        final Initiate hearingInitiate = Initiate.initiate().withHearing(Hearing.hearing().withProsecutionCases(Arrays.asList(prosecutionCase)).build()).build();
 
-        final List<ProsecutionCase> deltaProsecutionCases = Arrays.asList(ProsecutionCase.prosecutionCase()
-                .withId(caseId)
-                .withDefendants(asList(Defendant.defendant()
-                        .withId(defendant2)
-                        .withIsYouth(true)
-                        .withOffences(asList(
-                                Offence.offence()
-                                        .withId(defendant2sOffence2)
-                                        .build()))
-                        .build()))
-                .build());
+        final List<ProsecutionCase> deltaProsecutionCases = Arrays.asList(ProsecutionCase.prosecutionCase().withId(caseId).withDefendants(asList(Defendant.defendant().withId(defendant2).withIsYouth(true).withOffences(asList(Offence.offence().withId(defendant2sOffence2).build())).build())).build());
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false)
-                )).build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH)).thenReturn(enveloperFunction);
 
 
         progressionService.updateDefendantYouthForProsecutionCase(finalEnvelope, hearingInitiate, deltaProsecutionCases);
@@ -1219,34 +835,16 @@ public class ProgressionServiceTest {
         final UUID defendant2sOffence2 = randomUUID();
         final ProsecutionCase prosecutionCase = buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, true);
 
-        final Initiate hearingInitiate = Initiate.initiate()
-                .withHearing(Hearing.hearing()
-                        .withProsecutionCases(Arrays.asList(prosecutionCase))
-                        .build())
-                .build();
-        final List<ProsecutionCase> deltaProsecutionCases = Arrays.asList(ProsecutionCase.prosecutionCase()
-                .withId(caseId)
-                .withDefendants(asList(Defendant.defendant()
-                        .withId(defendant2)
-                        .withIsYouth(true)
-                        .withOffences(asList(Offence.offence()
-                                .withId(defendant2sOffence1)
-                                .build()))
-                        .build()))
-                .build());
+        final Initiate hearingInitiate = Initiate.initiate().withHearing(Hearing.hearing().withProsecutionCases(Arrays.asList(prosecutionCase)).build()).build();
+        final List<ProsecutionCase> deltaProsecutionCases = Arrays.asList(ProsecutionCase.prosecutionCase().withId(caseId).withDefendants(asList(Defendant.defendant().withId(defendant2).withIsYouth(true).withOffences(asList(Offence.offence().withId(defendant2sOffence1).build())).build())).build());
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false)
-                )).build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH)).thenReturn(enveloperFunction);
 
 
         progressionService.updateDefendantYouthForProsecutionCase(finalEnvelope, hearingInitiate, deltaProsecutionCases);
@@ -1267,34 +865,16 @@ public class ProgressionServiceTest {
         final UUID defendant2sOffence2 = randomUUID();
         final ProsecutionCase prosecutionCase = buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false);
 
-        final Initiate hearingInitiate = Initiate.initiate()
-                .withHearing(Hearing.hearing()
-                        .withProsecutionCases(Arrays.asList(prosecutionCase))
-                        .build())
-                .build();
-        final List<ProsecutionCase> deltaProsecutionCases = Arrays.asList(ProsecutionCase.prosecutionCase()
-                .withId(caseId)
-                .withDefendants(asList(Defendant.defendant()
-                        .withId(defendant2)
-                        .withIsYouth(false)
-                        .withOffences(asList(Offence.offence()
-                                .withId(defendant2sOffence1)
-                                .build()))
-                        .build()))
-                .build());
+        final Initiate hearingInitiate = Initiate.initiate().withHearing(Hearing.hearing().withProsecutionCases(Arrays.asList(prosecutionCase)).build()).build();
+        final List<ProsecutionCase> deltaProsecutionCases = Arrays.asList(ProsecutionCase.prosecutionCase().withId(caseId).withDefendants(asList(Defendant.defendant().withId(defendant2).withIsYouth(false).withOffences(asList(Offence.offence().withId(defendant2sOffence1).build())).build())).build());
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, null)
-                )).build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, null))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH)).thenReturn(enveloperFunction);
 
 
         progressionService.updateDefendantYouthForProsecutionCase(finalEnvelope, hearingInitiate, deltaProsecutionCases);
@@ -1314,25 +894,16 @@ public class ProgressionServiceTest {
         final UUID defendant2sOffence2 = randomUUID();
         final ProsecutionCase prosecutionCase = buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, true);
 
-        final Initiate hearingInitiate = Initiate.initiate()
-                .withHearing(Hearing.hearing()
-                        .withProsecutionCases(Arrays.asList(prosecutionCase))
-                        .build())
-                .build();
+        final Initiate hearingInitiate = Initiate.initiate().withHearing(Hearing.hearing().withProsecutionCases(Arrays.asList(prosecutionCase)).build()).build();
         final List<ProsecutionCase> deltaProsecutionCases = emptyList();
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false)
-                )).build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH)).thenReturn(enveloperFunction);
 
 
         progressionService.updateDefendantYouthForProsecutionCase(finalEnvelope, hearingInitiate, deltaProsecutionCases);
@@ -1349,32 +920,16 @@ public class ProgressionServiceTest {
         final UUID defendant1 = randomUUID();
         final UUID defendant1sOffence1 = randomUUID();
 
-        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
-                .withId(caseId)
-                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
-                        .withId(defendant1)
-                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
-                                .withId(defendant1sOffence1)
-                                .build()))
-                        .build()))
-                .build());
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(caseId).withDefendants(asList(ConfirmedDefendant.confirmedDefendant().withId(defendant1).withOffences(asList(ConfirmedOffence.confirmedOffence().withId(defendant1sOffence1).build())).build())).build());
 
-        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
-                .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .build();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withJurisdictionType(JurisdictionType.MAGISTRATES).build();
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN)
-                )).build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
-                Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
-        ));
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1392,32 +947,16 @@ public class ProgressionServiceTest {
         final UUID defendant1 = randomUUID();
         final UUID defendant1sOffence1 = randomUUID();
 
-        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
-                .withId(caseId)
-                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
-                        .withId(defendant1)
-                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
-                                .withId(defendant1sOffence1)
-                                .build()))
-                        .build()))
-                .build());
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(caseId).withDefendants(asList(ConfirmedDefendant.confirmedDefendant().withId(defendant1).withOffences(asList(ConfirmedOffence.confirmedOffence().withId(defendant1sOffence1).build())).build())).build());
 
-        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
-                .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .build();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withJurisdictionType(JurisdictionType.MAGISTRATES).build();
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN)
-                )).build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
-                Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
-        ));
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1436,32 +975,16 @@ public class ProgressionServiceTest {
         final UUID defendant1 = randomUUID();
         final UUID defendant1sOffence1 = randomUUID();
 
-        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
-                .withId(caseId)
-                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
-                        .withId(defendant1)
-                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
-                                .withId(defendant1sOffence1)
-                                .build()))
-                        .build()))
-                .build());
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(caseId).withDefendants(asList(ConfirmedDefendant.confirmedDefendant().withId(defendant1).withOffences(asList(ConfirmedOffence.confirmedOffence().withId(defendant1sOffence1).build())).build())).build());
 
-        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
-                .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .build();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withJurisdictionType(JurisdictionType.MAGISTRATES).build();
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN, 1)
-                )).build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN, 1))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
-                Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
-        ));
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1480,32 +1003,16 @@ public class ProgressionServiceTest {
         final UUID defendant1 = randomUUID();
         final UUID defendant1sOffence1 = randomUUID();
 
-        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
-                .withId(caseId)
-                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
-                        .withId(defendant1)
-                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
-                                .withId(defendant1sOffence1)
-                                .build()))
-                        .build()))
-                .build());
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(caseId).withDefendants(asList(ConfirmedDefendant.confirmedDefendant().withId(defendant1).withOffences(asList(ConfirmedOffence.confirmedOffence().withId(defendant1sOffence1).build())).build())).build());
 
-        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
-                .withJurisdictionType(JurisdictionType.CROWN)
-                .build();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withJurisdictionType(JurisdictionType.CROWN).build();
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.MAGISTRATES)
-                )).build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.MAGISTRATES))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
-                Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
-        ));
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1522,32 +1029,16 @@ public class ProgressionServiceTest {
         final UUID defendant1 = randomUUID();
         final UUID defendant1sOffence1 = randomUUID();
 
-        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
-                .withId(caseId)
-                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
-                        .withId(defendant1)
-                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
-                                .withId(defendant1sOffence1)
-                                .build()))
-                        .build()))
-                .build());
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(caseId).withDefendants(asList(ConfirmedDefendant.confirmedDefendant().withId(defendant1).withOffences(asList(ConfirmedOffence.confirmedOffence().withId(defendant1sOffence1).build())).build())).build());
 
-        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
-                .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .build();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withJurisdictionType(JurisdictionType.MAGISTRATES).build();
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.MAGISTRATES)
-                )).build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.MAGISTRATES))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
-                Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
-        ));
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1564,32 +1055,16 @@ public class ProgressionServiceTest {
         final UUID defendant1 = randomUUID();
         final UUID defendant1sOffence1 = randomUUID();
 
-        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
-                .withId(caseId)
-                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
-                        .withId(defendant1)
-                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
-                                .withId(defendant1sOffence1)
-                                .build()))
-                        .build()))
-                .build());
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(caseId).withDefendants(asList(ConfirmedDefendant.confirmedDefendant().withId(defendant1).withOffences(asList(ConfirmedOffence.confirmedOffence().withId(defendant1sOffence1).build())).build())).build());
 
-        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
-                .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .build();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withJurisdictionType(JurisdictionType.MAGISTRATES).build();
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN)
-                )).build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
-                Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "Yes").build()
-        ));
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "Yes").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1607,32 +1082,16 @@ public class ProgressionServiceTest {
         final UUID defendant1 = randomUUID();
         final UUID defendant1sOffence1 = randomUUID();
 
-        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase()
-                .withId(caseId)
-                .withDefendants(asList(ConfirmedDefendant.confirmedDefendant()
-                        .withId(defendant1)
-                        .withOffences(asList(ConfirmedOffence.confirmedOffence()
-                                .withId(defendant1sOffence1)
-                                .build()))
-                        .build()))
-                .build());
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = Arrays.asList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(caseId).withDefendants(asList(ConfirmedDefendant.confirmedDefendant().withId(defendant1).withOffences(asList(ConfirmedOffence.confirmedOffence().withId(defendant1sOffence1).build())).build())).build());
 
-        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
-                .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .build();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withJurisdictionType(JurisdictionType.MAGISTRATES).build();
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCase", objectToJsonObjectConverter.convert(
-                        buildProsecutionCaseWithDefendantWithOffenceWithPleaWithVerdict(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN)
-                )).build();
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPleaWithVerdict(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(
-                Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()
-        ));
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1648,23 +1107,10 @@ public class ProgressionServiceTest {
         final UUID courtCentreId = randomUUID();
         final String address1 = "ADDRESS1";
         final String oucode = STRING.next();
-        final JsonObject courtCentreJson = createObjectBuilder()
-                .add("oucodeL3Name", "Lavender Hill Magistrates Court")
-                .add("address1", address1)
-                .add("oucode", oucode)
-                .add("lja", "ljaCode")
-                .build();
+        final JsonObject courtCentreJson = createObjectBuilder().add("oucodeL3Name", "Lavender Hill Magistrates Court").add("address1", address1).add("oucode", oucode).add("lja", "ljaCode").build();
         when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(of(courtCentreJson));
-        when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(LjaDetails.ljaDetails().withLjaCode("nationalCourtCode")
-                .withLjaName("name").withWelshLjaName("welshName").build());
-        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
-                .withId(randomUUID())
-                .withEstimatedDuration(ESTIMATED_DURATION)
-                .withHearingDays(asList(HearingDay.hearingDay()
-                        .withSittingDay(ZonedDateTime.now()).build()))
-                .withCourtCentre(CourtCentre.courtCentre()
-                        .withId(courtCentreId).build())
-                .build();
+        when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(LjaDetails.ljaDetails().withLjaCode("nationalCourtCode").withLjaName("name").withWelshLjaName("welshName").build());
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing().withId(randomUUID()).withEstimatedDuration(ESTIMATED_DURATION).withHearingDays(asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build())).withCourtCentre(CourtCentre.courtCentre().withId(courtCentreId).build()).build();
 
         final Hearing hearing = progressionService.transformConfirmedHearing(confirmedHearing, finalEnvelope);
         assertThat(hearing.getCourtCentre().getCode(), is(oucode));
@@ -1677,7 +1123,7 @@ public class ProgressionServiceTest {
         assertThat(hearing.getCourtCentre().getLja().getLjaCode(), is("nationalCourtCode"));
         assertThat(hearing.getCourtCentre().getLja().getLjaName(), is("name"));
         assertThat(hearing.getCourtCentre().getLja().getWelshLjaName(), is("welshName"));
-        assertThat(hearing.getEstimatedDuration(), is (ESTIMATED_DURATION));
+        assertThat(hearing.getEstimatedDuration(), is(ESTIMATED_DURATION));
     }
 
     @Test
@@ -1687,28 +1133,13 @@ public class ProgressionServiceTest {
         final HearingType hearingType = HearingType.hearingType().withId(randomUUID()).build();
         final String address1 = "ADDRESS1";
         final String oucode = STRING.next();
-        final JsonObject courtCentreJson = createObjectBuilder()
-                .add("oucodeL3Name", "Lavender Hill Magistrates Court")
-                .add("address1", address1)
-                .add("oucode", oucode)
-                .add("lja", "ljaCode")
-                .build();
+        final JsonObject courtCentreJson = createObjectBuilder().add("oucodeL3Name", "Lavender Hill Magistrates Court").add("address1", address1).add("oucode", oucode).add("lja", "ljaCode").build();
         when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(of(courtCentreJson));
-        when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(LjaDetails.ljaDetails().withLjaCode("nationalCourtCode")
-                .withLjaName("name").withWelshLjaName("welshName").build());
+        when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(LjaDetails.ljaDetails().withLjaCode("nationalCourtCode").withLjaName("name").withWelshLjaName("welshName").build());
 
         doReturn(EMPTY_LIST).when(progressionService).transformProsecutionCase(any(), any(), any(), any());
 
-        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
-                .withId(randomUUID())
-                .withType(hearingType)
-                .withHearingDays(asList(HearingDay.hearingDay()
-                        .withSittingDay(ZonedDateTime.now()).build()))
-                .withCourtCentre(CourtCentre.courtCentre()
-                        .withId(courtCentreId).build())
-                .withJurisdictionType(jurisdictionType)
-                .withProsecutionCases(generateProsecutionCases())
-                .build();
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing().withId(randomUUID()).withType(hearingType).withHearingDays(asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build())).withCourtCentre(CourtCentre.courtCentre().withId(courtCentreId).build()).withJurisdictionType(jurisdictionType).withProsecutionCases(generateProsecutionCases()).build();
 
         Hearing hearing = progressionService.transformToHearingFrom(confirmedHearing, finalEnvelope);
 
@@ -1735,30 +1166,12 @@ public class ProgressionServiceTest {
     @Test
     public void shouldRemoveJudicialResultFromApplication() {
         final UUID applicationId = randomUUID();
-        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
-                .withCourtApplicationIds(singletonList(applicationId))
-                .build();
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing().withCourtApplicationIds(singletonList(applicationId)).build();
 
-        final CourtApplication applicationInProgression = CourtApplication.courtApplication()
-                .withJudicialResults(singletonList(JudicialResult.judicialResult().build()))
-                .withFutureSummonsHearing(FutureSummonsHearing.futureSummonsHearing().build())
-                .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
-                        .withOffences(singletonList(Offence.offence()
-                                .withJudicialResults(singletonList(JudicialResult.judicialResult().build()))
-                                .build()))
-                        .build()))
-                .withCourtOrder(CourtOrder.courtOrder()
-                        .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
-                                .withOffence(Offence.offence()
-                                        .withJudicialResults(singletonList(JudicialResult.judicialResult().build()))
-                                        .build())
-                                .build()))
-                        .build())
-                .build();
+        final CourtApplication applicationInProgression = courtApplication().withJudicialResults(singletonList(JudicialResult.judicialResult().build())).withFutureSummonsHearing(FutureSummonsHearing.futureSummonsHearing().build()).withCourtApplicationCases(singletonList(courtApplicationCase().withOffences(singletonList(Offence.offence().withJudicialResults(singletonList(JudicialResult.judicialResult().build())).build())).build())).withCourtOrder(CourtOrder.courtOrder().withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence().withOffence(Offence.offence().withJudicialResults(singletonList(JudicialResult.judicialResult().build())).build()).build())).build()).build();
 
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = createObjectBuilder().add("courtApplication",
-                objectToJsonObjectConverter.convert(applicationInProgression)).build();
+        final JsonObject jsonObject = createObjectBuilder().add("courtApplication", objectToJsonObjectConverter.convert(applicationInProgression)).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
 
         final JsonEnvelope jsonEnvelope = getEnvelope("progression.command.populate-hearing-to-probation-caseworker");
@@ -1774,41 +1187,12 @@ public class ProgressionServiceTest {
     public void shouldDeleteJudicialResultsFromApplicationWhenNewHearingForListing() {
 
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
-        final List<HearingListingNeeds> hearings = singletonList(HearingListingNeeds.hearingListingNeeds()
-                .withListedStartDateTime(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z"))
-                .withId(randomUUID())
-                .withCourtApplications(singletonList(CourtApplication.courtApplication()
-                        .withJudicialResults(singletonList(JudicialResult.judicialResult().build()))
-                        .withId(randomUUID())
-                        .withCourtOrder(CourtOrder.courtOrder()
-                                .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
-                                        .withOffence(Offence.offence()
-                                                .withJudicialResults(singletonList(JudicialResult.judicialResult().build()))
-                                                .build())
-                                        .build()))
-                                .build())
-                        .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
-                                .withOffences(singletonList(Offence.offence()
-                                        .withJudicialResults(singletonList(JudicialResult.judicialResult().build()))
-                                        .build()))
-                                .build()))
-                        .build()))
-                .build());
+        final List<HearingListingNeeds> hearings = singletonList(HearingListingNeeds.hearingListingNeeds().withListedStartDateTime(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z")).withId(randomUUID()).withCourtApplications(singletonList(courtApplication().withJudicialResults(singletonList(JudicialResult.judicialResult().build())).withId(randomUUID()).withCourtOrder(CourtOrder.courtOrder().withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence().withOffence(Offence.offence().withJudicialResults(singletonList(JudicialResult.judicialResult().build())).build()).build())).build()).withCourtApplicationCases(singletonList(courtApplicationCase().withOffences(singletonList(Offence.offence().withJudicialResults(singletonList(JudicialResult.judicialResult().build())).build())).build())).build())).build());
 
         progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, hearings, null);
 
         verify(sender).send(envelopeArgumentCaptor.capture());
-        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                        metadata().withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND),
-                        payloadIsJson(
-                                allOf(
-                                        withoutJsonPath("$.hearing.courtApplications[0].judicialResults"),
-                                        withoutJsonPath("$.hearing.courtApplications[0].courtOrder.courtOrderOffences[0].offence.judicialResults"),
-                                        withoutJsonPath("$.hearing.courtApplications[0].courtApplicationCases[0].offences[0].judicialResults")
-                                )
-                        )
-                )
-        );
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(metadata().withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND), payloadIsJson(allOf(withoutJsonPath("$.hearing.courtApplications[0].judicialResults"), withoutJsonPath("$.hearing.courtApplications[0].courtOrder.courtOrderOffences[0].offence.judicialResults"), withoutJsonPath("$.hearing.courtApplications[0].courtApplicationCases[0].offences[0].judicialResults")))));
 
     }
 
@@ -1816,67 +1200,26 @@ public class ProgressionServiceTest {
     public void shouldDeleteJudicialResultsFromApplicationWhenNewHearingForListingWithoutCourtApplicationCase() {
 
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
-        final List<HearingListingNeeds> hearings = singletonList(HearingListingNeeds.hearingListingNeeds()
-                .withListedStartDateTime(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z"))
-                .withId(randomUUID())
-                .withCourtApplications(singletonList(CourtApplication.courtApplication()
-                        .withJudicialResults(singletonList(JudicialResult.judicialResult().build()))
-                        .withId(randomUUID())
-                        .withCourtOrder(CourtOrder.courtOrder()
-                                .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
-                                        .withOffence(Offence.offence()
-                                                .withJudicialResults(singletonList(JudicialResult.judicialResult().build()))
-                                                .build())
-                                        .build()))
-                                .build())
-                        .build()))
-                .build());
+        final List<HearingListingNeeds> hearings = singletonList(HearingListingNeeds.hearingListingNeeds().withListedStartDateTime(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z")).withId(randomUUID()).withCourtApplications(singletonList(courtApplication().withJudicialResults(singletonList(JudicialResult.judicialResult().build())).withId(randomUUID()).withCourtOrder(CourtOrder.courtOrder().withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence().withOffence(Offence.offence().withJudicialResults(singletonList(JudicialResult.judicialResult().build())).build()).build())).build()).build())).build());
 
         progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, hearings, null);
 
         verify(sender).send(envelopeArgumentCaptor.capture());
-        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                metadata().withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND),
-                payloadIsJson(
-                        allOf(
-                                withoutJsonPath("$.hearing.courtApplications[0].judicialResults"),
-                                withoutJsonPath("$.hearing.courtApplications[0].courtOrder.courtOrderOffences[0].offence.judicialResults")
-                        )
-                )
-                )
-        );
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(metadata().withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND), payloadIsJson(allOf(withoutJsonPath("$.hearing.courtApplications[0].judicialResults"), withoutJsonPath("$.hearing.courtApplications[0].courtOrder.courtOrderOffences[0].offence.judicialResults")))));
 
     }
 
 
     @Test
-    public void shouldDeleteJudicialResultsFromApplicationWhenNewHearingForListingWithoutCourtOrderOffencesAndCourtApplicationCases(){
+    public void shouldDeleteJudicialResultsFromApplicationWhenNewHearingForListingWithoutCourtOrderOffencesAndCourtApplicationCases() {
 
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
-        final List<HearingListingNeeds> hearings = singletonList(HearingListingNeeds.hearingListingNeeds()
-                .withListedStartDateTime(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z"))
-                .withId(randomUUID())
-                .withCourtApplications(singletonList(CourtApplication.courtApplication()
-                        .withJudicialResults(singletonList(JudicialResult.judicialResult().build()))
-                        .withId(randomUUID())
-                        .withCourtOrder(CourtOrder.courtOrder()
-                                .build())
-                        .build()))
-                .build());
+        final List<HearingListingNeeds> hearings = singletonList(HearingListingNeeds.hearingListingNeeds().withListedStartDateTime(ZonedDateTimes.fromString("2019-08-12T05:27:17.210Z")).withId(randomUUID()).withCourtApplications(singletonList(courtApplication().withJudicialResults(singletonList(JudicialResult.judicialResult().build())).withId(randomUUID()).withCourtOrder(CourtOrder.courtOrder().build()).build())).build());
 
         progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, hearings, null);
 
         verify(sender).send(envelopeArgumentCaptor.capture());
-        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                metadata().withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND),
-                payloadIsJson(
-                        allOf(
-                                withoutJsonPath("$.hearing.courtApplications[0].judicialResults"),
-                                withoutJsonPath("$.hearing.courtApplications[0].courtOrder.courtOrderOffences[0].offence.judicialResults")
-                        )
-                )
-                )
-        );
+        assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(metadata().withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND), payloadIsJson(allOf(withoutJsonPath("$.hearing.courtApplications[0].judicialResults"), withoutJsonPath("$.hearing.courtApplications[0].courtOrder.courtOrderOffences[0].offence.judicialResults")))));
 
     }
 
@@ -1885,44 +1228,27 @@ public class ProgressionServiceTest {
         final UUID caseId = randomUUID();
         final UUID defendant1 = randomUUID();
         final UUID defendant1sOffence1 = randomUUID();
-        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = singletonList(ConfirmedProsecutionCase.confirmedProsecutionCase()
-                .withId(caseId)
-                .withDefendants(singletonList(ConfirmedDefendant.confirmedDefendant()
-                        .withId(defendant1)
-                        .withOffences(singletonList(ConfirmedOffence.confirmedOffence()
-                                .withId(defendant1sOffence1)
-                                .build()))
-                        .build()))
-                .build());
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = singletonList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(caseId).withDefendants(singletonList(ConfirmedDefendant.confirmedDefendant().withId(defendant1).withOffences(singletonList(ConfirmedOffence.confirmedOffence().withId(defendant1sOffence1).build())).build())).build());
 
         final LocalDate earliestHearingDate = LocalDate.now();
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
-        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
-                .withSeedingHearingId(randomUUID())
-                .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .build();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withSeedingHearingId(randomUUID()).withJurisdictionType(JurisdictionType.MAGISTRATES).build();
 
         progressionService.transformProsecutionCase(confirmedProsecutionCases, earliestHearingDate, jsonEnvelope, seedingHearing);
     }
 
     @Test(expected = CourtApplicationAndCaseNotFoundException.class)
     public void transformProsecutionCaseShouldThrowExceptionIfProsecutionCaseEmpty() {
-        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = singletonList(ConfirmedProsecutionCase.confirmedProsecutionCase()
-                .withId(randomUUID())
-                .build());
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = singletonList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(randomUUID()).build());
         final JsonObject jsonObject = Json.createObjectBuilder().build();
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
 
         final LocalDate earliestHearingDate = LocalDate.now();
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
-        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
-                .withSeedingHearingId(randomUUID())
-                .withJurisdictionType(JurisdictionType.MAGISTRATES)
-                .build();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withSeedingHearingId(randomUUID()).withJurisdictionType(JurisdictionType.MAGISTRATES).build();
 
         progressionService.transformProsecutionCase(confirmedProsecutionCases, earliestHearingDate, jsonEnvelope, seedingHearing);
     }
@@ -1934,39 +1260,17 @@ public class ProgressionServiceTest {
         final UUID defendantId = fromString("96ec1814-cfcd-4ef4-ba18-315a6c48659f");
         final String address1 = "ADDRESS1";
         final String oucode = STRING.next();
-        final JsonObject courtCentreJson = createObjectBuilder()
-                .add("oucodeL3Name", "Lavender Hill Magistrates Court")
-                .add("address1", address1)
-                .add("oucode", oucode)
-                .add("lja", "ljaCode")
-                .build();
+        final JsonObject courtCentreJson = createObjectBuilder().add("oucodeL3Name", "Lavender Hill Magistrates Court").add("address1", address1).add("oucode", oucode).add("lja", "ljaCode").build();
 
-        when(enveloper.withMetadataFrom
-                (finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         final JsonObject jsonObject = getPayload("caseQueryApiWithCourtOrdersExpectedResponse.json");
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
 
         when(referenceDataService.getOrganisationUnitById(courtCentreId, finalEnvelope, requester)).thenReturn(of(courtCentreJson));
-        when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(LjaDetails.ljaDetails().withLjaCode("nationalCourtCode")
-                .withLjaName("name").withWelshLjaName("welshName").build());
-        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
-                .withId(randomUUID())
-                .withHearingDays(singletonList(HearingDay.hearingDay()
-                        .withSittingDay(ZonedDateTime.now()).build()))
-                .withCourtCentre(CourtCentre.courtCentre()
-                        .withId(courtCentreId).build())
-                .withProsecutionCases(singletonList(ConfirmedProsecutionCase.confirmedProsecutionCase()
-                        .withId(defendantId)
-                        .withDefendants(singletonList(ConfirmedDefendant.confirmedDefendant()
-                                .withId(defendantId)
-                                .withOffences(singletonList(ConfirmedOffence.confirmedOffence()
-                                        .withId(randomUUID())
-                                        .build()))
-                                .build()))
-                        .build()))
-                .build();
+        when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(LjaDetails.ljaDetails().withLjaCode("nationalCourtCode").withLjaName("name").withWelshLjaName("welshName").build());
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing().withId(randomUUID()).withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build())).withCourtCentre(CourtCentre.courtCentre().withId(courtCentreId).build()).withProsecutionCases(singletonList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(defendantId).withDefendants(singletonList(ConfirmedDefendant.confirmedDefendant().withId(defendantId).withOffences(singletonList(ConfirmedOffence.confirmedOffence().withId(randomUUID()).build())).build())).build())).build();
 
         final Hearing hearing = progressionService.transformConfirmedHearing(confirmedHearing, finalEnvelope);
         assertThat(hearing.getCourtCentre().getCode(), is(oucode));
@@ -1984,10 +1288,7 @@ public class ProgressionServiceTest {
     public static JsonObject getPayload(final String path) {
         String response = null;
         try {
-            response = Resources.toString(
-                    Resources.getResource(path),
-                    Charset.defaultCharset()
-            );
+            response = Resources.toString(Resources.getResource(path), Charset.defaultCharset());
         } catch (final Exception e) {
             e.printStackTrace();
         }
@@ -1996,30 +1297,7 @@ public class ProgressionServiceTest {
     }
 
     private ProsecutionCase buildProsecutionCasesWithTwoDefendantsOffences(UUID caseId, UUID defendant1, UUID defendant2, UUID defendant1sOffence1, UUID defendant1sOffence2, UUID defendant2sOffence1, UUID defendant2sOffence2, Boolean youth) {
-        return ProsecutionCase.prosecutionCase()
-                .withId(caseId)
-                .withCpsOrganisation("A01")
-                .withDefendants(asList(Defendant.defendant()
-                                .withId(defendant1)
-                                .withIsYouth(youth)
-                                .withOffences(asList(Offence.offence()
-                                                .withId(defendant1sOffence1)
-                                                .build(),
-                                        Offence.offence()
-                                                .withId(defendant1sOffence2)
-                                                .build()))
-                                .build(),
-                        Defendant.defendant()
-                                .withId(defendant2)
-                                .withIsYouth(youth)
-                                .withOffences(asList(Offence.offence()
-                                                .withId(defendant2sOffence1)
-                                                .build(),
-                                        Offence.offence()
-                                                .withId(defendant2sOffence2)
-                                                .build()))
-                                .build()))
-                .build();
+        return ProsecutionCase.prosecutionCase().withId(caseId).withCpsOrganisation("A01").withDefendants(asList(Defendant.defendant().withId(defendant1).withIsYouth(youth).withOffences(asList(Offence.offence().withId(defendant1sOffence1).build(), Offence.offence().withId(defendant1sOffence2).build())).build(), Defendant.defendant().withId(defendant2).withIsYouth(youth).withOffences(asList(Offence.offence().withId(defendant2sOffence1).build(), Offence.offence().withId(defendant2sOffence2).build())).build())).build();
     }
 
     private ProsecutionCase buildProsecutionCaseWithDefendantWithOffenceWithPlea(UUID caseId, UUID defendant, UUID offence, JurisdictionType jurisdictionType) {
@@ -2027,71 +1305,15 @@ public class ProgressionServiceTest {
     }
 
     private ProsecutionCase buildProsecutionCaseWithDefendantWithOffenceWithPlea(UUID caseId, UUID defendant, UUID offence, JurisdictionType jurisdictionType, final Integer listingNumber) {
-        return ProsecutionCase.prosecutionCase()
-                .withId(caseId)
-                .withCpsOrganisation("A01")
-                .withTrialReceiptType("Voluntary bill")
-                .withDefendants(asList(Defendant.defendant()
-                        .withId(defendant)
-                        .withIsYouth(Boolean.FALSE)
-                        .withOffences(asList(Offence.offence()
-                                .withId(offence)
-                                .withListingNumber(listingNumber)
-                                .withPlea(Plea.plea().withPleaValue("NOT_GUILTY").build())
-                                .withJudicialResults(asList(
-                                        JudicialResult.judicialResult()
-                                                .withNextHearing(NextHearing.nextHearing().withJurisdictionType(JurisdictionType.MAGISTRATES).build())
-                                                .build(),
-                                        JudicialResult.judicialResult()
-                                                .build(),
-                                        JudicialResult.judicialResult()
-                                                .withNextHearing(NextHearing.nextHearing().withJurisdictionType(jurisdictionType).build())
-                                                .build()))
-                                .build()
-                        ))
-                        .build()
-                ))
-                .build();
+        return ProsecutionCase.prosecutionCase().withId(caseId).withCpsOrganisation("A01").withTrialReceiptType("Voluntary bill").withDefendants(asList(Defendant.defendant().withId(defendant).withIsYouth(Boolean.FALSE).withOffences(asList(Offence.offence().withId(offence).withListingNumber(listingNumber).withPlea(Plea.plea().withPleaValue("NOT_GUILTY").build()).withJudicialResults(asList(JudicialResult.judicialResult().withNextHearing(NextHearing.nextHearing().withJurisdictionType(JurisdictionType.MAGISTRATES).build()).build(), JudicialResult.judicialResult().build(), JudicialResult.judicialResult().withNextHearing(NextHearing.nextHearing().withJurisdictionType(jurisdictionType).build()).build())).build())).build())).build();
     }
 
     private ProsecutionCase buildProsecutionCaseWithDefendantWithOffenceWithPleaWithVerdict(UUID caseId, UUID defendant, UUID offence, JurisdictionType jurisdictionType) {
-        return ProsecutionCase.prosecutionCase()
-                .withId(caseId)
-                .withCpsOrganisation("A01")
-                .withDefendants(asList(Defendant.defendant()
-                        .withId(defendant)
-                        .withIsYouth(Boolean.FALSE)
-                        .withOffences(asList(Offence.offence()
-                                .withId(offence)
-                                .withPlea(Plea.plea().withPleaValue("NOT_GUILTY").build())
-                                .withVerdict(Verdict.verdict().build())
-                                .withJudicialResults(asList(
-                                        JudicialResult.judicialResult()
-                                                .withNextHearing(NextHearing.nextHearing().withJurisdictionType(JurisdictionType.MAGISTRATES).build())
-                                                .build(),
-                                        JudicialResult.judicialResult()
-                                                .build(),
-                                        JudicialResult.judicialResult()
-                                                .withNextHearing(NextHearing.nextHearing().withJurisdictionType(jurisdictionType).build())
-                                                .build()))
-                                .build()
-                        ))
-                        .build()
-                ))
-                .build();
+        return ProsecutionCase.prosecutionCase().withId(caseId).withCpsOrganisation("A01").withDefendants(asList(Defendant.defendant().withId(defendant).withIsYouth(Boolean.FALSE).withOffences(asList(Offence.offence().withId(offence).withPlea(Plea.plea().withPleaValue("NOT_GUILTY").build()).withVerdict(Verdict.verdict().build()).withJudicialResults(asList(JudicialResult.judicialResult().withNextHearing(NextHearing.nextHearing().withJurisdictionType(JurisdictionType.MAGISTRATES).build()).build(), JudicialResult.judicialResult().build(), JudicialResult.judicialResult().withNextHearing(NextHearing.nextHearing().withJurisdictionType(jurisdictionType).build()).build())).build())).build())).build();
     }
 
     private PublicListingNewDefendantAddedForCourtProceedings getDefendantAddedPayload() {
-        return publicListingNewDefendantAddedForCourtProceedings()
-                .withHearingId(randomUUID())
-                .withCaseId(randomUUID())
-                .withDefendantId(randomUUID())
-                .withCourtCentre(CourtCentre.courtCentre()
-                        .withId(randomUUID())
-                        .withRoomId(randomUUID())
-                        .build())
-                .withHearingDateTime(ZonedDateTime.now())
-                .build();
+        return publicListingNewDefendantAddedForCourtProceedings().withHearingId(randomUUID()).withCaseId(randomUUID()).withDefendantId(randomUUID()).withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withRoomId(randomUUID()).build()).withHearingDateTime(ZonedDateTime.now()).build();
     }
 
 }

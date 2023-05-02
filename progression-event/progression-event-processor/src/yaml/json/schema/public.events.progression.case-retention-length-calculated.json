@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public.events.progression.case-retention-length-calculated.json",
+  "type": "object",
+  "properties": {
+    "caseUrn": {
+      "type": "string"
+    },
+    "caseStatus": {
+      "type": "string"
+    },
+    "courtCentreId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "courtCentreName": {
+      "type": "string"
+    },
+    "courtRoomName": {
+      "type": "string"
+    },
+    "courtRoomId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "hearingType": {
+      "type": "string"
+    },
+    "jurisdictionType": {
+      "type": "string"
+    },
+    "retentionPolicy": {
+      "$ref": "#/definitions/retentionPolicy"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "caseUrn",
+    "caseStatus",
+    "courtCentreId",
+    "courtCentreName",
+    "retentionPolicy"
+  ],
+  "definitions": {
+    "retentionPolicy": {
+      "type": "object",
+      "properties": {
+        "policyType": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "policyType",
+        "period"
+      ]
+    }
+  }
+}

@@ -128,6 +128,9 @@ subscriptions_descriptor:
         - name: public.progression.hearing-resulted
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.hearing-resulted.json
 
+        - name: public.events.progression.case-retention-length-calculated
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.events.progression.case-retention-length-calculated.json
+
         - name: public.progression.event.form-defendants-updated
           schema_uri: http://justice.gov.uk/core/courts/public.progression.event.form-defendants-updated.json
 

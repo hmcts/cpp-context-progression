@@ -46,6 +46,7 @@ import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
@@ -90,10 +91,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -119,6 +122,7 @@ public class ProgressionService {
     private static final String PROSECUTION_CASE = "prosecutionCase";
 
     public static final String HEARING_ID = "hearingId";
+    public static final String HEARING_TYPE = "hearingType";
     public static final String DEFENDANT_ID = "defendantId";
     private static final String PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE = "progression.command.create-prosecution-case";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
@@ -158,8 +162,13 @@ public class ProgressionService {
     private static final String PLEA_TYPE_GUILTY_FLAG_FIELD = "pleaTypeGuiltyFlag";
     public static final String NOTIFY_NCES = "notifyNCES";
     private static final String DEFENDANT_JUDICIAL_RESULTS = "defendantJudicialResults";
+    private static final String COURT_CENTRE = "courtCentre";
+    private static final String JURISDICTION_TYPE = "jurisdictionType";
+    private static final String REMIT_RESULT_IDS = "remitResultIds";
+    private static final String IS_BOX_HEARING = "isBoxHearing";
 
     private DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd MMMM yyyy");
+    private Map<String, List<CpResultActionMapping>> remitResultIds = new ConcurrentHashMap<>(1);
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -490,7 +499,7 @@ public class ProgressionService {
     public void prepareSummonsData(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing) {
         final JsonObject casesConfirmedPayload = createObjectBuilder()
                 .add("hearingId", confirmedHearing.getId().toString())
-                .add("courtCentre", objectToJsonObjectConverter.convert(confirmedHearing.getCourtCentre()))
+                .add(COURT_CENTRE, objectToJsonObjectConverter.convert(confirmedHearing.getCourtCentre()))
                 .add("hearingDateTime", ZonedDateTimes.toString(getEarliestDate(confirmedHearing.getHearingDays())))
                 .add("confirmedProsecutionCaseIds", transformProsecutionCases(confirmedHearing.getProsecutionCases()))
                 .add("confirmedApplicationIds", transformApplicationIds(confirmedHearing))
@@ -606,7 +615,7 @@ public class ProgressionService {
 
     private boolean isYouthUpdated(final Defendant confirmedDefendantConsumer, final Defendant defEnt) {
         if (nonNull(confirmedDefendantConsumer.getIsYouth())) {
-            return !confirmedDefendantConsumer.getIsYouth().equals(Optional.ofNullable(defEnt.getIsYouth()).orElse(Boolean.FALSE));
+            return !confirmedDefendantConsumer.getIsYouth().equals(ofNullable(defEnt.getIsYouth()).orElse(Boolean.FALSE));
         }
         return false;
     }
@@ -1356,8 +1365,12 @@ public class ProgressionService {
         );
     }
 
-    public void updateCase(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase, final List<CourtApplication> courtApplications, final List<DefendantJudicialResult> defendantJudicialResults) {
+    public void updateCase(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase, final List<CourtApplication> courtApplications,
+                           final List<DefendantJudicialResult> defendantJudicialResults, final CourtCentre courtCentre,
+                           final UUID hearingId, final HearingType hearingType, final JurisdictionType jurisdictionType, final Boolean isBoxHearing) {
+
         final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
+        final JsonObject courtCentreJson = objectToJsonObjectConverter.convert(courtCentre);
         final JsonObjectBuilder payloadBuilder = createObjectBuilder();
         payloadBuilder.add(PROSECUTION_CASE, prosecutionCaseJson);
         if (isNotEmpty(courtApplications)) {
@@ -1366,6 +1379,13 @@ public class ProgressionService {
         if (isNotEmpty(defendantJudicialResults)) {
             payloadBuilder.add(DEFENDANT_JUDICIAL_RESULTS, resultListToJsonArrayConverter.convert(defendantJudicialResults));
         }
+        payloadBuilder.add(COURT_CENTRE, courtCentreJson);
+        payloadBuilder.add(HEARING_ID, hearingId.toString());
+        payloadBuilder.add(HEARING_TYPE, hearingType.getDescription());
+        payloadBuilder.add(REMIT_RESULT_IDS, getRemitResultIdsAsJsonArray());
+        payloadBuilder.add(JURISDICTION_TYPE, jurisdictionType.name());
+        ofNullable(isBoxHearing).ifPresent(boxHearing -> payloadBuilder.add(IS_BOX_HEARING, boxHearing));
+
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_HEARING_RESULTED_UPDATE_CASE)
                 .apply(payloadBuilder.build()));
     }
@@ -1553,6 +1573,19 @@ public class ProgressionService {
                             .withMetadataFrom(event));
         }
 
+    }
+
+    private JsonArrayBuilder getRemitResultIdsAsJsonArray() {
+        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
+        getCpActionResultMappingsForRemitResults()
+                .stream()
+                .map(a -> a.getResultRefId().toString())
+                .forEach(arrayBuilder::add);
+        return arrayBuilder;
+    }
+
+    private List<CpResultActionMapping> getCpActionResultMappingsForRemitResults() {
+        return remitResultIds.computeIfAbsent("remitResultIds", key -> referenceDataService.getResultIdsByActionCode("REM", requester));
     }
 
     private String getApplicationParticulars(final NextHearing nextHearing) {

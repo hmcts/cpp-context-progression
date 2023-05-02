@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.domain.aggregate;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
@@ -21,6 +22,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
+import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.FormCreated.formCreated;
 import static uk.gov.justice.core.courts.FormDefendants.formDefendants;
 import static uk.gov.justice.core.courts.FormType.BCM;
@@ -28,9 +31,14 @@ import static uk.gov.justice.core.courts.FormType.PET;
 import static uk.gov.justice.core.courts.FormType.PTPH;
 import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
 import static uk.gov.justice.core.courts.JudicialResultCategory.INTERMEDIARY;
+import static uk.gov.justice.core.courts.JurisdictionType.CROWN;
+import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.core.courts.LaaReference.laaReference;
+import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.core.courts.PetDefendants.petDefendants;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
+import static uk.gov.justice.core.courts.ProsecutionCaseCreated.prosecutionCaseCreated;
+import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.string;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.command.UpdateMatchedDefendantCustodialInformation.updateMatchedDefendantCustodialInformation;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
@@ -52,6 +60,7 @@ import uk.gov.justice.core.courts.CaseMarkersUpdated;
 import uk.gov.justice.core.courts.CaseNoteAdded;
 import uk.gov.justice.core.courts.CaseNoteAddedV2;
 import uk.gov.justice.core.courts.CaseNoteEditedV2;
+import uk.gov.justice.core.courts.CaseRetentionPolicyRecorded;
 import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -113,6 +122,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseSubject;
 import uk.gov.justice.core.courts.ReferralReason;
+import uk.gov.justice.progression.courts.CaseRetentionLengthCalculated;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdated;
 import uk.gov.justice.progression.courts.DefendantsAndListingHearingRequestsStored;
 import uk.gov.justice.progression.courts.HearingDeletedForProsecutionCase;
@@ -196,6 +206,7 @@ import org.mockito.Spy;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
 
+
 @RunWith(MockitoJUnitRunner.class)
 public class CaseAggregateTest {
 
@@ -246,7 +257,7 @@ public class CaseAggregateTest {
     private final String MESSAGE_FOR_PROSECUTION_NULL = "ProsecutionCase(%s) does not exists.";
     private final String MESSAGE_FOR_COURT_FORM_ID_NOT_PRESENT = "courtFormId (%s) does not exists.";
 
-    private static final uk.gov.justice.core.courts.Offence offence = uk.gov.justice.core.courts.Offence.offence()
+    private static final uk.gov.justice.core.courts.Offence offence = offence()
             .withId(randomUUID())
             .build();
     private static final Defendant defendant = Defendant.defendant()
@@ -260,7 +271,7 @@ public class CaseAggregateTest {
                             .build())
                     .build())
             .withCourtProceedingsInitiated(ZonedDateTime.now())
-            .withOffences(singletonList(uk.gov.justice.core.courts.Offence.offence().withId(randomUUID()).build()))
+            .withOffences(singletonList(offence().withId(randomUUID()).build()))
             .build();
 
     private static final Defendant legalEntityDefendant = Defendant.defendant()
@@ -295,6 +306,9 @@ public class CaseAggregateTest {
 
     @InjectMocks
     private CaseAggregate caseAggregate;
+
+    private final UUID hearingId = randomUUID();
+    private final String hearingType = "Trial";
 
     private static final Map<FormType, Integer> lockDurationMapByFormType = new HashMap<FormType, Integer>() {{
         put(BCM, 60);
@@ -409,7 +423,9 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldChangeCaseStatusFromInactiveToReadyForReviewIfAllDefendantProceedingsAreNotConcluded() {
+        final String caseURN = "case" + string(6).next();
         final UUID caseId = randomUUID();
+
         final UUID defendantId1 = randomUUID();
         final UUID defendantId2 = randomUUID();
         final UUID defendantId3 = randomUUID();
@@ -418,9 +434,15 @@ public class CaseAggregateTest {
         final UUID offenceId2 = randomUUID();
         final UUID offenceId3 = randomUUID();
 
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
+
         final List<Defendant> defendantsWithProceedingsConcluded = getDefendantsWithProceedingsConcluded(caseId, defendantId1, defendantId2, defendantId3,
                 offenceId1, offenceId2, offenceId3,true, true, true, 5);
         final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(caseURN).build())
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
                 .withDefendants(defendantsWithProceedingsConcluded).withId(caseId).build();
         final ProsecutionCaseCreated prosecutionCaseUpdated = ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
@@ -434,10 +456,12 @@ public class CaseAggregateTest {
                 .build();
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult);
 
-        final ProsecutionCase prosecutionCaseWithReadyForReview = prosecutionCase().withDefendants(defendantsWithProceedingsConcluded).withId(caseId).withCaseStatus(READY_FOR_REVIEW.toString()).build();
+        final ProsecutionCase prosecutionCaseWithReadyForReview = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(caseURN).build())
+                .withDefendants(defendantsWithProceedingsConcluded).withId(caseId).withCaseStatus(READY_FOR_REVIEW.toString()).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedReadyForReview = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithReadyForReview).build();
 
-        final Stream<Object> eventStreamWithReadyForReview = this.caseAggregate.updateCase(prosecutionCaseWithReadyForReview, defendantJudicialResults);
+        final Stream<Object> eventStreamWithReadyForReview = this.caseAggregate.updateCase(prosecutionCaseWithReadyForReview, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedReadyForReview);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedReadyForReviewAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithReadyForReview.collect(toList()).get(0);
@@ -445,10 +469,12 @@ public class CaseAggregateTest {
 
         final List<Defendant> defendantsWithInactive = getDefendantsWithProceedingsConcluded(caseId, defendantId1, defendantId2, defendantId3,
                 offenceId1, offenceId2, offenceId3, true, true, true, 5);
-        final ProsecutionCase prosecutionCaseWithInactive = prosecutionCase().withDefendants(defendantsWithInactive).withId(caseId).withCaseStatus(hearingResultedCaseUpdatedReadyForReview.getProsecutionCase().getCaseStatus()).build();
+        final ProsecutionCase prosecutionCaseWithInactive = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(caseURN).build())
+                .withDefendants(defendantsWithInactive).withId(caseId).withCaseStatus(hearingResultedCaseUpdatedReadyForReview.getProsecutionCase().getCaseStatus()).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithInactive = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithInactive).build();
 
-        final Stream<Object> eventStreamForInactiveCase = this.caseAggregate.updateCase(prosecutionCaseWithInactive, defendantJudicialResults);
+        final Stream<Object> eventStreamForInactiveCase = this.caseAggregate.updateCase(prosecutionCaseWithInactive, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedWithInactive);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithInactiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamForInactiveCase.collect(toList()).get(0);
@@ -456,11 +482,13 @@ public class CaseAggregateTest {
 
         final List<Defendant> defendantsAfterUpdate = getDefendantsWithProceedingsConcluded(caseId, defendantId1, defendantId2, defendantId3,
                 offenceId1, offenceId2, offenceId3, false, true, true, 5);
-        final ProsecutionCase prosecutionCaseAfterUpdate = prosecutionCase().withDefendants(defendantsAfterUpdate).withId(caseId).withCaseStatus(hearingResultedCaseUpdatedWithInactive.getProsecutionCase().getCaseStatus()).build();
+        final ProsecutionCase prosecutionCaseAfterUpdate = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(caseURN).build())
+                .withDefendants(defendantsAfterUpdate).withId(caseId).withCaseStatus(hearingResultedCaseUpdatedWithInactive.getProsecutionCase().getCaseStatus()).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdate = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseAfterUpdate).build();
 
         final List<DefendantJudicialResult> updatedDefendantJudicialResults = new ArrayList<>();
-        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, updatedDefendantJudicialResults);
+        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, updatedDefendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedAfterUpdate);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdateAfterAggregate = (HearingResultedCaseUpdated) eventStreamAfterUpdateAfterAggregate.collect(toList()).get(0);
@@ -484,7 +512,7 @@ public class CaseAggregateTest {
         final ProsecutionCase prosecutionCase = prosecutionCase()
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
                 .withDefendants(defendants).withId(caseId).build();
-        final ProsecutionCaseCreated prosecutionCaseUpdated = ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+        final ProsecutionCaseCreated prosecutionCaseUpdated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
 
         final Object response = this.caseAggregate.apply(prosecutionCaseUpdated);
 
@@ -524,7 +552,7 @@ public class CaseAggregateTest {
         final ProsecutionCase prosecutionCase = prosecutionCase()
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
                 .withDefendants(defendants).withId(caseId).build();
-        final ProsecutionCaseCreated prosecutionCaseUpdated = ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+        final ProsecutionCaseCreated prosecutionCaseUpdated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
 
         final Object response = this.caseAggregate.apply(prosecutionCaseUpdated);
 
@@ -562,7 +590,7 @@ public class CaseAggregateTest {
         final ProsecutionCase prosecutionCase = prosecutionCase()
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
                 .withDefendants(defendants).withId(caseId).build();
-        final ProsecutionCaseCreated prosecutionCaseUpdated = ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+        final ProsecutionCaseCreated prosecutionCaseUpdated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
 
         final Object response = this.caseAggregate.apply(prosecutionCaseUpdated);
 
@@ -589,9 +617,11 @@ public class CaseAggregateTest {
     @Test
     public void shouldChangeCaseStatusReadyForReviewToInactive() {
         final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
         final UUID defendantId1 = randomUUID();
         final UUID defendantId2 = randomUUID();
         final UUID defendantId3 = randomUUID();
+        final String caseURN = "case" + string(6).next();
 
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
@@ -601,16 +631,25 @@ public class CaseAggregateTest {
                 offenceId1, offenceId2, offenceId3, true, true, true, 5);
 
         final ProsecutionCase prosecutionCaseWithNoCaseStatus = prosecutionCase()
-                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier())
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
                 .withId(randomUUID()).withDefendants(defendantsWithReadyForReview).withId(caseId).build();
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
 
         this.caseAggregate.createProsecutionCase(prosecutionCaseWithNoCaseStatus);
 
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
-        final ProsecutionCase prosecutionCaseWithReadyForReview = prosecutionCase().withDefendants(defendantsWithReadyForReview).withId(caseId).withCaseStatus(READY_FOR_REVIEW.toString()).build();
+        final ProsecutionCase prosecutionCaseWithReadyForReview = prosecutionCase()
+                .withDefendants(defendantsWithReadyForReview)
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
+                .withId(caseId)
+                .withCaseStatus(READY_FOR_REVIEW.toString())
+                .build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedReadyForReview = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithReadyForReview).build();
 
-        final Stream<Object> eventStreamWithReadyForReview = this.caseAggregate.updateCase(prosecutionCaseWithReadyForReview, defendantJudicialResults);
+        final Stream<Object> eventStreamWithReadyForReview = this.caseAggregate.updateCase(prosecutionCaseWithReadyForReview, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedReadyForReview);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedReadyForReviewAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithReadyForReview.collect(toList()).get(0);
@@ -621,6 +660,7 @@ public class CaseAggregateTest {
     public void shouldUpdateCaseStatusFromInactiveToActiveOnHearingResultedWithNonFinalOffences() {
 
         final UUID caseId = randomUUID();
+        final String caseURN = "case" + string(6).next();
         final UUID defendantId1 = randomUUID();
         final UUID defendantId2 = randomUUID();
         final UUID defendantId3 = randomUUID();
@@ -629,22 +669,30 @@ public class CaseAggregateTest {
         final UUID offenceId2 = randomUUID();
         final UUID offenceId3 = randomUUID();
 
+        final UUID hearingId = randomUUID();
+
         final List<Defendant> defendantsWithProceedingsConcluded = getDefendantsWithProceedingsConcluded(caseId, defendantId1, defendantId2, defendantId3,
                 offenceId1, offenceId2, offenceId3, true, true, true, 5);
 
         final ProsecutionCase prosecutionCaseWithNoCaseStatus = prosecutionCase()
-                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier())
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
                 .withId(randomUUID()).withDefendants(defendantsWithProceedingsConcluded).withId(caseId).build();
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
 
         this.caseAggregate.createProsecutionCase(prosecutionCaseWithNoCaseStatus);
 
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
 
         // Case with Inactive Status
-        final ProsecutionCase prosecutionCaseWithInactiveCaseStatus = prosecutionCase().withDefendants(defendantsWithProceedingsConcluded).withCaseStatus(INACTIVE.getDescription()).withId(caseId).build();
+        final ProsecutionCase prosecutionCaseWithInactiveCaseStatus = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(caseURN).build())
+                .withDefendants(defendantsWithProceedingsConcluded).withCaseStatus(INACTIVE.getDescription()).withId(caseId).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedInactiveStatus = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithInactiveCaseStatus).build();
 
-        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithInactiveCaseStatus, defendantJudicialResults);
+        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithInactiveCaseStatus, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedInactiveStatus);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCaseStatus.collect(toList()).get(0);
@@ -652,10 +700,12 @@ public class CaseAggregateTest {
 
         final List<Defendant> defendantsWithOffencesNotConcludedToFinal = getDefendantsWithProceedingsConcluded(caseId, defendantId1, defendantId2, defendantId3,
                 offenceId1, offenceId2, offenceId3, false, true, true, 5);
-        final ProsecutionCase prosecutionCaseAfterUpdate = prosecutionCase().withDefendants(defendantsWithOffencesNotConcludedToFinal).withId(caseId).withCaseStatus(hearingResultedCaseUpdateInActiveAfterAggregate.getProsecutionCase().getCaseStatus()).build();
+        final ProsecutionCase prosecutionCaseAfterUpdate = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(caseURN).build())
+                .withDefendants(defendantsWithOffencesNotConcludedToFinal).withId(caseId).withCaseStatus(hearingResultedCaseUpdateInActiveAfterAggregate.getProsecutionCase().getCaseStatus()).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdate = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseAfterUpdate).build();
 
-        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, defendantJudicialResults);
+        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedAfterUpdate);
 
         // Case status to be back Active
@@ -667,6 +717,13 @@ public class CaseAggregateTest {
     public void shouldKeepCaseStatusAsActiveUntilAllDefendantProceedingsIsConcludedToFinalAcrossMultipleHearings() {
 
         final UUID caseId1 = randomUUID();
+        final String caseURN1 = "case" + string(6).next();
+
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
+
         final UUID masterDefendantId = randomUUID();
         final UUID defendantId1 = randomUUID();
         final UUID defendantId2 = randomUUID();
@@ -677,17 +734,17 @@ public class CaseAggregateTest {
         final List<Defendant> defendantsWithProceedingsConcluded = getDefendantsWithProceedingsConcluded(caseId1, defendantId1, defendantId2,
                 offenceId1, offenceId2,false, false);
 
-        final ProsecutionCase prosecutionCase1 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier())
+        final ProsecutionCase prosecutionCase1 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN1))
                 .withDefendants(defendantsWithProceedingsConcluded).withId(caseId1).withCaseStatus(ACTIVE.getDescription()).build();
         this.caseAggregate.createProsecutionCase(prosecutionCase1);
 
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
         final List<Defendant> defendant1withProceedingsConcludedTrue = getDefendantsWithMasterDefendantId(caseId1, defendantId1, masterDefendantId,
                 offenceId1, true);
-        final ProsecutionCase prosecutionCaseForHearing1WithDefendant1 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier())
+        final ProsecutionCase prosecutionCaseForHearing1WithDefendant1 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN1))
                 .withDefendants(defendant1withProceedingsConcludedTrue).withId(caseId1).withCaseStatus(ACTIVE.getDescription()).build();
         final HearingResultedCaseUpdated hearing1WithDefendant1Only = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseForHearing1WithDefendant1).build();
-        final Stream<Object> eventStreamWithActiveCaseStatusFromHearing1 = this.caseAggregate.updateCase(hearing1WithDefendant1Only.getProsecutionCase(), defendantJudicialResults);
+        final Stream<Object> eventStreamWithActiveCaseStatusFromHearing1 = this.caseAggregate.updateCase(hearing1WithDefendant1Only.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
 
         caseAggregate.apply(hearing1WithDefendant1Only);
         final HearingResultedCaseUpdated hearing1ResultedCaseUpdateAfterUpdateCase = (HearingResultedCaseUpdated) eventStreamWithActiveCaseStatusFromHearing1.collect(toList()).get(0);
@@ -695,10 +752,10 @@ public class CaseAggregateTest {
 
         final List<Defendant> defendant2WithProceedingsConcludedTrue = getDefendantsWithMasterDefendantId(caseId1, defendantId2, masterDefendantId,
                 offenceId2, true);
-        final ProsecutionCase prosecutionCaseForHearing2WithDefendant2 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier())
+        final ProsecutionCase prosecutionCaseForHearing2WithDefendant2 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN1))
                 .withDefendants(defendant2WithProceedingsConcludedTrue).withId(caseId1).withCaseStatus(INACTIVE.getDescription()).build();
         final HearingResultedCaseUpdated hearing2WithDefendant2Only = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseForHearing2WithDefendant2).build();
-        final Stream<Object> eventStreamWithInactiveCaseStatusFromHearing2 = this.caseAggregate.updateCase(hearing2WithDefendant2Only.getProsecutionCase(), defendantJudicialResults);
+        final Stream<Object> eventStreamWithInactiveCaseStatusFromHearing2 = this.caseAggregate.updateCase(hearing2WithDefendant2Only.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
 
         caseAggregate.apply(hearing2WithDefendant2Only);
         final HearingResultedCaseUpdated hearingResultedCase2UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInactiveCaseStatusFromHearing2.collect(toList()).get(0);
@@ -707,10 +764,13 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldSetCaseStatusOnResultingAnHearingWhenNoCaseStatusWasSet() {
+
         final UUID caseId = randomUUID();
+        final String caseURN = "case" + string(6).next();
         final UUID defendantId1 = randomUUID();
         final UUID defendantId2 = randomUUID();
         final UUID defendantId3 = randomUUID();
+        final UUID hearingId = randomUUID();
 
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
@@ -720,7 +780,7 @@ public class CaseAggregateTest {
                 offenceId1, offenceId2, offenceId3, true, true, true, 5);
 
         final ProsecutionCase prosecutionCaseWithNoCaseStatus = prosecutionCase()
-                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier())
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
                 .withDefendants(defendantsWithProceedingsConcluded).withId(caseId).build();
 
         this.caseAggregate.createProsecutionCase(prosecutionCaseWithNoCaseStatus);
@@ -732,9 +792,14 @@ public class CaseAggregateTest {
                 .withMasterDefendantId(UUID.randomUUID())
                 .build();
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult);
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
+
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithNoCaseStatus = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithNoCaseStatus).build();
 
-        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, defendantJudicialResults);
+        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedWithNoCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCaseStatus.collect(toList()).get(0);
@@ -743,10 +808,12 @@ public class CaseAggregateTest {
         final List<Defendant> defendantsAfterUpdate = getDefendantsWithProceedingsConcluded(caseId, defendantId1, defendantId2, defendantId3,
                 offenceId1, offenceId2, offenceId3, false, true, true, 5);
 
-        final ProsecutionCase prosecutionCaseAfterUpdate = prosecutionCase().withDefendants(defendantsAfterUpdate).withId(caseId).withCaseStatus(hearingResultedCaseUpdateInActiveAfterAggregate.getProsecutionCase().getCaseStatus()).build();
+        final ProsecutionCase prosecutionCaseAfterUpdate = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(caseURN).build())
+                .withDefendants(defendantsAfterUpdate).withId(caseId).withCaseStatus(hearingResultedCaseUpdateInActiveAfterAggregate.getProsecutionCase().getCaseStatus()).build();
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdate = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseAfterUpdate).build();
 
-        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, defendantJudicialResults);
+        final Stream<Object> eventStreamAfterUpdateAfterAggregate = this.caseAggregate.updateCase(prosecutionCaseAfterUpdate, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedAfterUpdate);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedAfterUpdateAfterAggregate = (HearingResultedCaseUpdated) eventStreamAfterUpdateAfterAggregate.collect(toList()).get(0);
@@ -756,6 +823,7 @@ public class CaseAggregateTest {
     @Test
     public void shouldChangeCaseStatusToInactiveWhenCaseDefendantsAllOffencesConcludedToFinal() {
         final UUID caseId = randomUUID();
+        final String caseURN1 = "case" + string(6).next();
         final UUID defendantId1 = randomUUID();
         final UUID defendantId2 = randomUUID();
         final UUID defendantId3 = randomUUID();
@@ -764,11 +832,16 @@ public class CaseAggregateTest {
         final UUID offenceId2 = randomUUID();
         final UUID offenceId3 = randomUUID();
 
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
+
         final List<Defendant> defendantsWithProceedingsConcluded = getDefendantsWithProceedingsConcluded(caseId, defendantId1, defendantId2, defendantId3,
                 offenceId1, offenceId2, offenceId3, true, true, true, 5);
 
         final ProsecutionCase prosecutionCaseWithNoCaseStatus = prosecutionCase()
-                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier())
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN1))
                 .withDefendants(defendantsWithProceedingsConcluded).withId(caseId).build();
 
         this.caseAggregate.createProsecutionCase(prosecutionCaseWithNoCaseStatus);
@@ -777,7 +850,7 @@ public class CaseAggregateTest {
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithNoCaseStatus = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithNoCaseStatus).build();
 
-        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, defendantJudicialResults);
+        final Stream<Object> eventStreamWithInActiveCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedWithNoCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCaseStatus.collect(toList()).get(0);
@@ -787,6 +860,7 @@ public class CaseAggregateTest {
     @Test
     public void shouldNotChangeCaseStatusToInactiveIfAllOffencesAreNotResultedToFinal() {
         final UUID caseId = randomUUID();
+        final String caseURN1 = "case" + string(6).next();
         final UUID defendantId1 = randomUUID();
         final UUID defendantId2 = randomUUID();
         final UUID defendantId3 = randomUUID();
@@ -795,18 +869,23 @@ public class CaseAggregateTest {
         final UUID offenceId2 = randomUUID();
         final UUID offenceId3 = randomUUID();
 
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
         final List<Defendant> defendantsWithAOffenceNotConcludedToFinal = getDefendantsWithProceedingsConcluded(caseId, defendantId1, defendantId2, defendantId3,
                 offenceId1, offenceId2, offenceId3, false, true, true, 5);
 
+
         final ProsecutionCase prosecutionCaseWithNoCaseStatus = prosecutionCase()
-                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier())
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN1))
                 .withDefendants(defendantsWithAOffenceNotConcludedToFinal).withId(caseId).withCaseStatus(ACTIVE.getDescription()).build();
 
         this.caseAggregate.createProsecutionCase(prosecutionCaseWithNoCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithNoCaseStatus = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCaseWithNoCaseStatus).build();
 
-        final Stream<Object> eventStreamWithWithUpdatedCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, Collections.emptyList());
+        final Stream<Object> eventStreamWithWithUpdatedCaseStatus = this.caseAggregate.updateCase(prosecutionCaseWithNoCaseStatus, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCaseUpdatedWithNoCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCaseUpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithWithUpdatedCaseStatus.collect(toList()).get(0);
@@ -816,18 +895,25 @@ public class CaseAggregateTest {
     @Test
     public void shouldChangeCaseStatusToInactiveIfAllOffencesOnTheCaseAreResultedFinal() {
         final UUID caseId = randomUUID();
+        final String caseURN1 = "case" + string(6).next();
         final UUID masterDefendantId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID offenceId = randomUUID();
+
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
+
         final List<Defendant> defendantWithProceedingsConcludedTrue = getDefendantsWithMasterDefendantId(caseId, defendantId, masterDefendantId, offenceId, true);
 
-        final ProsecutionCase prosecutionCase2 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier())
+        final ProsecutionCase prosecutionCase2 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN1))
                 .withDefendants(defendantWithProceedingsConcludedTrue).withId(caseId).withCaseStatus(ACTIVE.getDescription()).build();
         this.caseAggregate.createProsecutionCase(prosecutionCase2);
 
         final HearingResultedCaseUpdated hearingResultedCase2UpdatedWithActiveCaseStatus = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase2).build();
 
-        final Stream<Object> eventStreamWithInActiveCase2Status = this.caseAggregate.updateCase(hearingResultedCase2UpdatedWithActiveCaseStatus.getProsecutionCase(), Collections.emptyList());
+        final Stream<Object> eventStreamWithInActiveCase2Status = this.caseAggregate.updateCase(hearingResultedCase2UpdatedWithActiveCaseStatus.getProsecutionCase(), Collections.emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCase2UpdatedWithActiveCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCase2UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCase2Status.collect(toList()).get(0);
@@ -838,20 +924,25 @@ public class CaseAggregateTest {
     @Test
     public void shouldNotChangeCaseStatusIfAllOffencesOnTheCaseAreNotResultedFinal() {
         final UUID caseId = randomUUID();
+        final String caseURN1 = "case" + string(6).next();
         final UUID masterDefendantId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID offenceId = randomUUID();
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
 
         final List<Defendant> defendant1WithProceedingsConcludedFalse = getDefendantsWithMasterDefendantId(caseId, defendantId, masterDefendantId, offenceId, false);
 
-        final ProsecutionCase prosecutionCase1 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier())
+        final ProsecutionCase prosecutionCase1 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN1))
                 .withDefendants(defendant1WithProceedingsConcludedFalse).withId(caseId).withCaseStatus(ACTIVE.getDescription()).build();
         this.caseAggregate.createProsecutionCase(prosecutionCase1);
 
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
         final HearingResultedCaseUpdated hearingResultedCase1UpdatedWithActiveCaseStatus = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase1).build();
 
-        final Stream<Object> eventStreamWithInActiveCase1Status = this.caseAggregate.updateCase(hearingResultedCase1UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults);
+        final Stream<Object> eventStreamWithInActiveCase1Status = this.caseAggregate.updateCase(hearingResultedCase1UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
         caseAggregate.apply(hearingResultedCase1UpdatedWithActiveCaseStatus);
 
         final HearingResultedCaseUpdated hearingResultedCase1UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCase1Status.collect(toList()).get(0);
@@ -1392,6 +1483,7 @@ public class CaseAggregateTest {
     @Test
     public void shouldLAAReferenceUpdatedForOffence_whenOneOfTheOffenceIsRefusedAndOtherOneIsGranted_expectGrantedInDefendantLevelLegalAidStatus() {
         final UUID caseId = fromString(CASE_ID);
+        final String caseURN = "case" + string(6).next();
         final UUID defendantId = fromString(DEFENDANT_ID);
         final UUID offenceId1 = fromString(OFFENCE_ID);
         final UUID offenceId2 = randomUUID();
@@ -1400,14 +1492,14 @@ public class CaseAggregateTest {
                 .withCaseStatus("caseStatus")
                 .withId(randomUUID())
                 .withOriginatingOrganisation("originatingOrganisation")
-                .withDefendants(asList(Defendant.defendant().
+                .withDefendants(asList(defendant().
                         withId(defendantId)
                         .withPersonDefendant(PersonDefendant.personDefendant().build())
-                        .withOffences(asList(uk.gov.justice.core.courts.Offence.offence().withId(offenceId1).build()
-                                , uk.gov.justice.core.courts.Offence.offence().withId(offenceId2).build()))
+                        .withOffences(asList(offence().withId(offenceId1).build()
+                                , offence().withId(offenceId2).build()))
                         .build()))
                 .withInitiationCode(InitiationCode.C)
-                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier())
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
                 .build();
         caseAggregate.createProsecutionCase(prosecutionCase);
 
@@ -1431,6 +1523,7 @@ public class CaseAggregateTest {
     @Test
     public void shouldDisassociateAssociatedDefenceOrganisation_whenLaaReferenceIsWithDrawnAndDefendantLevelStatusIsNotGranted() {
         final UUID caseId = fromString(CASE_ID);
+        final String caseURN = "case" + string(6).next();
         final UUID defendantId = fromString(DEFENDANT_ID);
         final UUID offenceId1 = fromString(OFFENCE_ID);
         final UUID offenceId2 = randomUUID();
@@ -1445,17 +1538,17 @@ public class CaseAggregateTest {
                 .withCaseStatus("caseStatus")
                 .withId(randomUUID())
                 .withOriginatingOrganisation("originatingOrganisation")
-                .withDefendants(singletonList(Defendant.defendant().
+                .withDefendants(singletonList(defendant().
                         withId(defendantId)
                         .withPersonDefendant(PersonDefendant.personDefendant().build())
                         .withAssociationLockedByRepOrder(true)
-                        .withOffences(asList(uk.gov.justice.core.courts.Offence.offence().withId(offenceId1).build()
-                                , uk.gov.justice.core.courts.Offence.offence().withId(offenceId2)
+                        .withOffences(asList(offence().withId(offenceId1).build()
+                                , offence().withId(offenceId2)
                                         .withLaaApplnReference(laaReference().withStatusCode("WD").withOffenceLevelStatus(WITHDRAWN.getDescription()).build())
                                         .build()))
                         .build()))
                 .withInitiationCode(InitiationCode.C)
-                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier())
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
                 .build();
         caseAggregate.createProsecutionCase(prosecutionCase);
 
@@ -1487,10 +1580,12 @@ public class CaseAggregateTest {
     @Test
     public void shouldNotDisassociateAssociatedDefenceOrganisation_whenLaaReferenceIsWithDrawnAndDefendantLevelStatusIsNotGranted() {
         final UUID caseId = fromString(CASE_ID);
+
         final UUID defendantId = fromString(DEFENDANT_ID);
         final UUID offenceId1 = fromString(OFFENCE_ID);
         final UUID offenceId2 = randomUUID();
         final UUID associateDefenceOrganisationId = randomUUID();
+        final String caseURN = "case" + string(6).next();
 
         final HashMap<UUID, UUID> map = new HashMap();
         map.put(defendantId, associateDefenceOrganisationId);
@@ -1501,19 +1596,19 @@ public class CaseAggregateTest {
                 .withCaseStatus("caseStatus")
                 .withId(randomUUID())
                 .withOriginatingOrganisation("originatingOrganisation")
-                .withDefendants(singletonList(Defendant.defendant().
+                .withDefendants(singletonList(defendant().
                         withId(defendantId)
                         .withPersonDefendant(PersonDefendant.personDefendant().build())
                         .withAssociationLockedByRepOrder(true)
-                        .withOffences(asList(uk.gov.justice.core.courts.Offence.offence().withId(offenceId1)
+                        .withOffences(asList(offence().withId(offenceId1)
                                         .withLaaApplnReference(laaReference().withStatusCode("WD").withOffenceLevelStatus(REFUSED.getDescription()).build())
                                         .build()
-                                , uk.gov.justice.core.courts.Offence.offence().withId(offenceId2)
+                                , offence().withId(offenceId2)
                                         .withLaaApplnReference(laaReference().withStatusCode("WD").withOffenceLevelStatus(REFUSED.getDescription()).build())
                                         .build()))
                         .build()))
                 .withInitiationCode(InitiationCode.C)
-                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier())
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))
                 .build();
         caseAggregate.createProsecutionCase(prosecutionCase);
 
@@ -1592,12 +1687,13 @@ public class CaseAggregateTest {
     public void shouldUpdateCaseStatusToInactiveWhenAllOffencesAreFinalised() {
         final UUID caseId = randomUUID();
 
-        final Defendant defendant = Defendant.defendant()
+        final UUID hearingId = randomUUID();
+        final Defendant defendant = defendant()
                 .withId(randomUUID())
                 .withProceedingsConcluded(true)
                 .withProsecutionCaseId(caseId)
                 .withOffences(
-                        singletonList(uk.gov.justice.core.courts.Offence.offence()
+                        singletonList(offence()
                                 .withId(UUID.randomUUID())
                                 .withProceedingsConcluded(true)
                                 .withJudicialResults(
@@ -1612,10 +1708,13 @@ public class CaseAggregateTest {
                 .withCpsOrganisation("A01")
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
                 .build();
-        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
-
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
         this.caseAggregate.apply(prosecutionCaseCreated);
 
         final DefendantJudicialResult defendantJudicialResult = DefendantJudicialResult.defendantJudicialResult()
@@ -1625,9 +1724,9 @@ public class CaseAggregateTest {
                 .withMasterDefendantId(UUID.randomUUID())
                 .build();
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult);
-        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults).collect(toList());
+        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.size(), is(3));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
@@ -1639,12 +1738,13 @@ public class CaseAggregateTest {
     @Test
     public void shouldNotChangeCaseStatusIfAllTheOffencesAreNotResultedFinal() {
         final UUID caseId = randomUUID();
-        final Defendant defendant = Defendant.defendant()
+        final UUID hearingId = randomUUID();
+        final Defendant defendant = defendant()
                 .withId(randomUUID())
                 .withProsecutionCaseId(caseId)
                 .withProceedingsConcluded(true)
                 .withOffences(
-                        singletonList(uk.gov.justice.core.courts.Offence.offence()
+                        singletonList(offence()
                                 .withId(randomUUID())
                                 .withProceedingsConcluded(true)
                                 .withJudicialResults(
@@ -1659,33 +1759,126 @@ public class CaseAggregateTest {
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
                 .build();
 
-        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
+                .build();
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
                 .build();
 
         this.caseAggregate.apply(prosecutionCaseCreated);
 
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
-        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults).collect(toList());
+        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(1));
-        final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
+        assertThat(eventStream.size(), is(2));
+        final Object eventOne = eventStream.get(0);
+        assertThat(eventOne.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
         assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(SJP_REFERRAL.getDescription()));
 
+        final Object eventTwo = eventStream.get(1);
+        assertThat(eventTwo.getClass(), is(equalTo(CaseRetentionPolicyRecorded.class)));
+        final CaseRetentionPolicyRecorded caseRetentionPolicyRecorded = (CaseRetentionPolicyRecorded) eventStream.get(1);
+        assertThat(caseRetentionPolicyRecorded.getHearingId(), is(hearingId));
+        assertThat(caseRetentionPolicyRecorded.getHearingType(), is(hearingType));
+        assertThat(caseRetentionPolicyRecorded.getCourtCentreId(), is(courtCentre.getId()));
+        assertThat(caseRetentionPolicyRecorded.getCourtCentreName(), is(courtCentre.getName()));
+        assertThat(caseRetentionPolicyRecorded.getCourtRoomName(), is(courtCentre.getRoomName()));
+        assertThat(caseRetentionPolicyRecorded.getCourtRoomId(), is(courtCentre.getRoomId()));
+        assertThat(caseRetentionPolicyRecorded.getJurisdictionType(), is(CROWN.name()));
+        assertThat(caseRetentionPolicyRecorded.getPolicyType(), is("NON_CUSTODIAL"));
+        assertThat(caseRetentionPolicyRecorded.getPeriod(), is("7Y0M0D"));
+    }
+
+    @Test
+    public void shouldNotCalculateAndRecordCaseRetentionWhenJurisdictionIsNotCrown() {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final Defendant defendant = defendant()
+                .withId(randomUUID())
+                .withProceedingsConcluded(true)
+                .withOffences(
+                        singletonList(offence()
+                                .withId(randomUUID())
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(
+                                        singletonList(JudicialResult.judicialResult()
+                                                .withCategory(INTERMEDIARY)
+                                                .build())).build()))
+                .build();
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus(SJP_REFERRAL.getDescription())
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).withCode("code").build();
+
+        this.caseAggregate.apply(prosecutionCaseCreated);
+
+        final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
+        final Boolean isBoxHearing = Boolean.FALSE;
+        final JurisdictionType jurisdictionType = MAGISTRATES;
+        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, jurisdictionType,
+                isBoxHearing, emptyList()).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object eventOne = eventStream.get(0);
+        assertThat(eventOne.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
+    }
+
+    @Test
+    public void shouldNotCalculateAndRecordCaseRetentionWhenBoxHearing() {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final Defendant defendant = defendant()
+                .withId(randomUUID())
+                .withProceedingsConcluded(true)
+                .withOffences(
+                        singletonList(offence()
+                                .withId(randomUUID())
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(
+                                        singletonList(JudicialResult.judicialResult()
+                                                .withCategory(INTERMEDIARY)
+                                                .build())).build()))
+                .build();
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus(SJP_REFERRAL.getDescription())
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).withCode("code").build();
+
+        this.caseAggregate.apply(prosecutionCaseCreated);
+
+        final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
+        final Boolean isBoxHearing = Boolean.TRUE;
+        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, isBoxHearing, emptyList()).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object eventOne = eventStream.get(0);
+        assertThat(eventOne.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
     }
 
     @Test
     public void shouldChangeCaseStatusToInactiveWhenAllOffencesResultedFinal() {
         final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
 
-        final Defendant defendant = Defendant.defendant()
+        final Defendant defendant = defendant()
                 .withId(randomUUID())
                 .withProceedingsConcluded(true)
                 .withProsecutionCaseId(caseId)
                 .withOffences(
-                        singletonList(uk.gov.justice.core.courts.Offence.offence()
+                        singletonList(offence()
                                 .withId(UUID.randomUUID())
                                 .withProceedingsConcluded(true)
                                 .withJudicialResults(
@@ -1699,17 +1892,31 @@ public class CaseAggregateTest {
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
                 .build();
 
-        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
-                .withProsecutionCase(prosecutionCase)
+        final DefendantJudicialResult defendantJudicialResult = DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .withResultText("Result text")
+                        .withLabel("Label")
+                        .withJudicialResultId(randomUUID())
+                        .withLifeDuration(Boolean.TRUE)
+                        .build())
+                .withMasterDefendantId(UUID.randomUUID())
                 .build();
 
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
         this.caseAggregate.apply(prosecutionCaseCreated);
 
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
 
-        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCase, defendantJudicialResults).collect(toList());
+        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.size(), is(3));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
@@ -1753,7 +1960,7 @@ public class CaseAggregateTest {
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
                 .build();
 
-        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
 
@@ -1766,7 +1973,7 @@ public class CaseAggregateTest {
                 .withDefendantCaseOffences(DefendantCaseOffences.defendantCaseOffences()
                         .withDefendantId(defendantId1)
                         .withProsecutionCaseId(caseId)
-                        .withOffences(singletonList(uk.gov.justice.core.courts.Offence.offence()
+                        .withOffences(singletonList(offence()
                                 .withId(newOffenceId)
                                 .withProceedingsConcluded(false)
                                 .build()))
@@ -1783,7 +1990,7 @@ public class CaseAggregateTest {
                 .withDefendantCaseOffences(DefendantCaseOffences.defendantCaseOffences()
                         .withDefendantId(defendantId1)
                         .withProsecutionCaseId(caseId)
-                        .withOffences(singletonList(uk.gov.justice.core.courts.Offence.offence()
+                        .withOffences(singletonList(offence()
                                 .withId(newOffenceId)
                                 .withProceedingsConcluded(false)
                                 .build()))
@@ -1800,7 +2007,6 @@ public class CaseAggregateTest {
     @Test
     public void shouldKeepOriginalListingNumbersWhenProsecutionCaseUpdated() {
         final UUID caseId = randomUUID();
-
         final Defendant defendant = Defendant.defendant()
                 .withId(randomUUID())
                 .withProceedingsConcluded(false)
@@ -1825,6 +2031,10 @@ public class CaseAggregateTest {
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
 
         this.caseAggregate.apply(prosecutionCaseCreated);
 
@@ -1840,9 +2050,9 @@ public class CaseAggregateTest {
                         .collect(toList()))
                 .build();
 
-        final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults).collect(toList());
+        final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.size(), is(2));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
@@ -1855,13 +2065,14 @@ public class CaseAggregateTest {
     @Test
     public void shouldUpdateCaseStatusAsReadyForReviewWhenOneApplicationIsResultedAndAnotherApplicationIsNotResulted() {
         final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
 
-        final Defendant defendant = Defendant.defendant()
+        final Defendant defendant = defendant()
                 .withId(randomUUID())
                 .withProceedingsConcluded(false)
                 .withProsecutionCaseId(caseId)
                 .withOffences(
-                        singletonList(uk.gov.justice.core.courts.Offence.offence()
+                        singletonList(offence()
                                 .withProceedingsConcluded(false)
                                 .withId(UUID.randomUUID())
                                 .withJudicialResults(
@@ -1870,12 +2081,12 @@ public class CaseAggregateTest {
                                                 .build())).build()))
                 .build();
 
-        final Defendant defendant1 = Defendant.defendant()
+        final Defendant defendant1 = defendant()
                 .withId(randomUUID())
                 .withProceedingsConcluded(true)
                 .withProsecutionCaseId(caseId)
                 .withOffences(
-                        singletonList(uk.gov.justice.core.courts.Offence.offence()
+                        singletonList(offence()
                                 .withId(UUID.randomUUID())
                                 .withProceedingsConcluded(true)
                                 .withJudicialResults(
@@ -1890,7 +2101,7 @@ public class CaseAggregateTest {
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
                 .build();
 
-        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
 
@@ -1904,15 +2115,114 @@ public class CaseAggregateTest {
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
                 .build();
         final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
 
-        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCaseUpdate, defendantJudicialResults).collect(toList());
+        final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCaseUpdate, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.size(), is(2));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
         assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(READY_FOR_REVIEW.getDescription()));
 
+        final Object eventTwo = eventStream.get(1);
+        assertThat(eventTwo.getClass(), is(equalTo(CaseRetentionPolicyRecorded.class)));
+        final CaseRetentionPolicyRecorded caseRetentionPolicyRecorded = (CaseRetentionPolicyRecorded) eventStream.get(1);
+        assertThat(caseRetentionPolicyRecorded.getCaseURN(), is("URN"));
+        assertThat(caseRetentionPolicyRecorded.getHearingId(), is(hearingId));
+        assertThat(caseRetentionPolicyRecorded.getPolicyType(), is("NON_CUSTODIAL"));
+        assertThat(caseRetentionPolicyRecorded.getPeriod(), is("7Y0M0D"));
+
+    }
+
+    @Test
+    public void shouldCalculateCaseRetentionPolicyAndRaiseCaseRetentionLengthCalculatedEventWhenCaseInActive() {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final Defendant defendant = defendant()
+                .withId(randomUUID())
+                .withProceedingsConcluded(true)
+                .withOffences(singletonList(offence()
+                        .withId(randomUUID()).withListingNumber(2)
+                        .withProceedingsConcluded(true)
+                        .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                .withCategory(FINAL).build()))
+                        .build()))
+                .build();
+
+        final DefendantJudicialResult defendantJudicialResult = DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .withResultText("Result text")
+                        .withLabel("Label")
+                        .withJudicialResultId(randomUUID())
+                        .withLifeDuration(Boolean.TRUE)
+                        .build())
+                .withMasterDefendantId(UUID.randomUUID())
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).withName("Court Name").withCode("code")
+                .withRoomId(randomUUID()).withRoomName("roomName").build();
+
+        this.caseAggregate.apply(prosecutionCaseCreated);
+
+        final ProsecutionCase updatedProsecutionCase = prosecutionCase().withValuesFrom(prosecutionCase)
+                .withDefendants(prosecutionCase.getDefendants().stream()
+                        .map(def -> defendant().withValuesFrom(def)
+                                .withOffences(def.getOffences().stream()
+                                        .map(off -> offence().withValuesFrom(off)
+                                                .withListingNumber(0)
+                                                .build())
+                                        .collect(toList()))
+                                .build())
+                        .collect(toList()))
+                .build();
+
+        final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, singletonList(defendantJudicialResult),
+                courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+
+        assertThat(eventStream.size(), is(3));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
+        final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
+        assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(INACTIVE.getDescription()));
+
+        final Object eventTwo = eventStream.get(1);
+        assertThat(eventTwo.getClass(), is(equalTo(CaseRetentionPolicyRecorded.class)));
+        final CaseRetentionPolicyRecorded caseRetentionPolicyRecorded = (CaseRetentionPolicyRecorded) eventStream.get(1);
+        assertThat(caseRetentionPolicyRecorded.getCaseURN(), is("URN"));
+        assertThat(caseRetentionPolicyRecorded.getHearingId(), is(hearingId));
+        assertThat(caseRetentionPolicyRecorded.getHearingType(), is(hearingType));
+        assertThat(caseRetentionPolicyRecorded.getCourtCentreId(), is(courtCentre.getId()));
+        assertThat(caseRetentionPolicyRecorded.getCourtCentreName(), is(courtCentre.getName()));
+        assertThat(caseRetentionPolicyRecorded.getCourtRoomName(), is(courtCentre.getRoomName()));
+        assertThat(caseRetentionPolicyRecorded.getCourtRoomId(), is(courtCentre.getRoomId()));
+        assertThat(caseRetentionPolicyRecorded.getJurisdictionType(), is(CROWN.name()));
+        assertThat(caseRetentionPolicyRecorded.getPolicyType(), is("NON_CUSTODIAL"));
+        assertThat(caseRetentionPolicyRecorded.getPeriod(), is("7Y0M0D"));
+
+        final CaseRetentionLengthCalculated caseRetentionLengthCalculated = (CaseRetentionLengthCalculated) eventStream.get(2);
+        assertThat(caseRetentionLengthCalculated.getCaseURN(), is("URN"));
+        assertThat(caseRetentionLengthCalculated.getCaseStatus(), is(INACTIVE.getDescription()));
+        assertThat(caseRetentionLengthCalculated.getCourtCentreId(), is(courtCentre.getId()));
+        assertThat(caseRetentionLengthCalculated.getCourtCentreName(), is(courtCentre.getName()));
+        assertThat(caseRetentionLengthCalculated.getCourtRoomName(), is(courtCentre.getRoomName()));
+        assertThat(caseRetentionLengthCalculated.getCourtRoomId(), is(courtCentre.getRoomId()));
+        assertThat(caseRetentionLengthCalculated.getJurisdictionType(), is(CROWN.name()));
+        assertThat(caseRetentionLengthCalculated.getRetentionPolicy().getPolicyType(), is("2"));
+        assertThat(caseRetentionLengthCalculated.getRetentionPolicy().getPeriod(), is("7Y0M0D"));
+        assertThat(caseRetentionLengthCalculated.getHearingType(), is(hearingType));
     }
 
     @Test
@@ -2090,10 +2400,10 @@ public class CaseAggregateTest {
         formMap.put(petId, new Form(asList(petDefendants), petId, PET, new FormLockStatus(), submissionId));
         setField(caseAggregate, "formMap", formMap);
         setField(caseAggregate, "prosecutionCase", prosecutionCase()
-                .withDefendants(asList(Defendant.defendant()
+                .withDefendants(asList(defendant()
                                 .withId(randomUUID())
                                 .build(),
-                        Defendant.defendant()
+                        defendant()
                                 .withId(randomUUID())
                                 .build()))
                 .build());
@@ -2199,9 +2509,9 @@ public class CaseAggregateTest {
 
     private ProsecutionCase createProsecutionCase(final UUID defendantId, final UUID offenceId) {
         return prosecutionCase()
-                .withDefendants(asList(Defendant.defendant()
+                .withDefendants(asList(defendant()
                         .withId(defendantId)
-                        .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                        .withOffences(asList(offence()
                                 .withId(offenceId)
                                 .build()))
                         .build()))
@@ -2214,7 +2524,7 @@ public class CaseAggregateTest {
         final UUID defendantId = randomUUID();
         final UUID prosecutionCaseId = randomUUID();
 
-        final Defendant defendant = Defendant.defendant()
+        final Defendant defendant = defendant()
                 .withId(defendantId)
                 .withProsecutionCaseId(prosecutionCaseId)
                 .build();
@@ -2249,7 +2559,7 @@ public class CaseAggregateTest {
 
         caseAggregate.apply(new ProsecutionCaseCreatedInHearing(prosecutionCaseId));
 
-        final Defendant defendant = Defendant.defendant()
+        final Defendant defendant = defendant()
                 .withId(defendantId)
                 .withProsecutionCaseId(prosecutionCaseId)
                 .build();
@@ -2297,7 +2607,7 @@ public class CaseAggregateTest {
         final UUID defendantId = randomUUID();
         final UUID prosecutionCaseId = randomUUID();
 
-        final Defendant defendant = Defendant.defendant()
+        final Defendant defendant = defendant()
                 .withId(defendantId)
                 .withProsecutionCaseId(prosecutionCaseId)
                 .build();
@@ -2335,7 +2645,7 @@ public class CaseAggregateTest {
         final UUID defendantId = randomUUID();
         final UUID prosecutionCaseId = randomUUID();
 
-        final Defendant defendant = Defendant.defendant()
+        final Defendant defendant = defendant()
                 .withId(defendantId)
                 .withProsecutionCaseId(prosecutionCaseId)
                 .build();
@@ -2705,15 +3015,15 @@ public class CaseAggregateTest {
                 .withDefendants(singletonList(defendant))
                 .withCpsOrganisation("A01")
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
-                .withDefendants(asList(Defendant.defendant()
+                .withDefendants(asList(defendant()
                                 .withId(defendantId)
-                                .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                .withOffences(asList(offence()
                                         .withId(offenceId)
                                         .build()))
                                 .build(),
-                        Defendant.defendant()
+                        defendant()
                                 .withId(defendantId2)
-                                .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                .withOffences(asList(offence()
                                         .withId(offenceId2)
                                         .build()))
                                 .build()))
@@ -2747,15 +3057,15 @@ public class CaseAggregateTest {
         setField(caseAggregate, "formMap", formMap);
 
         ProsecutionCase prosecutionCase = prosecutionCase()
-                .withDefendants(asList(Defendant.defendant()
+                .withDefendants(asList(defendant()
                                 .withId(defendantId)
-                                .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                .withOffences(asList(offence()
                                         .withId(offenceId)
                                         .build()))
                                 .build(),
-                        Defendant.defendant()
+                        defendant()
                                 .withId(defendantId2)
-                                .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                                .withOffences(asList(offence()
                                         .withId(offenceId2)
                                         .build()))
                                 .build()))
@@ -4334,21 +4644,21 @@ public class CaseAggregateTest {
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();
 
-        final ProsecutionCase prosecutionCase = createProsecutionCase(asList(Defendant.defendant()
+        final ProsecutionCase prosecutionCase = createProsecutionCase(asList(defendant()
                         .withId(randomUUID())
-                        .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                        .withOffences(asList(offence()
                                         .withId(randomUUID())
                                         .build(),
-                                uk.gov.justice.core.courts.Offence.offence()
+                                offence()
                                         .withId(randomUUID())
                                         .build()))
                         .build(),
-                Defendant.defendant()
+                defendant()
                         .withId(defendantId)
-                        .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                        .withOffences(asList(offence()
                                         .withId(randomUUID())
                                         .build(),
-                                uk.gov.justice.core.courts.Offence.offence()
+                                offence()
                                         .withId(offenceId)
                                         .withOnlinePleaReceived(true)
                                         .build()))
@@ -4369,22 +4679,22 @@ public class CaseAggregateTest {
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();
 
-        final ProsecutionCase prosecutionCase = createProsecutionCase(asList(Defendant.defendant()
+        final ProsecutionCase prosecutionCase = createProsecutionCase(asList(defendant()
                         .withId(randomUUID())
-                        .withOffences(singletonList(uk.gov.justice.core.courts.Offence.offence()
+                        .withOffences(singletonList(offence()
                                 .withId(randomUUID())
                                 .build()))
                         .build(),
-                Defendant.defendant()
+                defendant()
                         .withId(defendantId)
-                        .withOffences(asList(uk.gov.justice.core.courts.Offence.offence()
+                        .withOffences(asList(offence()
                                         .withId(randomUUID())
                                         .build(),
-                                uk.gov.justice.core.courts.Offence.offence()
+                                offence()
                                         .withId(randomUUID())
                                         .withOnlinePleaReceived(true)
                                         .build(),
-                                uk.gov.justice.core.courts.Offence.offence()
+                                offence()
                                         .withId(offenceId)
                                         .withOnlinePleaReceived(false)
                                         .build()))
@@ -4403,7 +4713,7 @@ public class CaseAggregateTest {
     private DefendantsAddedToCourtProceedings buildDefendantsAddedToCourtProceedings(
             final UUID caseId, final UUID defendantId, final UUID defendantId2, final UUID offenceId) {
 
-        final uk.gov.justice.core.courts.Offence offence = uk.gov.justice.core.courts.Offence.offence()
+        final uk.gov.justice.core.courts.Offence offence = offence()
                 .withId(offenceId)
                 .withOffenceDefinitionId(UUID.randomUUID())
                 .withOffenceCode("TFL123")
@@ -4413,14 +4723,14 @@ public class CaseAggregateTest {
                 .withStartDate(LocalDate.of(2019, 05, 01))
                 .withCount(0)
                 .build();
-        final Defendant defendant = Defendant.defendant()
+        final Defendant defendant = defendant()
                 .withId(defendantId)
                 .withProsecutionCaseId(caseId)
                 .withOffences(singletonList(offence))
                 .build();
 
         //Add duplicate defendant
-        final Defendant defendant1 = Defendant.defendant()
+        final Defendant defendant1 = defendant()
                 .withId(defendantId)
                 .withMasterDefendantId(randomUUID())
                 .withCourtProceedingsInitiated(ZonedDateTime.now())
@@ -4428,7 +4738,7 @@ public class CaseAggregateTest {
                 .withOffences(singletonList(offence))
                 .build();
 
-        final Defendant defendant2 = Defendant.defendant()
+        final Defendant defendant2 = defendant()
                 .withId(defendantId2)
                 .withMasterDefendantId(randomUUID())
                 .withCourtProceedingsInitiated(ZonedDateTime.now())
@@ -4460,11 +4770,11 @@ public class CaseAggregateTest {
                 .build();
 
         final HearingType hearingType = HearingType.hearingType().withId(UUID.randomUUID()).withDescription("TO_JAIL").build();
-        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).build();
+        final CourtCentre courtCentre = courtCentre().withId(UUID.randomUUID()).build();
 
         final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
                 .withCourtCentre(courtCentre).withHearingType(hearingType)
-                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withJurisdictionType(MAGISTRATES)
                 .withListDefendantRequests(asList(listDefendantRequest, listDefendantRequest2))
                 .build();
 
@@ -4613,11 +4923,12 @@ public class CaseAggregateTest {
         assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(caseStatusEnum.toString()));
     }
 
-    private ProsecutionCaseIdentifier getProsecutionCaseIdentifier() {
+    private ProsecutionCaseIdentifier getProsecutionCaseIdentifier(String caseURN) {
         return ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
                 .withProsecutionAuthorityReference("reference")
                 .withProsecutionAuthorityCode("code")
                 .withProsecutionAuthorityId(randomUUID())
+                .withCaseURN(caseURN)
                 .build();
     }
 

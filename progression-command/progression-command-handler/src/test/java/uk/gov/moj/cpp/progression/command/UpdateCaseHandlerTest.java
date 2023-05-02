@@ -17,9 +17,11 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.string;
 import static uk.gov.moj.cpp.progression.command.helper.HandlerTestHelper.metadataFor;
 
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.FundingType;
@@ -33,6 +35,7 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.progression.courts.CaseRetentionLengthCalculated;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -71,7 +74,7 @@ public class UpdateCaseHandlerTest {
     private AggregateService aggregateService;
 
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(HearingResultedUpdateCase.class, HearingResultedCaseUpdated.class, LaaDefendantProceedingConcludedChanged.class);
+    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(HearingResultedUpdateCase.class, HearingResultedCaseUpdated.class, LaaDefendantProceedingConcludedChanged.class, CaseRetentionLengthCalculated.class);
 
     @InjectMocks
     private UpdateCaseHandler updateCaseHandler;
@@ -125,6 +128,40 @@ public class UpdateCaseHandlerTest {
                                                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.fundingType", notNullValue())
 
                                         )
+                                ))
+                )));
+
+
+    }
+
+    @Test
+    public void shouldProcessHearingResultedUpdateCaseCommand_whenAllOffencesOfDefendantHaveFinalCategory_expectProceedingConcludedAsFalse() throws Exception {
+
+        final Envelope<HearingResultedUpdateCase> envelope =
+                envelopeFrom(metadataFor("progression.command.hearing-resulted-update-case",
+                                randomUUID()),
+                        handlerTestHelper.convertFromFile("json/hearing-resulted-update-case-1.json", HearingResultedUpdateCase.class));
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
+                .withProsecutionCase(envelope.payload().getProsecutionCase())
+                .build();
+
+        this.aggregate.apply(prosecutionCaseCreated);
+
+        updateCaseHandler.handle(envelope);
+
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(envelope)
+                                        .withName("progression.event.hearing-resulted-case-updated"),
+                                payloadIsJson(
+                                        allOf(
+                                                withJsonPath("$.prosecutionCase.defendants[0].proceedingsConcluded", is(false)),
+                                                withJsonPath("$.prosecutionCase.defendants[0].offences[0].proceedingsConcluded", is(true)),
+                                                withJsonPath("$.prosecutionCase.defendants[0].offences[1].proceedingsConcluded", is(false)),
+                                                withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.fundingType", notNullValue())
+                                                )
                                 ))
                 )));
 
@@ -225,13 +262,9 @@ public class UpdateCaseHandlerTest {
                                                 withJsonPath("$.prosecutionCase.defendants[0].offences[1].proceedingsConcluded", is(true)),
                                                 withJsonPath("$.prosecutionCase.caseStatus", is(CaseStatusEnum.READY_FOR_REVIEW.getDescription())),
                                                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.fundingType", notNullValue())
-
-
                                         )
                                 ))
                 )));
-
-
     }
 
     @Test
@@ -341,16 +374,23 @@ public class UpdateCaseHandlerTest {
     }
 
     private HearingResultedUpdateCase createCommandPayloadWithHearingResultedUpdateCase() {
+        final String caseURN = "case" + string(6).next();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
         Offence offence1 = Offence.offence()
-                .withId(randomUUID())
+                .withId(offenceId1)
+                .withProceedingsConcluded(true)
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build(), JudicialResult.judicialResult()
                         .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
         Offence offence2 = Offence.offence()
-                .withId(randomUUID())
+                .withId(offenceId2)
+                .withProceedingsConcluded(true)
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build(), JudicialResult.judicialResult()
                         .withCategory(JudicialResultCategory.ANCILLARY).build()))
                 .build();
 
@@ -371,8 +411,8 @@ public class UpdateCaseHandlerTest {
         defendantList.add(defendant);
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withId(randomUUID())
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(caseURN).build())
                 .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
-                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
                 .withDefendants(defendantList).build();
 
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
@@ -381,8 +421,14 @@ public class UpdateCaseHandlerTest {
 
         this.aggregate.apply(prosecutionCaseCreated);
 
+        final CourtCentre courtCentre = CourtCentre.courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
+
         HearingResultedUpdateCase hearingResultedUpdateCase = HearingResultedUpdateCase.hearingResultedUpdateCase()
                 .withProsecutionCase(prosecutionCase)
+                .withCourtCentre(courtCentre)
                 .build();
 
         return hearingResultedUpdateCase;

@@ -1,10 +1,14 @@
 package uk.gov.moj.cpp.progression.event;
 
-import java.util.Objects;
-import java.util.function.Function;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -40,27 +44,24 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingResultedEventProcessor {
@@ -144,7 +145,11 @@ public class HearingResultedEventProcessor {
         for (final ProsecutionCase prosecutionCase : hearing.getProsecutionCases()) {
             initiateApplicationForCase(event, hearing, prosecutionCase);
         }
-        hearing.getProsecutionCases().forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications(), hearing.getDefendantJudicialResults()));
+        hearing.getProsecutionCases().forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase,
+                hearing.getCourtApplications(),
+                hearing.getDefendantJudicialResults(),
+                hearing.getCourtCentre(), hearing.getId(), hearing.getType(),
+                hearing.getJurisdictionType(), hearing.getIsBoxHearing()));
     }
 
     private void initiateApplicationForCase(final JsonEnvelope event, final Hearing hearing, final ProsecutionCase prosecutionCase) {
@@ -227,7 +232,7 @@ public class HearingResultedEventProcessor {
         final List<ListHearingRequest> listHearingRequests = hearingForApplicationCreated.getListHearingRequests();
         final UUID hearingId = hearingForApplicationCreated.getHearing().getId();
 
-        if (!CollectionUtils.isEmpty(listHearingRequests)) {
+        if (!isEmpty(listHearingRequests)) {
             listingService.listCourtHearing(jsonEnvelope, listCourtHearingTransformer.transform(jsonEnvelope, prosecutionCases, listHearingRequests, hearingId));
         }
     }

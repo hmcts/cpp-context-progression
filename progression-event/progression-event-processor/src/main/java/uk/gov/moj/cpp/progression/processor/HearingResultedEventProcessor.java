@@ -21,12 +21,14 @@ import org.slf4j.LoggerFactory;
 public class HearingResultedEventProcessor {
 
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED = "public.progression.hearing-resulted";
+    private static final String PUBLIC_PROGRESSION_CASE_ARCHIVED = "public.events.progression.case-retention-length-calculated";
 
     @Inject
     private Sender sender;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingResultedEventProcessor.class.getName());
 
+    //Need to decommission it
     @Handles("progression.event.hearing-resulted")
     public void processEvent(final JsonEnvelope event) {
         LOGGER.info("progression.event.hearing-resulted event received with metadata {} and payload {}", event.metadata(), event.payloadAsJsonObject());
@@ -38,6 +40,16 @@ public class HearingResultedEventProcessor {
                 .build();
 
         sender.send(envelopeFrom(metadata, outboundPayload));
+    }
+
+    @Handles("progression.events.case-retention-length-calculated")
+    public void processRetentionCalculated(final JsonEnvelope event) {
+
+        LOGGER.info("progression.events.case-retention-length-calculated event received with metadata {} and payload {}", event.metadata(), event.payloadAsJsonObject());
+
+        sender.send(JsonEnvelope.envelopeFrom(metadataFrom(event.metadata())
+                        .withName(PUBLIC_PROGRESSION_CASE_ARCHIVED),
+                event.payload()));
     }
 }
 
