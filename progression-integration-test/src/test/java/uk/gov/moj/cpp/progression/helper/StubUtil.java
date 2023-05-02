@@ -59,6 +59,25 @@ public class StubUtil {
 
     }
 
+    public static void setupForUshersMagistrateListQueryStub() {
+        InternalEndpointMockUtils.stubPingFor("listing-service");
+        stubFor(get(urlPathEqualTo("/listing-service/query/api/rest/listing/courtlistpayload"))
+                .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getPayload("stub-data/listing.ushersmagistratepayload.json"))));
+
+    }
+    public static void setupForUshersCrownListQueryStub() {
+        InternalEndpointMockUtils.stubPingFor("listing-service");
+        stubFor(get(urlPathEqualTo("/listing-service/query/api/rest/listing/courtlistpayload"))
+                .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(getPayload("stub-data/listing.usherscrownpayload.json"))));
+
+    }
+
     public static void setupStagingPubHubCommandStub() {
         InternalEndpointMockUtils.stubPingFor("stagingpubhub-service");
         stubFor(post(urlPathEqualTo("/stagingpubhub-service/command/api/rest/stagingpubhub/pubhub"))
@@ -101,7 +120,7 @@ public class StubUtil {
 
     public static void setupMaterialStructuredPetQuery(final String structuredFormId) {
         InternalEndpointMockUtils.stubPingFor("material-service");
-        stubFor(get(urlMatching(MATERIAL_QUERY_URL +"/structured-form/" + structuredFormId))
+        stubFor(get(urlMatching(MATERIAL_QUERY_URL + "/structured-form/" + structuredFormId))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                         .withHeader("CPPID", randomUUID().toString())
                         .withHeader("Content-Type", "application/json")
@@ -110,7 +129,7 @@ public class StubUtil {
 
     public static void setupMaterialStructuredPetQueryForCotr(final String structuredFormId) {
         InternalEndpointMockUtils.stubPingFor("material-service");
-        stubFor(get(urlMatching(MATERIAL_QUERY_URL +"/structured-form/" + structuredFormId))
+        stubFor(get(urlMatching(MATERIAL_QUERY_URL + "/structured-form/" + structuredFormId))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                         .withHeader("CPPID", randomUUID().toString())
                         .withHeader("Content-Type", "application/json")

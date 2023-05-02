@@ -91,7 +91,30 @@ public class CourtlistQueryViewTest {
         assertPleaValue(actual, true);
     }
 
-    private void assertPleaValue(final JsonObject actual, final boolean present ){
+    @Test
+    public void shouldEnrichUshersListDocumentPayloadForProsecutionCases_ReadCaseFromProgressionViewStoreWithDifferentListingNumber() throws IOException {
+        final Optional<JsonObject> listingResponse = Optional.of(getJsonPayload("listing-hearing-with-prosecution-case-ushers-list.json"));
+        final List<Hearing> hearingList = getHearings("courtlists.hearings.repository.all.json");
+        when(listingService.searchCourtlist(any(JsonEnvelope.class))).thenReturn(listingResponse);
+        when(hearingQueryView.getHearings(any(List.class))).thenReturn(hearingList);
+        final ProsecutionCase prosecutionCase = getHearings("courtlists.hearings.repository.all.without.listing.number.json").get(0).getProsecutionCases().get(0);
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+        when(prosecutionCaseRepository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
+
+        final JsonEnvelope query = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName("progression.search.court.list").build(),
+                Json.createObjectBuilder().build());
+
+        final JsonObject expected = getJsonPayload("courtlist-expected-with-prosecution-cases-ushers-list.json");
+        final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
+        assertThat(actual, is(expected));
+        assertPleaValue(actual, true);
+    }
+
+    private void assertPleaValue(final JsonObject actual, final boolean present) {
         final JsonObject plea = actual.getJsonArray("hearingDates").getJsonObject(0).getJsonArray("courtRooms").getJsonObject(0).getJsonArray("timeslots").getJsonObject(0).getJsonArray("hearings")
                 .getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0);
         if (present) {
@@ -165,14 +188,14 @@ public class CourtlistQueryViewTest {
     private JsonObject getJsonPayload(final String fileName) throws IOException {
         final String jsonString = Resources.toString(Resources.getResource(fileName), defaultCharset());
         return Json.createReader(
-                new ByteArrayInputStream(jsonString.getBytes()))
+                        new ByteArrayInputStream(jsonString.getBytes()))
                 .readObject();
     }
 
     private List<Hearing> getHearings(final String resourceName) throws IOException {
         final String jsonString = Resources.toString(Resources.getResource(resourceName), defaultCharset());
         return Json.createReader(
-                new ByteArrayInputStream(jsonString.getBytes()))
+                        new ByteArrayInputStream(jsonString.getBytes()))
                 .readArray().stream()
                 .map(jsonObject -> jsonObjectToObjectConverter.convert((JsonObject) jsonObject, Hearing.class))
                 .collect(toList());
@@ -181,7 +204,7 @@ public class CourtlistQueryViewTest {
     private List<Hearing> getHearingsWithoutCase() throws IOException {
         final String jsonString = Resources.toString(Resources.getResource("courtlists.hearings.repository.without.case.json"), defaultCharset());
         return Json.createReader(
-                new ByteArrayInputStream(jsonString.getBytes()))
+                        new ByteArrayInputStream(jsonString.getBytes()))
                 .readArray().stream()
                 .map(jsonObject -> jsonObjectToObjectConverter.convert((JsonObject) jsonObject, Hearing.class))
                 .collect(toList());

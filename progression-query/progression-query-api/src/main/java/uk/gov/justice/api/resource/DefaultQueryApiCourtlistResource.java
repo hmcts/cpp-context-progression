@@ -1,7 +1,6 @@
 package uk.gov.justice.api.resource;
 
 import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_DISPOSITION;
@@ -55,12 +54,18 @@ import org.slf4j.LoggerFactory;
 @Adapter(Component.QUERY_API)
 public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResource {
 
+    public static final String USHERS_CROWN = "USHERS_CROWN";
+    public static final String USHERS_MAGISTRATE = "USHERS_MAGISTRATE";
     protected static final String COURT_LIST_QUERY_NAME = "progression.search.court.list";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultQueryApiCourtlistResource.class);
     private static final String EXTRACT_FILE_NAME = "CourtList.pdf";
-    protected static final String DISPOSITION = "attachment; filename=\"" + EXTRACT_FILE_NAME + "\"";
-    private static final String MIME_TYPE = "application/pdf";
+    private static final String EXTRACT_WORD_FILE_NAME = "UshersList.docx";
+    protected static final String PDF_DISPOSITION = "attachment; filename=\"" + EXTRACT_FILE_NAME + "\"";
+    protected static final String WORD_DISPOSITION = "attachment; filename=\"" + EXTRACT_WORD_FILE_NAME + "\"";
+    private static final String PDF_MIME_TYPE = "application/pdf";
+    private static final String WORD_MIME_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
 
     @Context
     HttpHeaders headers;
@@ -136,34 +141,52 @@ public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResour
         } else {
             final UUID systemUser = serviceContextSystemUserProvider.getContextSystemUserId()
                     .orElseThrow(() -> new WebApplicationException("System user for progression context not found"));
-
-            final Optional<InputStream> documentInputStream = getPdfDocument(document, systemUser);
-            if (documentInputStream.isPresent()) {
-                final Response.ResponseBuilder responseBuilder = status(OK)
+            final JsonObject payload = document.payloadAsJsonObject();
+            final String templateName = payload.getString("templateName");
+            final String listType = payload.getString("listType");
+            final Optional<InputStream> documentInputStream;
+            Response.ResponseBuilder responseBuilder;
+            if (USHERS_CROWN.equalsIgnoreCase(listType) || USHERS_MAGISTRATE.equalsIgnoreCase(listType)) {
+                documentInputStream = getWordDocument(payload, templateName, systemUser);
+                responseBuilder = status(OK)
                         .entity(documentInputStream.get())
-                        .header(CONTENT_TYPE, MIME_TYPE)
-                        .header(CONTENT_DISPOSITION, DISPOSITION);
-                return responseBuilder.build();
+                        .header(CONTENT_TYPE, WORD_MIME_TYPE)
+                        .header(CONTENT_DISPOSITION, WORD_DISPOSITION);
+            } else {
+                documentInputStream = getPdfDocument(payload, templateName, systemUser);
+                responseBuilder = status(OK)
+                        .entity(documentInputStream.get())
+                        .header(CONTENT_TYPE, PDF_MIME_TYPE)
+                        .header(CONTENT_DISPOSITION, PDF_DISPOSITION);
             }
-
-            return status(OK).build();
+            return responseBuilder.build();
         }
     }
 
-    private Optional<InputStream> getPdfDocument(final JsonEnvelope document, final UUID systemUser) {
+
+    private Optional<InputStream> getPdfDocument(final JsonObject payload, final String templateName, final UUID systemUser) {
         final byte[] resultOrderAsByteArray;
         try {
-            final JsonObject payload = document.payloadAsJsonObject();
-            if (payload.containsKey("templateName")) {
-                final String templateName = payload.getString("templateName");
-                LOGGER.info("Calling document generation with Courtlist payload: {}, systemUser: {}", payload, systemUser);
-                resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(payload, templateName, systemUser);
-                return of(new ByteArrayInputStream(resultOrderAsByteArray));
-            }
+            LOGGER.info("Calling document generation with Court List payload: {}, systemUser: {}", payload, systemUser);
+            resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(payload, templateName, systemUser);
+            return of(new ByteArrayInputStream(resultOrderAsByteArray));
+
         } catch (IOException e) {
-            LOGGER.error("Courtlist PDF generation failed ", e);
+            LOGGER.error("Court List PDF generation failed ", e);
             throw new DocumentGeneratorException();
         }
-        return empty();
+    }
+
+    private Optional<InputStream> getWordDocument(final JsonObject payload, final String templateName, final UUID systemUser) {
+        final byte[] resultOrderAsByteArray;
+        try {
+            LOGGER.info("Calling document generation with UshersList payload: {}, systemUser: {}", payload, systemUser);
+            resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generateWordDocument(payload, templateName, systemUser);
+            return of(new ByteArrayInputStream(resultOrderAsByteArray));
+
+        } catch (IOException e) {
+            LOGGER.error("UshersList docx generation failed ", e);
+            throw new DocumentGeneratorException();
+        }
     }
 }
