@@ -140,8 +140,8 @@ public class CreateCourtApplicationIT extends AbstractIT {
         initiateCourtProceedingsForCourtApplication(firstApplicationId, caseId, "applications/progression.initiate-court-proceedings-with-court-order-to-update-offence-wording.json");
 
         verifyInMessagingQueueForCourtApplicationCreated(firstApplicationId);
-        final String expectedWording = "Resentenced Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ";
-        final String expectedWordingWelsh = "Resentenced Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court ";
+        final String expectedWording = "Original CaseURN: TVL1234, Re-sentenced Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ";
+        final String expectedWordingWelsh = "Original CaseURN: TVL1234, Re-sentenced Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court ";
         Matcher[] firstApplicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(firstApplicationId)),
                 withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
@@ -203,8 +203,8 @@ public class CreateCourtApplicationIT extends AbstractIT {
         initiateCourtProceedingsForCourtApplication(firstApplicationId, caseId, "applications/progression.initiate-court-proceedings-with-court-order-to-update-offence-wording2.json");
 
         verifyInMessagingQueueForCourtApplicationCreated(firstApplicationId);
-        final String expectedWording = "Activation of a suspended sentence order. Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ";
-        final String expectedWordingWelsh = "Activation of a suspended sentence order. Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court ";
+        final String expectedWording = "Activation of a suspended sentence order. Original CaseURN: TVL1234, Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ";
+        final String expectedWordingWelsh = "Activation of a suspended sentence order. Original CaseURN: TVL1234, Original code : CA03012, Original details: On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court ";
         Matcher[] firstApplicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(firstApplicationId)),
                 withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),

@@ -57,14 +57,10 @@ public class HearingApplicationLinkCreatedListener {
     public void process(final JsonEnvelope event) {
         final HearingApplicationLinkCreated hearingApplicationLinkCreated
                 = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingApplicationLinkCreated.class);
+        repository.save(transformHearingApplicationEntity
+                (hearingApplicationLinkCreated.getHearing(), hearingApplicationLinkCreated.getApplicationId(),
+                        hearingApplicationLinkCreated.getHearingListingStatus()));
 
-        final HearingEntity hearingEntity = hearingRepository.findBy(hearingApplicationLinkCreated.getHearing().getId());
-
-        if (isNull(hearingEntity) || !HEARING_RESULTED.equals(hearingEntity.getListingStatus())) {
-            repository.save(transformHearingApplicationEntity
-                    (hearingApplicationLinkCreated.getHearing(), hearingApplicationLinkCreated.getApplicationId(),
-                            hearingApplicationLinkCreated.getHearingListingStatus()));
-        }
     }
 
     @Handles("progression.event.hearing-deleted-for-court-application")
@@ -94,7 +90,7 @@ public class HearingApplicationLinkCreatedListener {
             }
             if (isNotEmpty(hearingFromEvent.getProsecutionCases())) {
                 final List<ProsecutionCase> prosecutionCases = ofNullable(originalHearingDomain.getProsecutionCases()).orElseGet(ArrayList::new);
-                final Set<UUID>  casesAlreadyLinked = prosecutionCases.stream().map(pc -> pc.getId()).collect(Collectors.toSet());
+                final Set<UUID> casesAlreadyLinked = prosecutionCases.stream().map(pc -> pc.getId()).collect(Collectors.toSet());
                 final List<ProsecutionCase> prosecutionCasesListToAdd = hearingFromEvent.getProsecutionCases().stream().filter(pc -> !(casesAlreadyLinked.contains(pc.getId()))).collect(Collectors.toList());
                 prosecutionCases.addAll(prosecutionCasesListToAdd);
                 hearingBuilder.withProsecutionCases(prosecutionCases);

@@ -67,7 +67,6 @@ import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestSucceeded;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
-import uk.gov.moj.cpp.progression.events.NotificationCreateHearingApplicationLinkFailed;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -202,23 +201,12 @@ public class ApplicationAggregate implements Aggregate {
 
     public Stream<Object> createHearingApplicationLink(final Hearing hearing, final UUID applicationId, final HearingListingStatus hearingListingStatus) {
         LOGGER.debug("Hearing Application link been created");
-        final Stream.Builder<Object> streamBuilder = Stream.builder();
-
-        if (!FINALISED.equals(this.applicationStatus) && !EJECTED.equals(this.applicationStatus)) {
-            streamBuilder.add(HearingApplicationLinkCreated.hearingApplicationLinkCreated()
-                    .withHearing(hearing)
-                    .withApplicationId(applicationId)
-                    .withHearingListingStatus(hearingListingStatus)
-                    .build());
-        } else {
-            streamBuilder.add(NotificationCreateHearingApplicationLinkFailed.notificationCreateHearingApplicationLinkFailed()
-                    .withHearingId(hearing.getId())
-                    .withHearingListingStatus(hearingListingStatus)
-                    .withApplicationStatus(this.applicationStatus)
-                    .withErrorMessage(CREATE_HEARING_APPLICATION_LINK_ERROR)
-                    .build());
-        }
-        return apply(streamBuilder.build());
+        return apply(Stream.of(
+                HearingApplicationLinkCreated.hearingApplicationLinkCreated()
+                        .withHearing(hearing)
+                        .withApplicationId(applicationId)
+                        .withHearingListingStatus(hearingListingStatus)
+                        .build()));
     }
 
     public Stream<Object> recordEmailRequest(final UUID applicationId, final UUID materialId, final List<Notification> notifications) {

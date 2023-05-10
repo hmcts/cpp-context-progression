@@ -131,7 +131,6 @@ public class HearingApplicationLinkCreatedListenerTest {
     }
 
 
-
     @Test
     public void shouldHandleHearingApplicationLinkCreatedEventWithExistingHearingAndExistingCase() {
         final Hearing hearingFromDb = Hearing.hearing()
@@ -172,10 +171,11 @@ public class HearingApplicationLinkCreatedListenerTest {
         assertThat(hearingApplicationEntity.getHearing().getHearingId(), is(HEARING_ID));
         final JsonObject payloadJson = stringToJsonObjectConverter.convert(hearingApplicationEntity.getHearing().getPayload());
         assertThat(payloadJson.getJsonArray(PROSECUTION_CASES).getJsonObject(0).getString(ID), is(CASE_ID2.toString()));
-        assertThat((Integer)(payloadJson.getJsonArray(PROSECUTION_CASES).size()), is(1));
+        assertThat((Integer) (payloadJson.getJsonArray(PROSECUTION_CASES).size()), is(1));
         assertThat(payloadJson.getJsonArray(COURT_APPLICATIONS).getJsonObject(0).getString(ID), is(APPLICATION_ID.toString()));
         assertThat(payloadJson.getJsonArray(COURT_APPLICATIONS).getJsonObject(0).getJsonArray(COURT_APPLICATION_CASES).getJsonObject(0).getString(PROSECUTION_CASE_ID), is(CASE_ID2.toString()));
     }
+
     @Test
     public void shouldHandleHearingApplicationLinkCreatedEventWithExistingHearingAndNewCase() {
         final Hearing hearingFromDb = Hearing.hearing()
@@ -190,9 +190,9 @@ public class HearingApplicationLinkCreatedListenerTest {
                         .withId(APPLICATION_ID)
                         .withCourtApplicationCases(singletonList(courtApplicationCase()
                                 .withProsecutionCaseId(CASE_ID2).build())).build()))
-                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
-                                .withId(CASE_ID2)
-                                .build()))
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(CASE_ID2)
+                        .build()))
                 .build();
 
         HearingApplicationLinkCreated hearingApplicationLinkCreated
@@ -303,43 +303,6 @@ public class HearingApplicationLinkCreatedListenerTest {
 
         assertThat(hearingIdArgumentCaptor.getValue(), is(HEARING_ID));
         assertThat(courtApplicationIdArgumentCaptor.getValue(), is(APPLICATION_ID));
-    }
-
-    @Test
-    public void shouldNotSaveHearingApplication_whenHearingListingStatus_isHearingResulted() {
-
-        final Hearing hearingFromDb = Hearing.hearing()
-                .withId(HEARING_ID)
-                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
-                        .withId(CASE_ID)
-                        .build()))
-                .build();
-
-        final Hearing hearing = Hearing.hearing().withId(HEARING_ID)
-                .withCourtApplications(singletonList(courtApplication()
-                        .withId(APPLICATION_ID)
-                        .withCourtApplicationCases(singletonList(courtApplicationCase()
-                                .withProsecutionCaseId(CASE_ID).build())).build()))
-                .build();
-
-        HearingApplicationLinkCreated hearingApplicationLinkCreated
-                = hearingApplicationLinkCreated()
-                .withApplicationId(APPLICATION_ID)
-                .withHearing(hearing)
-                .build();
-
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setHearingId(HEARING_ID);
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearingFromDb).toString());
-        hearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
-
-        final JsonObject payload = objectToJsonObjectConverter.convert(hearingApplicationLinkCreated);
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
-
-        eventListener.process(envelope);
-
-        verify(repository, times(0)).save(argumentCaptor.capture());
     }
 
     private List<CourtApplication> getCourtApplications(final List<JudicialResult> judicialResults) {

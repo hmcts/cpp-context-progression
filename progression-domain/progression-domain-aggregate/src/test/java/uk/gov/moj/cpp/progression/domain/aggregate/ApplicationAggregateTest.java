@@ -130,42 +130,6 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldReturnErrorMessage_whenHearingApplicationLinkCreated_withApplicationStatus_isFinalised() {
-        Whitebox.setInternalState(this.aggregate, "applicationStatus", ApplicationStatus.FINALISED);
-        assertCreateHearingApplicationLinkErrorMessage();
-    }
-
-    @Test
-    public void shouldReturnErrorMessage_whenHearingApplicationLinkCreated_withApplicationStatus_isEjected() {
-        Whitebox.setInternalState(this.aggregate, "applicationStatus", ApplicationStatus.EJECTED);
-        assertCreateHearingApplicationLinkErrorMessage();
-    }
-
-    @Test
-    public void shouldNotReturnErrorMessage_whenHearingApplicationLinkCreated_withApplicationStatus_isListed() {
-        Whitebox.setInternalState(this.aggregate, "applicationStatus", ApplicationStatus.LISTED);
-        final List<Object> eventStream = aggregate.createHearingApplicationLink
-                (Hearing.hearing().withId(randomUUID()).build(), randomUUID(), HearingListingStatus.HEARING_RESULTED).collect(toList());
-
-        assertThat(eventStream.size(), is(1));
-        final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(equalTo(HearingApplicationLinkCreated.class)));
-    }
-
-
-    private void assertCreateHearingApplicationLinkErrorMessage() {
-        final List<Object> eventStream = aggregate.createHearingApplicationLink
-                (Hearing.hearing().withId(randomUUID()).build(), randomUUID(), HearingListingStatus.HEARING_RESULTED).collect(toList());
-
-        assertThat(eventStream.size(), is(1));
-
-        final NotificationCreateHearingApplicationLinkFailed applicationLinkFailed = (NotificationCreateHearingApplicationLinkFailed) eventStream.get(0);
-        assertThat(applicationLinkFailed.getClass(), is(equalTo(NotificationCreateHearingApplicationLinkFailed.class)));
-        assertThat(applicationLinkFailed.getApplicationStatus(),anyOf( is(ApplicationStatus.FINALISED),is(ApplicationStatus.EJECTED)));
-        assertThat(applicationLinkFailed.getErrorMessage(), is(equalTo(ApplicationAggregate.CREATE_HEARING_APPLICATION_LINK_ERROR)));
-    }
-
-    @Test
     public void shouldReturnApplicationEjected() {
         final List<Object> eventStream = aggregate.ejectApplication(randomUUID(), "Legal").collect(toList());
         assertThat(eventStream.size(), is(1));
