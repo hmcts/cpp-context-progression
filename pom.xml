@@ -56,11 +56,11 @@
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>8.0.41</referencedata.version>
         <listing.version>8.0.53</listing.version>
-        <hearing.version>8.0.83</hearing.version>
+        <hearing.version>8.0.91</hearing.version>
         <usersgroups.version>8.0.7</usersgroups.version>
         <defence.version>8.0.30</defence.version>
         <referencedata.offence.version>8.0.14</referencedata.offence.version>
-        <coredomain.version>1.0.206</coredomain.version>
+        <coredomain.version>1.0.207</coredomain.version>
         <directionsmanagement.version>8.0.9</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>

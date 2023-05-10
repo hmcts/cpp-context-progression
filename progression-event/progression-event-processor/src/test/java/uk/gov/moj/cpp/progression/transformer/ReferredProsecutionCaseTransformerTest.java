@@ -14,6 +14,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.Verdict.verdict;
+import static uk.gov.justice.core.courts.VerdictType.verdictType;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION;
@@ -275,12 +277,19 @@ public class ReferredProsecutionCaseTransformerTest {
                 .withId(rrId)
                 .withLabel("label")
                 .build();
-
+        final UUID offenceId = randomUUID();
+        final String verdictCode = "ProvedSJP";
         final ReferredOffence referredOffence = factory.populatePojo(ReferredOffence.referredOffence()
                 .withId(id)
                 .withOffenceDefinitionId(offenceDefinitionId)
                 .withOrderIndex(0)
                 .withReportingRestrictions(singletonList(reportingRestriction))
+                .withVerdict(verdict().withOffenceId(offenceId)
+                        .withVerdictType(verdictType().
+                                withId(offenceId)
+                                .withVerdictCode(verdictCode)
+                                .build())
+                        .build())
                 .build());
 
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
@@ -298,6 +307,7 @@ public class ReferredProsecutionCaseTransformerTest {
         assertThat("Indictable", is(result.getModeOfTrial()));
         assertThat(rrId, is(result.getReportingRestrictions().get(0).getId()));
         assertThat("label", is(result.getReportingRestrictions().get(0).getLabel()));
+        assertThat(verdictCode, is(result.getVerdict().getVerdictType().getVerdictCode()));
     }
 
     @Test

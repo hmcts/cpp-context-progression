@@ -150,6 +150,10 @@ public class PreAndPostConditionHelper {
         return addProsecutionCaseToCrownCourt(caseId, defendantId, generateUrn());
     }
 
+    public static Response addProsecutionCaseToMagsCourt(final String caseId, final String defendantId) throws IOException {
+        return addProsecutionCaseToMagsCourt(caseId, defendantId, generateUrn());
+    }
+
     public static Response addProsecutionCaseToCrownCourtNullPostCode(final String caseId, final String defendantId) throws IOException {
         return addProsecutionCaseToCrownCourtNullPostCode(caseId, defendantId, generateUrn());
     }
@@ -160,6 +164,15 @@ public class PreAndPostConditionHelper {
 
     public static Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId, final String caseUrn) throws IOException {
         final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(),
+                randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), caseUrn));
+        jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
+        return postCommand(getWriteUrl("/refertocourt"),
+                "application/vnd.progression.refer-cases-to-court+json",
+                jsonPayload.toString());
+    }
+
+    public static Response addProsecutionCaseToMagsCourt(final String caseId, final String defendantId, final String caseUrn) throws IOException {
+        final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToMagsCourtJsonBody(caseId, defendantId, randomUUID().toString(),
                 randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), caseUrn));
         jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
         return postCommand(getWriteUrl("/refertocourt"),
@@ -612,6 +625,13 @@ public class PreAndPostConditionHelper {
                                                                          final String caseUrn) {
         return createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne,
                 materialIdTwo, courtDocumentId, referralId, caseUrn, "progression.command.prosecution-case-refer-to-court.json");
+    }
+
+    private static String createReferProsecutionCaseToMagsCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,
+                                                                         final String materialIdTwo, final String courtDocumentId, final String referralId,
+                                                                         final String caseUrn) {
+        return createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, materialIdOne,
+                materialIdTwo, courtDocumentId, referralId, caseUrn, "progression.sjp.case-refer-to-court-with-verdict.json");
     }
 
     private static String createReferProsecutionCaseToMagsCourtJsonBody(final String caseId, final String defendantId, final String referralId,
