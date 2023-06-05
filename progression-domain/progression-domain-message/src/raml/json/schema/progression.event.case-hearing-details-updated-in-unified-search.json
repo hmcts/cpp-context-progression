@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/case-hearing-details-updated-in-unified-search.json",
+  "type": "object",
+  "description": "update listing status for each defendant ",
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json#"
+    }
+  },
+  "required": [
+    "hearing"
+  ],
+  "additionalProperties": false
+}

@@ -49,4 +49,7 @@ unified_search_descriptor:
      - name: progression.event.application-referral-to-existing-hearing
        transformer_config: progression.event.application-referral-to-existing-hearing-spec.json
        index_name: crime_case_index
+     - name: progression.event.case-hearing-details-updated-in-unified-search
+       transformer_config: progression.event.case-hearing-details-updated-in-unified-search-spec.json
+       index_name: crime_case_index
 ...

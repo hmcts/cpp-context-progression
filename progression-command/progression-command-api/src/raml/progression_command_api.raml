@@ -522,6 +522,25 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       202:
         description: OK
 
+/unifiedSearch:
+  post:
+    description:  |
+      Republish hearing details in unified search
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.update-hearing-details-in-unified-search+json
+          name: progression.command.update-hearing-details-in-unified-search
+      ...
+    body:
+      application/vnd.progression.command.update-hearing-details-in-unified-search+json:
+        example:
+          !include json/progression.command.update-hearing-details-in-unified-search.json
+        schema:
+          !include json/schema/progression.command.update-hearing-details-in-unified-search.json
+    responses:
+      202:
+        description: OK
+
 /representationOrder/cases/{prosecutionCaseId}/defendants/{defendantId}/offences/{offenceId}:
   uriParameters:
     prosecutionCaseId:

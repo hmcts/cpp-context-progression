@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
+import uk.gov.justice.core.courts.CaseHearingDetailsUpdatedInUnifiedSearch;
 import uk.gov.justice.core.courts.CaseMarkersUpdatedInHearing;
 import uk.gov.justice.core.courts.CasesAddedForUpdatedRelatedHearing;
 import uk.gov.justice.core.courts.CommittingCourt;
@@ -1599,6 +1600,19 @@ public class HearingAggregate implements Aggregate {
                 .withHearing(newHearing)
                 .build());
 
+        return apply(streamBuilder.build());
+    }
+
+    public Stream<Object>  updateHearingDetailsInUnifiedSearch(final UUID hearingId) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if(hearing == null){
+            LOGGER.error("Hearing not found with stream id: {}", hearingId);
+        } else {
+            streamBuilder.add(CaseHearingDetailsUpdatedInUnifiedSearch.caseHearingDetailsUpdatedInUnifiedSearch()
+                    .withHearing(hearing)
+                    .build());
+        }
         return apply(streamBuilder.build());
     }
 

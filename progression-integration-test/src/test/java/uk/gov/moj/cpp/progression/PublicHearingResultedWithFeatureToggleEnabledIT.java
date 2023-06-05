@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
@@ -43,6 +45,7 @@ import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.justice.core.courts.Hearing;
@@ -61,6 +64,7 @@ import uk.gov.moj.cpp.progression.util.FileUtil;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -123,14 +127,18 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         messageConsumerProsecutionCaseListingNumberIncreasedEvent.close();
     }
 
-    @Before
-    public void setUp() {
-        while(privateEvents.retrievePrivateMessageAsString(messageConsumerHearingPopulatedToProbationCaseWorker, 1L).isPresent());
+    @BeforeClass
+    public static void setupOnce(){
+        stubDocumentCreate(DOCUMENT_TEXT);
+        HearingStub.stubInitiateHearing();
         final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
         FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
         cleanViewStoreTables();
-        stubDocumentCreate(DOCUMENT_TEXT);
-        HearingStub.stubInitiateHearing();
+    }
+
+    @Before
+    public void setUp() {
+        while(privateEvents.retrievePrivateMessageAsString(messageConsumerHearingPopulatedToProbationCaseWorker, 1L).isPresent());
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -1099,9 +1107,23 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     }
 
     private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
-        return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
+
+        final AtomicReference<String> hearingId = new AtomicReference<>();
+
+        waitAtMost(ONE_MINUTE).until(() -> {
+            final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+            final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
+
+                if(prosecutionCaseDefendantListingStatusChanged.containsKey("hearing") && prosecutionCaseDefendantListingStatusChanged.toString().contains(caseId)){
+                    hearingId.set(prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id"));
+                    return true;
+                } else {
+                    return false;
+                }
+        }
+        );
+
+        return hearingId.get();
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,

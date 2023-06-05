@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.CaseHearingDetailsUpdatedInUnifiedSearch;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -18,6 +19,8 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
+import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
+import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedResent;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -35,8 +38,10 @@ import uk.gov.justice.progression.courts.RelatedHearingUpdated;
 import uk.gov.justice.progression.courts.UnscheduledHearingAllocationNotified;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -850,6 +855,21 @@ public class HearingAggregateTest {
         final Defendant defendant3 = relatedHearingUpdated.getHearingRequest().getProsecutionCases().get(0).getDefendants().stream().filter(defendant -> defendant.getId().equals(defendantId3)).findFirst().get();
         assertThat(defendant3.getOffences().size(), is(2));
 
+
+    }
+
+    @Test
+    public void testUpdateHearingDetailsInUnifiedSearch() {
+
+        final UUID hearingId = randomUUID();
+        setField(hearingAggregate, "hearing", Hearing.hearing()
+                .withId(hearingId)
+                .build());
+
+        final List<Object> events = hearingAggregate.updateHearingDetailsInUnifiedSearch(hearingId).collect(toList());
+
+        final CaseHearingDetailsUpdatedInUnifiedSearch caseHearingDetailsUpdatedInUnifiedSearch = (CaseHearingDetailsUpdatedInUnifiedSearch) events.get(0);
+        assertThat(caseHearingDetailsUpdatedInUnifiedSearch.getHearing().getId(), is(hearingId));
 
     }
 
