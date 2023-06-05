@@ -86,6 +86,9 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
     private static final String WORDING_RESENTENCED = "Resentenced Original code : %1$s, Original details: %2$s";
     private static final String WORDING_SUSPENDED_RESENTENCED = "Activation of a suspended sentence order. Original code : %1$s, Original details: %2$s";
 
+    private static final String WORDING_RE_SENTENCED_CLONED_OFFENCE = "Original CaseURN: %1$s, Re-sentenced Original code : %2$s, Original details: %3$s";
+    private static final String WORDING_SUSPENDED_RE_SENTENCED_CLONED_OFFENCE = "Activation of a suspended sentence order. Original CaseURN: %1$s, Original code : %2$s, Original details: %3$s";
+
     private static final String PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY = "contactEmailAddress";
     private static final String PROSECUTOR_OUCODE_KEY = "oucode";
     private static final String PROSECUTOR_MAJOR_CREDITOR_CODE_KEY = "majorCreditorCode";
@@ -304,6 +307,16 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         return wordingPattern;
     }
 
+    private String getOffenceWordingPatternForClonedOffence(CourtApplication courtApplication) {
+        final String wordingPattern;
+        if (nonNull(courtApplication.getCourtOrder()) && TYPE_ID_FOR_SUSPENDED_SENTENCE_ORDER.equals(courtApplication.getCourtOrder().getJudicialResultTypeId())) {
+            wordingPattern = WORDING_SUSPENDED_RE_SENTENCED_CLONED_OFFENCE;
+        } else {
+            wordingPattern = WORDING_RE_SENTENCED_CLONED_OFFENCE;
+        }
+        return wordingPattern;
+    }
+
     private boolean hasActivationCode(CourtApplicationType type) {
         return StringUtils.isNotEmpty(type.getResentencingActivationCode());
     }
@@ -357,7 +370,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
             return;
         }
 
-        final String wordingPattern = getOffenceWordingPattern(courtApplication);
+        final String wordingPattern = getOffenceWordingPatternForClonedOffence(courtApplication);
 
         final String resentencingActivationCode = courtApplication.getType().getResentencingActivationCode();
 
@@ -365,7 +378,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
                 .map(courtOrder -> CourtOrder.courtOrder().withValuesFrom(courtOrder)
                         .withCourtOrderOffences(courtOrder.getCourtOrderOffences().stream()
                                 .map(courtOrderOffence -> CourtOrderOffence.courtOrderOffence().withValuesFrom(courtOrderOffence)
-                                        .withOffence(updateOffence(courtApplication.getType(), courtOrderOffence.getOffence(), wordingPattern, resentencingActivationCode))
+                                        .withOffence(updateClonedOffence(courtApplication, courtOrderOffence.getProsecutionCaseIdentifier(), courtOrderOffence.getOffence(), wordingPattern, resentencingActivationCode))
                                         .build())
                                 .collect(toList()))
                         .build())
@@ -457,6 +470,25 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
 
             if (nonNull(offence.getWordingWelsh())) {
                 offenceBuilder.withWordingWelsh(String.format(wordingPattern, offence.getOffenceCode(), offence.getWordingWelsh()));
+            }
+        }
+
+        return offenceBuilder.build();
+
+    }
+
+    private Offence updateClonedOffence(final CourtApplication courtApplication, final ProsecutionCaseIdentifier prosecutionCaseIdentifier, final Offence offence, final String wordingPattern, final String resentencingActivationCode) {
+        final Offence.Builder offenceBuilder = Offence.offence()
+                .withValuesFrom(offence)
+                .withJudicialResults(null)
+                .withCustodyTimeLimit(null);
+
+        if (!offence.getOffenceCode().equals(resentencingActivationCode) && hasActivationCode(courtApplication.getType())) {
+            offenceBuilder.withWording(String.format(wordingPattern, prosecutionCaseIdentifier.getCaseURN(), offence.getOffenceCode(),  offence.getWording()))
+                    .withOffenceCode(resentencingActivationCode);
+
+            if (nonNull(offence.getWordingWelsh())) {
+                offenceBuilder.withWordingWelsh(String.format(wordingPattern, prosecutionCaseIdentifier.getCaseURN(), offence.getOffenceCode(), offence.getWordingWelsh()));
             }
         }
 

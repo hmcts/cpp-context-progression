@@ -37,20 +37,16 @@ import static uk.gov.justice.progression.courts.RejectApplicationSummons.rejectA
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import org.junit.Assert;
 import uk.gov.justice.core.courts.AddCourtApplicationToCase;
 import uk.gov.justice.core.courts.ApplicationReferredToBoxwork;
 import uk.gov.justice.core.courts.ApplicationReferredToCourtHearing;
@@ -129,6 +125,9 @@ public class CourtApplicationHandlerTest {
     private static final UUID TYPE_ID_FOR_SUSPENDED_SENTENCE_ORDER = fromString("8b1cff00-a456-40da-9ce4-f11c20959084");
     private static final String APPLICATION_ID = "applicationId";
     private static final String APPLICATION_REFERRED_TO_COURT_HEARING = "progression.command.application-referred-to-court-hearing";
+    private static final String WELSH_WORDING_CLONED_COURT_ORDER_OFFENCE = "Original CaseURN: null, Re-sentenced Original code : OFC0001, Original details: On 12/10/2020 at 10:100am on the corner of the hugh street outside the";
+    private static final String ACTIVATION_WORDING_CLONED_COURT_ORDER_OFFENCE = "Activation of a suspended sentence order. Original CaseURN: null, Original code : OFC0001, Original details: On 12/10/2020 at 10:100am on the corner of the hugh street outside the dog and duck in Croydon you did something wrong";
+    private static final String WORDING_CLONED_COURT_ORDER_OFFENCE = "Original CaseURN: null, Re-sentenced Original code : OFC0001, Original details: On 12/10/2020 at 10:100am on the corner of the hugh street outside the dog and duck in Croydon you did something wrong";
 
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CourtApplicationCreated.class,
@@ -1616,8 +1615,8 @@ public class CourtApplicationHandlerTest {
                         payload().isJson(allOf(
                                 withJsonPath("$.courtApplication", notNullValue()),
                                 withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.offenceCode", is(RESENTENCING_ACTIVATION_CODE)),
-                                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.wording", is(expectedWording)),
-                                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.wordingWelsh", is(expectedWordingWelsh)),
+                                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.wording", is(WORDING_CLONED_COURT_ORDER_OFFENCE)),
+                                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.wordingWelsh", is(WELSH_WORDING_CLONED_COURT_ORDER_OFFENCE)),
                                 withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.id", is(offenceId.toString())),
                                 withJsonPath("$.courtApplication.courtOrder.id", is(courtOrder.getId().toString())),
                                 withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].prosecutionCaseIdentifier.prosecutionAuthorityCode", is(prosecutor2AuthCode)),
@@ -1877,13 +1876,18 @@ public class CourtApplicationHandlerTest {
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
         final String prefix;
+        final String expectedWording ;
+        final String expectedWordingWelsh;
         if (TYPE_ID_FOR_SUSPENDED_SENTENCE_ORDER.equals(judicialResultTypeId)) {
-            prefix = "Activation of a suspended sentence order.";
+            prefix = "Activation of a suspended sentence order. ";
+            expectedWording  =   prefix + "Original CaseURN: null, " +  "Original code : " + ORG_OFFENCE_CODE + ", Original details: " + ORG_OFFENCE_WORDING;
+            expectedWordingWelsh = prefix + "Original CaseURN: null, " +  "Original code : " + ORG_OFFENCE_CODE + ", Original details: "  + ORG_OFFENCE_WORDING_WELSH;
         } else {
-            prefix = "Resentenced";
+            prefix = "Re-sentenced";
+            expectedWording  =   "Original CaseURN: null, " + prefix +  " Original code : " + ORG_OFFENCE_CODE + ", Original details: " + ORG_OFFENCE_WORDING;
+            expectedWordingWelsh = "Original CaseURN: null, " + prefix + " Original code : " + ORG_OFFENCE_CODE + ", Original details: "  + ORG_OFFENCE_WORDING_WELSH;
+
         }
-        final String expectedWording = prefix + " Original code : " + ORG_OFFENCE_CODE + ", Original details: " + ORG_OFFENCE_WORDING;
-        final String expectedWordingWelsh = prefix + " Original code : " + ORG_OFFENCE_CODE + ", Original details: " + ORG_OFFENCE_WORDING_WELSH;
         final CourtOrder courtOrder = initiateCourtApplicationProceedings.getCourtApplication().getCourtOrder();
         final UUID offenceId = courtOrder.getCourtOrderOffences().get(0).getOffence().getId();
         final String prosecutor2AuthCode = initiateCourtApplicationProceedings.getCourtApplication().getCourtOrder().getCourtOrderOffences().get(0).getProsecutionCaseIdentifier().getProsecutionAuthorityCode();
