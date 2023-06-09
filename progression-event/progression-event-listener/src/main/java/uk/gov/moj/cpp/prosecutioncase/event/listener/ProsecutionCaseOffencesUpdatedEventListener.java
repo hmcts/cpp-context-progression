@@ -220,6 +220,7 @@ public class ProsecutionCaseOffencesUpdatedEventListener {
                 .withOffenceLegislation(updatedOffence.getOffenceLegislation())
                 .withOffenceLegislationWelsh(updatedOffence.getOffenceLegislationWelsh())
                 .withCount(updatedOffence.getCount())
+                .withIndictmentParticular(updatedOffence.getIndictmentParticular())
                 .withLaaApplnReference(nonNull(updatedOffence.getLaaApplnReference())
                         ? updatedOffence.getLaaApplnReference() : persistedOffence.getLaaApplnReference())
                 .withOffenceDateCode(updatedOffence.getOffenceDateCode())

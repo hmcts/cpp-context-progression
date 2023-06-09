@@ -49,6 +49,18 @@ public class UpdateOffencesCommandApiTest {
     }
 
     @Test
+    public void shouldUpdateDefendantOffences() {
+        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(command, "progression.command.update-defendant-offences"))
+                .thenReturn(function);
+        when(function.apply(any())).thenReturn(commandEnvelope);
+
+        updateOffencesCommand.handleUpdateDefendantOffences(command);
+
+        verify(sender, times(1)).send(commandEnvelope);
+    }
+
+    @Test
     public void shouldUpdatePlea()
     {
         final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);

@@ -24,6 +24,13 @@ public class UpdateOffencesCommandApi {
         sender.send(commandEnvelope);
     }
 
+    @Handles("progression.update-defendant-offences")
+    public void handleUpdateDefendantOffences(final JsonEnvelope envelope) {
+        final JsonEnvelope commandEnvelope = envelopeWithUpdatedActionName(envelope,
+                "progression.command.update-defendant-offences");
+        sender.send(commandEnvelope);
+    }
+
     @Handles("progression.update-hearing-offence-plea")
     public void handleUpdatePlea(final JsonEnvelope envelope) {
         final JsonEnvelope commandEnvelope = envelopeWithUpdatedActionName(envelope,

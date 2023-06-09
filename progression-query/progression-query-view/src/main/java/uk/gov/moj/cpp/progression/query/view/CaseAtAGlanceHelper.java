@@ -192,6 +192,7 @@ public class CaseAtAGlanceHelper {
                 caagDefendantOffenceBuilder.withId(offence.getId());
                 caagDefendantOffenceBuilder.withOffenceCode(offence.getOffenceCode());
                 caagDefendantOffenceBuilder.withCount(offence.getCount());
+                caagDefendantOffenceBuilder.withIndictmentParticular(offence.getIndictmentParticular());
                 caagDefendantOffenceBuilder.withOrderIndex(offence.getOrderIndex());
                 caagDefendantOffenceBuilder.withOffenceTitle(offence.getOffenceTitle());
                 caagDefendantOffenceBuilder.withOffenceTitleWelsh(offence.getOffenceTitleWelsh());

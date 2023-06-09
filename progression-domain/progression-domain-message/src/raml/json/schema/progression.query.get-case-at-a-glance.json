@@ -192,6 +192,9 @@
         "count": {
           "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/positiveInteger"
         },
+        "indictmentParticular": {
+          "type": "string"
+        },
         "orderIndex": {
           "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/positiveInteger"
         },
