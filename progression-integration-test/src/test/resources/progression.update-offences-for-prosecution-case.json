@@ -17,6 +17,7 @@
         "offenceTitle": "offence title",
         "offenceTitleWelsh": "offence title Welsh",
         "count": 1,
+        "indictmentParticular": "offence-indictmentParticular",
         "notifiedPlea": {
           "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
           "notifiedPleaDate": "2018-04-01",

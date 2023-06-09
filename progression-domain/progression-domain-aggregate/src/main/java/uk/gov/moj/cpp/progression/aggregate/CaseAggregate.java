@@ -1558,7 +1558,9 @@ public class CaseAggregate implements Aggregate {
             if (existingOffence.isPresent()) {
                 offence = updateOrderIndex(commandOffence, existingOffence.get().getOrderIndex());
             } else {
-                offence = offenceWithSexualOffenceReportingRestriction(updateOrderIndex(commandOffence, maxOrderIndex.addAndGet(1)), referenceDataOffences);
+                offence = updateLaaApplicationReference(defendantId,
+                        offenceWithSexualOffenceReportingRestriction(
+                                updateOrderIndex(commandOffence, maxOrderIndex.addAndGet(1)), referenceDataOffences));
             }
             return offence;
         }).collect(Collectors.toList());
@@ -3397,5 +3399,22 @@ public class CaseAggregate implements Aggregate {
                 .build();
     }
 
+    private uk.gov.justice.core.courts.Offence updateLaaApplicationReference(final UUID defendantId, final uk.gov.justice.core.courts.Offence offence) {
+        final uk.gov.justice.core.courts.Offence.Builder builder = uk.gov.justice.core.courts.Offence.offence().withValuesFrom(offence);
+        if(nonNull(offence.getCount())) {
+            final Optional<uk.gov.justice.core.courts.Defendant> defendant = this.getProsecutionCase().getDefendants().stream()
+                    .filter(caseDefendant -> caseDefendant.getId().equals(defendantId))
+                    .findFirst();
+            if (defendant.isPresent()) {
+                final Optional<uk.gov.justice.core.courts.Offence> offenceWithLAAReference = defendant.get().getOffences().stream()
+                        .filter(existingOffence -> nonNull(existingOffence.getLaaApplnReference()))
+                        .findFirst();
+                if (offenceWithLAAReference.isPresent()) {
+                    builder.withLaaApplnReference(offenceWithLAAReference.get().getLaaApplnReference()).build();
+                }
+            }
+        }
+        return builder.build();
+    }
 }
 

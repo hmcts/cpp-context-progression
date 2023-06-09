@@ -49,6 +49,8 @@ import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRAN
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
 import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.COMPANYONLINEPLEA;
+import static javax.json.Json.createObjectBuilder;
+import static javax.json.Json.createArrayBuilder;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
@@ -5085,6 +5087,123 @@ public class CaseAggregateTest {
         assertThat(eventStream.get(2).getClass(), is(equalTo(PleaDocumentForOnlinePleaSubmitted.class)));
         assertThat(eventStream.get(3).getClass(), is(equalTo(NotificationSentForDefendantDocument.class)));
     }
+
+    @Test
+    public void shouldAddNewOffenceWithLaaApplicationReferenceIfExistingOffenceHasLaaApplicationReference() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String applicationReference = "AB746921";
+
+        this.caseAggregate.apply(createProsecutionCaseCreated(caseId, defendantId1, offenceId, applicationReference, true));
+
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().size(), is(1));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(1));
+        assertThat(this.caseAggregate.getDefendantCaseOffences().get(defendantId1).size(), is(1));
+
+        uk.gov.justice.core.courts.Offence offence = uk.gov.justice.core.courts.Offence.offence()
+                .withId(randomUUID())
+                .withProceedingsConcluded(false)
+                .withCount(7)
+                .withIndictmentParticular("Indictment Particular")
+                .build();
+
+        this.caseAggregate.updateOffences(Arrays.asList(offence), caseId, defendantId1, Optional.of(createJsonList()));
+
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().size(), is(1));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(2));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().get(0).getLaaApplnReference().getApplicationReference(), is(applicationReference));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().get(1).getLaaApplnReference().getApplicationReference(), is(applicationReference));
+    }
+
+    @Test
+    public void shouldNotAddNewOffenceWithLaaApplicationReferenceIfExistingOffenceHasLaaApplicationReferenceAndNewOffenceWithoutCount() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String applicationReference = "AB746921";
+        final UUID offenceId2 = randomUUID();
+
+        this.caseAggregate.apply(createProsecutionCaseCreated(caseId, defendantId1, offenceId, applicationReference, true));
+
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().size(), is(1));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(1));
+        assertThat(this.caseAggregate.getDefendantCaseOffences().get(defendantId1).size(), is(1));
+
+        uk.gov.justice.core.courts.Offence offence = uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId2)
+                .withProceedingsConcluded(false)
+                .build();
+
+        this.caseAggregate.updateOffences(Arrays.asList(offence), caseId, defendantId1, Optional.of(createJsonList()));
+
+        final List<uk.gov.justice.core.courts.Offence> offences = this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences();
+        final Optional<uk.gov.justice.core.courts.Offence> offence1 = offences.stream().filter(o -> o.getId().equals(offenceId)).findFirst();
+        final Optional<uk.gov.justice.core.courts.Offence> offence2 = offences.stream().filter(o -> o.getId().equals(offenceId2)).findFirst();
+
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().size(), is(1));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(2));
+        assertThat(offence1.get().getLaaApplnReference().getApplicationReference(), is(applicationReference));
+        assertThat(offence2.get().getLaaApplnReference(), nullValue());
+    }
+
+    @Test
+    public void shouldAddNewOffenceWithoutLaaApplicationReferenceIfExistingOffenceDoesNotHaveLaaApplicationReference() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID offenceId = randomUUID();
+
+
+        this.caseAggregate.apply(createProsecutionCaseCreated(caseId, defendantId1, offenceId, null, false));
+
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().size(), is(1));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(1));
+        assertThat(this.caseAggregate.getDefendantCaseOffences().get(defendantId1).size(), is(1));
+
+        uk.gov.justice.core.courts.Offence offence = uk.gov.justice.core.courts.Offence.offence()
+                .withId(randomUUID())
+                .withProceedingsConcluded(false)
+                .build();
+
+        this.caseAggregate.updateOffences(Arrays.asList(offence), caseId, defendantId1, Optional.of(createJsonList()));
+
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().size(), is(1));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(2));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().get(0).getLaaApplnReference(), nullValue());
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().get(1).getLaaApplnReference(), nullValue());
+    }
+
+    private ProsecutionCaseCreated createProsecutionCaseCreated(final UUID caseId, final UUID defendantId1, final UUID offenceId, final String applicationReference, final boolean flag) {
+        final uk.gov.justice.core.courts.Defendant defendant1 = uk.gov.justice.core.courts.Defendant.defendant()
+                .withId(defendantId1)
+                .withOffences(
+                        Arrays.asList(uk.gov.justice.core.courts.Offence.offence()
+                                .withId(offenceId)
+                                .withListingNumber(1)
+                                .withProceedingsConcluded(true)
+                                .withLaaApplnReference(flag ? LaaReference.laaReference().withApplicationReference(applicationReference).build() : null)
+                                .build()))
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(Arrays.asList(defendant1))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("URN").build())
+                .build();
+
+        return ProsecutionCaseCreated.prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+    }
+
+    private List<JsonObject> createJsonList() {
+        return Arrays.asList(createArrayBuilder().add(
+                createObjectBuilder()
+                        .add("cjsOffenceCode", "TTH105HY")
+                        .build()).build().getJsonObject(0));
+    }
+
 }
 
 
