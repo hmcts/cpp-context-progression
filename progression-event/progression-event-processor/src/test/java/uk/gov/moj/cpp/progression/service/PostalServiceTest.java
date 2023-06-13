@@ -3,9 +3,11 @@ package uk.gov.moj.cpp.progression.service;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -147,7 +149,7 @@ public class PostalServiceTest {
                 null,
                 courtApplication.getApplicant(),
                 caseId,
-                JurisdictionType.MAGISTRATES);
+                JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
@@ -208,6 +210,9 @@ public class PostalServiceTest {
         final String hearingDate = hearingDateTime.toLocalDate().toString();
         final DateTimeFormatter dTF = DateTimeFormatter.ofPattern("HH:mm a");
         final String hearingTime = dTF.format(hearingDateTime.toLocalTime());
+        final String applicationParticulars = "testing";
+        final String applicant = "Test";
+        final Boolean isApplicant = false;
 
        PostalNotification postalNotification=  postalService.buildPostalNotification(
                 hearingDate,
@@ -221,7 +226,7 @@ public class PostalServiceTest {
                 null,
                 localJusticeArea,
                 courtApplication.getApplicant(),
-                JurisdictionType.MAGISTRATES);
+                JurisdictionType.MAGISTRATES, applicationParticulars, courtApplication, applicant, EMPTY);
 
        verifyMagistratesCourt(postalNotification.getLjaCode(), postalNotification.getLjaName());
     }
@@ -272,6 +277,9 @@ public class PostalServiceTest {
         final String hearingDate = hearingDateTime.toLocalDate().toString();
         final DateTimeFormatter dTF = DateTimeFormatter.ofPattern("HH:mm a");
         final String hearingTime = dTF.format(hearingDateTime.toLocalTime());
+        final String applicationParticulars = "testing";
+        final String applicant = "test";
+        final Boolean isApplicant = false;
 
         PostalNotification postalNotification=  postalService.buildPostalNotification(
                 hearingDate,
@@ -285,13 +293,13 @@ public class PostalServiceTest {
                 null,
                 localJusticeArea,
                 courtApplication.getApplicant(),
-                JurisdictionType.CROWN);
+                JurisdictionType.CROWN, applicationParticulars, courtApplication, applicant, EMPTY);
 
         verifyCrownCourt(postalNotification.getLjaCode(), postalNotification.getLjaName());
     }
 
     @Test
-    public void sendPostNotification() {
+    public void sendPostNotification_courtNotInWelsh_applicationParticularTranslationNotRequired() {
 
         final ZonedDateTime hearingDateTime = ZonedDateTime.of(
                 LocalDate.of(2019, 4, 19),
@@ -318,31 +326,7 @@ public class PostalServiceTest {
 
         when(referenceDataService.getDocumentTypeAccessData(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
 
-
-        final CourtApplication courtApplication = CourtApplication.courtApplication()
-                .withId(applicationId)
-                .withType(CourtApplicationType.courtApplicationType().build())
-                .withApplicant(CourtApplicationParty.courtApplicationParty()
-                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
-                                Person.person()
-                                        .withFirstName("John")
-                                        .withLastName("Edward")
-                                        .withDateOfBirth(LocalDate.of(1998, 8, 10))
-                                        .withContact(
-                                                ContactNumber.contactNumber()
-                                                        .withPrimaryEmail("applicant@test.com")
-                                                        .build())
-                                        .withAddress(Address.address()
-                                                .withAddress1("22 Acacia Avenue")
-                                                .withAddress2("Acacia Town")
-                                                .withAddress3("Acacia City")
-                                                .withAddress4("Test")
-                                                .withPostcode("AC1 4AC")
-                                                .build()
-                                        )
-                                        .build()).build()).build())
-                        .build())
-                .build();
+        final CourtApplication courtApplication = getCourtApplication();
 
         final String hearingDate = hearingDateTime.toLocalDate().toString();
 
@@ -372,7 +356,7 @@ public class PostalServiceTest {
                         .build(),
                 courtApplication.getApplicant(),
                 caseId,
-                JurisdictionType.MAGISTRATES);
+                JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
@@ -385,6 +369,190 @@ public class PostalServiceTest {
                                 withJsonPath("$.courtDocument.documentTypeDescription", equalTo("Applications")),
                                 withJsonPath("$.courtDocument.mimeType", equalTo("application/pdf"))
                         )))));
+    }
+
+    @Test
+    public void sendPostNotification_courtInWelsh_applicationParticularTranslationNotRequired() {
+
+        final ZonedDateTime hearingDateTime = ZonedDateTime.of(
+                LocalDate.of(2019, 4, 19),
+                LocalTime.of(10, 0),
+                ZoneId.of("UTC"));
+
+        final JsonObject courtCentreJson = createObjectBuilder()
+                .add("lja", "1234")
+                .add("isWelsh", true)
+                .add("oucodeL3WelshName", "Caerdydd")
+                .build();
+
+        when(documentGeneratorService.generateDocument(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(UUID.randomUUID());
+
+        when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+
+        when(referenceDataService.getCourtRoomById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+
+        final JsonObject ljaDetails = createObjectBuilder()
+                .add("localJusticeArea", createObjectBuilder()
+                        .add("nationalCourtCode", "3190")
+                        .add("name", "Cardiff Magistrates' Court")
+                        .add("welshName", "Caerdydd")
+                        .build())
+                .build();
+
+        when(referenceDataService.getEnforcementAreaByLjaCode(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(ljaDetails);
+
+        when(referenceDataService.getDocumentTypeAccessData(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
+
+        final CourtApplication courtApplication = getCourtApplication();
+
+        final String hearingDate = hearingDateTime.toLocalDate().toString();
+
+        final DateTimeFormatter dTF = DateTimeFormatter.ofPattern("HH:mm a");
+
+        final String hearingTime = dTF.format(hearingDateTime.toLocalTime());
+
+        postalService.sendPostToCourtApplicationParty(
+                envelope,
+                hearingDate,
+                hearingTime,
+                applicationId,
+                "05PP1000915-01",
+                "Application to amend the requirements of a suspended sentence order",
+                "welsh - Application to amend the requirements of a suspended sentence order",
+                "In accordance with Part 3 of Schedule 12 to the Criminal Justice Act 2003",
+                "welsh - In accordance with Part 3 of Schedule 12 to the Criminal Justice Act 2003",
+                CourtCentre.courtCentre()
+                        .withId(randomUUID())
+                        .withName("Lavendar Hill Magistrates' Court")
+                        .withAddress(Address.address()
+                                .withAddress1("Court Road")
+                                .withAddress2("Court Town")
+                                .withAddress3("Lavendar Hill, London")
+                                .withPostcode("EA22 5TF")
+                                .build())
+                        .build(),
+                courtApplication.getApplicant(),
+                caseId,
+                JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY);
+
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
+                payloadIsJson(
+                        allOf(
+                                withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
+                                withJsonPath("$.courtDocument.documentCategory.applicationDocument.prosecutionCaseId", equalTo(caseId.toString())),
+                                withJsonPath("$.courtDocument.name", equalTo("PostalNotification")),
+                                withJsonPath("$.courtDocument.documentTypeId", equalTo(APPLICATION_DOCUMENT_TYPE_ID.toString())),
+                                withJsonPath("$.courtDocument.documentTypeDescription", equalTo("Applications")),
+                                withJsonPath("$.courtDocument.mimeType", equalTo("application/pdf"))
+                        )))));
+    }
+
+    @Test
+    public void sendPostNotification_courtInWelsh_applicationParticularTranslationRequired() {
+
+        final ZonedDateTime hearingDateTime = ZonedDateTime.of(
+                LocalDate.of(2019, 4, 19),
+                LocalTime.of(10, 0),
+                ZoneId.of("UTC"));
+
+        final JsonObject courtCentreJson = createObjectBuilder()
+                .add("lja", "1234")
+                .add("isWelsh", true)
+                .add("oucodeL3WelshName", "Caerdydd")
+                .build();
+
+        when(documentGeneratorService.generateDocument(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(UUID.randomUUID());
+
+        when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+
+        when(referenceDataService.getCourtRoomById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+
+        final JsonObject ljaDetails = createObjectBuilder()
+                .add("localJusticeArea", createObjectBuilder()
+                        .add("nationalCourtCode", "3190")
+                        .add("name", "Cardiff Magistrates' Court")
+                        .add("welshName", "Caerdydd")
+                        .build())
+                .build();
+
+        when(referenceDataService.getEnforcementAreaByLjaCode(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(ljaDetails);
+
+        when(referenceDataService.getDocumentTypeAccessData(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
+
+        final CourtApplication courtApplication = getCourtApplication();
+
+        final String hearingDate = hearingDateTime.toLocalDate().toString();
+
+        final DateTimeFormatter dTF = DateTimeFormatter.ofPattern("HH:mm a");
+
+        final String hearingTime = dTF.format(hearingDateTime.toLocalTime());
+
+        postalService.sendPostToCourtApplicationParty(
+                envelope,
+                hearingDate,
+                hearingTime,
+                applicationId,
+                "05PP1000915-01",
+                "Application to amend the requirements of a suspended sentence order",
+                "welsh - Application to amend the requirements of a suspended sentence order",
+                "In accordance with Part 3 of Schedule 12 to the Criminal Justice Act 2003",
+                "welsh - In accordance with Part 3 of Schedule 12 to the Criminal Justice Act 2003",
+                CourtCentre.courtCentre()
+                        .withId(randomUUID())
+                        .withName("Lavendar Hill Magistrates' Court")
+                        .withAddress(Address.address()
+                                .withAddress1("Court Road")
+                                .withAddress2("Court Town")
+                                .withAddress3("Lavendar Hill, London")
+                                .withPostcode("EA22 5TF")
+                                .build())
+                        .build(),
+                courtApplication.getApplicant(),
+                caseId,
+                JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY);
+
+        verify(sender, times(1)).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
+                payloadIsJson(
+                        allOf(
+                                withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
+                                withJsonPath("$.courtDocument.documentCategory.applicationDocument.prosecutionCaseId", equalTo(caseId.toString())),
+                                withJsonPath("$.courtDocument.name", equalTo("PostalNotification")),
+                                withJsonPath("$.courtDocument.documentTypeId", equalTo(APPLICATION_DOCUMENT_TYPE_ID.toString())),
+                                withJsonPath("$.courtDocument.documentTypeDescription", equalTo("Applications")),
+                                withJsonPath("$.courtDocument.mimeType", equalTo("application/pdf"))
+                        )))));
+    }
+
+    private CourtApplication getCourtApplication() {
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType().build())
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
+                                Person.person()
+                                        .withFirstName("John")
+                                        .withLastName("Edward")
+                                        .withDateOfBirth(LocalDate.of(1998, 8, 10))
+                                        .withContact(
+                                                ContactNumber.contactNumber()
+                                                        .withPrimaryEmail("applicant@test.com")
+                                                        .build())
+                                        .withAddress(Address.address()
+                                                .withAddress1("22 Acacia Avenue")
+                                                .withAddress2("Acacia Town")
+                                                .withAddress3("Acacia City")
+                                                .withAddress4("Test")
+                                                .withPostcode("AC1 4AC")
+                                                .build()
+                                        )
+                                        .build()).build()).build())
+                        .build())
+                .build();
+        return courtApplication;
     }
 
     @Test

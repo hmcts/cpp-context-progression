@@ -35,6 +35,8 @@ import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
+import uk.gov.justice.core.courts.SendNotificationForApplication;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
 import uk.gov.justice.core.courts.SummonsTemplateType;
@@ -54,6 +56,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
+import uk.gov.moj.cpp.progression.aggregate.SendNotificationAggregate;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.ArrayList;
@@ -168,6 +171,61 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
             final Stream<Object> events = applicationAggregate.ignoreApplicationProceedings(initiateCourtProceedingsForApplication);
             appendEventsToStream(initiateCourtApplicationProceedingsEnv, eventStream, events);
         }
+    }
+
+    @Handles("progression.command.send-notification-for-application")
+    public void sendNotificationForApplication(final Envelope<SendNotificationForApplicationInitiated> sendNotificationForApplicationEnvelope) throws EventStreamException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("progression.command.initiate-court-proceedings-for-application {}", sendNotificationForApplicationEnvelope.payload());
+        }
+
+        final boolean applicationReferredToNewHearing = isApplicationReferredToNewHearing(sendNotificationForApplicationEnvelope.payload());
+
+        final SendNotificationForApplication sendNotificationForApplication = rebuildSendNotificationForApplication(sendNotificationForApplicationEnvelope.payload(), applicationReferredToNewHearing, sendNotificationForApplicationEnvelope);
+
+        final EventStream eventStream = eventSource.getStreamById(sendNotificationForApplication.getCourtApplication().getId());
+        final SendNotificationAggregate applicationAggregate = aggregateService.get(eventStream, SendNotificationAggregate.class);
+
+        if (validateSendNotificationForApplication(sendNotificationForApplication) && !sendNotificationForApplication.getIsBoxWorkRequest()) {
+            final Stream<Object> events = applicationAggregate.sendNotificationForApplication(sendNotificationForApplication, applicationReferredToNewHearing, sendNotificationForApplication.getIsWelshTranslationRequired());
+            appendEventsToStream(sendNotificationForApplicationEnvelope, eventStream, events);
+        } else {
+            final Stream<Object> events = applicationAggregate.ignoreSendNotificationForApplication(sendNotificationForApplication);
+            appendEventsToStream(sendNotificationForApplicationEnvelope, eventStream, events);
+
+        }
+    }
+
+    private SendNotificationForApplication rebuildSendNotificationForApplication(final SendNotificationForApplicationInitiated sendNotificationForApplication, final boolean applicationReferredToNewHearing, final Envelope<SendNotificationForApplicationInitiated> envelope) {
+        final boolean summonsApprovalRequired = isSummonsApprovalRequired(sendNotificationForApplication.getBoxHearing(), sendNotificationForApplication.getCourtApplication());
+        final SendNotificationForApplication.Builder sendNotificationForApplicationBuilder = SendNotificationForApplication.sendNotificationForApplication()
+                .withCourtApplication(rebuildCourtApplication(sendNotificationForApplication.getCourtApplication(), envelope))
+                .withIsWelshTranslationRequired(sendNotificationForApplication.getIsWelshTranslationRequired())
+                .withIsBoxWorkRequest(sendNotificationForApplication.getIsBoxWorkRequest())
+                .withSummonsApprovalRequired(summonsApprovalRequired);
+
+        if (nonNull(sendNotificationForApplication.getBoxHearing())) {
+            sendNotificationForApplicationBuilder
+                    .withBoxHearing(BoxHearingRequest.boxHearingRequest()
+                            .withValuesFrom(sendNotificationForApplication.getBoxHearing())
+                            .withId(UUID.randomUUID())
+                            .build())
+                    .build();
+        }
+
+        if (applicationReferredToNewHearing || summonsApprovalRequired) {
+            if (nonNull(sendNotificationForApplication.getCourtHearing())) {
+                sendNotificationForApplicationBuilder
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest()
+                                .withValuesFrom(sendNotificationForApplication.getCourtHearing())
+                                .withId(randomUUID())
+                                .build());
+            }
+        } else {
+            sendNotificationForApplicationBuilder.withCourtHearing(sendNotificationForApplication.getCourtHearing());
+        }
+
+        return sendNotificationForApplicationBuilder.build();
     }
 
     @Handles("progression.command.edit-court-proceedings-for-application")
@@ -507,6 +565,12 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         return nonNull(courtHearing) && isNull(courtHearing.getId()) && isNull(boxHearing);
     }
 
+    private boolean isApplicationReferredToNewHearing(final SendNotificationForApplicationInitiated sendNotificationForApplication) {
+        final CourtHearingRequest courtHearing = sendNotificationForApplication.getCourtHearing();
+        final BoxHearingRequest boxHearing = sendNotificationForApplication.getBoxHearing();
+        return nonNull(courtHearing) && isNull(courtHearing.getId()) && isNull(boxHearing);
+    }
+
     private boolean validateInitiateCourtApplicationProceedings(final InitiateCourtApplicationProceedings initiateCourtProceedingsForApplication) {
 
 
@@ -522,6 +586,23 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         }
         return true;
     }
+
+    private boolean validateSendNotificationForApplication(final SendNotificationForApplication sendNotificationForApplication) {
+
+
+        if (isNotEmpty(sendNotificationForApplication.getCourtApplication().getCourtApplicationCases())) {
+            final Predicate<CourtApplicationCase> isSjpCourtApplication = CourtApplicationCase::getIsSJP;
+            final Predicate<CourtApplicationCase> isNonSjpCourtApplication = courtApplicationCase -> !courtApplicationCase.getIsSJP();
+            final boolean isSjp = sendNotificationForApplication.getCourtApplication().getCourtApplicationCases().stream().anyMatch(isSjpCourtApplication);
+            final boolean isNonSjp = sendNotificationForApplication.getCourtApplication().getCourtApplicationCases().stream().anyMatch(isNonSjpCourtApplication);
+
+            if (isSjp && isNonSjp) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     private boolean isApplicationCreatedForSJPCase(final List<CourtApplicationCase> courtApplicationCases) {
         if (isNotEmpty(courtApplicationCases)) {

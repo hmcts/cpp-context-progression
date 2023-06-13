@@ -134,6 +134,7 @@ subscriptions_descriptor:
         - name: public.progression.event.form-defendants-updated
           schema_uri: http://justice.gov.uk/core/courts/public.progression.event.form-defendants-updated.json
 
+
         - name: public.progression.offences-removed-from-existing-allocated-hearing
           schema_uri: http://justice.gov.uk/progression/courts/public.progression.offences-removed-from-existing-allocated-hearing.json
 
@@ -262,6 +263,9 @@ subscriptions_descriptor:
 
         - name: public.progression.now-notification-suppressed
           schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.now-notification-suppressed.json
+
+        - name: public.progression.welsh-translation-required
+          schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.welsh-translation-required.json
 
         - name: public.progression.court-application-proceedings-initiated
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-application-proceedings-initiated.json

@@ -451,7 +451,7 @@ public class CaseAggregate implements Aggregate {
                         ),
                 when(ProsecutionCaseDefendantUpdated.class).apply(e -> defendantsMap.put(e.getDefendant().getId(), updateDefendantFrom(e.getDefendant()))),
                 when(ProsecutionCaseUpdateDefendantsWithMatchedRequested.class).apply(e ->
-                            defendantsMap.put(e.getDefendant().getId(), updateDefendantFrom(e.getDefendant()))),
+                        defendantsMap.put(e.getDefendant().getId(), updateDefendantFrom(e.getDefendant()))),
 
                 when(ProsecutionCaseOffencesUpdated.class).apply(e -> {
                             if (e.getDefendantCaseOffences().getOffences() != null && !e.getDefendantCaseOffences().getOffences().isEmpty()) {
@@ -1503,7 +1503,7 @@ public class CaseAggregate implements Aggregate {
             final List<uk.gov.justice.core.courts.Offence> defendantOffencesFromPayload = getCurrentDefendantOffencesFromProsecutionCase(prosecutionCase, defId);
             final boolean isDefendantProceedingConcluded = checkIfDefendantConcludedTrue(defendantAllOffences, defendantOffencesFromPayload);
             if(!isDefendantProceedingConcluded){
-               return false;
+                return false;
             }
         }
         return true;

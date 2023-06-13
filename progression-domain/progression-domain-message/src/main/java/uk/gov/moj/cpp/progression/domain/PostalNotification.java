@@ -31,10 +31,16 @@ public class PostalNotification {
 
     private final String courtCentreNameWelsh;
 
-    private PostalHearingCourtDetails hearingCourtDetails;
+    private final PostalHearingCourtDetails hearingCourtDetails;
+
+    private final String applicationParticulars;
+
+    private final String applicantName;
+
+    private final String thirdParty;
 
     @SuppressWarnings({"squid:S00107"})
-    public PostalNotification(final String reference, final String ljaCode, final String ljaName, final String ljaNameWelsh, final LocalDate issueDate, final PostalDefendant defendant, final PostalAddressee addressee, final String applicationType, final String applicationTypeWelsh, final String legislationText, final String legislationTextWelsh, final String courtCentreName, final String courtCentreNameWelsh, final PostalHearingCourtDetails hearingCourtDetails) {
+    public PostalNotification(final String reference, final String ljaCode, final String ljaName, final String ljaNameWelsh, final LocalDate issueDate, final PostalDefendant defendant, final PostalAddressee addressee, final String applicationType, final String applicationTypeWelsh, final String legislationText, final String legislationTextWelsh, final String courtCentreName, final String courtCentreNameWelsh, final PostalHearingCourtDetails hearingCourtDetails, final String applicationParticulars, final String applicantName, final String thirdParty) {
         this.reference = reference;
         this.ljaCode = ljaCode;
         this.ljaName = ljaName;
@@ -49,6 +55,9 @@ public class PostalNotification {
         this.courtCentreName = courtCentreName;
         this.courtCentreNameWelsh = courtCentreNameWelsh;
         this.hearingCourtDetails = hearingCourtDetails;
+        this.applicationParticulars = applicationParticulars;
+        this.applicantName = applicantName;
+        this.thirdParty = thirdParty;
     }
     public String getReference() {
         return reference;
@@ -106,6 +115,20 @@ public class PostalNotification {
         return legislationTextWelsh;
     }
 
+    public String getApplicationParticulars() {
+        return applicationParticulars;
+    }
+
+    public String getThirdParty() {
+        return thirdParty;
+    }
+
+    public String getApplicantName() {
+        return applicantName;
+    }
+
+
+
     public static Builder builder() {
         return new Builder();
     }
@@ -126,7 +149,10 @@ public class PostalNotification {
                 ", legislationTextWelsh='" + legislationTextWelsh + '\'' +
                 ", courtCentreName='" + courtCentreName + '\'' +
                 ", courtCentreNameWelsh='" + courtCentreNameWelsh + '\'' +
-                ", hearingCourtDetails=" + hearingCourtDetails +
+                ", hearingCourtDetails=" + hearingCourtDetails + '\'' +
+                ", applicationParticulars=" + applicationParticulars + '\'' +
+                ", applicantName" + applicantName + '\'' +
+                ", thirdParty=" + thirdParty +
                 '}';
     }
 
@@ -159,6 +185,12 @@ public class PostalNotification {
         private String legislationText;
 
         private String legislationTextWelsh;
+
+        private String applicationParticulars;
+
+        private String applicantName;
+
+        private String thirdParty;
 
         public Builder withReference(final String reference) {
             this.reference = reference;
@@ -229,8 +261,23 @@ public class PostalNotification {
             return this;
         }
 
+        public Builder withApplicationParticulars(final String applicationParticulars) {
+            this.applicationParticulars = applicationParticulars;
+            return this;
+        }
+
+        public Builder withThirdParty(final String thirdParty) {
+            this.thirdParty = thirdParty;
+            return this;
+        }
+
+        public Builder withApplicantName(final String applicantName) {
+            this.applicantName = applicantName;
+            return this;
+        }
+
         public PostalNotification build() {
-            return new PostalNotification(reference, ljaCode, ljaName,ljaNameWelsh, issueDate, defendant, addressee, applicationType, applicationTypeWelsh, legislationText, legislationTextWelsh, courtCentreName, courtCentreNameWelsh, hearingCourtDetails);
+            return new PostalNotification(reference, ljaCode, ljaName,ljaNameWelsh, issueDate, defendant, addressee, applicationType, applicationTypeWelsh, legislationText, legislationTextWelsh, courtCentreName, courtCentreNameWelsh, hearingCourtDetails, applicationParticulars, applicantName, thirdParty);
         }
     }
 }

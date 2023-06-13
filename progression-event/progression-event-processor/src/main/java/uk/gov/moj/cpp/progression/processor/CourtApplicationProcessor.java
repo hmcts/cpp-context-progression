@@ -59,6 +59,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsApproved;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.SendNotificationForApplication;
 import uk.gov.justice.core.courts.SummonsTemplateType;
 import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.hearing.courts.Initiate;
@@ -66,6 +67,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
@@ -73,6 +75,7 @@ import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsRejectedService;
 import uk.gov.moj.cpp.progression.service.ListingService;
+import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.SjpService;
 
@@ -123,6 +126,9 @@ public class CourtApplicationProcessor {
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED = "public.progression.court-application-summons-approved";
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_REJECTED = "public.progression.court-application-summons-rejected";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_APPLICATION_UPDATED = "public.progression.hearing-resulted-application-updated";
+
+    private static final String PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED = "public.progression.welsh-translation-required";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtApplicationProcessor.class.getCanonicalName());
     public static final String HEARING_ID = "hearingId";
 
@@ -151,6 +157,17 @@ public class CourtApplicationProcessor {
     @Inject
     private SummonsRejectedService summonsRejectedService;
 
+    @Inject
+    private NotificationService notificationService;
+
+    public static final String MATERIAL_ID = "materialId";
+
+    private static final String MASTER_DEFENDANT_ID = "masterDefendantId";
+
+    private static final String DEFENDANT_NAME = "defendantName";
+
+    private static final String CASE_URN = "caseURN";
+
     @Handles("progression.event.court-application-created")
     public void processCourtApplicationCreated(final JsonEnvelope event) {
 
@@ -164,7 +181,7 @@ public class CourtApplicationProcessor {
                 .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
                 .build();
 
-        LOGGER.info("Raiseing public event for CourtApplication {}", courtApplication);
+        LOGGER.info("Raising public event for CourtApplication {}", courtApplication);
         sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_CREATED).build(), publicEvent));
 
         sendUpdateCpsDefendantIdCommand(event, courtApplicationCreated);
@@ -520,6 +537,29 @@ public class CourtApplicationProcessor {
         sender.send(envelop(event.payloadAsJsonObject()).withName(PUBLIC_PROGRESSION_HEARING_RESULTED_APPLICATION_UPDATED).withMetadataFrom(event));
     }
 
+    @Handles("progression.event.send-notification-for-application-initiated")
+    public void sendNotificationForApplication(final JsonEnvelope jsonEnvelope) {
+        final SendNotificationForApplication sendNotificationForApplication = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), SendNotificationForApplication.class);
+        final CourtHearingRequest courtHearingRequest = sendNotificationForApplication.getCourtHearing();
+
+        final CourtApplication courtApplication = sendNotificationForApplication.getCourtApplication();
+
+        if (sendNotificationForApplication.getIsWelshTranslationRequired()) {
+            final String applicationReference = nonNull(courtApplication.getApplicant()) && nonNull(courtApplication.getApplicant().getMasterDefendant()) && !courtApplication.getApplicant().getMasterDefendant().getDefendantCase().isEmpty() ? courtApplication.getApplicant().getMasterDefendant().getDefendantCase().get(0).getCaseReference(): courtApplication.getRespondents().get(0).getMasterDefendant().getDefendantCase().get(0).getCaseReference();
+            final String applicantNameFromMasterDefendant = nonNull(courtApplication.getApplicant().getMasterDefendant())  && nonNull(courtApplication.getApplicant().getMasterDefendant().getPersonDefendant()) ? courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getFirstName() : "";
+            final String applicationName = nonNull(courtApplication.getApplicant().getPersonDetails()) ? courtApplication.getApplicant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getPersonDetails().getFirstName() : applicantNameFromMasterDefendant;
+            final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
+                    .add(MASTER_DEFENDANT_ID, courtApplication.getApplicant().getId().toString())
+                    .add(DEFENDANT_NAME, applicationName)
+                    .add(CASE_URN, applicationReference);
+            final JsonObjectBuilder welshTranslationRequiredBuilder = createObjectBuilder().add("welshTranslationRequired", jsonObjectBuilder.build());
+            sender.send(Enveloper.envelop(welshTranslationRequiredBuilder.build())
+                    .withName(PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED)
+                    .withMetadataFrom(jsonEnvelope));
+        }
+        notificationService.sendNotification(jsonEnvelope, courtApplication, sendNotificationForApplication.getIsWelshTranslationRequired(), courtHearingRequest.getCourtCentre(), courtHearingRequest.getEarliestStartDateTime(), courtHearingRequest.getJurisdictionType());
+
+    }
     @Handles("progression.event.breach-application-creation-requested")
     public void processBreachApplicationCreationRequested(final JsonEnvelope event) {
         if (LOGGER.isInfoEnabled()) {

@@ -6,7 +6,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
@@ -36,18 +35,6 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubLegalStatus;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -56,10 +43,8 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.stub.AzureScheduleServiceStub;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.LaaAPIMServiceStub;
-import uk.gov.moj.cpp.progression.util.FileUtil;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -72,8 +57,20 @@ import javax.jms.MessageProducer;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
+import com.google.common.collect.ImmutableMap;
 import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
+import com.jayway.restassured.path.json.JsonPath;
+import com.jayway.restassured.response.Response;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
 public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT {
