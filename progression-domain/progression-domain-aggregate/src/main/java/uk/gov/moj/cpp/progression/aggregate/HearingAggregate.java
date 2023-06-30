@@ -700,7 +700,7 @@ public class HearingAggregate implements Aggregate {
 
         return ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
                 .withDefendants(prosecutionCase.getDefendants().stream()
-                        .map(defendant -> Defendant.defendant().withValuesFrom(defendant)
+                        .map(defendant -> Defendant.defendant().withValuesFrom(defendant).withMasterDefendantId(findMatchedMasterDefendantId(defendant))
                                 .withOffences(ofNullable(defendant.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
                                         .map(offence -> Offence.offence().withValuesFrom(offence)
                                                 .withListingNumber(ofNullable(listingMap.get(offence.getId())).orElse(offence.getListingNumber()))
@@ -711,6 +711,19 @@ public class HearingAggregate implements Aggregate {
                 .build();
     }
 
+    @SuppressWarnings("squid:S1066")
+    private UUID findMatchedMasterDefendantId(final Defendant defendant){
+        if(null != this.hearing && null != this.hearing.getProsecutionCases()) {
+            if(null == defendant.getMasterDefendantId() || defendant.getId().equals(defendant.getMasterDefendantId())) {
+                final Optional<Defendant> matchedDefendant = this.hearing.getProsecutionCases().stream().flatMap(x -> x.getDefendants().stream()).filter(d -> d.getId().equals(defendant.getId())).findFirst();
+                if (matchedDefendant.isPresent()) {
+                   final  UUID matchedMasterDefendantId = matchedDefendant.get().getMasterDefendantId();
+                     return  matchedMasterDefendantId == null ? defendant.getMasterDefendantId() : matchedMasterDefendantId;
+                }
+            }
+        }
+        return  defendant.getMasterDefendantId();
+    }
     public Stream<Object> processHearingExtended(final HearingListingNeeds hearingRequest, final List<UUID> shadowListedOffences) {
         return apply(Stream.of(HearingExtendedProcessed.hearingExtendedProcessed()
                 .withHearingRequest(hearingRequest)
