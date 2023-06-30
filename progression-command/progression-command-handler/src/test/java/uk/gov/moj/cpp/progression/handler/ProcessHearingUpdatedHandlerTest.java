@@ -112,7 +112,7 @@ public class ProcessHearingUpdatedHandlerTest {
 
         final Hearing originalHearing = Hearing.hearing().withId(hearingId)
                 .withProsecutionCases(Collections.singletonList(ProsecutionCase.prosecutionCase()
-                        .withDefendants(Collections.singletonList(Defendant.defendant().withId(randomUUID())
+                        .withDefendants(Collections.singletonList(Defendant.defendant()
                                 .withOffences(Arrays.asList(Offence.offence()
                                                 .withId(offenceId1)
                                                 .withListingNumber(2)
@@ -129,7 +129,7 @@ public class ProcessHearingUpdatedHandlerTest {
 
         final Hearing updatedHearing = Hearing.hearing().withId(hearingId)
                 .withProsecutionCases(Collections.singletonList(ProsecutionCase.prosecutionCase()
-                        .withDefendants(Collections.singletonList(Defendant.defendant().withId(randomUUID())
+                        .withDefendants(Collections.singletonList(Defendant.defendant()
                                 .withOffences(Arrays.asList(Offence.offence()
                                                 .withId(offenceId1)
                                                 .withListingNumber(1)

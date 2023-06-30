@@ -418,16 +418,14 @@ public class HearingAggregateTest {
     }
 
     private List<ProsecutionCase> getProsecutionCaseCases(final UUID prosecutionCaseId, final UUID offenceId) {
-       final List<Defendant> defendantList =  new ArrayList<>();
-       defendantList.add(Defendant.defendant().withId(randomUUID())
-               .withOffences(singletonList(Offence.offence()
-                       .withId(offenceId)
-                       .build()))
-               .build());
         return asList(
                 ProsecutionCase.prosecutionCase()
                         .withId(prosecutionCaseId)
-                        .withDefendants(defendantList)
+                        .withDefendants(asList(Defendant.defendant()
+                                .withOffences(singletonList(Offence.offence()
+                                        .withId(offenceId)
+                                        .build()))
+                                .build()))
                         .build()
         );
     }
@@ -566,47 +564,6 @@ public class HearingAggregateTest {
         UnscheduledHearingAllocationNotified unscheduledHearingAllocationNotified = (UnscheduledHearingAllocationNotified) eventStream1.get(0);
         assertThat(hearingId, is(unscheduledHearingAllocationNotified.getHearing().getId()));
         ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = (ProsecutionCaseDefendantListingStatusChangedV2) eventStream1.get(1);
-        assertThat(hearingId, is(prosecutionCaseDefendantListingStatusChangedV2.getHearing().getId()));
-        HearingPopulatedToProbationCaseworker hearingPopulatedToProbationCaseworker = (HearingPopulatedToProbationCaseworker) eventStream1.get(2);
-        assertThat(hearingId, is(hearingPopulatedToProbationCaseworker.getHearing().getId()));
-        VejHearingPopulatedToProbationCaseworker vejHearingPopulatedToProbationCaseworker = (VejHearingPopulatedToProbationCaseworker) eventStream1.get(3);
-        assertThat(hearingId, is(vejHearingPopulatedToProbationCaseworker.getHearing().getId()));
-    }
-
-    @Test
-    public void shouldUpdateMasterDefendantIdAndUpdateDefendantListingStatusHearingInitialised() {
-        final UUID prosecutionCaseId = randomUUID();
-        final UUID courtApplicationId = randomUUID();
-        final UUID hearingId = randomUUID();
-        final UUID offenceId = randomUUID();
-
-        final Hearing hearing = getHearingForVejWithoutCourtApplications(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
-        final UUID masterDefendantId = randomUUID();
-        final UUID defendantId = randomUUID();
-        final Defendant defendant = Defendant.defendant().withId(defendantId).withMasterDefendantId(masterDefendantId)
-                .withOffences(singletonList(Offence.offence()
-                        .withId(randomUUID())
-                        .build()))
-                .build();
-        hearing.getProsecutionCases().get(0).getDefendants().add(defendant);
-        final Hearing updatedHearing = getHearingForVejWithoutCourtApplications(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
-        updatedHearing.getProsecutionCases().get(0).getDefendants().add(defendant);
-
-        final Defendant defendantWithoutMasterId = Defendant.defendant().withValuesFrom(defendant).withMasterDefendantId(null).build();
-        hearing.getProsecutionCases().get(0).getDefendants().add(defendantWithoutMasterId);
-        final HearingListingStatus hearingListingStatus = HearingListingStatus.HEARING_INITIALISED;
-        final Boolean notifyNCES = true;
-        setField(hearingAggregate, "hearing", hearing);
-        setField(hearingAggregate, "hearingListingStatus", hearingListingStatus);
-        setField(hearingAggregate, "notifyNCES", notifyNCES);
-
-
-        final List<Object> eventStream1 = hearingAggregate.updateDefendantListingStatus(updatedHearing, hearingListingStatus, notifyNCES, null).collect(toList());
-        assertThat(eventStream1.size(), is(4));
-        UnscheduledHearingAllocationNotified unscheduledHearingAllocationNotified = (UnscheduledHearingAllocationNotified) eventStream1.get(0);
-        assertThat(hearingId, is(unscheduledHearingAllocationNotified.getHearing().getId()));
-        ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = (ProsecutionCaseDefendantListingStatusChangedV2) eventStream1.get(1);
-        assertThat(masterDefendantId, is(prosecutionCaseDefendantListingStatusChangedV2.getHearing().getProsecutionCases().stream().flatMap(c -> c.getDefendants().stream()).filter(d -> d.getMasterDefendantId() != null).map(d -> d.getMasterDefendantId()).findFirst().get()));
         assertThat(hearingId, is(prosecutionCaseDefendantListingStatusChangedV2.getHearing().getId()));
         HearingPopulatedToProbationCaseworker hearingPopulatedToProbationCaseworker = (HearingPopulatedToProbationCaseworker) eventStream1.get(2);
         assertThat(hearingId, is(hearingPopulatedToProbationCaseworker.getHearing().getId()));

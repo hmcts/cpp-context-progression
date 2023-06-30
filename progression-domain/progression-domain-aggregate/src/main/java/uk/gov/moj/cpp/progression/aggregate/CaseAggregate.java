@@ -49,7 +49,6 @@ import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantEmail;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantJudicialResultsOfDefendantsAssociatedToTheCase;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantPostcode;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getMasterDefendant;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendants;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendantsForOnlinePlea;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hearingCaseDefendantsProceedingsConcluded;
@@ -1062,14 +1061,8 @@ public class CaseAggregate implements Aggregate {
         }
     }
 
-
-    @SuppressWarnings("squid:S2589")
     public Stream<Object> createProsecutionCase(final ProsecutionCase prosecutionCase) {
         LOGGER.debug("Prosecution case is being referred To Court .");
-        if(null != exactMatchedDefendants) {
-           final List<uk.gov.justice.core.courts.Defendant> defendantList = prosecutionCase.getDefendants().stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
-            defendantList.stream().forEach(x -> DefendantHelper.getUpdatedDefendantWithMasterDefendantId(prosecutionCase, x, transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))));
-        }
         return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build()));
     }
 
@@ -1087,14 +1080,7 @@ public class CaseAggregate implements Aggregate {
                     .build())
             );
         }
-        final List<uk.gov.justice.core.courts.Defendant> defendantListWithMasterDefendants =  newDefendantsList.stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
 
-                final List<uk.gov.justice.core.courts.Defendant>  updatedDefendantsWitMasterDefendantIdsSet  =   defendantListWithMasterDefendants.stream().filter(x -> getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))) != null).map(x ->
-                        uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(x).withMasterDefendantId(getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))).getMasterDefendantId()
-                        ).build()).collect(toList());
-                final List<UUID> updatedDefendantIds = updatedDefendantsWitMasterDefendantIdsSet.stream().map(x -> x.getId()).collect(toList());
-                newDefendantsList.removeIf(x -> updatedDefendantIds.contains(x.getId()));
-                newDefendantsList.addAll(updatedDefendantsWitMasterDefendantIdsSet);
         return apply(Stream.of(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
                 .withDefendants(newDefendantsList)
                 .withListHearingRequests(listHearingRequests)
@@ -1776,7 +1762,7 @@ public class CaseAggregate implements Aggregate {
                         .withLegalAidStatus(legalAidStatus)
                         .build();
 
-                    final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper.getOffencesForDefendantUpdated(Arrays.asList(updatedOffence), offencesList, prosecutionCaseId, defendantId);
+                final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper.getOffencesForDefendantUpdated(Arrays.asList(updatedOffence), offencesList, prosecutionCaseId, defendantId);
                 if (offencesForDefendantChanged.isPresent()) {
                     streamBuilder.add(ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()
                             .withDefendantCaseOffences(newDefendantCaseOffences).build());
