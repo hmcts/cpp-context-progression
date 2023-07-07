@@ -26,6 +26,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
+import uk.gov.moj.cpp.progression.helper.DocmosisTextHelper;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.MaterialService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
@@ -114,6 +115,9 @@ public class PetFormEventProcessor {
     @Inject
     private UsersGroupService usersGroupService;
 
+    @Inject
+    private DocmosisTextHelper docmosisTextHelper;
+
     @Handles("progression.event.pet-form-created")
     public void petFormCreated(final JsonEnvelope event) {
         LOGGER.info("progression.event.pet-form-created event received with petId: {} for case: {}", event.payloadAsJsonObject().getString(PET_ID), event.payloadAsJsonObject().getString(CASE_ID));
@@ -171,7 +175,7 @@ public class PetFormEventProcessor {
 
     private JsonObject processFinalisedFormData(final JsonEnvelope event, final JsonValue formDataPerDefendant, final UUID petId, final UUID caseId, final UUID materialId) {
         final JsonObjectBuilder documentMetaDataBuilder = createObjectBuilder();
-        final JsonObject documentData = stringToJsonObjectConverter.convert(((JsonString) formDataPerDefendant).getString());
+        final JsonObject documentData = stringToJsonObjectConverter.convert(docmosisTextHelper.replaceEscapeCharForDocmosis(((JsonString)formDataPerDefendant).getString()));
         LOGGER.info("Generating Pet Form Document petId: {}, MaterialId: {}", petId, materialId);
         final String filename = documentGeneratorService.generateFormDocument(event, FormType.PET, documentData, materialId);
         documentMetaDataBuilder.add(DOCUMENT_FILE_NAME, filename);

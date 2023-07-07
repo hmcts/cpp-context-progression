@@ -55,6 +55,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
+import uk.gov.moj.cpp.progression.helper.DocmosisTextHelper;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.MaterialService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
@@ -133,6 +134,9 @@ public class PetFormEventProcessorTest {
 
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Spy
+    private DocmosisTextHelper docmosisTextHelper;
 
     @Mock
     private UsersGroupService usersGroupService;
