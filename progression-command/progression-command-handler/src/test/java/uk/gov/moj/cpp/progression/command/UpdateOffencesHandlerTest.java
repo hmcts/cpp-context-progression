@@ -6,13 +6,11 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
@@ -27,7 +25,6 @@ import uk.gov.justice.core.courts.CasesReferredToCourt;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
-import uk.gov.justice.core.courts.DefendantsOffences;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingOffencesUpdated;
@@ -38,7 +35,6 @@ import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReportingRestriction;
-import uk.gov.justice.core.courts.UpdateDefendantOffences;
 import uk.gov.justice.core.courts.UpdateHearingOffenceVerdict;
 import uk.gov.justice.core.courts.UpdateOffencesForHearing;
 import uk.gov.justice.core.courts.UpdateOffencesForProsecutionCase;
@@ -62,7 +58,6 @@ import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 
 import java.io.StringReader;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -73,7 +68,6 @@ import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.json.JsonValue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -109,7 +103,6 @@ public class UpdateOffencesHandlerTest {
     private UUID defendantId;
     private UUID offenceId;
     private String offenceCode;
-    private String offenceCode2;
     private HearingAggregate hearingAggregate;
 
     private static final String SEXUAL_OFFENCE_RR_DESCRIPTION = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
@@ -122,7 +115,6 @@ public class UpdateOffencesHandlerTest {
         defendantId = randomUUID();
         offenceId = randomUUID();
         offenceCode = new StringGenerator().next();
-        offenceCode2 = new StringGenerator().next();
         aggregate = new CaseAggregate();
         hearingAggregate = new HearingAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
@@ -135,14 +127,6 @@ public class UpdateOffencesHandlerTest {
         assertThat(new UpdateOffencesHandler(), isHandler(COMMAND_HANDLER)
                 .with(method("handle")
                         .thatHandles("progression.command.update-offences-for-prosecution-case")
-                ));
-    }
-
-    @Test
-    public void shouldHandleUpdateDefendantOffencesCommand() {
-        assertThat(new UpdateOffencesHandler(), isHandler(COMMAND_HANDLER)
-                .with(method("handleUpdateDefendantOffences")
-                        .thatHandles("progression.command.update-defendant-offences")
                 ));
     }
 
@@ -171,33 +155,6 @@ public class UpdateOffencesHandlerTest {
         updateOffencesHandler.handle(envelope);
 
         Stream<JsonEnvelope> events =  verifyAppendAndGetArgumentFrom(eventStream);
-    }
-
-    @Test
-    public void shouldHandleUpdateDefendantOffences() throws Exception {
-
-        final UpdateDefendantOffences updateDefendantOffences = prepareUpdateDefendantOffences(caseId,defendantId,offenceId, offenceCode);
-
-        aggregate = getEventStreamReady(caseId,defendantId);
-        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
-
-        final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
-                SEXUAL_OFFENCE_RR_DESCRIPTION,
-                "json/referencedataoffences.offences-list.json");
-
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
-
-        final Metadata metadata = Envelope
-                .metadataBuilder()
-                .withName("progression.command.update-defendant-offences")
-                .withId(randomUUID())
-                .build();
-
-        final Envelope<UpdateDefendantOffences> envelope = envelopeFrom(metadata, updateDefendantOffences);
-
-        updateOffencesHandler.handleUpdateDefendantOffences(envelope);
-
-        verifyAppendAndGetArgumentFrom(eventStream);
     }
 
     @Test
@@ -556,23 +513,5 @@ public class UpdateOffencesHandlerTest {
                         .withDefendantId(defendantId)
                         .build();
         return  UpdateOffencesForProsecutionCase.updateOffencesForProsecutionCase().withSwitchedToYouth(true).withDefendantCaseOffences(defendantCaseOffences).build();
-    }
-
-    private UpdateDefendantOffences prepareUpdateDefendantOffences(final UUID caseId, final UUID defendantId, final UUID offenceId, final String offenceCode){
-        final List<Offence> offences = Stream.of(
-                Offence.offence().withId(randomUUID()).withOffenceCode(randomUUID().toString()).withOffenceTitle("RegularOffence1").build(),
-                Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withOffenceTitle("SexualOffence1").build()
-        ).collect(Collectors.toList());
-
-        final DefendantCaseOffences defendantCaseOffences =
-                DefendantCaseOffences.defendantCaseOffences().withOffences(offences)
-                        .withProsecutionCaseId(caseId)
-                        .withDefendantId(defendantId)
-                        .build();
-
-        final DefendantsOffences defendantsOffences = DefendantsOffences.defendantsOffences().withDefendantCaseOffences(defendantCaseOffences).build();
-
-        return UpdateDefendantOffences.updateDefendantOffences().withDefendantsOffences(Arrays.asList(defendantsOffences)).build();
-
     }
 }

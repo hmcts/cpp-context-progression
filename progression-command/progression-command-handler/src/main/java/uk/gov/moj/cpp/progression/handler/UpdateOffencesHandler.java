@@ -5,10 +5,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
-import uk.gov.justice.core.courts.DefendantsOffences;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ReportingRestriction;
-import uk.gov.justice.core.courts.UpdateDefendantOffences;
 import uk.gov.justice.core.courts.UpdateHearingOffenceVerdict;
 import uk.gov.justice.core.courts.UpdateIndexForBdf;
 import uk.gov.justice.core.courts.UpdateListingNumber;
@@ -85,30 +83,6 @@ public class UpdateOffencesHandler {
         final Stream<Object> events = caseAggregate.updateOffences(dedupAllReportingRestrictions(offences),prosecutionCaseId,defendantId,offencesJsonObjectOptional);
 
         appendEventsToStream(updateDefedantEnvelope, eventStream, events);
-
-    }
-
-    @Handles("progression.command.update-defendant-offences")
-    public void handleUpdateDefendantOffences(final Envelope<UpdateDefendantOffences> updateDefendantOffenceEnvelope) throws EventStreamException {
-        LOGGER.debug("progression.command.update-offences-for-prosecution-case {}", updateDefendantOffenceEnvelope.payload());
-
-        final UpdateDefendantOffences updateDefendantOffences = updateDefendantOffenceEnvelope.payload();
-
-        for (final DefendantsOffences updateDefendantOffence : updateDefendantOffences.getDefendantsOffences()) {
-            final EventStream eventStream = eventSource.getStreamById(updateDefendantOffence.getDefendantCaseOffences().getProsecutionCaseId());
-            final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-            final UUID prosecutionCaseId = updateDefendantOffence.getDefendantCaseOffences().getProsecutionCaseId();
-            final UUID defendantId = updateDefendantOffence.getDefendantCaseOffences().getDefendantId();
-            final List<Offence> offenceList = updateDefendantOffence.getDefendantCaseOffences().getOffences();
-            final List<Offence> offences = Boolean.TRUE.equals(updateDefendantOffence.getSwitchedToYouth()) ? offenceList.stream().map(this::addYouthRestrictions).collect(Collectors.toList()) : offenceList;
-
-            final List<String> offenceCodes = offences.stream().map(Offence::getOffenceCode).collect(Collectors.toList());
-            final Optional<List<JsonObject>> offencesJsonObjectOptional = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelopeFrom(updateDefendantOffenceEnvelope.metadata(), JsonValue.NULL), requester);
-
-            final Stream<Object> events = caseAggregate.updateOffences(dedupAllReportingRestrictions(offences), prosecutionCaseId, defendantId, offencesJsonObjectOptional);
-
-            appendEventsToStream(updateDefendantOffenceEnvelope, eventStream, events);
-        }
     }
 
     @Handles("progression.command.update-offences-for-hearing")

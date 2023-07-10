@@ -5,6 +5,7 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -41,6 +42,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.justice.progression.courts.SendStatdecAppointmentLetter;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
+import uk.gov.moj.cpp.progression.events.NotificationCreateHearingApplicationLinkFailed;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -177,7 +179,7 @@ public class ApplicationAggregateTest {
         assertThat(courtApplicationProceedingsInitiateIgnored.getClass(), is(equalTo(CourtApplicationProceedingsInitiateIgnored.class)));
 
 
-
+        
     }
 
     @Test

@@ -90,7 +90,6 @@ public class TestUtils {
     public static ProsecutingAuthority buildProsecutingAuthority(){
         return ProsecutingAuthority.prosecutingAuthority()
                 .withName(TEST_PROSECUTION_AUTHORITY_NAME)
-                .withProsecutionAuthorityCode(TEST_PROSECUTION_AUTHORITY_NAME)
                 .withAddress(buildAddress(TEST_PROSECUTION_AUTHORITY_ADDRESS_LINE1, TEST_PROSECUTION_AUTHORITY_ADDRESS_POSTCODE))
                 .build();
     }

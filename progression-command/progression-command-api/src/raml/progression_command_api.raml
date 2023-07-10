@@ -248,25 +248,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
-/send-notification-for-application :
-  post:
-      description: |
-        Case is sent to a Court to initiate proceedings.
-        ...
-        (mapping):
-            requestType: application/vnd.progression.send-notification-for-application+json
-            name: progression.send-notification-for-application
-        ...
-      body:
-        application/vnd.progression.send-notification-for-application+json:
-            example:
-             !include json/progression.send-notification-for-application.json
-            schema:
-             !include json/schema/progression.send-notification-for-application.json
-      responses:
-            202:
-                description: OK
-
 /listnewhearing :
   post:
     description: |
@@ -317,32 +298,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
           !include json/progression.update-offences-for-prosecution-case.json
         schema:
           !include json/schema/progression.update-offences-for-prosecution-case.json
-
-    responses:
-          202:
-              description: OK
-
-
-/prosecutioncases/{prosecutionCaseId}/defendants:
-  uriParameters:
-    prosecutionCaseId:
-      description: The ID of the case
-      type: string
-  post:
-    description: |
-      Update defendant details.
-      ...
-      (mapping):
-          requestType: application/vnd.progression.update-defendant-offences+json
-          name: progression.update-defendant-offences
-
-      ...
-    body:
-      application/vnd.progression.update-defendant-offences+json:
-        example:
-          !include json/progression.update-defendant-offences.json
-        schema:
-          !include json/schema/progression.update-defendant-offences.json
 
     responses:
           202:
@@ -401,7 +356,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       responses:
             202:
                 description: OK
-
 
 /add-breach-application:
   post:

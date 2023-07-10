@@ -451,7 +451,7 @@ public class CaseAggregate implements Aggregate {
                         ),
                 when(ProsecutionCaseDefendantUpdated.class).apply(e -> defendantsMap.put(e.getDefendant().getId(), updateDefendantFrom(e.getDefendant()))),
                 when(ProsecutionCaseUpdateDefendantsWithMatchedRequested.class).apply(e ->
-                        defendantsMap.put(e.getDefendant().getId(), updateDefendantFrom(e.getDefendant()))),
+                            defendantsMap.put(e.getDefendant().getId(), updateDefendantFrom(e.getDefendant()))),
 
                 when(ProsecutionCaseOffencesUpdated.class).apply(e -> {
                             if (e.getDefendantCaseOffences().getOffences() != null && !e.getDefendantCaseOffences().getOffences().isEmpty()) {
@@ -1503,7 +1503,7 @@ public class CaseAggregate implements Aggregate {
             final List<uk.gov.justice.core.courts.Offence> defendantOffencesFromPayload = getCurrentDefendantOffencesFromProsecutionCase(prosecutionCase, defId);
             final boolean isDefendantProceedingConcluded = checkIfDefendantConcludedTrue(defendantAllOffences, defendantOffencesFromPayload);
             if(!isDefendantProceedingConcluded){
-                return false;
+               return false;
             }
         }
         return true;
@@ -1572,9 +1572,7 @@ public class CaseAggregate implements Aggregate {
             if (existingOffence.isPresent()) {
                 offence = updateOrderIndex(commandOffence, existingOffence.get().getOrderIndex());
             } else {
-                offence = updateLaaApplicationReference(defendantId,
-                        offenceWithSexualOffenceReportingRestriction(
-                                updateOrderIndex(commandOffence, maxOrderIndex.addAndGet(1)), referenceDataOffences));
+                offence = offenceWithSexualOffenceReportingRestriction(updateOrderIndex(commandOffence, maxOrderIndex.addAndGet(1)), referenceDataOffences);
             }
             return offence;
         }).collect(Collectors.toList());
@@ -3413,22 +3411,5 @@ public class CaseAggregate implements Aggregate {
                 .build();
     }
 
-    private uk.gov.justice.core.courts.Offence updateLaaApplicationReference(final UUID defendantId, final uk.gov.justice.core.courts.Offence offence) {
-        final uk.gov.justice.core.courts.Offence.Builder builder = uk.gov.justice.core.courts.Offence.offence().withValuesFrom(offence);
-        if(nonNull(offence.getCount())) {
-            final Optional<uk.gov.justice.core.courts.Defendant> defendant = this.getProsecutionCase().getDefendants().stream()
-                    .filter(caseDefendant -> caseDefendant.getId().equals(defendantId))
-                    .findFirst();
-            if (defendant.isPresent()) {
-                final Optional<uk.gov.justice.core.courts.Offence> offenceWithLAAReference = defendant.get().getOffences().stream()
-                        .filter(existingOffence -> nonNull(existingOffence.getLaaApplnReference()))
-                        .findFirst();
-                if (offenceWithLAAReference.isPresent()) {
-                    builder.withLaaApplnReference(offenceWithLAAReference.get().getLaaApplnReference()).build();
-                }
-            }
-        }
-        return builder.build();
-    }
 }
 

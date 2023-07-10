@@ -14,7 +14,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -38,7 +37,6 @@ import static uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApprove
 import static uk.gov.justice.core.courts.MasterDefendant.masterDefendant;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.core.courts.ProsecutionCaseIdentifier.prosecutionCaseIdentifier;
-import static uk.gov.justice.core.courts.SendNotificationForApplication.sendNotificationForApplication;
 import static uk.gov.justice.core.courts.SummonsApprovedOutcome.summonsApprovedOutcome;
 import static uk.gov.justice.core.courts.SummonsRejectedOutcome.summonsRejectedOutcome;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -73,7 +71,6 @@ import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected;
-import uk.gov.justice.core.courts.SendNotificationForApplication;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
 import uk.gov.justice.core.courts.SummonsTemplateType;
 import uk.gov.justice.core.courts.SummonsType;
@@ -91,13 +88,11 @@ import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsRejectedService;
 import uk.gov.moj.cpp.progression.service.ListingService;
-import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.SjpService;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -163,9 +158,6 @@ public class CourtApplicationProcessorTest {
 
     @Mock
     private ProgressionService progressionService;
-
-    @Mock
-    private NotificationService notificationService = new NotificationService();
 
     @Mock
     private SummonsHearingRequestService summonsHearingRequestService;
@@ -255,52 +247,6 @@ public class CourtApplicationProcessorTest {
         assertThat(captor.getAllValues().get(2).metadata().name(), is("progression.command.update-cps-defendant-id"));
         assertThat(captor.getAllValues().get(3).payload(), notNullValue());
         assertThat(captor.getAllValues().get(3).metadata().name(), is("progression.command.list-or-refer-court-application"));
-    }
-
-
-    @Test
-    public void processSendNotificationForApplicationShouldNotThrowException() {
-        //Given
-        final MetadataBuilder metadataBuilder = getMetadata("progression.event.send-notification-for-application-initiated");
-        SendNotificationForApplication sendNotificationForApplication = sendNotificationForApplication()
-                .withCourtApplication(courtApplication()
-                        .withApplicationReference(STRING.next())
-                        .withId(randomUUID())
-                        .withRespondents(Arrays.asList(buildMasterDefendant(), buildMasterDefendant()))
-                        .build())
-                .withIsWelshTranslationRequired(false)
-                .withCourtHearing(courtHearingRequest()
-                        .withCourtCentre(CourtCentre.courtCentre().build())
-                        .withEarliestStartDateTime(ZonedDateTime.now())
-                        .build())
-                .build();
-
-        final JsonObject payload = objectToJsonObjectConverter.convert(sendNotificationForApplication);
-
-        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
-
-        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), SendNotificationForApplication.class)).thenReturn(sendNotificationForApplication);
-
-
-        courtApplicationProcessor.sendNotificationForApplication(event);
-        ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(notificationService, times(1)).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
-
-        SendNotificationForApplication sendNotificationForApplicationWelshRequired = sendNotificationForApplication()
-                .withCourtApplication(courtApplication()
-                        .withApplicationReference(STRING.next())
-                        .withId(randomUUID())
-                        .withRespondents(Arrays.asList(buildMasterDefendant(), buildMasterDefendant()))
-                        .build())
-                .withIsWelshTranslationRequired(true)
-                .withCourtHearing(courtHearingRequest()
-                        .withCourtCentre(CourtCentre.courtCentre().build())
-                        .withEarliestStartDateTime(ZonedDateTime.now())
-                        .build())
-                .build();
-        courtApplicationProcessor.sendNotificationForApplication(event);
-        verify(notificationService, times(2)).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
-
     }
 
     private CourtApplicationParty buildMasterDefendant() {

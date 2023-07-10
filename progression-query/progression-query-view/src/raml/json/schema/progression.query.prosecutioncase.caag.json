@@ -181,9 +181,6 @@
         "offenceTitle": {
           "type": "string"
         },
-        "indictmentParticular": {
-          "type": "string"
-        },
         "offenceTitleWelsh": {
           "type": "string"
         },

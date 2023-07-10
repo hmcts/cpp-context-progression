@@ -65,7 +65,7 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
 
     @Mock
     private InterceptorChainProcessor interceptorChainProcessor;
-
+    
     @Mock
     private FileInputDetailsFactory fileInputDetailsFactory;
 

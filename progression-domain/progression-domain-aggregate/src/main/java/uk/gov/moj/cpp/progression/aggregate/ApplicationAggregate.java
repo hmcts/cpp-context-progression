@@ -404,7 +404,7 @@ public class ApplicationAggregate implements Aggregate {
         final List<UUID> courtOrderCaseIds = ofNullable(courtApplication.getCourtOrder()).map(courtOrder -> courtOrder.getCourtOrderOffences().stream()).orElseGet(Stream::empty)
                 .map(CourtOrderOffence::getProsecutionCaseId).collect(Collectors.toList());
 
-        return Stream.of(caseIds, courtOrderCaseIds).flatMap(Collection::stream).collect(Collectors.collectingAndThen(Collectors.toList(), list -> list.isEmpty() ? null : list));
+        return Stream.of(caseIds, courtOrderCaseIds).flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     private CourtApplication updateCourtApplicationWithFutureSummonsHearing(CourtApplication courtApplication, CourtHearingRequest courtHearingRequest) {

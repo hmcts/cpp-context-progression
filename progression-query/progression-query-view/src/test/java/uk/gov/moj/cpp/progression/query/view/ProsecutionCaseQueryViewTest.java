@@ -2,10 +2,8 @@ package uk.gov.moj.cpp.progression.query.view;
 
 import static com.jayway.jsonassert.JsonAssert.with;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -27,6 +25,9 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Collections.singletonList;
+
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -89,6 +90,11 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseH
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCaseRepository;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -101,12 +107,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
