@@ -4,7 +4,6 @@ package uk.gov.moj.cpp.progression.domain.aggregate.utils;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.Comparator.comparing;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
@@ -25,7 +24,6 @@ import uk.gov.justice.progression.courts.AddedOffences;
 import uk.gov.justice.progression.courts.DeletedOffences;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.progression.courts.UpdatedOffences;
-import uk.gov.moj.cpp.progression.events.MatchedDefendants;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
 import uk.gov.moj.cpp.progression.plea.json.schemas.TemplateType;
 
@@ -33,7 +31,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -100,29 +97,6 @@ public class DefendantHelper {
                 .collect(Collectors.toList());
     }
 
-    public static ProsecutionCase getUpdatedDefendantWithMasterDefendantId(final ProsecutionCase prosecutionCase, final Defendant defendant, final List<MatchedDefendants> matchedDefendantsList) {
-        final Optional<Defendant> defendantInCase =  prosecutionCase.getDefendants().stream()
-                .filter(def ->  def.getId().equals(defendant.getId()))
-                 .findFirst();
-        if(defendantInCase.isPresent()) {
-            final MatchedDefendants masterDefendant =  getMasterDefendant(matchedDefendantsList);
-            if(null != masterDefendant) {
-                final Defendant updatedDefendant = Defendant.defendant().withValuesFrom(defendant).withMasterDefendantId(masterDefendant.getMasterDefendantId()).build();
-                prosecutionCase.getDefendants().removeIf(x -> x.getId().equals(defendant.getId()));
-                prosecutionCase.getDefendants().add(updatedDefendant);
-            }
-        }
-        return prosecutionCase;
-    }
-
-    public static MatchedDefendants getMasterDefendant(final List<MatchedDefendants> matchedDefendants) {
-        final Comparator<MatchedDefendants> comparator = comparing(MatchedDefendants::getCourtProceedingsInitiated);
-        return matchedDefendants.stream()
-                .filter(def -> nonNull(def.getCourtProceedingsInitiated()))
-                .min(comparator)
-                .orElse(null);
-    }
-
     private static Defendant getUpdatedDefendant(final Defendant defendant, final List<DefendantJudicialResult> defendantJudicialResults) {
         final List<Offence> updatedOffences = new ArrayList<>();
         boolean proceedingConcluded;
@@ -146,8 +120,6 @@ public class DefendantHelper {
             updateOffencesWithProceedingConcludedState(offenceProceedingConcluded, updatedDefendants, updatedDefendantsForProceedingsConcludedEvent);
         }
     }
-
-
 
     public static void getDefendantsWithLAAAndHearingOrCaseDefendantResults(ProsecutionCase prosecutionCase, List<Defendant> updatedDefendants, List<DefendantJudicialResult> hearingdefendantJudicialResults, Map<UUID, List<uk.gov.justice.core.courts.Offence>> offenceProceedingConcluded) {
         prosecutionCase.getDefendants().stream().forEach(existingDefendant -> {

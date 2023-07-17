@@ -9,6 +9,7 @@ import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.REM
 import uk.gov.justice.core.courts.Offence;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public class RemittalRetentionRule implements RetentionRule {
 
@@ -30,7 +31,7 @@ public class RemittalRetentionRule implements RetentionRule {
         }
 
         return defendantsOffences.stream()
-                .flatMap(offence -> offence.getJudicialResults().stream())
+                .flatMap(offence -> offence.getJudicialResults()!=null?offence.getJudicialResults().stream(): Stream.empty())
                 .filter(judicialResult -> nonNull(judicialResult.getJudicialResultTypeId()))
                 .anyMatch(judicialResult -> remitResultIds.contains(judicialResult.getJudicialResultTypeId().toString()));
     }

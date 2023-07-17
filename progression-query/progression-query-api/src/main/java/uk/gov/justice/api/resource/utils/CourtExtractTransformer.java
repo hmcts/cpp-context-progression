@@ -522,6 +522,7 @@ public class CourtExtractTransformer {
                     .withUsergroups(result.getUsergroups())
                     .withWelshLabel(result.getWelshLabel())
                     .withWelshResultWording(result.getWelshResultWording())
+                    .withPoliceSubjectLineTitle(result.getPoliceSubjectLineTitle())
                     .build();
         }
         return judicialResult()
