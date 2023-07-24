@@ -1231,17 +1231,18 @@ public class HearingAggregate implements Aggregate {
                 newHearingListingNeeds.getProsecutionCases().clear();
                 newHearingListingNeeds.getProsecutionCases().addAll(resultCases);
 
-                final Hearing prosecutionCaseDefendantListingHearing = Hearing.hearing()
-                        .withId(newHearingListingNeeds.getId())
-                        .withHearingDays(this.getHearing().getHearingDays())
-                        .withCourtApplications(newHearingListingNeeds.getCourtApplications())
-                        .withCourtCentre(newHearingListingNeeds.getCourtCentre())
-                        .withJurisdictionType(newHearingListingNeeds.getJurisdictionType())
-                        .withType(newHearingListingNeeds.getType())
-                        .withReportingRestrictionReason(newHearingListingNeeds.getReportingRestrictionReason())
-                        .withJudiciary(newHearingListingNeeds.getJudiciary())
-                        .withBookingType(newHearingListingNeeds.getBookingType())
-                        .withProsecutionCases(newHearingListingNeeds.getProsecutionCases()).build();
+            final Hearing prosecutionCaseDefendantListingHearing = Hearing.hearing()
+                    .withId(newHearingListingNeeds.getId())
+                    .withHearingDays(this.getHearing().getHearingDays())
+                    .withHasSharedResults(false)
+                    .withCourtApplications(newHearingListingNeeds.getCourtApplications())
+                    .withCourtCentre(newHearingListingNeeds.getCourtCentre())
+                    .withJurisdictionType(newHearingListingNeeds.getJurisdictionType())
+                    .withType(newHearingListingNeeds.getType())
+                    .withReportingRestrictionReason(newHearingListingNeeds.getReportingRestrictionReason())
+                    .withJudiciary(newHearingListingNeeds.getJudiciary())
+                    .withBookingType(newHearingListingNeeds.getBookingType())
+                    .withProsecutionCases(newHearingListingNeeds.getProsecutionCases()).build();
 
                 final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = prosecutionCaseDefendantListingStatusChangedV2()
                         .withHearing(prosecutionCaseDefendantListingHearing)
@@ -1448,7 +1449,8 @@ public class HearingAggregate implements Aggregate {
 
 
     public Stream<Object> updateOffence(UUID defendantId, final List<Offence> updatedOffences) {
-        if (!this.hearing.getHasSharedResults()) {
+        if (isNull(this.hearing.getHasSharedResults()) || !this.hearing.getHasSharedResults()) {
+            LOGGER.info("Hearing with id {} and the status: {} is either not yet set or not shared, offence can be updated\"", hearing.getId(), hearingListingStatus);
             return apply(Stream.of(HearingOffencesUpdated.hearingOffencesUpdated()
                     .withDefendantId(defendantId)
                     .withHearingId(this.hearing.getId())
@@ -1690,7 +1692,8 @@ public class HearingAggregate implements Aggregate {
 
 
     private void updateOffenceInHearing(final HearingOffencesUpdated hearingOffencesUpdated) {
-        if (isNotEmpty(this.hearing.getProsecutionCases()) && !this.hearing.getHasSharedResults()) {
+        if (isNotEmpty(this.hearing.getProsecutionCases()) &&
+                (isNull(this.hearing.getHasSharedResults()) || !this.hearing.getHasSharedResults())) {
             this.hearing.getProsecutionCases().stream()
                     .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
                     .forEach(defendant -> {

@@ -283,12 +283,12 @@ public class HearingAggregateTest {
                 .build()
         ))).build();
 
-        final Stream<Object> eventStream = hearingAggregate.saveHearingResult(hearingResult,ZonedDateTime.now(),of(randomUUID()));
+        final Stream<Object> eventStream = hearingAggregate.saveHearingResult(hearingResult, ZonedDateTime.now(), of(randomUUID()));
 
         final List<?> eventList = eventStream.collect(toList());
         assertThat(eventList.get(0), instanceOf(HearingResulted.class));
         int listingNumber = ((HearingResulted) eventList.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getListingNumber();
-        assertThat(listingNumber,is(1));
+        assertThat(listingNumber, is(1));
     }
 
     @Test
@@ -407,6 +407,7 @@ public class HearingAggregateTest {
         final Stream<Object> events = hearingAggregate.populateHearingToVEP();
         assertThat(events.findFirst().isPresent(), is(false));
     }
+
     @Test
     public void shouldNotRaiseHearingPopulateEventWhenResulted() {
 
@@ -464,7 +465,7 @@ public class HearingAggregateTest {
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.equalTo(HearingTrialVacated.class)));
-        final HearingTrialVacated hearingTrialVacated = (HearingTrialVacated)eventStream.get(0);
+        final HearingTrialVacated hearingTrialVacated = (HearingTrialVacated) eventStream.get(0);
 
         assertThat(hearingTrialVacated.getHearingId(), is(hearingId));
 
@@ -653,8 +654,9 @@ public class HearingAggregateTest {
         assertThat(prosecutionCase.getDefendants().get(0).getId(), is(defendantId));
 
     }
+
     @Test
-    public void shouldUpdateHearingWithCaseMarkers(){
+    public void shouldUpdateHearingWithCaseMarkers() {
         final UUID case1Id = randomUUID();
         final UUID hearingId = randomUUID();
         final Hearing hearing = Hearing.hearing()
@@ -675,7 +677,7 @@ public class HearingAggregateTest {
         final Marker marker = Marker.marker().withId(randomUUID()).build();
 
         hearingAggregate.apply(createHearingResulted(hearing));
-        hearingAggregate.updateCaseMarkers(singletonList(marker),case1Id, hearingId);
+        hearingAggregate.updateCaseMarkers(singletonList(marker), case1Id, hearingId);
 
         final Stream<Object> events = hearingAggregate.populateHearingToProbationCaseWorker();
         final HearingPopulatedToProbationCaseworker event = (HearingPopulatedToProbationCaseworker) events.findFirst().get();
@@ -684,7 +686,7 @@ public class HearingAggregateTest {
     }
 
     @Test
-    public void shouldUpdateVejHearingWithCaseMarkers(){
+    public void shouldUpdateVejHearingWithCaseMarkers() {
         final UUID case1Id = randomUUID();
         final UUID hearingId = randomUUID();
         final Hearing hearing = Hearing.hearing()
@@ -705,13 +707,14 @@ public class HearingAggregateTest {
         final Marker marker = Marker.marker().withId(randomUUID()).build();
 
         hearingAggregate.apply(createHearingResulted(hearing));
-        hearingAggregate.updateCaseMarkers(singletonList(marker),case1Id, hearingId);
+        hearingAggregate.updateCaseMarkers(singletonList(marker), case1Id, hearingId);
 
         final Stream<Object> events = hearingAggregate.populateHearingToVEP();
         final VejHearingPopulatedToProbationCaseworker event = (VejHearingPopulatedToProbationCaseworker) events.findFirst().get();
 
         assertThat(event.getHearing().getProsecutionCases().get(0).getCaseMarkers().get(0).getId(), is(marker.getId()));
     }
+
     @Test
     public void shouldUpdateApplicationInHearingAndRaiseProbationEvent() throws EventStreamException {
         final UUID hearingId = randomUUID();
@@ -733,11 +736,12 @@ public class HearingAggregateTest {
                 .withSubject(CourtApplicationParty.courtApplicationParty().build())
                 .build()).collect(toList());
 
-        assertThat(((HearingUpdatedWithCourtApplication)events.get(0)).getCourtApplication().getApplicationReference(), is("B"));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getCourtApplications().get(0).getApplicationReference(), is("B"));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getId(), is(hearingId));
+        assertThat(((HearingUpdatedWithCourtApplication) events.get(0)).getCourtApplication().getApplicationReference(), is("B"));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getCourtApplications().get(0).getApplicationReference(), is("B"));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getId(), is(hearingId));
 
     }
+
     @Test
     public void shouldUpdateHearingForAllocationFieldsAndRaiseProbationEvent() throws EventStreamException {
         final UUID hearingId = randomUUID();
@@ -759,22 +763,22 @@ public class HearingAggregateTest {
                 .build());
         sittingDay = ZonedDateTime.now().plusDays(1);
         final List<Object> events = hearingAggregate.updateAllocationFields(UpdateHearingForAllocationFields.updateHearingForAllocationFields()
-                        .withType(HearingType.hearingType().withDescription("Application").build())
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(sittingDay).build()))
-                        .withHearingLanguage(HearingLanguage.WELSH)
-                        .withCourtCentre(CourtCentre.courtCentre().withCode("A002").build())
-                        .build()
-                ).collect(toList());
+                .withType(HearingType.hearingType().withDescription("Application").build())
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(sittingDay).build()))
+                .withHearingLanguage(HearingLanguage.WELSH)
+                .withCourtCentre(CourtCentre.courtCentre().withCode("A002").build())
+                .build()
+        ).collect(toList());
 
-        assertThat(((HearingUpdatedForAllocationFields)events.get(0)).getHearingLanguage(), is(HearingLanguage.WELSH));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getHearingDays().get(0).getSittingDay() , is(sittingDay));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getType().getDescription(), is("Application"));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getCourtCentre().getCode(), is("A002"));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getHearingLanguage(), is(HearingLanguage.WELSH));
+        assertThat(((HearingUpdatedForAllocationFields) events.get(0)).getHearingLanguage(), is(HearingLanguage.WELSH));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getHearingDays().get(0).getSittingDay(), is(sittingDay));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getType().getDescription(), is("Application"));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getCourtCentre().getCode(), is("A002"));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getHearingLanguage(), is(HearingLanguage.WELSH));
     }
 
     @Test
-    public void shouldAddNewApplicationToHearingAndRaiseProbationEvent(){
+    public void shouldAddNewApplicationToHearingAndRaiseProbationEvent() {
         final UUID hearingId = randomUUID();
         final UUID applicationId = randomUUID();
         ZonedDateTime sittingDay = ZonedDateTime.now();
@@ -801,16 +805,16 @@ public class HearingAggregateTest {
                 .build()
         ).collect(toList());
 
-        assertThat(((HearingUpdatedForAllocationFields)events.get(0)).getHearingLanguage(), is(HearingLanguage.WELSH));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getHearingDays().get(0).getSittingDay() , is(sittingDay));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getType().getDescription(), is("Application"));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getCourtCentre().getCode(), is("A002"));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getHearingLanguage(), is(HearingLanguage.WELSH));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getCourtApplications().get(0).getId(), is(applicationId));
+        assertThat(((HearingUpdatedForAllocationFields) events.get(0)).getHearingLanguage(), is(HearingLanguage.WELSH));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getHearingDays().get(0).getSittingDay(), is(sittingDay));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getType().getDescription(), is("Application"));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getCourtCentre().getCode(), is("A002"));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getHearingLanguage(), is(HearingLanguage.WELSH));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getCourtApplications().get(0).getId(), is(applicationId));
     }
 
     @Test
-    public void shouldAddNewApplicationToHearingHasApplicationsAndRaiseProbationEvent(){
+    public void shouldAddNewApplicationToHearingHasApplicationsAndRaiseProbationEvent() {
         final UUID hearingId = randomUUID();
         final UUID applicationId = randomUUID();
         ZonedDateTime sittingDay = ZonedDateTime.now();
@@ -842,16 +846,16 @@ public class HearingAggregateTest {
                 .build()
         ).collect(toList());
 
-        assertThat(((HearingUpdatedForAllocationFields)events.get(0)).getHearingLanguage(), is(HearingLanguage.WELSH));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getHearingDays().get(0).getSittingDay() , is(sittingDay));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getType().getDescription(), is("Application"));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getCourtCentre().getCode(), is("A002"));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getHearingLanguage(), is(HearingLanguage.WELSH));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getCourtApplications().get(1).getId(), is(applicationId));
+        assertThat(((HearingUpdatedForAllocationFields) events.get(0)).getHearingLanguage(), is(HearingLanguage.WELSH));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getHearingDays().get(0).getSittingDay(), is(sittingDay));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getType().getDescription(), is("Application"));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getCourtCentre().getCode(), is("A002"));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getHearingLanguage(), is(HearingLanguage.WELSH));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getCourtApplications().get(1).getId(), is(applicationId));
     }
 
     @Test
-    public void shouldUpdateApplicationToHearingHasApplicationsAndRaiseProbationEvent(){
+    public void shouldUpdateApplicationToHearingHasApplicationsAndRaiseProbationEvent() {
         final UUID hearingId = randomUUID();
         final UUID applicationId = randomUUID();
         ZonedDateTime sittingDay = ZonedDateTime.now();
@@ -887,13 +891,13 @@ public class HearingAggregateTest {
                 .build()
         ).collect(toList());
 
-        assertThat(((HearingUpdatedForAllocationFields)events.get(0)).getHearingLanguage(), is(HearingLanguage.WELSH));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getHearingDays().get(0).getSittingDay() , is(sittingDay));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getType().getDescription(), is("Application"));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getCourtCentre().getCode(), is("A002"));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getHearingLanguage(), is(HearingLanguage.WELSH));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getCourtApplications().get(1).getId(), is(applicationId));
-        assertThat(((HearingPopulatedToProbationCaseworker)events.get(1)).getHearing().getCourtApplications().get(1).getApplicationReference(), is("B"));
+        assertThat(((HearingUpdatedForAllocationFields) events.get(0)).getHearingLanguage(), is(HearingLanguage.WELSH));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getHearingDays().get(0).getSittingDay(), is(sittingDay));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getType().getDescription(), is("Application"));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getCourtCentre().getCode(), is("A002"));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getHearingLanguage(), is(HearingLanguage.WELSH));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getCourtApplications().get(1).getId(), is(applicationId));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getCourtApplications().get(1).getApplicationReference(), is("B"));
     }
 
     @Test
@@ -912,13 +916,13 @@ public class HearingAggregateTest {
                         .withCourtCentre(CourtCentre.courtCentre().withCode("A001").build())
                         .withHearingLanguage(HearingLanguage.ENGLISH)
                         .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(caseId1)
-                                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
-                                                        .withId(defendantId1)
-                                                        .build(),
-                                                Defendant.defendant()
-                                                        .withId(defendantId2)
-                                                        .build()))).build()))
-                .build()).build());
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                                .withId(defendantId1)
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(defendantId2)
+                                                .build()))).build()))
+                        .build()).build());
         final HearingExtendedProcessed hearingExtendedProcessed = HearingExtendedProcessed.hearingExtendedProcessed()
                 .withHearingRequest(HearingListingNeeds.hearingListingNeeds()
                         .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(caseId2).withDefendants(new ArrayList<>(asList(Defendant.defendant()
@@ -928,11 +932,11 @@ public class HearingAggregateTest {
                 .build();
         hearingAggregate.apply(hearingExtendedProcessed);
         final List<Object> objectStream = hearingAggregate.populateHearingToProbationCaseWorker().collect(toList());
-        assertThat(((HearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().size(), is(2));
-        assertThat(((HearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getId(), is(caseId1));
-        assertThat(((HearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().size(), is(2));
-        assertThat(((HearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(1).getId(), is(caseId2));
-        assertThat(((HearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(1).getDefendants().size(), is(1));
+        assertThat(((HearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().size(), is(2));
+        assertThat(((HearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(0).getId(), is(caseId1));
+        assertThat(((HearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().size(), is(2));
+        assertThat(((HearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(1).getId(), is(caseId2));
+        assertThat(((HearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(1).getDefendants().size(), is(1));
     }
 
     @Test
@@ -967,11 +971,11 @@ public class HearingAggregateTest {
                 .build();
         hearingAggregate.apply(hearingExtendedProcessed);
         final List<Object> objectStream = hearingAggregate.populateHearingToVEP().collect(toList());
-        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().size(), is(2));
-        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getId(), is(caseId1));
-        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().size(), is(2));
-        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(1).getId(), is(caseId2));
-        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(1).getDefendants().size(), is(1));
+        assertThat(((VejHearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().size(), is(2));
+        assertThat(((VejHearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(0).getId(), is(caseId1));
+        assertThat(((VejHearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().size(), is(2));
+        assertThat(((VejHearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(1).getId(), is(caseId2));
+        assertThat(((VejHearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(1).getDefendants().size(), is(1));
     }
 
     @Test
@@ -989,13 +993,13 @@ public class HearingAggregateTest {
                         .withCourtCentre(CourtCentre.courtCentre().withCode("A001").build())
                         .withHearingLanguage(HearingLanguage.ENGLISH)
                         .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(caseId1)
-                                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
-                                                        .withId(defendantId1)
-                                                        .build(),
-                                                Defendant.defendant()
-                                                        .withId(defendantId2)
-                                                        .build()))).build()))
-                .build()).build());
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                                .withId(defendantId1)
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(defendantId2)
+                                                .build()))).build()))
+                        .build()).build());
         final HearingExtendedProcessed hearingExtendedProcessed = HearingExtendedProcessed.hearingExtendedProcessed()
                 .withHearingRequest(HearingListingNeeds.hearingListingNeeds()
                         .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(caseId1).withDefendants(new ArrayList<>(asList(Defendant.defendant()
@@ -1005,9 +1009,9 @@ public class HearingAggregateTest {
                 .build();
         hearingAggregate.apply(hearingExtendedProcessed);
         final List<Object> objectStream = hearingAggregate.populateHearingToProbationCaseWorker().collect(toList());
-        assertThat(((HearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().size(), is(1));
-        assertThat(((HearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getId(), is(caseId1));
-        assertThat(((HearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().size(), is(3));
+        assertThat(((HearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().size(), is(1));
+        assertThat(((HearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(0).getId(), is(caseId1));
+        assertThat(((HearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().size(), is(3));
     }
 
     @Test
@@ -1041,9 +1045,9 @@ public class HearingAggregateTest {
                 .build();
         hearingAggregate.apply(hearingExtendedProcessed);
         final List<Object> objectStream = hearingAggregate.populateHearingToVEP().collect(toList());
-        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().size(), is(1));
-        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getId(), is(caseId1));
-        assertThat(((VejHearingPopulatedToProbationCaseworker)objectStream.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().size(), is(3));
+        assertThat(((VejHearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().size(), is(1));
+        assertThat(((VejHearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(0).getId(), is(caseId1));
+        assertThat(((VejHearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().size(), is(3));
     }
 
     @Test
@@ -1059,29 +1063,29 @@ public class HearingAggregateTest {
                 .withId(hearingId)
                 .withJurisdictionType(JurisdictionType.CROWN)
                 .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
-                        .withId(caseId1)
-                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
-                                        .withId(randomUUID())
-                                        .withOffences(new ArrayList<>(asList(Offence.offence()
-                                                        .withId(offenceId1)
-                                                        .build(),
-                                                Offence.offence()
-                                                        .withId(offenceId2)
-                                                        .withListingNumber(11)
-                                                        .build())))
-                                        .build(),
-                                Defendant.defendant()
-                                        .withId(randomUUID())
-                                        .withOffences(new ArrayList<>(asList(Offence.offence()
-                                                        .withId(offenceId3)
-                                                        .build(),
-                                                Offence.offence()
-                                                        .withId(offenceId4)
-                                                        .withListingNumber(13)
-                                                        .build())))
-                                        .build()
-                        )))
-                        .build(),
+                                .withId(caseId1)
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                                .withId(randomUUID())
+                                                .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                                .withId(offenceId1)
+                                                                .build(),
+                                                        Offence.offence()
+                                                                .withId(offenceId2)
+                                                                .withListingNumber(11)
+                                                                .build())))
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(randomUUID())
+                                                .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                                .withId(offenceId3)
+                                                                .build(),
+                                                        Offence.offence()
+                                                                .withId(offenceId4)
+                                                                .withListingNumber(13)
+                                                                .build())))
+                                                .build()
+                                )))
+                                .build(),
                         ProsecutionCase.prosecutionCase()
                                 .withId(randomUUID())
                                 .withDefendants(new ArrayList<>(asList(Defendant.defendant()
@@ -1131,7 +1135,7 @@ public class HearingAggregateTest {
     }
 
     @Test
-    public void shouldRaiseUnAllocatedEventWhenStartDateRemoved(){
+    public void shouldRaiseUnAllocatedEventWhenStartDateRemoved() {
         final UUID hearingId = randomUUID();
 
         hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
@@ -1155,7 +1159,7 @@ public class HearingAggregateTest {
                         .build()).build());
 
         final List<Object> events = hearingAggregate.updateHearing(UpdateHearingFromHmi.updateHearingFromHmi().build()).collect(toList());
-        final HearingMovedToUnallocated hearingMovedToUnallocated = (HearingMovedToUnallocated)events.get(0);
+        final HearingMovedToUnallocated hearingMovedToUnallocated = (HearingMovedToUnallocated) events.get(0);
 
         assertThat(hearingMovedToUnallocated.getHearing().getHearingDays(), nullValue());
         assertThat(hearingMovedToUnallocated.getHearing().getJudiciary(), nullValue());
@@ -1184,7 +1188,50 @@ public class HearingAggregateTest {
                         .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(randomUUID())
                                 .withDefendants(new ArrayList<>(asList(Defendant.defendant()
                                                 .withId(defendantId)
-                                        .withMasterDefendantId(defendantId)
+                                                .withMasterDefendantId(defendantId)
+                                                .withOffences(singletonList(Offence.offence().withListingNumber(1).build()))
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(randomUUID())
+                                                .withMasterDefendantId(randomUUID())
+                                                .withOffences(singletonList(Offence.offence().withListingNumber(1).build()))
+                                                .build()))).build()))
+                        .build()).build());
+
+        final List<Offence> offences = Stream.of(
+                Offence.offence().withId(randomUUID()).withOffenceCode(randomUUID().toString()).withOffenceTitle("RegularOffence1").withReportingRestrictions(Collections.singletonList(ReportingRestriction.reportingRestriction().withId(randomUUID()).withLabel(YOUTH_RESTRICTION).withOrderedDate(LocalDate.now()).build())).build(),
+                Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withOffenceTitle("SexualOffence1").build()
+        ).collect(Collectors.toList());
+
+        List<Object> events = hearingAggregate.updateOffence(defendantId, offences).collect(toList());
+        final HearingOffencesUpdated hearingOffencesUpdated = (HearingOffencesUpdated) events.get(0);
+        assertThat(hearingOffencesUpdated.getHearingId(), is(hearingId));
+        List<Offence> offencesInHearing = hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences();
+        assertThat(offencesInHearing.size(), is(2));
+
+    }
+
+    @Test
+    public void shouldOnlyUpdateWhenHearingHasNoSetWithHasSharedResult() {
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String offenceCode = new StringGenerator().next();
+        final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now())
+                                .withCourtRoomId(randomUUID()).build()))
+                        .withType(HearingType.hearingType().withDescription("Statement").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("A001").build())
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .withJudiciary(singletonList(JudicialRole.judicialRole().build()))
+                        .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(randomUUID())
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                                .withId(defendantId)
+                                                .withMasterDefendantId(defendantId)
                                                 .withOffences(singletonList(Offence.offence().withListingNumber(1).build()))
                                                 .build(),
                                         Defendant.defendant()
@@ -1207,11 +1254,8 @@ public class HearingAggregateTest {
 
     }
 
-
-
-
-        @Test
-    public void shouldRaiseUnAllocatedEventWhenCourtRoomRemoved(){
+    @Test
+    public void shouldRaiseUnAllocatedEventWhenCourtRoomRemoved() {
         final UUID hearingId = randomUUID();
 
         hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
@@ -1237,7 +1281,7 @@ public class HearingAggregateTest {
         final List<Object> events = hearingAggregate.updateHearing(UpdateHearingFromHmi.updateHearingFromHmi()
                 .withStartDate(LocalDate.now().toString())
                 .build()).collect(toList());
-        final HearingMovedToUnallocated hearingMovedToUnallocated = (HearingMovedToUnallocated)events.get(0);
+        final HearingMovedToUnallocated hearingMovedToUnallocated = (HearingMovedToUnallocated) events.get(0);
 
         assertThat(hearingMovedToUnallocated.getHearing().getHearingDays().size(), is(1));
         assertThat(hearingMovedToUnallocated.getHearing().getHearingDays().get(0).getCourtRoomId(), nullValue());
@@ -1247,7 +1291,7 @@ public class HearingAggregateTest {
     }
 
     @Test
-    public void shouldNotRaiseUnAllocatedEventWhenHMINotChanged(){
+    public void shouldNotRaiseUnAllocatedEventWhenHMINotChanged() {
         final UUID hearingId = randomUUID();
 
         hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
@@ -1290,30 +1334,30 @@ public class HearingAggregateTest {
                 .withId(hearingId)
                 .withJurisdictionType(JurisdictionType.CROWN)
                 .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
-                                .withId(caseId1)
-                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
-                                                .withId(randomUUID())
-                                                .withOffences(new ArrayList<>(asList(Offence.offence()
-                                                                .withId(offenceId1)
-                                                                .withVerdict(Verdict.verdict().withOffenceId(offenceId1).build())
-                                                                .build(),
-                                                        Offence.offence()
-                                                                .withId(offenceId2)
-                                                                .withListingNumber(11)
-                                                                .build())))
-                                                .build(),
-                                        Defendant.defendant()
-                                                .withId(randomUUID())
-                                                .withOffences(new ArrayList<>(asList(Offence.offence()
-                                                                .withId(offenceId3)
-                                                                .build(),
-                                                        Offence.offence()
-                                                                .withId(offenceId4)
-                                                                .withListingNumber(13)
-                                                                .build())))
-                                                .build()
-                                )))
-                                .build()
+                        .withId(caseId1)
+                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                        .withId(offenceId1)
+                                                        .withVerdict(Verdict.verdict().withOffenceId(offenceId1).build())
+                                                        .build(),
+                                                Offence.offence()
+                                                        .withId(offenceId2)
+                                                        .withListingNumber(11)
+                                                        .build())))
+                                        .build(),
+                                Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                        .withId(offenceId3)
+                                                        .build(),
+                                                Offence.offence()
+                                                        .withId(offenceId4)
+                                                        .withListingNumber(13)
+                                                        .build())))
+                                        .build()
+                        )))
+                        .build()
                 )))
                 .build();
 
@@ -1392,7 +1436,7 @@ public class HearingAggregateTest {
                 .withCourtApplications(singletonList(CourtApplication.courtApplication()
                         .withId(applicationId)
                         .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
-                            .build()))
+                                .build()))
                         .build()))
                 .build();
 
@@ -1424,11 +1468,11 @@ public class HearingAggregateTest {
                         .withId(applicationId)
                         .withCourtOrder(CourtOrder.courtOrder()
                                 .withCourtOrderOffences(asList(CourtOrderOffence.courtOrderOffence()
-                                        .withOffence(Offence.offence()
-                                                .withId(offenceId1)
-                                                .withVerdict(Verdict.verdict().withOffenceId(offenceId1).build())
-                                                .build())
-                                        .build(),
+                                                .withOffence(Offence.offence()
+                                                        .withId(offenceId1)
+                                                        .withVerdict(Verdict.verdict().withOffenceId(offenceId1).build())
+                                                        .build())
+                                                .build(),
                                         CourtOrderOffence.courtOrderOffence()
                                                 .withOffence(Offence.offence()
                                                         .withId(offenceId2)
@@ -1668,16 +1712,16 @@ public class HearingAggregateTest {
                 .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
                         .withId(caseId)
                         .withDefendants(new ArrayList<>(asList(Defendant.defendant()
-                                        .withId(randomUUID())
-                                        .withOffences(new ArrayList<>(asList(Offence.offence()
-                                                        .withId(offenceId1)
-                                                        .withPlea(Plea.plea().withOffenceId(offenceId1).build())
-                                                        .build(),
-                                                Offence.offence()
-                                                        .withId(offenceId2)
-                                                        .withListingNumber(11)
-                                                        .build())))
-                                        .build()
+                                .withId(randomUUID())
+                                .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                .withId(offenceId1)
+                                                .withPlea(Plea.plea().withOffenceId(offenceId1).build())
+                                                .build(),
+                                        Offence.offence()
+                                                .withId(offenceId2)
+                                                .withListingNumber(11)
+                                                .build())))
+                                .build()
                         )))
                         .build()
                 )))
@@ -1705,8 +1749,6 @@ public class HearingAggregateTest {
         assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(1).getPlea().getPleaValue(), is(GUILTY));
         assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getId(), is(applicationId));
         assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications().get(0).getCourtApplicationCases().get(0).getOffences(), is(nullValue()));
-
-
 
 
     }
@@ -1868,7 +1910,7 @@ public class HearingAggregateTest {
     }
 
     @Test
-    public void shouldAddNewDefenceCounsel(){
+    public void shouldAddNewDefenceCounsel() {
         final UUID defenceCounselId = randomUUID();
         final UUID hearingId = randomUUID();
 
@@ -1894,7 +1936,7 @@ public class HearingAggregateTest {
     }
 
     @Test
-    public void shouldUpdateNewDefenceCounsel(){
+    public void shouldUpdateNewDefenceCounsel() {
         final UUID defenceCounselId = randomUUID();
         final UUID hearingId = randomUUID();
 
@@ -1925,7 +1967,7 @@ public class HearingAggregateTest {
     }
 
     @Test
-    public void shouldRemoveNewDefenceCounsel(){
+    public void shouldRemoveNewDefenceCounsel() {
         final UUID defenceCounselId = randomUUID();
         final UUID hearingId = randomUUID();
 
@@ -1959,7 +2001,7 @@ public class HearingAggregateTest {
         return HearingResulted.hearingResulted().withHearing(hearing).build();
     }
 
-    private Hearing getHearing(final UUID offenceId){
+    private Hearing getHearing(final UUID offenceId) {
         return Hearing.hearing()
                 .withId(randomUUID())
                 .withJurisdictionType(JurisdictionType.CROWN)

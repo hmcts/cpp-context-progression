@@ -75,6 +75,29 @@ public class RemittalRetentionRuleTest {
         assertThat(remittalRetentionRule.getPolicy().getPeriod(), is("7Y0M0D"));
     }
 
+    @Test
+    public void shouldReturnFalseWhenAnyOffenceDoesNotHaveJudicialResults() {
+
+        final List<Offence> offences = asList(Offence.offence()
+                        .withJudicialResults(getJudicialResults(JudicialResultCategory.ANCILLARY, randomUUID())).build(),
+                Offence.offence().withId(randomUUID()).build());
+        remittalRetentionRule = new RemittalRetentionRule(hearingInfo, offences, remitResultIds);
+
+        assertThat(remittalRetentionRule.apply(), is(false));
+    }
+
+    @Test
+    public void shouldReturnFalseWhenAllOffencesDoesNotHaveJudicialResults() {
+
+        final List<Offence> offences = asList(Offence.offence()
+                        .withId(randomUUID()).build(),
+                Offence.offence().withId(randomUUID()).build());
+        remittalRetentionRule = new RemittalRetentionRule(hearingInfo, offences, remitResultIds);
+
+        assertThat(remittalRetentionRule.apply(), is(false));
+    }
+
+
     private List<JudicialResult> getJudicialResults(final JudicialResultCategory judicialResultCategory, final UUID judicialResultTypeId) {
         return singletonList(JudicialResult.judicialResult()
                 .withJudicialResultId(randomUUID())

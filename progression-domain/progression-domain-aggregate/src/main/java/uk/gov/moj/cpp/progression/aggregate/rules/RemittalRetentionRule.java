@@ -31,9 +31,11 @@ public class RemittalRetentionRule implements RetentionRule {
         }
 
         return defendantsOffences.stream()
-                .flatMap(offence -> offence.getJudicialResults()!=null?offence.getJudicialResults().stream(): Stream.empty())
+                .filter(defendantOffence -> nonNull(defendantOffence.getJudicialResults()))
+                .flatMap(offence -> offence.getJudicialResults().stream())
                 .filter(judicialResult -> nonNull(judicialResult.getJudicialResultTypeId()))
                 .anyMatch(judicialResult -> remitResultIds.contains(judicialResult.getJudicialResultTypeId().toString()));
+
     }
 
     @Override
