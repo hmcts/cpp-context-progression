@@ -49,6 +49,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntit
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NotificationStatusEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CpsSendNotificationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
@@ -166,6 +167,8 @@ public class CourtDocumentQueryView {
     @Inject
     private Requester requester;
 
+    @Inject
+    private CpsSendNotificationRepository cpsSendNotificationRepository;
 
     @Handles(COURT_DOCUMENT_SEARCH_NAME)
     public JsonEnvelope getCourtDocument(final JsonEnvelope envelope) {
@@ -321,7 +324,7 @@ public class CourtDocumentQueryView {
         final List<CourtDocumentIndex> courtDocumentIndices = filteredMaterialCourtDocuments
                 .stream().sorted(Comparator.comparing(CourtDocument::getSeqNum))
                 .map(courtDocumentFiltered -> courtDocumentTransform
-                        .transform(courtDocumentFiltered).build())
+                        .transform(courtDocumentFiltered, cpsSendNotificationRepository).build())
                 .filter(courtDocumentIndex -> isEmpty(defendantId)
                         || courtDocumentIndex.getDefendantIds().isEmpty()
                         || courtDocumentIndex.getDefendantIds()
@@ -375,7 +378,7 @@ public class CourtDocumentQueryView {
                 .filter(entity -> !entity.isRemoved())
                 .map(this::courtDocument)
                 .map(courtDocumentFiltered -> courtDocumentTransform
-                .transform(courtDocumentFiltered).build())
+                .transform(courtDocumentFiltered, cpsSendNotificationRepository).build())
                 .collect(toList());
 
         final CourtDocumentsSearchResult result = new CourtDocumentsSearchResult();
@@ -632,7 +635,7 @@ public class CourtDocumentQueryView {
         final List<CourtDocumentIndex> courtDocumentIndices =
                 filteredMaterialCourtDocuments.stream()
                         .map(courtDocumentFiltered -> courtDocumentTransform
-                                .transform(courtDocumentFiltered).build())
+                                .transform(courtDocumentFiltered, cpsSendNotificationRepository).build())
                         .collect(Collectors.toList());
 
         result.setDocumentIndices(courtDocumentIndices);

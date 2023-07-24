@@ -26,8 +26,10 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentTypeRBAC;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CpsSendNotificationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CpsSendNotificationRepository;
 
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -36,10 +38,16 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.json.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3655", "squid:S2789", "squid:S1612"})
 @ServiceComponent(EVENT_LISTENER)
 public class CourtDocumentEventListener {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentEventListener.class);
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
@@ -56,6 +64,9 @@ public class CourtDocumentEventListener {
     @Inject
     private CourtDocumentMaterialRepository courtDocumentMaterialRepository;
 
+    @Inject
+    private CpsSendNotificationRepository cpsSendNotificationRepository;
+
     @Handles("progression.event.court-document-created")
     public void processCourtDocumentCreated(final JsonEnvelope event) {
         final CourtsDocumentCreated courtsDocumentCreated = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtsDocumentCreated.class);
@@ -70,6 +81,17 @@ public class CourtDocumentEventListener {
                             .save(getCourtDocumentMaterialEntity(material, courtDocument.getCourtDocumentId()))
             );
         }
+    }
+
+    @Handles("progression.event.send-to-cps-flag-updated")
+    public void processSendToCpsFlagUpdated(final JsonEnvelope event){
+        final JsonObject jsonObject = event.payloadAsJsonObject();
+        LOGGER.info("progression.event.send-to-cps-flag-updated - {}", jsonObject);
+
+        final CpsSendNotificationEntity cpsSendNotificationEntity = new CpsSendNotificationEntity();
+        cpsSendNotificationEntity.setCourtDocumentId(UUID.fromString(jsonObject.getJsonString("courtDocumentId").getString()));
+        cpsSendNotificationEntity.setSendToCps(jsonObject.getBoolean("sendToCps"));
+        cpsSendNotificationRepository.save(cpsSendNotificationEntity);
     }
 
     @Handles("progression.event.court-document-updated")

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-cps-send-notification" author="cpp.context.progression">
+        <createTable tableName="cps_send_notification">
+            <column name="court_document_id" type="UUID"/>
+            <column name="send_to_cps" type="boolean" defaultValue="false"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="add-court_document-key-constraints" author="cpp.context.progression">
+        <addPrimaryKey columnNames="court_document_id" constraintName="cps_send_notification_primary_key"
+                       tableName="cps_send_notification"/>
+    </changeSet>
+
+</databaseChangeLog>

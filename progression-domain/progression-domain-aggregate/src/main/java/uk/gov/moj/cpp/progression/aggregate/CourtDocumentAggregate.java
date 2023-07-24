@@ -38,6 +38,7 @@ import uk.gov.justice.core.courts.DocumentTypeRBAC;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.SharedCourtDocument;
 import uk.gov.justice.domain.aggregate.Aggregate;
+import uk.gov.justice.progression.event.SendToCpsFlagUpdated;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -92,6 +93,16 @@ public class CourtDocumentAggregate implements Aggregate {
                 .withCourtDocumentId(courtDocumentId)
                 .withMaterialId(materialId)
                 .withPrintedAt(printedAt)
+                .build());
+
+        return apply(builder.build());
+    }
+
+    public Stream<Object> updateSendToCpsFlag(final UUID courtDocumentId, final boolean sendToCpsFlag) {
+        final Stream.Builder<Object> builder = builder();
+        builder.add(SendToCpsFlagUpdated.sendToCpsFlagUpdated()
+                .withCourtDocumentId(courtDocumentId)
+                .withSendToCps(sendToCpsFlag)
                 .build());
 
         return apply(builder.build());

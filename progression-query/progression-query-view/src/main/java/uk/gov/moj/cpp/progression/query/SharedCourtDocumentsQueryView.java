@@ -18,6 +18,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SharedCourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CpsSendNotificationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SharedCourtDocumentRepository;
 
 import java.util.ArrayList;
@@ -51,6 +52,9 @@ public class SharedCourtDocumentsQueryView {
     private CourtDocumentTransform courtDocumentTransform;
 
     @Inject
+    private CpsSendNotificationRepository cpsSendNotificationRepository;
+
+    @Inject
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Handles(PROGRESSION_QUERY_SHARED_COURT_DOCUMENTS)
@@ -68,7 +72,7 @@ public class SharedCourtDocumentsQueryView {
         final List<CourtDocument> courtDocuments = getCourtDocumentsByBatch(sharedDocuments);
 
         final List<CourtDocumentIndex> courtDocumentIndices = courtDocuments.stream()
-                .map(courtDocumentFiltered -> courtDocumentTransform.transform(courtDocumentFiltered).build()).sorted((o1, o2) -> {
+                .map(courtDocumentFiltered -> courtDocumentTransform.transform(courtDocumentFiltered, cpsSendNotificationRepository).build()).sorted((o1, o2) -> {
                     if (CollectionUtils.isNotEmpty(o1.getDocument().getMaterials()) &&
                             CollectionUtils.isNotEmpty(o2.getDocument().getMaterials()) &&
                             nonNull(o2.getDocument().getMaterials().get(0).getUploadDateTime()) &&

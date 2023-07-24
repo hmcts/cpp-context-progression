@@ -29,6 +29,7 @@ import uk.gov.justice.core.courts.CourtDocumentUpdated;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.UpdateCourtDocument;
 import uk.gov.justice.core.courts.UpdateCourtDocumentPrintTime;
+import uk.gov.justice.progression.event.SendToCpsFlagUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -42,6 +43,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
+import uk.gov.moj.cpp.progression.command.UpdateSendToCpsFlag;
 import uk.gov.moj.cpp.progression.helper.EnvelopeHelper;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
@@ -72,7 +74,7 @@ public class UpdateCourtDocumentHandlerTest {
     private static final DateTimeFormatter ISO_8601_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            CourtDocumentUpdated.class, CourtDocumentPrintTimeUpdated.class);
+            CourtDocumentUpdated.class, CourtDocumentPrintTimeUpdated.class, SendToCpsFlagUpdated.class);
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     @Spy
@@ -235,6 +237,33 @@ public class UpdateCourtDocumentHandlerTest {
                                 withJsonPath("$.courtDocumentId", is(courtDocumentPrintTime.getCourtDocumentId().toString())),
                                 withJsonPath("$.materialId", is(courtDocumentPrintTime.getMaterialId().toString())),
                                 withJsonPath("$.printedAt", is(courtDocumentPrintTime.getPrintedAt().format(ISO_8601_FORMATTER)))
+                                )
+                        ))
+                )
+        );
+    }
+
+    @Test
+    public void shouldHandleUpdateSendToCpsFlag() throws EventStreamException {
+        final UpdateSendToCpsFlag updateSendToCpsFlag = UpdateSendToCpsFlag.updateSendToCpsFlag()
+                .withCourtDocumentId(randomUUID())
+                .withSendToCps(true)
+                .build();
+
+        final Envelope<UpdateSendToCpsFlag> envelope =
+                envelopeFrom(metadataFor("progression.command.update-send-to-cps-flag", randomUUID()),
+                        updateSendToCpsFlag);
+
+        target.handleUpdateSendToCpsFlag(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        MatcherAssert.assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.send-to-cps-flag-updated"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtDocumentId", is(updateSendToCpsFlag.getCourtDocumentId().toString())),
+                                withJsonPath("$.sendToCps", is(updateSendToCpsFlag.getSendToCps()))
                                 )
                         ))
                 )

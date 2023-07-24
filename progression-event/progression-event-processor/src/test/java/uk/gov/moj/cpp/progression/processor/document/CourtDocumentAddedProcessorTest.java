@@ -402,7 +402,7 @@ public class CourtDocumentAddedProcessorTest {
         eventProcessor.handleCourtDocumentAddEvent(requestMessage);
 
         verify(progressionService).getCourtApplicationById(any(), any());
-        verify(cpsRestNotificationService).sendMaterial(anyString());
+        verify(cpsRestNotificationService).sendMaterial(anyString(), any(), any());
     }
 
     private JsonObject buildApplicationDocument(String applicationId) {

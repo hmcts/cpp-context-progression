@@ -1,9 +1,14 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -17,6 +22,7 @@ import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.PUBLIC_EVENT_COURT_DOCUMENT_UPADTED;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addRemoveCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocumentAndCpsOrganisation;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
@@ -27,8 +33,11 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
+import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialMetadata;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
+import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableDefenceDisclosureFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
@@ -65,6 +74,7 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator;
 @SuppressWarnings({"squid:S1607"})
 public class AddCourtDocumentIT extends AbstractIT {
 
+    private static final String USER_ID = "07e9cd55-0eff-4eb3-961f-0d83e259e415";
     public static final String ACCESS_CONTROL_FAILED = "Access Control failed for json envelope";
     public static final String USER_GROUP_NOT_PRESENT_DROOL = UUID.randomUUID().toString();
     public static final String USER_GROUP_NOT_PRESENT_RBAC = UUID.randomUUID().toString();
@@ -85,6 +95,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_DROOL), "stub-data/usersgroups.get-invalid-groups-by-user.json");
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_RBAC), "stub-data/usersgroups.get-invalid-rbac-groups-by-user.json");
         setupAsAuthorisedUser(fromString(CHAMBER_USER_ID), "stub-data/usersgroups.get-chamber-groups-by-user.json");
+        setupAsAuthorisedUser(fromString(USER_ID), "stub-data/usersgroups.get-specific-groups-by-user.json");
     }
 
 
@@ -96,6 +107,8 @@ public class AddCourtDocumentIT extends AbstractIT {
         defendantId = randomUUID().toString();
         updatedDefendantId = randomUUID().toString();
         caseProsecutorUpdateHelper = new CaseProsecutorUpdateHelper(caseId);
+
+        stubMaterialMetadata();
     }
 
     @Test
@@ -569,6 +582,50 @@ public class AddCourtDocumentIT extends AbstractIT {
                 .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId.toString())
                 .replaceAll("%RANDOM_DOC_TYPE%", docTypeId.toString());
         return body;
+    }
+
+    @Test
+    public void shouldUpdateSendToCpsToViewStore() throws IOException {
+
+        enableDefenceDisclosureFeature(true);
+
+        stubFor(post(urlPathEqualTo("/notification-cms/v1/transformAndSendCms"))
+                .willReturn(aResponse().withStatus(SC_OK)));
+
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
+
+        initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        //Given
+        verifyAddCourtDocument(null,"460f7ec0-c002-11e8-a355-529269fb1459");
+
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
+
+        //Given
+        final String bodyForUpdate = prepareUpdateCourtDocumentPayload();
+        //When
+        final Response writeResponseForUpdate = postCommand(getWriteUrl("/courtdocument"),
+                "application/vnd.progression.update-court-document+json",
+                bodyForUpdate);
+        assertThat(writeResponseForUpdate.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        final String actualDocumentAfterUpdate = getCourtDocumentFor(docId, allOf(
+                withJsonPath("$.courtDocument.courtDocumentId", equalTo(docId)),
+                withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(true)),
+                withJsonPath("$.courtDocument.documentTypeDescription", equalTo("Magistrate's Sending sheet"))
+        ));
+
+        final String expectedPayloadAfterUpdate = getPayload("expected/expected.progression.court-document-updated.json")
+                .replace("COURT-DOCUMENT-ID", docId)
+                .replace("DEFENDENT-ID", updatedDefendantId)
+                .replace("CASE-ID", caseId);
+
+        assertEquals(expectedPayloadAfterUpdate, actualDocumentAfterUpdate, getCustomComparator());
+        verifyForCourtDocumentNotified();
+
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
+        getCourtDocumentsByCase(USER_ID, caseId);
     }
 
 }

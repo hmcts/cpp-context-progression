@@ -312,6 +312,9 @@ subscriptions_descriptor:
         - name: progression.event.review-notes-updated
           schema_uri: http://justice.gov.uk/progression/event/progression.event.review-notes-updated.json
 
+        - name: progression.event.send-to-cps-flag-updated
+          schema_uri: http://justice.gov.uk/progression/event/send-to-cps-flag-updated.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

@@ -313,7 +313,7 @@ public class NotificationService {
         final Optional<String> transformedJsonPayload = ofNullable(objectToJsonObjectConverter.convert(eventNotification).toString());
         if (transformedJsonPayload.isPresent()) {
             LOGGER.info("Notification triggered");
-            cpsRestNotificationService.sendMaterial(transformedJsonPayload.get());
+            cpsRestNotificationService.sendMaterial(transformedJsonPayload.get(), materialId, sourceEnvelope); // Need tp pass court document id. Satish to check and confirm
         } else {
             LOGGER.info("No payload available");
         }

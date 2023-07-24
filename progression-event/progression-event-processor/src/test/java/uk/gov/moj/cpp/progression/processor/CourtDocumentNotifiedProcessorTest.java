@@ -126,7 +126,7 @@ public class CourtDocumentNotifiedProcessorTest {
         courtDocumentNotifiedProcessor.processCourtDocumentSendToCPS(jsonEnvelope);
         verify(courtDocumentTransformer).transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
         verify(cpsEmailNotificationService, never()).sendEmailToCps(jsonEnvelope, courtDocument, fromString(prosecutionCaseId), prosecutionCaseJsonOptional.get());
-        verify(cpsRestNotificationService).sendMaterial(transformedPayload);
+        verify(cpsRestNotificationService).sendMaterial(transformedPayload, courtDocument.getCourtDocumentId(), jsonEnvelope);
     }
 
 }

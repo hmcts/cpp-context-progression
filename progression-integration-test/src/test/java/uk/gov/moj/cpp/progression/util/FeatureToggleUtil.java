@@ -12,4 +12,9 @@ public class FeatureToggleUtil {
         final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", enabled);
         FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
     }
+
+    public static final void enableDefenceDisclosureFeature(final boolean enabled) {
+        final ImmutableMap<String, Boolean> features = ImmutableMap.of("defenceDisclosure", enabled);
+        FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
+    }
 }

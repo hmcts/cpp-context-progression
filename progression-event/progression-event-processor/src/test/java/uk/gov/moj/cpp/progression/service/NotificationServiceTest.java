@@ -7,12 +7,11 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -144,6 +143,9 @@ public class NotificationServiceTest {
 
     @Captor
     private ArgumentCaptor<String> apiNotificationArgumentCaptor;
+
+    @Mock
+    private JsonEnvelope envelope1;
 
     private final ZonedDateTime hearingDateTime = ZonedDateTime.of(LocalDate.of(2019, 06, 18), LocalTime.of(14, 45), ZoneId.of("UTC"));
 
@@ -778,7 +780,7 @@ public class NotificationServiceTest {
                 .build());
 
         notificationService.sendApiNotification(envelope, notificationId, materialDetails, caseSubjects, Arrays.asList("defAsn,defAsn2"),  null);
-        verify(cpsRestNotificationService, times(1)).sendMaterial(apiNotificationArgumentCaptor.capture());
+        verify(cpsRestNotificationService, times(1)).sendMaterial(apiNotificationArgumentCaptor.capture(), any(), any());
 
         JsonObject jsonObject = new StringToJsonObjectConverter().convert(apiNotificationArgumentCaptor.getValue());
         assertThat(jsonObject.getString("businessEventType"), is("now-generated-for-cps-subscription"));
@@ -798,7 +800,7 @@ public class NotificationServiceTest {
                 .build());
 
         notificationService.sendApiNotification(envelope, notificationId, materialDetails, caseSubjects, Arrays.asList("defAsn"),  null);
-        verify(cpsRestNotificationService, times(1)).sendMaterial(apiNotificationArgumentCaptor.capture());
+        verify(cpsRestNotificationService, times(1)).sendMaterial(apiNotificationArgumentCaptor.capture(),any(), any());
 
         JsonObject jsonObject = new StringToJsonObjectConverter().convert(apiNotificationArgumentCaptor.getValue());
         assertThat(jsonObject.getJsonObject("subjectDetails").getJsonObject("prosecutionCaseSubject").getJsonString("prosecutingAuthority").getString(), is("ouCode123"));

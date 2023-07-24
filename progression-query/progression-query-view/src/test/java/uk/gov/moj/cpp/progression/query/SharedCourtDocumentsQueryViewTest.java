@@ -28,8 +28,10 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CpsSendNotificationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SharedCourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CpsSendNotificationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SharedCourtDocumentRepository;
 
 import java.util.ArrayList;
@@ -73,6 +75,9 @@ public class SharedCourtDocumentsQueryViewTest {
 
     @InjectMocks
     private SharedCourtDocumentsQueryView sharedCourtDocumentsQueryView;
+
+    @Mock
+    private CpsSendNotificationRepository cpsSendNotificationRepository;
 
     @Before
     public void setUp() {
@@ -134,7 +139,7 @@ public class SharedCourtDocumentsQueryViewTest {
                 .withDocument(courtDocument(courtDocumentId))
                 .withType("Defendant profile notes");
 
-        when(courtDocumentTransform.transform(Mockito.any())).thenReturn(courtDocumentIndexBuilder);
+        when(courtDocumentTransform.transform(Mockito.any(), Mockito.any())).thenReturn(courtDocumentIndexBuilder);
 
         final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
 
@@ -159,7 +164,7 @@ public class SharedCourtDocumentsQueryViewTest {
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
         when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateCaseLevelDocument(courtDocumentId));
 
-        when(courtDocumentTransform.transform(Mockito.any())).thenCallRealMethod();
+        when(courtDocumentTransform.transform(Mockito.any(), Mockito.any())).thenCallRealMethod();
 
         final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
 
@@ -184,7 +189,7 @@ public class SharedCourtDocumentsQueryViewTest {
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
         when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateDefendantLevelDocument(courtDocumentId, defendantId));
 
-        when(courtDocumentTransform.transform(Mockito.any())).thenCallRealMethod();
+        when(courtDocumentTransform.transform(Mockito.any(), Mockito.any())).thenCallRealMethod();
 
         final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
 
@@ -209,7 +214,7 @@ public class SharedCourtDocumentsQueryViewTest {
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
         when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateDefendantLevelDocument(courtDocumentId, randomUUID()));
 
-        when(courtDocumentTransform.transform(Mockito.any())).thenCallRealMethod();
+        when(courtDocumentTransform.transform(Mockito.any(), Mockito.any())).thenCallRealMethod();
 
         final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
 
@@ -233,7 +238,7 @@ public class SharedCourtDocumentsQueryViewTest {
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
         when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateNowDocument(courtDocumentId, defendantId));
 
-        when(courtDocumentTransform.transform(Mockito.any())).thenCallRealMethod();
+        when(courtDocumentTransform.transform(Mockito.any(), Mockito.any())).thenCallRealMethod();
 
         final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
 
@@ -258,7 +263,7 @@ public class SharedCourtDocumentsQueryViewTest {
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
         when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateNowDocument(courtDocumentId, randomUUID()));
 
-        when(courtDocumentTransform.transform(Mockito.any())).thenCallRealMethod();
+        when(courtDocumentTransform.transform(Mockito.any(), Mockito.any())).thenCallRealMethod();
 
         final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
 
@@ -282,7 +287,9 @@ public class SharedCourtDocumentsQueryViewTest {
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
         when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateApplicationDocument(courtDocumentId));
 
-        when(courtDocumentTransform.transform(Mockito.any())).thenCallRealMethod();
+        when(courtDocumentTransform.transform(Mockito.any(),Mockito.any())).thenCallRealMethod();
+
+        when(cpsSendNotificationRepository.findBy(mockCourtDocumentEntity.getCourtDocumentId())).thenReturn(createCpsSendNotificationEntity(mockCourtDocumentEntity.getCourtDocumentId()));
 
         final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
 
@@ -331,7 +338,7 @@ public class SharedCourtDocumentsQueryViewTest {
                 .withDocument(courtDocument(courtDocumentId))
                 .withType("Defendant profile notes");
 
-        when(courtDocumentTransform.transform(Mockito.any())).thenReturn(courtDocumentIndexBuilder);
+        when(courtDocumentTransform.transform(Mockito.any(),Mockito.any())).thenReturn(courtDocumentIndexBuilder);
 
         final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUIDAndName(), body);
@@ -368,7 +375,7 @@ public class SharedCourtDocumentsQueryViewTest {
                 .withDocument(courtDocument(courtDocumentId))
                 .withType("Defendant profile notes");
 
-        when(courtDocumentTransform.transform(Mockito.any())).thenReturn(courtDocumentIndexBuilder);
+        when(courtDocumentTransform.transform(Mockito.any(), Mockito.any())).thenReturn(courtDocumentIndexBuilder);
 
         final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUIDAndName(), body);
@@ -479,5 +486,13 @@ public class SharedCourtDocumentsQueryViewTest {
                 .add("PayloadThings", "PayloadThings")
                 .add("courtDocumentId", courtDocumentId.toString())
                 .build();
+    }
+
+    private CpsSendNotificationEntity createCpsSendNotificationEntity(final UUID courtDocumentId){
+        final CpsSendNotificationEntity cpsSendNotificationEntity = new CpsSendNotificationEntity();
+        cpsSendNotificationEntity.setSendToCps(true);
+        cpsSendNotificationEntity.setCourtDocumentId(courtDocumentId);
+
+        return cpsSendNotificationEntity;
     }
 }

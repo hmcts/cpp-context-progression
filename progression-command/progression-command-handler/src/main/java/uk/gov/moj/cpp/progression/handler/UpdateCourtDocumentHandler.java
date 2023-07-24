@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.Integer.valueOf;
 import static java.lang.String.format;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 
@@ -27,12 +27,12 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
+import uk.gov.moj.cpp.progression.command.UpdateSendToCpsFlag;
 import uk.gov.moj.cpp.progression.helper.EnvelopeHelper;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -107,7 +107,7 @@ public class UpdateCourtDocumentHandler {
             final List<UUID> ptphFormFinalisedDocuments= new ArrayList<>();
             if (inputCourtDocumentDetails.getSendToCps()) {
                 final UUID caseId = updateCourtDocument.getProsecutionCaseId();
-                if(Objects.nonNull(caseId)) {
+                if(nonNull(caseId)) {
                     final EventStream caseEventStream = eventSource.getStreamById(caseId);
                     final CaseAggregate caseAggregate = aggregateService.get(caseEventStream, CaseAggregate.class);
                     petFormFinalisedDocuments.addAll(caseAggregate.getPetFormFinalisedDocuments());
@@ -190,5 +190,18 @@ public class UpdateCourtDocumentHandler {
             return null;
         }
         return IntStream.range(0, (documentTypeRBACJsonArray).size()).mapToObj(i -> documentTypeRBACJsonArray.getJsonObject(i).getJsonObject("cppGroup").getString("groupName")).collect(toList());
+    }
+
+    @Handles("progression.command.update-send-to-cps-flag")
+    public void handleUpdateSendToCpsFlag(final Envelope<UpdateSendToCpsFlag> updateSendToCpsFlagEnvelope) throws EventStreamException {
+        LOGGER.debug("progression.command.update-send-to-cps-flag {}", updateSendToCpsFlagEnvelope.payload());
+
+        final UpdateSendToCpsFlag updateSendToCpsFlag = updateSendToCpsFlagEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(updateSendToCpsFlag.getCourtDocumentId());
+        final CourtDocumentAggregate courtDocumentAggregate = aggregateService.get(eventStream, CourtDocumentAggregate.class);
+
+        final Stream<Object> events = courtDocumentAggregate.updateSendToCpsFlag(updateSendToCpsFlag.getCourtDocumentId(), nonNull(updateSendToCpsFlag.getSendToCps())?updateSendToCpsFlag.getSendToCps():false);
+        appendEventsToStream(updateSendToCpsFlagEnvelope, eventStream, events);
+
     }
 }

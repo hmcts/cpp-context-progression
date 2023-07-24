@@ -9,6 +9,8 @@ import uk.gov.justice.core.courts.CourtDocumentIndex;
 import uk.gov.justice.core.courts.DefendantDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.NowDocument;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CpsSendNotificationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CpsSendNotificationRepository;
 
 import java.util.Arrays;
 
@@ -20,7 +22,7 @@ public class CourtDocumentTransform {
     public static final String APPLICATION_CATEGORY = "Applications";
     public static final String NOW_CATEGORY = "NOW documents";
 
-    public CourtDocumentIndex.Builder transform(final CourtDocument courtDocument) {
+    public CourtDocumentIndex.Builder transform(final CourtDocument courtDocument, final CpsSendNotificationRepository cpsSendNotificationRepository) {
         final CourtDocumentIndex.Builder indexBuilder = new CourtDocumentIndex.Builder();
         indexBuilder.withDocument(courtDocument);
         final DocumentCategory category = courtDocument.getDocumentCategory();
@@ -34,6 +36,12 @@ public class CourtDocumentTransform {
             map(indexBuilder);
         }
         indexBuilder.withType(nonNull(courtDocument.getDocumentTypeDescription())? courtDocument.getDocumentTypeDescription(): "unknown document type");
+
+        final CpsSendNotificationEntity cpsSendNotificationEntity = cpsSendNotificationRepository.findBy(courtDocument.getCourtDocumentId());
+        if (nonNull(cpsSendNotificationEntity)){
+            indexBuilder.withSendToCps(cpsSendNotificationEntity.getSendToCps());
+        }
+
         return indexBuilder;
     }
 

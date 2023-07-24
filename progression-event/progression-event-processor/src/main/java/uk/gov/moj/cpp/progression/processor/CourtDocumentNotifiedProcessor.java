@@ -69,7 +69,7 @@ public class CourtDocumentNotifiedProcessor {
                 final Optional<String> transformedJsonPayload = courtDocumentTransformer.transform(courtDocument, prosecutionCaseOptional, envelope,notificationType);
                 if (transformedJsonPayload.isPresent()) {
                     LOGGER.info("Event court-document-send-to-cps triggered and API-M notification is enabled");
-                    cpsRestNotificationService.sendMaterial(transformedJsonPayload.get());
+                    cpsRestNotificationService.sendMaterial(transformedJsonPayload.get(), courtDocument.getCourtDocumentId(), envelope);
                 } else {
                     LOGGER.info("Event court-document-send-to-cps triggered but no payload available");
                 }

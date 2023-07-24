@@ -32,6 +32,9 @@
      },
     "document": {
       "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
+    },
+    "sendToCps": {
+      "type": "boolean"
     }
   },
   "required": [

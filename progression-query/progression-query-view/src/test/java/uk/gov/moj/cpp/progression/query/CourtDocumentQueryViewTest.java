@@ -64,6 +64,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentTypeRBAC;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NotificationStatusEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CpsSendNotificationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
@@ -157,6 +158,9 @@ public class CourtDocumentQueryViewTest {
 
     @Mock
     uk.gov.justice.services.messaging.Envelope<JsonObject> responseFromRefData;
+
+    @Mock
+    private CpsSendNotificationRepository cpsSendNotificationRepository;
 
     private static final UUID DOCUMENT_TYPE_ID_1 = UUID.fromString("460f7ec0-c002-11e8-a355-529269fb1459");
     private static final UUID DOCUMENT_TYPE_ID_2 = UUID.fromString("460f8154-c002-11e8-a355-529269fb1459");
@@ -479,7 +483,7 @@ public class CourtDocumentQueryViewTest {
             return id2ExpectedCourtDocumentIndex.get(id);
         };
 
-        when(courtDocumentTransform.transform(any())).thenAnswer(transformResult);
+        when(courtDocumentTransform.transform(any(),any())).thenAnswer(transformResult);
 
         final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
         CourtDocumentsSearchResult result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
@@ -1041,7 +1045,7 @@ public class CourtDocumentQueryViewTest {
             }
         };
 
-        when(courtDocumentTransform.transform(any())).thenAnswer(transformResult);
+        when(courtDocumentTransform.transform(any(), any())).thenAnswer(transformResult);
 
         final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
         final CourtDocumentsSearchResult result = jsonObjectToObjectConverter
@@ -1106,7 +1110,7 @@ public class CourtDocumentQueryViewTest {
             }
         };
 
-        when(courtDocumentTransform.transform(any())).thenAnswer(transformResult);
+        when(courtDocumentTransform.transform(any(), any())).thenAnswer(transformResult);
 
         final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsAll(jsonEnvelopeIn);
         final CourtDocumentsSearchResult result = jsonObjectToObjectConverter.convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
@@ -1176,7 +1180,7 @@ public class CourtDocumentQueryViewTest {
                 .withHearingIds(asList(UUID.randomUUID()))
                 .withType("Defendant profile notes");
 
-        when(courtDocumentTransform.transform(any())).thenReturn(courtDocumentIndexBuilder);
+        when(courtDocumentTransform.transform(any(), any())).thenReturn(courtDocumentIndexBuilder);
 
         when(rbacProvider.isLoggedInUserAllowedToReadDocument((Action) any())).thenReturn(true);
         mockReferenceData(jsonEnvelopeIn, userGroupArray);
@@ -1192,7 +1196,7 @@ public class CourtDocumentQueryViewTest {
             assertThat(courtDocumentIndexOut.getDefendantIds().get(0), is(expectedIndex.getDefendantIds().get(0)));
             assertThat(courtDocumentIndexOut.getCaseIds().get(0), is(expectedIndex.getCaseIds().get(0)));
             assertThat(courtDocumentIndexOut.getHearingIds().get(0), is(expectedIndex.getHearingIds().get(0)));
-            verify(courtDocumentTransform, times(1)).transform(courtDocumentArgumentCaptor.capture());
+            verify(courtDocumentTransform, times(1)).transform(courtDocumentArgumentCaptor.capture(), any());
 
             final CourtDocument courtDocumentTransformed = courtDocumentArgumentCaptor.getValue();
             final int materialCount = courtDocumentTransformed.getMaterials().size();
@@ -1231,7 +1235,7 @@ public class CourtDocumentQueryViewTest {
                 .withHearingIds(asList(UUID.randomUUID()))
                 .withType("Defendant profile notes");
 
-        when(courtDocumentTransform.transform(any())).thenReturn(courtDocumentIndexBuilder);
+        when(courtDocumentTransform.transform(any(),any())).thenReturn(courtDocumentIndexBuilder);
 
         when(rbacProvider.isLoggedInUserAllowedToReadDocument((Action) any())).thenReturn(true);
         mockUserGroups(userGroupArray, jsonEnvelopeIn);
@@ -1280,7 +1284,7 @@ public class CourtDocumentQueryViewTest {
         final CourtDocumentIndex.Builder courtDocumentIndexBuilder2 = createCourtDocumentIndex(courtDocument2, applicationId);
         final CourtDocumentIndex.Builder courtDocumentIndexBuilder = createCourtDocumentIndex(courtDocument1, applicationId);
 
-        when(courtDocumentTransform.transform(any())).thenReturn(courtDocumentIndexBuilder1)
+        when(courtDocumentTransform.transform(any(), any())).thenReturn(courtDocumentIndexBuilder1)
                 .thenReturn(courtDocumentIndexBuilder2)
                 .thenReturn(courtDocumentIndexBuilder);
 
@@ -1309,7 +1313,7 @@ public class CourtDocumentQueryViewTest {
         assertThat(courtDocumentIndexOut1.getCaseIds().get(0), is(expectedIndex2.getCaseIds().get(0)));
         assertThat(courtDocumentIndexOut1.getHearingIds().get(0), is(expectedIndex2.getHearingIds().get(0)));
 
-        verify(courtDocumentTransform, times(2)).transform(courtDocumentArgumentCaptor.capture());
+        verify(courtDocumentTransform, times(2)).transform(courtDocumentArgumentCaptor.capture(), any());
 
         final CourtDocument courtDocumentTransformed = courtDocumentArgumentCaptor.getValue();
         final int materialCount = courtDocumentTransformed.getMaterials().size();
@@ -1349,7 +1353,7 @@ public class CourtDocumentQueryViewTest {
                 .withHearingIds(asList(hearingId))
                 .withType("Defendant profile notes");
 
-        when(courtDocumentTransform.transform(any())).thenReturn(courtDocumentIndexBuilder);
+        when(courtDocumentTransform.transform(any(), any())).thenReturn(courtDocumentIndexBuilder);
 
         final CourtDocumentIndex expectedIndex = courtDocumentIndexBuilder.build();
         final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsByHearingId(jsonEnvelopeIn);
@@ -1363,7 +1367,7 @@ public class CourtDocumentQueryViewTest {
             assertThat(courtDocumentIndexOut.getDefendantIds().get(0), is(expectedIndex.getDefendantIds().get(0)));
             assertThat(courtDocumentIndexOut.getCaseIds().get(0), is(expectedIndex.getCaseIds().get(0)));
             assertThat(courtDocumentIndexOut.getHearingIds().get(0), is(expectedIndex.getHearingIds().get(0)));
-            verify(courtDocumentTransform, times(1)).transform(courtDocumentArgumentCaptor.capture());
+            verify(courtDocumentTransform, times(1)).transform(courtDocumentArgumentCaptor.capture(), cpsSendNotificationRepository);
 
             final CourtDocument courtDocumentTransformed = courtDocumentArgumentCaptor.getValue();
             final int materialCount = courtDocumentTransformed.getMaterials().size();
@@ -1402,7 +1406,7 @@ public class CourtDocumentQueryViewTest {
                 .withType("Defendant profile notes")
                 .withCaseIds(singletonList(hearingId));
 
-        when(courtDocumentTransform.transform(any())).thenReturn(courtDocumentIndexBuilder);
+        when(courtDocumentTransform.transform(any(), any())).thenReturn(courtDocumentIndexBuilder);
 
         final CourtDocumentIndex expectedIndex = courtDocumentIndexBuilder.build();
         final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsByHearingId(jsonEnvelopeIn);
@@ -1416,7 +1420,7 @@ public class CourtDocumentQueryViewTest {
         assertThat(courtDocumentIndexOut.getDefendantIds().get(0), is(expectedIndex.getDefendantIds().get(0)));
         assertThat(courtDocumentIndexOut.getCaseIds().get(0), is(expectedIndex.getCaseIds().get(0)));
         assertThat(courtDocumentIndexOut.getHearingIds().get(0), is(expectedIndex.getHearingIds().get(0)));
-        verify(courtDocumentTransform, times(1)).transform(courtDocumentArgumentCaptor.capture());
+        verify(courtDocumentTransform, times(1)).transform(courtDocumentArgumentCaptor.capture(), any());
 
         final CourtDocument courtDocumentTransformed = courtDocumentArgumentCaptor.getValue();
         final int materialCount = courtDocumentTransformed.getMaterials().size();
