@@ -400,47 +400,10 @@
                             <runOrder>alphabetical</runOrder>
                             <systemPropertyVariables>
                                 <INTEGRATION_HOST_KEY>${INTEGRATION_HOST_KEY}</INTEGRATION_HOST_KEY>
-                                <ELASTICSEARCH_URI>http://127.0.0.1:9500</ELASTICSEARCH_URI>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
-                    <!-- Running with embedded elasticsearch by default -->
-                    <plugin>
-                        <groupId>com.github.alexcojocaru</groupId>
-                        <artifactId>elasticsearch-maven-plugin</artifactId>
-                        <version>${elasticsearch-maven-plugin.version}</version>
-                        <configuration>
-                            <skip>false</skip>
-                            <version>${elasticsearch.embedded.version}</version>
-                            <flavour>default</flavour>
-                            <clusterName>test</clusterName>
-                            <httpPort>9500</httpPort>
-                            <transportPort>9600</transportPort>
-                            <!-- How long to wait for ES to start-->
-                            <timeout>60</timeout>
-                            <instanceSettings>
-                                <properties>
-                                    <discovery.type>single-node</discovery.type>
-                                </properties>
-                            </instanceSettings>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>start-elasticsearch</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>runforked</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>stop-elasticsearch</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>stop</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
+                    <!-- Running with embedded elasticsearch by default - removed on recommendation from DevOps -->
                 </plugins>
             </build>
         </profile>
