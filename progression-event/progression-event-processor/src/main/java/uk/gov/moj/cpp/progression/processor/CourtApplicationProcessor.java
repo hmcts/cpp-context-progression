@@ -131,6 +131,8 @@ public class CourtApplicationProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtApplicationProcessor.class.getCanonicalName());
     public static final String HEARING_ID = "hearingId";
+    public static final String PUBLIC_PROGRESSION_EVENTS_BREACH_APPLICATIONS_TO_BE_ADDED_TO_HEARING = "public.progression.breach-applications-to-be-added-to-hearing";
+
 
     @Inject
     private ListingService listingService;
@@ -613,7 +615,7 @@ public class CourtApplicationProcessor {
                     final List<Offence> offences = nonNull(defendant.get().getOffences())? defendant.get().getOffences().stream().collect(toList()) :null;
 
                     final CourtApplication courtApplication = CourtApplication.courtApplication()
-                            .withId(UUID.randomUUID())
+                            .withId(breachedApplication.getId())
                             .withType(breachedApplication.getApplicationType())
                             .withCourtOrder(breachedApplication.getCourtOrder())
                             .withApplicationStatus(ApplicationStatus.DRAFT)
@@ -711,6 +713,11 @@ public class CourtApplicationProcessor {
         subject.ifPresent(masterDefendants::add);
 
         return masterDefendants.stream().filter(distinctByKey(MasterDefendant::getMasterDefendantId)).collect(toList());
+    }
+
+    @Handles("progression.event.breach-applications-to-be-added-to-hearing")
+    public void processBreachApplicationsTobeAddedToHearing(final JsonEnvelope event) {
+        sender.send(envelop(event.payloadAsJsonObject()).withName(PUBLIC_PROGRESSION_EVENTS_BREACH_APPLICATIONS_TO_BE_ADDED_TO_HEARING).withMetadataFrom(event));
     }
 
     private <T> Predicate<T> distinctByKey(final Function<? super T, Object> keyExtractor) {

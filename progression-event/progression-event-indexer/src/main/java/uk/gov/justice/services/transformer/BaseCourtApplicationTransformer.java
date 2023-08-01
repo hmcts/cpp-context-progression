@@ -48,16 +48,21 @@ public abstract class BaseCourtApplicationTransformer implements Transform {
     protected CaseDetailsMapper caseDetailsMapper = new CaseDetailsMapper();
 
     protected Map<UUID, CaseDetails> transformCourtApplicationStatusChange(final CourtApplication courtApplication, final Map<UUID, CaseDetails> caseDocumentsMap) {
-        final CourtApplicationType applicationType = courtApplication.getType();
-        final LinkType linkType = applicationType.getLinkType();
         final List<CourtApplicationCase> courtApplicationCases = courtApplication.getCourtApplicationCases();
+        final LinkType linkType = courtApplication.getType().getLinkType();
         final List<Application> applications = new ArrayList<>();
         applications.add(applicationMapper.transform(courtApplication));
-        if (CollectionUtils.isNotEmpty(courtApplicationCases) && !FIRST_HEARING.equals(linkType)) {
-            //linked application
-            for (final CourtApplicationCase courtApplicationCase : courtApplicationCases) {
-                final UUID caseId = courtApplicationCase.getProsecutionCaseId();
-                caseDocumentsMap.put(caseId, getCaseDetails(applications, caseId, courtApplicationCase.getCaseStatus()));
+        if (CollectionUtils.isNotEmpty(courtApplicationCases)) {
+            if (FIRST_HEARING.equals(linkType)) {
+
+                transformCourtApplication(courtApplication, caseDocumentsMap);
+
+            } else {
+                //linked application
+                for (final CourtApplicationCase courtApplicationCase : courtApplicationCases) {
+                    final UUID caseId = courtApplicationCase.getProsecutionCaseId();
+                    caseDocumentsMap.put(caseId, getCaseDetails(applications, caseId, courtApplicationCase.getCaseStatus()));
+                }
             }
         } else if (nonNull(courtApplication.getCourtOrder())) {
             //Handle courtOrder

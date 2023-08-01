@@ -30,6 +30,9 @@
         "applicationType": {
           "description": "The type of application made to court for judicial decision.  Taken from reference data",
           "$ref": "http://justice.gov.uk/core/courts/courtApplicationType.json"
+        },
+        "id": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
         }
       },
       "required": [

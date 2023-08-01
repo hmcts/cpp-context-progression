@@ -52,7 +52,6 @@ unified_search_descriptor:
      - name: progression.event.case-hearing-details-updated-in-unified-search
        transformer_config: progression.event.case-hearing-details-updated-in-unified-search-spec.json
        index_name: crime_case_index
-
      - name: progression.event.case-ejected
        transformer_config: progression.event.case-ejected-spec.json
        index_name: crime_case_index

@@ -6,6 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
+import uk.gov.justice.core.courts.BreachApplicationsToBeAddedToHearing;
+import uk.gov.justice.core.courts.BreachedApplications;
+import uk.gov.justice.core.courts.CaseHearingDetailsUpdatedInUnifiedSearch;
 import uk.gov.justice.core.courts.CaseHearingDetailsUpdatedInUnifiedSearch;
 import uk.gov.justice.core.courts.CaseMarkersUpdatedInHearing;
 import uk.gov.justice.core.courts.CasesAddedForUpdatedRelatedHearing;
@@ -122,6 +125,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -158,7 +162,7 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupRe
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 9128521802762667388L;
+    private static final long serialVersionUID = 9128521802762667389L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -181,15 +185,18 @@ public class HearingAggregate implements Aggregate {
     @Override
     public Object apply(final Object event) {
         return match(event).with(
-                when(HearingInitiateEnriched.class).apply(e ->
-                        setHearing(e.getHearing())
-                ),
-                when(HearingForApplicationCreated.class).apply(e ->
-                        setHearing(e.getHearing())
-                ),
-                when(HearingForApplicationCreatedV2.class).apply(e ->
-                        setHearing(e.getHearing())
-                ),
+                when(HearingInitiateEnriched.class).apply(e -> {
+                    setHearing(e.getHearing());
+                    this.hearingListingStatus = HearingListingStatus.HEARING_INITIALISED;
+                }),
+                when(HearingForApplicationCreated.class).apply(e -> {
+                    setHearing(e.getHearing());
+                    this.hearingListingStatus = e.getHearingListingStatus();
+                }),
+                when(HearingForApplicationCreatedV2.class).apply(e -> {
+                    setHearing(e.getHearing());
+                    this.hearingListingStatus = e.getHearingListingStatus();
+                }),
                 when(ProsecutionCaseDefendantListingStatusChanged.class).apply(e -> {
                     setHearing(e.getHearing());
                     this.committingCourt = findCommittingCourt(e.getHearing());
@@ -485,9 +492,11 @@ public class HearingAggregate implements Aggregate {
 
     public Stream<Object> addBreachApplication(final AddBreachApplication addBreachApplication) {
         LOGGER.debug("Breach application creation is being requested.");
+        final List<BreachedApplications> breachedApplications = addBreachApplication.getBreachedApplications().stream().map(ba -> getBreachedApplicationsWithId(ba)).collect(toList());
+        final List<UUID> breachedApplicationIds = breachedApplications.stream().map(ba -> ba.getId()).collect(toList());
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        addBreachApplication.getBreachedApplications()
+        breachedApplications
                 .stream()
                 .map(breachedApplication -> BreachApplicationCreationRequested.breachApplicationCreationRequested()
                         .withBreachedApplications(breachedApplication)
@@ -495,8 +504,15 @@ public class HearingAggregate implements Aggregate {
                         .withHearingId(addBreachApplication.getHearingId())
                         .build())
                 .forEach(streamBuilder::add);
-
+        streamBuilder.add(new BreachApplicationsToBeAddedToHearing(breachedApplicationIds, addBreachApplication.getHearingId()));
         return apply(streamBuilder.build());
+    }
+
+    private static BreachedApplications getBreachedApplicationsWithId(final BreachedApplications ba) {
+        return new BreachedApplications.Builder().withId(randomUUID())
+                .withApplicationType(ba.getApplicationType())
+                .withCourtOrder(ba.getCourtOrder())
+                .build();
     }
 
     /**
@@ -592,7 +608,7 @@ public class HearingAggregate implements Aggregate {
     }
 
     public ProsecutionCaseDefendantListingStatusChangedV2 getSavedListingStatusChanged() {
-        return ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2().withHearing(hearing).withHearingListingStatus(hearingListingStatus).withNotifyNCES(notifyNCES).build();
+        return ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2().withHearing(hearing).withHearingListingStatus(HearingListingStatus.HEARING_RESULTED).withNotifyNCES(notifyNCES).build();
     }
 
     public Stream<Object> updateListDefendantRequest(final List<ListDefendantRequest> listDefendantRequests, ConfirmedHearing confirmedHearing) {
@@ -700,7 +716,7 @@ public class HearingAggregate implements Aggregate {
 
         return ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
                 .withDefendants(prosecutionCase.getDefendants().stream()
-                        .map(defendant -> Defendant.defendant().withValuesFrom(defendant)
+                        .map(defendant -> Defendant.defendant().withValuesFrom(defendant).withMasterDefendantId(findMatchedMasterDefendantId(defendant))
                                 .withOffences(ofNullable(defendant.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
                                         .map(offence -> Offence.offence().withValuesFrom(offence)
                                                 .withListingNumber(ofNullable(listingMap.get(offence.getId())).orElse(offence.getListingNumber()))
@@ -711,6 +727,19 @@ public class HearingAggregate implements Aggregate {
                 .build();
     }
 
+    @SuppressWarnings("squid:S1066")
+    private UUID findMatchedMasterDefendantId(final Defendant defendant){
+        if(null != this.hearing && null != this.hearing.getProsecutionCases()) {
+            if(null == defendant.getMasterDefendantId() || defendant.getId().equals(defendant.getMasterDefendantId())) {
+                final Optional<Defendant> matchedDefendant = this.hearing.getProsecutionCases().stream().flatMap(x -> x.getDefendants().stream()).filter(d -> d.getId().equals(defendant.getId())).findFirst();
+                if (matchedDefendant.isPresent()) {
+                   final  UUID matchedMasterDefendantId = matchedDefendant.get().getMasterDefendantId();
+                     return  matchedMasterDefendantId == null ? defendant.getMasterDefendantId() : matchedMasterDefendantId;
+                }
+            }
+        }
+        return  defendant.getMasterDefendantId();
+    }
     public Stream<Object> processHearingExtended(final HearingListingNeeds hearingRequest, final List<UUID> shadowListedOffences) {
         return apply(Stream.of(HearingExtendedProcessed.hearingExtendedProcessed()
                 .withHearingRequest(hearingRequest)
@@ -918,6 +947,7 @@ public class HearingAggregate implements Aggregate {
      * DO NOT USE THIS FUNCTION EXCEPT FOR THE PURPOSE MENTIONED BELOW.
      * The aggregate function is being added to be invoked only by the BDF, purpose of this function to raise 'progression.event.hearing-deleted'
      * event to remove any child entries of deleted hearing entity from the view store.
+     *
      * @param hearingId The already deleted hearing id
      * @return The Stream object
      */
@@ -1223,13 +1253,13 @@ public class HearingAggregate implements Aggregate {
 
         if (HearingListingStatus.HEARING_INITIALISED == this.hearingListingStatus) {
             Set<ProsecutionCase> resultCases = new HashSet<>();
-            final Set<Defendant> resultDefendants= new HashSet<>();
+            final Set<Defendant> resultDefendants = new HashSet<>();
 
 
-                resultCases = getProsecutionCasesAfterMergeAtDifferentLevel(hearingListingNeeds, resultCases, resultDefendants);
+            resultCases = getProsecutionCasesAfterMergeAtDifferentLevel(hearingListingNeeds, resultCases, resultDefendants);
 
-                newHearingListingNeeds.getProsecutionCases().clear();
-                newHearingListingNeeds.getProsecutionCases().addAll(resultCases);
+            newHearingListingNeeds.getProsecutionCases().clear();
+            newHearingListingNeeds.getProsecutionCases().addAll(resultCases);
 
             final Hearing prosecutionCaseDefendantListingHearing = Hearing.hearing()
                     .withId(newHearingListingNeeds.getId())
@@ -1244,13 +1274,13 @@ public class HearingAggregate implements Aggregate {
                     .withBookingType(newHearingListingNeeds.getBookingType())
                     .withProsecutionCases(newHearingListingNeeds.getProsecutionCases()).build();
 
-                final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = prosecutionCaseDefendantListingStatusChangedV2()
-                        .withHearing(prosecutionCaseDefendantListingHearing)
-                        .withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED)
-                        .build();
+            final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = prosecutionCaseDefendantListingStatusChangedV2()
+                    .withHearing(prosecutionCaseDefendantListingHearing)
+                    .withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED)
+                    .build();
 
-                streamBuilder.add(prosecutionCaseDefendantListingStatusChangedV2);
-            }
+            streamBuilder.add(prosecutionCaseDefendantListingStatusChangedV2);
+        }
 
 
         final RelatedHearingUpdated relatedHearingUpdated = RelatedHearingUpdated.relatedHearingUpdated()
@@ -1271,9 +1301,9 @@ public class HearingAggregate implements Aggregate {
      * This method is responsible for merging cases, defendants and offences between HearingListingNeeds which is passed in payload and hearing in aggregate.
      * Since the case can be splitted at case, defendant and offence levels when we are merging here we need to compare at every level and merge it back.
      *
-     * @param hearingListingNeeds  HearingListingNeeds which is passed in payload
-     * @param resultCases Result cases
-     * @param resultDefendants Result Defendants
+     * @param hearingListingNeeds HearingListingNeeds which is passed in payload
+     * @param resultCases         Result cases
+     * @param resultDefendants    Result Defendants
      * @return set of new case with merged cases, defendant or offence based on which level spilt has happened.
      */
 
@@ -1811,7 +1841,7 @@ public class HearingAggregate implements Aggregate {
     }
 
     private ProsecutionCaseDefendantListingStatusChangedV2 createListingStatusResultedEvent(final Hearing hearing) {
-        return ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2().withHearing(hearing).withHearingListingStatus(hearingListingStatus).withNotifyNCES(notifyNCES).build();
+        return ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2().withHearing(hearing).withHearingListingStatus(HearingListingStatus.HEARING_RESULTED).withNotifyNCES(notifyNCES).build();
     }
 
     private HearingResulted createHearingResultedEvent(final Hearing hearing, final ZonedDateTime sharedTime, final LocalDate hearingDay) {

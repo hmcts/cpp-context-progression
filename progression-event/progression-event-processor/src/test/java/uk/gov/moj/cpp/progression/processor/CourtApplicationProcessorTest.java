@@ -8,6 +8,7 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
+import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -38,6 +39,7 @@ import static uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApprove
 import static uk.gov.justice.core.courts.MasterDefendant.masterDefendant;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.core.courts.ProsecutionCaseIdentifier.prosecutionCaseIdentifier;
+
 import static uk.gov.justice.core.courts.SendNotificationForApplication.sendNotificationForApplication;
 import static uk.gov.justice.core.courts.SummonsApprovedOutcome.summonsApprovedOutcome;
 import static uk.gov.justice.core.courts.SummonsRejectedOutcome.summonsRejectedOutcome;
@@ -46,10 +48,12 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.EMAIL_ADDRESS;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.progression.processor.CourtApplicationProcessor.PUBLIC_PROGRESSION_EVENTS_BREACH_APPLICATIONS_TO_BE_ADDED_TO_HEARING;
 
 import uk.gov.justice.core.courts.ApplicationReferredToExistingHearing;
 import uk.gov.justice.core.courts.BoxHearingRequest;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
+import uk.gov.justice.core.courts.BreachApplicationsToBeAddedToHearing;
 import uk.gov.justice.core.courts.BreachType;
 import uk.gov.justice.core.courts.BreachedApplications;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -98,6 +102,7 @@ import uk.gov.moj.cpp.progression.service.SjpService;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -302,6 +307,8 @@ public class CourtApplicationProcessorTest {
         verify(notificationService, times(2)).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
 
     }
+
+
 
     private CourtApplicationParty buildMasterDefendant() {
         return courtApplicationParty()
@@ -986,6 +993,23 @@ public class CourtApplicationProcessorTest {
         verify(sender).send(captor.capture());
         final List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), is(PUBLIC_PROGRESSION_HEARING_RESULTED_APPLICATION_UPDATED));
+    }
+
+
+    @Test
+    public void shouldProcessBreachApplicationsTobeAddedToHearing() {
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.breach-applications-to-be-added-to-hearing");
+
+        final BreachApplicationsToBeAddedToHearing breachApplicationsToBeAddedToHearing = new BreachApplicationsToBeAddedToHearing(asList(randomUUID()), randomUUID());
+        final JsonObject payload = objectToJsonObjectConverter.convert(breachApplicationsToBeAddedToHearing);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        courtApplicationProcessor.processBreachApplicationsTobeAddedToHearing(event);
+
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender).send(captor.capture());
+        final List<Envelope> currentEvents = captor.getAllValues();
+        assertThat(currentEvents.get(0).metadata().name(), is(PUBLIC_PROGRESSION_EVENTS_BREACH_APPLICATIONS_TO_BE_ADDED_TO_HEARING));
     }
 
     @Test

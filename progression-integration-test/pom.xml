@@ -404,6 +404,7 @@
                         </configuration>
                     </plugin>
                     <!-- Running with embedded elasticsearch by default - removed on recommendation from DevOps -->
+
                 </plugins>
             </build>
         </profile>

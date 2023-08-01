@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -11,6 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import uk.gov.justice.core.courts.CasesAddedForUpdatedRelatedHearing;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.listing.courts.UpdateRelatedHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
@@ -25,8 +29,12 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import javax.inject.Inject;
+
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class RelatedHearingEventProcessor {
@@ -121,13 +129,60 @@ public class RelatedHearingEventProcessor {
         }
 
         final CasesAddedForUpdatedRelatedHearing casesAddedForUpdatedRelatedHearing = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), CasesAddedForUpdatedRelatedHearing.class);
+        final List<ProsecutionCase> prosecutionCases = buildProsecutionCasesForRelatedHearing(casesAddedForUpdatedRelatedHearing.getHearingRequest());
         final UpdateRelatedHearing updateRelatedHearingForHearing = UpdateRelatedHearing.updateRelatedHearing()
                 .withHearingId(casesAddedForUpdatedRelatedHearing.getHearingRequest().getId())
-                .withProsecutionCases(casesAddedForUpdatedRelatedHearing.getHearingRequest().getProsecutionCases())
+                .withProsecutionCases(prosecutionCases)
                 .withShadowListedOffences(casesAddedForUpdatedRelatedHearing.getShadowListedOffences())
                 .build();
         sender.send(Enveloper.envelop(objectToJsonObjectConverter.convert(updateRelatedHearingForHearing)).withName("hearing.update-related-hearing").withMetadataFrom(jsonEnvelope));
 
+    }
+
+    private List<ProsecutionCase> buildProsecutionCasesForRelatedHearing(HearingListingNeeds hearingRequest) {
+        final List<ProsecutionCase> updatedProsecutionCases = new ArrayList<>();
+        hearingRequest.getProsecutionCases().forEach(prosecutionCase ->
+                {
+                    final ProsecutionCase newProsecutionCase = buildProsecutionCase(hearingRequest, prosecutionCase);
+                    updatedProsecutionCases.add(newProsecutionCase);
+                }
+
+        );
+        return updatedProsecutionCases;
+    }
+
+    private ProsecutionCase buildProsecutionCase(final HearingListingNeeds hearingRequest, final ProsecutionCase prosecutionCase) {
+        return ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
+                .withDefendants(buildDefendants(prosecutionCase.getDefendants(), hearingRequest.getListedStartDateTime()))
+                .build();
+    }
+
+    private List<Defendant> buildDefendants(final List<Defendant> defendants, ZonedDateTime listedStartDateTime) {
+        return defendants.stream().map(defendant -> buildDefendantWithNextHearingOffences(defendant, listedStartDateTime))
+                .collect(Collectors.toList());
+    }
+
+    private Defendant buildDefendantWithNextHearingOffences(Defendant defendant, ZonedDateTime listedStartDateTime) {
+        return Defendant.defendant().withValuesFrom(defendant)
+                .withOffences(filterOffencesWithNextHearing(defendant.getOffences(), listedStartDateTime))
+                .build();
+    }
+
+
+    private List<Offence> filterOffencesWithNextHearing(List<Offence> defendantOffences, ZonedDateTime listedStartDateTime) {
+        return defendantOffences.stream()
+                .filter(offence -> checkNextHearingExists(offence, listedStartDateTime))
+                .collect(Collectors.toList());
+
+    }
+
+    private boolean checkNextHearingExists(final Offence offence, ZonedDateTime listedStartDateTime) {
+        if(offence.getJudicialResults()!=null) {
+            return offence.getJudicialResults().stream()
+                    .anyMatch(judicialResult -> nonNull(judicialResult.getNextHearing())
+                            && listedStartDateTime.equals(judicialResult.getNextHearing().getListedStartDateTime()));
+        }
+        return true;
     }
 
 
