@@ -693,10 +693,10 @@ public class FormEventProcessor {
         final JsonArrayBuilder defendantIdArray = Json.createArrayBuilder();
         final List<JsonObject> formDefendantList = payload.getJsonArray(FORM_DEFENDANTS).getValuesAs(JsonObject.class);
         formDefendantList.forEach(defendant -> defendantIdArray.add(Json.createObjectBuilder()
-                                .add(DEFENDANT_ID, defendant.getString(DEFENDANT_ID))
-                                .build()
-                        )
-                );
+                        .add(DEFENDANT_ID, defendant.getString(DEFENDANT_ID))
+                        .build()
+                )
+        );
 
         final JsonObject createPetFormPayload = Json.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
@@ -729,10 +729,10 @@ public class FormEventProcessor {
         final JsonArrayBuilder defendantIdArray = Json.createArrayBuilder();
         final List<JsonObject> formDefendantList = payload.getJsonArray(FORM_DEFENDANTS).getValuesAs(JsonObject.class);
         formDefendantList.forEach(defendant -> defendantIdArray.add(Json.createObjectBuilder()
-                                .add(DEFENDANT_ID, defendant.getString(DEFENDANT_ID))
-                                .build()
-                        )
-                );
+                        .add(DEFENDANT_ID, defendant.getString(DEFENDANT_ID))
+                        .build()
+                )
+        );
 
         final JsonObject createPetFormPayload = Json.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))

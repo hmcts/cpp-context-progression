@@ -358,7 +358,7 @@ public class PetFormEventProcessor {
         if(isNotEmpty(petDefendantList)){
             petDefendantList.forEach( defendant -> updateCpsDefendantId(envelope, payload.getString(CASE_ID), defendant));
         }
-        
+
         LOGGER.info("prosecutioncasefile.event.cps-serve-pet-submitted");
 
     }

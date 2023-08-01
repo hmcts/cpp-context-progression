@@ -306,6 +306,13 @@ public class NotificationServiceTest {
                 .withId(applicationId)
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(
+                                MasterDefendant.masterDefendant().withPersonDefendant(
+                                                PersonDefendant.personDefendant().withPersonDetails(
+                                                                Person.person().withFirstName("Test").withLastName("Test")
+                                                                        .build())
+                                                        .build())
+                                        .build())
                         .withPersonDetails(
                                 Person.person()
                                         .withContact(
@@ -336,6 +343,7 @@ public class NotificationServiceTest {
                 .withId(applicationId)
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().withFirstName("Test").withLastName("Test").build()).build()).build())
                         .withOrganisation(Organisation.organisation().withContact(ContactNumber.contactNumber().withPrimaryEmail("applicant@test.com").build()).build())
                         .build())
                 .build();
@@ -424,7 +432,13 @@ public class NotificationServiceTest {
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withRespondents(respondents)
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
-                        .withPersonDetails(
+                        .withMasterDefendant(
+                                MasterDefendant.masterDefendant().withPersonDefendant(
+                                                PersonDefendant.personDefendant().withPersonDetails(
+                                                                Person.person().withFirstName("Test").withLastName("Test")
+                                                                        .build())
+                                                        .build())
+                                        .build())                         .withPersonDetails(
                                 Person.person()
                                         .withContact(
                                                 ContactNumber.contactNumber()
@@ -462,6 +476,7 @@ public class NotificationServiceTest {
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withThirdParties(thirdParties)
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().withFirstName("Test").withLastName("Test").build()).build()).build())
                         .withPersonDetails(
                                 Person.person()
                                         .withContact(
@@ -500,6 +515,13 @@ public class NotificationServiceTest {
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withRespondents(respondents)
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(
+                                MasterDefendant.masterDefendant().withPersonDefendant(
+                                        PersonDefendant.personDefendant().withPersonDetails(
+                                                        Person.person().withFirstName("Test").withLastName("Test")
+                                                                .build())
+                                                .build())
+                                .build())
                         .withPersonDetails(
                                 Person.person()
                                         .withContact(
@@ -538,6 +560,13 @@ public class NotificationServiceTest {
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withRespondents(respondents)
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(
+                                MasterDefendant.masterDefendant().withPersonDefendant(
+                                        PersonDefendant.personDefendant().withPersonDetails(
+                                                Person.person().withFirstName("Test").withLastName("Test")
+                                                        .build())
+                                                .build())
+                                        .build())
                         .withPersonDetails(
                                 Person.person()
                                         .withContact(
@@ -575,7 +604,13 @@ public class NotificationServiceTest {
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withRespondents(respondents)
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
-                        .withPersonDetails(
+                        .withMasterDefendant(
+                                MasterDefendant.masterDefendant().withPersonDefendant(
+                                                PersonDefendant.personDefendant().withPersonDetails(
+                                                                Person.person().withFirstName("Test").withLastName("Test")
+                                                                        .build())
+                                                        .build())
+                                        .build())                         .withPersonDetails(
                                 Person.person()
                                         .withContact(
                                                 ContactNumber.contactNumber()
@@ -607,7 +642,13 @@ public class NotificationServiceTest {
                 .withId(applicationId)
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
-                        .withPersonDetails(
+                        .withMasterDefendant(
+                                MasterDefendant.masterDefendant().withPersonDefendant(
+                                                PersonDefendant.personDefendant().withPersonDetails(
+                                                                Person.person().withFirstName("Test").withLastName("Test")
+                                                                        .build())
+                                                        .build())
+                                        .build())                        .withPersonDetails(
                                 Person.person()
                                         .withContact(
                                                 ContactNumber.contactNumber()
@@ -658,13 +699,13 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void getApplicantEmailAddressTest() throws Exception {
+    public void getCourtApplicationPartyEmailAddressTest() throws Exception {
         CourtApplicationParty courtApplicationPartyMock = buildCourtApplicationPartyWithLegalEntity();
-        Optional<String> companyEmail = Whitebox.invokeMethod(notificationService, "getApplicantEmailAddress", courtApplicationPartyMock);
+        Optional<String> companyEmail = Whitebox.invokeMethod(notificationService, "getCourtApplicationPartyEmailAddress", courtApplicationPartyMock);
         verifyCompanyEmail(companyEmail.get());
 
         CourtApplicationParty courtApplicationPartyMock1 = buildCourtApplicationPartyWithPersonDefendant();
-        Optional<String> personEmail = Whitebox.invokeMethod(notificationService, "getApplicantEmailAddress", courtApplicationPartyMock1);
+        Optional<String> personEmail = Whitebox.invokeMethod(notificationService, "getCourtApplicationPartyEmailAddress", courtApplicationPartyMock1);
         verifyPersonEmail(personEmail.get());
     }
 

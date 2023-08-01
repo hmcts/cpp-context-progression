@@ -1590,9 +1590,9 @@ public class ProgressionService {
 
     private String getApplicationParticulars(final NextHearing nextHearing) {
         return Stream.of(nextHearing.getOrderName(),
-                nonNull(nextHearing.getSuspendedPeriod()) ? "Suspended Period: " + nextHearing.getSuspendedPeriod() : null,
-                nonNull(nextHearing.getTotalCustodialPeriod()) ? "Total Custodial Period: " + nextHearing.getTotalCustodialPeriod() : null,
-                getEndDateString(nextHearing))
+                        nonNull(nextHearing.getSuspendedPeriod()) ? "Suspended Period: " + nextHearing.getSuspendedPeriod() : null,
+                        nonNull(nextHearing.getTotalCustodialPeriod()) ? "Total Custodial Period: " + nextHearing.getTotalCustodialPeriod() : null,
+                        getEndDateString(nextHearing))
                 .filter(applicationParticulars -> applicationParticulars != null && !applicationParticulars.isEmpty())
                 .collect(Collectors.joining(", "));
     }

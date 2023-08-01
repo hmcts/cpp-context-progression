@@ -2,15 +2,11 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
-
-import java.util.Collection;
-import java.util.stream.Stream;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AssignDefendantRequestFromCurrentHearingToExtendHearing;
 import uk.gov.justice.core.courts.AssignDefendantRequestToExtendHearing;
@@ -25,7 +21,6 @@ import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdateRequested;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingConfirmed;
-import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ListCourtHearing;
@@ -52,13 +47,14 @@ import uk.gov.moj.cpp.progression.service.PartialHearingConfirmService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.ProsecutionCasesReferredToCourtTransformer;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -134,13 +130,11 @@ public class HearingConfirmedEventProcessor {
             final List<ConfirmedProsecutionCase> confirmedProsecutionCases = confirmedHearing.getProsecutionCases();
 
             final Hearing hearing = hearingInitiate.getHearing();
-            final ZonedDateTime hearingStartDateTime = getEarliestDate(hearing.getHearingDays());
             LOGGER.info("List of application ids {} ", applicationIds);
 
             final List<CourtApplication> courtApplications = ofNullable(hearing.getCourtApplications()).orElse(new ArrayList<>());
 
             courtApplications.forEach(courtApplication -> LOGGER.info("sending notification for Application : {}", objectToJsonObjectConverter.convert(courtApplication)));
-            courtApplications.forEach(courtApplication -> notificationService.sendNotification(jsonEnvelope, UUID.randomUUID(), courtApplication, hearing.getCourtCentre(), hearingStartDateTime, hearing.getJurisdictionType()));
 
             if (isNotEmpty(applicationIds)) {
                 LOGGER.info("Update application status to LISTED, associate Hearing with id: {} to Applications with ids {} and generate summons", hearing.getId(), applicationIds);
@@ -279,13 +273,6 @@ public class HearingConfirmedEventProcessor {
         progressionService.populateHearingToProbationCaseworker(jsonEnvelope, hearingInitiate.getHearing().getId());
     }
 
-    private static ZonedDateTime getEarliestDate(final List<HearingDay> hearingDays) {
-        return hearingDays.stream()
-                .map(HearingDay::getSittingDay)
-                .sorted()
-                .findFirst()
-                .orElseThrow(IllegalArgumentException::new);
-    }
 
     private void processExtendHearing(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing, final Hearing hearingInProgression) {
         LOGGER.info(" processing extend hearing for hearing id {}", confirmedHearing.getExistingHearingId());
