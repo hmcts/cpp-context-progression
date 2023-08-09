@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.event;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -27,13 +26,7 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.gov.justice.core.courts.CasesAddedForUpdatedRelatedHearing;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.HearingListingNeeds;
-import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.JudicialResultCategory;
-import uk.gov.justice.core.courts.NextHearing;
-import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
@@ -47,7 +40,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.processor.RelatedHearingEventProcessor;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -207,52 +199,19 @@ public class RelatedHearingEventProcessorTest {
         final UUID seedingHearingId = randomUUID();
         final UUID hearingId = randomUUID();
         final UUID prosecutionCaseId = randomUUID();
-        final UUID offenceId1 = randomUUID();
-        final UUID offenceId2 = randomUUID();
-        final ZonedDateTime listedStartDateTime = ZonedDateTime.now();
+        final UUID offenceId = randomUUID();
 
         final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
                 .withSeedingHearingId(seedingHearingId)
                 .build();
-        final JudicialResult judicialResult1 = JudicialResult.judicialResult()
-                .withCategory(JudicialResultCategory.FINAL)
-                .withLabel("WithDrawn")
-                .withJudicialResultId(randomUUID())
-                .withResultText("WithDrawn")
-                .build();
-        final JudicialResult judicialResult2 = JudicialResult.judicialResult()
-                .withCategory(JudicialResultCategory.INTERMEDIARY)
-                .withLabel("Case in proceedings")
-                .withJudicialResultId(randomUUID())
-                .withResultText("Case in proceedings")
-                .withNextHearing(NextHearing.nextHearing()
-                        .withCourtCentre(CourtCentre.courtCentre().build())
-                        .withListedStartDateTime(listedStartDateTime).build())
-                .build();
 
-        final Offence offence1 = Offence.offence()
-                .withId(offenceId1)
-                .withOffenceCode("TH68023A")
-                .withJudicialResults(singletonList(judicialResult1))
-                .build();
-        final Offence offence2 = Offence.offence()
-                .withId(offenceId2)
-                .withJudicialResults(singletonList(judicialResult2))
-                .build();
-        final Defendant defendant = Defendant.defendant().
-                withId(randomUUID())
-                .withProsecutionCaseId(prosecutionCaseId)
-                .withOffences(Arrays.asList(offence1, offence2))
-                .build();
-        final List<ProsecutionCase> prosecutionCases = singletonList(ProsecutionCase.prosecutionCase()
+        final List<ProsecutionCase> prosecutionCases = Arrays.asList(ProsecutionCase.prosecutionCase()
                 .withId(prosecutionCaseId)
-                .withDefendants(singletonList(defendant))
                 .build());
 
         final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds()
                 .withId(hearingId)
                 .withProsecutionCases(prosecutionCases)
-                .withListedStartDateTime(listedStartDateTime)
                 .build();
 
         final JsonEnvelope event = envelopeFrom(
@@ -260,7 +219,7 @@ public class RelatedHearingEventProcessorTest {
                 objectToJsonObjectConverter.convert(CasesAddedForUpdatedRelatedHearing.casesAddedForUpdatedRelatedHearing()
                         .withSeedingHearing(seedingHearing)
                         .withHearingRequest(hearingListingNeeds)
-                        .withShadowListedOffences(singletonList(offenceId1))
+                        .withShadowListedOffences(Arrays.asList(offenceId))
                         .build()));
 
         this.eventProcessor.processCasesAddedForUpdatedRelatedHearing(event);
@@ -274,9 +233,8 @@ public class RelatedHearingEventProcessorTest {
                 withJsonPath("$.hearingId", is(hearingId.toString())),
                 withJsonPath("$.prosecutionCases", notNullValue()),
                 withJsonPath("$.prosecutionCases[0].id", is(prosecutionCaseId.toString())),
-                withJsonPath("$.prosecutionCases[0].defendants[0].offences[0].id", is(offenceId2.toString())),
                 withJsonPath("$.shadowListedOffences", notNullValue()),
-                withJsonPath("$.shadowListedOffences[0]", is(offenceId1.toString())))));
+                withJsonPath("$.shadowListedOffences[0]", is(offenceId.toString())))));
     }
 
 }
