@@ -1747,7 +1747,6 @@ public class CaseAggregate implements Aggregate {
                         .withLaaApplnReference(laaReference)
                         .withVictims(null)
                         .withVerdict(null)
-                        .withReportingRestrictions(null)
                         .withProceedingsConcluded(null)
                         .withPlea(null)
                         .withLaidDate(null)

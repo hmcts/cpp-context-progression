@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
@@ -22,6 +23,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReferralReason;
+import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -42,13 +44,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -130,6 +135,8 @@ public class RecordLAAReferenceToOffenceHandlerTest {
         when(legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode(any(JsonEnvelope.class), any(String.class))).thenReturn(Optional.of(getLegalStatus()));
 
         recordLAAReferenceToOffenceHandler.handle(envelope);
+        ArgumentCaptor<Stream> events = ArgumentCaptor.forClass(Stream.class);
+       verify(eventStream).append(events.capture());
 
        verifyAppendAndGetArgumentFrom(eventStream);
 
@@ -159,12 +166,13 @@ public class RecordLAAReferenceToOffenceHandlerTest {
     private DefendantsAddedToCourtProceedings buildDefendantsAddedToCourtProceedings(
             final UUID caseId, final UUID defendantId, final UUID defendantId2, final UUID offenceId) {
 
-
+        ReportingRestriction reportingRestriction = ReportingRestriction.reportingRestriction().withLabel("Victim offence").build();
         uk.gov.justice.core.courts.Offence offence = uk.gov.justice.core.courts.Offence.offence()
                 .withId(offenceId)
                 .withOffenceDefinitionId(UUID.randomUUID())
                 .withOffenceCode("TFL123")
                 .withOffenceTitle("TFL Ticket Dodger")
+                .withReportingRestrictions(Lists.newArrayList(reportingRestriction))
                 .withWording("TFL ticket dodged")
                 .withStartDate(LocalDate.of(2019, 05, 01))
                 .withCount(0)
