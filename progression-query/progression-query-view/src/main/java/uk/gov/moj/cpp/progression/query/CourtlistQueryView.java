@@ -28,6 +28,8 @@ import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.IndicatedPlea;
+import uk.gov.justice.core.courts.IndicatedPleaValue;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
@@ -496,18 +498,31 @@ public class CourtlistQueryView {
 
         if ((nonNull(offenceFromHearing)) && (nonNull(offenceFromHearing.getPlea()))) {
             final Plea pLea = offenceFromHearing.getPlea();
-            offenceBuilder.add("plea", pLea.getPleaValue());
-            offenceBuilder.add("pleaDate", pLea.getPleaDate().format(DATE_FORMATTER));
+            setPleaAndPleaDateIfNotIndicatedNotGuilty(offenceBuilder, pLea.getPleaValue(), pLea.getPleaDate());
         } else if (nonNull(offence.getPlea())) {
             final Plea pLea = offence.getPlea();
-            offenceBuilder.add("plea", pLea.getPleaValue());
-            offenceBuilder.add("pleaDate", pLea.getPleaDate().format(DATE_FORMATTER));
+            setPleaAndPleaDateIfNotIndicatedNotGuilty(offenceBuilder, pLea.getPleaValue(), pLea.getPleaDate());
+        }
+
+        if ((nonNull(offenceFromHearing)) && (nonNull(offenceFromHearing.getIndicatedPlea()))) {
+            final IndicatedPlea pLea = offenceFromHearing.getIndicatedPlea();
+            setPleaAndPleaDateIfNotIndicatedNotGuilty(offenceBuilder, pLea.getIndicatedPleaValue().name(), pLea.getIndicatedPleaDate());
+        } else if (nonNull(offence.getIndicatedPlea())) {
+            final IndicatedPlea pLea = offence.getIndicatedPlea();
+            setPleaAndPleaDateIfNotIndicatedNotGuilty(offenceBuilder, pLea.getIndicatedPleaValue().name(), pLea.getIndicatedPleaDate());
         }
 
         ofNullable(offence.getMaxPenalty()).ifPresent(maxPenalty -> offenceBuilder.add("maxPenalty", maxPenalty));
         ofNullable(offence.getConvictionDate()).ifPresent(convictedOn -> offenceBuilder.add("convictedOn", convictedOn.format(DATE_FORMATTER)));
         ofNullable(offence.getLastAdjournDate()).ifPresent(adjournedDate -> offenceBuilder.add("adjournedDate", adjournedDate.format(DATE_FORMATTER)));
         ofNullable(offence.getLastAdjournedHearingType()).ifPresent(adjournedHearingType -> offenceBuilder.add("adjournedHearingType", adjournedHearingType.replaceAll("\n", ",")));
+    }
+
+    private void setPleaAndPleaDateIfNotIndicatedNotGuilty(final JsonObjectBuilder offenceBuilder, final String plea, LocalDate pleaDate) {
+        if(!plea.equals(IndicatedPleaValue.INDICATED_NOT_GUILTY.name())){
+            offenceBuilder.add("plea", plea);
+            offenceBuilder.add("pleaDate", pleaDate.format(DATE_FORMATTER));
+        }
     }
 
 

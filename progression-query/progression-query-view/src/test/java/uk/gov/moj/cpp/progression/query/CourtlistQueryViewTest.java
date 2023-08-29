@@ -114,16 +114,6 @@ public class CourtlistQueryViewTest {
         assertPleaValue(actual, true);
     }
 
-    private void assertPleaValue(final JsonObject actual, final boolean present) {
-        final JsonObject plea = actual.getJsonArray("hearingDates").getJsonObject(0).getJsonArray("courtRooms").getJsonObject(0).getJsonArray("timeslots").getJsonObject(0).getJsonArray("hearings")
-                .getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0);
-        if (present) {
-            assertThat(plea.getString("plea"), is("GUILTY"));
-        } else {
-            assertThat(plea.containsKey("plea"), is(false));
-        }
-    }
-
     @Test
     public void shouldEnrichCourtlistDocumentPayload_NoPlea() throws IOException {
         final Optional<JsonObject> listingResponse = Optional.of(getJsonPayload("listing-hearing-with-prosecution-case.json"));
@@ -143,6 +133,48 @@ public class CourtlistQueryViewTest {
 
         final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
         assertPleaValue(actual, false);
+    }
+
+    @Test
+    public void shouldEnrichCourtlistDocumentPayload_WithIndicatedGuiltyPlea() throws IOException {
+        final Optional<JsonObject> listingResponse = Optional.of(getJsonPayload("listing-hearing-with-prosecution-case.json"));
+        final List<Hearing> hearingList = getHearings("courtlists.hearings.repository.indicated.guilty.plea.json");
+        when(listingService.searchCourtlist(any(JsonEnvelope.class))).thenReturn(listingResponse);
+        when(hearingQueryView.getHearings(any(List.class))).thenReturn(hearingList);
+        final ProsecutionCase prosecutionCase = getHearings("courtlists.hearings.repository.indicated.guilty.plea.json").get(0).getProsecutionCases().get(0);
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+        when(prosecutionCaseRepository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
+
+        final JsonEnvelope query = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName("progression.search.court.list").build(),
+                Json.createObjectBuilder().build());
+
+        final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
+        assertIndicatedPleaValue(actual, true);
+    }
+
+    @Test
+    public void shouldEnrichCourtlistDocumentPayload_WithNoIndicatedNotGuiltyPlea() throws IOException {
+        final Optional<JsonObject> listingResponse = Optional.of(getJsonPayload("listing-hearing-with-prosecution-case.json"));
+        final List<Hearing> hearingList = getHearings("courtlists.hearings.repository.indicated.not.guilty.plea.json");
+        when(listingService.searchCourtlist(any(JsonEnvelope.class))).thenReturn(listingResponse);
+        when(hearingQueryView.getHearings(any(List.class))).thenReturn(hearingList);
+        final ProsecutionCase prosecutionCase = getHearings("courtlists.hearings.repository.indicated.not.guilty.plea.json").get(0).getProsecutionCases().get(0);
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
+        when(prosecutionCaseRepository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
+
+        final JsonEnvelope query = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName("progression.search.court.list").build(),
+                Json.createObjectBuilder().build());
+
+        final JsonObject actual = courtlistQueryView.searchCourtlist(query).payloadAsJsonObject();
+        assertIndicatedPleaValue(actual, false);
     }
 
     @Test
@@ -208,5 +240,26 @@ public class CourtlistQueryViewTest {
                 .readArray().stream()
                 .map(jsonObject -> jsonObjectToObjectConverter.convert((JsonObject) jsonObject, Hearing.class))
                 .collect(toList());
+    }
+
+    private void assertPleaValue(final JsonObject actual, final boolean present) {
+        final JsonObject plea = actual.getJsonArray("hearingDates").getJsonObject(0).getJsonArray("courtRooms").getJsonObject(0).getJsonArray("timeslots").getJsonObject(0).getJsonArray("hearings")
+                .getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0);
+        if (present) {
+            assertThat(plea.getString("plea"), is("GUILTY"));
+        } else {
+            assertThat(plea.containsKey("plea"), is(false));
+        }
+    }
+
+    private void assertIndicatedPleaValue(final JsonObject actual, final boolean present) {
+        final JsonObject plea = actual.getJsonArray("hearingDates").getJsonObject(0).getJsonArray("courtRooms").getJsonObject(0).getJsonArray("timeslots").getJsonObject(0).getJsonArray("hearings")
+                .getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0);
+        if (present) {
+            assertThat(plea.getString("plea"), is("INDICATED_GUILTY"));
+            assertThat(plea.getString("pleaDate"), is("2020-01-01"));
+        } else {
+            assertThat(plea.containsKey("plea"), is(false));
+        }
     }
 }
