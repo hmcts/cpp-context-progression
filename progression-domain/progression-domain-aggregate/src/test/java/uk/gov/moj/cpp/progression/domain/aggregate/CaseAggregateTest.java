@@ -123,6 +123,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
 import uk.gov.justice.core.courts.ProsecutionCaseListingNumberUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseSubject;
+import uk.gov.justice.core.courts.ReapplyMiReportingRestrictions;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.progression.courts.CaseRetentionLengthCalculated;
@@ -2382,6 +2383,33 @@ public class CaseAggregateTest {
         assertThat(hearingMarkedAsDuplicateForCase.getCaseId(), is(caseId));
         assertThat(hearingMarkedAsDuplicateForCase.getDefendantIds(), is(defendantIds));
 
+    }
+
+    @Test
+    public void shouldReapplyMiReportingRestrictions() {
+        final UUID caseId = randomUUID();
+
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+
+        final List<Defendant> defendants = getDefendants(caseId, defendantId1, defendantId2, defendantId3, offenceId1, offenceId2, offenceId3);
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .withDefendants(defendants).withId(caseId).build();
+        final ProsecutionCaseCreated prosecutionCaseUpdated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+
+        this.caseAggregate.apply(prosecutionCaseUpdated);
+
+        final List<Object> eventStream = caseAggregate.reApplyMiReportingRestrictions(caseId).collect(toList());
+        assertThat(eventStream.size(), is(1));
+        final ReapplyMiReportingRestrictions reapplyMiReportingRestrictions = (ReapplyMiReportingRestrictions) eventStream.get(0);
+        assertThat(reapplyMiReportingRestrictions.getCaseId(), is(caseId));
     }
 
     @Test

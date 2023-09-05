@@ -152,6 +152,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseSubject;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequested;
 import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
 import uk.gov.justice.core.courts.Prosecutor;
+import uk.gov.justice.core.courts.ReapplyMiReportingRestrictions;
 import uk.gov.justice.core.courts.ReceiveRepresentationOrderForDefendant;
 import uk.gov.justice.core.courts.UpdatedOrganisation;
 import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
@@ -2392,6 +2393,16 @@ public class CaseAggregate implements Aggregate {
                             .withOffenceListingNumbers(offenceListingNumbers)
                             .build())
                     .build());
+        } else {
+            return Stream.empty();
+        }
+    }
+
+    public Stream<Object> reApplyMiReportingRestrictions(final UUID caseId) {
+        if (nonNull(this.prosecutionCase)) {
+            return apply(Stream.of(ReapplyMiReportingRestrictions.reapplyMiReportingRestrictions()
+                    .withCaseId(caseId)
+                    .build()));
         } else {
             return Stream.empty();
         }
