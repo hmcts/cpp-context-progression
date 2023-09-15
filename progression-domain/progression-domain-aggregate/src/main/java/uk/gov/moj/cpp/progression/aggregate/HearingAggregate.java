@@ -9,7 +9,6 @@ import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
 import uk.gov.justice.core.courts.BreachApplicationsToBeAddedToHearing;
 import uk.gov.justice.core.courts.BreachedApplications;
 import uk.gov.justice.core.courts.CaseHearingDetailsUpdatedInUnifiedSearch;
-import uk.gov.justice.core.courts.CaseHearingDetailsUpdatedInUnifiedSearch;
 import uk.gov.justice.core.courts.CaseMarkersUpdatedInHearing;
 import uk.gov.justice.core.courts.CasesAddedForUpdatedRelatedHearing;
 import uk.gov.justice.core.courts.CommittingCourt;
@@ -876,6 +875,11 @@ public class HearingAggregate implements Aggregate {
     }
 
     public Stream<Object> updateDefendant(final UUID hearingId, final DefendantUpdate defendantUpdate, final Boolean updateOnlyNonResulted) {
+
+        if(this.deleted || this.duplicate){
+            return Stream.empty();
+        }
+
         if (ofNullable(updateOnlyNonResulted).orElse(false) && HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus)) {
             return Stream.empty();
         }

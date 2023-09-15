@@ -12,8 +12,10 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingDefendantUpdated;
 import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -913,6 +915,45 @@ public class HearingAggregateTest {
 
         final CaseHearingDetailsUpdatedInUnifiedSearch caseHearingDetailsUpdatedInUnifiedSearch = (CaseHearingDetailsUpdatedInUnifiedSearch) events.get(0);
         assertThat(caseHearingDetailsUpdatedInUnifiedSearch.getHearing().getId(), is(hearingId));
+
+    }
+
+    @Test
+    public void shouldRaiseDefendantUpdatedEventWhenTheHearingNotDeleted(){
+        final UUID hearingId = randomUUID();
+        final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().build();
+
+        final List<Object> events = hearingAggregate.updateDefendant(hearingId, defendantUpdate, true).
+                collect(toList());
+
+        final HearingDefendantUpdated hearingDefendantUpdated = (HearingDefendantUpdated) events.get(0);
+        assertThat(hearingDefendantUpdated.getHearingId(), is(hearingId));
+        assertThat(hearingDefendantUpdated.getDefendant(), is(defendantUpdate));
+    }
+
+    @Test
+    public void shouldNotRaiseDefendantUpdatedEventWhenTheHearingDeleted(){
+        final UUID hearingId = randomUUID();
+        hearingAggregate.deleteHearing(hearingId);
+
+        final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().build();
+        final List<Object> events = hearingAggregate.updateDefendant(hearingId, defendantUpdate, true).
+                collect(toList());
+
+        assertThat(events.isEmpty(), is(true));
+
+    }
+
+    @Test
+    public void shouldNotRaiseDefendantUpdatedEventWhenTheHearingDuplicated(){
+        final UUID hearingId = randomUUID();
+        hearingAggregate.markAsDuplicate(hearingId, new ArrayList<>(), new ArrayList<>());
+
+        final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().build();
+        final List<Object> events = hearingAggregate.updateDefendant(hearingId, defendantUpdate, true).
+                collect(toList());
+
+        assertThat(events.isEmpty(), is(true));
 
     }
 
