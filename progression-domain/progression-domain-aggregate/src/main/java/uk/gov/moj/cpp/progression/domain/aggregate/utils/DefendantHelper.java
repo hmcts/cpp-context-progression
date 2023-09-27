@@ -374,6 +374,7 @@ public class DefendantHelper {
                 .append(nonNull(commandOffenceForDefendant.getOffenceLegislation()) ? commandOffenceForDefendant.getOffenceLegislation() : previousOffenceForDefendant.getOffenceLegislation(), previousOffenceForDefendant.getOffenceLegislation())
                 .append(nonNull(commandOffenceForDefendant.getLaaApplnReference()) ? commandOffenceForDefendant.getLaaApplnReference() : previousOffenceForDefendant.getLaaApplnReference(), previousOffenceForDefendant.getLaaApplnReference())
                 .append(nonNull(commandOffenceForDefendant.getOffenceLegislationWelsh()) ? commandOffenceForDefendant.getOffenceLegislationWelsh() : previousOffenceForDefendant.getOffenceLegislationWelsh(), previousOffenceForDefendant.getOffenceLegislationWelsh())
+                .append(nonNull(commandOffenceForDefendant.getOffenceFacts()) ? commandOffenceForDefendant.getOffenceFacts() : previousOffenceForDefendant.getOffenceFacts(), previousOffenceForDefendant.getOffenceFacts())
                 .isEquals()
                 && CollectionUtils.isEqualCollection(isNull(commandOffenceForDefendant.getReportingRestrictions()) ? Collections.emptyList() : commandOffenceForDefendant.getReportingRestrictions(),
                 isNull(previousOffenceForDefendant.getReportingRestrictions()) ? Collections.emptyList() : previousOffenceForDefendant.getReportingRestrictions())

@@ -16,6 +16,7 @@ import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.OffenceFacts;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -43,7 +44,7 @@ public class DefendantHelperTest {
     Organisation organisation;
 
     private static Offence createOffence(final UUID offenceId, final String offenceCode) {
-        return Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withStartDate(LocalDate.now()).withArrestDate(LocalDate.now()).withChargeDate(LocalDate.now()).withConvictionDate(LocalDate.now()).withEndDate(LocalDate.now()).withOffenceTitle("title").withOffenceTitleWelsh("welsh title").withWording("wording").withOffenceLegislation("legisltation").withOffenceLegislationWelsh("welsh legisltation").withCount(1).withOrderIndex(500).build();
+        return Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withStartDate(LocalDate.now()).withArrestDate(LocalDate.now()).withChargeDate(LocalDate.now()).withConvictionDate(LocalDate.now()).withEndDate(LocalDate.now()).withOffenceTitle("title").withOffenceTitleWelsh("welsh title").withWording("wording").withOffenceLegislation("legisltation").withOffenceLegislationWelsh("welsh legisltation").withCount(1).withOrderIndex(500).withOffenceFacts(OffenceFacts.offenceFacts().withAlcoholReadingAmount(new Integer(100)).withAlcoholReadingMethodCode("B").build()).build();
     }
 
     private static Offence.Builder createOffenceWithDefaults(final UUID offenceId, final String offenceCode) {

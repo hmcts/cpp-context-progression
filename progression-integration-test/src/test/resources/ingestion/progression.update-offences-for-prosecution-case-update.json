@@ -31,8 +31,8 @@
           },
           "offenceFacts": {
             "vehicleRegistration": "AA12345",
-            "alcoholReadingAmount": 1,
-            "alcoholReadingMethodCode": "2222"
+            "alcoholReadingAmount": 100,
+            "alcoholReadingMethodCode": "B"
           },
           "laaApplnReference": {
             "applicationReference": "LAA-API-TEST-1228",

@@ -23,6 +23,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.OffenceFacts;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.ReportingRestriction;
@@ -168,6 +169,9 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
                                 .build())
                         .withReportingRestrictions(Stream.of(prepareReportingRestriction(reportingRestrictionId1, reportingRestrictionLabel))
                                 .collect(toList()))
+                        .withOffenceFacts(OffenceFacts.offenceFacts().withAlcoholReadingMethodCode("B")
+                                .withAlcoholReadingAmount(new Integer(100))
+                                .withAlcoholReadingMethodDescription("Blood").build())
                         .build()).collect(toList()))
                 .build();
         final ProsecutionCase prosecutionCase = prosecutionCase()
@@ -250,6 +254,8 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         assertThat(prosecutionCaseNode.path("defendants").get(0).path("legalAidStatus").asText(), is(""));
         assertThat(prosecutionCaseNode.path("defendants").get(0).path("proceedingsConcluded").asBoolean(), is(true));
         assertThat(prosecutionCaseNode.path("defendants").get(0).path("offences").get(0).path("judicialResults").get(0).path("resultText").asText(), is("Some Text"));
+        assertThat(prosecutionCaseNode.path("defendants").get(0).path("offences").get(0).path("offenceFacts").path("alcoholReadingAmount").asText(), is("100"));
+        assertThat(prosecutionCaseNode.path("defendants").get(0).path("offences").get(0).path("offenceFacts").path("alcoholReadingMethodCode").asText(), is("B"));
 
         final JsonNode reportingRestrictionListJsonNode = prosecutionCaseNode.path("defendants").get(0).path("offences").get(0).path("reportingRestrictions");
         assertThat(reportingRestrictionListJsonNode.size(), is(1));

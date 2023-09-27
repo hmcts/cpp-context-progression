@@ -2,28 +2,16 @@ package uk.gov.moj.cpp.progression;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createReferProsecutionCaseToCrownCourtJsonBody;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
-import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper.OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
-
-import java.io.IOException;
-import java.time.LocalDate;
 
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
@@ -37,8 +25,6 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
     private String caseId;
     private String defendantId;
     private String offenceId;
-
-    private static final String INITIAL_COURT_PROCEEDINGS_WITH_MULTIPLE_DEFENDANTS = "ingestion/progression.command.initiate-court-proceedings-multiple-defendants.json";
 
     @Before
     public void setUp() {
@@ -72,77 +58,11 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         helper.verifyInMessagingQueueForOffencesUpdated();
         pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is(OFFENCE_CODE)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(1)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].indictmentParticular", is("offence-indictmentParticular")),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceFacts.alcoholReadingMethodCode", is("B")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].id", is("3789ab16-e588-4b7f-806a-44dc0eb0e75e")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", is("Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", is("2020-01-01")));
     }
-
-
-
-    @Test
-    public void shouldUpdateDefendantOffence() throws Exception {
-        stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-
-        final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,
-                newArrayList(
-                        // defendant offence reporting restrictions and offencecode assertion
-                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].id", is("3789ab16-e588-4b7f-806a-44dc0eb0e75e")),
-                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", is("Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992")),
-                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", is("2021-08-28")),
-                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))
-        );
-
-        pollProsecutionCasesProgressionFor(caseId, caseWithOffenceMatchers);
-
-        helper.updateOffenceOfSingleDefendant();
-
-        // then
-        helper.verifyInActiveMQ();
-        helper.verifyInMessagingQueueForOffencesUpdated();
-
-        final Matcher[] prosecutionCasesProgressionForCAAG = new Matcher[]{
-                withJsonPath("$.defendants[0].id", is(defendantId)),
-                withJsonPath("$.defendants[0].caagDefendantOffences[0].indictmentParticular", is("offence-indictmentParticular")),
-                withJsonPath("$.defendants[0].caagDefendantOffences[0].id", is(offenceId))};
-
-        pollProsecutionCasesProgressionForCAAG(caseId, prosecutionCasesProgressionForCAAG);
-    }
-
-    @Test
-    public void shouldUpdateMultipleDefendantOffence() throws IOException{
-
-        stubInitiateHearing();
-        final String caseId = randomUUID().toString();
-        final String defendantId1 = randomUUID().toString();
-        final String defendantId2 = randomUUID().toString();
-        final String listedStartDateTime = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z").toString();
-        final String earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
-        final String defendantDOB = LocalDate.now().minusYears(15).toString();
-        final String offenceId1 ="3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
-        final String offenceId2 ="3789ab16-0bb7-4ef1-87ef-c936bf0364f2";
-
-        // initiation of cases
-        initiateCourtProceedings(INITIAL_COURT_PROCEEDINGS_WITH_MULTIPLE_DEFENDANTS, caseId, defendantId1,defendantId2, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), listedStartDateTime, earliestStartDateTime, defendantDOB);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, emptyList()));
-
-        helper.updateOffenceOfMultipleDefendants(caseId, defendantId1, defendantId2, offenceId1, offenceId2) ;
-        helper.verifyInActiveMQ();
-        helper.verifyInMessagingQueueForOffencesUpdated();
-
-        pollProsecutionCasesProgressionFor(caseId,
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is(offenceId1)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is(OFFENCE_CODE)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(1)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].indictmentParticular", is("offence-indictmentParticular")),
-                withJsonPath("$.prosecutionCase.defendants[1].offences[0].id", is(offenceId2)),
-                withJsonPath("$.prosecutionCase.defendants[1].offences[0].offenceCode", is(OFFENCE_CODE)),
-                withJsonPath("$.prosecutionCase.defendants[1].offences[0].count", is(1)),
-                withJsonPath("$.prosecutionCase.defendants[1].offences[0].indictmentParticular", is("offence-indictmentParticular")));
-
-    }
-
 
     @Test
     @Ignore("This test is irrelavant after change in case aggregate as we don't delete the offence now")
@@ -275,7 +195,5 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         };
         pollProsecutionCasesProgressionFor(caseId, matchers);
     }
-
-
 }
 

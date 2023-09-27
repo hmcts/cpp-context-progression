@@ -25,8 +25,8 @@
         },
         "offenceFacts": {
           "vehicleRegistration": "AA12345",
-          "alcoholReadingAmount": 123,
-          "alcoholReadingMethodCode": "2222"
+          "alcoholReadingAmount": 456,
+          "alcoholReadingMethodCode": "B"
         },
         "reportingRestrictions": [
           {
