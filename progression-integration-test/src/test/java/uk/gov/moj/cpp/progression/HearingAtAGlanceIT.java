@@ -32,7 +32,6 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
@@ -47,7 +46,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.ReadContext;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
@@ -187,27 +185,6 @@ public class HearingAtAGlanceIT extends AbstractIT {
                         .build());
 
         pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
-        verifyInMessagingQueueForHearingResultedCaseUpdated();
-    }
-
-    @Test
-    public void shouldKeepCpsOrganisationForHearingAtAGlance() throws Exception {
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
-        FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
-        initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-
-        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingWithSingleCaseJsonObject("public.hearing.resulted-and-hearing-at-a-glance-updated.json", caseId,
-                        hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID), JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
-
-        pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchersForCpsOrganisation());
         verifyInMessagingQueueForHearingResultedCaseUpdated();
     }
 

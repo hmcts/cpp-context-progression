@@ -95,8 +95,6 @@ public class ReportingRestrictionsIT extends AbstractIT {
         newCourtCentreId = "999bdd2a-6b7a-4002-bc8c-5c6f93844f40";
         newCourtCentreName = "Narnia Magistrate's Court";
         applicationId = randomUUID().toString();
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
-        FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
         cleanViewStoreTables();
         stubDocumentCreate(DOCUMENT_TEXT);
         HearingStub.stubInitiateHearing();

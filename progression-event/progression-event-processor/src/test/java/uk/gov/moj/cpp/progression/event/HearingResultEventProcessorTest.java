@@ -435,7 +435,7 @@ public class HearingResultEventProcessorTest {
     }
 
     @Test
-    public void shouldNotProcessHandleApplicationsResultedIfAmendReshareFeatureEnabled() {
+    public void shouldNotProcessHandleApplicationsResultedAsAmendReshareFeatureEnabledByDefault() {
         final ApplicationsResulted applicationsResulted = applicationsResulted().withHearing(hearing().withCourtApplications(singletonList(courtApplication().build())).build()).build();
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),

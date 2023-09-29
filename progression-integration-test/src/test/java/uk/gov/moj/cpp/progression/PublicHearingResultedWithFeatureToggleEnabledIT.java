@@ -41,7 +41,6 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.LaaAPIMServiceStub;
@@ -57,7 +56,6 @@ import javax.jms.MessageProducer;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import com.google.common.collect.ImmutableMap;
 import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
 import com.jayway.restassured.path.json.JsonPath;
@@ -70,17 +68,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
-import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
 public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT {
@@ -138,8 +126,6 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     public static void setupOnce(){
         stubDocumentCreate(DOCUMENT_TEXT);
         HearingStub.stubInitiateHearing();
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
-        FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
         cleanViewStoreTables();
     }
 
@@ -154,12 +140,6 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
         newCourtCentreName = "Narnia Magistrate's Court";
         reportingRestrictionId = randomUUID().toString();
-    }
-
-    @AfterClass
-    public static void teardown() {
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
-        FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
     }
 
     @Test
