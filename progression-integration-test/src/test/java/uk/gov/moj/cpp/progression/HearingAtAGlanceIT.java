@@ -27,7 +27,6 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
-import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -129,7 +128,6 @@ public class HearingAtAGlanceIT extends AbstractIT {
     @Test
     public void shouldSetJudiciaryResultsAtHearingsLevelForHearingAtAGlance() throws Exception {
         stubQueryCpsProsecutorData("/restResource/referencedata.query.prosecutor.by.oucode.json", randomUUID(), HttpStatus.SC_OK);
-        enableAmendReshareFeature(false);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         //validate enrichment for refer-cases-to-court
@@ -156,9 +154,6 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
     @Test
     public void shouldRetainCurrentReportingRestrictionsAfterManuallyAddingOnewithHearing() throws Exception {
-
-        enableAmendReshareFeature(true);
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -178,8 +173,6 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
     @Test
     public void shouldSetJudiciaryResultsAtHearingsLevelForHearingAtAGlanceV2() throws Exception {
-        enableAmendReshareFeature(true);
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -220,8 +213,6 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
     @Test
     public void shouldKeepCpsOrganisationForHearingAtAGlanceV2() throws Exception {
-        enableAmendReshareFeature(true);
-
         initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -242,8 +233,6 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
     @Test
     public void shouldSetDefendantLevelJudiciaryResultsAndQuery() throws Exception {
-        enableAmendReshareFeature(false);
-
         stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
@@ -268,7 +257,6 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
     @Test
     public void shouldSetDefendantLevelJudiciaryResultsAndQueryV2() throws Exception {
-        enableAmendReshareFeature(true);
         stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);

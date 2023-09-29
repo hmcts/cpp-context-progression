@@ -29,7 +29,6 @@ import static uk.gov.moj.cpp.progression.stub.AzureScheduleServiceStub.stubGetPr
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyListNextHearingRequestsAsStreamV2;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearingV2;
-import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -117,8 +116,6 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
 
     @Test
     public void shouldAdjournApplicationToNewHearing() throws Exception {
-        enableAmendReshareFeature(false);
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         JsonObject prosecutionCasesJsonObject = getJsonObject(response);
@@ -171,8 +168,6 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
 
     @Test
     public void shouldAdjournApplicationToNewHearingV2() throws Exception {
-        enableAmendReshareFeature(true);
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         JsonObject prosecutionCasesJsonObject = getJsonObject(response);
@@ -223,8 +218,6 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
     @Test
     @Ignore("it comes from master branch")
     public void shouldCallListingToNewHearingWithCourtOrder() throws Exception {
-        enableAmendReshareFeature(false);
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
@@ -291,7 +284,6 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
 
     @Test
     public void shouldCallListingToNewHearingWithCourtOrderV2() throws Exception {
-        enableAmendReshareFeature(true);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -363,8 +355,6 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
     @Ignore("Flaky Test")
     @Test
     public void shouldAdjournApplicationToNewHearingInMagistrate() throws Exception {
-        enableAmendReshareFeature(false);
-
         stubGetProvisionalBookedSlotsForNonExistingBookingId();
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -427,7 +417,6 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
 
     @Test
     public void shouldAdjournApplicationToNewHearingInMagistrateV2() throws Exception {
-        enableAmendReshareFeature(true);
 
         stubGetProvisionalBookedSlotsForNonExistingBookingId();
         addProsecutionCaseToCrownCourt(caseId, defendantId);
@@ -492,8 +481,6 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
     @Ignore("Flaky Test")
     @Test
     public void shouldKeepLastAdjournValuesWhenCourtApplicationHasCaseAdjourned() throws IOException {
-        enableAmendReshareFeature(false);
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
@@ -611,7 +598,6 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
 
     @Test
     public void shouldKeepLastAdjournValuesWhenCourtApplicationHasCaseAdjournedV2() throws Exception {
-        enableAmendReshareFeature(true);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));

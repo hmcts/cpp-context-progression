@@ -31,14 +31,12 @@ import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.getCrownCour
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubPleaTypes;
-import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.util.FeatureToggleUtil;
 
 import java.util.List;
 import java.util.Optional;
@@ -106,8 +104,6 @@ public class CourtExtractIT extends AbstractIT {
 
     @Test
     public void shouldGetCourtExtract_whenExtractTypeIsCrownCourtExtract() throws Exception {
-        enableAmendReshareFeature(false);
-
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
@@ -133,8 +129,6 @@ public class CourtExtractIT extends AbstractIT {
 
     @Test
     public void shouldGetCourtExtract_whenExtractTypeIsCertificateOfConviction() throws Exception {
-        enableAmendReshareFeature(false);
-        // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
         final JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
@@ -158,8 +152,6 @@ public class CourtExtractIT extends AbstractIT {
 
     @Test
     public void shouldGetCourtExtract_whenLinkedApplicationAdded() throws Exception {
-        enableAmendReshareFeature(false);
-
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
@@ -186,8 +178,6 @@ public class CourtExtractIT extends AbstractIT {
 
     @Test
     public void shouldGetCourtExtract_whenUnresultedCaseWithLikedApplicationIsEjected() throws Exception {
-        enableAmendReshareFeature(false);
-
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         doAddCourtApplicationAndVerify(false);
@@ -201,8 +191,6 @@ public class CourtExtractIT extends AbstractIT {
 
     @Test
     public void shouldExtractCrownCourtFromResultedHearingWithPlea() throws Exception {
-        enableAmendReshareFeature(false);
-
         final String newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
@@ -260,8 +248,6 @@ public class CourtExtractIT extends AbstractIT {
 
     @Test
     public void shouldExtractCrownCourtFromResultedHearingWithPleaV2() throws Exception {
-        enableAmendReshareFeature(true);
-
         final String newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
 
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents

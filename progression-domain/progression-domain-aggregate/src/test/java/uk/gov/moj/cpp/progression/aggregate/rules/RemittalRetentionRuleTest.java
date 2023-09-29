@@ -63,6 +63,15 @@ public class RemittalRetentionRuleTest {
     }
 
     @Test
+    public void shouldReturnFalseWhenOffencesWithNoJudicialResults() {
+
+        final List<Offence> offences = asList(Offence.offence().build(), Offence.offence().build());
+        remittalRetentionRule = new RemittalRetentionRule(hearingInfo, offences, remitResultIds);
+
+        assertThat(remittalRetentionRule.apply(), is(false));
+    }
+
+    @Test
     public void shouldReturnTrueWhenOffencesJudicialResultsCategoryIntermediaryWithNextHearing() {
 
         final List<Offence> offences = singletonList(Offence.offence()

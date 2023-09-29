@@ -11,7 +11,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
-import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -103,8 +102,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
     @Test
     public void shouldUpdateHearingResultedCaseUpdated() throws Exception {
-        enableAmendReshareFeature(false);
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -125,8 +122,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
     @Test
     public void shouldUpdateHearingResultedCaseUpdatedV2() throws Exception {
-        enableAmendReshareFeature(true);
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
@@ -147,8 +142,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
     @Test
     public void shouldRaiseUpdateHearingCaseUpdatedEventWhenMultipleProsecutionCasesArePresent() throws Exception {
-        enableAmendReshareFeature(false);
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String caseId2 = randomUUID().toString();
         addProsecutionCaseToCrownCourt(caseId2, defendantId);
@@ -170,8 +163,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
     @Test
     public void shouldRaiseUpdateHearingCaseUpdatedEventWhenMultipleProsecutionCasesArePresentV2() throws Exception {
-        enableAmendReshareFeature(true);
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String caseId2 = randomUUID().toString();
         addProsecutionCaseToCrownCourt(caseId2, defendantId);

@@ -65,7 +65,6 @@ import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -203,9 +202,6 @@ public class HearingResultEventProcessorTest {
 
     @Mock
     private HearingListingNeedsTransformer hearingListingNeedsTransformer;
-
-    @Mock
-    private FeatureControlGuard featureControlGuard;
 
     @Captor
     private ArgumentCaptor<UUID> hearingIdCaptor;
@@ -429,7 +425,6 @@ public class HearingResultEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),
                 objectToJsonObjectConverter.convert(applicationsResulted));
-        when(featureControlGuard.isFeatureEnabled("amendReshare")).thenReturn(false);
 
         eventProcessor.processHandleApplicationsResulted(event);
 
@@ -445,7 +440,6 @@ public class HearingResultEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),
                 objectToJsonObjectConverter.convert(applicationsResulted));
-        when(featureControlGuard.isFeatureEnabled("amendReshare")).thenReturn(true);
 
         eventProcessor.processHandleApplicationsResulted(event);
 

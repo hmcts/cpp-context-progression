@@ -15,7 +15,6 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
-import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -84,104 +83,7 @@ public class ConvictionDateIT extends AbstractIT {
     }
 
     @Test
-    public void shouldUpdateProsecutionCaseDefendant() throws Exception {
-        enableAmendReshareFeature(false);
-
-        // given
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-
-        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("Harry")));
-
-        // when
-        helper.addConvictionDate();
-
-        // then
-        helper.verifyInActiveMQForConvictionDateChanged();
-
-        final Matcher[] convictionAddedMatchers = {
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].chargeDate", is("2018-01-01")),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].convictionDate", is("2017-02-02"))
-        };
-        pollProsecutionCasesProgressionFor(caseId, convictionAddedMatchers);
-
-        helper.removeConvictionDate();
-
-        helper.verifyInActiveMQForConvictionDateRemoved();
-
-        pollProsecutionCasesProgressionFor(caseId, withoutJsonPath("$.prosecutionCase.defendants[0].offences[0].convictionDate"));
-    }
-
-    @Test
-    public void shouldUpdateOffenceUnderCourtApplicationCase() throws Exception {
-        enableAmendReshareFeature(false);
-
-        // given
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-
-        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("Harry")));
-
-        final String courtApplicationId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-appeal-application.json");
-
-        pollForApplication(courtApplicationId);
-
-        helper = new ConvictionDateHelper(null, "28b3d444-ae80-4920-a70f-ef01e128188e", courtApplicationId);
-
-        // when
-        helper.addConvictionDate();
-
-        // then
-        helper.verifyInActiveMQForConvictionDateChanged();
-
-        final Matcher[] convictionAddedMatchers = {
-                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].convictionDate", is("2017-02-02"))
-        };
-        pollForApplication(courtApplicationId, convictionAddedMatchers);
-
-        helper.removeConvictionDate();
-
-        helper.verifyInActiveMQForConvictionDateRemoved();
-
-        pollForApplication(courtApplicationId, withoutJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].convictionDate"));
-    }
-
-    @Test
-    public void shouldUpdateOffenceUnderCourtApplicationCourtOrder() throws Exception {
-        enableAmendReshareFeature(false);
-
-        // given
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-
-        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("Harry")));
-
-        final String courtApplicationId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
-        pollForApplication(courtApplicationId);
-
-        helper = new ConvictionDateHelper(null, "28b3d444-ae80-4920-a70f-ef01e128188e", courtApplicationId);
-
-        // when
-        helper.addConvictionDate();
-
-        // then
-        helper.verifyInActiveMQForConvictionDateChanged();
-
-        final Matcher[] convictionAddedMatchers = {
-                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.convictionDate", is("2017-02-02"))
-        };
-        pollForApplication(courtApplicationId, convictionAddedMatchers);
-
-        helper.removeConvictionDate();
-
-        helper.verifyInActiveMQForConvictionDateRemoved();
-
-        pollForApplication(courtApplicationId, withoutJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.convictionDate"));
-    }
-
-    @Test
     public void shouldUpdateCourtApplication() throws Exception {
-        enableAmendReshareFeature(false);
-
         // given
         final String courtApplicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-standalone-application.json");
@@ -208,8 +110,6 @@ public class ConvictionDateIT extends AbstractIT {
 
     @Test
     public void shouldRetainTheJudicialResultsWhenConvictionDateIsUpdated() throws IOException {
-        enableAmendReshareFeature(false);
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final String hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
@@ -237,8 +137,6 @@ public class ConvictionDateIT extends AbstractIT {
 
     @Test
     public void shouldRetainTheJudicialResultsWhenConvictionDateIsUpdatedV2() throws IOException {
-        enableAmendReshareFeature(true);
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final String hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();

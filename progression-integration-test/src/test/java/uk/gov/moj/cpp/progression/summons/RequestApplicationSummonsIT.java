@@ -43,7 +43,6 @@ import static uk.gov.moj.cpp.progression.summons.SummonsHelper.getLanguagePrefix
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.getSubjectDateOfBirth;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyMaterialRequestRecordedAndExtractMaterialId;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyTemplatePayloadValues;
-import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.CourtApplication;
@@ -191,7 +190,6 @@ public class RequestApplicationSummonsIT extends AbstractIT {
     @UseDataProvider("applicationSummonsNotSuppressed")
     @Test
     public void shouldGenerateSummonsAfterApplicationApproved_SummonsNotSuppressed(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
-        enableAmendReshareFeature(false);
         ReferenceDataStub.stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
         final boolean summonsSuppressed = false;
@@ -222,7 +220,6 @@ public class RequestApplicationSummonsIT extends AbstractIT {
     @UseDataProvider("applicationSummonsNotSuppressed")
     @Test
     public void shouldGenerateSummonsAfterApplicationApproved_SummonsNotSuppressedV2(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
-        enableAmendReshareFeature(true);
         ReferenceDataStub.stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
         final boolean summonsSuppressed = false;
@@ -253,8 +250,6 @@ public class RequestApplicationSummonsIT extends AbstractIT {
     @UseDataProvider("applicationSummonsSuppressed")
     @Test
     public void shouldInitiateCourtHearingAfterSummonsApproved_SummonsSuppressed(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
-        enableAmendReshareFeature(false);
-
         final boolean summonsSuppressed = true;
 
         final Hearing hearing = givenApplicationInitiatedInBoxWork(summonsTemplateType, isYouth, isWelsh);

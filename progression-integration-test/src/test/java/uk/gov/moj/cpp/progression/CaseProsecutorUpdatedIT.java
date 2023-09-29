@@ -20,7 +20,6 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
 
 import java.util.List;
@@ -30,7 +29,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 import org.junit.Before;
@@ -54,49 +52,6 @@ public class CaseProsecutorUpdatedIT extends AbstractIT {
 
         stubDocumentCreate(DOCUMENT_TEXT);
         stubInitiateHearing();
-    }
-
-    @Test
-    public void shouldUpdateHearingResultedCaseUpdated() throws Exception {
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
-        FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
-
-        final String hearingId;
-
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
-
-            addProsecutionCaseToCrownCourt(caseId, defendantId);
-            pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-            hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        }
-
-        final Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                .withUserId(randomUUID().toString())
-                .build();
-        final String updatedCourtCentreId = randomUUID().toString();
-        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, updatedCourtCentreId );
-        sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
-
-        verifyInMessagingQueueForCasesReferredToCourts();
-
-        caseProsecutorUpdateHelper.updateCaseProsecutor();
-
-        caseProsecutorUpdateHelper.verifyInActiveMQ();
-
-        caseProsecutorUpdateHelper.verifyInMessagingQueueForProsecutorUpdated(1);
-        final List<Matcher<? super ReadContext>> customMatchers = newArrayList(
-                withJsonPath("$.prosecutionCase.isCpsOrgVerifyError", is(false)),
-                //verify prosecutionCaseIdentifier is not updated
-                withJsonPath("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityName", is("Transport for London")),
-                withJsonPath("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityOUCode", is("GB10056")),
-                //verify prosecutor is updated
-                withJsonPath("$.prosecutionCase.prosecutor.prosecutorCode", is("TFL-CM")),
-                withJsonPath("$.prosecutionCase.prosecutor.prosecutorName", is("BL001"))
-        );
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, customMatchers));
     }
 
     @Test

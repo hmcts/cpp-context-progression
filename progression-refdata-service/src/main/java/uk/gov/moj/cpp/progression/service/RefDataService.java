@@ -657,7 +657,7 @@ public class RefDataService {
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
         final Envelope<JsonObject> response = requester.requestAsAdmin(jsonEnvelope, JsonObject.class);
-        return nonNull(response) ? Optional.of(response.payload()) : Optional.empty();
+        return (nonNull(response) && nonNull(response.payload())) ? Optional.of(response.payload()) : Optional.empty();
     }
 
     public Optional<JsonObject> getProsecutorByProsecutionAuthority(final String prosecutionAuthority, final Requester requester) {
@@ -668,7 +668,7 @@ public class RefDataService {
                 .build();
 
         final Envelope<JsonObject> response = requester.requestAsAdmin(envelopeFrom(metadata, payload), JsonObject.class);
-        if (response.payload().getJsonArray("prosecutors").isEmpty()) {
+        if (isNull(response.payload()) || response.payload().getJsonArray("prosecutors").isEmpty()) {
             return Optional.empty();
         }
         return ofNullable(response.payload().getJsonArray("prosecutors").getJsonObject(0));

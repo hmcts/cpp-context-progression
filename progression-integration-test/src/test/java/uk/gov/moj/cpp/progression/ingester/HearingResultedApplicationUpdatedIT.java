@@ -2,26 +2,37 @@ package uk.gov.moj.cpp.progression.ingester;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
+import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
-import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+
+import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.core.Is;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.services.messaging.Metadata;
@@ -49,9 +60,14 @@ public class HearingResultedApplicationUpdatedIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_RESULTED_TO_NEXT_HEARING_V2 = "ingestion/public.hearing.resulted.application-adjourned-to-next-hearing-with-application-case-V2.json";
     private static final String PUBLIC_HEARING_RESULTED_WITH_DRIVER_NUMBER = "public.hearing.resulted.application-with-driver-number.json";
+    private static final String EVENT_CASE_DEFENDANT_UPDATED = "progression.event.prosecution-case-defendant-updated";
+    private static final String EVENT_CASE_DEFENDANT_DRIVER_NUMBER_UPDATED = "progression.event.case-defendant-updated-with-driver-number";
+
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged =
             privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+    private MessageConsumer privateEventsConsumerCaseDefendantUpdated;
+    private MessageConsumer privateEventsConsumerDriverNumberUpdated;
 
 
     private String applicationId;
@@ -88,7 +104,6 @@ public class HearingResultedApplicationUpdatedIT extends AbstractIT {
     public void shouldIngestHearingResultedApplicationUpdatedEvent() throws Exception {
 
         //GIVEN - WHEN
-        enableAmendReshareFeature(true);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
@@ -145,7 +160,6 @@ public class HearingResultedApplicationUpdatedIT extends AbstractIT {
     public void shouldUpdateDriveNumberForApplication() throws Exception {
 
         //GIVEN - WHEN
-        enableAmendReshareFeature(true);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
@@ -164,24 +178,51 @@ public class HearingResultedApplicationUpdatedIT extends AbstractIT {
 
         final String courtApplicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, hearingId, "ingestion/progression.initiate-court-proceedings-for-generic-linked-application.json");
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String adjournedHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
 
+        final JsonObject hearingResultedEventJsonObject = getHearingJsonObject(PUBLIC_HEARING_RESULTED_WITH_DRIVER_NUMBER, caseId,
+                hearingId, defendantId, courtApplicationId, adjournedHearingId, prosecutionAuthorityReference, newCourtCentreId, newCourtCentreName, "2021-05-26");
+        final String driverNumber = hearingResultedEventJsonObject.getJsonObject("hearing").getJsonArray("courtApplications")
+                .getJsonObject(0).getJsonObject("applicant").getJsonObject("masterDefendant").getJsonObject("personDefendant").getString("driverNumber");
         sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED_V2, getHearingJsonObject(PUBLIC_HEARING_RESULTED_WITH_DRIVER_NUMBER, caseId,
-                        hearingId, defendantId, courtApplicationId, adjournedHearingId, prosecutionAuthorityReference, newCourtCentreId, newCourtCentreName, "2021-05-26"), metadataBuilder()
+                PUBLIC_HEARING_RESULTED_V2, hearingResultedEventJsonObject, metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_HEARING_RESULTED_V2)
                         .withUserId(userId)
                         .build());
 
+
         // THEN
-        pollForResponse("/prosecutioncases/" + caseId, "application/vnd.progression.query.prosecutioncase+json", allOf(
-                withJsonPath("$.prosecutionCase.id", is(caseId)),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.driverNumber", is("DVL12345"))
+        verifyDriverNumberUpdatedEvents(caseId, defendantId, driverNumber);
 
-        ));
+        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), "application/vnd.progression.query.prosecutioncase+json")
+                .withHeader(USER_ID, userId).build())
+                .timeout(30, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(
+                                allOf(
+                                        withJsonPath("$.prosecutionCase.id", is(caseId)),
+                                        withJsonPath("$.prosecutionCase.defendants[0].personDefendant.driverNumber", is("DVL12345"))
+                                )
+                        ));
 
+    }
+
+    public void verifyDriverNumberUpdatedEvents(final String caseId, final String defendantId, final String driverNumber) {
+        privateEventsConsumerCaseDefendantUpdated = privateEvents.createPrivateConsumer(EVENT_CASE_DEFENDANT_UPDATED);
+        privateEventsConsumerDriverNumberUpdated = privateEvents.createPrivateConsumer(EVENT_CASE_DEFENDANT_DRIVER_NUMBER_UPDATED);
+
+        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumerCaseDefendantUpdated);
+        assertThat(jsonResponse.getString("defendant.prosecutionCaseId"), Is.is(caseId));
+        assertThat(jsonResponse.getString("defendant.id"), Is.is(defendantId));
+        assertThat(jsonResponse.getString("defendant.personDefendant.driverNumber"), Is.is(driverNumber));
+
+
+        final JsonPath driverNoJsonResponse = retrieveMessage(privateEventsConsumerDriverNumberUpdated);
+        assertThat(driverNoJsonResponse.getString("prosecutionCaseId"), Is.is(caseId));
+        assertThat(driverNoJsonResponse.getString("defendantId"), Is.is(defendantId));
+        assertThat(driverNoJsonResponse.getString("driverNumber"), Is.is(driverNumber));
     }
 
     private String doVerifyProsecutionCaseDefendantListingStatusChanged() {

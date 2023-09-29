@@ -8,11 +8,6 @@ import com.google.common.collect.ImmutableMap;
 
 public class FeatureToggleUtil {
 
-    public static final void enableAmendReshareFeature(final boolean enabled) {
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", enabled);
-        FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
-    }
-
     public static final void enableDefenceDisclosureFeature(final boolean enabled) {
         final ImmutableMap<String, Boolean> features = ImmutableMap.of("defenceDisclosure", enabled);
         FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);

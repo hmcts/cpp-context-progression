@@ -20,7 +20,6 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyListUnscheduledHearingRequestsAsStream;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyListUnscheduledHearingRequestsAsStreamV2;
-import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.Utilities.listenForPrivateEvent;
@@ -111,8 +110,6 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
     @Test
     public void shouldListUnscheduledHearingsWithWCPNAndRaiseNotificationEvent() throws Exception {
-        enableAmendReshareFeature(false);
-
         final String existingHearingId = prepareHearingForTest();
         Utilities.EventListener eventListenerForDefendantListinStatusChanged = listenForPrivateEvent(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED)
                 .withFilter(isJson(withJsonPath("$.hearing.id", not(existingHearingId))));
@@ -173,8 +170,6 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
     @Ignore
     @Test
     public void shouldListUnscheduledHearingsV2() throws Exception {
-        enableAmendReshareFeature(true);
-
         final String existingHearingId = prepareHearingForTest();
         Utilities.EventListener eventListenerForDefendantListinStatusChanged = listenForPrivateEvent(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED)
                 .withFilter(isJson(withJsonPath("$.hearing.id", not(existingHearingId))));
@@ -223,8 +218,6 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
     @Test
     public void shouldKeepsCpsOrganisationAndListUnscheduledHearings() throws Exception {
-        enableAmendReshareFeature(false);
-
         final String existingHearingId = prepareHearingForTestWithInitiate();
         Utilities.EventListener eventListenerForDefendantListinStatusChanged = listenForPrivateEvent(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED)
                 .withFilter(isJson(withJsonPath("$.hearing.id", not(existingHearingId))));
@@ -270,8 +263,6 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
     @Test
     public void shouldKeepsCpsOrganisationAndListUnscheduledHearingsV2() throws Exception {
-        enableAmendReshareFeature(true);
-
         final String existingHearingId = prepareHearingForTestWithInitiate();
         Utilities.EventListener eventListenerForDefendantListinStatusChanged = listenForPrivateEvent(PROGRESSION_EVENT_PROSECUTIONCASE_DEFENDANT_LISTING_STATUS_CHANGED)
                 .withFilter(isJson(withJsonPath("$.hearing.id", not(existingHearingId))));

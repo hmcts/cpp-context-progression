@@ -1,11 +1,9 @@
 package uk.gov.moj.cpp.progression.event;
 
 import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -28,7 +26,6 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.converter.SeedingHearingConverter;
@@ -98,9 +95,6 @@ public class HearingResultEventProcessor {
     @Inject
     private SummonsHelper summonsHelper;
 
-    @Inject
-    private FeatureControlGuard featureControlGuard;
-
     @Handles("public.hearing.resulted")
     public void handleHearingResultedPublicEvent(final JsonEnvelope event) {
 
@@ -143,7 +137,6 @@ public class HearingResultEventProcessor {
     public void processHandleApplicationsResulted(final JsonEnvelope event) {
         final ApplicationsResulted applicationsResulted = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ApplicationsResulted.class);
         final Hearing hearing = applicationsResulted.getHearing();
-        final List<UUID> shadowListedOffences = applicationsResulted.getShadowListedOffences();
         LOGGER.info("Hearing contains applications resulted for hearing id :: {}", hearing.getId());
         hearing.getCourtApplications().forEach(courtApplication -> {
             final JsonObjectBuilder payloadBuilder = createObjectBuilder().add("courtApplication", objectToJsonObjectConverter.convert(courtApplication));
@@ -151,10 +144,6 @@ public class HearingResultEventProcessor {
         });
 
         updateApplications(event, hearing);
-
-        if (isEmpty(hearing.getProsecutionCases()) && !featureControlGuard.isFeatureEnabled("amendReshare")) {
-            initiateHearingAdjournment(event, hearing, shadowListedOffences, empty());
-        }
     }
 
     private void initiateHearingAdjournment(JsonEnvelope event, Hearing hearing, final List<UUID> shadowListedOffences, final Optional<CommittingCourt> committingCourt) {

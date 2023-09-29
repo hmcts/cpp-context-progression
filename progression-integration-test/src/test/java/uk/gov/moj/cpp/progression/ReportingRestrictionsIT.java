@@ -25,7 +25,6 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableAmendReshareFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getYouthReportingRestrictionsMatchers;
@@ -122,7 +121,6 @@ public class ReportingRestrictionsIT extends AbstractIT {
 
     @Test
     public void shouldAddManualRestrictionsWhenAdjourned() throws Exception {
-        enableAmendReshareFeature(false);
         addProsecutionCaseToCrownCourtWithOneYouthDefendantAndTwoOffences(caseId, defendantId);
         String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, getYouthReportingRestrictionsMatchers(LocalDate.of(2021, 01, 20), LocalDate.of(2006, 01, 01), 2)));
         JsonObject prosecutionCasesJsonObject = getJsonObject(response);

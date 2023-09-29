@@ -30,7 +30,6 @@ import uk.gov.justice.listing.courts.ListNextHearings;
 import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.progression.courts.StoreBookingReferenceCourtScheduleIds;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.core.annotation.FeatureControl;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -100,7 +99,6 @@ public class HearingResultedEventProcessor {
 
 
     @Handles("public.events.hearing.hearing-resulted")
-    @FeatureControl("amendReshare")
     public void handlePublicHearingResulted(final JsonEnvelope event) {
 
         if (LOGGER.isDebugEnabled()) {
