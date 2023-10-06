@@ -374,7 +374,7 @@ rule "Query - Access control for  progression.query.applicationhearings"
     $outcome: Outcome();
     $action: Action(name == "progression.query.applicationhearings");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin",
-     "Court Administrators", "Crown Court Admin", "Judge","Victims & Witness Care Admin","Police Admin","Recorders","DJMC","Deputies"))
+     "Court Administrators", "Crown Court Admin", "Judge","Victims & Witness Care Admin","Police Admin","Recorders","DJMC","Deputies", "Magistrates"))
   then
     $outcome.setSuccess(true);
 end
