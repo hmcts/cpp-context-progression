@@ -315,6 +315,9 @@ subscriptions_descriptor:
         - name: progression.event.send-to-cps-flag-updated
           schema_uri: http://justice.gov.uk/progression/event/send-to-cps-flag-updated.json
 
+        - name: progression.event.new-defendant-added-to-hearing
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.new-defendant-added-to-hearing.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 
