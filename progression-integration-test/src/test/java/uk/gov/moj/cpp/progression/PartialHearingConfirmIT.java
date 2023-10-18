@@ -27,9 +27,8 @@ import javax.jms.JMSException;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class PartialHearingConfirmIT extends AbstractIT {
@@ -37,13 +36,13 @@ public class PartialHearingConfirmIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_LISTING_PARTIAL_HEARING_CONFIRMED = "public.listing.partial-hearing-confirmed.json";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private MessageProducer messageProducerClientPublic;
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
     }
 
@@ -53,9 +52,10 @@ public class PartialHearingConfirmIT extends AbstractIT {
         HearingStub.stubInitiateHearing();
         ListingStub.stubListCourtHearing();
         IdMapperStub.setUp();
+
+        messageProducerClientPublic = publicEvents.createPublicProducer();
     }
 
-    @Ignore("Will be fixed as part of CPI-353")
     @Test
     public void shouldPartialHearingConfirm() throws IOException {
         final String caseId1 = randomUUID().toString();

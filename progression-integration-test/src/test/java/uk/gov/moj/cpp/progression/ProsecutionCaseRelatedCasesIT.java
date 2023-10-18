@@ -42,7 +42,7 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,12 +51,9 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED = "public.hearing.resulted-case-updated";
 
-    private MessageConsumer publicEventConsumerForProsecutionCaseCreated = publicEvents
-            .createPublicConsumer("public.progression.prosecution-case-created");
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-            .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
-
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private MessageConsumer publicEventConsumerForProsecutionCaseCreated;
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
+    private MessageProducer messageProducerClientPublic;
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
@@ -93,27 +90,33 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
         earliestStartDateTime = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z").toString();
         defendantDOB = LocalDate.now().minusYears(15).toString();
         courtCentreId = randomUUID().toString();
+
+        publicEventConsumerForProsecutionCaseCreated = publicEvents.createPublicConsumer("public.progression.prosecution-case-created");
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+        messageProducerClientPublic = publicEvents.createPublicProducer();
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
+        publicEventConsumerForProsecutionCaseCreated.close();
         messageProducerClientPublic.close();
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
     }
 
     @Test
-    public void shouldVerifyRelatedCasesWhenAllCasesActive() throws IOException {
+    public void shouldVerifyRelatedCasesWhenAllCasesInActive() throws IOException {
         // initiation of case
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, masterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyInMessagingQueueForProsecutionCaseCreated();
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
+        final String hearingId1 = doVerifyProsecutionCaseDefendantListingStatusChanged();
 
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, defendantId_2_forMasterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyInMessagingQueueForProsecutionCaseCreated();
         prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
-
+        final String hearingId2 = doVerifyProsecutionCaseDefendantListingStatusChanged();
         // match defendantId_2_forMasterDefendantId_1 associated to case 2
         matchDefendant(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, masterDefendantId_1);
 
@@ -143,24 +146,6 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
                                 withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY"))
                         ))
                 );
-    }
-
-    @Test
-    public void shouldVerifyRelatedCasesWhenAllCasesInActive() throws IOException {
-        // initiation of case
-        initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, masterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-        verifyInMessagingQueueForProsecutionCaseCreated();
-        Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, emptyList());
-        pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
-        final String hearingId1 = doVerifyProsecutionCaseDefendantListingStatusChanged();
-
-        initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, defendantId_2_forMasterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-        verifyInMessagingQueueForProsecutionCaseCreated();
-        prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, emptyList());
-        pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
-        final String hearingId2 = doVerifyProsecutionCaseDefendantListingStatusChanged();
-        // match defendantId_2_forMasterDefendantId_1 associated to case 2
-        matchDefendant(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, masterDefendantId_1);
 
         closeTheCase(prosecutionCaseId_1, masterDefendantId_1, hearingId1);
         closeTheCase(prosecutionCaseId_2, masterDefendantId_1, hearingId2);
@@ -236,16 +221,6 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
     private void verifyInMessagingQueueForProsecutionCaseCreated() {
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(publicEventConsumerForProsecutionCaseCreated);
         assertTrue(message.isPresent());
-    }
-
-    private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
-                                            final String defendantId, final String courtCentreId) {
-        final String strPayload = getPayload(path)
-                .replaceAll("CASE_ID", caseId)
-                .replaceAll("HEARING_ID", hearingId)
-                .replaceAll("DEFENDANT_ID", defendantId)
-                .replaceAll("COURT_CENTRE_ID", courtCentreId);
-        return new StringToJsonObjectConverter().convert(strPayload);
     }
 
     private void closeTheCase(final String caseId, final String defendantId, final String hearingId){

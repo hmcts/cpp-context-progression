@@ -4,6 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -15,6 +16,7 @@ import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
@@ -23,12 +25,12 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verify
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 
 import org.junit.After;
-import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -36,6 +38,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
+
 import com.jayway.restassured.path.json.JsonPath;
 
 import java.io.IOException;
@@ -48,7 +51,6 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -83,6 +85,7 @@ public class HearingDeletedIT extends AbstractIT {
 
 
         HearingStub.stubInitiateHearing();
+        stubDocumentCreate(randomAlphanumeric(20));
     }
 
     @After
@@ -201,10 +204,8 @@ public class HearingDeletedIT extends AbstractIT {
         verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(hearingId, messageConsumerDeletedHearingPopulatedToProbationCaseWorker);
     }
 
-    @SuppressWarnings("squid:S1607")
-    @Ignore("passes locally everytime but failing in pipeline")
     @Test
-    public void shouldReopenCaseWhenAnewApplicationAddedAndHasFutureHearingsAndDeleteHearing() throws IOException {
+    public void shouldReopenCaseWhenAnewApplicationAddedAndHasFutureHearingsAndDeleteHearing() throws IOException, InterruptedException {
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
         final String courtCentreId = UUID.randomUUID().toString();
@@ -228,8 +229,7 @@ public class HearingDeletedIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(INACTIVE.getDescription(), caseId));
 
         initiateCourtProceedingsForCourtApplicationWithCourtHearing(applicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
-
-        pollForApplicationStatus(applicationId, "DRAFT");
+        pollForApplication(applicationId);
 
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed-case-reopen.json",

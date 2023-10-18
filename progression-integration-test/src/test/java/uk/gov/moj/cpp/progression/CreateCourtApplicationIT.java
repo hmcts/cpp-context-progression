@@ -222,16 +222,6 @@ public class CreateCourtApplicationIT extends AbstractIT {
         pollForApplication(firstApplicationId, firstApplicationMatchers);
 
     }
-    // progression.event.court-application-rejected never raise in progression context
-    // GPE-15039 Ignored temporarily until applications feature is implemented
-    @Ignore
-    @Test
-    public void shouldRejectCourtApplicationWhenApplicantIsRespondent() throws Exception {
-        // when
-        addCourtApplication(caseId, randomUUID().toString(), "progression.command.create-court-application-reject.json");
-        // then
-        verifyInMessagingQueueForCourtApplicationRejected();
-    }
 
     private static void verifyInMessagingQueueForCourtApplicationCreated(String applicationId) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);

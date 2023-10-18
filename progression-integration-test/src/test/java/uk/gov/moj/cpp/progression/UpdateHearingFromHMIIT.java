@@ -35,7 +35,7 @@ import javax.json.JsonObjectBuilder;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.justice.services.messaging.Envelope;
@@ -46,9 +46,9 @@ import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 public class UpdateHearingFromHMIIT extends AbstractIT {
 
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
-    private static final MessageConsumer messageConsumerProsecutionHearingMovedtoUnAllocated = privateEvents.createPrivateConsumer("progression.event.hearing-moved-to-unallocated");
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
+    private MessageConsumer messageConsumerProsecutionHearingMovedtoUnAllocated;
+    private MessageProducer messageProducerClientPublic;
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_LISTING_HEARING_DAYS_WITHOUT_COURT_CENTRE_CORRECTED = "public.events.listing.hearing-days-without-court-centre-corrected";
@@ -67,10 +67,14 @@ public class UpdateHearingFromHMIIT extends AbstractIT {
         courtRoomId = randomUUID().toString();
         listedDurationMinutes = 20;
         listingSequence = 0;
+
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+        messageConsumerProsecutionHearingMovedtoUnAllocated = privateEvents.createPrivateConsumer("progression.event.hearing-moved-to-unallocated");
+        messageProducerClientPublic = publicEvents.createPublicProducer();
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
         messageConsumerProsecutionHearingMovedtoUnAllocated.close();

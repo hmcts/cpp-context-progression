@@ -28,7 +28,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -43,9 +43,8 @@ public class UpdatePleaIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression" +
             ".prosecution-cases-referred-to-court";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents
-            .createPrivateConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated;
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
@@ -63,8 +62,8 @@ public class UpdatePleaIT extends AbstractIT {
     private String reportingRestrictionId;
 
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerClientPublicForReferToCourtOnHearingInitiated.close();
     }
@@ -83,6 +82,9 @@ public class UpdatePleaIT extends AbstractIT {
         newCourtCentreName = "Narnia Magistrate's Court";
         applicationId = randomUUID().toString();
         reportingRestrictionId = randomUUID().toString();
+
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents.createPrivateConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
     }
     @Test
     public void shouldUpdateOffenceVerdictWhenRaisedPublicEvent() throws Exception {
@@ -210,7 +212,7 @@ public class UpdatePleaIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    private static void verifyInMessagingQueueForCasesReferredToCourts() {
+    private void verifyInMessagingQueueForCasesReferredToCourts() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
         assertTrue(message.isPresent());
     }

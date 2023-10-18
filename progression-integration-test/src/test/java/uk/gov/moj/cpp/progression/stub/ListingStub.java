@@ -27,6 +27,7 @@ import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBe
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -41,6 +42,7 @@ public class ListingStub {
 
     private static final String LISTING_COMMAND = "/listing-service/command/api/rest/listing/cases";
     private static final String LISTING_HEARING_COMMAND_V2 = "/listing-service/command/api/rest/listing/hearings/";
+    private static final String LISTING_DELETE_HEARING_COMMAND = "/listing-command-api/command/api/rest/listing/delete-hearing/";
     private static final String LISTING_COMMAND_TYPE = "application/vnd.listing.command.list-court-hearing+json";
 
     private static final String LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE = "application/vnd.listing.command.list-unscheduled-court-hearing+json";
@@ -50,6 +52,9 @@ public class ListingStub {
     private static final String LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE = "application/vnd.listing.search.hearings+json";
     private static final String LISTING_NEXT_HEARING_V2_TYPE = "application/vnd.listing.next-hearings-v2+json";
     private static final String LISTING_COTR_SEARCH_QUERY_TYPE = "application/vnd.listing.search.hearings+json";
+
+    private static final String LISTING_DELETE_HEARING_TYPE = "application/vnd.listing.delete-hearing+json";
+    private static final String LISTING_DELETE_NEXT_HEARINGS_TYPE = "application/vnd.listing.delete-next-hearings+json";
 
     public static void stubListCourtHearing() {
         InternalEndpointMockUtils.stubPingFor("listing-service");
@@ -72,6 +77,18 @@ public class ListingStub {
 
         stubFor(post(urlPathMatching(LISTING_HEARING_COMMAND_V2))
                 .withHeader(CONTENT_TYPE, equalTo(LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE_V2))
+                .willReturn(aResponse()
+                        .withStatus(ACCEPTED.getStatusCode())
+                        .withHeader(ID, UUID.randomUUID().toString())));
+
+        stubFor(post(urlPathMatching(LISTING_DELETE_HEARING_COMMAND))
+                .withHeader(CONTENT_TYPE, equalTo(LISTING_DELETE_HEARING_TYPE))
+                .willReturn(aResponse()
+                        .withStatus(ACCEPTED.getStatusCode())
+                        .withHeader(ID, UUID.randomUUID().toString())));
+
+        stubFor(post(urlPathMatching(LISTING_HEARING_COMMAND_V2))
+                .withHeader(CONTENT_TYPE, equalTo(LISTING_DELETE_NEXT_HEARINGS_TYPE))
                 .willReturn(aResponse()
                         .withStatus(ACCEPTED.getStatusCode())
                         .withHeader(ID, UUID.randomUUID().toString())));
@@ -470,6 +487,19 @@ public class ListingStub {
                         .withBody(getPayload(resource))));
 
         waitForStubToBeReady(urlPath, LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE);
+    }
+
+    public static void setupListingAnyFutureAllocationQuery(final String resource, final ZonedDateTime startDateTime ) {
+        stubPingFor("listing-service");
+
+        final String urlPath = "/listing-service/query/api/rest/listing/hearings/any-allocation";
+        stubFor(get(urlPathEqualTo(urlPath))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(getPayload(resource).replaceAll("START_TIME",startDateTime.toString()))));
+
+        waitForStubToBeReady(urlPath, "application/vnd.listing.search.hearings+json");
     }
 
     public static void stubListingSearchHearingsQuery(final String resource,

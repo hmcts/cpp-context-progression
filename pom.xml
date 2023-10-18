@@ -55,7 +55,7 @@
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>8.0.41</referencedata.version>
-        <listing.version>8.0.56</listing.version>
+        <listing.version>8.0.57</listing.version>
         <hearing.version>8.0.93</hearing.version>
         <usersgroups.version>8.0.7</usersgroups.version>
         <defence.version>8.0.32</defence.version>

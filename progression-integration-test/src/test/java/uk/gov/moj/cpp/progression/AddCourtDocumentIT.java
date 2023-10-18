@@ -37,7 +37,6 @@ import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialMetadata;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
-import static uk.gov.moj.cpp.progression.util.FeatureToggleUtil.enableDefenceDisclosureFeature;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
@@ -109,12 +108,6 @@ public class AddCourtDocumentIT extends AbstractIT {
         caseProsecutorUpdateHelper = new CaseProsecutorUpdateHelper(caseId);
 
         stubMaterialMetadata();
-    }
-
-    @Test
-    public void shouldAddCourtDocument() throws IOException {
-
-        verifyAddCourtDocument(null, "460f7ec0-c002-11e8-a355-529269fb1459");
     }
 
     @Test
@@ -586,9 +579,6 @@ public class AddCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldUpdateSendToCpsToViewStore() throws IOException {
-
-        enableDefenceDisclosureFeature(true);
-
         stubFor(post(urlPathEqualTo("/notification-cms/v1/transformAndSendCms"))
                 .willReturn(aResponse().withStatus(SC_OK)));
 

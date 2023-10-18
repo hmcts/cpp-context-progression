@@ -48,16 +48,13 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
-@Ignore
 public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
     private static final String LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS = "listing.list-next-hearings-v2";
     private final String DOCUMENT_TEXT = STRING.next();
@@ -66,15 +63,11 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged =
-            privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
-    private static final MessageConsumer consumerForCourtApplicationCreated =
-            publicEvents.createPublicConsumer("public.progression.court-application-created");
-    private static final MessageConsumer consumerForCourtApplicationResulted =
-            publicEvents.createPublicConsumer("progression.event.applications-resulted");
-    private static final MessageConsumer consumerForCourtApplicationUpdated =
-            privateEvents.createPrivateConsumer("progression.event.hearing-resulted-application-updated");
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
+    private MessageConsumer consumerForCourtApplicationCreated;
+    private MessageConsumer consumerForCourtApplicationResulted;
+    private MessageConsumer consumerForCourtApplicationUpdated;
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
     private String hearingId;
@@ -89,8 +82,8 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
             LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS);
 
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
         consumerForCourtApplicationCreated.close();
@@ -112,175 +105,15 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
         newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
         newCourtCentreName = "Narnia Magistrate's Court";
         applicationId = randomUUID().toString();
+
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+        consumerForCourtApplicationCreated = publicEvents.createPublicConsumer("public.progression.court-application-created");
+        consumerForCourtApplicationResulted = publicEvents.createPublicConsumer("progression.event.applications-resulted");
+        consumerForCourtApplicationUpdated = privateEvents.createPrivateConsumer("progression.event.hearing-resulted-application-updated");
+
     }
 
-    @Test
-    public void shouldAdjournApplicationToNewHearing() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-        String prosecutionAuthorityReference = prosecutionCasesJsonObject.getJsonObject("prosecutionCase").getJsonObject("prosecutionCaseIdentifier").getString("prosecutionAuthorityReference");
-
-        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-        final Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                .withUserId(userId)
-                .build();
-
-        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, applicationId, randomUUID().toString(), prosecutionAuthorityReference, courtCentreId, courtCentreName);
-
-        sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
-
-        String courtApplicationId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application-adjorn.json");
-        verifyCourtApplicationCreatedPrivateEvent();
-
-        final Matcher[] applicationMatchers = {
-                withJsonPath("$.courtApplication.id", is(courtApplicationId)),
-                withJsonPath("$.courtApplication.type.code", is("AS14518")),
-                withJsonPath("$.courtApplication.type.linkType", is("LINKED")),
-                withJsonPath("$.courtApplication.applicationStatus", is("LISTED")),
-                withJsonPath("$.courtApplication.applicant.id", notNullValue()),
-                withJsonPath("$.courtApplication.subject.id", notNullValue()),
-                withJsonPath("$.courtApplication..courtOrder.courtOrderOffences[0].prosecutionCaseId", notNullValue()),
-                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].prosecutionCaseIdentifier.caseURN", is("TVL1234")),
-                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test"))
-        };
-
-         pollForCourtApplication(courtApplicationId, applicationMatchers);
-
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        final String adjournedHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted.application-adjourned-to-next-hearing.json", caseId,
-                        hearingId, defendantId, applicationId, adjournedHearingId, prosecutionAuthorityReference, newCourtCentreId, newCourtCentreName), metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
-
-        verifyPostHearingExtendedEvent(adjournedHearingId, applicationId);
-    }
-
-
-    @Test
-    public void shouldAdjournApplicationToNewHearingV2() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-        String prosecutionAuthorityReference = prosecutionCasesJsonObject.getJsonObject("prosecutionCase").getJsonObject("prosecutionCaseIdentifier").getString("prosecutionAuthorityReference");
-
-        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-        final Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                .withUserId(userId)
-                .build();
-
-        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, applicationId, randomUUID().toString(), prosecutionAuthorityReference, courtCentreId, courtCentreName);
-
-        sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
-
-        String courtApplicationId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application-adjorn.json");
-        verifyCourtApplicationCreatedPrivateEvent();
-
-        final Matcher[] applicationMatchers = {
-                withJsonPath("$.courtApplication.id", is(courtApplicationId)),
-                withJsonPath("$.courtApplication.type.code", is("AS14518")),
-                withJsonPath("$.courtApplication.type.linkType", is("LINKED")),
-                withJsonPath("$.courtApplication.applicationStatus", is("LISTED")),
-                withJsonPath("$.courtApplication.applicant.id", notNullValue()),
-                withJsonPath("$.courtApplication.subject.id", notNullValue()),
-                withJsonPath("$.courtApplication..courtOrder.courtOrderOffences[0].prosecutionCaseId", notNullValue()),
-                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].prosecutionCaseIdentifier.caseURN", is("TVL1234")),
-                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test"))
-        };
-
-        pollForCourtApplication(courtApplicationId, applicationMatchers);
-
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        final String adjournedHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED_V2, getHearingJsonObject("public.events.hearing.hearing-resulted.application-adjourned-to-next-hearing.json", caseId,
-                        hearingId, defendantId, applicationId, adjournedHearingId, prosecutionAuthorityReference, newCourtCentreId, newCourtCentreName), metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED_V2)
-                        .withUserId(userId)
-                        .build());
-    }
-
-    @Test
-    @Ignore("it comes from master branch")
-    public void shouldCallListingToNewHearingWithCourtOrder() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        final String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-        final String prosecutionAuthorityReference = prosecutionCasesJsonObject.getJsonObject("prosecutionCase").getJsonObject("prosecutionCaseIdentifier").getString("prosecutionAuthorityReference");
-
-        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-        final Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                .withUserId(userId)
-                .build();
-
-        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, applicationId, randomUUID().toString(), prosecutionAuthorityReference, courtCentreId, courtCentreName);
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
-
-        final String courtApplicationId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application-adjorn.json");
-        verifyCourtApplicationCreatedPrivateEvent();
-
-        final Matcher[] applicationMatchers = {
-                withJsonPath("$.courtApplication.id", is(courtApplicationId)),
-                withJsonPath("$.courtApplication.type.code", is("AS14518")),
-                withJsonPath("$.courtApplication.type.linkType", is("LINKED")),
-                withJsonPath("$.courtApplication.applicationStatus", is("LISTED")),
-                withJsonPath("$.courtApplication.applicant.id", notNullValue()),
-                withJsonPath("$.courtApplication.subject.id", notNullValue()),
-                withJsonPath("$.courtApplication..courtOrder.courtOrderOffences[0].prosecutionCaseId", notNullValue()),
-                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].prosecutionCaseIdentifier.caseURN", is("TVL1234")),
-                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test"))
-        };
-
-        pollForCourtApplication(courtApplicationId, applicationMatchers);
-
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        final String adjournedHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted.application-adjourned-to-next-hearing-with-court-order.json", caseId,
-                        hearingId, defendantId, courtApplicationId, adjournedHearingId, prosecutionAuthorityReference, newCourtCentreId, newCourtCentreName), metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
-        verifyCourtApplicationUpdatedPrivateEvent();
-
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.id", Matchers.is(hearingId)),
-                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].lastAdjournDate", Matchers.is("0000-01-01")),
-                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].lastAdjournedHearingType", Matchers.is("adjournmentReason")),
-                withJsonPath("$.hearing.courtApplications[0].courtOrder.courtOrderOffences[0].offence.lastAdjournDate", Matchers.is("2020-06-27")),
-                withJsonPath("$.hearing.courtApplications[0].courtOrder.courtOrderOffences[0].offence.lastAdjournedHearingType", Matchers.is("adjournmentReason"))
-        );
-
-        final Matcher[] adjournOffenceUpdatedMatchers = {
-                withJsonPath("$.prosecutionCase.id", is(caseId)),
-                withoutJsonPath("$.prosecutionCase.defendants[0].offences[0].lastAdjournDate"),
-                withoutJsonPath("$.prosecutionCase.defendants[0].offences[0].lastAdjournedHearingType")
-        };
-
-        pollProsecutionCasesProgressionFor(caseId, adjournOffenceUpdatedMatchers);
-    }
 
     @Test
     public void shouldCallListingToNewHearingWithCourtOrderV2() throws Exception {
@@ -351,70 +184,6 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
         verifyListNextHearingRequestsAsStreamV2(hearingId, "1 week");
     }
 
-
-    @Ignore("Flaky Test")
-    @Test
-    public void shouldAdjournApplicationToNewHearingInMagistrate() throws Exception {
-        stubGetProvisionalBookedSlotsForNonExistingBookingId();
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-        String prosecutionAuthorityReference = prosecutionCasesJsonObject.getJsonObject("prosecutionCase").getJsonObject("prosecutionCaseIdentifier").getString("prosecutionAuthorityReference");
-
-        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-        final Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                .withUserId(userId)
-                .build();
-
-        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, applicationId, randomUUID().toString(), prosecutionAuthorityReference, courtCentreId, courtCentreName);
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
-
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
-        verifyCourtApplicationCreatedPrivateEvent();
-
-        final Matcher[] applicationMatchers = {
-                withJsonPath("$.courtApplication.id", is(applicationId)),
-                withJsonPath("$.courtApplication.type.code", is("AS14518")),
-                withJsonPath("$.courtApplication.type.linkType", is("LINKED")),
-                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
-                withJsonPath("$.courtApplication.applicant.id", notNullValue()),
-                withJsonPath("$.courtApplication.subject.id", notNullValue()),
-                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].prosecutionCaseId", notNullValue()),
-                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].prosecutionCaseIdentifier.caseURN", is("TVL1234")),
-                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test"))
-        };
-
-        pollForApplication(applicationId, applicationMatchers);
-
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        final String adjournedHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(hearingId);
-
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted.application-adjourned-to-next-hearing-in-mag-with-non-existing-booking-ref.json", caseId,
-                        hearingId, defendantId, applicationId, adjournedHearingId, prosecutionAuthorityReference, newCourtCentreId, newCourtCentreName), metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
-
-        verifyPostHearingExtendedEvent(adjournedHearingId, applicationId);
-
-        final Matcher[] personDefendantOffenceUpdatedMatchers = {
-                withJsonPath("$.prosecutionCase.id", is(caseId)),
-                withJsonPath("$.hearingsAtAGlance.hearings.[*].id", hasItem(hearingId)),
-                withJsonPath("$.hearingsAtAGlance.hearings.[*].type.description", hasItem("Sentence")),
-                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(newCourtCentreId)),
-                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.name", hasItem(newCourtCentreName)),
-                withJsonPath("$.hearingsAtAGlance.defendantHearings.[*].defendantId", hasItem(defendantId)),
-                withJsonPath("$.hearingsAtAGlance.hearings.[*].defendants.[*].address.address2", hasItem("Leamington Avenue")) // Need to fix why this is not working
-        };
-
-        pollProsecutionCasesProgressionFor(caseId, personDefendantOffenceUpdatedMatchers);
-    }
-
     @Test
     public void shouldAdjournApplicationToNewHearingInMagistrateV2() throws Exception {
 
@@ -475,125 +244,6 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, personDefendantOffenceUpdatedMatchers);
 
-    }
-
-
-    @Ignore("Flaky Test")
-    @Test
-    public void shouldKeepLastAdjournValuesWhenCourtApplicationHasCaseAdjourned() throws IOException {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        final String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-        final String prosecutionAuthorityReference = prosecutionCasesJsonObject.getJsonObject("prosecutionCase").getJsonObject("prosecutionCaseIdentifier").getString("prosecutionAuthorityReference");
-
-        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-        final Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                .withUserId(userId)
-                .build();
-
-        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, applicationId, randomUUID().toString(), prosecutionAuthorityReference, courtCentreId, courtCentreName);
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
-
-        final String courtApplicationId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
-        verifyCourtApplicationCreatedPrivateEvent();
-
-        final Matcher[] applicationMatchers = {
-                withJsonPath("$.courtApplication.id", is(courtApplicationId)),
-                withJsonPath("$.courtApplication.type.code", is("AS14518")),
-                withJsonPath("$.courtApplication.type.linkType", is("LINKED")),
-                withJsonPath("$.courtApplication.applicationStatus", is("LISTED")),
-                withJsonPath("$.courtApplication.applicant.id", notNullValue()),
-                withJsonPath("$.courtApplication.subject.id", notNullValue()),
-                withJsonPath("$.courtApplication.courtApplicationCases[0].offences", notNullValue()),
-                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test"))
-        };
-
-        pollForCourtApplication(courtApplicationId, applicationMatchers);
-
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        final String adjournedHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted.application-adjourned-to-next-hearing-with-application-case.json", caseId,
-                        hearingId, defendantId, courtApplicationId, adjournedHearingId, prosecutionAuthorityReference, newCourtCentreId, newCourtCentreName, "2020-05-26"), metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
-
-        verifyCourtApplicationUpdatedPrivateEvent();
-
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.id", Matchers.is(hearingId)),
-                withJsonPath("$.hearing.courtApplications[0].courtApplicationCases[0].offences[0].lastAdjournDate", Matchers.is("2020-05-26")),
-                withJsonPath("$.hearing.courtApplications[0].courtApplicationCases[0].offences[0].lastAdjournedHearingType", Matchers.is("adjournmentReason"))
-        );
-
-        final Matcher[] applicationMatchers2 = {
-                withJsonPath("$.courtApplication.id", is(courtApplicationId)),
-                withJsonPath("$.courtApplication.type.code", is("AS14518")),
-                withJsonPath("$.courtApplication.type.linkType", is("LINKED")),
-                withJsonPath("$.courtApplication.applicationStatus", is("FINALISED")),
-                withJsonPath("$.courtApplication.applicant.id", notNullValue()),
-                withJsonPath("$.courtApplication.subject.id", notNullValue()),
-                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].lastAdjournDate", is("2020-05-26")),
-                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].lastAdjournedHearingType", is("adjournmentReason"))
-        };
-
-        pollForCourtApplication(courtApplicationId, applicationMatchers2);
-
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted.application-adjourned-to-next-hearing-with-application-case.json", caseId,
-                        hearingId, defendantId, courtApplicationId, adjournedHearingId, prosecutionAuthorityReference, newCourtCentreId, newCourtCentreName, "2020-05-27"), metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
-
-        verifyCourtApplicationUpdatedPrivateEvent();
-
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.id", Matchers.is(hearingId)),
-                withJsonPath("$.hearing.courtApplications[0].courtApplicationCases[0].offences[0].lastAdjournDate", Matchers.is("2020-05-27")),
-                withJsonPath("$.hearing.courtApplications[0].courtApplicationCases[0].offences[0].lastAdjournedHearingType", Matchers.is("adjournmentReason"))
-        );
-
-        final Matcher[] applicationMatchers3 = {
-                withJsonPath("$.courtApplication.id", is(courtApplicationId)),
-                withJsonPath("$.courtApplication.type.code", is("AS14518")),
-                withJsonPath("$.courtApplication.type.linkType", is("LINKED")),
-                withJsonPath("$.courtApplication.applicationStatus", is("FINALISED")),
-                withJsonPath("$.courtApplication.applicant.id", notNullValue()),
-                withJsonPath("$.courtApplication.subject.id", notNullValue()),
-                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].lastAdjournDate", is("2020-05-27")),
-                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].lastAdjournedHearingType", is("adjournmentReason"))
-        };
-
-        pollForCourtApplication(courtApplicationId, applicationMatchers3);
-
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted.application-adjourned-to-next-hearing-with-application-case.json", caseId,
-                        hearingId, defendantId, courtApplicationId, adjournedHearingId, prosecutionAuthorityReference, newCourtCentreId, newCourtCentreName, "2020-05-25"), metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
-
-        verifyCourtApplicationUpdatedPrivateEvent();
-
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.id", Matchers.is(hearingId)),
-                withJsonPath("$.hearing.courtApplications[0].courtApplicationCases[0].offences[0].lastAdjournDate", Matchers.is("2020-05-27")),
-                withJsonPath("$.hearing.courtApplications[0].courtApplicationCases[0].offences[0].lastAdjournedHearingType", Matchers.is("adjournmentReason"))
-        );
-
-
-        pollForCourtApplication(courtApplicationId, applicationMatchers3);
     }
 
     @Test
@@ -702,26 +352,10 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
         verifyListNextHearingRequestsAsStreamV2(hearingId, "1 week");
     }
 
-    private void verifyPostHearingExtendedEvent(final String hearingId, String applicationId) {
-        final MessageConsumer hearingExtendedConsumer = publicEvents.createPublicConsumer(APPLICATION_REFERRED_AND_HEARING_EXTENDED);
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(hearingExtendedConsumer);
-        assertTrue(message.isPresent());
-        assertThat(message.get().getString("hearingId"), equalTo(hearingId));
-        assertNotNull(message.get().getJsonObject("courtApplication"));
-        assertThat(message.get().getJsonObject("courtApplication").getString("id"), equalTo(applicationId));
-    }
-
     private String doVerifyProsecutionCaseDefendantListingStatusChanged() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
         return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
-    }
-
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final String existingHearingId) {
-        final JsonPath message = QueueUtil.retrieveMessage(messageConsumerProsecutionCaseDefendantListingStatusChanged, isJson(
-                withJsonPath("$.hearing.id", is(not(existingHearingId)))
-        ));
-        return message.getJsonObject("hearing.id");
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
@@ -749,12 +383,6 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
                         .replaceAll("OFFENCE_ID", "3789ab16-0bb7-4ef1-87ef-c936bf0364f1")
                         .replaceAll("ORDERED_DATE", orderedDate)
         );
-    }
-
-    private void verifyNoPostHearingExtendedEvent() {
-        final MessageConsumer hearingExtendedConsumer = publicEvents.createPublicConsumer(APPLICATION_REFERRED_AND_HEARING_EXTENDED);
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(hearingExtendedConsumer);
-        assertThat(message.isPresent(), is(false));
     }
 
     private void verifyCourtApplicationCreatedPrivateEvent() {

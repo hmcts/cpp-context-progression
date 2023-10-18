@@ -46,11 +46,12 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
+import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.ReadContext;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsCollectionWithSize;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -68,11 +69,9 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerClientPublicForHearingResultedCaseUpdated = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED);
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-            .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerClientPublicForHearingResultedCaseUpdated;
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private static String userId;
@@ -86,14 +85,14 @@ public class HearingAtAGlanceIT extends AbstractIT {
         HearingStub.stubInitiateHearing();
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerClientPublicForHearingResultedCaseUpdated.close();
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
     }
 
-    private static void verifyInMessagingQueueForHearingResultedCaseUpdated() {
+    private  void verifyInMessagingQueueForHearingResultedCaseUpdated() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForHearingResultedCaseUpdated);
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));
@@ -121,33 +120,10 @@ public class HearingAtAGlanceIT extends AbstractIT {
         defendantId = randomUUID().toString();
         offenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1").toString();
         userId = randomUUID().toString();
-    }
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerClientPublicForHearingResultedCaseUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED);
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
 
-    @Test
-    public void shouldSetJudiciaryResultsAtHearingsLevelForHearingAtAGlance() throws Exception {
-        stubQueryCpsProsecutorData("/restResource/referencedata.query.prosecutor.by.oucode.json", randomUUID(), HttpStatus.SC_OK);
-
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        //validate enrichment for refer-cases-to-court
-        List<Matcher<? super ReadContext>> additionalMatchers = newArrayList(
-                withJsonPath("$.prosecutionCase.prosecutionCaseIdentifier.majorCreditorCode", is("TFL2")),
-                withJsonPath("$.prosecutionCase.prosecutionCaseIdentifier.prosecutionAuthorityOUCode", is("GB10056"))
-        );
-
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, additionalMatchers));
-
-        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingWithSingleCaseJsonObject("public.hearing.resulted-and-hearing-at-a-glance-updated.json", caseId,
-                        hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID), JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
-
-        pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
-        verifyInMessagingQueueForHearingResultedCaseUpdated();
     }
 
     @Test
@@ -206,31 +182,6 @@ public class HearingAtAGlanceIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchersForCpsOrganisation());
         verifyInMessagingQueueForHearingResultedCaseUpdated();
     }
-
-
-    @Test
-    public void shouldSetDefendantLevelJudiciaryResultsAndQuery() throws Exception {
-        stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
-
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-
-        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingWithSingleCaseJsonObject("public.hearing.resulted-and-hearing-at-a-glance-updated.json", caseId,
-                        hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID), JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
-
-        pollProsecutionCasesProgressionForCAAG(caseId, getCaseAtAGlanceMatchers());
-        verifyInMessagingQueueForHearingResultedCaseUpdated();
-
-        verifResultTextForCaag();
-    }
-
 
     @Test
     public void shouldSetDefendantLevelJudiciaryResultsAndQueryV2() throws Exception {

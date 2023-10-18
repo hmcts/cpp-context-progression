@@ -1,8 +1,11 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Duration.FIVE_HUNDRED_MILLISECONDS;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -18,6 +21,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -26,8 +30,9 @@ import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -53,11 +58,11 @@ public class PartialAllocationOfHearingIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_WITH_EXTENDED_HEARING_ID = "public.listing.hearing-confirmed-with-extended-hearing-id.json";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final Logger LOGGER = LoggerFactory.getLogger(PartialAllocationOfHearingIT.class);
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
-    private static final MessageConsumer messageConsumerProgressionHearingExtendedEvent = privateEvents.createPrivateConsumer("progression.event.hearing-extended");
-    private static final MessageConsumer messageConsumerProgressionSummonsDataPreparedEvent = privateEvents.createPrivateConsumer("progression.event.summons-data-prepared");
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
+    private MessageConsumer messageConsumerProgressionHearingExtendedEvent;
+    private MessageConsumer messageConsumerProgressionSummonsDataPreparedEvent;
+    private MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker;
 
 
     @BeforeClass
@@ -65,8 +70,18 @@ public class PartialAllocationOfHearingIT extends AbstractIT {
         HearingStub.stubInitiateHearing();
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @Before
+    public void setUpQueue() {
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+        messageConsumerProgressionHearingExtendedEvent = privateEvents.createPrivateConsumer("progression.event.hearing-extended");
+        messageConsumerProgressionSummonsDataPreparedEvent = privateEvents.createPrivateConsumer("progression.event.summons-data-prepared");
+        messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+
+    }
+
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
         messageConsumerProgressionHearingExtendedEvent.close();
@@ -188,7 +203,8 @@ public class PartialAllocationOfHearingIT extends AbstractIT {
         doHearingConfirmedAndVerify(existingHearingId, caseId3, defendantId3, courtCentreId1, userId1, extendedHearingId);
 
         doVerifyProgressionHearingExtendedEvent(extendedHearingId, caseId3);
-        queryAndVerifyHearingIsExtended(extendedHearingId, 3);
+        await().atMost(TIMEOUT, SECONDS).pollInterval(FIVE_HUNDRED_MILLISECONDS).until(() ->
+                queryAndVerifyHearingIsExtended(extendedHearingId, 3));
     }
 
     private void doHearingConfirmedAndVerifyForOneDefendantAndTwoOffences(String hearingId, String caseId, String defendantId, String courtCentreId, String userId) {

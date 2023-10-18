@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.is;
@@ -27,6 +28,7 @@ import static uk.gov.moj.cpp.progression.stub.VejHearingStub.verifyHearingDelete
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.VejHearingStub;
@@ -48,18 +50,16 @@ import com.jayway.jsonpath.ReadContext;
 import com.jayway.restassured.response.Response;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("for Release 22.21")
 public class VepHearingIT extends AbstractIT {
     private static final String DOCUMENT_TEXT = STRING.next();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPrivateProducer();
-    private static final MessageConsumer messageConsumerVejHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.vej-hearing-populated-to-probation-caseworker");
-    private static final MessageConsumer messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.vej-deleted-hearing-populated-to-probation-caseworker");
+    private MessageProducer messageProducerClientPublic = publicEvents.createPrivateProducer();
+    private MessageConsumer messageConsumerVejHearingPopulatedToProbationCaseWorker;
+    private MessageConsumer messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker;
 
     private static final String PUBLIC_EVENTS_LISTING_HEARING_DELETED = "public.events.listing.hearing-deleted";
 
@@ -74,8 +74,8 @@ public class VepHearingIT extends AbstractIT {
     private String ouCode;
     private String prosecutionAuthorityId;
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerVejHearingPopulatedToProbationCaseWorker.close();
         messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker.close();
@@ -83,6 +83,10 @@ public class VepHearingIT extends AbstractIT {
 
     @Before
     public void setUp() {
+        messageProducerClientPublic = publicEvents.createPrivateProducer();
+        messageConsumerVejHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.vej-hearing-populated-to-probation-caseworker");
+        messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.vej-deleted-hearing-populated-to-probation-caseworker");
+
         cleanViewStoreTables();
         stubDocumentCreate(DOCUMENT_TEXT);
         HearingStub.stubInitiateHearing();
@@ -126,9 +130,9 @@ public class VepHearingIT extends AbstractIT {
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
 
             doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-            verifyHearingCommandInvoked();
-
         }
+        verifyInMessagingQueueForVejHearingPopulatedToProbationCaseWorker(messageConsumerVejHearingPopulatedToProbationCaseWorker);
+        verifyHearingCommandInvoked(asList(caseId, hearingId));
     }
 
     @Test
@@ -155,6 +159,14 @@ public class VepHearingIT extends AbstractIT {
                     PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
             doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         }
+
+        sendMessage(messageProducerClientPublic,
+                "public.events.hearing.hearing-resulted", getHearingWithSingleCaseJsonObject("public.hearing.resulted-case-updated2.json", caseId,
+                        hearingId, defendantId, courtCentreId, "C", "Remedy", "2593cf09-ace0-4b7d-a746-0703a29f33b5"), JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName("public.events.hearing.hearing-resulted")
+                        .withUserId(userId)
+                        .build());
         metadata = metadataBuilder()
                 .withId(randomUUID())
                 .withName(PUBLIC_EVENTS_LISTING_HEARING_DELETED)
@@ -165,7 +177,12 @@ public class VepHearingIT extends AbstractIT {
                 PUBLIC_EVENTS_LISTING_HEARING_DELETED, hearingDeletedJson, metadata);
 
         verifyInMessagingQueueForDeletedHearingPopulatedToProbationCaseWorker(messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker);
-        verifyHearingDeletedCommandInvoked();
+        verifyHearingDeletedCommandInvoked(asList(caseId, hearingId));
+    }
+
+    public static void verifyInMessagingQueueForVejHearingPopulatedToProbationCaseWorker(final MessageConsumer messageConsumerVejHearingPopulatedToProbationCaseWorker) {
+        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerVejHearingPopulatedToProbationCaseWorker);
+        assertTrue(message.isPresent());
     }
 
     public static void verifyInMessagingQueueForDeletedHearingPopulatedToProbationCaseWorker(final MessageConsumer messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker) {
@@ -358,6 +375,21 @@ public class VepHearingIT extends AbstractIT {
                 "application/vnd.progression.refer-cases-to-court+json",
                 caseCreationPayload);
         assertThatRequestIsAccepted(response);
+    }
+    private JsonObject getHearingWithSingleCaseJsonObject(final String path, final String caseId, final String hearingId,
+                                                          final String defendantId, final String courtCentreId, final String bailStatusCode,
+                                                          final String bailStatusDescription, final String bailStatusId) {
+        return stringToJsonObjectConverter.convert(
+                getPayload(path)
+                        .replaceAll("CASE_ID", caseId)
+                        .replaceAll("HEARING_ID", hearingId)
+                        .replaceAll("DEFENDANT_ID", defendantId)
+                        .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                        .replaceAll("BAIL_STATUS_ID", bailStatusId)
+                        .replaceAll("BAIL_STATUS_CODE", bailStatusCode)
+                        .replaceAll("BAIL_STATUS_DESCRIPTION", bailStatusDescription)
+                        .replaceAll("APPLICATION_ID", randomUUID().toString())
+        );
     }
 
 }

@@ -64,7 +64,7 @@ import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -90,24 +90,16 @@ public class PetFormIT extends AbstractIT {
     private static final String EDIT_FORM_ENDPOINT = "/prosecutioncases/%caseId%/form/%courtFormId%";
     private static final String REQUEST_EDIT_FORM_MEDIA_TYPE = "application/vnd.progression.request-edit-form+json";
 
-    private static final MessageProducer PUBLIC_MESSAGE_CONSUMER = publicEvents.createPublicProducer();
-    private static final MessageConsumer CREATE_PETFORM_REQUESTED = privateEvents.createPrivateConsumer("progression.event.pet-form-created");
-    private static final MessageConsumer consumerForPetFormCreated = publicEvents
-            .createPublicConsumer("public.progression.pet-form-created");
-    private static final MessageConsumer consumerForCpsPetFormSubmited = publicEvents
-            .createPublicConsumer("public.prosecutioncasefile.cps-serve-pet-submitted");
-    private static final MessageConsumer consumerForPetDetailUpdated = publicEvents
-            .createPublicConsumer("public.progression.pet-detail-updated");
-    private static final MessageConsumer consumerForPetFormUpdated = publicEvents
-            .createPublicConsumer("public.progression.pet-form-updated");
-    private static final MessageConsumer consumerForPetFormDefendantUpdated = publicEvents
-            .createPublicConsumer("public.progression.pet-form-defendant-updated");
-    private static final MessageConsumer consumerForPetFormFinalised = publicEvents
-            .createPublicConsumer("public.progression.pet-form-finalised");
-    private static final MessageConsumer consumerForCourtsDocumentAdded = privateEvents
-            .createPrivateConsumer("progression.event.court-document-added");
-    private static MessageConsumer consumerForEditFormRequested = publicEvents
-            .createPublicConsumer("public.progression.edit-form-requested");
+    private MessageProducer publicMessageConsumer;
+    private MessageConsumer createPetformRequested;
+    private MessageConsumer consumerForPetFormCreated;
+    private MessageConsumer consumerForCpsPetFormSubmited;
+    private MessageConsumer consumerForPetDetailUpdated;
+    private MessageConsumer consumerForPetFormUpdated;
+    private MessageConsumer consumerForPetFormDefendantUpdated;
+    private MessageConsumer consumerForPetFormFinalised;
+    private MessageConsumer consumerForCourtsDocumentAdded;
+    private MessageConsumer consumerForEditFormRequested;
 
     public static final String NAME = "name";
     public static final String USER_NAME_VALUE = "cps user name";
@@ -120,8 +112,8 @@ public class PetFormIT extends AbstractIT {
     private RefDataService referenceDataService;
     private String caseId;
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         consumerForPetFormCreated.close();
         consumerForPetFormDefendantUpdated.close();
         consumerForPetFormFinalised.close();
@@ -129,9 +121,11 @@ public class PetFormIT extends AbstractIT {
         consumerForPetFormUpdated.close();
         consumerForCpsPetFormSubmited.close();
         messageProducerClientPublic.close();
+        publicMessageConsumer.close();
+        createPetformRequested.close();
     }
 
-    private static void verifyInMessagingQueueForCourtsDocumentAdded() {
+    private void verifyInMessagingQueueForCourtsDocumentAdded() {
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(consumerForCourtsDocumentAdded);
         assertTrue(message.isPresent());
     }
@@ -157,6 +151,17 @@ public class PetFormIT extends AbstractIT {
         setupMaterialStructuredPetQuery(petId.toString());
         stubDocumentCreate(DOCUMENT_TEXT);
         stubMaterialMetadata();
+
+        publicMessageConsumer = publicEvents.createPublicProducer();
+        createPetformRequested = privateEvents.createPrivateConsumer("progression.event.pet-form-created");
+        consumerForPetFormCreated = publicEvents.createPublicConsumer("public.progression.pet-form-created");
+        consumerForCpsPetFormSubmited = publicEvents.createPublicConsumer("public.prosecutioncasefile.cps-serve-pet-submitted");
+        consumerForPetDetailUpdated = publicEvents.createPublicConsumer("public.progression.pet-detail-updated");
+        consumerForPetFormUpdated = publicEvents.createPublicConsumer("public.progression.pet-form-updated");
+        consumerForPetFormDefendantUpdated = publicEvents.createPublicConsumer("public.progression.pet-form-defendant-updated");
+        consumerForPetFormFinalised = publicEvents.createPublicConsumer("public.progression.pet-form-finalised");
+        consumerForCourtsDocumentAdded = privateEvents.createPrivateConsumer("progression.event.court-document-added");
+        consumerForEditFormRequested = publicEvents.createPublicConsumer("public.progression.edit-form-requested");
     }
 
     @Test
@@ -588,7 +593,7 @@ public class PetFormIT extends AbstractIT {
         final JsonObject cpsServePetSubmittedPublicEvent = buildPayloadForCpsServePetSubmitted(caseId.toString(),
         defendantId1.toString(), defendantId2.toString(), cpsDefendantId1.toString());
 
-        sendMessage(PUBLIC_MESSAGE_CONSUMER,
+        sendMessage(publicMessageConsumer,
                 PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_PET_SUBMITTED, cpsServePetSubmittedPublicEvent, metadata);
 
         assertThat(cpsServeMaterialHelper.getPrivateEvents(), is(notNullValue()));

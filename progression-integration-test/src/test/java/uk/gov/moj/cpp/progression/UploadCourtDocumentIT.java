@@ -29,7 +29,8 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 
 import com.jayway.restassured.path.json.JsonPath;
 import javax.jms.JMSException;
-import org.junit.AfterClass;
+
+import org.junit.After;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.courts.progression.query.ApplicationDocument;
@@ -67,11 +68,9 @@ public class UploadCourtDocumentIT extends AbstractIT {
     private String docId;
     private String defendantId;
 
-    private static final MessageConsumer publicEventConsumer = publicEvents
-            .createPublicConsumer("public.progression.court-document-added");
+    private MessageConsumer publicEventConsumer;
 
-    private static final MessageConsumer privateEventConsumer = privateEvents
-            .createPrivateConsumer("progression.event.court-document-added-v2");
+    private MessageConsumer privateEventConsumer;
 
     @Before
     public void setup() {
@@ -80,10 +79,13 @@ public class UploadCourtDocumentIT extends AbstractIT {
         docId = randomUUID().toString();
         defendantId = randomUUID().toString();
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
+
+        publicEventConsumer = publicEvents.createPublicConsumer("public.progression.court-document-added");
+        privateEventConsumer = privateEvents.createPrivateConsumer("progression.event.court-document-added-v2");
     }
 
-    @AfterClass
-    public static void after() throws JMSException {
+    @After
+    public void after() throws JMSException {
         publicEventConsumer.close();
         privateEventConsumer.close();
     }
@@ -107,26 +109,6 @@ public class UploadCourtDocumentIT extends AbstractIT {
         helper.makeMultipartFormPostCall(url, "fileServiceId", fileName);
         helper.verifyInMessagingQueueForCourtDocUploaded(materialId);
         helper.resetUserRoles();
-    }
-
-    @Test
-    public void shouldAddCourtDocument() throws IOException, InterruptedException {
-
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
-
-
-        addCourtDocument(docId, caseId, defendantId);
-
-        final Matcher[] matcher = {
-                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.courtDocuments[0].courtDocumentId", equalTo(docId))
-        };
-
-        assertCourtDocumentByCase();
-
-        verifyInMessagingQueueForPublicCourtDocumentAdded();
     }
 
     @Test
@@ -178,6 +160,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
 
 
         assertEquals(expectedPayload, courtDocumentsByCaseStatus, getCustomComparatorForPaging());
+        verifyInMessagingQueueForPublicCourtDocumentAdded();
     }
 
     private void addCourtDocument(final String docId, final String caseId, final String defendantId) throws IOException {

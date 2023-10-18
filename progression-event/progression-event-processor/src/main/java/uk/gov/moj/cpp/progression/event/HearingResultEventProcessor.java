@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.event;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -38,6 +40,8 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 
+import javax.inject.Inject;
+import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,12 +52,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.json.JsonObjectBuilder;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingResultEventProcessor {

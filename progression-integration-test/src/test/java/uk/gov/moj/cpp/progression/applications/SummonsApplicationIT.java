@@ -27,7 +27,6 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class SummonsApplicationIT extends AbstractIT {
@@ -50,7 +49,6 @@ public class SummonsApplicationIT extends AbstractIT {
         consumerForCourtApplicationUpdated.close();
     }
 
-    @Ignore("This test case need to be enabled while application stat-dec is released")
     @Test
     public void shouldCreateLinkedApplicationWithSummons() throws Exception {
         final String applicationId = randomUUID().toString();
@@ -150,7 +148,6 @@ public class SummonsApplicationIT extends AbstractIT {
         pollForCourtApplication(applicationId, applicationMatchers);
     }
 
-    @Ignore("This test case need to be enabled while application stat-dec is released")
     @Test
     public void shouldCreateLinkedApplicationWithSummonsWithCases() throws Exception {
         final String applicationId = randomUUID().toString();
@@ -167,7 +164,7 @@ public class SummonsApplicationIT extends AbstractIT {
         pollForCourtApplication(applicationId, applicationMatchers);
     }
 
-    @Ignore("This test case need to be enabled while application stat-dec is released")
+    @Test
     public void shouldCreateDifferentCourtApplicationWithSameCase() throws Exception {
         String applicationId = randomUUID().toString();
         final String caseId = randomUUID().toString();

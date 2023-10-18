@@ -108,14 +108,6 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     }
 
 
-    @Test
-    public void shouldVerifyApplicationAtAGlance() throws Exception {
-        doReferCaseToCourtAndVerify();
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
-        doHearingConfirmedAndVerify();
-        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
-        verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
-    }
 
     @Test
     public void shouldVerifyLinkedApplicationsInApplicationAtAGlance() throws Exception {
@@ -133,25 +125,17 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     }
 
     @Test
-    public void shouldVerifyLinkedCasesInApplicationAtAGlance() throws Exception {
-        doReferCaseToCourtAndVerify();
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
-        doHearingConfirmedAndVerify();
-        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
-        verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
-    }
-
-    @Test
     public void shouldVerifyLinkedCasesInApplicationAtAGlanceForDefence() throws Exception {
-        doReferCaseToCourtAndVerify();
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
-        doHearingConfirmedAndVerify();
-        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
         final String userRoleInCase = getPayload("stub-data/defence.advocate.query.role-in-case-by-caseid.json")
                 .replace("%CASE_ID%", prosecutionCaseId)
                 .replace("%USER_ROLE_IN_CASE%", "prosecuting");
 
         stubAdvocateRoleInCaseByCaseId(prosecutionCaseId, userRoleInCase);
+        doReferCaseToCourtAndVerify();
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+        doHearingConfirmedAndVerify();
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
+
         verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_FOR_DEFENCE_JSON);
     }
 

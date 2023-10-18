@@ -41,13 +41,13 @@ import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class DefenceCounselIT extends AbstractIT {
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private MessageProducer messageProducerClientPublic;
     private static final String DOCUMENT_TEXT = STRING.next();
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -64,8 +64,8 @@ public class DefenceCounselIT extends AbstractIT {
     private String courtCentreId;
     private String courtCentreName;
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
     }
 
@@ -79,6 +79,8 @@ public class DefenceCounselIT extends AbstractIT {
         defendantId = randomUUID().toString();
         courtCentreId = UUID.fromString("111bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
         courtCentreName = "Lavender Hill Magistrate's Court";
+
+        messageProducerClientPublic = publicEvents.createPublicProducer();
     }
 
     @Test
@@ -163,61 +165,7 @@ public class DefenceCounselIT extends AbstractIT {
     }
 
     @Test
-    public void shouldAddDefenseCounsel() throws Exception {
-        final String defenceCounselId = randomUUID().toString();
-        final List<String> defendantList = Stream.of(randomUUID().toString(), randomUUID().toString()).collect(Collectors.toList());
-        final List<String> attendanceDaysList = Stream.of(FUTURE_LOCAL_DATE.next().toString(), FUTURE_LOCAL_DATE.next().toString()).collect(Collectors.toList());
-
-
-        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
-            addProsecutionCaseToCrownCourt(caseId, defendantId);
-            pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-
-            hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        }
-
-        Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                .withUserId(userId)
-                .build();
-
-        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
-
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
-
-            sendMessage(messageProducerClientPublic,
-                    PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
-
-            doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        }
-
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
-            addDefenceCounsel(hearingId, defenceCounselId, defendantList, attendanceDaysList, "progression.add-hearing-defence-counsel.json");
-            doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        }
-
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.id", is(hearingId)),
-                withJsonPath("$.hearing.defenceCounsels[0].id", is(defenceCounselId)),
-                withJsonPath("$.hearing.defenceCounsels[0].firstName", is("Eric")),
-                withJsonPath("$.hearing.defenceCounsels[0].lastName", is("Ormsby")),
-                withJsonPath("$.hearing.defenceCounsels[0].title", is("Mr")),
-                withJsonPath("$.hearing.defenceCounsels[0].defendants[0]", is(defendantList.get(0))),
-                withJsonPath("$.hearing.defenceCounsels[0].defendants[1]", is(defendantList.get(1))),
-                withJsonPath("$.hearing.defenceCounsels[0].attendanceDays[0]", is(attendanceDaysList.get(0))),
-                withJsonPath("$.hearing.defenceCounsels[0].attendanceDays[1]", is(attendanceDaysList.get(1)))
-        );
-
-
-    }
-
-    @Test
-    public void shouldUpdateDefenseCounsel() throws Exception {
+    public void shouldAddAndUpdateAndRemoveDefenseCounsel() throws Exception {
 
         final String defenceCounselId = randomUUID().toString();
         final List<String> defendantList = Stream.of(randomUUID().toString(), randomUUID().toString()).collect(Collectors.toList());
@@ -288,60 +236,6 @@ public class DefenceCounselIT extends AbstractIT {
                 withJsonPath("$.hearing.defenceCounsels[0].attendanceDays[1]", is(updatedAttendanceDaysList.get(1)))
         );
 
-
-    }
-
-    @Test
-    public void shouldRemoveDefenseCounsel() throws Exception {
-        final String defenceCounselId = randomUUID().toString();
-        final List<String> defendantList = Stream.of(randomUUID().toString(), randomUUID().toString()).collect(Collectors.toList());
-        final List<String> attendanceDaysList = Stream.of(FUTURE_LOCAL_DATE.next().toString(), FUTURE_LOCAL_DATE.next().toString()).collect(Collectors.toList());
-
-
-        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
-            addProsecutionCaseToCrownCourt(caseId, defendantId);
-            pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-
-            hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        }
-
-        Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                .withUserId(userId)
-                .build();
-
-        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
-
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
-
-            sendMessage(messageProducerClientPublic,
-                    PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
-
-            doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        }
-
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
-            addDefenceCounsel(hearingId, defenceCounselId, defendantList, attendanceDaysList, "progression.add-hearing-defence-counsel.json");
-            doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        }
-
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.id", is(hearingId)),
-                withJsonPath("$.hearing.defenceCounsels[0].id", is(defenceCounselId)),
-                withJsonPath("$.hearing.defenceCounsels[0].firstName", is("Eric")),
-                withJsonPath("$.hearing.defenceCounsels[0].lastName", is("Ormsby")),
-                withJsonPath("$.hearing.defenceCounsels[0].title", is("Mr")),
-                withJsonPath("$.hearing.defenceCounsels[0].defendants[0]", is(defendantList.get(0))),
-                withJsonPath("$.hearing.defenceCounsels[0].defendants[1]", is(defendantList.get(1))),
-                withJsonPath("$.hearing.defenceCounsels[0].attendanceDays[0]", is(attendanceDaysList.get(0))),
-                withJsonPath("$.hearing.defenceCounsels[0].attendanceDays[1]", is(attendanceDaysList.get(1)))
-        );
-
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
                 .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
             removeDefenceCounsel(hearingId, defenceCounselId, defendantList, attendanceDaysList, "progression.remove-hearing-defence-counsel.json");
@@ -355,7 +249,6 @@ public class DefenceCounselIT extends AbstractIT {
 
 
     }
-
 
     private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);

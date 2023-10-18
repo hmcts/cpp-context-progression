@@ -43,7 +43,7 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,20 +51,25 @@ import org.junit.Test;
 public class InitiateHearingIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents.createPublicConsumer("public.progression.prosecution-cases-referred-to-court");
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated;
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
     public static final String PROGRESSION_QUERY_GET_CASE_HEARING_TYPES = "application/vnd.progression.query.case.hearingtypes+json";
 
     @Before
     public void setUp() {
         HearingStub.stubInitiateHearing();
+
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents.createPublicConsumer("public.progression.prosecution-cases-referred-to-court");
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerClientPublicForReferToCourtOnHearingInitiated.close();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
     }
 
 
@@ -125,7 +130,7 @@ public class InitiateHearingIT extends AbstractIT {
         );
     }
 
-    private static void verifyInMessagingQueueForCasesReferredToCourts() {
+    private void verifyInMessagingQueueForCasesReferredToCourts() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
         assertTrue(message.isPresent());
     }

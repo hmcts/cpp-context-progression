@@ -31,9 +31,8 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class UpdateDefendantListingStatusIT extends AbstractIT {
@@ -41,11 +40,9 @@ public class UpdateDefendantListingStatusIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerClientPublicForHearingResultedCaseUpdated = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED);
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-            .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerClientPublicForHearingResultedCaseUpdated;
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
@@ -58,14 +55,14 @@ public class UpdateDefendantListingStatusIT extends AbstractIT {
     private String bailStatusId;
 
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerClientPublicForHearingResultedCaseUpdated.close();
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
     }
 
-    private static void verifyInMessagingQueueForHearingResultedCaseUpdated() {
+    private void verifyInMessagingQueueForHearingResultedCaseUpdated() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForHearingResultedCaseUpdated);
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));
@@ -82,6 +79,10 @@ public class UpdateDefendantListingStatusIT extends AbstractIT {
         bailStatusCode = "C";
         bailStatusDescription = "Remanded into Custody";
         bailStatusId = "2593cf09-ace0-4b7d-a746-0703a29f33b5";
+
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerClientPublicForHearingResultedCaseUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED);
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
     }
 
     @Test

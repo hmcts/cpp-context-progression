@@ -37,7 +37,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,19 +45,25 @@ public class HearingUnallocatedIT extends AbstractIT {
 
     private static final String PUBLIC_EVENTS_LISTING_HEARING_UNALLOCATED = "public.events.listing.hearing-unallocated";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
-    private static final MessageConsumer messageConsumerOffencesRemovedFromHearing = privateEvents.createPrivateConsumer("progression.events.offences-removed-from-hearing");
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
+    private MessageConsumer messageConsumerOffencesRemovedFromHearing;
 
 
     @Before
     public void setUp() {
         HearingStub.stubInitiateHearing();
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+        messageConsumerOffencesRemovedFromHearing = privateEvents.createPrivateConsumer("progression.events.offences-removed-from-hearing");
+
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
+        messageConsumerOffencesRemovedFromHearing.close();
     }
 
     @Test
@@ -109,7 +115,7 @@ public class HearingUnallocatedIT extends AbstractIT {
         );
     }
 
-    private static void verifyInMessagingQueueForOffencesRemovedFromHearing() {
+    private void verifyInMessagingQueueForOffencesRemovedFromHearing() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerOffencesRemovedFromHearing);
         assertTrue(message.isPresent());
     }

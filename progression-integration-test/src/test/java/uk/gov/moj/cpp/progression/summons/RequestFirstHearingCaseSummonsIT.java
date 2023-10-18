@@ -68,7 +68,6 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.Utilities.JsonUtil.toJsonString;
 
 
-import com.jayway.restassured.path.json.JsonPath;
 import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
@@ -92,7 +91,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.jms.JMSException;
@@ -106,7 +104,6 @@ import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import org.hamcrest.Matcher;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -136,9 +133,9 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
 
     private final String prosecutorCost = "£300.00";
 
-    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createPublicProducer();
-    private final MessageConsumer nowsMaterialRequestRecordedConsumer = privateEvents.createPrivateConsumer(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED);
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private MessageProducer publicMessageProducer;
+    private MessageConsumer nowsMaterialRequestRecordedConsumer;
+    private MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker;
 
     private static final String DOCUMENT_TEXT = STRING.next();
 
@@ -161,15 +158,19 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
         };
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
-        PUBLIC_MESSAGE_PRODUCER.close();
+    @After
+    public void tearDown() throws JMSException {
+        publicMessageProducer.close();
         messageConsumerHearingPopulatedToProbationCaseWorker.close();
+        nowsMaterialRequestRecordedConsumer.close();
     }
 
     @Before
     public void setUp() {
-        while(QueueUtil.retrieveMessageAsString(messageConsumerHearingPopulatedToProbationCaseWorker, 1L).isPresent());
+        publicMessageProducer = publicEvents.createPublicProducer();
+        nowsMaterialRequestRecordedConsumer = privateEvents.createPrivateConsumer(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED);
+        messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+
         stubInitiateHearing();
         stubDocumentCreate(DOCUMENT_TEXT);
         IdMapperStub.setUp();
@@ -181,7 +182,7 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
 
         personalService = BOOLEAN.next();
         prosecutorEmailAddress = randomAlphanumeric(20) + "@random.com";
-        
+
         initialiseDefendantDetails();
     }
 
@@ -334,7 +335,7 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
                 .add("hearingDateTime", FIRST_HEARING_START_TIME.toString())
                 .build();
 
-        sendMessage(PUBLIC_MESSAGE_PRODUCER, PUBLIC_LISTING_DEFENDANTS_ADDED, payload, metadata);
+        sendMessage(publicMessageProducer, PUBLIC_LISTING_DEFENDANTS_ADDED, payload, metadata);
     }
 
     private String getPayloadForInitiatingCourtProceedings(final boolean isYouth, final String summonsCode, final boolean summonsSuppressed, final ZonedDateTime startDateTime, final boolean isWelsh) {
@@ -470,7 +471,7 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
                 defendantId3, newArrayList(defendant3Name, defendant3ParentName)
         );
     }
-    
+
     private String getFirstName(final String defendantId) {
         return getDefendantNameObject(defendantId).get(0);
     }

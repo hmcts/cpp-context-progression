@@ -37,9 +37,8 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -57,17 +56,15 @@ import java.util.UUID;
 
 @SuppressWarnings("squid:S1607")
 public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
-    private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED = "public.hearing.resulted-case-updated";
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-            .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.event.hearing-application-link-created";
-    private static final MessageConsumer messageConsumerLink = privateEvents.createPrivateConsumer(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
+    private  MessageConsumer messageConsumerLink;
     private static final String MAGISTRATES_JURISDICTION_TYPE = "MAGISTRATES";
-    private static final MessageConsumer messageConsumerListingNumberUpdated = privateEvents.createPrivateConsumer("progression.event.listing-number-updated");
+    private  MessageConsumer messageConsumerListingNumberUpdated;
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
@@ -78,8 +75,8 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
     private String courtCentreName;
     private String applicationId;
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
     }
@@ -91,9 +88,15 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         IdMapperStub.setUp();
         userId = randomUUID().toString();
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
+
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+
+        messageConsumerLink = privateEvents.createPrivateConsumer(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
+        messageConsumerListingNumberUpdated = privateEvents.createPrivateConsumer("progression.event.listing-number-updated");
+
     }
 
-    @Ignore("Will be fixed as part of CPI-353")
     @Test
     public void shouldUpdateCaseLinkedApplicationStatus() throws Exception {
         caseId = randomUUID().toString();
@@ -102,10 +105,9 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         courtCentreName = "Lavender Hill Magistrate's Court";
         applicationId = UUID.randomUUID().toString();
 
+        initiateCourtProceedingsForCourtApplication(applicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json");
+        pollForApplication(applicationId);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        addCourtApplication(caseId, applicationId, "progression.command.create-court-application.json");
-
-        pollForApplicationStatus(applicationId, "DRAFT");
         hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
         sendMessage(messageProducerClientPublic,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed-application-with-linked-case.json",
@@ -133,55 +135,6 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    @Test
-    public void shouldReopenCaseWhenAnewApplicationAddedAndHasFutureHearings() throws Exception {
-        caseId = randomUUID().toString();
-        defendantId = randomUUID().toString();
-        courtCentreId = UUID.randomUUID().toString();
-        applicationId = UUID.randomUUID().toString();
-        courtCentreName = "Lavender Hill Magistrate's Court";
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED + ".json", caseId,
-                        hearingId, defendantId, courtCentreId, "C", "Remedy", "2593cf09-ace0-4b7d-a746-0703a29f33b5"), JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
-
-        pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(INACTIVE.getDescription()));
-
-        //addCourtApplication(caseId, applicationId, "progression.command.create-court-application.json");
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, randomUUID().toString(), "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
-
-        pollForApplicationStatus(applicationId, "DRAFT");
-
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed-case-reopen.json",
-                        caseId, hearingId, defendantId, courtCentreId, courtCentreName), JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                        .withUserId(userId)
-                        .build());
-        pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(ACTIVE.getDescription()));
-
-    }
-
-    public static void pollForApplicationWithListingNumber(final String applicationId, final String offenceId, final Integer listingNumber) {
-        pollForApplication(applicationId,
-                withJsonPath("$.courtApplication.id", equalTo(applicationId)),
-                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].id", equalTo(offenceId)),
-                withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].listingNumber", equalTo(listingNumber))
-        );
-    }
-
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
-        return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
-    }
 
     private void pollForApplicationAtAGlance(final String status) {
         poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
@@ -191,7 +144,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
                         status().is(OK),
                         payload().isJson(allOf(
                                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                                withJsonPath("$.hearingsAtAGlance.courtApplications.[*].linkedCaseId", hasItem(equalTo(caseId))),
+                                withJsonPath("$.hearingsAtAGlance.courtApplications.[*].courtApplicationCases[*].prosecutionCaseId", hasItem(equalTo(caseId))),
                                 withJsonPath("$.hearingsAtAGlance.courtApplications.[*].applicationStatus", hasItem(equalTo(status))),
                                 withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(equalTo(courtCentreId))),
                                 withJsonPath("$.hearingsAtAGlance.latestHearingJurisdictionType", equalTo(MAGISTRATES_JURISDICTION_TYPE))
@@ -202,26 +155,4 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         Awaitility.await().atMost(Duration.TEN_SECONDS).until(() -> assertThat(QueueUtil.retrieveMessage(messageConsumerLink), notNullValue()));
     }
 
-    private JsonObject getHearingWithSingleCaseJsonObject(final String path, final String caseId, final String hearingId,
-                                                          final String defendantId, final String courtCentreId, final String bailStatusCode,
-                                                          final String bailStatusDescription, final String bailStatusId) {
-        return stringToJsonObjectConverter.convert(
-                getPayload(path)
-                        .replaceAll("CASE_ID", caseId)
-                        .replaceAll("HEARING_ID", hearingId)
-                        .replaceAll("DEFENDANT_ID", defendantId)
-                        .replaceAll("COURT_CENTRE_ID", courtCentreId)
-                        .replaceAll("BAIL_STATUS_ID", bailStatusId)
-                        .replaceAll("BAIL_STATUS_CODE", bailStatusCode)
-                        .replaceAll("BAIL_STATUS_DESCRIPTION", bailStatusDescription)
-        );
-    }
-
-    private Matcher[] getCaseStatusMatchers(final String caseStatus) {
-        return new Matcher[]{
-                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.prosecutionCase.caseStatus", equalTo(caseStatus))
-
-        };
-    }
 }

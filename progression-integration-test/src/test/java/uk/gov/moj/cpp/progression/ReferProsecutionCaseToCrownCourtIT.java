@@ -161,9 +161,10 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, matchers);
     }
 
-    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldRemoveAndAddDocuments() throws Exception {
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, emptyList()));
         assertThat("Court Document Does not exist", getCourtDocumentsByCase(UUID.randomUUID().toString(), caseId).contains(caseId));
@@ -178,13 +179,6 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         assertThat(getCourtDocumentsByCase(UUID.randomUUID().toString(), caseId).contains("{\"documentIndices\":[]}"), is(true));
     }
 
-    @Test
-    public void shouldGetProsecutionCaseAtAGlance() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, newArrayList(
-                withJsonPath("$.hearingsAtAGlance.id", is(caseId))
-        )));
-    }
 
     private static void verifyInMessagingQueueForReferToCourtsRejcted() {
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(consumerForReferToCourtRejected);

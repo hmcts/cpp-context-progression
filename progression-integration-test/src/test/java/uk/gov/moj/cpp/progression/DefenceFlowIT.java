@@ -49,10 +49,8 @@ import com.jayway.jsonpath.ReadContext;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
@@ -65,11 +63,11 @@ public class DefenceFlowIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED = "public.progression.case-defendant-changed";
 
 
-    private static MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static MessageConsumer messageConsumerClientPublicForRecordLAAReference;
-    private static MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated;
-    private static MessageConsumer messageConsumerClientPublicForCaseDefendantChanged;
-    private static MessageConsumer multipleMessageConsumerClientPublicForCaseDefendantChanged;
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerClientPublicForRecordLAAReference;
+    private MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated;
+    private MessageConsumer messageConsumerClientPublicForCaseDefendantChanged;
+    private MessageConsumer multipleMessageConsumerClientPublicForCaseDefendantChanged;
 
     private static final String statusCode = "G2";
     private static final String userId = UUID.randomUUID().toString();
@@ -97,8 +95,8 @@ public class DefenceFlowIT extends AbstractIT {
         stubGetGroupsForLoggedInQuery(userId);
     }
 
-    @AfterClass
-    public static void tearDownClass() throws JMSException {
+    @After
+    public void tearDownClass() throws JMSException {
         messageProducerClientPublic.close();
     }
 
@@ -108,6 +106,7 @@ public class DefenceFlowIT extends AbstractIT {
         messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_AID_STATUS_UPDATED);
         messageConsumerClientPublicForCaseDefendantChanged = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED);
         multipleMessageConsumerClientPublicForCaseDefendantChanged = publicEvents.createPublicConsumerForMultipleSelectors(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED);
+        messageProducerClientPublic = publicEvents.createPublicProducer();
     }
 
     @After
@@ -116,6 +115,7 @@ public class DefenceFlowIT extends AbstractIT {
         messageConsumerClientPublicForDefendantLegalAidStatusUpdated.close();
         messageConsumerClientPublicForCaseDefendantChanged.close();
         multipleMessageConsumerClientPublicForCaseDefendantChanged.close();
+        messageProducerClientPublic.close();
     }
 
     @Test
@@ -225,7 +225,7 @@ public class DefenceFlowIT extends AbstractIT {
     }
 
 
-    private static void verifyInMessagingQueueForDefendantOffenceUpdated() {
+    private void verifyInMessagingQueueForDefendantOffenceUpdated() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForRecordLAAReference);
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonArray("updatedOffences").size(), is(1));
@@ -233,23 +233,23 @@ public class DefenceFlowIT extends AbstractIT {
         assertFalse(message.get().containsKey("deletedOffences"));
     }
 
-    private static void verifyInMessagingQueueForDefendantLegalAidStatusUpdated() {
+    private void verifyInMessagingQueueForDefendantLegalAidStatusUpdated() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
         assertTrue(message.isPresent());
     }
 
-    private static void verifyInMessagingQueueForCaseDefendantChanged() {
+    private void verifyInMessagingQueueForCaseDefendantChanged() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForCaseDefendantChanged);
         assertTrue(message.isPresent());
     }
 
-    private static void verifyInMessagingQueueForCaseDefendantChanged(final String laaContractNumber) {
+    private void verifyInMessagingQueueForCaseDefendantChanged(final String laaContractNumber) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForCaseDefendantChanged);
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("defendant").getJsonObject("associatedDefenceOrganisation").getJsonObject("defenceOrganisation").getJsonString("laaContractNumber").getString(), is(laaContractNumber));
     }
 
-    private static boolean isPublicCaseDefendantChangedEventExists(final String laaContractNumber) {
+    private boolean isPublicCaseDefendantChangedEventExists(final String laaContractNumber) {
 
         return nonNull(retrieveMessage(multipleMessageConsumerClientPublicForCaseDefendantChanged, isJson(allOf(
                 withJsonPath("$.defendant.associatedDefenceOrganisation", notNullValue()),

@@ -56,16 +56,16 @@ import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 public class ACourtHearingDaysIT extends AbstractIT {
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
+    private MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker;
 
     private static final String MEDIA_TYPE_CORRECT_HEARING_DAYS_WITHOUT_COURT_CENTRE = "application/vnd.progression.correct-hearing-days-without-court-centre+json";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
@@ -84,6 +84,10 @@ public class ACourtHearingDaysIT extends AbstractIT {
 
     @Before
     public void setUp() {
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+        messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+
         HearingStub.stubInitiateHearing();
         courtCentreId = fromString("111bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
         courtRoomId = randomUUID().toString();
@@ -91,8 +95,8 @@ public class ACourtHearingDaysIT extends AbstractIT {
         listingSequence = 0;
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
         messageConsumerHearingPopulatedToProbationCaseWorker.close();

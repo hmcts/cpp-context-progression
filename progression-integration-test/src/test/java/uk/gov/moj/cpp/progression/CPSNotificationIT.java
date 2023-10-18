@@ -36,6 +36,7 @@ import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 
 import java.nio.charset.Charset;
+import java.time.LocalDate;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -48,9 +49,8 @@ import com.google.common.io.Resources;
 import com.jayway.jsonpath.Filter;
 import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +68,7 @@ public class CPSNotificationIT extends AbstractIT {
     private static final MessageConsumer NOTIFICATION_REQUEST_ACCEPTED = privateEvents.createPrivateConsumer("progression.event.notification-request-accepted");
     private static final String ORGANISATION_ID = "f8254db1-1683-483e-afb3-b87fde5a0a26";
     private static final String ORGANISATION_NAME = "Smith Associates Ltd.";
+    private final String futureHearingDate = LocalDate.now().plusYears(1) + "T09:30:00.000Z";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
     private String hearingId;
@@ -76,8 +77,8 @@ public class CPSNotificationIT extends AbstractIT {
     private String courtCentreId;
     private String courtCentreName;
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         NOTIFICATION_REQUEST_ACCEPTED.close();
         PUBLIC_MESSAGE_CONSUMER.close();
         NOTIFICATION_EMAIL_REQUESTED.close();
@@ -96,7 +97,6 @@ public class CPSNotificationIT extends AbstractIT {
         stubGetOrganisationDetails(ORGANISATION_ID, ORGANISATION_NAME);
     }
 
-    @Ignore("Will be fixed as part of CPI-353")
     @Test
     public void shouldNotifyCPS() throws Exception {
 
@@ -138,7 +138,8 @@ public class CPSNotificationIT extends AbstractIT {
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId)
-                .replaceAll("COURT_CENTRE_NAME", courtCentreName);
+                .replaceAll("COURT_CENTRE_NAME", courtCentreName)
+                .replaceAll("FUTURE_HEARING_DATE", futureHearingDate);
         LOGGER.info("Payload: " + strPayload);
         LOGGER.info("COURT_CENTRE_ID==" + courtCentreId);
         LOGGER.info("COURT_CENTRE_NAME==" + courtCentreName);

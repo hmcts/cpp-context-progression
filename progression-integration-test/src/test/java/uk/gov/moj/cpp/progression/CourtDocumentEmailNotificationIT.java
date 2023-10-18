@@ -1,13 +1,14 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -25,9 +26,9 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStub;
+import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
@@ -56,10 +57,9 @@ import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -70,13 +70,14 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
 
     private static final String USER_GROUP_NOT_PRESENT_DROOL = randomUUID().toString();
     private static final String USER_GROUP_NOT_PRESENT_RBAC = randomUUID().toString();
-    private static final MessageConsumer consumerForCourDocumentSendToCps = privateEvents.createPrivateConsumer("progression.event.court-document-send-to-cps");
-    private static final MessageConsumer consumerForProgressionCommandEmail = privateEvents.createPrivateConsumer("progression.event.email-requested");
+    private  MessageConsumer consumerForCourDocumentSendToCps;
+    private  MessageConsumer consumerForProgressionCommandEmail;
+    private  MessageConsumer consumerForProgressionSendToCpsFlag;
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private MessageProducer messageProducerClientPublic;
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
-    private static final MessageConsumer publicEventConsumer = publicEvents.createPublicConsumer("public.progression.court-document-added");
+    private  MessageConsumer publicEventConsumer;
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String caseId;
     private String docId;
@@ -89,13 +90,15 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
     public static void init() {
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_DROOL), "stub-data/usersgroups.get-invalid-groups-by-user.json");
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_RBAC), "stub-data/usersgroups.get-invalid-rbac-groups-by-user.json");
+        stubDocumentCreate(randomAlphanumeric(20));
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public  void tearDown() throws JMSException {
         consumerForCourDocumentSendToCps.close();
         consumerForProgressionCommandEmail.close();
         messageProducerClientPublic.close();
+        consumerForProgressionSendToCpsFlag.close();
         publicEventConsumer.close();
     }
 
@@ -112,12 +115,18 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
         courtCentreId = randomUUID().toString();
         userId = randomUUID().toString();
         docId = randomUUID().toString();
+        consumerForCourDocumentSendToCps = privateEvents.createPrivateConsumer("progression.event.court-document-send-to-cps");
+        consumerForProgressionCommandEmail = privateEvents.createPrivateConsumer("progression.event.email-requested");
+        consumerForProgressionSendToCpsFlag = privateEvents.createPrivateConsumer("progression.event.send-to-cps-flag-updated");
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        publicEventConsumer = publicEvents.createPublicConsumer("public.progression.court-document-added");
+
     }
 
     @Test
-    @Ignore // todo: For build ignored, needs to be resolved: flaky tests
     public void shouldGenerateEmailNotificationEventWhenCourtDocumentAdded_DefenceDisclosureToggledOff() throws IOException {
         final ImmutableMap<String, Boolean> features = ImmutableMap.of("defenceDisclosure", false);
+        FeatureStubber.clearCache(PROGRESSION_CONTEXT);
         FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId1);
@@ -168,9 +177,9 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
     }
 
     @Test
-    @Ignore // todo: For build ignored, needs to be resolved: flaky test
     public void shouldGenerateAPINotificationEventWhenCourtDocumentAdded_DefenceDisclosureToggledOn() throws IOException {
         final ImmutableMap<String, Boolean> features = ImmutableMap.of("defenceDisclosure", true);
+        FeatureStubber.clearCache(PROGRESSION_CONTEXT);
         FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId1);
@@ -192,7 +201,7 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
         addCourtDocument("expected/expected.progression.add-court-document.json", courtCentreId);
         verifyForCourtDocumentSentToCps();
         verifyForProgressionCommandEmailNotSent();
-        verify(1, postRequestedFor(urlEqualTo("/notification-cms/v1/transformAndSendCms")));
+        verifyForProgressionDocumentSentToCpsFlag();
     }
 
 
@@ -245,7 +254,9 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
                 .replaceAll("CASE_ID", caseId)
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("DEFENDANT_ID", defendantId1)
-                .replaceAll("COURT_CENTRE_ID", courtCentreId);
+                .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("REPORTING_RESTRICTION_ID", randomUUID().toString())
+                .replaceAll("ORDERED_DATE", "2023-01-01");
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
@@ -254,6 +265,12 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourDocumentSendToCps);
         assertThat(message, notNullValue());
     }
+
+    private void verifyForProgressionDocumentSentToCpsFlag() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForProgressionSendToCpsFlag);
+        assertThat(message, notNullValue());
+    }
+
 
     private void verifyForProgressionCommandEmail() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForProgressionCommandEmail);

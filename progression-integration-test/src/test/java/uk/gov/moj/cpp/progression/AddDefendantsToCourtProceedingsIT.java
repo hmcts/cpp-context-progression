@@ -70,7 +70,6 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,13 +78,17 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
     static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
     static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_CASE = "public.progression.defendants-added-to-case";
-    static final String PUBLIC_LISTING_COMMAND_LIST_COURT_HEARING = "listing.command.list-court-hearing";
     private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
     private static final String PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON = "application/vnd.progression.add-defendants-to-court-proceedings+json";
     private MessageConsumer messageConsumerClientPublicCourtProceedings;
     private MessageConsumer messageConsumerClientPublicCase;
     private MessageProducer messageProducerClientPublic;
     private static final String DOCUMENT_TEXT = STRING.next();
+
+    private String caseId;
+    private String defendantId;
+    private String offenceId;
+    private String caseUrn;
 
     private static void verifyHearingInitialised(final String caseId, final String hearingId) {
         poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
@@ -113,51 +116,18 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         messageProducerClientPublic = publicEvents.createPublicProducer();
         stubDocumentCreate(DOCUMENT_TEXT);
         stubInitiateHearing();
-    }
 
-    @Test
-    public void shouldInvokeDefendantsAddedToCaseAndListHearingRequestEvents() throws Exception {
-
-        final String caseId = randomUUID().toString();
-        final String defendantId = randomUUID().toString();
-        final String offenceId = randomUUID().toString();
-        final String defendantId2 = randomUUID().toString();
-        final String caseUrn = generateUrn();
-
-        ListingStub.setupListingAnyAllocationQuery(caseUrn,"stub-data/listing.any-allocation.search.hearings.json");
-
-
-        //Create prosecution case
-        addProsecutionCaseToCrownCourt(caseId, defendantId, caseUrn);
-        verifyPostListCourtHearing(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-
-        //Create payload for
-        final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
-                true, caseId, defendantId, defendantId2, offenceId);
-        final String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
-
-        //Post command progression.add-defendants-to-court-proceedings
-        postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
-                PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON,
-                addDefendantsToCourtProceedingsJson);
-
-        //Verify the defendants and check the duplicate is not added
-        verifyDefendantsAddedInViewStore(caseId, defendantId2);
-
-        verifyPostListCourtHearing(caseId, defendantId2);
+        caseId = randomUUID().toString();
+        defendantId = randomUUID().toString();
+        offenceId = randomUUID().toString();
+        caseUrn = generateUrn();
     }
 
     @Test
     public void shouldInvokeDefendantsAddedToCaseWithoutListingRequests() throws Exception {
-
-        final String caseId = randomUUID().toString();
-        final String defendantId = randomUUID().toString();
-        final String offenceId = randomUUID().toString();
         final String offenceId3 = randomUUID().toString();
         final String defendantId2 = randomUUID().toString();
         final String defendantId3 = randomUUID().toString();
-        final String caseUrn = generateUrn();
 
         ListingStub.setupListingAnyAllocationQuery(caseUrn,"stub-data/listing.any-allocation.search.hearings.json");
 
@@ -197,18 +167,14 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         verifyDefendantsAddedInViewStore(caseId, defendantId3);
 
         verifyPostListCourtHearing(caseId, defendantId3);
+
     }
 
     @Test
     public void shouldInvokeDefendantsNotAddedToCaseAndListHearingRequestEvents() throws Exception {
-
-        final String caseId = randomUUID().toString();
-        final String defendantId = randomUUID().toString();
-        final String offenceId = randomUUID().toString();
         final String defendantId2 = randomUUID().toString();
 
         final ZonedDateTime startDateTime = ZonedDateTime.now().plusWeeks(1);
-        final String caseUrn = generateUrn();
 
         ListingStub.setupListingAnyAllocationQuery(caseUrn,"stub-data/listing.any-allocation.search.hearings.json");
 
@@ -231,20 +197,18 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         verifyDefendantsNotAddedInViewStore(caseId, defendantId2);
     }
 
-    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldListHearingRequestsInvokePublicMessage() throws Exception {
 
         final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
         final String PUBLIC_LISTING_HEARING_UPDATED = "public.listing.hearing-updated";
 
-        final String caseId = randomUUID().toString();
-        final String defendantId = randomUUID().toString();
-
         final String userId = randomUUID().toString();
-        final String courtCentreId = randomUUID().toString();
-        final String offenceId = randomUUID().toString();
+        final String courtCentreId = "3d2cf089-63ec-4bbf-a330-402540f200ba";
         final String defendantId2 = randomUUID().toString();
+        final ZonedDateTime startDateTime = ZonedDateTime.now().plusWeeks(1);
+        ListingStub.setupListingAnyFutureAllocationQuery("stub-data/listing.any-allocation.search.future-hearings.json", startDateTime);
+
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
@@ -273,7 +237,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
         //Create payload for
         final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
-                true, caseId, defendantId, defendantId2, offenceId);
+                true, caseId, defendantId, defendantId2, offenceId, startDateTime);
         final String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
 
         //Post command progression.add-defendants-to-court-proceedings
@@ -320,11 +284,6 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     private void verifyDefendantsNotAddedInViewStore(final String caseId, final String defendantId) {
         LOGGER.info("Verifying for defendants not added to caseId {} and defendant id {}", caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, withoutJsonPath("$.prosecutionCase.defendants[?(@.id=='" + defendantId + "')]"));
-    }
-
-    private AddDefendantsToCourtProceedings buildAddDefendantsToCourtProceedings(
-            final boolean forAdded, final String caseId, final String defendantId, final String defendantId2, final String offenceId) {
-        return buildAddDefendantsToCourtProceedings(forAdded, caseId, defendantId, defendantId2, offenceId, ZonedDateTime.now().plusWeeks(1));
     }
 
     private AddDefendantsToCourtProceedings buildAddDefendantsToCourtProceedings(
@@ -386,7 +345,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
                 .build();
 
         final HearingType hearingType = HearingType.hearingType().withId(randomUUID()).withDescription("TO_JAIL").build();
-        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(randomUUID()).withName("Court Name 5").build();
+        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(UUID.fromString("3d2cf089-63ec-4bbf-a330-402540f200ba")).withName("Court Name 5").build();
 
         final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
                 .withCourtCentre(courtCentre).withHearingType(hearingType)

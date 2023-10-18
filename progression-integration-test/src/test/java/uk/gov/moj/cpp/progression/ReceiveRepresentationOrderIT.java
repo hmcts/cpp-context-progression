@@ -78,9 +78,10 @@ import com.google.common.io.Resources;
 import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
 import com.jayway.jsonpath.Filter;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -97,25 +98,19 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED = "public.progression.defence-organisation-for-laa-associated";
     private static final String NO_LAA_CONTRACT_NUMBER_REGISTER = "LAA12345";
 
-    private static final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
-    private static final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_ID_STATUS_UPDATED);
-    private static final MessageConsumer messageConsumerClientPublicForAssociationLockedReference = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ASSOCIATION_LOCKED_FOR_LAA);
-    private static final MessageConsumer messageConsumerClientPublicForLaaContractAssociation = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_LAA_CONTRACT_ASSOCIATED);
-    private static final MessageConsumer messageConsumerClientPublicForDefenceOrganisationDisassociation = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_DISASSOCIATED);
-    private static final MessageConsumer messageConsumerClientPublicForDefenceOrganisationAssociation = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED);
+    private MessageConsumer messageConsumerClientPublicForRecordLAAReference;
+    private MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated;
+    private MessageConsumer messageConsumerClientPublicForAssociationLockedReference;
+    private MessageConsumer messageConsumerClientPublicForLaaContractAssociation;
+    private MessageConsumer messageConsumerClientPublicForDefenceOrganisationDisassociation;
+    private MessageConsumer messageConsumerClientPublicForDefenceOrganisationAssociation;
 
-    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createPublicProducer();
+    private MessageProducer publicMessageProducer;
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FILE = "public.listing.hearing-confirmed-cps-notification.json";
 
     private final String userId = UUID.randomUUID().toString();
-    private final String organisationName = "Greg Associates Ltd.";
+    private final String organisationName = RandomStringUtils.randomAlphabetic(10);
     private final String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
     private final String statusCode = "G2";
     private final String laaContractNumber = "LAA3456";
@@ -141,16 +136,25 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         stubInitiateHearing();
         stubDocumentCreate(STRING.next());
         NotificationServiceStub.setUp();
+
+        messageConsumerClientPublicForRecordLAAReference = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
+        messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_ID_STATUS_UPDATED);
+        messageConsumerClientPublicForAssociationLockedReference = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ASSOCIATION_LOCKED_FOR_LAA);
+        messageConsumerClientPublicForLaaContractAssociation = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_LAA_CONTRACT_ASSOCIATED);
+        messageConsumerClientPublicForDefenceOrganisationDisassociation = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_DISASSOCIATED);
+        messageConsumerClientPublicForDefenceOrganisationAssociation = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED);
+        publicMessageProducer = publicEvents.createPublicProducer();
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageConsumerClientPublicForRecordLAAReference.close();
         messageConsumerClientPublicForDefendantLegalAidStatusUpdated.close();
         messageConsumerClientPublicForAssociationLockedReference.close();
         messageConsumerClientPublicForLaaContractAssociation.close();
         messageConsumerClientPublicForDefenceOrganisationDisassociation.close();
         messageConsumerClientPublicForDefenceOrganisationAssociation.close();
+        publicMessageProducer.close();
     }
 
     @Test
@@ -409,7 +413,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         verifyPostListCourtHearing(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId);
         final String hearingIdForHearing = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
-        sendMessage(PUBLIC_MESSAGE_PRODUCER,
+        sendMessage(publicMessageProducer,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
                         caseId, hearingIdForHearing, defendantId, courtCentreId, courtCentreName), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
@@ -485,7 +489,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                 .getJsonArray("defendants").getJsonObject(0)
                 .getString("legalAidStatus"), equalTo("Granted"));
 
-        verifyEmailNotificationIsRaisedWithoutAttachment(Arrays.asList("SE14 2AB", "Legal House", "15 Sewell Street", "Hammersmith", "joe@example.com"));
+        verifyEmailNotificationIsRaisedWithoutAttachment(Arrays.asList("SE14 2AB", "Legal House", "15 Sewell Street", "Hammersmith", "joe@example.com", organisationName));
     }
 
 
@@ -501,7 +505,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         verifyPostListCourtHearing(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId);
         final String hearingIdForHearing = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
-        sendMessage(PUBLIC_MESSAGE_PRODUCER,
+        sendMessage(publicMessageProducer,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
                         caseId, hearingIdForHearing, defendantId, courtCentreId, courtCentreName), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
@@ -558,7 +562,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                 .getJsonArray("defendants").getJsonObject(0)
                 .getString("legalAidStatus"), equalTo("Granted"));
 
-        verifyNoEmailNotificationIsRaised(Arrays.asList("SE14 2AB", "Legal House", "15 Sewell Street", "Hammersmith", "joe@example.com"));
+        verifyNoEmailNotificationIsRaised(Arrays.asList("SE14 2AB", "Legal House", "15 Sewell Street", "Hammersmith", "joe@example.com", organisationName));
     }
 
 
@@ -573,7 +577,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         verifyPostListCourtHearing(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId);
         final String hearingIdForHearing = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
-        sendMessage(PUBLIC_MESSAGE_PRODUCER,
+        sendMessage(publicMessageProducer,
                 PUBLIC_LISTING_HEARING_CONFIRMED, getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
                         caseId, hearingIdForHearing, defendantId, courtCentreId, courtCentreName), JsonEnvelope.metadataBuilder()
                         .withId(randomUUID())
@@ -649,7 +653,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                 .getJsonArray("defendants").getJsonObject(0)
                 .getString("legalAidStatus"), equalTo("Granted"));
 
-        verifyNoEmailNotificationIsRaised(Arrays.asList("SE14 2AB", "Legal House", "15 Sewell Street", "Hammersmith", "joe@example.com"));
+        verifyNoEmailNotificationIsRaised(Arrays.asList("SE14 2AB", "Legal House", "15 Sewell Street", "Hammersmith", "joe@example.com", organisationName));
     }
 
     private void assertInMessagingQueueForLAAContractAssociation(String defendantId, String laaContractNumber, boolean isAssociation) {

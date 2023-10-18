@@ -27,7 +27,7 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,9 +36,8 @@ public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_UPDATED = "public.listing.hearing-updated";
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression" +
             ".prosecution-cases-referred-to-court";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerClientPublicForReferToCourtOnHearingInitiated;
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
     private String hearingId;
@@ -47,8 +46,8 @@ public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
     private String newCourtCentreId;
     private String newCourtCentreName;
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerClientPublicForReferToCourtOnHearingInitiated.close();
     }
@@ -61,6 +60,9 @@ public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
         defendantId = randomUUID().toString();
         newCourtCentreId = randomUUID().toString();
         newCourtCentreName = "Lavender Hill Magistrate's Court";
+
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerClientPublicForReferToCourtOnHearingInitiated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT);
     }
 
     @Test

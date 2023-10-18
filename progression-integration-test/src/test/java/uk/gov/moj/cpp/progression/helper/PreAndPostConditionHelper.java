@@ -23,6 +23,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getMaterialContentResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
@@ -1539,6 +1540,7 @@ public class PreAndPostConditionHelper {
     public static void pollForApplication(final String applicationId) {
         poll(requestParams(getReadUrl("/applications/" + applicationId),
                 "application/vnd.progression.query.application+json").withHeader(USER_ID, randomUUID()))
+                .timeout(TIMEOUT, TimeUnit.SECONDS)
                 .until(status().is(OK));
 
     }

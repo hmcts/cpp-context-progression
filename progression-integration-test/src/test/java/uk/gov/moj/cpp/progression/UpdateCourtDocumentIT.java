@@ -38,7 +38,7 @@ import javax.json.JsonObjectBuilder;
 
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,9 +47,9 @@ public class UpdateCourtDocumentIT extends AbstractIT {
     private static final String PROGRESSION_EVENT_PRINT_REQUESTED = "progression.event.print-requested";
     private static final String PROGRESSION_EVENT_PRINT_TIME_UPDATED = "progression.event.court-document-print-time-updated";
 
-    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createPublicProducer();
-    private static final MessageConsumer PRINT_REQUESTED_CONSUMER = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PRINT_REQUESTED);
-    private static final MessageConsumer PRINT_TIME_UPDATED_CONSUMER = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PRINT_TIME_UPDATED);
+    private MessageProducer publicMessageProducer;
+    private MessageConsumer printRequestedConsumer;
+    private MessageConsumer printTimeUpdatedConsumer;
 
     private String caseId;
     private String defendantId;
@@ -61,11 +61,11 @@ public class UpdateCourtDocumentIT extends AbstractIT {
 
     private UtcClock utcClock = new UtcClock();
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
-        PUBLIC_MESSAGE_PRODUCER.close();
-        PRINT_REQUESTED_CONSUMER.close();
-        PRINT_TIME_UPDATED_CONSUMER.close();
+    @After
+    public void tearDown() throws JMSException {
+        publicMessageProducer.close();
+        printRequestedConsumer.close();
+        printTimeUpdatedConsumer.close();
     }
 
     @Before
@@ -81,6 +81,9 @@ public class UpdateCourtDocumentIT extends AbstractIT {
         stubForDocumentId(materialId, documentId);
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
+        publicMessageProducer = publicEvents.createPublicProducer();
+        printRequestedConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PRINT_REQUESTED);
+        printTimeUpdatedConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PRINT_TIME_UPDATED);
     }
 
     @Test
@@ -145,6 +148,6 @@ public class UpdateCourtDocumentIT extends AbstractIT {
             objectBuilder.add("completedAt", completedAt.withFixedOffsetZone().toString());
         }
 
-        sendMessage(PUBLIC_MESSAGE_PRODUCER, PUBLIC_NOTIFICATION_SENT, objectBuilder.build(), metadata);
+        sendMessage(publicMessageProducer, PUBLIC_NOTIFICATION_SENT, objectBuilder.build(), metadata);
     }
 }

@@ -59,9 +59,8 @@ import javax.json.JsonObject;
 import com.jayway.jsonpath.DocumentContext;
 import junit.framework.TestCase;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,8 +70,8 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
     private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
     private static final String PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON = "application/vnd.progression.add-defendants-to-court-proceedings+json";
-    private static final MessageConsumer messageConsumerClientPublic = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS);
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private MessageConsumer messageConsumerClientPublic;
+    private MessageProducer messageProducerClientPublic;
     private String caseId;
     private String courtDocumentId;
     private String materialIdActive;
@@ -81,8 +80,8 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     private String referralReasonId;
     private final BaseVerificationHelper verificationHelper = new BaseVerificationHelper();
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageConsumerClientPublic.close();
         messageProducerClientPublic.close();
     }
@@ -96,9 +95,12 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         defendantId = randomUUID().toString();
         referralReasonId = randomUUID().toString();
         deleteAndCreateIndex();
+
+        messageConsumerClientPublic = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS);
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+
     }
 
-    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldInvokeDefendantsAddedToCaseAndListHearingRequestEvents() throws Exception {
 
@@ -197,7 +199,10 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final Plea plea = Plea.plea()
                 .withOriginatingHearingId(UUID.randomUUID())
                 .withPleaValue("GUILTY")
-                .withPleaDate(LocalDate.of(2019, 8, 12)).build();
+                .withPleaDate(LocalDate.of(2019, 8, 12))
+                .withOffenceId(UUID.fromString(offenceId))
+                .withApplicationId(randomUUID())
+                .build();
 
         final LaaReference laaReference = LaaReference.laaReference()
                 .withApplicationReference("LaaReference")

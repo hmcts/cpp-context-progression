@@ -28,7 +28,7 @@ import java.io.IOException;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -51,11 +51,11 @@ public class CustodyTimeLimitIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
     private static final String PUBLIC_HEARING_RESULTED_WITH_CTL_EXTENSION = "public.events.hearing.hearing-resulted-with-ctl-extension";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer prosecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
-    private static final MessageConsumer extendCustodyTimeLimitResulted = privateEvents.createPrivateConsumer("progression.events.extend-custody-time-limit-resulted");
-    private static final MessageConsumer custodyTimeLimitExtended = privateEvents.createPrivateConsumer("progression.events.custody-time-limit-extended");
-    private static final MessageConsumer custodyTimeLimitExtendedPublicEvent = publicEvents.createPublicConsumer("public.events.progression.custody-time-limit-extended");
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer prosecutionCaseDefendantListingStatusChanged;
+    private MessageConsumer extendCustodyTimeLimitResulted;
+    private MessageConsumer custodyTimeLimitExtended;
+    private MessageConsumer custodyTimeLimitExtendedPublicEvent;
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
@@ -81,10 +81,17 @@ public class CustodyTimeLimitIT extends AbstractIT {
         bailStatusCode = "C";
         bailStatusDescription = "Remanded into Custody";
         bailStatusId = "2593cf09-ace0-4b7d-a746-0703a29f33b5";
+
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        prosecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+        extendCustodyTimeLimitResulted = privateEvents.createPrivateConsumer("progression.events.extend-custody-time-limit-resulted");
+        custodyTimeLimitExtended = privateEvents.createPrivateConsumer("progression.events.custody-time-limit-extended");
+        custodyTimeLimitExtendedPublicEvent = publicEvents.createPublicConsumer("public.events.progression.custody-time-limit-extended");
+
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         prosecutionCaseDefendantListingStatusChanged.close();
         extendCustodyTimeLimitResulted.close();
@@ -161,7 +168,7 @@ public class CustodyTimeLimitIT extends AbstractIT {
         );
     }
 
-    private static void verifyInMessagingQueueForExtendCustodyTimeLimitResulted(final String hearingId, final String caseId, final String offenceId, final String extendedCustodyTimeLimit) {
+    private void verifyInMessagingQueueForExtendCustodyTimeLimitResulted(final String hearingId, final String caseId, final String offenceId, final String extendedCustodyTimeLimit) {
 
         final Optional<JsonObject> message = AwaitUtil.awaitAndRetrieveMessageAsJsonObject(extendCustodyTimeLimitResulted);
         assertTrue(message.isPresent());
@@ -174,7 +181,7 @@ public class CustodyTimeLimitIT extends AbstractIT {
 
     }
 
-    private static void verifyInMessagingQueueForCustodyTimeLimitExtended(final String hearingId, final String offenceId, final String extendedCustodyTimeLimit) {
+    private void verifyInMessagingQueueForCustodyTimeLimitExtended(final String hearingId, final String offenceId, final String extendedCustodyTimeLimit) {
 
         final Optional<JsonObject> message = AwaitUtil.awaitAndRetrieveMessageAsJsonObject(custodyTimeLimitExtended);
         assertTrue(message.isPresent());
@@ -186,7 +193,7 @@ public class CustodyTimeLimitIT extends AbstractIT {
 
     }
 
-    private static void verifyInMessagingQueueForCustodyTimeLimitExtendedPublicEvent(final String hearingId, final String offenceId, final String extendedCustodyTimeLimit) {
+    private void verifyInMessagingQueueForCustodyTimeLimitExtendedPublicEvent(final String hearingId, final String offenceId, final String extendedCustodyTimeLimit) {
 
         final Optional<JsonObject> message = AwaitUtil.awaitAndRetrieveMessageAsJsonObject(custodyTimeLimitExtendedPublicEvent);
         assertTrue(message.isPresent());

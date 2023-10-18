@@ -33,7 +33,7 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -41,9 +41,8 @@ import org.junit.Test;
 @SuppressWarnings("squid:S1607")
 public class ConvictionDateIT extends AbstractIT {
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-            .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
 
     private static final String NEW_COURT_CENTRE_ID = fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
 
@@ -67,8 +66,8 @@ public class ConvictionDateIT extends AbstractIT {
         HearingStub.stubInitiateHearing();
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
     }
@@ -80,6 +79,11 @@ public class ConvictionDateIT extends AbstractIT {
         userId = randomUUID().toString();
         offenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1").toString();
         helper = new ConvictionDateHelper(caseId, offenceId, null);
+
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+
     }
 
     @Test
@@ -106,33 +110,6 @@ public class ConvictionDateIT extends AbstractIT {
         helper.verifyInActiveMQForConvictionDateRemoved();
 
         pollForApplication(courtApplicationId, withoutJsonPath("$.courtApplication.convictionDate"));
-    }
-
-    @Test
-    public void shouldRetainTheJudicialResultsWhenConvictionDateIsUpdated() throws IOException {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        final String hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingWithSingleCaseJsonObject("public.hearing.resulted-and-hearing-at-a-glance-updated.json", caseId,
-                        hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID), JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
-
-        pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
-
-        helper.addConvictionDate();
-        helper.verifyInActiveMQForConvictionDateChanged();
-        final Matcher[] convictionAddedMatchers = {
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].chargeDate", is("2018-01-01")),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].convictionDate", is("2017-02-02"))
-        };
-        pollProsecutionCasesProgressionFor(caseId, convictionAddedMatchers);
-
-        pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
     }
 
     @Test

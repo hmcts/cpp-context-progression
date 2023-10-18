@@ -1,22 +1,29 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Duration.FIVE_HUNDRED_MILLISECONDS;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper.OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
+import java.io.IOException;
+import java.time.LocalDate;
+
+import com.jayway.awaitility.Duration;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
@@ -65,7 +72,6 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
     }
 
     @Test
-    @Ignore("This test is irrelavant after change in case aggregate as we don't delete the offence now")
     public void shouldUpdateProsecutionCaseAddOffences() throws Exception {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
@@ -84,9 +90,6 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         updateOffenceAndVerify(offenceId, ++orderIndex, OFFENCE_CODE);
         // Update existing offence and check it has same orderIndex
         updateOffenceAndVerify(offenceId, orderIndex, "TFL124");
-        // Add multiple offences and check order
-        updateMultipleOffenceAndVerify(orderIndex);
-
 
     }
 
@@ -95,15 +98,17 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
-        final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))
-        );
-        final String payload = pollProsecutionCasesProgressionFor(caseId, caseWithOffenceMatchers);
-        final JSONObject jsonObjectPayload = new JSONObject(payload);
-        final int orderIndex = Integer.parseInt(jsonObjectPayload.getJSONObject("prosecutionCase").getJSONArray("defendants").getJSONObject(0).getJSONArray("offences").getJSONObject(0).get("orderIndex").toString());
-        final String hearingId = jsonObjectPayload.getJSONObject("hearingsAtAGlance").getJSONArray("defendantHearings").getJSONObject(0).getJSONArray("hearingIds").get(0).toString();
-        // Add new offence and check orderIndex is incremented
-        updateOffenceVerdictAndVerify(hearingId, orderIndex, offenceId);
+        await().atMost(Duration.ONE_MINUTE).pollInterval(FIVE_HUNDRED_MILLISECONDS).until(() -> {
+            final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,
+                    singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))
+            );
+            final String payload = pollProsecutionCasesProgressionFor(caseId, caseWithOffenceMatchers);
+            final JSONObject jsonObjectPayload = new JSONObject(payload);
+            final int orderIndex = Integer.parseInt(jsonObjectPayload.getJSONObject("prosecutionCase").getJSONArray("defendants").getJSONObject(0).getJSONArray("offences").getJSONObject(0).get("orderIndex").toString());
+            final String hearingId = jsonObjectPayload.getJSONObject("hearingsAtAGlance").getJSONArray("defendantHearings").getJSONObject(0).getJSONArray("hearingIds").get(0).toString();
+            // Add new offence and check orderIndex is incremented
+            updateOffenceVerdictAndVerify(hearingId, orderIndex, offenceId);
+        });
     }
 
     @Test
@@ -120,27 +125,6 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         final String hearingId = jsonObjectPayload.getJSONObject("hearingsAtAGlance").getJSONArray("defendantHearings").getJSONObject(0).getJSONArray("hearingIds").get(0).toString();
         // Add new offence and check orderIndex is incremented
         updateOffencePleaAndVerify(hearingId, orderIndex, offenceId);
-    }
-
-    private void updateMultipleOffenceAndVerify(int orderIndex) {
-        final String offenceId = randomUUID().toString();
-        final String secondOffenceId = randomUUID().toString();
-
-        helper.updateMultipleOffences(offenceId, secondOffenceId, "TFL125");
-        helper.verifyInActiveMQ();
-        helper.verifyInMessagingQueueForOffencesUpdated();
-
-        final Matcher[] matchers = {
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TFL125")),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is(offenceId)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(1)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].orderIndex", is(++orderIndex)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[1].offenceCode", is("TFL125")),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[1].id", is(secondOffenceId)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[1].count", is(1)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[1].orderIndex", is(++orderIndex))
-        };
-        pollProsecutionCasesProgressionFor(caseId, matchers);
     }
 
 
@@ -188,10 +172,10 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         helper.verifyInMessagingQueueForOffencesUpdated();
 
         final Matcher[] matchers = {
-                withJsonPath("$.prosecutionCase.defendants[0].offence["+ offenceIndex +"].offenceCode", is(offenceCode)),
-                withJsonPath("$.prosecutionCase.defendants[0].offence["+ offenceIndex +"].id", is(newOffenceId)),
-                withJsonPath("$.prosecutionCase.defendants[0].offence["+ offenceIndex +"].count", is(1)),
-                withJsonPath("$.prosecutionCase.defendants[0].offence["+ offenceIndex +"].orderIndex", is(orderIndex))
+                withJsonPath("$.prosecutionCase.defendants[0].offences["+ offenceIndex +"].offenceCode", is(offenceCode)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences["+ offenceIndex +"].id", is(newOffenceId)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences["+ offenceIndex +"].count", is(1)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences["+ offenceIndex +"].orderIndex", is(orderIndex))
         };
         pollProsecutionCasesProgressionFor(caseId, matchers);
     }

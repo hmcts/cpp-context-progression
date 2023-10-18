@@ -38,7 +38,7 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -55,10 +55,10 @@ public class ExtendHearingIT extends AbstractIT {
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PUBLIC_EVENTS_LISTING_ALLOCATED_HEARING_DELETED = "public.events.listing.allocated-hearing-deleted";
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtendHearingIT.class);
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
-    private static final MessageConsumer messageConsumerProgressionHearingExtendedEvent = privateEvents.createPrivateConsumer("progression.event.hearing-extended");
-    private static final MessageConsumer messageConsumerProgressionSummonsDataPreparedEvent = privateEvents.createPrivateConsumer("progression.event.summons-data-prepared");
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
+    private MessageConsumer messageConsumerProgressionHearingExtendedEvent;
+    private MessageConsumer messageConsumerProgressionSummonsDataPreparedEvent;
 
     private static List<String> caseIds = new ArrayList<>();
     private static List<String> defendantIds = new ArrayList<>();
@@ -89,10 +89,15 @@ public class ExtendHearingIT extends AbstractIT {
         userId1 = randomUUID().toString();
         caseIds.add(caseId);
         defendantIds.add(defendantId);
+
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+        messageConsumerProgressionHearingExtendedEvent = privateEvents.createPrivateConsumer("progression.event.hearing-extended");
+        messageConsumerProgressionSummonsDataPreparedEvent = privateEvents.createPrivateConsumer("progression.event.summons-data-prepared");
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
         messageConsumerProgressionHearingExtendedEvent.close();
@@ -100,36 +105,7 @@ public class ExtendHearingIT extends AbstractIT {
     }
 
     @Test
-    public void shouldExtendHearingForProsecutionCases() throws Exception {
-
-        doReferCaseToCourtAndVerify(caseId, defendantId);
-        final String extendedHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-        LOGGER.info("*** Extended Hearing : {}  | caseId : {}  |  defendant id : {}", extendedHearingId, caseId, defendantId );
-
-        doHearingConfirmedAndVerify(extendedHearingId,caseId,defendantId,courtCentreId,userId);
-        doVerifyProsecutionCaseDefendantListingStatusChanged();
-
-        // UnAllocated hearing Id
-        caseIds.add(caseId1);
-        defendantIds.add(defendantId1);
-
-        doReferCaseToCourtAndVerify(caseId1,defendantId1);
-
-        final String existingHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-        LOGGER.info("*** Existing Hearing : {}  | caseId : {}  |  defendant id : {}", existingHearingId, caseId1, defendantId1 );
-
-        // Extending hearing
-        doHearingConfirmedAndVerify(existingHearingId,caseId1,defendantId1,courtCentreId1,userId1, extendedHearingId);
-
-        doVerifyProgressionHearingExtendedEvent(extendedHearingId, caseId1);
-        queryAndVerifyHearingIsExtended(extendedHearingId, 2);
-
-        doVerifyProgressionSummonsDataPreparedEvent(caseIds, defendantIds);
-
-    }
-
-    @Test
-    public void shouldIncreaseListingNumberWhenHearingDeletedForProsecutionCases() throws Exception {
+    public void shouldExtendHearingAndIncreaseListingNumberWhenHearingDeletedForProsecutionCases() throws Exception {
 
         doReferCaseToCourtAndVerify(caseId, defendantId);
         final String extendedHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
@@ -174,36 +150,6 @@ public class ExtendHearingIT extends AbstractIT {
         verifyListingNumberForCase(caseId,defendantId, 1);
     }
 
-
-    @Test
-    public void shouldExtendHearingForProsecutionCasesNullPostCode() throws Exception {
-
-        doReferCaseToCourtAndVerifyNullPostCode(caseId, defendantId);
-        final String extendedHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-        LOGGER.info("*** Extended Hearing : {}  | caseId : {}  |  defendant id : {}", extendedHearingId, caseId, defendantId );
-
-        doHearingConfirmedAndVerify(extendedHearingId,caseId,defendantId,courtCentreId,userId);
-        doVerifyProsecutionCaseDefendantListingStatusChanged();
-
-        // UnAllocated hearing Id
-        caseIds.add(caseId1);
-        defendantIds.add(defendantId1);
-
-        doReferCaseToCourtAndVerifyNullPostCode(caseId1,defendantId1);
-
-        final String existingHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
-        LOGGER.info("*** Existing Hearing : {}  | caseId : {}  |  defendant id : {}", existingHearingId, caseId1, defendantId1 );
-
-        // Extending hearing
-        doHearingConfirmedAndVerify(existingHearingId,caseId1,defendantId1,courtCentreId1,userId1, extendedHearingId);
-
-        doVerifyProgressionHearingExtendedEvent(extendedHearingId, caseId1);
-        queryAndVerifyHearingIsExtended(extendedHearingId, 2);
-
-        doVerifyProgressionSummonsDataPreparedEvent(caseIds, defendantIds);
-
-    }
-
     private void doReferCaseToCourtAndVerify(final String caseId, final String defendantId) throws IOException {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -213,12 +159,6 @@ public class ExtendHearingIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, newArrayList(
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].listingNumber", CoreMatchers.is(listingNumber))
         )));
-    }
-
-    private void doReferCaseToCourtAndVerifyNullPostCode(final String caseId, final String defendantId) throws IOException {
-        addProsecutionCaseToCrownCourtNullPostCode(caseId, defendantId);
-        //pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchersNullDefendantPostCode(caseId, defendantId));
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
     }
 
     private void doHearingConfirmedAndVerify(String hearingId, String caseId, String defendantId, String courtCentreId, String userId) {

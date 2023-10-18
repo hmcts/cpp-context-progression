@@ -27,7 +27,7 @@ import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
@@ -66,24 +66,37 @@ public class AddDefendantsToHearingIT extends AbstractIT {
     private static final String PUBLIC_HEARING_PROSECUTION_CASE_CREATED_IN_HEARING_EVENT = "public.events.hearing.prosecution-case-created-in-hearing";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private static final MessageConsumer messageConsumerDefendantsAndListingHearingRequestsStoredPrivateEvent = privateEvents.createPrivateConsumer("progression.event.defendants-and-listing-hearing-requests-stored");
-    private static final MessageConsumer messageConsumerDefendantsAddedToCourtProceedingsPrivateEvent = privateEvents.createPrivateConsumer("progression.event.defendants-added-to-court-proceedings");
-    private static final MessageConsumer messageConsumerProsecutionCaseCreatedInHearingPrivateEvent = privateEvents.createPrivateConsumer("progression.event.prosecution-case-created-in-hearing");
-    private static final MessageConsumer messageConsumerDefendantsAndListingHearingRequestsAddedPrivateEvent = privateEvents.createPrivateConsumer("progression.event.defendants-and-listing-hearing-requests-added");
-    private static final MessageConsumer messageConsumerDefendantsAddedToCourtProceedingsPublicEvent = publicEvents.createPublicConsumer("public.progression.defendants-added-to-court-proceedings");
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer messageConsumerDefendantsAndListingHearingRequestsStoredPrivateEvent;
+    private MessageConsumer messageConsumerDefendantsAddedToCourtProceedingsPrivateEvent;
+    private MessageConsumer messageConsumerProsecutionCaseCreatedInHearingPrivateEvent;
+    private MessageConsumer messageConsumerDefendantsAndListingHearingRequestsAddedPrivateEvent;
+    private MessageConsumer messageConsumerDefendantsAddedToCourtProceedingsPublicEvent;
+    private MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker;
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @Before
     public void setUp() {
+        messageConsumerDefendantsAndListingHearingRequestsStoredPrivateEvent = privateEvents.createPrivateConsumer("progression.event.defendants-and-listing-hearing-requests-stored");
+        messageConsumerDefendantsAddedToCourtProceedingsPrivateEvent = privateEvents.createPrivateConsumer("progression.event.defendants-added-to-court-proceedings");
+        messageConsumerProsecutionCaseCreatedInHearingPrivateEvent = privateEvents.createPrivateConsumer("progression.event.prosecution-case-created-in-hearing");
+        messageConsumerDefendantsAndListingHearingRequestsAddedPrivateEvent = privateEvents.createPrivateConsumer("progression.event.defendants-and-listing-hearing-requests-added");
+        messageConsumerDefendantsAddedToCourtProceedingsPublicEvent = publicEvents.createPublicConsumer("public.progression.defendants-added-to-court-proceedings");
+
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
         while(QueueUtil.retrieveMessageAsString(messageConsumerHearingPopulatedToProbationCaseWorker, 1L).isPresent());
         HearingStub.stubInitiateHearing();
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
+        messageConsumerDefendantsAndListingHearingRequestsStoredPrivateEvent.close();
+        messageConsumerDefendantsAddedToCourtProceedingsPrivateEvent.close();
+        messageConsumerProsecutionCaseCreatedInHearingPrivateEvent.close();
+        messageConsumerDefendantsAndListingHearingRequestsAddedPrivateEvent.close();
+        messageConsumerDefendantsAddedToCourtProceedingsPublicEvent.close();
         messageConsumerHearingPopulatedToProbationCaseWorker.close();
         messageProducerClientPublic.close();
     }
@@ -286,27 +299,27 @@ public class AddDefendantsToHearingIT extends AbstractIT {
         );
     }
 
-    private static void verifyInMessagingQueueForDefendantsAndListingHearingRequestsStored() {
+    private void verifyInMessagingQueueForDefendantsAndListingHearingRequestsStored() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerDefendantsAndListingHearingRequestsStoredPrivateEvent);
         assertTrue(message.isPresent());
     }
 
-    private static void verifyInMessagingQueueForDefendantsAddedToCourtProceedings() {
+    private void verifyInMessagingQueueForDefendantsAddedToCourtProceedings() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerDefendantsAddedToCourtProceedingsPrivateEvent);
         assertTrue(message.isPresent());
     }
 
-    private static void verifyInMessagingQueueForProsecutionCaseCreatedInHearing() {
+    private void verifyInMessagingQueueForProsecutionCaseCreatedInHearing() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseCreatedInHearingPrivateEvent);
         assertTrue(message.isPresent());
     }
 
-    private static void verifyInMessagingQueueForDefendantsAndListingHearingRequestsAdded() {
+    private void verifyInMessagingQueueForDefendantsAndListingHearingRequestsAdded() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerDefendantsAndListingHearingRequestsAddedPrivateEvent);
         assertTrue(message.isPresent());
     }
 
-    private static void verifyInMessagingQueueForDefendantsAddedToCourtProceedingsPublicEvent() {
+    private void verifyInMessagingQueueForDefendantsAddedToCourtProceedingsPublicEvent() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerDefendantsAddedToCourtProceedingsPublicEvent);
         assertTrue(message.isPresent());
     }

@@ -38,7 +38,7 @@ import javax.json.JsonObject;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,8 +52,8 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
 
 
 
-    private static final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer(DEFENDANT_CHANGED_EVENT);
-    private static final MessageProducer messageProducer = privateEvents.createPrivateProducer();
+    private MessageConsumer messageConsumer;
+    private MessageProducer messageProducer;
 
     private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil;
 
@@ -68,6 +68,9 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
 
     @Before
     public void setUp() throws IOException {
+        messageConsumer = privateEvents.createPrivateConsumer(DEFENDANT_CHANGED_EVENT);
+        messageProducer = privateEvents.createPrivateProducer();
+
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         caseUrn = PreAndPostConditionHelper.generateUrn();
@@ -83,8 +86,8 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
         deleteAndCreateIndex();
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         cleanEventStoreTables();
         cleanViewStoreTables();
 
@@ -202,7 +205,7 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
                 .build();
     }
 
-    private static void verifyInMessagingQueue() {
+    private void verifyInMessagingQueue() {
         final JsonPath message = retrieveMessage(messageConsumer);
         assertTrue(message != null);
     }

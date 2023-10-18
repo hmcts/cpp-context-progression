@@ -23,7 +23,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 import org.hamcrest.CoreMatchers;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -53,19 +53,21 @@ public class UpdateCaseMarkersIT extends AbstractIT {
     private String defendantDOB;
 
     private ProsecutionCaseUpdateCaseMarkersHelper helper;
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+    private MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker;
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private MessageProducer messageProducerClientPublic;
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageConsumerHearingPopulatedToProbationCaseWorker.close();
         messageProducerClientPublic.close();
     }
 
     @Before
     public void setUp() {
-        while(QueueUtil.retrieveMessageAsString(messageConsumerHearingPopulatedToProbationCaseWorker, 1L).isPresent());
+        messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+
         caseId = randomUUID().toString();
         materialIdActive = randomUUID().toString();
         materialIdDeleted = randomUUID().toString();

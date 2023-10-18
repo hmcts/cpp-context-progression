@@ -1,16 +1,20 @@
 package uk.gov.moj.cpp.progression.stub;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
+
+import java.util.List;
 
 import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
 
@@ -33,18 +37,21 @@ public class VejHearingStub {
         );
     }
 
-    public static void verifyHearingCommandInvoked() {
-        verifyVejHearingStubCommandInvoked(VEJ_HEARING_COMMAND);
+    public static void verifyHearingCommandInvoked(final List<String> expectedValues) {
+        verifyVejHearingStubCommandInvoked(VEJ_HEARING_COMMAND, expectedValues);
     }
 
-    public static void verifyHearingDeletedCommandInvoked() {
-        verifyVejHearingStubCommandInvoked(VEJ_HEARING_DELETED_COMMAND);
+    public static void verifyHearingDeletedCommandInvoked(final List<String> expectedValues) {
+        verifyVejHearingStubCommandInvoked(VEJ_HEARING_DELETED_COMMAND, expectedValues);
     }
 
-    public static void verifyVejHearingStubCommandInvoked(final String commandEndPoint) {
+    public static void verifyVejHearingStubCommandInvoked(final String commandEndPoint, final List<String> expectedValues) {
         await().atMost(30, SECONDS).pollInterval(10, SECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlMatching(commandEndPoint));
-            verify(1, requestPatternBuilder);
+            expectedValues.forEach(
+                    expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
+            );
+            verify(requestPatternBuilder);
         });
     }
 }

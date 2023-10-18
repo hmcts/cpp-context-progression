@@ -42,6 +42,7 @@ import javax.json.JsonObject;
 
 import com.google.common.base.Strings;
 import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -56,12 +57,10 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
 
     private static final String USER_GROUP_NOT_PRESENT_DROOL = UUID.randomUUID().toString();
     private static final String USER_GROUP_NOT_PRESENT_RBAC = UUID.randomUUID().toString();
-    private static final MessageConsumer consumerForCourDocumentSendToCps = privateEvents.createPrivateConsumer("progression.event.court-document-send-to-cps");
-    private static final MessageConsumer consumerForProgressionCommandEmail = privateEvents.createPrivateConsumer("progression.event.email-requested");
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
-    private final MessageConsumer publicEventConsumer = publicEvents
-            .createPublicConsumer("public.progression.court-document-added");
-
+    private MessageConsumer consumerForCourDocumentSendToCps;
+    private MessageConsumer consumerForProgressionCommandEmail;
+    private MessageProducer messageProducerClientPublic;
+    private MessageConsumer publicEventConsumer;
 
     @BeforeClass
     public static void init() {
@@ -72,10 +71,15 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
 
     @AfterClass
     public static void tearDown() throws JMSException {
+        setupUsersGroupQueryStub();
+    }
+
+    @After
+    public void tearDownQueues() throws JMSException {
         consumerForCourDocumentSendToCps.close();
         consumerForProgressionCommandEmail.close();
         messageProducerClientPublic.close();
-        setupUsersGroupQueryStub();
+        publicEventConsumer.close();
     }
 
 
@@ -91,6 +95,11 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         defendantId1 = randomUUID().toString();
         defendantId2 = randomUUID().toString();
         userId = randomUUID().toString();
+
+        consumerForCourDocumentSendToCps = privateEvents.createPrivateConsumer("progression.event.court-document-send-to-cps");
+        consumerForProgressionCommandEmail = privateEvents.createPrivateConsumer("progression.event.email-requested");
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        publicEventConsumer = publicEvents.createPublicConsumer("public.progression.court-document-added");
     }
 
     @Test
@@ -145,7 +154,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         assertThat(message, notNullValue());
     }
 
-    private static void verifyInMessagingQueueForEmailSendForDocumentAdded(final String caseId, final String defendant1FirstName, final String defendant1LastName, final String defendant2FirstName, final String defendant2LastName, final boolean expectSeperrateEmails) {
+    private void verifyInMessagingQueueForEmailSendForDocumentAdded(final String caseId, final String defendant1FirstName, final String defendant1LastName, final String defendant2FirstName, final String defendant2LastName, final boolean expectSeperrateEmails) {
         final Optional<JsonObject> messageOptional = QueueUtil.retrieveMessageAsJsonObject(consumerForProgressionCommandEmail);
         messageOptional.ifPresent(message -> {
             if ((expectSeperrateEmails)) {
@@ -161,7 +170,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         checkMultipleDefendantsInSingleNotification(message, getDefendantFullName(defendant1FirstName, defendant1LastName), getDefendantFullName(defendant2FirstName, defendant2LastName));
     }
 
-    private static void checkMultipleNotificationsSeperately(final String caseId, final String defendant1FirstName, final String defendant1LastName, final String defendant2FirstName, final String defendant2LastName, final JsonObject message) {
+    private void checkMultipleNotificationsSeperately(final String caseId, final String defendant1FirstName, final String defendant1LastName, final String defendant2FirstName, final String defendant2LastName, final JsonObject message) {
         checkCommonFields(caseId, message);
         checkSingleDefendantInSingleNotification(message, getDefendantFullName(defendant1FirstName, defendant1LastName), getDefendantFullName(defendant2FirstName, defendant2LastName));
         if(!Strings.isNullOrEmpty(defendant2FirstName)) {

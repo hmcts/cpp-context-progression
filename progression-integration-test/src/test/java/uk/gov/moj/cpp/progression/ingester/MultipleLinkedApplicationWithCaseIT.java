@@ -85,68 +85,6 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         assertTrue(retrieveMessageAsJsonObject(messageConsumer).isPresent());
     }
 
-    @SuppressWarnings("squid:S1607")
-    @Ignore
-    @Test
-    public void shouldCreateMultipleEmbeddedCourtApplicationAndGetConfirmation() throws Exception {
-
-
-        final String caseUrn = applicationReference;
-        addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
-
-        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-initiated")) {
-            addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
-            verifyMessageReceived(messageConsumer);
-        }
-
-
-        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-initiated")) {
-            addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, applicationReference, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
-            verifyMessageReceived(messageConsumer);
-        }
-
-        final String payloadStr1 = getStringFromResource(CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
-                .replaceAll("RANDOM_CASE_ID", caseId)
-                .replaceAll("RANDOM_APPLICATION_ID", applicationId1)
-                .replaceAll("RANDOM_APPLICANT_ID", applicantId1)
-                .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId1)
-                .replaceAll("RANDOM_RESPONDANT_ID", respondentId1)
-                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondentDefendantId1)
-                .replaceAll("RANDOM_REFERENCE", applicationReference);
-        final JsonObject inputApplication1 = jsonFromString(payloadStr1);
-
-        final DocumentContext inputCourtApplication1 = parse(inputApplication1);
-        final String payloadStr2 = getStringFromResource(CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
-                .replaceAll("RANDOM_CASE_ID", caseId)
-                .replaceAll("RANDOM_APPLICATION_ID", applicationId2)
-                .replaceAll("RANDOM_APPLICANT_ID", applicantId2)
-                .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId2)
-                .replaceAll("RANDOM_RESPONDANT_ID", respondentId2)
-                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondentDefendantId2)
-                .replaceAll("RANDOM_REFERENCE", applicationReference);
-        final JsonObject inputApplication2 = jsonFromString(payloadStr2);
-
-        final DocumentContext inputCourtApplication2 = parse(inputApplication2);
-
-        final Matcher[] caseMatchers = {allOf(
-                withJsonPath("$.caseId", equalTo(caseId)),
-                withJsonPath("$.caseReference", equalTo(caseUrn)),
-                withJsonPath("$.parties.length()", equalTo(5)))};
-
-        final Optional<JsonObject> prosecutionCaseResponseJsonObject = findBy(caseMatchers);
-        assertThat(prosecutionCaseResponseJsonObject.isPresent(), is(true));
-        final JsonObject transformedJson = prosecutionCaseResponseJsonObject.get();
-
-        final DocumentContext inputProsecutionCase = documentContext(caseUrn);
-        verifyCaseCreated(5l, inputProsecutionCase, transformedJson);
-        final String linkedCaseId1 = ((JsonString) inputCourtApplication1.read("$.courtApplication.courtApplicationCases[0].prosecutionCaseId")).getString();
-        final String linkedCaseId2 = ((JsonString) inputCourtApplication2.read("$.courtApplication.courtApplicationCases[0].prosecutionCaseId")).getString();
-        verifyEmbeddedApplication(linkedCaseId1, transformedJson);
-        verifyEmbeddedApplication(linkedCaseId2, transformedJson);
-        verifyAddCourtApplication(inputCourtApplication1, transformedJson, applicationId1);
-        verifyAddCourtApplication(inputCourtApplication2, transformedJson, applicationId2);
-    }
-
     @Test
     public void shouldCreateMultipleEmbeddedCourtApplicationAndGetConfirmationAndVerifyUpdate() throws Exception {
 
@@ -232,6 +170,7 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         final String linkedCaseId2 = ((JsonString) inputCourtApplication2.read("$.courtApplication.courtApplicationCases[0].prosecutionCaseId")).getString();
         verifyEmbeddedApplication(linkedCaseId1, transformedJson);
         verifyEmbeddedApplication(linkedCaseId2, transformedJson);
+        verifyAddCourtApplication(inputCourtApplication1, transformedJson, applicationId1);
         verifyAddCourtApplication(inputCourtApplication2, transformedJson, applicationId2);
         verifyUpdateCourtApplication(inputCourtApplication1, transformedJson, applicationId1);
     }

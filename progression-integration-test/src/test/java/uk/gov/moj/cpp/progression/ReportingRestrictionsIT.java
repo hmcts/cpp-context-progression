@@ -49,7 +49,7 @@ import javax.json.JsonObject;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mortbay.util.SingletonList;
@@ -67,10 +67,8 @@ public class ReportingRestrictionsIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static String userId;
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged =
-            privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
-    private static final MessageConsumer consumerForCourtApplicationCreated =
-            publicEvents.createPublicConsumer("public.progression.court-application-created");
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
+    private MessageConsumer consumerForCourtApplicationCreated;
     private String hearingId1;
     private String hearingId2;
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -99,11 +97,14 @@ public class ReportingRestrictionsIT extends AbstractIT {
         stubDocumentCreate(DOCUMENT_TEXT);
         HearingStub.stubInitiateHearing();
 
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+        consumerForCourtApplicationCreated = publicEvents.createPublicConsumer("public.progression.court-application-created");
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
+        consumerForCourtApplicationCreated.close();
     }
 
     @Test

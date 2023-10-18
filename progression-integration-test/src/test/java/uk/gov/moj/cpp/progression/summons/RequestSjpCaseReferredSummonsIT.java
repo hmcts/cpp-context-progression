@@ -45,7 +45,6 @@ import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,8 +68,8 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
     private static final String PARENT_MIDDLE_NAME = "PM_" + STRING.next();
     private static final String PARENT_LAST_NAME = "PL_" + STRING.next();
 
-    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createPublicProducer();
-    private final MessageConsumer nowsMaterialRequestRecordedConsumer = privateEvents.createPrivateConsumer(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED);
+    private MessageProducer publicMessageProducer;
+    private MessageConsumer nowsMaterialRequestRecordedConsumer;
     private static final String DOCUMENT_TEXT = STRING.next();
 
     private static final String DEFENDANT_ID_1 = randomUUID().toString();
@@ -104,13 +103,17 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
         };
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
-        PUBLIC_MESSAGE_PRODUCER.close();
+    @After
+    public void tearDown() throws JMSException {
+        publicMessageProducer.close();
+        nowsMaterialRequestRecordedConsumer.close();
     }
 
     @Before
     public void setUp() {
+        publicMessageProducer = publicEvents.createPublicProducer();
+        nowsMaterialRequestRecordedConsumer = privateEvents.createPrivateConsumer(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED);
+
         stubInitiateHearing();
         stubDocumentCreate(DOCUMENT_TEXT);
         IdMapperStub.setUp();

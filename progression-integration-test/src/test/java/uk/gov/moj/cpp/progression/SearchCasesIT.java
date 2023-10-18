@@ -17,7 +17,6 @@ import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 @SuppressWarnings({"squid:S1607"})
@@ -43,7 +42,7 @@ public class SearchCasesIT extends AbstractIT {
     public static void setUpCommonData() throws IOException {
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
-        helper = new ProsecutionCaseUpdateDefendantHelper(randomUUID().toString(), randomUUID().toString());
+        helper = new ProsecutionCaseUpdateDefendantHelper(caseId, defendantId);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
     }
 
@@ -84,7 +83,6 @@ public class SearchCasesIT extends AbstractIT {
     }
 
     @Test
-    @Ignore
     public void shouldGetProsecutionCaseByFirstNameAfterDefendantUpdate() {
         verifyCasesForSearchCriteria(firstName, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH, containsString(firstName))});
         final String updatedFirstName = "updatedName";
@@ -105,11 +103,6 @@ public class SearchCasesIT extends AbstractIT {
 
     @Test
     public void shouldGetProsecutionCaseByDobDDMMMyy() {
-        verifyCasesForSearchCriteria("01/01/10", new Matcher[]{withJsonPath(JSON_RESULTS_DOB, equalTo(DOB))});
-    }
-
-    @Test
-    public void shouldGetProsecutionCaseByDobyyyyMMDD() {
         verifyCasesForSearchCriteria("01/01/10", new Matcher[]{withJsonPath(JSON_RESULTS_DOB, equalTo(DOB))});
     }
 

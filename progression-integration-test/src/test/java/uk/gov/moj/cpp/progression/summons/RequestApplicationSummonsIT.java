@@ -189,36 +189,6 @@ public class RequestApplicationSummonsIT extends AbstractIT {
 
     @UseDataProvider("applicationSummonsNotSuppressed")
     @Test
-    public void shouldGenerateSummonsAfterApplicationApproved_SummonsNotSuppressed(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
-        ReferenceDataStub.stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
-
-        final boolean summonsSuppressed = false;
-
-        final Hearing hearing = givenApplicationInitiatedInBoxWork(summonsTemplateType, isYouth, isWelsh);
-
-        whenApplicationResultedAsApprovedAndCourtHearingInitiated(summonsSuppressed, isWelsh, hearing);
-
-        // perform following verifications
-        verifyDocumentAddedToCdes(applicationId, numberOfDocuments);
-
-        final String subjectTemplateName = "SP" + getLanguagePrefix(isWelsh) + "_" + templateName;
-        verifyTemplatePayloadValues(true, subjectTemplateName, summonsRequired.toString(), PROSECUTOR_COST, personalService, firstName, middleName, lastName);
-
-        final UUID materialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
-        sendEventToConfirmMaterialAdded(materialId);
-
-        final List<String> expectedEmailDetails = newArrayList(prosecutorEmailAddress, format("%s %s %s", firstName, middleName, lastName));
-        verifyEmailNotificationIsRaisedWithoutAttachment(expectedEmailDetails);
-        verifyCreateLetterRequested(of("letterUrl", materialId.toString()));
-
-        // applies only to breach application types
-        if (isYouth && numberOfDocuments > 1) {
-            verifyParentBreachSummonWhenNotSuppressed(summonsRequired, isWelsh);
-        }
-    }
-
-    @UseDataProvider("applicationSummonsNotSuppressed")
-    @Test
     public void shouldGenerateSummonsAfterApplicationApproved_SummonsNotSuppressedV2(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
         ReferenceDataStub.stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 

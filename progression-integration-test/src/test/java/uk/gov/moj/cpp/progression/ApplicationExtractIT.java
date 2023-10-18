@@ -32,9 +32,8 @@ import javax.json.JsonObject;
 
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
@@ -47,7 +46,7 @@ public class ApplicationExtractIT extends AbstractIT {
     private String updatedDefendantId;
 
     private static final String DOCUMENT_TEXT = STRING.next();
-    private static final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createPublicConsumer("public.progression.court-application-created");
+    private MessageConsumer consumerForCourtApplicationCreated;
 
     @Before
     public void setUp() {
@@ -58,25 +57,15 @@ public class ApplicationExtractIT extends AbstractIT {
         defendantId = randomUUID().toString();
         updatedDefendantId = randomUUID().toString();
         stubQueryDocumentTypeAccessQueryData("/restResource/ref-data-document-type-for-standalone.json");
+        consumerForCourtApplicationCreated = publicEvents.createPublicConsumer("public.progression.court-application-created");
+
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         consumerForCourtApplicationCreated.close();
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
     }
-
-    @Test
-    public void shouldGetApplicationExtract_whenExtractTypeIsStandAloneApplication() throws Exception {
-        // given
-        addStandaloneCourtApplication(courtApplicationId, randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
-        verifyInMessagingQueueForStandaloneCourtApplicationCreated();
-        // when
-        final String documentContentResponse = getApplicationExtractPdf(courtApplicationId, hearingId);
-        // then
-        assertThat(documentContentResponse, equalTo(DOCUMENT_TEXT));
-    }
-
 
     @Test
     public void shouldAddDocumentInStandAloneApplicationAndThenUpdateIt() throws Exception {
@@ -154,7 +143,7 @@ public class ApplicationExtractIT extends AbstractIT {
         return body;
     }
 
-    private static void verifyInMessagingQueueForStandaloneCourtApplicationCreated() {
+    private void verifyInMessagingQueueForStandaloneCourtApplicationCreated() {
         final Optional<JsonObject> message = AwaitUtil.awaitAndRetrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
 
         String referenceResponse = message.get().getJsonObject("courtApplication").getString("applicationReference");

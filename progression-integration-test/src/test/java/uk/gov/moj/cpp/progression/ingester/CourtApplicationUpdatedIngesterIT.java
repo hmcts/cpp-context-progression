@@ -32,7 +32,6 @@ import javax.json.JsonObject;
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 public class CourtApplicationUpdatedIngesterIT extends AbstractIT {

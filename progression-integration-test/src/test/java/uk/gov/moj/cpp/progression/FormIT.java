@@ -78,7 +78,7 @@ import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -130,23 +130,12 @@ public class FormIT extends AbstractIT {
     private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     public static final String SUBMISSION_ID_VALUE = "e85d2c62-af1f-4674-863a-0891e67e325b";
 
-    private static MessageConsumer consumerForFormCreated = publicEvents
-            .createPublicConsumer("public.progression.form-created");
-
-    private static MessageConsumer consumerForFormFinalised = publicEvents
-            .createPublicConsumer("public.progression.form-finalised");
-
-    private static MessageConsumer consumerForPublicCourtDocumentAdded = publicEvents
-            .createPublicConsumer("public.progression.court-document-added");
-
-    private static MessageConsumer consumerForFormOperationFailed = publicEvents
-            .createPublicConsumer("public.progression.form-operation-failed");
-
-    private static MessageConsumer consumerForFormUpdated = publicEvents
-            .createPublicConsumer("public.progression.form-updated");
-
-    private static MessageConsumer consumerForEditFormRequested = publicEvents
-            .createPublicConsumer("public.progression.edit-form-requested");
+    private MessageConsumer consumerForFormCreated;
+    private MessageConsumer consumerForFormFinalised;
+    private MessageConsumer consumerForPublicCourtDocumentAdded;
+    private MessageConsumer consumerForFormOperationFailed;
+    private MessageConsumer consumerForFormUpdated;
+    private MessageConsumer consumerForEditFormRequested;
 
     private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
@@ -155,10 +144,17 @@ public class FormIT extends AbstractIT {
         setupLoggedInUsersPermissionQueryStub();
         stubDocumentCreate(DOCUMENT_TEXT);
         stubMaterialStructuredFormQuery(UPDATED_FORM_DATA);
+
+        consumerForFormCreated = publicEvents.createPublicConsumer("public.progression.form-created");
+        consumerForFormFinalised = publicEvents.createPublicConsumer("public.progression.form-finalised");
+        consumerForPublicCourtDocumentAdded = publicEvents.createPublicConsumer("public.progression.court-document-added");
+        consumerForFormOperationFailed = publicEvents.createPublicConsumer("public.progression.form-operation-failed");
+        consumerForFormUpdated = publicEvents.createPublicConsumer("public.progression.form-updated");
+        consumerForEditFormRequested = publicEvents.createPublicConsumer("public.progression.edit-form-requested");
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         consumerForFormCreated.close();
         messageProducerClientPublic.close();
         consumerForPublicCourtDocumentAdded.close();

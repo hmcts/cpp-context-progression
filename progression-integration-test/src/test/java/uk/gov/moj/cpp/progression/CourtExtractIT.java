@@ -50,20 +50,19 @@ import javax.json.JsonObject;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 @SuppressWarnings("squid:S1607")
 public class CourtExtractIT extends AbstractIT {
-    private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
 
     private static final String DOCUMENT_TEXT = STRING.next();
     private static final String CROWN_COURT_EXTRACT = "CrownCourtExtract";
     private static final String CERTIFICATE_OF_CONVICTION = "CertificateOfConviction";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private MessageProducer messageProducerClientPublic;
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application.json";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_WITH_DEFENDANT_JSON = "progression.command.create-court-application-with-defendant.json";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -75,8 +74,8 @@ public class CourtExtractIT extends AbstractIT {
     private String courtApplicationId;
     private String reportingRestrictionId;
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
     }
 
@@ -100,31 +99,9 @@ public class CourtExtractIT extends AbstractIT {
         stubDocumentCreate(DOCUMENT_TEXT);
         stubInitiateHearing();
         stubPleaTypes();
-    }
 
-    @Test
-    public void shouldGetCourtExtract_whenExtractTypeIsCrownCourtExtract() throws Exception {
-        // given
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
-        final JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
-        hearingId = extractHearingIdFromProsecutionCasesProgression(prosecutionCasesJsonObject, defendantId);
+        messageProducerClientPublic = publicEvents.createPublicProducer();
 
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
-                        caseId, hearingId, defendantId, courtCentreId), JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                        .withUserId(userId)
-                        .build());
-
-        assertEquals(caseId, prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getString("id"));
-
-        // when
-        final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, hearingId, CROWN_COURT_EXTRACT);
-        // then
-        assertThat(documentContentResponse, is(notNullValue()));
-        verifyContentsInCrownCourtExtractPayloadUsedForPdfGeneration();
     }
 
     @Test
@@ -145,9 +122,14 @@ public class CourtExtractIT extends AbstractIT {
         assertEquals(caseId, prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getString("id"));
 
         // when
-        final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, "", CERTIFICATE_OF_CONVICTION);
+        String documentContentResponse = getCourtExtractPdf(caseId, defendantId, "", CERTIFICATE_OF_CONVICTION);
         // then
         assertThat(documentContentResponse, is(notNullValue()));
+
+        documentContentResponse = getCourtExtractPdf(caseId, defendantId, hearingId, CROWN_COURT_EXTRACT);
+        // then
+        assertThat(documentContentResponse, is(notNullValue()));
+        verifyContentsInCrownCourtExtractPayloadUsedForPdfGeneration();
     }
 
     @Test
@@ -186,63 +168,6 @@ public class CourtExtractIT extends AbstractIT {
         final String documentContentResponse = ejectCaseExtractPdf(caseId, defendantId);
 
         // then
-        assertThat(documentContentResponse, is(notNullValue()));
-    }
-
-    @Test
-    public void shouldExtractCrownCourtFromResultedHearingWithPlea() throws Exception {
-        final String newCourtCentreId = UUID.fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
-
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
-
-            addProsecutionCaseToCrownCourt(caseId, defendantId);
-            pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-            hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        }
-
-
-        final Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                .withUserId(userId)
-                .build();
-
-        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId);
-        sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
-
-        verifyInMessagingQueueForCasesReferredToCourts();
-
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED, getHearingJsonObject(PUBLIC_HEARING_RESULTED + ".json", caseId,
-                        hearingId, defendantId, newCourtCentreId, reportingRestrictionId), metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED)
-                        .withUserId(userId)
-                        .build());
-
-
-        Matcher[] personDefendantOffenceUpdatedMatchers = {
-                withJsonPath("$.prosecutionCase.id", CoreMatchers.is(caseId)),
-
-                withJsonPath("$.hearingsAtAGlance.hearings.[*].type.description", hasItem("Sentence")),
-                withJsonPath("$.hearingsAtAGlance.hearings.[*].courtCentre.id", hasItem(newCourtCentreId)),
-                withJsonPath("$.hearingsAtAGlance.hearings.[*].defendants.[*].id", hasItem(defendantId)),
-
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodyTimeLimit", CoreMatchers.is("2018-01-01")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.timeLimit", CoreMatchers.is("2018-09-10")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.daysSpent", CoreMatchers.is(44)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.timeLimit", CoreMatchers.is("2018-09-14")),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.daysSpent", CoreMatchers.is(55)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].id", CoreMatchers.is(reportingRestrictionId)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].judicialResultId", CoreMatchers.is("0f5b8757-e588-4b7f-806a-44dc0eb0e75e")),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", CoreMatchers.is("Reporting Restriction Label")),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].orderedDate", CoreMatchers.is("2020-10-20"))
-        };
-
-        pollProsecutionCasesProgressionFor(caseId, personDefendantOffenceUpdatedMatchers);
-
-        final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, hearingId, CROWN_COURT_EXTRACT);
         assertThat(documentContentResponse, is(notNullValue()));
     }
 
@@ -332,17 +257,6 @@ public class CourtExtractIT extends AbstractIT {
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId);
-        return stringToJsonObjectConverter.convert(strPayload);
-    }
-
-    private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
-                                            final String defendantId, final String courtCentreId, final String reportingRestrictionId) {
-        final String strPayload = getPayload(path)
-                .replaceAll("CASE_ID", caseId)
-                .replaceAll("HEARING_ID", hearingId)
-                .replaceAll("DEFENDANT_ID", defendantId)
-                .replaceAll("COURT_CENTRE_ID", courtCentreId)
-                .replaceAll("REPORTING_RESTRICTION_ID", reportingRestrictionId);
         return stringToJsonObjectConverter.convert(strPayload);
     }
 

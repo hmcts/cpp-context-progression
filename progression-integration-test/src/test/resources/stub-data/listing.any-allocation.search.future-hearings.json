@@ -13,10 +13,10 @@
       "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
       "hearingDays": [
         {
-          "endTime": "2020-09-06T09:30:0.001Z",
+          "endTime": "2040-09-06T09:30:00.001Z",
           "sequence": 0,
-          "startTime": "2020-09-06T09:01:01.001Z",
-          "hearingDate": "2020-09-06",
+          "startTime": "START_TIME",
+          "hearingDate": "2040-09-06",
           "durationMinutes": 20
         }
       ],
@@ -127,7 +127,7 @@
           "restrictFromCourtList": false
         }
       ],
-      "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "courtCentreId": "3d2cf089-63ec-4bbf-a330-402540f200ba",
       "isSlotsBooked": false,
       "nonDefaultDays": [
         {

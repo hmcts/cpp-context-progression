@@ -27,15 +27,15 @@ import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private MessageProducer messageProducerClientPublic;
     private static final String MAGISTRATES_JURISDICTION_TYPE = "MAGISTRATES";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -47,8 +47,12 @@ public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
 
     @AfterClass
     public static void tearDown() throws JMSException {
-        messageProducerClientPublic.close();
         stubGetOrganisationById(REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON);
+    }
+
+    @After
+    public void tearDownQueue() throws JMSException {
+        messageProducerClientPublic.close();
     }
 
     @Before
@@ -60,10 +64,11 @@ public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         courtCentreId = randomUUID().toString();
+
+        messageProducerClientPublic = publicEvents.createPublicProducer();
     }
 
     @SuppressWarnings("squid:S1607")
-    @Ignore
     @Test
     public void shouldUpdateCaseAtAGlance() throws Exception {
 

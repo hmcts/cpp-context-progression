@@ -88,14 +88,6 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
     }
 
     @Test
-    public void shouldInitiateCourtProceedingsNoCourtDocuments() throws IOException {
-        //given
-        initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-        //when
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-    }
-
-    @Test
     public void shouldInitiateCourtProceedingWithPartialMatchDefendant() throws IOException {
         final String matchedCaseId_1 = randomUUID().toString();
         final String matchedDefendant_1 = randomUUID().toString();

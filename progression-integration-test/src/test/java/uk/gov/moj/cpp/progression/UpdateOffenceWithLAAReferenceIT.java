@@ -44,7 +44,7 @@ import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,18 +57,12 @@ public class UpdateOffenceWithLAAReferenceIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_DISASSOCIATED = "public.progression.defence-organisation-for-laa-disassociated";
     private static final String PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED = "public.progression.defence-organisation-for-laa-associated";
 
-    private static final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
-    private static final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_ID_STATUS_UPDATED);
-    private static final MessageConsumer messageConsumerClientPublicForAssociationLockedReference = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ASSOCIATION_LOCKED_FOR_LAA);
-    private static final MessageConsumer messageConsumerClientPublicForLaaContractAssociation = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_LAA_CONTRACT_ASSOCIATED);
-    private static final MessageConsumer messageConsumerClientPublicForDefenceOrganisationDisassociation = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_DISASSOCIATED);
-    private static final MessageConsumer messageConsumerClientPublicForDefenceOrganisationAssociation = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED);
+    private MessageConsumer messageConsumerClientPublicForRecordLAAReference;
+    private MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated;
+    private MessageConsumer messageConsumerClientPublicForAssociationLockedReference;
+    private MessageConsumer messageConsumerClientPublicForLaaContractAssociation;
+    private MessageConsumer messageConsumerClientPublicForDefenceOrganisationDisassociation;
+    private MessageConsumer messageConsumerClientPublicForDefenceOrganisationAssociation;
 
 
     private final String userId = UUID.randomUUID().toString();
@@ -97,10 +91,16 @@ public class UpdateOffenceWithLAAReferenceIT extends AbstractIT {
         stubInitiateHearing();
         stubDocumentCreate(STRING.next());
         NotificationServiceStub.setUp();
+        messageConsumerClientPublicForRecordLAAReference = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
+        messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_ID_STATUS_UPDATED);
+        messageConsumerClientPublicForAssociationLockedReference = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ASSOCIATION_LOCKED_FOR_LAA);
+        messageConsumerClientPublicForLaaContractAssociation = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_LAA_CONTRACT_ASSOCIATED);
+        messageConsumerClientPublicForDefenceOrganisationDisassociation = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_DISASSOCIATED);
+        messageConsumerClientPublicForDefenceOrganisationAssociation = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED);
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageConsumerClientPublicForRecordLAAReference.close();
         messageConsumerClientPublicForDefendantLegalAidStatusUpdated.close();
         messageConsumerClientPublicForAssociationLockedReference.close();

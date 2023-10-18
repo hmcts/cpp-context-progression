@@ -7,7 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -92,7 +92,7 @@ public class VejCaseworkerProcessorTest {
 
         vejCaseworkerProcessor.processVejHearingPopulatedToProbationCaseworker(jsonEnvelope);
 
-        verify(restEasyClientService, atLeast(1)).post(any(), envelopeArgumentCaptor.capture(), any());
+        verify(restEasyClientService).post(eq(VEJ_HEARING_DETAILS_URL), envelopeArgumentCaptor.capture(), any());
         final String argumentCaptor = envelopeArgumentCaptor.getValue();
         final JsonReader jsonReader = Json.createReader(new StringReader(argumentCaptor));
         final JsonObject externalPayload = jsonReader.readObject();
@@ -133,5 +133,33 @@ public class VejCaseworkerProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.events.hearing-populated-to-probation-caseworker"),
                 payload);
         vejCaseworkerProcessor.processVejDeletedHearingPopulatedToProbationCaseworker(jsonEnvelope);
+
+        verify(restEasyClientService, never()).post(eq(VEJ_HEARING_DELETED_URL), envelopeArgumentCaptor.capture(), any());
     }
+
+    @Test
+    public void shouldProcessVejDeletedHearingPopulatedToProbationCaseworker() throws IOException {
+        final JsonObject hearing = stringToJsonObjectConverter.convert(Resources.toString(getResource("vep-hearing.json"), defaultCharset()));
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.events.vej-deleted-hearing-populated-to-probation-caseworker"),
+                hearing);
+
+        when(referenceDataService.getPoliceFlag(anyString(), anyString(), eq(requester))).thenReturn(true);
+        when(restEasyClientService.post(eq(VEJ_HEARING_DELETED_URL), any(), any())).thenReturn(response);
+
+        vejCaseworkerProcessor.processVejDeletedHearingPopulatedToProbationCaseworker(jsonEnvelope);
+
+        verify(restEasyClientService).post(eq(VEJ_HEARING_DELETED_URL), envelopeArgumentCaptor.capture(), any());
+        final String argumentCaptor = envelopeArgumentCaptor.getValue();
+        final JsonReader jsonReader = Json.createReader(new StringReader(argumentCaptor));
+        final JsonObject externalPayload = jsonReader.readObject();
+        jsonReader.close();
+        final JsonObject hearingObj = (JsonObject) externalPayload.get(HEARING);
+        final JsonArray policeProsecutionCases = hearingObj.getJsonArray(PROSECUTION_CASES);
+        final JsonArray hearingProsecutionCases = ((JsonObject) hearing.get("hearing")).getJsonArray(PROSECUTION_CASES);
+        assertThat(((JsonObject) hearing.get("hearing")).get("id"), is(hearingObj.get("id")));
+        assertThat(((JsonObject) hearingProsecutionCases.get(0)).get("id"), is(((JsonObject) policeProsecutionCases.get(0)).get("id")));
+    }
+
 }

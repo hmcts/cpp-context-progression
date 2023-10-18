@@ -61,7 +61,6 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
         deleteAndCreateIndex();
     }
 
-    @Ignore("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldInitiateCourtProceedingsWithCourtDocuments() throws IOException {
 

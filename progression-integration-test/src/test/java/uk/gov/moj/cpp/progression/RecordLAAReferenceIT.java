@@ -46,17 +46,17 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@SuppressWarnings("squid:S1607")
 public class RecordLAAReferenceIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
     private static final String PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
     private static final String PUBLIC_DEFENCE_ORGANISATION_FOR_LAA_DISASSOCIATED = "public.progression.defence-organisation-for-laa-disassociated";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private MessageProducer messageProducerClientPublic;
     private String caseId;
     private String defendantId;
     private static final String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
@@ -68,6 +68,11 @@ public class RecordLAAReferenceIT extends AbstractIT {
     private String statusCode;
     private String userId;
 
+    @Before
+    public void setup() {
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+    }
+
     @BeforeClass
     public static void setupOnce() {
         removeStub();
@@ -77,13 +82,17 @@ public class RecordLAAReferenceIT extends AbstractIT {
 
     @AfterClass
     public static void teardownOnce() throws JMSException {
-        messageProducerClientPublic.close();
         final String pncId = "2099/1234567L";
         final String croNumber = "1234567";
 
         removeStub();
         stubUnifiedSearchQueryExactMatchWithEmptyResults();
         stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), pncId, croNumber);
+    }
+
+    @After
+    public void tearDown() throws JMSException {
+        messageProducerClientPublic.close();
     }
 
     private static void verifyInMessagingQueueForDefendantOffenceUpdated(final MessageConsumer messageConsumerClientPublicForRecordLAAReference) {
@@ -105,8 +114,6 @@ public class RecordLAAReferenceIT extends AbstractIT {
     }
 
 
-    @SuppressWarnings("squid:S1607")
-    @Ignore
     @Test
     public void recordLAAReferenceForOffence() throws IOException, JMSException {
         userId = randomUUID().toString();

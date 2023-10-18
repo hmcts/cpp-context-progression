@@ -23,6 +23,8 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 
 import com.jayway.restassured.path.json.JsonPath;
 import javax.json.Json;
+
+import org.junit.After;
 import org.junit.Assert;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -40,7 +42,6 @@ import javax.json.JsonObject;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,21 +51,26 @@ public class HearingTrialVacatedIT extends AbstractIT {
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_LISTING_HEARING_UPDATED = "public.listing.hearing-updated";
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private static final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
-    private static final MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
-    private static final MessageConsumer messageConsumerHearingTrialVacated = privateEvents.createPrivateConsumer("progression.event.hearing-trial-vacated");
+    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
+    private MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker;
+    private MessageConsumer messageConsumerHearingTrialVacated;
     private String vacatedTrialReasonId;
 
     @Before
     public void setUp() {
+        messageProducerClientPublic = publicEvents.createPublicProducer();
+        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
+        messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
+        messageConsumerHearingTrialVacated = privateEvents.createPrivateConsumer("progression.event.hearing-trial-vacated");
+
         HearingStub.stubInitiateHearing();
         vacatedTrialReasonId = UUID.randomUUID().toString();
     }
 
-    @AfterClass
-    public static void tearDown() throws JMSException {
+    @After
+    public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerHearingPopulatedToProbationCaseWorker.close();
         messageConsumerHearingTrialVacated.close();
@@ -315,7 +321,7 @@ public class HearingTrialVacatedIT extends AbstractIT {
 
 
 
-    private static void verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(final String hearingId, final Boolean isVacatedTrial) {
+    private void verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(final String hearingId, final Boolean isVacatedTrial) {
         final JsonPath result = QueueUtil.retrieveMessage(messageConsumerHearingPopulatedToProbationCaseWorker, isJson(allOf(
                 withJsonPath("$.hearing.id", CoreMatchers.is(hearingId)),
                 withJsonPath("$.hearing.isVacatedTrial", CoreMatchers.is(isVacatedTrial))
@@ -323,7 +329,7 @@ public class HearingTrialVacatedIT extends AbstractIT {
         Assert.assertNotNull(result);
     }
 
-    private static void verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(final String hearingId, final Boolean isVacatedTrial, final String courtCenterId) {
+    private void verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(final String hearingId, final Boolean isVacatedTrial, final String courtCenterId) {
         final JsonPath result = QueueUtil.retrieveMessage(messageConsumerHearingPopulatedToProbationCaseWorker, isJson(allOf(
                 withJsonPath("$.hearing.id", CoreMatchers.is(hearingId)),
                 withJsonPath("$.hearing.isVacatedTrial", CoreMatchers.is(isVacatedTrial)),
@@ -333,7 +339,7 @@ public class HearingTrialVacatedIT extends AbstractIT {
     }
 
 
-    private static void verifyInMessagingQueueForHearingTrialvacated(final String hearingId, final String vacatedTrialReasonId) {
+    private void verifyInMessagingQueueForHearingTrialvacated(final String hearingId, final String vacatedTrialReasonId) {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerHearingTrialVacated);
         assertTrue(message.isPresent());
         final JsonObject jsonObject = message.get();
