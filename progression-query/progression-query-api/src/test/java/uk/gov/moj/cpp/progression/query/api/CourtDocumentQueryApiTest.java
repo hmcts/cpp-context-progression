@@ -1,29 +1,5 @@
 package uk.gov.moj.cpp.progression.query.api;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.QueryClientTestBase;
-import uk.gov.justice.api.resource.service.DefenceQueryService;
-import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.common.exception.ForbiddenRequestException;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
-
-import javax.json.JsonObject;
-import java.util.function.Function;
-
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -39,6 +15,33 @@ import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.APPLICA
 import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.CASE_ID;
 import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.COURT_DOCUMENTS_SEARCH_NAME;
 import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.COURT_DOCUMENTS_SEARCH_PROSECUTION;
+import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.DEFENDANT_ID;
+
+import uk.gov.QueryClientTestBase;
+import uk.gov.justice.api.resource.service.DefenceQueryService;
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
+
+import java.util.function.Function;
+
+import javax.json.JsonObject;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CourtDocumentQueryApiTest {
@@ -239,6 +242,22 @@ public class CourtDocumentQueryApiTest {
         when(defenceQueryService.isUserProsecutingCase(envelope, caseId)).thenReturn(true);
 
         JsonEnvelope response = courtDocumentApi.getCaseDocumentDetailsForProsecution(envelope);
+
+        assertThat(response, equalTo(envelope));
+    }
+
+    @Test
+    public void shouldFetchCaseDocumentDetailsForDefence() {
+        String applicationId = randomUUID().toString();
+        final JsonObject jsonObjectPayload = createObjectBuilder()
+                .add(APPLICATION_ID, applicationId)
+                .add(DEFENDANT_ID, randomUUID().toString()).build();
+        final Metadata metadata = QueryClientTestBase.metadataFor("progression.query.material-content-for-defence");
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+//        when(requester.request(any())).thenReturn(envelope);
+//        when(defenceQueryService.isUserProsecutingCase(envelope, caseId)).thenReturn(true);
+
+        JsonEnvelope response = courtDocumentApi.getCaseDocumentDetailsForDefence(envelope);
 
         assertThat(response, equalTo(envelope));
     }

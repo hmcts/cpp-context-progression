@@ -437,4 +437,27 @@ public class CotrCommandHandlerTest {
                 .with(uk.gov.justice.cpp.progression.event.ProsecutionCotrUpdated::getCotrId, is(cotrId))
         );
     }
+
+    @Test
+    public void shouldTestServeProsecutionCotr1() throws Exception {
+        final Metadata metadata = metadataFor("progression.command.serve-prosecution-cotr", UUID.randomUUID());
+        final UUID hearingId = randomUUID();
+        final UUID cotrId = randomUUID();
+
+        when(this.eventSource.getStreamById(any())).thenReturn(this.cotrEventStream);
+        when(this.aggregateService.get(this.cotrEventStream, CotrAggregate.class)).thenReturn(new CotrAggregate());
+
+        final Envelope<UpdateProsecutionCotr> envelope = Envelope.envelopeFrom(metadata, UpdateProsecutionCotr.updateProsecutionCotr()
+                .withCotrId(cotrId)
+                .withHearingId(hearingId)
+                .build());
+
+        handler.updateProsecutionCotr(envelope);
+
+        final List<JsonEnvelope> events = verifyAppendAndGetArgumentFrom(this.cotrEventStream).collect(Collectors.toList());
+
+        assertThat(asPojo(events.get(0), uk.gov.justice.cpp.progression.event.ProsecutionCotrServed.class), isBean(uk.gov.justice.cpp.progression.event.ProsecutionCotrServed.class)
+                .with(uk.gov.justice.cpp.progression.event.ProsecutionCotrServed::getHearingId, is(hearingId))
+        );
+    }
 }

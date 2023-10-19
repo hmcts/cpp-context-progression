@@ -1,20 +1,21 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.PetCaseDefendantOffence;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.PetCaseDefendantOffenceRepository;
-
-import javax.inject.Inject;
-
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.PetCaseDefendantOffence;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.PetCaseDefendantOffenceRepository;
+
+import java.time.ZonedDateTime;
 import java.util.UUID;
+
+import javax.inject.Inject;
+
+import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
 public class PetCaseDefendantOffenceRepositoryTest {
@@ -42,7 +43,7 @@ public class PetCaseDefendantOffenceRepositoryTest {
         UUID key = randomUUID();
         boolean isYouth = true;
 
-        final PetCaseDefendantOffence petCaseDefendantOffence = new PetCaseDefendantOffence(key, randomUUID(), randomUUID(), isYouth, randomUUID());
+        final PetCaseDefendantOffence petCaseDefendantOffence = new PetCaseDefendantOffence(key, randomUUID(), randomUUID(), isYouth, randomUUID(), ZonedDateTime.now());
         repository.save(petCaseDefendantOffence);
 
         final PetCaseDefendantOffence persistedPet = repository.findBy(key);

@@ -1,31 +1,58 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.util.Arrays.asList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.DefenceCounsel;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingInitiateEnriched;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Plea;
+import uk.gov.justice.core.courts.PleaModel;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.UpdateHearingOffencePlea;
 import uk.gov.justice.services.core.aggregate.AggregateService;
+import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
-import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PleaUpdatedHandlerTest {
 
     private static final String UPDATE_HEARING_OFFENCE_PLEA = "progression.command.update-hearing-offence-plea";
-
-    private final FileResourceObjectMapper handlerTestHelper = new FileResourceObjectMapper();
 
     @Mock
     private EventSource eventSource;
@@ -36,16 +63,24 @@ public class PleaUpdatedHandlerTest {
     @Mock
     private AggregateService aggregateService;
 
-    @Mock
     private HearingAggregate hearingAggregate;
 
-   @InjectMocks
+    private CaseAggregate caseAggregate;
+
+    @InjectMocks
     private PleaUpdatedHandler pleaUpdatedHandler;
+
+    @Spy
+    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
+            );
 
     @Before
     public void setup() {
+        hearingAggregate = new HearingAggregate();
+        caseAggregate = new CaseAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
     }
 
     @Test
@@ -56,5 +91,71 @@ public class PleaUpdatedHandlerTest {
                 ));
     }
 
+    @Test
+    public void shouldHandleUpdatePlea() throws EventStreamException {
+        final List<DefenceCounsel> defenceCounsels = new ArrayList<>();
+        defenceCounsels.add(DefenceCounsel.defenceCounsel()
+                .withId(randomUUID())
+                .build());
 
+        Hearing hearing = Hearing.hearing()
+                .withCourtCentre(CourtCentre.courtCentre().build())
+                .withDefenceCounsels(defenceCounsels)
+                .withId(randomUUID())
+                .withHearingDays(asList(
+                        HearingDay.hearingDay()
+                                .withCourtRoomId(randomUUID())
+                                .build(),
+                        HearingDay.hearingDay()
+                                .build()))
+                .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
+                                .withId(randomUUID())
+                                .withDefendants(asList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                        .withId(randomUUID())
+                                                        .build(),
+                                                Offence.offence()
+                                                        .withId(randomUUID())
+                                                        .build())))
+                                        .build()))
+                                .build(),
+                        ProsecutionCase.prosecutionCase()
+                                .withId(randomUUID())
+                                .withDefendants(asList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(asList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .build()))
+                                        .build()))
+                                .build()))
+                .build();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build());
+        final UpdateHearingOffencePlea updateHearingOffencePlea = UpdateHearingOffencePlea.updateHearingOffencePlea()
+                .withHearingId(randomUUID())
+                .withPleaModel(PleaModel.pleaModel()
+                        .withOffenceId(randomUUID())
+                        .withPlea(Plea.plea()
+                                .withPleaValue("pleaValue")
+                                .build())
+                        .build())
+                .build();
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.handler.update-hearing-defence-counsel")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<UpdateHearingOffencePlea> envelope = envelopeFrom(metadata, updateHearingOffencePlea);
+        pleaUpdatedHandler.handleUpdatePlea(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        final List<Envelope> envelopes = envelopeStream.map(value -> (Envelope) value).collect(Collectors.toList());
+
+        MatcherAssert.assertThat(envelopes.size()
+                , is(0));
+    }
 }

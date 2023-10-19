@@ -21,6 +21,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseListingNumberDecreased;
+import uk.gov.justice.progression.courts.DecreaseListingNumberForProsecutionCase;
 import uk.gov.justice.progression.courts.DeleteHearing;
 import uk.gov.justice.progression.courts.DeleteHearingForCourtApplication;
 import uk.gov.justice.progression.courts.DeleteHearingForProsecutionCase;
@@ -62,7 +64,8 @@ public class DeleteHearingCommandHandlerTest {
 
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            HearingDeleted.class, HearingDeletedForProsecutionCase.class, HearingDeletedForCourtApplication.class);
+            HearingDeleted.class, HearingDeletedForProsecutionCase.class, HearingDeletedForCourtApplication.class,
+            ProsecutionCaseListingNumberDecreased.class);
 
     @Mock
     private EventSource eventSource;
@@ -336,4 +339,32 @@ public class DeleteHearingCommandHandlerTest {
         return prosecutionCase;
     }
 
+    @Test
+    public void shouldHandleDecreaseListingNumber() throws EventStreamException {
+        final UUID caseId = UUID.randomUUID();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.decrease-listing-number-for-prosecution-case")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<DecreaseListingNumberForProsecutionCase> envelope = envelopeFrom(metadata, DecreaseListingNumberForProsecutionCase.decreaseListingNumberForProsecutionCase()
+                .withProsecutionCaseId(caseId)
+                .build());
+
+        when(caseAggregate.decreaseListingNumbers(any()))
+                .thenReturn(Stream.of(ProsecutionCaseListingNumberDecreased.prosecutionCaseListingNumberDecreased()
+                        .withProsecutionCaseId(caseId)
+                        .build()));
+
+        deleteHearingCommandHandler.handleDecreaseListingNumber(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        Optional<JsonEnvelope> prosecutionCaseListingNumberDecreasedEnvelope = envelopeStream
+                .filter(jsonEnvelope -> jsonEnvelope.metadata().name().equals("progression.event.prosecution-case-listing-number-decreased"))
+                .findAny();
+
+        assertTrue(prosecutionCaseListingNumberDecreasedEnvelope.isPresent());
+    }
 }

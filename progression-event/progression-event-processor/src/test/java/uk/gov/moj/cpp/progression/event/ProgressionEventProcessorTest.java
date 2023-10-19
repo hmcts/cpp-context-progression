@@ -22,6 +22,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INCOMPLETE;
+import static uk.gov.moj.cpp.progression.service.RefDataService.ID;
+import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
@@ -46,6 +48,7 @@ import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Plea;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
 import uk.gov.moj.cpp.progression.service.ListingService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer;
 
@@ -107,6 +110,8 @@ public class ProgressionEventProcessorTest {
     @Mock
     private ReferenceDataOffenceService referenceDataOffenceService;
     @Mock
+    private RefDataService referenceDataService;
+    @Mock
     private ProsecutionCase prosecutionCase;
 
     @Mock
@@ -123,7 +128,8 @@ public class ProgressionEventProcessorTest {
                 .add("welshlegislation", LEGISLATION_WELSH)
                 .add("title", "title")
                 .add("welshoffencetitle", WELSH_OFFENCE_TITLE)
-                .add("modeoftrial", modeoftrial)
+                .add("modeOfTrial", modeoftrial)
+                .add("offenceId", randomUUID().toString())
                 .add(CJS_OFFENCE_CODE, CJS_OFFENCE_CODE).build();
 
     }
@@ -208,7 +214,7 @@ public class ProgressionEventProcessorTest {
                 )));
     }
 
-    //@Test
+    @Test
     public void publishSendingSheetCompletedEvent() {
         final UUID courtCenterId = randomUUID();
 
@@ -246,6 +252,10 @@ public class ProgressionEventProcessorTest {
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), SendingSheetCompleted.class)).thenReturn(sendingSheetCompleted);
 
         when(referenceDataOffenceService.getOffenceByCjsCode(CJS_OFFENCE_CODE, event, requester)).thenReturn(of(getOffence("Indictable")));
+
+        when(referenceDataService.getNationalityByNationality(event, "US", requester))
+                .thenReturn(of(getNationalityObject()));
+
         progressionEventProcessor.publishSendingSheetCompletedEvent(event);
         // then
         final ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor =
@@ -263,6 +273,14 @@ public class ProgressionEventProcessorTest {
         verify(listingService).listCourtHearing(envelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
 
         assertThat(listCourtHearingArgumentCaptor.getValue().getHearings().get(0).getCourtCentre().getId(), is(courtCenterId));
+    }
+
+    private static JsonObject getNationalityObject() {
+        return Json.createObjectBuilder()
+                .add(NATIONALITY_CODE, "N12")
+                .add("NAME2", "UK")
+                .add(ID, randomUUID().toString())
+                .build();
     }
 
     @Test

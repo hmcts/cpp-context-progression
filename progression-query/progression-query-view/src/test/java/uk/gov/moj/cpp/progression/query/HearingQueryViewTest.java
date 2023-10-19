@@ -127,6 +127,24 @@ public class HearingQueryViewTest {
         assertThat(hearings.get(1).getId(), is(hearingId2));
     }
 
+    @Test
+    public void shouldReturnEmpty_FindHearingById() {
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("hearingId", randomUUID().toString())
+                .add("jurisdictionType", JurisdictionType.CROWN.toString())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.hearing").build(),
+                jsonObject);
+
+        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(jsonObject);
+
+        final JsonEnvelope response = hearingQueryView.getHearing(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().size(), is(0));
+    }
+
 }
 
 

@@ -9,6 +9,7 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.SendNotificationForApplication;
+import uk.gov.justice.core.courts.SendNotificationForApplicationIgnored;
 import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
 
 import java.util.List;
@@ -56,4 +57,22 @@ public class SendNotificationAggregateTest {
         assertThat(lEvents.get(0).getClass(), is(CoreMatchers.equalTo(SendNotificationForApplicationInitiated.class)));
     }
 
+    @Test
+    public void shouldIgnoreSendNotificationForApplication() {
+        final SendNotificationForApplication sendNotificationForApplication = SendNotificationForApplication.sendNotificationForApplication().withCourtApplication(
+                CourtApplication.courtApplication()
+                        .withSubject(CourtApplicationParty.courtApplicationParty()
+                                .withMasterDefendant(MasterDefendant.masterDefendant().withIsYouth(true).build())
+                                .build())
+                        .build())
+                .withIsWelshTranslationRequired(false)
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .build();
+        final Stream<Object> eventStream = aggregate.ignoreSendNotificationForApplication(sendNotificationForApplication);
+        List<Object> lEvents = eventStream.collect(Collectors.toList());
+        assertThat(lEvents.size(), is(1));
+        final Object object = lEvents.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.equalTo(SendNotificationForApplicationIgnored.class)));
+        assertThat(lEvents.get(0).getClass(), is(CoreMatchers.equalTo(SendNotificationForApplicationIgnored.class)));
+    }
 }

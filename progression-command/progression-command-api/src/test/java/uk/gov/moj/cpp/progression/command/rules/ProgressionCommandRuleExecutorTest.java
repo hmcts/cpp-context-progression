@@ -4,13 +4,22 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.adhocHearingCreatePermission;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getBCMCreatePermission;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getBCMEditPermission;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getBCMFinalisePermission;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getPTPHCreatePermission;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getPTPHEditPermission;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getPTPHFinalisePermission;
+import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.petFormFinaliseAccessPermission;
+import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.petFormGrantAccessPermission;
+import static uk.gov.moj.cpp.progression.command.api.accesscontrol.PermissionConstants.addFurtherInfoDefenceCotrPermissions;
+import static uk.gov.moj.cpp.progression.command.api.accesscontrol.PermissionConstants.archivePermissions;
+import static uk.gov.moj.cpp.progression.command.api.accesscontrol.PermissionConstants.changeDefendantsCotrPermissions;
+import static uk.gov.moj.cpp.progression.command.api.accesscontrol.PermissionConstants.createCotrPermissions;
 import static uk.gov.moj.cpp.progression.command.api.accesscontrol.PermissionConstants.getCaseCreatePermission;
+import static uk.gov.moj.cpp.progression.command.api.accesscontrol.PermissionConstants.serveDefendantCotrPermissions;
+import static uk.gov.moj.cpp.progression.command.api.accesscontrol.PermissionConstants.updateReviewNotesPermissions;
 
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
@@ -26,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlTest {
@@ -35,6 +45,9 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
     protected UserAndGroupProvider userAndGroupProvider;
     @Mock
     protected RbacProvider rbacProvider;
+
+    @Mock
+    private static Logger LOGGER;
 
     @Override
     protected Map<Class, Object> getProviderMocks() {
@@ -133,7 +146,16 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         UpdatePTPHDefendants("progression.update-form-defendants", getPTPHEditPermission()),
         RequestEditBCMForm("progression.request-edit-form", getBCMEditPermission()),
         RequestEditPTPHForm("progression.request-edit-form", getPTPHEditPermission()),
-        CourtProceedingsForApplication("progression.initiate-court-proceedings-for-application", getCaseCreatePermission());
+        CourtProceedingsForApplication("progression.initiate-court-proceedings-for-application", getCaseCreatePermission()),
+        ListNewHearing("progression.list-new-hearing", adhocHearingCreatePermission()),
+        UpdatePetForm("progression.update-pet-form-for-defendant", petFormGrantAccessPermission()),
+        FinalisePetForm("progression.finalise-pet-form",petFormFinaliseAccessPermission()),
+        UpdateReviewNotes("progression.update-review-notes", updateReviewNotesPermissions()),
+        AddFurtherInfoDefenceCotr("progression.add-further-info-defence-cotr", addFurtherInfoDefenceCotrPermissions()),
+        ChangeDefendantsCotr("progression.change-defendants-cotr", changeDefendantsCotrPermissions()),
+        ServeDefendantCotr("progression.serve-defendant-cotr", serveDefendantCotrPermissions()),
+        ArchiveCotr("progression.archive-cotr", archivePermissions()),
+        CreateCotr("progression.create-cotr", createCotrPermissions());
 
         private final String actionName;
         private final String[] allowedPermissions;

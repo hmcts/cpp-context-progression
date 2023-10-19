@@ -35,6 +35,10 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.event.nows.order.Address;
+import uk.gov.moj.cpp.progression.event.nows.order.Cases;
+import uk.gov.moj.cpp.progression.event.nows.order.Defendant;
+import uk.gov.moj.cpp.progression.event.nows.order.DefendantCaseOffences;
 import uk.gov.moj.cpp.progression.event.nows.order.NowsDocumentOrder;
 import uk.gov.moj.cpp.progression.service.utils.NowDocumentValidator;
 import uk.gov.moj.cpp.progression.test.TestTemplates;
@@ -42,7 +46,10 @@ import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
 
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -165,7 +172,30 @@ public class DocumentGeneratorServiceTest {
 
         final UUID userId = randomUUID();
 
-        final NowsDocumentOrder nowsDocumentOrder = NowsDocumentOrder.nowsDocumentOrder().build();
+        final Set<DefendantCaseOffences> defendantCaseOffences = new HashSet<>();
+        defendantCaseOffences.add(DefendantCaseOffences.defendantCaseOffences()
+                .withWording("Test")
+                .build());
+
+        final NowsDocumentOrder nowsDocumentOrder = NowsDocumentOrder.nowsDocumentOrder()
+                .withCourtCentreName("CourtCenter 1")
+                .withCases(Arrays.asList(Cases.cases()
+                        .withUrn("CaseUrn1")
+                        .withDefendantCaseOffences(defendantCaseOffences)
+                        .build()))
+                .withDefendant(Defendant.defendant()
+                        .withName("Defendant1")
+                        .withDateOfBirth("20-09-1978")
+                        .withAddress(Address.address()
+                                .withLine1("78")
+                                .withLine2("Address1")
+                                .withLine3("Address2")
+                                .withLine4("Address4")
+                                .withLine5("Address5")
+                                .withPostCode("XXXXX")
+                                .build())
+                        .build())
+                .build();
 
         when(objectToJsonObjectConverter.convert(nowsDocumentOrder)).thenReturn(nowsDocumentOrderJson);
 

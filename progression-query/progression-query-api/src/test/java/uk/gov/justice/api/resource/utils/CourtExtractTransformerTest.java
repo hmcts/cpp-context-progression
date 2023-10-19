@@ -500,7 +500,7 @@ public class CourtExtractTransformerTest {
         assertThat(courtExtractRequested.getParentGuardian().getAddress().getAddress1(), is(ADDRESS_1));
         assertThat(courtExtractRequested.getParentGuardian().getAddress().getAddress2(), is(ADDRESS_2));
         assertThat(courtExtractRequested.getParentGuardian().getAddress().getPostcode(), is(POST_CODE));
-        assertThat(courtExtractRequested.getParentGuardian().getName(), is(FIRST_NAME + " " + LAST_NAME));
+        assertThat(courtExtractRequested.getParentGuardian().getName(), is(FIRST_NAME + " D " + LAST_NAME));
 
         if (hearingDate != null) {
             //referralReason
@@ -1312,6 +1312,7 @@ public class CourtExtractTransformerTest {
         return Person.person()
                 .withDateOfBirth(DOB)
                 .withFirstName(FIRST_NAME)
+                .withMiddleName("D")
                 .withLastName(LAST_NAME)
                 .withAddress(createAddress())
                 .withTitle("MR")

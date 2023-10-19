@@ -17,20 +17,31 @@ import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
 import uk.gov.justice.core.courts.BreachApplicationsToBeAddedToHearing;
 import uk.gov.justice.core.courts.BreachedApplications;
+import uk.gov.justice.core.courts.ConfirmedHearing;
+import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
+import uk.gov.justice.core.courts.DefendantRequestToExtendHearingCreated;
+import uk.gov.justice.core.courts.DefendantUpdate;
+import uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated;
+import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingApplicationRequestCreated;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingDefenceCounselAdded;
 import uk.gov.justice.core.courts.HearingDefenceCounselRemoved;
 import uk.gov.justice.core.courts.HearingDefenceCounselUpdated;
+import uk.gov.justice.core.courts.HearingDefendantRequestCreated;
+import uk.gov.justice.core.courts.HearingDefendantUpdated;
 import uk.gov.justice.core.courts.HearingExtendedProcessed;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingLanguage;
@@ -39,10 +50,13 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingOffencesUpdated;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
+import uk.gov.justice.core.courts.HearingUpdatedProcessed;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LaaReference;
+import uk.gov.justice.core.courts.ListDefendantRequest;
+import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ListingNumberUpdated;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.MasterDefendant;
@@ -51,10 +65,16 @@ import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.PleaModel;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantHearingResultUpdated;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2;
 import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.justice.core.courts.SharedResultLine;
+import uk.gov.justice.core.courts.SummonsDataPrepared;
+import uk.gov.justice.core.courts.UnscheduledHearingListingRequested;
+import uk.gov.justice.core.courts.UnscheduledHearingRecorded;
 import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
 import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.core.courts.VerdictType;
@@ -86,6 +106,7 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.Lists;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -2121,5 +2142,299 @@ public class HearingAggregateTest {
                         .build()))
                 .withId(UUID.randomUUID())
                 .build();
+    }
+
+    @Test
+    public void shouldCreateHearingDefendantRequest() {
+        final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
+        listDefendantRequests.add(ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(randomUUID())
+                .withDefendantId(randomUUID())
+                .build());
+
+        final List<Object> eventStream = hearingAggregate.createHearingDefendantRequest(listDefendantRequests).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final HearingDefendantRequestCreated hearingDefendantRequestCreated = (HearingDefendantRequestCreated) eventStream.get(0);
+        assertThat(hearingDefendantRequestCreated.getDefendantRequests().size(), is(1));
+    }
+
+    @Test
+    public void shouldUpdateDefendantHearingResult() {
+        final UUID hearingId  = randomUUID();
+        final List<SharedResultLine> sharedResultLines = new ArrayList<>();
+        sharedResultLines.add(SharedResultLine.sharedResultLine()
+                .build());
+
+        final List<Object> eventStream = hearingAggregate.updateDefendantHearingResult(hearingId, sharedResultLines).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final ProsecutionCaseDefendantHearingResultUpdated prosecutionCaseDefendantHearingResultUpdated = (ProsecutionCaseDefendantHearingResultUpdated) eventStream.get(0);
+        assertThat(prosecutionCaseDefendantHearingResultUpdated.getHearingId(), is(hearingId));
+    }
+
+    @Test
+    public void shouldCreateHearingApplicationRequest() {
+        final List<SharedResultLine> sharedResultLines = new ArrayList<>();
+        sharedResultLines.add(SharedResultLine.sharedResultLine()
+                .build());
+
+        final List<CourtApplicationPartyListingNeeds> list = new ArrayList<>();
+        list.add(CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                .withCourtApplicationId(randomUUID())
+                .build());
+
+        final List<Object> eventStream = hearingAggregate.createHearingApplicationRequest(list).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final HearingApplicationRequestCreated hearingApplicationRequestCreated = (HearingApplicationRequestCreated) eventStream.get(0);
+        assertThat(hearingApplicationRequestCreated.getApplicationRequests().size(), is(1));
+    }
+
+    @Test
+    public void shouldCreateSummonsData(){
+        final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
+        listDefendantRequests.add(ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(randomUUID())
+                .withDefendantId(randomUUID())
+                .build());
+
+        hearingAggregate.createHearingDefendantRequest(listDefendantRequests).collect(toList());
+
+        final List<SharedResultLine> sharedResultLines = new ArrayList<>();
+        sharedResultLines.add(SharedResultLine.sharedResultLine()
+                .build());
+
+        final List<CourtApplicationPartyListingNeeds> list = new ArrayList<>();
+        list.add(CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds()
+                .withCourtApplicationId(randomUUID())
+                .build());
+
+        hearingAggregate.createHearingApplicationRequest(list).collect(toList());
+
+        final List<ConfirmedProsecutionCaseId> confirmedProsecutionCaseIds = new ArrayList<>();
+        final List<UUID> confirmedApplicationIds = new ArrayList<>();
+
+        final Stream<Object> eventStream = hearingAggregate.createSummonsData(CourtCentre.courtCentre().build(),
+                ZonedDateTime.now(),confirmedProsecutionCaseIds, confirmedApplicationIds);
+
+        final List events = eventStream.collect(toList());
+        assertThat(events.get(0), Matchers.instanceOf(SummonsDataPrepared.class));
+    }
+
+    @Test
+    public void shouldEnrichInitiateHearing(){
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+        final Stream<Object> eventStream = hearingAggregate.enrichInitiateHearing(hearing);
+        final List events = eventStream.collect(toList());
+        assertThat(events.get(0), Matchers.instanceOf(HearingInitiateEnriched.class));
+    }
+
+    @Test
+    public void shouldUpdateListDefendantRequest(){
+        final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
+        listDefendantRequests.add(ListDefendantRequest.listDefendantRequest()
+                .withDefendantId(randomUUID())
+                .build());
+        ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing().build();
+        final Stream<Object> eventStream = hearingAggregate.updateListDefendantRequest(listDefendantRequests,confirmedHearing);
+        final List events = eventStream.collect(toList());
+        assertThat(events.get(0), Matchers.instanceOf(ExtendHearingDefendantRequestUpdated.class));
+    }
+
+    @Test
+    public void shouldCreateHearingForApplication(){
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+        final List<ListHearingRequest> listHearingRequests = new ArrayList<>();
+        listHearingRequests.add(ListHearingRequest.listHearingRequest()
+                .withHearingType(HearingType.hearingType()
+                        .withId(randomUUID())
+                        .build())
+                .build());
+
+        final Stream<Object> eventStream = hearingAggregate.createHearingForApplication(hearing,HearingListingStatus.HEARING_INITIALISED, listHearingRequests);
+        final List events = eventStream.collect(toList());
+        assertThat(events.get(0), Matchers.instanceOf(HearingForApplicationCreatedV2.class));
+    }
+
+    @Test
+    public void shouldAssignDefendantRequestFromCurrentHearingToExtendHearing() {
+        final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
+        listDefendantRequests.add(ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(randomUUID())
+                .withDefendantId(randomUUID())
+                .build());
+
+        hearingAggregate.createHearingDefendantRequest(listDefendantRequests).collect(toList());
+        final Stream<Object> eventStream =  hearingAggregate.assignDefendantRequestFromCurrentHearingToExtendHearing(randomUUID(),randomUUID());
+
+        final List<?> eventList = eventStream.collect(toList());
+        assertThat(eventList.get(0), instanceOf(DefendantRequestFromCurrentHearingToExtendHearingCreated.class));
+    }
+
+    @Test
+    public void shouldAssignDefendantRequestToExtendHearing() {
+        final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
+        listDefendantRequests.add(ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(randomUUID())
+                .withDefendantId(randomUUID())
+                .build());
+        final Stream<Object> eventStream =  hearingAggregate.assignDefendantRequestToExtendHearing(randomUUID(),listDefendantRequests);
+
+        final List<?> eventList = eventStream.collect(toList());
+        assertThat(eventList.get(0), instanceOf(DefendantRequestToExtendHearingCreated.class));
+    }
+
+    @Test
+    public void shouldNotAssignDefendantRequestFromCurrentHearingToExtendHearing() {
+        final Stream<Object> eventStream =  hearingAggregate.assignDefendantRequestFromCurrentHearingToExtendHearing(randomUUID(),randomUUID());
+
+        final List<?> eventList = eventStream.collect(toList());
+        assertThat(eventList.size(), is(0));
+    }
+
+    @Test
+    public void shouldListUnscheduledHearing() {
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+        final Stream<Object> eventStream =  hearingAggregate.listUnscheduledHearing(hearing);
+
+        final List<?> eventList = eventStream.collect(toList());
+        assertThat(eventList.get(0), instanceOf(UnscheduledHearingListingRequested.class));
+    }
+
+    @Test
+    public void shouldRecordUnscheduledHearing() {
+        final List<UUID> uuidList = new ArrayList<>();
+        uuidList.add(randomUUID());
+        final Stream<Object> eventStream =  hearingAggregate.recordUnscheduledHearing(randomUUID(), uuidList);
+
+        final List<?> eventList = eventStream.collect(toList());
+        assertThat(eventList.get(0), instanceOf(UnscheduledHearingRecorded.class));
+    }
+
+    @Test
+    public void shouldProcessHearingUpdated() {
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing().build();
+        final Stream<Object> eventStream =  hearingAggregate.processHearingUpdated(confirmedHearing, hearing);
+
+        final List<?> eventList = eventStream.collect(toList());
+        assertThat(eventList.get(0), instanceOf(HearingUpdatedProcessed.class));
+    }
+
+    @Test
+    public void shouldProcessHearingExtended() {
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+
+        hearingAggregate.apply(createHearingResulted(hearing));
+
+        final HearingListingNeeds hearingRequest = HearingListingNeeds.hearingListingNeeds().build();
+        final List<UUID> shadowListedOffences = new ArrayList<>();
+        shadowListedOffences.add(randomUUID());
+        final Stream<Object> eventStream =  hearingAggregate.processHearingExtended(hearingRequest, shadowListedOffences);
+
+        final List<?> eventList = eventStream.collect(toList());
+        assertThat(eventList.get(0), instanceOf(HearingExtendedProcessed.class));
+    }
+
+    @Test
+    public void shouldCreateListDefendantRequest() {
+        final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
+        listDefendantRequests.add(ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(randomUUID())
+                .withDefendantId(randomUUID())
+                .build());
+
+        hearingAggregate.createHearingDefendantRequest(listDefendantRequests).collect(toList());
+        final Stream<Object> eventStream =  hearingAggregate.createListDefendantRequest(ConfirmedHearing.confirmedHearing().build());
+
+        final List<?> eventList = eventStream.collect(toList());
+        assertThat(eventList.get(0), instanceOf(ExtendHearingDefendantRequestCreated.class));
+    }
+
+    @Test
+    public void shouldNotRaiseRecordUpdateMatchedDefendantDetailRequest() {
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+
+        hearingAggregate.apply(createHearingResulted(hearing));
+
+        final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate()
+                .withId(randomUUID())
+                .withProsecutionCaseId(randomUUID())
+                .build();
+        final Stream<Object> eventStream =  hearingAggregate.recordUpdateMatchedDefendantDetailRequest(defendantUpdate);
+
+        final List<?> eventList = eventStream.collect(toList());
+        assertThat(eventList.size(), is(0));
+    }
+
+    @Test
+    public void shouldRecordUpdateMatchedDefendantDetailRequest() {
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+
+        hearingAggregate.apply(createHearingResulted(hearing));
+
+        final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate()
+                .withId(hearing.getProsecutionCases().get(0).getDefendants().get(0).getId())
+                .withProsecutionCaseId(randomUUID())
+                .build();
+        final Stream<Object> eventStream =  hearingAggregate.recordUpdateMatchedDefendantDetailRequest(defendantUpdate);
+
+        final List<?> eventList = eventStream.collect(toList());
+        assertThat(eventList.get(0), instanceOf(ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2.class));
+    }
+
+    @Test
+    public void shouldEnrichInitiateHearingWhenHearingDefendantRequestIsPresent(){
+        final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
+        listDefendantRequests.add(ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(randomUUID())
+                .withDefendantId(randomUUID())
+                .build());
+
+        hearingAggregate.createHearingDefendantRequest(listDefendantRequests).collect(toList());
+
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+        final Stream<Object> eventStream = hearingAggregate.enrichInitiateHearing(hearing);
+        final List events = eventStream.collect(toList());
+        assertThat(events.get(0), Matchers.instanceOf(HearingInitiateEnriched.class));
+    }
+
+    @Test
+    public void shouldUpdateDefendant(){
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+        hearingAggregate.enrichInitiateHearing(hearing);
+
+        final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().build();
+        final Stream<Object> eventStream = hearingAggregate.updateDefendant(randomUUID(),defendantUpdate,false);
+        final List events = eventStream.collect(toList());
+        assertThat(events.get(0), Matchers.instanceOf(HearingDefendantUpdated.class));
     }
 }

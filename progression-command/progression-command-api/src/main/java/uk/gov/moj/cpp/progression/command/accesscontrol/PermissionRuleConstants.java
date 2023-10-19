@@ -19,7 +19,6 @@ public class PermissionRuleConstants {
     private static final String BCM = "BCM";
     private static final String PTPH = "PTPH";
     private static final String CREATE = "Create";
-    private static final String VIEW = "View";
     private static final String EDIT = "Edit";
     private static final String FINALISE = "Finalise";
     private static final String OBJECT = "object";
@@ -60,14 +59,6 @@ public class PermissionRuleConstants {
 
     public static String getPTPHEditPermission() {
         return buildPermissions(PTPH, EDIT);
-    }
-
-    public static String getBCMViewPermission() {
-        return buildPermissions(BCM, VIEW);
-    }
-
-    public static String getPTPHViewPermission() {
-        return buildPermissions(PTPH, VIEW);
     }
 
     private static String buildPermissions(String object, String action) {

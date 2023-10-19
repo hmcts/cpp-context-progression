@@ -20,8 +20,8 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
-import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdated;
+import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdatedV2;
 import uk.gov.moj.cpp.progression.events.MatchedDefendants;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
@@ -273,5 +273,47 @@ public class DefendantMatchingEventProcessorTest {
         return JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.defendant-matched"),
                 objectToJsonObjectConverter.convert(masterDefendantIdUpdated));
+    }
+
+    @Test
+    public void handleMasterDefendantIdUpdatedEventV2() {
+        final UUID incomingDefendantId = randomUUID();
+        final UUID incomingProsecutionCaseId = randomUUID();
+        final UUID matchedDefendantId = randomUUID();
+        final UUID matchedProsecutionCaseId = randomUUID();
+        final UUID matchedMasterDefendantId = randomUUID();
+        final ZonedDateTime courtProceedingsInitiatedDate = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z");
+
+        final ProsecutionCase incomingProsecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(incomingProsecutionCaseId)
+                .withDefendants(createDefendants(incomingDefendantId))
+                .build();
+
+        final JsonObject incomingProsecutionCaseJson = Json.createObjectBuilder()
+                .add("prosecutionCase", objectToJsonObjectConverter.convert(incomingProsecutionCase))
+                .build();
+        final Optional<JsonObject> incomingProsecutionCaseJsonOptional = Optional.of(incomingProsecutionCaseJson);
+
+        final MasterDefendantIdUpdatedV2 masterDefendantIdUpdated = MasterDefendantIdUpdatedV2.masterDefendantIdUpdatedV2()
+                .withProsecutionCaseId(incomingProsecutionCaseId)
+                .withDefendant(Defendant.defendant()
+                        .withId(randomUUID())
+                        .build())
+                .withMatchedDefendants(Arrays.asList(MatchedDefendants.matchedDefendants()
+                        .withDefendantId(matchedDefendantId)
+                        .withProsecutionCaseId(matchedProsecutionCaseId)
+                        .withMasterDefendantId(matchedMasterDefendantId)
+                        .withCourtProceedingsInitiated(courtProceedingsInitiatedDate)
+                        .build()))
+                .build();
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(incomingProsecutionCaseJsonOptional);
+
+        defendantMatchingEventProcessor.handleMasterDefendantIdUpdatedEventV2(JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.defendant-matched"),
+                objectToJsonObjectConverter.convert(masterDefendantIdUpdated)));
+
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().payload().getJsonObject("defendant").getString("masterDefendantId"), is(matchedMasterDefendantId.toString()));
     }
 }

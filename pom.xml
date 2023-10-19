@@ -36,14 +36,26 @@
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
         <sonar.exclusions>
-            **/uk/gov/moj/cpp/progression/domain/*.java,
-            **/uk/gov/moj/cpp/progression/domain/**/*.java,
-            **/uk/gov/moj/cpp/progression/test/*.java,
-            **/uk/gov/moj/cpp/progression/test/matchers/*.java,
+            **/uk/gov/moj/cpp/progression/domain/**/*,
+            **/uk/gov/moj/cpp/progression/command/enforcement/**/*,
+            **/uk/gov/moj/cpp/progression/command/defendant/**/*,
+            **/uk/gov/moj/cpp/progression/test/**/*,
+            **/uk/gov/moj/cpp/progression/test/matchers/**/*,
             **/uk/gov/moj/cpp/progression/CreateJsonSampleUtil.java,
-            **/uk/gov/moj/cpp/progression/query/view/response/nowresponse/*.java,
-            **/uk/gov/moj/cpp/progression/query/view/response/*.java,
-            **/query/view/progression/ctl/model/*.java
+            **/uk/gov/moj/cpp/progression/query/view/response/nowresponse/**/*,
+            **/uk/gov/moj/cpp/progression/query/view/response/**/*,
+            **/query/view/progression/ctl/model/**/*,
+            **/uk/gov/moj/cpp/progression/event/nows/order/**/*,
+            **/uk/gov/moj/cpp/progression/persistence/entity/**/*,
+            **/uk/gov/moj/cpp/prosecutioncase/persistence/entity/**/*,
+            **/uk/gov/moj/cpp/progression/processor/exceptions/**/*,
+            **/uk/gov/moj/cpp/progression/service/pojo/**/*,
+            **/uk/gov/moj/cpp/progression/service/dto/**/*,
+            **/uk/gov/moj/cpp/progression/service/payloads/**/*,
+            **/uk/gov/justice/api/resource/utils/payload/UserGroupDetails.java,
+            **/uk/gov/moj/cpp/progression/service/ApplicationParameters.java,
+            **/uk/gov/justice/services/domain/CaseDocuments.java,
+            **/uk/gov/moj/cpp/progression/value/object/**/*
         </sonar.exclusions>
         <cpp.platform-libraries.version>8.3.21</cpp.platform-libraries.version>
         <file-alfresco.version>2.3.0</file-alfresco.version>

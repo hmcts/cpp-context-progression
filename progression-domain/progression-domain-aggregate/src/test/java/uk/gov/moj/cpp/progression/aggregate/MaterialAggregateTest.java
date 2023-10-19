@@ -4,10 +4,14 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 
+import uk.gov.justice.core.courts.CaseSubjects;
 import uk.gov.justice.core.courts.EnforcementAcknowledgmentError;
+import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.core.courts.NowDocumentRequestToBeAcknowledged;
 import uk.gov.justice.core.courts.NowDocumentRequested;
+import uk.gov.justice.core.courts.NowsMaterialRequestRecorded;
 import uk.gov.justice.core.courts.NowsRequestWithAccountNumberIgnored;
 import uk.gov.justice.core.courts.NowsRequestWithAccountNumberUpdated;
 import uk.gov.justice.core.courts.nowdocument.FinancialOrderDetails;
@@ -17,16 +21,19 @@ import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestSucceeded;
+import uk.gov.moj.cpp.progression.domain.event.MaterialStatusUpdateIgnored;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequestNotSent;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
@@ -174,5 +181,27 @@ public class MaterialAggregateTest {
 
     private Notification createNotification(final UUID notificationId, final UUID templateId, final String sendToAddress, final UUID materialId) {
         return new Notification(notificationId, templateId, sendToAddress, "replyTo@hmcts.net", Collections.emptyMap(), materialId.toString());
+    }
+
+    @Test
+    public void shouldRecordNowsMaterialRequest(){
+        final Stream<Object> eventStream = aggregate.create(MaterialDetails.materialDetails().build());
+
+        final List events = eventStream.collect(toList());
+        assertThat(events.get(0), instanceOf(NowsMaterialRequestRecorded.class));
+    }
+
+    @Test
+    public void shouldReturnNowsMaterialStatusIgnored() {
+        final List<CaseSubjects> caseSubjects = new ArrayList<>();
+        caseSubjects.add(CaseSubjects.caseSubjects()
+                .withProsecutingAuthorityOUCode("ouCode")
+                .build());
+        final List<String> cpsDefendantIds = new ArrayList<>();
+        cpsDefendantIds.add("defId1");
+
+        final List<Object> eventStream = aggregate.nowsMaterialStatusUpdated(randomUUID(), "status", caseSubjects, cpsDefendantIds).collect(toList());
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0).getClass(), is(CoreMatchers.equalTo(MaterialStatusUpdateIgnored.class)));
     }
 }

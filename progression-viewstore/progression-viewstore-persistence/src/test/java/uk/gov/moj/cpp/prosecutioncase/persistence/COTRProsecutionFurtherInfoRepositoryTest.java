@@ -32,8 +32,17 @@ public class COTRProsecutionFurtherInfoRepositoryTest {
         final ZonedDateTime addedOn = ZonedDateTime.now();
 
         COTRProsecutionFurtherInfoEntity entity = new COTRProsecutionFurtherInfoEntity(id, cotrId, furtherInformation, infoAddedBy, addedOn, Boolean.TRUE, "Erica");
-
         cotrProsecutionFurtherInfoRepository.save(entity);
+
+        COTRProsecutionFurtherInfoEntity entity1 = new COTRProsecutionFurtherInfoEntity();
+        entity1.setId(id);
+        entity1.setCotrId(cotrId);
+        entity1.setFurtherInformation(furtherInformation);
+        entity1.setInfoAddedBy(infoAddedBy);
+        entity1.setAddedOn(addedOn);
+        entity1.setIsCertificationReady(Boolean.TRUE);
+        entity1.setInfoAddedByName("Erica");
+        cotrProsecutionFurtherInfoRepository.save(entity1);
 
         final COTRProsecutionFurtherInfoEntity cotrProsecutionFurtherInfoEntity = cotrProsecutionFurtherInfoRepository.findBy(id);
         verifyCOTRProsecutionFurtherInfo(cotrProsecutionFurtherInfoEntity, entity);

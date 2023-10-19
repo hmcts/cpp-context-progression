@@ -7,6 +7,7 @@ import static java.time.ZonedDateTime.now;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -37,12 +38,17 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
+import uk.gov.moj.cpp.progression.domain.EmailNotification;
+import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestSucceeded;
+import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -120,7 +126,8 @@ public class NotificationHandlerTest {
             PrintRequested.class,
             NotificationRequestFailed.class,
             NotificationRequestSucceeded.class,
-            NotificationRequestAccepted.class);
+            NotificationRequestAccepted.class,
+            EmailRequested.class);
 
     @Captor
     private ArgumentCaptor<Stream<JsonEnvelope>> eventStreamCaptor;
@@ -568,6 +575,52 @@ public class NotificationHandlerTest {
                                 .thatHandles("progression.command.print"),
                         method("recordNotificationRequestFailure")
                                 .thatHandles("progression.command.record-notification-request-failure")
+                )));
+    }
+
+    @Test
+    public void shouldPrintEmail() throws EventStreamException {
+
+        final UUID applicationId = randomUUID();
+
+        final JsonEnvelope emailResultOrder = envelopeFrom(
+                metadataWithRandomUUID("progression.command.email"),
+                createObjectBuilder()
+                        .add("caseId", caseId.toString())
+                        .add("applicationId", applicationId.toString())
+                        .add("materialId", materialId.toString())
+                        .add("notifications", createArrayBuilder().add(createObjectBuilder()
+                                .add("notificationId", randomUUID().toString())
+                                .add("templateId", randomUUID().toString())
+                                .add("sendToAddress", "sendToAddress")
+                                .build()))
+                        .build());
+
+        final List<Notification> notifications = new ArrayList<>();
+
+        final EmailNotification emailNotification = new EmailNotification(caseId,materialId, null,notifications);
+
+        final EmailRequested emailRequested = new EmailRequested(caseId,materialId, applicationId,notifications);
+
+        when(converter.convert(emailResultOrder.payloadAsJsonObject(), EmailNotification.class)).thenReturn(emailNotification);
+
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(caseAggregate.recordEmailRequest(caseId, materialId,notifications)).thenReturn(Stream.of(emailRequested));
+
+        notificationHandler.email(emailResultOrder);
+
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(emailResultOrder)
+                                        .withName("progression.event.email-requested"),
+                                payloadIsJson(
+                                        allOf(
+                                                withJsonPath("$.caseId", is(caseId.toString())),
+                                                withJsonPath("$.materialId", is(materialId.toString()))
+                                        )
+                                ))
                 )));
     }
 

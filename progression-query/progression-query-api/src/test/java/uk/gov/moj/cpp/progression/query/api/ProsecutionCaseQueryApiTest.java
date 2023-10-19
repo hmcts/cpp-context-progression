@@ -236,4 +236,22 @@ public class ProsecutionCaseQueryApiTest {
 
         assertThat(actualCotrCaseResponse.payloadAsJsonObject(), equalTo(expectedCotrCaseResponse));
     }
+
+    @Test
+    public void shouldHandleSearchProsecutionAuthorityIdByCaseId() {
+        when(prosecutionCaseQuery.searchProsecutionAuthorityId(query)).thenReturn(response);
+        assertThat(prosecutionCaseQueryApi.searchProsecutionAuthorityIdByCaseId(query), equalTo(response));
+    }
+
+    @Test
+    public void shouldHandleSearchCaseByUrn() {
+        when(prosecutionCaseQuery.searchCaseByCaseUrn(query)).thenReturn(response);
+        assertThat(prosecutionCaseQueryApi.searchCaseByUrn(query), equalTo(response));
+    }
+
+    @Test
+    public void shouldHandleSearchCaseExistsByCaseUrn() {
+        when(prosecutionCaseQuery.caseExistsByCaseUrn(query)).thenReturn(response);
+        assertThat(prosecutionCaseQueryApi.searchCaseExistsByCaseUrn(query), equalTo(response));
+    }
 }

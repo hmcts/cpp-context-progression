@@ -4,8 +4,10 @@ import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.FormCreated.formCreated;
 import static uk.gov.justice.core.courts.FormDefendants.formDefendants;
 import static uk.gov.justice.core.courts.FormDefendantsUpdated.formDefendantsUpdated;
@@ -23,6 +25,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantOffence;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantOffenceRepository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -155,5 +159,43 @@ public class FormEventListenerTest {
 
         assertThat(caseDefendantOffence.getCaseId(), is(caseId));
         assertThat(caseDefendantOffence.getDefendantId(), is(defendantId));
+    }
+
+    @Test
+    public void shouldUpdateForm() {
+
+        final UUID courtFormId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final FormCreated event = formCreated()
+                .withCourtFormId(courtFormId)
+                .withCaseId(caseId)
+                .withFormDefendants(asList(formDefendants()
+                        .withDefendantId(defendantId)
+                        .build()))
+                .withFormId(randomUUID())
+                .withFormData("Test Data")
+                .withFormType(FormType.BCM)
+                .withUserId(randomUUID())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUID("progression.event.form-created"),
+                objectToJsonObjectConverter.convert(event));
+        final List<CaseDefendantOffence> caseDefendantOffences = new ArrayList<>();
+        caseDefendantOffences.add(new CaseDefendantOffence(randomUUID(), defendantId, caseId, courtFormId,FormType.BCM));
+        when(caseDefendantOffenceRepository.findByCourtFormId(any())).thenReturn(caseDefendantOffences);
+
+        formEventListener.formUpdated(jsonEnvelope);
+
+        verify(this.caseDefendantOffenceRepository, times(1)).save(caseDefendantOffenceArgumentCaptor.capture());
+
+        final CaseDefendantOffence caseDefendantOffence = caseDefendantOffenceArgumentCaptor.getValue();
+
+        assertThat(caseDefendantOffence.getCaseId(), is(caseId));
+        assertThat(caseDefendantOffence.getDefendantId(), is(defendantId));
+        assertThat(caseDefendantOffence.getFormType(), is(FormType.BCM));
+
     }
 }

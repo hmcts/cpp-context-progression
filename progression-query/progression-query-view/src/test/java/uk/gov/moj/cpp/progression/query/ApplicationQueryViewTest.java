@@ -281,8 +281,14 @@ public class ApplicationQueryViewTest {
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setPayload("{\"id\": \"9aec6dcc-564c-11ea-8e2d-0242ac130003\"}");
 
+        final List<Offence> offences = new ArrayList<>();
+        offences.add(Offence.offence()
+                .withId(randomUUID())
+                .build());
+
         final CourtApplicationCase courtApplicationCase = CourtApplicationCase.courtApplicationCase()
                 .withProsecutionCaseId(prosecutionCaseId)
+                .withOffences(offences)
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
                 .build();
 

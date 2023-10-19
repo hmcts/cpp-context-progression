@@ -45,7 +45,15 @@ public class COTRDefendantRepositoryTest {
         final COTRDefendantEntity cotrDetailsEntity1 = cotrDefendantRepository.findBy(id);
         verifyCOTRDefendant(cotrDetailsEntity1, entity1);
 
-        COTRDefendantEntity entity2 = new COTRDefendantEntity(id, cotrId, defendantId2, dNumber, defendantForm, servedBy, servedOn,"name");
+        COTRDefendantEntity entity2 = new COTRDefendantEntity();
+        entity2.setId(id);
+        entity2.setCotrId(cotrId);
+        entity2.setDefendantId(defendantId2);
+        entity2.setdNumber(dNumber);
+        entity2.setDefendantForm(defendantForm);
+        entity2.setServedBy(servedBy);
+        entity2.setServedOn(servedOn);
+        entity2.setServedByName("name");
 
         cotrDefendantRepository.save(entity2);
 

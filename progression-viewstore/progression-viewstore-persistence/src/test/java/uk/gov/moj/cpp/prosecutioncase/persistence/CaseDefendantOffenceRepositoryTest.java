@@ -10,6 +10,8 @@ import uk.gov.justice.core.courts.FormType;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantOffence;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantOffenceRepository;
 
+import java.time.ZonedDateTime;
+
 import javax.inject.Inject;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
@@ -28,11 +30,21 @@ public class CaseDefendantOffenceRepositoryTest {
 
         final CaseDefendantOffence persisted = repository.save(caseDefendantOffence);
         assertPersistedEntity(persisted, caseDefendantOffence);
+
+        final CaseDefendantOffence caseDefendantOffence1 = new CaseDefendantOffence(randomUUID(), randomUUID(), randomUUID(), randomUUID(), FormType.BCM, ZonedDateTime.now());
+        final CaseDefendantOffence persisted1 = repository.save(caseDefendantOffence1);
+        assertPersistedEntity(persisted1, caseDefendantOffence1);
     }
 
     @Test
     public void shouldSaveAndReadCaseDefendantOffenceForBCMWithNullOffenceId() {
-        final CaseDefendantOffence caseDefendantOffence = new CaseDefendantOffence(randomUUID(), randomUUID(), randomUUID(), randomUUID(), FormType.BCM);
+        final CaseDefendantOffence caseDefendantOffence = new CaseDefendantOffence();
+        caseDefendantOffence.setId(randomUUID());
+        caseDefendantOffence.setCaseId(randomUUID());
+        caseDefendantOffence.setCourtFormId(randomUUID());
+        caseDefendantOffence.setDefendantId(randomUUID());
+        caseDefendantOffence.setFormType(FormType.BCM);
+        caseDefendantOffence.setLastUpdated(ZonedDateTime.now());
 
         final CaseDefendantOffence persisted = repository.save(caseDefendantOffence);
         assertPersistedEntity(persisted, caseDefendantOffence);

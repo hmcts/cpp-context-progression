@@ -5,6 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -29,13 +30,17 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.command.handler.HandleOnlinePleaDocumentCreation;
 import uk.gov.moj.cpp.progression.events.NotificationSentForPleaDocument;
+import uk.gov.moj.cpp.progression.events.OnlinePleaPcqVisitedRecorded;
 import uk.gov.moj.cpp.progression.events.OnlinePleaRecorded;
-import uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
+import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnlinePcqVisited;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,7 +54,8 @@ public class PleadOnlineHandlerTest {
 
     @Spy
     private final Enveloper enveloper = createEnveloperWithEvents(OnlinePleaRecorded.class,
-            NotificationSentForPleaDocument.class);
+            NotificationSentForPleaDocument.class,
+            OnlinePleaPcqVisitedRecorded.class);
 
     @Mock
     private EventSource eventSource;
@@ -148,5 +154,36 @@ public class PleadOnlineHandlerTest {
                         ))
         ));
 
+    }
+
+    @Test
+    public void shouldHandlePleadOnlinePcqVisitedRequest() throws EventStreamException {
+        final PleadOnlinePcqVisited pleadOnlinePcqVisited = PleadOnlinePcqVisited.pleadOnlinePcqVisited()
+                .withCaseId(randomUUID())
+                .build();
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.handler.update-hearing-defence-counsel")
+                .withId(randomUUID())
+                .build();
+        final Envelope<PleadOnlinePcqVisited> envelope = envelopeFrom(metadata, pleadOnlinePcqVisited);
+
+        when(caseAggregate.createOnlinePleaPcqVisited(any())).thenReturn(Stream.of(
+                OnlinePleaPcqVisitedRecorded.onlinePleaPcqVisitedRecorded()
+                        .withCaseId(pleadOnlinePcqVisited.getCaseId())
+                        .withPleadOnlinePcqVisited(pleadOnlinePcqVisited)
+                        .build()
+        ));
+
+        pleadOnlineHandler.handlePleadOnlinePcqVisitedRequest(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        final List<Envelope> envelopes = envelopeStream.map(value -> (Envelope) value).collect(Collectors.toList());
+        final JsonEnvelope  resultEnvelope = (JsonEnvelope)envelopes.stream().filter(
+                env -> env.metadata().name().equals("progression.event.online-plea-pcq-visited-recorded")).findFirst().get();
+
+        MatcherAssert.assertThat(resultEnvelope.payloadAsJsonObject()
+                , notNullValue());
     }
 }

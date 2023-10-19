@@ -38,6 +38,12 @@ public class CaseCpsProsecutorRepositoryTest {
     public void setUp(){
         caseCpsProsecutorEntity = new CaseCpsProsecutorEntity(ID, PROSECUTOR, OLD_PROSECUTOR);
         caseCpsProsecutorRepository.save(caseCpsProsecutorEntity);
+
+        final CaseCpsProsecutorEntity caseCpsProsecutorEntity1 = new CaseCpsProsecutorEntity();
+        caseCpsProsecutorEntity1.setCaseId(UUID.randomUUID());
+        caseCpsProsecutorEntity1.setCpsProsecutor("CpsProsecutor");
+        caseCpsProsecutorEntity1.setOldCpsProsecutor("OldCpsProsecutor");
+        caseCpsProsecutorRepository.save(caseCpsProsecutorEntity1);
     }
 
     @Test

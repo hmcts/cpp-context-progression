@@ -10,6 +10,7 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
+import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -42,6 +43,9 @@ public class TestHelper {
     public static CourtApplication buildCourtapplicationWithOffenceUnderCase(final UUID courtApplicationId, final UUID offenceId, final LocalDate convictionDate){
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
+                .withType(CourtApplicationType.courtApplicationType()
+                        .withLinkType(LinkType.FIRST_HEARING)
+                        .build())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
                                 .withProsecutionAuthorityId(randomUUID())
@@ -54,6 +58,9 @@ public class TestHelper {
     public static CourtApplication buildCourtapplicationWithOffenceUnderCourtOrder(final UUID courtApplicationId, final UUID offenceId,  final LocalDate convictionDate){
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
+                .withType(CourtApplicationType.courtApplicationType()
+                        .withLinkType(LinkType.STANDALONE)
+                        .build())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
                                 .withProsecutionAuthorityId(randomUUID())

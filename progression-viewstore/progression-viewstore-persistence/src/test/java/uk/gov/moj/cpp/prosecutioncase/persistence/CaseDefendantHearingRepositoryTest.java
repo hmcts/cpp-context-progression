@@ -12,7 +12,9 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingResultLineEntity
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -46,6 +48,33 @@ public class CaseDefendantHearingRepositoryTest {
     public void setUp() {
         //given
         saveEntity(HEARING_ID, CASE_ID, DEFENDANT_ID, RESULT_ID);
+
+        final CaseDefendantHearingKey caseDefendantHearingKey = new CaseDefendantHearingKey();
+        caseDefendantHearingKey.setCaseId(randomUUID());
+        caseDefendantHearingKey.setDefendantId(randomUUID());
+        caseDefendantHearingKey.setHearingId(randomUUID());
+
+        final HearingResultLineEntity hearingResultLineEntity = new HearingResultLineEntity();
+        hearingResultLineEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingResultLineEntity.setId(randomUUID());
+
+        final Set<HearingResultLineEntity> resultLines = new HashSet<>();
+        resultLines.add(new HearingResultLineEntity(randomUUID(),Json.createObjectBuilder().build().toString(), null));
+
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(caseDefendantHearingKey.getHearingId());
+        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        hearingEntity.addResultLine(hearingResultLineEntity);
+        hearingEntity.setResultLines(resultLines);
+        hearingEntity.setResultLines(resultLines);
+        hearingRepository.save(hearingEntity);
+
+        final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity.setId(caseDefendantHearingKey);
+        caseDefendantHearingEntity.setHearing(hearingEntity);
+
+        caseDefendantHearingRepository.save(caseDefendantHearingEntity);
     }
 
     @Test

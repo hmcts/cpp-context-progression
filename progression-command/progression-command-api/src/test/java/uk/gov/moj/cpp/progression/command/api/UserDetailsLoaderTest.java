@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.command.api;
 
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -19,7 +20,6 @@ import uk.gov.moj.cpp.progression.command.api.vo.UserOrganisationDetails;
 
 import java.util.List;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -48,10 +48,7 @@ public class UserDetailsLoaderTest {
     @Test
     public void shouldReturnAllPermissionForDefendant() {
         final JsonObject jsonObjectPayload = CommandClientTestBase.readJson(JSON_PERMISSION_JSON, JsonObject.class);
-        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
-        final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);
-        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
-        final List<Permission> permissions = userDetailsLoader.getPermissions(metadata, requester, randomUUID().toString());
+        final List<Permission> permissions = getPermissions(jsonObjectPayload);
         assertThat(permissions.size(),is(2));
         Permission firstPermission = Permission.permission().withSource(fromString("4a18bec5-ab1a-410a-9889-885694356401"))
                 .withTarget(fromString("faee972d-f9dd-43d3-9f41-8acc3b908d09")).build();
@@ -62,6 +59,20 @@ public class UserDetailsLoaderTest {
         assertThat(permissions.contains(firstPermission), is(true));
         assertThat(permissions.contains(secondPermission), is(true));
         assertThat(permissions.contains(inValidPermission), is(false));
+    }
+
+    @Test
+    public void shouldReturnEmptyPermissions() {
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
+        final List<Permission> permissions = getPermissions(jsonObjectPayload);
+        assertThat(permissions.size(),is(0));
+    }
+
+    private List<Permission> getPermissions(final JsonObject jsonObjectPayload){
+        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
+        final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);
+        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope);
+        return userDetailsLoader.getPermissions(metadata, requester, randomUUID().toString());
     }
 
     @Test
@@ -80,7 +91,7 @@ public class UserDetailsLoaderTest {
     @Test
     public void shouldNotReturnOrganisationDetails() {
 
-        final JsonObject jsonObjectPayload = Json.createObjectBuilder().build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().build();
         final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
 
         final Envelope envelope = Envelope.envelopeFrom(metadata, jsonObjectPayload);
@@ -112,7 +123,7 @@ public class UserDetailsLoaderTest {
         });
 
 
-        final JsonObject jsonAddCourtDocument = Json.createObjectBuilder().add("defendantId", "faee972d-f9dd-43d3-9f41-8acc3b908d09").build();
+        final JsonObject jsonAddCourtDocument = createObjectBuilder().add("defendantId", "faee972d-f9dd-43d3-9f41-8acc3b908d09").build();
         final Metadata metadataAddCourtDocument = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
         final JsonEnvelope envelopeAddCourtDoc = JsonEnvelope.envelopeFrom(metadataAddCourtDocument, jsonAddCourtDocument);
 
@@ -142,7 +153,7 @@ public class UserDetailsLoaderTest {
         });
 
 
-        final JsonObject jsonAddCourtDocument = Json.createObjectBuilder().add("defendantId", "faee972d-f9dd-43d3-9f41-8acc3b908d09").build();
+        final JsonObject jsonAddCourtDocument = createObjectBuilder().add("defendantId", "faee972d-f9dd-43d3-9f41-8acc3b908d09").build();
         final Metadata metadataAddCourtDocument = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, "4a18bec5-ab1a-410a-9889-885694356401");
         final JsonEnvelope envelopeAddCourtDoc = JsonEnvelope.envelopeFrom(metadataAddCourtDocument, jsonAddCourtDocument);
 
@@ -172,10 +183,23 @@ public class UserDetailsLoaderTest {
         });
 
 
-        final JsonObject jsonAddCourtDocument = Json.createObjectBuilder().add("defendantId", "faee972d-f9dd-43d3-9f41-8acc3b908d09").build();
+        final JsonObject jsonAddCourtDocument = createObjectBuilder().add("defendantId", "faee972d-f9dd-43d3-9f41-8acc3b908d09").build();
         final Metadata metadataAddCourtDocument = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
         final JsonEnvelope envelopeAddCourtDoc = JsonEnvelope.envelopeFrom(metadataAddCourtDocument, jsonAddCourtDocument);
 
         assertThat(userDetailsLoader.isPermitted(envelopeAddCourtDoc, requester), is(false));
+    }
+
+
+    @Test(expected=IllegalArgumentException.class)
+    public void shouldPermitBasedOnGrantee_1() {
+        final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
+        when(requester.request(any())).thenReturn(JsonEnvelope.envelopeFrom(metadata, createObjectBuilder().build()));
+
+        final JsonObject jsonObj = createObjectBuilder().add("cotrId", "faee972d-f9dd-43d3-9f41-8acc3b908d09").build();
+        final Metadata metadata1 = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, "4a18bec5-ab1a-410a-9889-885694356401");
+        final JsonEnvelope envelopeAddCourtDoc = JsonEnvelope.envelopeFrom(metadata1, jsonObj);
+
+        userDetailsLoader.isDefenceClient(envelopeAddCourtDoc, requester);
     }
 }

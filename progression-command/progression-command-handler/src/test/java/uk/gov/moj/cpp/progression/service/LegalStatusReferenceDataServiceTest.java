@@ -41,7 +41,7 @@ public class LegalStatusReferenceDataServiceTest {
     private Requester requester;
 
     @Spy
-    Enveloper enveloper = EnveloperFactory.createEnveloper();;
+    Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @InjectMocks
     private LegalStatusReferenceDataService legalStatusReferenceDataService;

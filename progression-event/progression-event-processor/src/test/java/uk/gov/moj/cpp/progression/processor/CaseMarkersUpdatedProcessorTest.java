@@ -10,11 +10,8 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import uk.gov.justice.core.courts.CaseMarkersSharedWithHearings;
+import uk.gov.justice.core.courts.CaseMarkersUpdatedInHearing;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -22,18 +19,25 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 
+import java.util.UUID;
 import java.util.function.Function;
 
 import javax.json.JsonObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import org.slf4j.Logger;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseMarkersUpdatedProcessorTest {
@@ -59,6 +63,9 @@ public class CaseMarkersUpdatedProcessorTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> senderCaptor;
 
+    @Mock
+    private ProgressionService progressionService;
+
     @InjectMocks
     private CaseMarkersUpdatedProcessor processor;
 
@@ -69,12 +76,15 @@ public class CaseMarkersUpdatedProcessorTest {
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
+    @Mock
+    private Logger logger;
 
     @Test
     public void processCaseMarkersUpdated() {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(enveloper.withMetadataFrom(envelope, "public.progression.case-markers-updated")).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(logger.isInfoEnabled()).thenReturn(true);
 
         processor.processCaseMarkerUpdated(envelope);
 
@@ -97,6 +107,18 @@ public class CaseMarkersUpdatedProcessorTest {
         processor.processCaseMarkerSharedWithHearings(requestMessage);
 
         verify(sender, times(2)).send(senderCaptor.capture());
+    }
+
+    @Test
+    public void shouldProcessCaseMarkerUpdateInHearing(){
+        final CaseMarkersUpdatedInHearing caseMarkersUpdatedInHearing = CaseMarkersUpdatedInHearing.caseMarkersUpdatedInHearing()
+                .withHearingId(randomUUID())
+                .build();
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.case-markers-updated-in-hearing"),
+                objectToJsonObjectConverter.convert(caseMarkersUpdatedInHearing));
+        processor.processCaseMarkerUpdateInHearing(requestMessage);
+        verify(progressionService, times(1)).populateHearingToProbationCaseworker(Mockito.eq(requestMessage), any(UUID.class));
     }
 
 }

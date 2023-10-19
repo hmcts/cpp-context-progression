@@ -14,9 +14,6 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 
-import javax.inject.Inject;
-import javax.json.JsonObjectBuilder;
-
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -40,6 +37,7 @@ import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -57,8 +55,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class AddCourtDocumentApiTest {
 
     private static final String ADD_COURT_DOCUMENT_NAME = "progression.add-court-document";
+    private static final String ADD_COURT_DOCUMENT_NAME_V2 = "progression.add-court-document-v2";
     private static final String PROGRESSION_ADD_COURT_DOCUMENT_FOR_PROSECUTOR = "progression.add-court-document-for-prosecutor";
     private static final String ADD_COURT_DOCUMENT_COMMAND_NAME = "progression.command.add-court-document";
+    private static final String ADD_COURT_DOCUMENT_COMMAND_NAME_V2 = "progression.command.add-court-document-v2";
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloper();
     @Mock
@@ -119,14 +119,23 @@ public class AddCourtDocumentApiTest {
         final UUID caseId = randomUUID();
         final JsonEnvelope commandEnvelope = buildEnvelope(null, true, caseId);
 
-
         addCourtDocumentApi.handleAddCourtDocument(commandEnvelope);
         verify(sender, times(1)).send(envelopeCaptor.capture());
 
         final Envelope newCommand = envelopeCaptor.getValue();
 
+        JsonObjectBuilder builder = Json.createObjectBuilder()
+                .add("documentTypeId", docTypeId.toString())
+                .add("documentCategory", Json.createObjectBuilder()
+                        .add("caseDocument", Json.createObjectBuilder()
+                                .add("prosecutionCaseId", caseId.toString())
+                                .build())
+                        .build());
+        builder = Json.createObjectBuilder().add("courtDocument", builder.build())
+                .add("isUnbundledDocument", true);
+
         assertThat(newCommand.metadata().name(), is(ADD_COURT_DOCUMENT_COMMAND_NAME));
-        assertThat(newCommand.payload(), equalTo(commandEnvelope.payload()));
+        assertThat(newCommand.payload(), equalTo(builder.build()));
     }
 
     @Test(expected = ForbiddenRequestException.class)
@@ -163,8 +172,18 @@ public class AddCourtDocumentApiTest {
 
         final Envelope newCommand = envelopeCaptor.getValue();
 
+        JsonObjectBuilder builder = Json.createObjectBuilder()
+                .add("documentTypeId", docTypeId.toString())
+                .add("documentCategory", Json.createObjectBuilder()
+                        .add("caseDocument", Json.createObjectBuilder()
+                                .add("prosecutionCaseId", caseId.toString())
+                                .build())
+                        .build());
+        builder = Json.createObjectBuilder().add("courtDocument", builder.build())
+                .add("isUnbundledDocument", true);
+
         assertThat(newCommand.metadata().name(), is(ADD_COURT_DOCUMENT_COMMAND_NAME));
-        assertThat(newCommand.payload(), equalTo(commandEnvelope.payload()));
+        assertThat(newCommand.payload(), equalTo(builder.build()));
     }
 
     @Test(expected = ForbiddenRequestException.class)
@@ -236,14 +255,15 @@ public class AddCourtDocumentApiTest {
                                 .add("prosecutionCaseId", prosecutionCaseId.toString())
                                 .build())
                         .build());
-        builder = Json.createObjectBuilder().add("courtDocument", builder.build());
-
         if (nonNull(isCpsCase)) {
             builder.add("isCpsCase", isCpsCase);
         }
         if (nonNull(isUnbundledDocument)) {
             builder.add("isUnbundledDocument", isUnbundledDocument);
         }
+
+        builder = Json.createObjectBuilder().add("courtDocument", builder.build());
+
         final JsonObject payload = builder.build();
 
         final Metadata metadata = Envelope
@@ -309,5 +329,54 @@ public class AddCourtDocumentApiTest {
                 .build();
 
         return new DefaultJsonEnvelopeProvider().envelopeFrom(metadata, Json.createObjectBuilder().add("courtDocument", payload).build());
+    }
+
+    @Test
+    public void shouldAddDocumentV2() {
+
+        final JsonObject payload = CommandClientTestBase.readJson("json/progression.add-court-document-v2.json", JsonObject.class);
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName(ADD_COURT_DOCUMENT_NAME_V2)
+                .withId(uuid)
+                .withUserId(userId.toString())
+                .build();
+
+        final JsonEnvelope commandEnvelope = new DefaultJsonEnvelopeProvider().envelopeFrom(metadata, payload);
+
+        addCourtDocumentApi.handleV2(commandEnvelope);
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+
+        final Envelope newCommand = envelopeCaptor.getValue();
+
+        assertThat(newCommand.metadata().name(), is(ADD_COURT_DOCUMENT_COMMAND_NAME_V2));
+        assertThat(newCommand.payload(), equalTo(commandEnvelope.payload()));
+    }
+
+    @Test
+    public void shouldAddDocumentCpsCase() {
+
+        final UUID caseId = randomUUID();
+        final JsonEnvelope commandEnvelope = buildEnvelope(true, true, caseId);
+
+
+        addCourtDocumentApi.handleAddCourtDocument(commandEnvelope);
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+
+        final Envelope newCommand = envelopeCaptor.getValue();
+
+        JsonObjectBuilder builder = Json.createObjectBuilder()
+                .add("documentTypeId", docTypeId.toString())
+                .add("documentCategory", Json.createObjectBuilder()
+                        .add("caseDocument", Json.createObjectBuilder()
+                                .add("prosecutionCaseId", caseId.toString())
+                                .build())
+                        .build());
+        builder = Json.createObjectBuilder().add("courtDocument", builder.build())
+                .add("isCpsCase", true)
+                .add("isUnbundledDocument", true);
+
+        assertThat(newCommand.metadata().name(), is(ADD_COURT_DOCUMENT_COMMAND_NAME));
+        assertThat(newCommand.payload(), equalTo(builder.build()));
     }
 }

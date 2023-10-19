@@ -57,7 +57,7 @@ public class CourtDocumentQueryApi {
     public static final String COURT_DOCUMENT_APPLICATION_NOTIFICATION_STATUS = "progression.query.application.notification-status";
     private static final String HEARING_ID = "hearingId";
     static final String CASE_ID = "caseId";
-    private static final String DEFENDANT_ID = "defendantId";
+    public static final String DEFENDANT_ID = "defendantId";
     public static final String APPLICATION_ID = "applicationId";
 
     @Inject

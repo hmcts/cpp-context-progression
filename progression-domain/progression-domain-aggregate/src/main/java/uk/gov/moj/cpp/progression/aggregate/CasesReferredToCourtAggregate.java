@@ -42,7 +42,7 @@ public class CasesReferredToCourtAggregate implements Aggregate {
     }
 
 
-    public Stream<Object> initiateCourtProceedings(CourtReferral courtReferral) {
+    public Stream<Object> initiateCourtProceedings(final CourtReferral courtReferral) {
         LOGGER.info("Court Proceedings being initiated");
         return apply(Stream.of(CourtProceedingsInitiated.courtProceedingsInitiated().withCourtReferral(courtReferral).build()));
     }

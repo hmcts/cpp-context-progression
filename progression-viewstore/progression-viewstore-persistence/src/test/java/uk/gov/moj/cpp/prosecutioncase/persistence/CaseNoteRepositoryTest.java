@@ -29,7 +29,14 @@ public class CaseNoteRepositoryTest {
     public void shouldSaveAndReadACaseNoteAndOrderByCreatedDateDesc() {
 
         CaseNoteEntity firstNote = new CaseNoteEntity(randomUUID(), CASE_ID, "A Note", "Bob", "Marley", now(), false);
-        CaseNoteEntity secondNote = new CaseNoteEntity(randomUUID(), CASE_ID, "A Second Note", "Bob", "Marley", now().plusMinutes(1), false);
+        CaseNoteEntity secondNote = new CaseNoteEntity();
+        secondNote.setId(randomUUID());
+        secondNote.setCaseId(CASE_ID);
+        secondNote.setNote("A Second Note");
+        secondNote.setFirstName("Bob");
+        secondNote.setLastName("Marley");
+        secondNote.setCreatedDateTime(now().plusMinutes(1));
+        secondNote.setPinned(false);
 
         caseNoteRepository.save(firstNote);
         caseNoteRepository.save(secondNote);

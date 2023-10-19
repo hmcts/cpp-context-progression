@@ -1,19 +1,5 @@
 package uk.gov.justice.api.resource.service;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import javax.json.JsonObject;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
@@ -28,9 +14,23 @@ import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.api.resource.utils.FileUtil;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ReferenceDataServiceTest {
@@ -56,6 +56,9 @@ public class ReferenceDataServiceTest {
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+
+    @Mock
+    private JsonEnvelope jsonEnvelope;
 
 
     @Test
@@ -121,5 +124,17 @@ public class ReferenceDataServiceTest {
         return createObjectBuilder().add(FIELD_CLUSTER_ID, "53b3c80f-57ea-3915-8b2d-457291d94d9a")
                         .add(FIELD_ORGGANISATION_UNITS, createArrayBuilder().add(createObjectBuilder().add("ouId", "2608ebcc-d643-4260-8175-b8a24ac5cae5")))
                 .build();
+    }
+
+    @Test
+    public void shouldGetOrganisationUnitById() {
+        final JsonEnvelope envelope = envelopeFrom(metadataBuilder().withId(UUID.randomUUID()).withName("ids").build(),
+                createObjectBuilder().build());
+        when(requester.request(any())).thenReturn(envelope);
+        final Optional<JsonObject> actual = referenceDataService.getOrganisationUnitById(envelope, UUID.randomUUID());
+
+        verify(requester).request(envelopeArgumentCaptor.capture());
+        final JsonEnvelope envelopeCapture = envelopeArgumentCaptor.getValue();
+        assertEquals("referencedata.query.organisation-unit.v2", envelopeCapture.metadata().name());
     }
 }

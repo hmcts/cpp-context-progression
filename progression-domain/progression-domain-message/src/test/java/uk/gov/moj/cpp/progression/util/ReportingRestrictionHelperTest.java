@@ -6,17 +6,30 @@ import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictionsForCourtApplications;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestriction;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
+import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
+import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
+import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.core.courts.ReportingRestriction;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -85,5 +98,97 @@ public class ReportingRestrictionHelperTest {
 
     private ReportingRestriction newRR(UUID resultId, String label, LocalDate date) {
         return new ReportingRestriction(UUID.randomUUID(), resultId, label, date);
+    }
+
+    @Test
+    public void testDedupReportingRestrictionsForDefendantListingStatusChangedV2() {
+        final ImmutableList<ReportingRestriction> rrs = of(newRR("A", LocalDate.now()), newRR("A", LocalDate.now().minusDays(10)), newRR("A", LocalDate.now().minusDays(7)));
+
+        final List<ListHearingRequest> listHearingRequests = new ArrayList<>();
+        listHearingRequests.add(ListHearingRequest.listHearingRequest()
+                .withHearingType(HearingType.hearingType()
+                        .withId(UUID.randomUUID())
+                        .build())
+                .build());
+
+        final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = ProsecutionCaseDefendantListingStatusChangedV2.
+                prosecutionCaseDefendantListingStatusChangedV2().
+                withListHearingRequests(listHearingRequests).
+                withHearing(Hearing.hearing().withProsecutionCases(asList(ProsecutionCase.
+                                prosecutionCase().
+                                withDefendants(asList(Defendant.
+                                        defendant().
+                                        withOffences(asList(Offence.
+                                                offence().
+                                                withReportingRestrictions(rrs).
+                                                build())).
+                                        build())).
+                                build())).
+                                build()).
+                build();
+
+        final ProsecutionCaseDefendantListingStatusChangedV2 actual = dedupAllReportingRestrictions(prosecutionCaseDefendantListingStatusChangedV2);
+
+        final List<ReportingRestriction> actualRR = actual.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getReportingRestrictions();
+        assertThat(actualRR, hasSize(1));
+        assertThat(actualRR.get(0), is(rrs.get(1)));
+    }
+
+    @Test
+    public void testDedupAllReportingRestrictionsForCourtApplications(){
+        final List<CourtApplication> courtApplications = new ArrayList<>();
+        courtApplications.add(CourtApplication.courtApplication().build());
+        List<CourtApplication> applications = dedupAllReportingRestrictionsForCourtApplications(courtApplications);
+        assertThat(applications, hasSize(1));
+    }
+
+    @Test
+    public void testDedupReportingRestriction(){
+        final CourtApplicationProceedingsEdited initiateCourtApplicationEdited = CourtApplicationProceedingsEdited.courtApplicationProceedingsEdited().build();
+        CourtApplicationProceedingsEdited courtApplicationProceedingsEdited = dedupReportingRestriction(initiateCourtApplicationEdited);
+        assertThat(courtApplicationProceedingsEdited, notNullValue());
+    }
+
+    @Test
+    public void testDedupReportingRestrictionOnInitiation(){
+        final List<CourtApplicationCase> courtApplicationCases = new ArrayList<>();
+        courtApplicationCases.add(CourtApplicationCase.courtApplicationCase()
+                .withProsecutionCaseId(UUID.randomUUID())
+                .build());
+        final CourtApplicationProceedingsInitiated initiateCourtApplicationProceedings = CourtApplicationProceedingsInitiated.courtApplicationProceedingsInitiated()
+                .withCourtApplication(CourtApplication.courtApplication()
+                        .withCourtApplicationCases(courtApplicationCases)
+                        .build())
+                .build();
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = dedupReportingRestriction(initiateCourtApplicationProceedings);
+        assertThat(courtApplicationProceedingsInitiated, notNullValue());
+    }
+
+    @Test
+    public void testDedupReportingRestriction_courtApplication(){
+        final List<Offence> offences = new ArrayList<>();
+        offences.add(Offence.offence().build());
+        final List<CourtOrderOffence> courtOrderOffences = new ArrayList<>();
+        courtOrderOffences.add(CourtOrderOffence.courtOrderOffence()
+                .withOffence(Offence.offence()
+                        .withReportingRestrictions(of(newRR("Test", LocalDate.now())))
+                        .build())
+                .build());
+
+        final List<CourtApplicationCase> courtApplicationCases = new ArrayList<>();
+        courtApplicationCases.add(CourtApplicationCase.courtApplicationCase()
+                .withOffences(offences)
+                .build());
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(UUID.randomUUID())
+                .withCourtOrder(CourtOrder.courtOrder()
+                        .withCourtOrderOffences(courtOrderOffences)
+                        .build())
+                .withCourtApplicationCases(courtApplicationCases)
+                .build();
+
+        final CourtApplication courtApplication1 = dedupAllReportingRestrictions(courtApplication);
+        assertThat(courtApplication1, notNullValue());
     }
 }
