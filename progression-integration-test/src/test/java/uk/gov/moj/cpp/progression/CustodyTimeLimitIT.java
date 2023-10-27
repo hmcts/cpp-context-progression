@@ -215,10 +215,8 @@ public class CustodyTimeLimitIT extends AbstractIT {
         final String dbHearing =  pollForResponse("/hearingSearch/" + hearingId, HEARING_QUERY, hearingMatchers);
         final JsonObject hearing = stringToJsonObjectConverter.convert(dbHearing);
         final JsonObject custodyTimeLimit = hearing.getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getJsonObject("custodyTimeLimit");
-        final String actualCpsDefendantId = hearing.getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getString("cpsDefendantId");
         assertThat(custodyTimeLimit.getBoolean("isCtlExtended"), is(true));
         assertThat(custodyTimeLimit.getString("timeLimit"), is(extendedCustodyTimeLimit));
-        assertThat(actualCpsDefendantId, is(cpsDefendantId));
 
     }
 

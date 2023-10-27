@@ -1220,8 +1220,9 @@ public class HearingAggregate implements Aggregate {
                 .withCourtApplications(updatedCourtApplications)
                 .withProsecutionCases(updatedProsecutionCasesForOriginalHearing).build();
 
-        streamBuilder.add(createHearingResultedEvent(updatedHearing, sharedTime, hearingDay));
         streamBuilder.add(createListingStatusResultedEvent(updatedHearing));
+        streamBuilder.add(createHearingResultedEvent(updatedHearing, sharedTime, hearingDay));
+
 
         if (isNotEmpty(hearing.getProsecutionCases())) {
             streamBuilder.add(createProsecutionCasesResultedV2Event(updatedHearing, shadowListedOffences, hearingDay));

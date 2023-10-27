@@ -1,19 +1,21 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.ContactNumber;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -29,21 +31,22 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
+import javax.json.JsonObject;
+import javax.json.JsonValue;
 import java.util.Collections;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateProsecutionCaseCpsProsecutorEventListenerTest {
@@ -77,6 +80,9 @@ public class UpdateProsecutionCaseCpsProsecutorEventListenerTest {
 
     @Captor
     ArgumentCaptor<ProsecutionCaseEntity> entityArgumentCaptor;
+
+    @Captor
+    ArgumentCaptor<HearingEntity> hearingEntityArgumentCaptor;
 
     @Before
     public void setUp() {
@@ -115,6 +121,7 @@ public class UpdateProsecutionCaseCpsProsecutorEventListenerTest {
         CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
         HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setPayload(hearingPayload);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         caseDefendantHearingEntity.setHearing(hearingEntity);
         when(caseDefendantHearingRepository.findByCaseId(any())).thenReturn(Collections.singletonList(caseDefendantHearingEntity));
         doNothing().when(searchCase).updateSearchable(any());
@@ -194,6 +201,7 @@ public class UpdateProsecutionCaseCpsProsecutorEventListenerTest {
         CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
         HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setPayload(hearingPayload);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
         caseDefendantHearingEntity.setHearing(hearingEntity);
         when(caseDefendantHearingRepository.findByCaseId(any())).thenReturn(Collections.singletonList(caseDefendantHearingEntity));
         doNothing().when(searchCase).updateSearchable(any());
@@ -205,6 +213,358 @@ public class UpdateProsecutionCaseCpsProsecutorEventListenerTest {
         assertThat(stringToJsonObjectConverter.convert(entityArgumentCaptor.getValue().getPayload()).get("prosecutor"), is(objectToJsonObjectConverter.convert(expectedEntity(caseCpsProsecutorUpdated))));
         assertThat(stringToJsonObjectConverter.convert(entityArgumentCaptor.getValue().getPayload()).getString("trialReceiptType"), is("Transfer"));
     }
+
+    @Test
+    public void  shouldNotUpdateHearingWhichAreNotResulted() {
+
+        final UUID prosecutionCaseId = UUID.randomUUID();
+        final CaseCpsProsecutorUpdated caseCpsProsecutorUpdated = CaseCpsProsecutorUpdated.caseCpsProsecutorUpdated()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withProsecutionAuthorityOUCode("oucode")
+                .withMajorCreditorCode("major")
+                .withContact(ContactNumber.contactNumber().withPrimaryEmail("aaa@aaa").build())
+                .withAddress(Address.address().withAddress1("aaaaa").build())
+                .withCaseURN("caseUrn")
+                .withProsecutionAuthorityCode("ProsecutionAuthorityCode")
+                .withProsecutionAuthorityId(UUID.randomUUID())
+                .withProsecutionAuthorityName("ProsecutionAuthorityName")
+                .withProsecutionAuthorityReference("withProsecutionAuthorityReference")
+                .build();
+
+        ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withTrialReceiptType("Transfer")
+                .withId(prosecutionCaseId).build();
+        final Hearing hearing = Hearing.hearing().build();
+        String payload = objectToJsonObjectConverter.convert(prosecutionCase).toString();
+        String hearingPayload = objectToJsonObjectConverter.convert(hearing).toString();
+        ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(payload);
+        JsonObject jsonObject = objectToJsonObjectConverter.convert(caseCpsProsecutorUpdated);
+        when(envelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(repository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
+        CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
+        HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setPayload(hearingPayload);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
+        when(caseDefendantHearingRepository.findByCaseId(any())).thenReturn(Collections.singletonList(caseDefendantHearingEntity));
+        doNothing().when(searchCase).updateSearchable(any());
+
+        updateProsecutionCaseCpsProsecutorEventListener.handleUpdateCaseCpsProsecutor(envelope);
+        verify(searchCase, times(1)).updateSearchable(any());
+        verify(repository).save(entityArgumentCaptor.capture());
+
+        assertThat(stringToJsonObjectConverter.convert(entityArgumentCaptor.getValue().getPayload()).get("prosecutor"), is(objectToJsonObjectConverter.convert(expectedEntity(caseCpsProsecutorUpdated))));
+        assertThat(stringToJsonObjectConverter.convert(entityArgumentCaptor.getValue().getPayload()).getString("trialReceiptType"), is("Transfer"));
+        verify(hearingRepository, never()).save(any(HearingEntity.class));
+    }
+
+    @Test
+    public void shouldUpdateCaseAndHearingCaseWhichAreNotResultedWhereHearingCaseDoesNotHaveAllOffencesFromCase() {
+
+        final UUID prosecutionCaseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId1 = UUID.randomUUID();
+        final UUID offenceId2 = UUID.randomUUID();
+        final CaseCpsProsecutorUpdated caseCpsProsecutorUpdated = CaseCpsProsecutorUpdated.caseCpsProsecutorUpdated()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withProsecutionAuthorityOUCode("oucode")
+                .withMajorCreditorCode("major")
+                .withContact(ContactNumber.contactNumber().withPrimaryEmail("aaa@aaa").build())
+                .withAddress(Address.address().withAddress1("aaaaa").build())
+                .withCaseURN("caseUrn")
+                .withProsecutionAuthorityCode("ProsecutionAuthorityCode")
+                .withProsecutionAuthorityId(UUID.randomUUID())
+                .withProsecutionAuthorityName("ProsecutionAuthorityName")
+                .withProsecutionAuthorityReference("withProsecutionAuthorityReference")
+                .build();
+
+        ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withTrialReceiptType("Transfer")
+                .withId(prosecutionCaseId)
+                .withDefendants(asList(Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(asList(Offence.offence()
+                                .withId(offenceId1)
+                                .build(),
+                                Offence.offence()
+                                        .withId(offenceId2)
+                                        .build()))
+                        .build()))
+                        .build();
+        ProsecutionCase hearingProsecutionCase = ProsecutionCase.prosecutionCase()
+                .withTrialReceiptType("Transfer")
+                .withId(prosecutionCaseId)
+                .withDefendants(asList(Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(asList(Offence.offence()
+                                .withId(offenceId1)
+                                .build()))
+                        .build()))
+                .build();
+        final Hearing hearing = Hearing.hearing()
+                .withProsecutionCases(asList(hearingProsecutionCase))
+                .build();
+        String payload = objectToJsonObjectConverter.convert(prosecutionCase).toString();
+        String hearingPayload = objectToJsonObjectConverter.convert(hearing).toString();
+        ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(payload);
+        JsonObject jsonObject = objectToJsonObjectConverter.convert(caseCpsProsecutorUpdated);
+        when(envelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(repository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
+        CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
+        HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setPayload(hearingPayload);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        caseDefendantHearingEntity.setHearing(hearingEntity);
+        when(caseDefendantHearingRepository.findByCaseId(any())).thenReturn(Collections.singletonList(caseDefendantHearingEntity));
+        doNothing().when(searchCase).updateSearchable(any());
+
+        updateProsecutionCaseCpsProsecutorEventListener.handleUpdateCaseCpsProsecutor(envelope);
+        verify(searchCase, times(1)).updateSearchable(any());
+        verify(repository).save(entityArgumentCaptor.capture());
+
+        final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(entityArgumentCaptor.getValue().getPayload());
+
+        assertThat(prosecutionCaseJson.get("prosecutor"), is(objectToJsonObjectConverter.convert(expectedEntity(caseCpsProsecutorUpdated))));
+        assertThat(prosecutionCaseJson.getString("trialReceiptType"), is("Transfer"));
+        assertThat(prosecutionCaseJson
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").size(), is(2));
+        assertThat(prosecutionCaseJson.getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(0).getString("id"), is(offenceId1.toString()));
+        assertThat(prosecutionCaseJson.getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(1).getString("id"), is(offenceId2.toString()));
+
+        verify(hearingRepository).save(hearingEntityArgumentCaptor.capture());
+        final JsonObject hearingJsonObject = stringToJsonObjectConverter.convert(hearingEntityArgumentCaptor.getValue().getPayload());
+
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(0).get("prosecutor"), is(objectToJsonObjectConverter.convert(expectedEntity(caseCpsProsecutorUpdated))));
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(0).getString("trialReceiptType"), is("Transfer"));
+
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(0)
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(0).getString("id"), is(offenceId1.toString()));
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(0)
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").size(), is(1));
+
+
+
+    }
+
+    @Test
+    public void shouldUpdateCaseAndHearingCaseWhichAreNotResultedWhereHearingCaseDoesHaveAllOffencesFromCase() {
+
+        final UUID prosecutionCaseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId1 = UUID.randomUUID();
+        final UUID offenceId2 = UUID.randomUUID();
+        final CaseCpsProsecutorUpdated caseCpsProsecutorUpdated = CaseCpsProsecutorUpdated.caseCpsProsecutorUpdated()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withProsecutionAuthorityOUCode("oucode")
+                .withMajorCreditorCode("major")
+                .withContact(ContactNumber.contactNumber().withPrimaryEmail("aaa@aaa").build())
+                .withAddress(Address.address().withAddress1("aaaaa").build())
+                .withCaseURN("caseUrn")
+                .withProsecutionAuthorityCode("ProsecutionAuthorityCode")
+                .withProsecutionAuthorityId(UUID.randomUUID())
+                .withProsecutionAuthorityName("ProsecutionAuthorityName")
+                .withProsecutionAuthorityReference("withProsecutionAuthorityReference")
+                .build();
+
+        ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withTrialReceiptType("Transfer")
+                .withId(prosecutionCaseId)
+                .withDefendants(asList(Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(asList(Offence.offence()
+                                        .withId(offenceId1)
+                                        .build(),
+                                Offence.offence()
+                                        .withId(offenceId2)
+                                        .build()))
+                        .build()))
+                .build();
+        ProsecutionCase hearingProsecutionCase = ProsecutionCase.prosecutionCase()
+                .withTrialReceiptType("Transfer")
+                .withId(prosecutionCaseId)
+                .withDefendants(asList(Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(asList(Offence.offence()
+                                .withId(offenceId1)
+                                .build(),
+                                Offence.offence()
+                                        .withId(offenceId2)
+                                        .build()))
+                        .build()))
+                .build();
+        final Hearing hearing = Hearing.hearing()
+                .withProsecutionCases(asList(hearingProsecutionCase))
+                .build();
+        String payload = objectToJsonObjectConverter.convert(prosecutionCase).toString();
+        String hearingPayload = objectToJsonObjectConverter.convert(hearing).toString();
+        ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(payload);
+        JsonObject jsonObject = objectToJsonObjectConverter.convert(caseCpsProsecutorUpdated);
+        when(envelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(repository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
+        CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
+        HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setPayload(hearingPayload);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        caseDefendantHearingEntity.setHearing(hearingEntity);
+        when(caseDefendantHearingRepository.findByCaseId(any())).thenReturn(Collections.singletonList(caseDefendantHearingEntity));
+        doNothing().when(searchCase).updateSearchable(any());
+
+        updateProsecutionCaseCpsProsecutorEventListener.handleUpdateCaseCpsProsecutor(envelope);
+        verify(searchCase, times(1)).updateSearchable(any());
+        verify(repository).save(entityArgumentCaptor.capture());
+
+        final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(entityArgumentCaptor.getValue().getPayload());
+
+        assertThat(prosecutionCaseJson.get("prosecutor"), is(objectToJsonObjectConverter.convert(expectedEntity(caseCpsProsecutorUpdated))));
+        assertThat(prosecutionCaseJson.getString("trialReceiptType"), is("Transfer"));
+        assertThat(prosecutionCaseJson
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").size(), is(2));
+        assertThat(prosecutionCaseJson.getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(0).getString("id"), is(offenceId1.toString()));
+        assertThat(prosecutionCaseJson.getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(1).getString("id"), is(offenceId2.toString()));
+
+        verify(hearingRepository).save(hearingEntityArgumentCaptor.capture());
+        final JsonObject hearingJsonObject = stringToJsonObjectConverter.convert(hearingEntityArgumentCaptor.getValue().getPayload());
+
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(0).get("prosecutor"), is(objectToJsonObjectConverter.convert(expectedEntity(caseCpsProsecutorUpdated))));
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(0).getString("trialReceiptType"), is("Transfer"));
+
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(0)
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(0).getString("id"), is(offenceId1.toString()));
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(0)
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").size(), is(2));
+
+    }
+
+    @Test
+    public void shouldUpdateCaseAndHearingCaseWhichAreNotResultedWhereHearingHaveOtherCases() {
+
+        final UUID prosecutionCaseId = UUID.randomUUID();
+        final UUID prosecutionCaseId2 = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID defendantId2 = UUID.randomUUID();
+        final UUID offenceId1 = UUID.randomUUID();
+        final UUID offenceId2 = UUID.randomUUID();
+        final UUID offenceId3 = UUID.randomUUID();
+        final CaseCpsProsecutorUpdated caseCpsProsecutorUpdated = CaseCpsProsecutorUpdated.caseCpsProsecutorUpdated()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withProsecutionAuthorityOUCode("oucode")
+                .withMajorCreditorCode("major")
+                .withContact(ContactNumber.contactNumber().withPrimaryEmail("aaa@aaa").build())
+                .withAddress(Address.address().withAddress1("aaaaa").build())
+                .withCaseURN("caseUrn")
+                .withProsecutionAuthorityCode("ProsecutionAuthorityCode")
+                .withProsecutionAuthorityId(UUID.randomUUID())
+                .withProsecutionAuthorityName("ProsecutionAuthorityName")
+                .withProsecutionAuthorityReference("withProsecutionAuthorityReference")
+                .build();
+
+        ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withTrialReceiptType("Transfer")
+                .withId(prosecutionCaseId)
+                .withDefendants(asList(Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(asList(Offence.offence()
+                                        .withId(offenceId1)
+                                        .build(),
+                                Offence.offence()
+                                        .withId(offenceId2)
+                                        .build()))
+                        .build()))
+                .build();
+        ProsecutionCase hearingProsecutionCase = ProsecutionCase.prosecutionCase()
+                .withTrialReceiptType("Transfer")
+                .withId(prosecutionCaseId)
+                .withDefendants(asList(Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(asList(Offence.offence()
+                                        .withId(offenceId1)
+                                        .build(),
+                                Offence.offence()
+                                        .withId(offenceId2)
+                                        .build()))
+                        .build()))
+                .build();
+
+        ProsecutionCase hearingProsecutionCase2 = ProsecutionCase.prosecutionCase()
+                .withTrialReceiptType("Transfer")
+                .withId(prosecutionCaseId2)
+                .withDefendants(asList(Defendant.defendant()
+                        .withId(defendantId2)
+                        .withOffences(asList(Offence.offence()
+                                        .withId(offenceId3)
+                                        .build()))
+                        .build()))
+                .build();
+        final Hearing hearing = Hearing.hearing()
+                .withProsecutionCases(asList(hearingProsecutionCase, hearingProsecutionCase2))
+                .build();
+        String payload = objectToJsonObjectConverter.convert(prosecutionCase).toString();
+        String hearingPayload = objectToJsonObjectConverter.convert(hearing).toString();
+        ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setPayload(payload);
+        JsonObject jsonObject = objectToJsonObjectConverter.convert(caseCpsProsecutorUpdated);
+        when(envelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(repository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
+        CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
+        HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setPayload(hearingPayload);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        caseDefendantHearingEntity.setHearing(hearingEntity);
+        when(caseDefendantHearingRepository.findByCaseId(any())).thenReturn(Collections.singletonList(caseDefendantHearingEntity));
+        doNothing().when(searchCase).updateSearchable(any());
+
+        updateProsecutionCaseCpsProsecutorEventListener.handleUpdateCaseCpsProsecutor(envelope);
+        verify(searchCase, times(1)).updateSearchable(any());
+        verify(repository).save(entityArgumentCaptor.capture());
+
+        final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(entityArgumentCaptor.getValue().getPayload());
+
+        assertThat(prosecutionCaseJson.get("prosecutor"), is(objectToJsonObjectConverter.convert(expectedEntity(caseCpsProsecutorUpdated))));
+        assertThat(prosecutionCaseJson.getString("trialReceiptType"), is("Transfer"));
+        assertThat(prosecutionCaseJson
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").size(), is(2));
+        assertThat(prosecutionCaseJson.getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(0).getString("id"), is(offenceId1.toString()));
+        assertThat(prosecutionCaseJson.getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(1).getString("id"), is(offenceId2.toString()));
+
+        verify(hearingRepository).save(hearingEntityArgumentCaptor.capture());
+        final JsonObject hearingJsonObject = stringToJsonObjectConverter.convert(hearingEntityArgumentCaptor.getValue().getPayload());
+
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").size(), is(2));
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(0).get("prosecutor"), is(objectToJsonObjectConverter.convert(expectedEntity(caseCpsProsecutorUpdated))));
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(0).getString("trialReceiptType"), is("Transfer"));
+
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(0)
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(0).getString("id"), is(offenceId1.toString()));
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(0)
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").size(), is(2));
+
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(1)
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(0).getString("id"), is(offenceId3.toString()));
+        assertThat(hearingJsonObject.getJsonArray("prosecutionCases").getJsonObject(1)
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").size(), is(1));
+
+    }
+
+
 
     @Test
     public void shouldUpdateProsecutionCaseErrorFlagWhenCpsInValid(){
