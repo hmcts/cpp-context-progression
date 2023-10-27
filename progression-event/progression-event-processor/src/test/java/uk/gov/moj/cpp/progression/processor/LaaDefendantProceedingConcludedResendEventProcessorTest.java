@@ -1,16 +1,12 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.utils.PayloadUtil.convertFromFile;
 
-import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
 import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedResent;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -20,14 +16,9 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.service.AzureFunctionService;
 import uk.gov.moj.cpp.progression.transformer.DefendantProceedingConcludedTransformer;
 import uk.gov.moj.cpp.progression.utils.FileUtil;
-import uk.gov.moj.cpp.progression.utils.PayloadUtil;
 
 import java.io.IOException;
 import java.util.UUID;
-
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;

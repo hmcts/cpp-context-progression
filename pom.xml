@@ -51,16 +51,17 @@
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <junit4-dataprovider.version>2.6</junit4-dataprovider.version>
+        <javafaker.version>1.0.2</javafaker.version>
         <material.version>8.0.12</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>8.0.41</referencedata.version>
+        <referencedata.version>8.0.43</referencedata.version>
         <listing.version>8.0.57</listing.version>
         <hearing.version>8.0.93</hearing.version>
         <usersgroups.version>8.0.7</usersgroups.version>
         <defence.version>8.0.32</defence.version>
         <referencedata.offence.version>8.0.14</referencedata.offence.version>
-        <coredomain.version>1.0.207</coredomain.version>
+        <coredomain.version>1.0.209</coredomain.version>
         <directionsmanagement.version>8.0.9</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
@@ -74,6 +75,7 @@
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>8.0.1</stagingpubhub.version>
         <pdfbox.version>2.0.11</pdfbox.version>
+        <correspondence.version>8.0.17</correspondence.version>
     </properties>
     <build>
         <plugins>
@@ -105,6 +107,12 @@
                 <groupId>com.tngtech.junit.dataprovider</groupId>
                 <artifactId>junit4-dataprovider</artifactId>
                 <version>${junit4-dataprovider.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.javafaker</groupId>
+                <artifactId>javafaker</artifactId>
+                <version>${javafaker.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

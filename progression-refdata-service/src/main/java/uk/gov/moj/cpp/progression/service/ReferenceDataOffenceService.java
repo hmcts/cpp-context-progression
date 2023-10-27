@@ -13,6 +13,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +63,7 @@ public class ReferenceDataOffenceService {
             LOGGER.info(" '{}' by id {} received with payload {} ", REFERENCEDATAOFFENCE_GET_OFFENCE, offenceId, response.toObfuscatedDebugString());
         }
 
-        if (response.payload() == null) {
+        if (response.payload() == null || Objects.isNull(response.payload()) || response.payload() == JsonValue.NULL || JsonValue.NULL.equals(response.payload())) {
             return Optional.empty();
         }
         final JsonObject offencePayload = response.payloadAsJsonObject();

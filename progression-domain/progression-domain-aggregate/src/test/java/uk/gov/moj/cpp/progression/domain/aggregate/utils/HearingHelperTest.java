@@ -76,12 +76,12 @@ public class HearingHelperTest {
 
     @Test
     public void shouldNotBeEligibleForNextHearingsWhenEarliestNextHearingDateIs1HourInFuture() {
-        final ZonedDateTime now = clock.now().plusHours(1);
+        final ZonedDateTime now = clock.now();
 
         final Hearing hearing = Hearing.hearing()
                 .withHearingDays(asList(
                         HearingDay.hearingDay()
-                                .withSittingDay(now)
+                                .withSittingDay(now.plusHours(1))
                                 .build(),
                         HearingDay.hearingDay()
                                 .withSittingDay(now.plusDays(1))

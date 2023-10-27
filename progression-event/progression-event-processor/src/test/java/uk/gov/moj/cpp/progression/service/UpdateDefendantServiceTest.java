@@ -1,14 +1,14 @@
 package uk.gov.moj.cpp.progression.service;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.verify;
+import static uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment;
+import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
+import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+
 import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -20,14 +20,15 @@ import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelope;
 
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.verify;
-import static uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment;
-import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
-import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateDefendantServiceTest {

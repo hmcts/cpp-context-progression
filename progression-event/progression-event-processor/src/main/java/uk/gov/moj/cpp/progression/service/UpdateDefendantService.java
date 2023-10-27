@@ -1,7 +1,9 @@
 package uk.gov.moj.cpp.progression.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+
 import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
@@ -15,9 +17,8 @@ import uk.gov.justice.services.messaging.Metadata;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UpdateDefendantService {
 

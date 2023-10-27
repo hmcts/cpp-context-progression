@@ -3,8 +3,6 @@ package uk.gov.moj.cpp.progression.helper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.omg.CosNaming.BindingIterator;
-
 public class DocmosisTextHelper {
     private Map<String, String> replaceChars = new HashMap();
 

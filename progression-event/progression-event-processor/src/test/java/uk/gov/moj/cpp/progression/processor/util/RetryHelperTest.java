@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.progression.processor.util;
 
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.processor.utils.RetryHelper.retryHelper;
-import static org.mockito.Mockito.verify;
 
 import uk.gov.moj.cpp.progression.exception.LaaAzureApimInvocationException;
 import uk.gov.moj.cpp.progression.processor.utils.RetryHelper;

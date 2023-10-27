@@ -548,7 +548,7 @@ public class ProgressionServiceTest {
         final CourtCentre courtCentre = CourtCentre.courtCentre().withId(courtCentreId).withRoomId(courtRoomId).build();
         when(referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester)).thenReturn(of(courtCentreJson));
         when(referenceDataService.getOuCourtRoomCode(courtRoomId.toString(), requester)).thenReturn(of(courtRoomOuJson));
-        when(referenceDataService.getCourtRoomById(courtCentreId, envelope, requester)).thenReturn(of(courtRoomJson));
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(courtCentreId, envelope, requester)).thenReturn(of(courtRoomJson));
 
         final CourtCentre result = progressionService.transformCourtCentre(courtCentre, envelope);
 
@@ -570,7 +570,7 @@ public class ProgressionServiceTest {
         final CourtCentre courtCentre = CourtCentre.courtCentre().withId(courtCentreId).withRoomId(courtRoomId).build();
         when(referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester)).thenReturn(of(courtCentreJson));
         when(referenceDataService.getOuCourtRoomCode(courtRoomId.toString(), requester)).thenReturn(of(courtRoomOuJson));
-        when(referenceDataService.getCourtRoomById(courtCentreId, envelope, requester)).thenReturn(of(courtRoomJson));
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(courtCentreId, envelope, requester)).thenReturn(of(courtRoomJson));
 
         final CourtCentre result = progressionService.transformCourtCentre(courtCentre, envelope);
 

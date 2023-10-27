@@ -48,7 +48,6 @@ public class OrderingCourt {
                 ", welshLjaName='" + welshLjaName + '\'' +
                 ", courtCentreName='" + courtCentreName + '\'' +
                 ", welshCourtCentreName='" + welshCourtCentreName + '\'' +
-
                 '}';
     }
 
@@ -95,7 +94,6 @@ public class OrderingCourt {
             this.welshCourtCentreName = welshCourtCentreName;
             return this;
         }
-
 
         public OrderingCourt build() {
             return new OrderingCourt(ljaCode, ljaName, welshLjaName, courtCentreName, welshCourtCentreName);

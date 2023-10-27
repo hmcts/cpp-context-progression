@@ -1,7 +1,17 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.google.common.collect.ImmutableMap.of;
+import static java.lang.String.format;
+import static java.lang.String.join;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.nonNull;
+import static java.util.UUID.fromString;
+import static java.util.regex.Pattern.compile;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyPriorityHelper.periodToDays;
+import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.CUSTODIAL;
+
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.core.courts.Offence;
@@ -17,17 +27,8 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
-import static com.google.common.collect.ImmutableMap.of;
-import static java.lang.String.format;
-import static java.lang.String.join;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.unmodifiableList;
-import static java.util.Objects.nonNull;
-import static java.util.UUID.fromString;
-import static java.util.regex.Pattern.compile;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyPriorityHelper.periodToDays;
-import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.CUSTODIAL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CustodialSentenceRetentionRule implements RetentionRule {
 

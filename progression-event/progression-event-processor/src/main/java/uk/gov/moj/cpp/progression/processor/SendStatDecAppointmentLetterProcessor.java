@@ -1,5 +1,9 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Objects.nonNull;
+import static java.util.UUID.randomUUID;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+
 import uk.gov.justice.core.courts.BoxHearingRequest;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.progression.courts.SendStatdecAppointmentLetter;
@@ -11,16 +15,13 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.StatDecNotificationService;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static java.util.Objects.nonNull;
-import static java.util.UUID.randomUUID;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import javax.inject.Inject;
+import javax.json.JsonObject;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class SendStatDecAppointmentLetterProcessor {
@@ -58,7 +59,7 @@ public class SendStatDecAppointmentLetterProcessor {
         String documentTemplateName = nonNull(boxHearingRequest.getVirtualAppointmentTime()) ? STAT_DEC_VIRTUAL_HEARING : STAT_DEC_COURT_HEARING;
 
         if(nonNull(boxHearingRequest.getCourtCentre())){
-           final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getCourtRoomById(boxHearingRequest.getCourtCentre().getId(), jsonEnvelope, requester);
+           final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getCourtCentreWithCourtRoomsById(boxHearingRequest.getCourtCentre().getId(), jsonEnvelope, requester);
            final JsonObject courtCentreJson = courtCentreJsonOptional.orElseThrow(() -> new IllegalArgumentException(String.format("Court centre '%s' not found", boxHearingRequest.getId())));
            final boolean isWelsh = courtCentreJson.getBoolean("isWelsh",false);
            if (isWelsh){

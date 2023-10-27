@@ -1,11 +1,5 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
-import org.junit.Test;
-import uk.gov.justice.core.courts.JurisdictionType;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,6 +9,13 @@ import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.CUS
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.LIFE;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.NON_CUSTODIAL;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.NOT_GUILTY;
+
+import uk.gov.justice.core.courts.JurisdictionType;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Test;
 
 public class RetentionPolicyPriorityHelperTest {
     private HearingInfo hearingInfo = new HearingInfo(randomUUID(), "hearingType", JurisdictionType.CROWN.name(),

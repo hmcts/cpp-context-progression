@@ -3,6 +3,9 @@ package uk.gov.moj.cpp.progression.handler;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
@@ -151,6 +154,9 @@ public class ListNewHearingHandlerTest {
                 .findAny();
 
         assertTrue(events.isPresent());
+        assertEquals("true", events.get().payloadAsJsonObject().get("sendNotificationToParties").toString());
+        assertThat( events.get().payloadAsJsonObject().getBoolean("sendNotificationToParties"), is(true));
+
     }
 
     @Test
@@ -204,6 +210,7 @@ public class ListNewHearingHandlerTest {
                                 .withDefendantId(randomUUID())
                                 .build()))
                         .build())
+                .withSendNotificationToParties(true)
                 .build();
     }
 

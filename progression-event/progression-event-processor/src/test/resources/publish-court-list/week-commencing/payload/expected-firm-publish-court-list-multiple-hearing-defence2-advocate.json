@@ -1,0 +1,46 @@
+{
+  "publishCourtListType": "FIRM",
+  "issueDate": "2023-02-15",
+  "weekCommencing": true,
+  "ljaCode": "MERS",
+  "ljaName": "Merseyside LJA",
+  "courtName": "Croydon Crown Court",
+  "courtAddress": {
+    "line1": "The Law Courts",
+    "line2": "Altyre Road",
+    "line3": "Croydon",
+    "postCode": "CR9 5AB",
+    "isWelsh": false
+  },
+  "weekCommencingStartDate": "2023-02-20",
+  "weekCommencingEndDate": "2023-02-24",
+  "addressee": {
+    "name": "contactPersonName",
+    "address": {
+      "line1": "address1",
+      "line2": "address2",
+      "postCode": "postcode"
+    }
+  },
+  "hearingByWeekCommencingDateNoCourtroom": {
+    "weekCommencingStartDate": "2023-02-20",
+    "weekCommencingEndDate": "2023-02-24",
+    "hearingByCourtrooms": [
+      {
+        "hearings": [
+          {
+            "caseReference": "90GD9173LAA",
+            "hearingType": "Trial",
+            "defendants": [
+              {
+                "defendantName": "Daniel Lloyd",
+                "defendantLastName": "Lloyd",
+                "defendantDateOfBirth": "1990-01-01"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

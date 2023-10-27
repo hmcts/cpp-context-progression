@@ -390,7 +390,7 @@ public class PostalServiceTest {
 
         when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
 
-        when(referenceDataService.getCourtRoomById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
 
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
@@ -468,7 +468,7 @@ public class PostalServiceTest {
 
         when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
 
-        when(referenceDataService.getCourtRoomById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
 
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()

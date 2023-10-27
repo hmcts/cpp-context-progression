@@ -253,7 +253,7 @@ public class SummonsDataPreparedEventProcessorTest {
         when(envelope.payloadAsJsonObject()).thenReturn(summonsDataPreparedAsJsonObject);
 
         when(progressionService.getProsecutionCaseDetailById(envelope, CASE_ID.toString())).thenReturn(optionalCase);
-        when(referenceDataService.getCourtRoomById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
         when(summonsService.getLjaDetails(envelope, LJA_CODE)).thenReturn(ljaDetails);
         when(summonsService.getProsecutor(eq(envelope), eq(prosecutionCaseIdentifier))).thenReturn(summonsProsecutor);
         when(summonsTemplateNameService.getCaseSummonsTemplateName(summonsRequired, summonsCode, isWelsh)).thenReturn(defendantTemplateName);
@@ -266,7 +266,7 @@ public class SummonsDataPreparedEventProcessorTest {
 
         //When
         verify(progressionService).getProsecutionCaseDetailById(envelope, CASE_ID.toString());
-        verify(referenceDataService).getCourtRoomById(COURT_CENTRE_ID, envelope, requester);
+        verify(referenceDataService).getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester);
         verify(summonsService).getLjaDetails(envelope, LJA_CODE);
         verify(summonsService).getProsecutor(eq(envelope), eq(prosecutionCaseIdentifier));
         verify(summonsTemplateNameService).getCaseSummonsTemplateName(summonsRequired, summonsCode, isWelsh);
@@ -303,7 +303,7 @@ public class SummonsDataPreparedEventProcessorTest {
         when(envelope.payloadAsJsonObject()).thenReturn(summonsDataPreparedAsJsonObject);
 
         when(progressionService.getCourtApplicationById(envelope, APPLICATION_ID.toString())).thenReturn(optionalApplication);
-        when(referenceDataService.getCourtRoomById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
         when(summonsService.getLjaDetails(envelope, LJA_CODE)).thenReturn(ljaDetails);
         when(applicantEmailAddressUtil.getApplicantEmailAddress(any(CourtApplication.class))).thenReturn(Optional.of(EMAIL_ADDRESS));
         when(summonsTemplateNameService.getApplicationTemplateName(summonsRequired, isWelsh)).thenReturn(subjectTemplateName);
@@ -316,7 +316,7 @@ public class SummonsDataPreparedEventProcessorTest {
 
         //When
         verify(progressionService).getCourtApplicationById(envelope, APPLICATION_ID.toString());
-        verify(referenceDataService).getCourtRoomById(COURT_CENTRE_ID, envelope, requester);
+        verify(referenceDataService).getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester);
         verify(summonsService).getLjaDetails(envelope, LJA_CODE);
         verify(summonsTemplateNameService).getApplicationTemplateName(summonsRequired, isWelsh);
         verify(applicationSummonsService).generateSummonsDocumentContent(any(SummonsDataPrepared.class), any(CourtApplication.class), any(CourtApplicationPartyListingNeeds.class), eq(courtCentreJson.get()), eq(ljaDetails));

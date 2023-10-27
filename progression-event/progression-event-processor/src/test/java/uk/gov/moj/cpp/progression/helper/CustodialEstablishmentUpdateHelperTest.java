@@ -1,14 +1,5 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import org.junit.Test;
-import uk.gov.justice.core.courts.CustodialEstablishment;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.moj.cpp.progression.domain.pojo.PrisonCustodySuite;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -20,6 +11,16 @@ import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.JudicialResult.judicialResult;
 import static uk.gov.justice.core.courts.JudicialResultPrompt.judicialResultPrompt;
 import static uk.gov.justice.core.courts.Offence.offence;
+
+import uk.gov.justice.core.courts.CustodialEstablishment;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.moj.cpp.progression.domain.pojo.PrisonCustodySuite;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.Test;
 
 public class CustodialEstablishmentUpdateHelperTest {
 

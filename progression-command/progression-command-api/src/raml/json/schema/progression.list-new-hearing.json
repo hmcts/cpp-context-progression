@@ -5,6 +5,9 @@
   "properties": {
     "listNewHearing": {
       "$ref": "http://justice.gov.uk/core/courts/courtHearingRequest.json#"
+    },
+    "sendNotificationToParties": {
+      "type" : "boolean"
     }
   },
   "required": [

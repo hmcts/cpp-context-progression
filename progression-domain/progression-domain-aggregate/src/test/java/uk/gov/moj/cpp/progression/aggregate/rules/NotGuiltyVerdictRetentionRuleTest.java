@@ -1,13 +1,5 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
-import org.junit.Test;
-import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.Verdict;
-import uk.gov.justice.core.courts.VerdictType;
-
-import java.util.List;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
@@ -15,6 +7,15 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.aggregate.rules.NotGuiltyVerdictRetentionRule.NOT_GUILTY_SENTENCE;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.NOT_GUILTY;
+
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Verdict;
+import uk.gov.justice.core.courts.VerdictType;
+
+import java.util.List;
+
+import org.junit.Test;
 
 public class NotGuiltyVerdictRetentionRuleTest {
 

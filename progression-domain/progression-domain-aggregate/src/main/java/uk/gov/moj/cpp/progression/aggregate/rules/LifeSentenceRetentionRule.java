@@ -1,10 +1,5 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
-import uk.gov.justice.core.courts.Offence;
-
-import java.util.List;
-import java.util.UUID;
-
 import static java.lang.Boolean.valueOf;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
@@ -12,6 +7,11 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.LIFE;
+
+import uk.gov.justice.core.courts.Offence;
+
+import java.util.List;
+import java.util.UUID;
 
 public class LifeSentenceRetentionRule implements RetentionRule {
 

@@ -1,13 +1,5 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
-import org.junit.Test;
-import uk.gov.justice.core.courts.DefendantJudicialResult;
-import uk.gov.justice.core.courts.JudicialResultCategory;
-import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.core.courts.Offence;
-
-import java.util.List;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -19,6 +11,15 @@ import static uk.gov.justice.core.courts.JudicialResult.judicialResult;
 import static uk.gov.moj.cpp.progression.aggregate.rules.AcquittalRetentionRule.ACQUITTAL_SENTENCE;
 import static uk.gov.moj.cpp.progression.aggregate.rules.AcquittalRetentionRule.DISCH_RESULT_DEFINITION_ID;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.ACQUITTAL;
+
+import uk.gov.justice.core.courts.DefendantJudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.Offence;
+
+import java.util.List;
+
+import org.junit.Test;
 
 public class AcquittalRetentionRuleTest {
 

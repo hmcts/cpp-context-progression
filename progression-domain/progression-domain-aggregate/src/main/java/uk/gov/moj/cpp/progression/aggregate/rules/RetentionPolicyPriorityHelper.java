@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
+import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.CUSTODIAL;
+import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.REMITTAL;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.CUSTODIAL;
-import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.REMITTAL;
 
 public class RetentionPolicyPriorityHelper {
 

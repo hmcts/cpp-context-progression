@@ -8,7 +8,11 @@
     },
     "hearingId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "sendNotificationToParties": {
+      "type" : "boolean"
     }
+
   },
   "required": [
     "listNewHearing",

@@ -87,7 +87,7 @@ public class CaseLsmInfoConverterTest {
     }
 
     @Test
-    public void shouldReturnLegalEntityDefendant(){
+    public void shouldReturnLegalEntityDefendant() {
         final List<Defendant> defendants = Stream.generate(() -> createLegalEntityDefendant())
                 .limit(1)
                 .collect(Collectors.toList());
@@ -97,12 +97,12 @@ public class CaseLsmInfoConverterTest {
         validate(jsonArray.getJsonObject(0), defendants.get(0), null);
     }
 
-    private void validate(final JsonObject actual, final Defendant expected, final Hearing hearing){
+    private void validate(final JsonObject actual, final Defendant expected, final Hearing hearing) {
         assertThat(actual.getString("id"), is(expected.getId().toString()));
         assertThat(actual.getString("masterDefendantId"), is(expected.getMasterDefendantId().toString()));
         final boolean actualHasBeenResulted = actual.getBoolean("hasBeenResulted", false);
 
-        if (expected.getProceedingsConcluded() == null){
+        if (expected.getProceedingsConcluded() == null) {
             assertThat(actualHasBeenResulted, is(false));
         } else {
             assertThat(actualHasBeenResulted, is(expected.getProceedingsConcluded()));
@@ -130,8 +130,8 @@ public class CaseLsmInfoConverterTest {
         }
     }
 
-    private CaseDefendantHearingEntity createCaseDefendantHearingEntity(){
-        final List<Defendant> defendants = Arrays.asList(createDefendant(DEFENDANT_ID1, MASTER_DEFENDANT_ID1,true), createDefendant(DEFENDANT_ID2, MASTER_DEFENDANT_ID1, null));
+    private CaseDefendantHearingEntity createCaseDefendantHearingEntity() {
+        final List<Defendant> defendants = Arrays.asList(createDefendant(DEFENDANT_ID1, MASTER_DEFENDANT_ID1, true), createDefendant(DEFENDANT_ID2, MASTER_DEFENDANT_ID1, null));
         final Hearing hearing = createHearing(defendants);
         final JsonObject hearingPayload = objectToJsonObjectConverter.convert(hearing);
         final HearingEntity hearingEntity = new HearingEntity();
@@ -143,7 +143,7 @@ public class CaseLsmInfoConverterTest {
         return caseDefendantHearingEntity;
     }
 
-    private Hearing createHearing(final List<Defendant> defendants){
+    private Hearing createHearing(final List<Defendant> defendants) {
 
         return Hearing.hearing()
                 .withId(HEARING_ID)

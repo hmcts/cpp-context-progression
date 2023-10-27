@@ -1,14 +1,17 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.Captor;
-import org.mockito.ArgumentCaptor;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.util.Optional.of;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.LJA_CODE;
+
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.BoxHearingRequest;
 import uk.gov.justice.core.courts.ContactNumber;
@@ -29,22 +32,21 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.StatDecNotificationService;
 
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import static java.util.Optional.of;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.progression.utils.TestUtils.LJA_CODE;
+import javax.json.JsonObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SendStatDecAppointmentLetterProcessorTest {
@@ -130,7 +132,7 @@ public class SendStatDecAppointmentLetterProcessorTest {
         final JsonEnvelope eventEnvelope = envelope(sendStatdecAppointmentLetter);
 
         when(jsonObjectToObjectConverter.convert(eventEnvelope.payloadAsJsonObject(), SendStatdecAppointmentLetter.class)).thenReturn(sendStatdecAppointmentLetter);
-        when(referenceDataService.getCourtRoomById(any(),any(),any())).thenReturn(courtCentreJson);
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(any(),any(),any())).thenReturn(courtCentreJson);
         this.eventProcessor.process(eventEnvelope);
         verify(statDecNotificationService).sendNotification(any(),any(),any(),any(),any(),any(), any());
     }
@@ -191,7 +193,7 @@ public class SendStatDecAppointmentLetterProcessorTest {
         final JsonEnvelope eventEnvelope = envelope(sendStatdecAppointmentLetter);
 
         when(jsonObjectToObjectConverter.convert(eventEnvelope.payloadAsJsonObject(), SendStatdecAppointmentLetter.class)).thenReturn(sendStatdecAppointmentLetter);
-        when(referenceDataService.getCourtRoomById(any(),any(),any())).thenReturn(courtCentreJson);
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(any(),any(),any())).thenReturn(courtCentreJson);
         this.eventProcessor.process(eventEnvelope);
         verify(statDecNotificationService).sendNotification(any(),any(),any(),any(),any(),any(), captor.capture());
         assertThat(captor.getValue(), equalTo("NPB_StatutoryDeclarationHearing"));

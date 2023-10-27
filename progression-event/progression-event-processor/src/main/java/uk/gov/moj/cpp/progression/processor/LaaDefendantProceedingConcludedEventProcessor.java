@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static java.lang.Integer.parseInt;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.progression.processor.utils.RetryHelper.retryHelper;
 
 import uk.gov.justice.core.courts.Defendant;

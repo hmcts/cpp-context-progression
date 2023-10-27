@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class CasesReferredToCourtAggregateTest {
-    private static final SjpCourtReferral courtReferral = new SjpCourtReferral(new ArrayList<ReferredCourtDocument>(),  null , new ArrayList<ReferredProsecutionCase>(),null);
+
     private CasesReferredToCourtAggregate aggregate;
 
     @Before
@@ -28,7 +28,7 @@ public class CasesReferredToCourtAggregateTest {
 
     @Test
     public void shouldReturnCasesReferredToCourt() {
-
+        final SjpCourtReferral courtReferral = new SjpCourtReferral(new ArrayList<ReferredCourtDocument>(),  null, null, new ArrayList<ReferredProsecutionCase>(),null);
         final List<Object> eventStream = aggregate.referCasesToCourt(courtReferral).collect(toList());
 
         assertThat(eventStream.size(), is(1));

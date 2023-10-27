@@ -7,7 +7,8 @@ public enum DateTimeFormats {
     HYP_DAY_TIME_YYYY_MM_DD("yyyy-MM-dd HH:mm:ss"),
     TIME_HMMA("h:mm a"),
     DATE_SLASHED_DD_MM_YYYY("dd/MM/yyyy"),
-    SPACE_SEPARATED_3_CHAR_MONTH("dd MMM yyyy");
+    SPACE_SEPARATED_3_CHAR_MONTH("dd MMM yyyy"),
+    DATE_WITH_TIME("yyyy-MM-dd'T'HH:mm");
 
     private final String dateFormat;
 

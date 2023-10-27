@@ -1,10 +1,5 @@
 package uk.gov.moj.cpp.progression.util;
 
-import org.apache.http.HttpStatus;
-
-import javax.ws.rs.core.Response.Status;
-import java.util.UUID;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -24,6 +19,12 @@ import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+
+import java.util.UUID;
+
+import javax.ws.rs.core.Response.Status;
+
+import org.apache.http.HttpStatus;
 
 public class WireMockStubUtils {
 

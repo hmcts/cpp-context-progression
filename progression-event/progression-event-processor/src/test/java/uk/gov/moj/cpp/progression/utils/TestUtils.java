@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.utils;
 
+import static org.junit.Assert.assertEquals;
+
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplicationParty;
@@ -10,8 +12,6 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
-
-import static org.junit.Assert.assertEquals;
 
 public class TestUtils {
 

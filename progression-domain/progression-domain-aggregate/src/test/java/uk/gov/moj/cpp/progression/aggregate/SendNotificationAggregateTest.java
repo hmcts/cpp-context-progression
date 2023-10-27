@@ -1,8 +1,6 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
-import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -10,27 +8,20 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.MasterDefendant;
-import uk.gov.justice.core.courts.NowDocumentRequestToBeAcknowledged;
-import uk.gov.justice.core.courts.NowDocumentRequested;
-import uk.gov.justice.core.courts.NowsRequestWithAccountNumberUpdated;
 import uk.gov.justice.core.courts.SendNotificationForApplication;
 import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
-import uk.gov.justice.core.courts.nowdocument.FinancialOrderDetails;
-import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
-import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.InjectMocks;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.runners.MockitoJUnitRunner;
 
 
 @RunWith(MockitoJUnitRunner.class)

@@ -1,0 +1,291 @@
+{
+  "courtCentreId": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+  "courtListId": "7a7ca6d9-ceb2-34c4-b957-f71edd1efd67",
+  "publishCourtListType": "FIRM",
+  "requestedTime": "2023-02-15T18:23:33.152Z",
+  "startDate": "2023-02-20",
+  "endDate": "2023-02-24",
+  "weekCommencing": true,
+  "courtLists": [
+    {
+      "sittingDate": "2023-02-20",
+      "weekCommencing": false,
+      "courtRoomId": "731816c1-5ee4-373a-9bda-840e13a5bcb0",
+      "judiciary": [],
+      "hearings": [
+        {
+          "startTime": "2023-02-20T10:00",
+          "endTime": "2023-02-20T10:20",
+          "hearingType": {
+            "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776",
+            "description": "First hearing"
+          },
+          "restrictFromCourtList": false,
+          "weekCommencing": false,
+          "hasVideoLink": true,
+          "caseIdentifier": {
+            "authorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+            "authorityCode": "SURRPF",
+            "caseReference": "15FEB000005"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-02-15T14:50:08.189Z",
+              "id": "c4fbed8f-790d-4480-86c8-bb1b8a49cf78",
+              "masterDefendantId": "c4fbed8f-790d-4480-86c8-bb1b8a49cf78",
+              "prosecutionCaseId": "6c510b76-5ea0-4471-b0e2-a99fca32a623",
+              "offences": [
+                {
+                  "count": 0,
+                  "id": "cec4b1f8-0fbc-474c-b14a-f4e274ac4224",
+                  "offenceCode": "TH68023",
+                  "offenceDefinitionId": "cec4b1f8-0fbc-474c-b14a-f4e274ac4224",
+                  "offenceLegislation": "Contrary to section 8(1) of the Theft Act 1968.",
+                  "offenceTitle": "Robbery",
+                  "orderIndex": 1,
+                  "startDate": "2020-09-18",
+                  "wording": "Robbery"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "56saon",
+                    "address2": "56Police House",
+                    "address3": "StreetDescription1",
+                    "address4": "Locality1",
+                    "address5": "Town2",
+                    "postcode": "TW14 9XD"
+                  },
+                  "dateOfBirth": "2000-08-08",
+                  "firstName": "Tim",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "Saxon"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sittingDate": "2023-02-20",
+      "weekCommencing": true,
+      "judiciary": [],
+      "hearings": [
+        {
+          "startTime": "2023-02-20T00:00",
+          "hearingType": {
+            "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4",
+            "description": "Trial"
+          },
+          "restrictFromCourtList": false,
+          "weekCommencing": true,
+          "hasVideoLink": false,
+          "caseIdentifier": {
+            "authorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+            "authorityCode": "CITYPF",
+            "caseReference": "38GD7734123"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-02-09T16:58:43.676Z",
+              "id": "808f65d0-dc76-42b5-8510-ea45c038b8c0",
+              "masterDefendantId": "808f65d0-dc76-42b5-8510-ea45c038b8c0",
+              "prosecutionCaseId": "1ce92d9a-4e20-4ce3-8917-d2da046eae5d",
+              "offences": [
+                {
+                  "count": 0,
+                  "id": "405a2085-7e7d-498e-a76e-763e91d1c729",
+                  "offenceCode": "CA03010",
+                  "offenceDefinitionId": "405a2085-7e7d-498e-a76e-763e91d1c729",
+                  "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+                  "offenceTitle": "Use / install a television set without a licence",
+                  "orderIndex": 1,
+                  "startDate": "2023-01-10",
+                  "wording": "Use / install a television set without a licence 1"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "Address line 1",
+                    "address2": "Address line 2",
+                    "address3": "Address line 3",
+                    "address4": "Address line 4",
+                    "address5": "West Dianaland",
+                    "postcode": "TW14 9XD"
+                  },
+                  "dateOfBirth": "1995-01-22",
+                  "firstName": "Willie",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "Kirlin"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sittingDate": "2023-02-21",
+      "weekCommencing": false,
+      "courtRoomId": "731816c1-5ee4-373a-9bda-840e13a5bcb0",
+      "judiciary": [
+        {
+          "judicialId": "00f50b1e-9691-3727-8408-61c58352eec6",
+          "judicialRoleType": {
+            "judiciaryType": "CROWN"
+          }
+        },
+        {
+          "judicialId": "01963f7f-c2d0-325e-b6df-148b2907f78c",
+          "judicialRoleType": {
+            "judiciaryType": "CROWN"
+          }
+        },
+        {
+          "judicialId": "01963f7f-c2d0-325e-b6df-148b2907f78c",
+          "judicialRoleType": {
+            "judiciaryType": "CROWN"
+          }
+        }
+      ],
+      "hearings": [
+        {
+          "startTime": "2023-02-21T10:00",
+          "hearingType": {
+            "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776",
+            "description": "First hearing"
+          },
+          "restrictFromCourtList": false,
+          "weekCommencing": false,
+          "hasVideoLink": false,
+          "endTime": "2023-02-21T10:20",
+          "caseIdentifier": {
+            "authorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+            "authorityCode": "CITYPF",
+            "caseReference": "54GD9455723"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-02-14T12:55:19.185Z",
+              "id": "effe7442-a68f-4a6c-9820-cfe4bc6d9ee3",
+              "masterDefendantId": "effe7442-a68f-4a6c-9820-cfe4bc6d9ee3",
+              "prosecutionCaseId": "4280bb38-7bef-4d3d-97f6-8eaadfc1fc17",
+              "offences": [
+                {
+                  "count": 0,
+                  "id": "6aa045e8-c59b-48b1-a936-833529c01c1f",
+                  "offenceCode": "CA03010",
+                  "offenceDefinitionId": "6aa045e8-c59b-48b1-a936-833529c01c1f",
+                  "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+                  "offenceTitle": "Use / install a television set without a licence",
+                  "orderIndex": 1,
+                  "startDate": "2023-01-15",
+                  "wording": "From 15 January 2023, used a television receiver without a licence."
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "Address line 1",
+                    "address2": "Address line 2",
+                    "address3": "Address line 3",
+                    "address4": "Address line 4",
+                    "address5": "Pascaletown",
+                    "postcode": "TW14 9XD"
+                  },
+                  "dateOfBirth": "1995-08-26",
+                  "firstName": "Allison",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "Stehr"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sittingDate": "2023-02-21",
+      "weekCommencing": false,
+      "courtRoomId": "731816c1-5ee4-373a-9bda-840e13a5bcb0",
+      "judiciary": [
+        {
+          "judicialId": "019d00dc-ecdd-3c6a-9102-446a352e3faa",
+          "judicialRoleType": {
+            "judiciaryType": "CROWN"
+          }
+        },
+        {
+          "judicialId": "0032af21-9321-3699-8eec-9516c3cb2645",
+          "judicialRoleType": {
+            "judiciaryType": "CROWN"
+          }
+        },
+        {
+          "judicialId": "019d00dc-ecdd-3c6a-9102-446a352e3faa",
+          "judicialRoleType": {
+            "judiciaryType": "CROWN"
+          }
+        }
+      ],
+      "hearings": [
+        {
+          "startTime": "2023-02-21T10:00",
+          "hearingType": {
+            "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776",
+            "description": "First hearing"
+          },
+          "restrictFromCourtList": false,
+          "weekCommencing": false,
+          "hasVideoLink": false,
+          "endTime": "2023-02-21T10:20",
+          "caseIdentifier": {
+            "authorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+            "authorityCode": "CITYPF",
+            "caseReference": "13GD6608923"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-02-14T12:48:30.682Z",
+              "id": "1ff3b576-3d28-4dc7-8e64-ccffef93b70b",
+              "masterDefendantId": "1ff3b576-3d28-4dc7-8e64-ccffef93b70b",
+              "prosecutionCaseId": "b6a85a67-af34-4246-8b3b-e0602774e1ab",
+              "offences": [
+                {
+                  "count": 0,
+                  "id": "695b0727-ad34-4248-b06b-d707f50822b8",
+                  "offenceCode": "CA03010",
+                  "offenceDefinitionId": "695b0727-ad34-4248-b06b-d707f50822b8",
+                  "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+                  "offenceTitle": "Use / install a television set without a licence",
+                  "orderIndex": 1,
+                  "startDate": "2023-01-15",
+                  "wording": "From 15 January 2023, used a television receiver without a licence."
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "Address line 1",
+                    "address2": "Address line 2",
+                    "address3": "Address line 3",
+                    "address4": "Address line 4",
+                    "address5": "Norachester",
+                    "postcode": "TW14 9XD"
+                  },
+                  "dateOfBirth": "2000-02-15",
+                  "firstName": "Josue",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "Yost"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

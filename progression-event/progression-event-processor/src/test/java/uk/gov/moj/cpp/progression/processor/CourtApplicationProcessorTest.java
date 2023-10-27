@@ -39,7 +39,6 @@ import static uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApprove
 import static uk.gov.justice.core.courts.MasterDefendant.masterDefendant;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.core.courts.ProsecutionCaseIdentifier.prosecutionCaseIdentifier;
-
 import static uk.gov.justice.core.courts.SendNotificationForApplication.sendNotificationForApplication;
 import static uk.gov.justice.core.courts.SummonsApprovedOutcome.summonsApprovedOutcome;
 import static uk.gov.justice.core.courts.SummonsRejectedOutcome.summonsRejectedOutcome;
@@ -102,7 +101,6 @@ import uk.gov.moj.cpp.progression.service.SjpService;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;

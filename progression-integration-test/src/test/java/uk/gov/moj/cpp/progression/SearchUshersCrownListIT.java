@@ -5,7 +5,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupForUshersCrownListQueryStub;
-import static uk.gov.moj.cpp.progression.helper.StubUtil.setupForUshersMagistrateListQueryStub;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupReferenceDataQueryCourtCenterDataByCourtNameStub;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupStagingPubHubCommandStub;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;

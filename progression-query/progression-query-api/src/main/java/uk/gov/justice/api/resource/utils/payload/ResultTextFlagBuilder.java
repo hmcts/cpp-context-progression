@@ -1,16 +1,19 @@
 package uk.gov.justice.api.resource.utils.payload;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import javax.json.JsonObject;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class ResultTextFlagBuilder {
 

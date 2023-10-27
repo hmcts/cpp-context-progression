@@ -15,6 +15,7 @@ import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
 import static uk.gov.justice.core.courts.ConfirmedProsecutionCaseId.confirmedProsecutionCaseId;
+import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing.prepareSummonsDataForExtendedHearing;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
@@ -1173,7 +1174,7 @@ public class ProgressionService {
                 .map(roomId -> referenceDataService.getOuCourtRoomCode(roomId.toString(), requester).map(obj -> obj.getJsonArray("ouCourtRoomCodes")).map(codes -> codes.isEmpty() ? null : codes.getString(0)).orElse(null))
                 .orElseGet(() -> courtCentreJson.getString("oucode", null));
 
-        return CourtCentre.courtCentre()
+        return courtCentre()
                 .withId(courtCentre.getId())
                 .withLja(ljaDetails)
                 .withCode(courtCentreJson.getString("oucode", null))
@@ -1190,6 +1191,65 @@ public class ProgressionService {
                         .withPostcode(courtCentreJson.getString(POSTCODE, null))
                         .build())
                 .build();
+    }
+
+    public CourtCentre transformCourtCentreV2(final CourtCentre courtCentre, final JsonEnvelope jsonEnvelope) {
+
+        final String ADDRESS_1 = "address1";
+        final String ADDRESS_2 = "address2";
+        final String ADDRESS_3 = "address3";
+        final String ADDRESS_4 = "address4";
+        final String ADDRESS_5 = "address5";
+        final String WELSH_ADDRESS_1 = "welshAddress1";
+        final String WELSH_ADDRESS_2 = "welshAddress2";
+        final String WELSH_ADDRESS_3 = "welshAddress3";
+        final String WELSH_ADDRESS_4 = "welshAddress4";
+        final String WELSH_ADDRESS_5 = "welshAddress5";
+        final String POSTCODE = "postcode";
+
+        final JsonObject courtCentreJson = referenceDataService.getCourtCentreWithCourtRoomsById(courtCentre.getId(), jsonEnvelope, requester)
+                .orElseThrow(() -> new ReferenceDataNotFoundException("Court center ", courtCentre.getId().toString()));
+
+        final LjaDetails ljaDetails = referenceDataService.getLjaDetails(jsonEnvelope, courtCentreJson.getString("lja"), requester);
+        final boolean isWelshCourtCenter = courtCentreJson.getBoolean("isWelsh", false);
+        final Optional<JsonObject> courtRoomDetails = courtCentreJson.getJsonArray("courtrooms").getValuesAs(JsonObject.class).stream()
+                .filter(courtroom -> nonNull(courtCentre.getRoomId()))
+                .filter(courtroom -> courtCentre.getRoomId().toString().equalsIgnoreCase(courtroom.getString("id", null)))
+                .findFirst();
+
+
+        final CourtCentre.Builder courtCenterBuilder = courtCentre()
+                .withId(courtCentre.getId())
+                .withLja(ljaDetails)
+                .withCode(courtCentreJson.getString("oucode", null))
+                .withCourtHearingLocation(courtCentreJson.getString("courtLocationCode", null))
+                .withName(courtCentreJson.getString("oucodeL3Name"))
+                .withRoomName(courtRoomDetails.isPresent() ? courtRoomDetails.get().getString("courtroomName") : EMPTY_STRING)
+                .withRoomId(courtCentre.getRoomId())
+                .withWelshCourtCentre(isWelshCourtCenter)
+                .withAddress(Address.address()
+                        .withAddress1(courtCentreJson.getString(ADDRESS_1))
+                        .withAddress2(courtCentreJson.getString(ADDRESS_2, EMPTY_STRING))
+                        .withAddress3(courtCentreJson.getString(ADDRESS_3, EMPTY_STRING))
+                        .withAddress4(courtCentreJson.getString(ADDRESS_4, EMPTY_STRING))
+                        .withAddress5(courtCentreJson.getString(ADDRESS_5, EMPTY_STRING))
+                        .withPostcode(courtCentreJson.getString(POSTCODE, null))
+                        .build());
+        if (isWelshCourtCenter) {
+            courtCenterBuilder.withWelshAddress(
+                    Address.address()
+                            .withAddress1(courtCentreJson.getString(WELSH_ADDRESS_1))
+                            .withAddress2(courtCentreJson.getString(WELSH_ADDRESS_2, EMPTY_STRING))
+                            .withAddress3(courtCentreJson.getString(WELSH_ADDRESS_3, EMPTY_STRING))
+                            .withAddress4(courtCentreJson.getString(WELSH_ADDRESS_4, EMPTY_STRING))
+                            .withAddress5(courtCentreJson.getString(WELSH_ADDRESS_5, EMPTY_STRING))
+                            .withPostcode(courtCentreJson.getString(POSTCODE, null))
+                            .build())
+                    .withWelshName(courtCentreJson.getString("oucodeL3WelshName"))
+                    .withWelshRoomName((courtRoomDetails.isPresent() ? courtRoomDetails.get().getString("welshCourtroomName") : EMPTY_STRING));
+        }
+
+        return courtCenterBuilder.build();
     }
 
     private List<JudicialRole> enrichJudiciaries(final List<JudicialRole> judiciaryList, final JsonEnvelope jsonEnvelope) {
@@ -1252,15 +1312,16 @@ public class ProgressionService {
     }
 
     private String enrichCourtRoomName(final UUID courtCentreId, final UUID courtRoomId, final JsonEnvelope jsonEnvelope) {
-        final JsonObject courtRoomsJson = referenceDataService.getCourtRoomById(courtCentreId, jsonEnvelope, requester)
+        final JsonObject courtRoomsJson = referenceDataService.getCourtCentreWithCourtRoomsById(courtCentreId, jsonEnvelope, requester)
                 .orElseThrow(() -> new ReferenceDataNotFoundException("Court room ", courtCentreId.toString()));
         return getValueFromCourtRoomJson(courtRoomsJson, courtRoomId, "courtroomName");
     }
 
     private String getValueFromCourtRoomJson(final JsonObject courtRoomsJson, final UUID courtRoomId, final String fieldName) {
-        return courtRoomsJson.getJsonArray("courtrooms").getValuesAs(JsonObject.class).stream()
+        final JsonObject matchingCourtroom = courtRoomsJson.getJsonArray("courtrooms").getValuesAs(JsonObject.class).stream()
                 .filter(cr -> courtRoomId.toString().equals(cr.getString("id")))
-                .map(cr -> cr.getString(fieldName, EMPTY_STRING)).findFirst().orElse("");
+                .findFirst().orElse(null);
+        return isNull(matchingCourtroom) ? EMPTY_STRING : matchingCourtroom.getString(fieldName, EMPTY_STRING);
     }
 
     /**

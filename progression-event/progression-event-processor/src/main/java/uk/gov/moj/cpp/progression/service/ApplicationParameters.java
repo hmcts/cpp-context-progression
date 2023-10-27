@@ -67,6 +67,11 @@ public class ApplicationParameters {
     private String notifyDefenceOfNewMaterialTemplateId;
 
     @Inject
+    @Value(key = "notifyHearingTemplateId", defaultValue = "e4648583-eb0f-438e-aab5-5eff29f3f7b4")
+    private String notifyHearingTemplateId;
+
+
+    @Inject
     @Value(key = "endClientHost", defaultValue = "")
     private String endClientHost;
 
@@ -272,6 +277,10 @@ public class ApplicationParameters {
 
     public String getOnlinePleaProsecutorTemplateId() {
         return onlinePleaProsecutorTemplateId;
+    }
+
+    public String getNotifyHearingTemplateId() {
+        return notifyHearingTemplateId;
     }
 
     public String getRetryTimes() {

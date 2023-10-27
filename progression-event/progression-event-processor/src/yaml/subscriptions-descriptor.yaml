@@ -412,6 +412,9 @@ subscriptions_descriptor:
         - name: progression.event.prosecution-cotr-updated
           schema_uri: http://justice.gov.uk/cpp/progression/event/prosecution-cotr-updated.json
 
+        - name: progression.event.court-list-published
+          schema_uri: http://justice.gov.uk/cpp/progression/event/court-list-published.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 
@@ -697,6 +700,9 @@ subscriptions_descriptor:
 
         - name: public.hearing.hearing-offence-plea-updated
           schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/public.hearing-offence-plea-updated.json
+
+        - name: public.listing.court-list-published
+          schema_uri: http://justice.gov.uk/listing/events/public.listing.court-list-published.json
 
         - name: public.prosecutioncasefile.cps-serve-cotr-submitted
           schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-cotr-submitted.json

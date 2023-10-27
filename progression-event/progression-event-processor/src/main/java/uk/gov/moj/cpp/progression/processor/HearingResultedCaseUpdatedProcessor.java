@@ -1,7 +1,8 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+
 import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -16,12 +17,13 @@ import uk.gov.moj.cpp.progression.helper.CustodialEstablishmentUpdateHelper;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UpdateDefendantService;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.Objects.nonNull;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingResultedCaseUpdatedProcessor {

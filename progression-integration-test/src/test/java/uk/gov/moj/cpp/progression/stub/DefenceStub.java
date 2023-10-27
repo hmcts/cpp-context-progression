@@ -1,9 +1,5 @@
 package uk.gov.moj.cpp.progression.stub;
 
-import org.apache.http.HttpHeaders;
-
-import java.text.MessageFormat;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -16,6 +12,10 @@ import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
+
+import java.text.MessageFormat;
+
+import org.apache.http.HttpHeaders;
 
 
 public class DefenceStub {

@@ -1,12 +1,5 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
-import org.junit.Test;
-import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.core.courts.Offence;
-
-import java.util.List;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -18,6 +11,14 @@ import static uk.gov.moj.cpp.progression.aggregate.rules.LifeSentenceRetentionRu
 import static uk.gov.moj.cpp.progression.aggregate.rules.LifeSentenceRetentionRule.LIFE_JUDICIAL_RESULT_PROMPT_TYPE_ID;
 import static uk.gov.moj.cpp.progression.aggregate.rules.LifeSentenceRetentionRule.LIFE_SENTENCE;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.LIFE;
+
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.Offence;
+
+import java.util.List;
+
+import org.junit.Test;
 
 public class LifeSentenceRetentionRuleTest {
 

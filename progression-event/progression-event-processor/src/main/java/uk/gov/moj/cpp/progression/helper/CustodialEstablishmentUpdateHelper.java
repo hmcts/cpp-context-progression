@@ -1,6 +1,9 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import org.apache.commons.lang3.StringUtils;
+import static java.util.Arrays.asList;
+import static java.util.Objects.nonNull;
+import static uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment;
+
 import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
@@ -11,9 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static java.util.Arrays.asList;
-import static java.util.Objects.nonNull;
-import static uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment;
+import org.apache.commons.lang3.StringUtils;
 
 public class CustodialEstablishmentUpdateHelper {
 

@@ -1,15 +1,15 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
-import uk.gov.justice.core.courts.Offence;
-
-import java.util.List;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.NOT_GUILTY;
+
+import uk.gov.justice.core.courts.Offence;
+
+import java.util.List;
 
 public class NotGuiltyVerdictRetentionRule implements RetentionRule {
 

@@ -56,7 +56,7 @@ public class ListNewHearingHandler {
         final UUID hearingId = randomUUID();
         final EventStream eventStream = eventSource.getStreamById(hearingId);
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
-        final Stream<Object> events = hearingAggregate.listNewHearing(hearingId, listNewHearing.getListNewHearing());
+        final Stream<Object> events = hearingAggregate.listNewHearing(hearingId, listNewHearing.getListNewHearing(), listNewHearing.getSendNotificationToParties());
         appendEventsToStream(listNewHearingEnvelope, eventStream, events);
     }
 

@@ -8,6 +8,8 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -49,8 +51,6 @@ import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRAN
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
 import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.COMPANYONLINEPLEA;
-import static javax.json.Json.createObjectBuilder;
-import static javax.json.Json.createArrayBuilder;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;

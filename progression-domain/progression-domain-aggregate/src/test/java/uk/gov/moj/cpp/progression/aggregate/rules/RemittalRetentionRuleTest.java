@@ -1,14 +1,5 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
-import org.junit.Test;
-import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.JudicialResultCategory;
-import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.core.courts.Offence;
-
-import java.util.List;
-import java.util.UUID;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -17,6 +8,16 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.REMITTAL;
+
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.Offence;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.Test;
 
 public class RemittalRetentionRuleTest {
 

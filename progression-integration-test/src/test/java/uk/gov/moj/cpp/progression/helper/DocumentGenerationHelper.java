@@ -1,7 +1,8 @@
 package uk.gov.moj.cpp.progression.helper;
 
 import static java.util.Arrays.stream;
-import static java.util.Objects.nonNull;import static org.hamcrest.CoreMatchers.is;
+import static java.util.Objects.nonNull;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetCountryByPostCode;

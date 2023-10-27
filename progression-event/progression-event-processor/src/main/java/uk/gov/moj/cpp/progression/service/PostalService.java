@@ -119,7 +119,7 @@ public class PostalService {
 
         String courtCentreNameWelsh = null;
         if(nonNull(courtCentre)){
-            final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getCourtRoomById(courtCentre.getId(), envelope, requester);
+            final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getCourtCentreWithCourtRoomsById(courtCentre.getId(), envelope, requester);
             if (nonNull(courtCentreJsonOptional)) {
                 final JsonObject courtCentreJson = courtCentreJsonOptional.orElseThrow(() -> new IllegalArgumentException(String.format("Court centre '%s' not found", courtCentre.getId())));
 

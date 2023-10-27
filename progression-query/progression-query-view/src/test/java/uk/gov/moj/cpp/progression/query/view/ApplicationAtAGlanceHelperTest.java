@@ -19,10 +19,6 @@ import static uk.gov.justice.core.courts.Organisation.organisation;
 import static uk.gov.justice.core.courts.Person.person;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 
-
-import java.util.Collections;
-import org.junit.Before;
-import org.junit.Test;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -43,7 +39,11 @@ import uk.gov.justice.services.test.utils.core.random.BooleanGenerator;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
 
 public class ApplicationAtAGlanceHelperTest {
 

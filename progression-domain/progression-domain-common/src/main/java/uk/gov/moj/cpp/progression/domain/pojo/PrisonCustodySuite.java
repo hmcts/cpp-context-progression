@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.progression.domain.pojo;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import static java.util.Objects.hash;
 
 import java.io.Serializable;
 import java.util.UUID;
 
-import static java.util.Objects.hash;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PrisonCustodySuite implements Serializable {

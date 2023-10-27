@@ -4,6 +4,9 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.UUID.fromString;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
@@ -12,6 +15,7 @@ import uk.gov.justice.core.courts.AssignDefendantRequestFromCurrentHearingToExte
 import uk.gov.justice.core.courts.AssignDefendantRequestToExtendHearing;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.ConfirmedHearing;
+import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
@@ -21,6 +25,7 @@ import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdateRequested;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingConfirmed;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ListCourtHearing;
@@ -40,19 +45,26 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
+import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.PartialHearingConfirmService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
 import uk.gov.moj.cpp.progression.transformer.ProsecutionCasesReferredToCourtTransformer;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -76,6 +88,9 @@ public class HearingConfirmedEventProcessor {
             "progression.command.prepare-summons-data-for-extended-hearing";
     private static final String PRIVATE_PROGRESSION_COMMAND_EXTEND_HEARING_DEFENDANT_REQUEST_UPDATE_REQUESTED =
             "progression.command.extend-hearing-defendant-request-update-requested";
+
+    private static final String NEW_HEARING_NOTIFICATION_TEMPLATE_NAME = "NewHearingNotification";
+
     private static final Logger LOGGER =
             LoggerFactory.getLogger(HearingConfirmedEventProcessor.class.getName());
     @Inject
@@ -95,6 +110,13 @@ public class HearingConfirmedEventProcessor {
     private ListingService listingService;
 
     @Inject
+    private HearingNotificationHelper hearingNotificationHelper;
+
+    @Inject
+    private ApplicationParameters applicationParameters;
+
+
+    @Inject
     private Sender sender;
     @Inject
     private Enveloper enveloper;
@@ -108,6 +130,10 @@ public class HearingConfirmedEventProcessor {
         final HearingConfirmed hearingConfirmed = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingConfirmed.class);
         final ConfirmedHearing confirmedHearing = hearingConfirmed.getConfirmedHearing();
         final Hearing hearingInProgression = progressionService.retrieveHearing(jsonEnvelope, confirmedHearing.getId());
+        boolean sendNotificationToParties = false;
+        if (nonNull(hearingConfirmed.getSendNotificationToParties())) {
+            sendNotificationToParties = hearingConfirmed.getSendNotificationToParties();
+        }
 
         triggerRetryOnMissingCaseAndApplication(confirmedHearing.getId(), hearingInProgression);
 
@@ -116,6 +142,7 @@ public class HearingConfirmedEventProcessor {
             if (isHearingInitialised(hearingIdFromQuery)) {
                 processExtendHearing(jsonEnvelope, confirmedHearing, hearingInProgression);
             }
+
         } else {
 
             final SeedingHearing seedingHearing = hearingInProgression.getSeedingHearing();
@@ -130,11 +157,13 @@ public class HearingConfirmedEventProcessor {
             final List<ConfirmedProsecutionCase> confirmedProsecutionCases = confirmedHearing.getProsecutionCases();
 
             final Hearing hearing = hearingInitiate.getHearing();
+            final ZonedDateTime hearingStartDateTime = getEarliestDate(hearing.getHearingDays());
             LOGGER.info("List of application ids {} ", applicationIds);
 
             final List<CourtApplication> courtApplications = ofNullable(hearing.getCourtApplications()).orElse(new ArrayList<>());
 
             courtApplications.forEach(courtApplication -> LOGGER.info("sending notification for Application : {}", objectToJsonObjectConverter.convert(courtApplication)));
+            courtApplications.forEach(courtApplication -> notificationService.sendNotification(jsonEnvelope, UUID.randomUUID(), courtApplication, hearing.getCourtCentre(), hearingStartDateTime, hearing.getJurisdictionType()));
 
             if (isNotEmpty(applicationIds)) {
                 LOGGER.info("Update application status to LISTED, associate Hearing with id: {} to Applications with ids {} and generate summons", hearing.getId(), applicationIds);
@@ -164,6 +193,12 @@ public class HearingConfirmedEventProcessor {
             sender.send(hearingInitiateTransformedPayload);
 
             progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, hearingInitiate, deltaProsecutionCases);
+        }
+
+        if (sendNotificationToParties) {
+            sendHearingNotificationsToDefenceAndProsecutor(jsonEnvelope, confirmedHearing);
+        } else {
+            LOGGER.info("Notification is not sent for HearingId {}  , Notification sent flag {}", confirmedHearing.getId(), false);
         }
     }
 
@@ -273,6 +308,13 @@ public class HearingConfirmedEventProcessor {
         progressionService.populateHearingToProbationCaseworker(jsonEnvelope, hearingInitiate.getHearing().getId());
     }
 
+    private static ZonedDateTime getEarliestDate(final List<HearingDay> hearingDays) {
+        return hearingDays.stream()
+                .map(HearingDay::getSittingDay)
+                .sorted()
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+    }
 
     private void processExtendHearing(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing, final Hearing hearingInProgression) {
         LOGGER.info(" processing extend hearing for hearing id {}", confirmedHearing.getExistingHearingId());
@@ -315,7 +357,7 @@ public class HearingConfirmedEventProcessor {
         LOGGER.info("hearing-confirmed event populate hearing to probation caseworker for hearingId '{}' ", confirmedHearing.getId());
         progressionService.populateHearingToProbationCaseworker(jsonEnvelope, confirmedHearing.getId());
         final Boolean fullExtension = confirmedHearing.getFullExtension();
-        if(nonNull(fullExtension) && fullExtension.booleanValue()) {
+        if (nonNull(fullExtension) && fullExtension.booleanValue()) {
             progressionService.sendListingCommandToDeleteHearing(jsonEnvelope, confirmedHearing.getId());
         }
     }
@@ -389,7 +431,6 @@ public class HearingConfirmedEventProcessor {
     }
 
 
-
     private void prepareSummonsDataForExtendHearing(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing) {
         final PrepareSummonsDataForExtendedHearing prepareSummonsDataForExtendedHearing =
                 PrepareSummonsDataForExtendedHearing.prepareSummonsDataForExtendedHearing()
@@ -423,4 +464,41 @@ public class HearingConfirmedEventProcessor {
             throw new CourtApplicationAndCaseNotFoundException(format("Prosecution case and court application not found for hearing id : %s", hearingId));
         }
     }
+
+    private void sendHearingNotificationsToDefenceAndProsecutor(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedUpdatedHearing) {
+        final HearingNotificationInputData hearingNotificationInputData = new HearingNotificationInputData();
+
+        final Set<UUID> caseIds = confirmedUpdatedHearing.getProsecutionCases()
+                .stream().map(ConfirmedProsecutionCase::getId).collect(toSet());
+
+        final Map<UUID, List<UUID>> defendantOffenceListMap = new HashMap<>();
+        final Set<UUID> defendantIdSet = new HashSet<>();
+
+        confirmedUpdatedHearing.getProsecutionCases().stream()
+                .flatMap(confirmedProsecutionCase -> confirmedProsecutionCase.getDefendants().stream())
+                .forEach(defendant -> {
+                    defendantIdSet.add(defendant.getId());
+                    defendantOffenceListMap.put(defendant.getId(),
+                            defendant.getOffences().stream()
+                                    .map(ConfirmedOffence::getId)
+                                    .collect(toList()));
+                });
+
+        final ZonedDateTime hearingStartDateTime = getEarliestDate(confirmedUpdatedHearing.getHearingDays());
+
+        hearingNotificationInputData.setHearingType(confirmedUpdatedHearing.getType().getDescription());
+        hearingNotificationInputData.setCaseIds(new ArrayList<>(caseIds));
+        hearingNotificationInputData.setDefendantIds(new ArrayList<>(defendantIdSet));
+        hearingNotificationInputData.setDefendantOffenceListMap(defendantOffenceListMap);
+        hearingNotificationInputData.setTemplateName(NEW_HEARING_NOTIFICATION_TEMPLATE_NAME);
+        hearingNotificationInputData.setHearingId(confirmedUpdatedHearing.getId());
+        hearingNotificationInputData.setHearingDateTime(hearingStartDateTime);
+        hearingNotificationInputData.setEmailNotificationTemplateId(fromString(applicationParameters.getNotifyHearingTemplateId()));
+        hearingNotificationInputData.setCourtCenterId(confirmedUpdatedHearing.getCourtCentre().getId());
+        hearingNotificationInputData.setCourtRoomId(confirmedUpdatedHearing.getCourtCentre().getRoomId());
+
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, hearingNotificationInputData);
+    }
+
+
 }

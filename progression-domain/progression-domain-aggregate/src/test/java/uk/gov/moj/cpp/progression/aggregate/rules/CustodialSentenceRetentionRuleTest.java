@@ -1,13 +1,5 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
-import org.junit.Test;
-import uk.gov.justice.core.courts.DefendantJudicialResult;
-import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.core.courts.Offence;
-
-import java.util.List;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -19,6 +11,15 @@ import static uk.gov.moj.cpp.progression.aggregate.rules.CustodialSentenceRetent
 import static uk.gov.moj.cpp.progression.aggregate.rules.CustodialSentenceRetentionRule.TOTAL_CUSTODIAL_PERIOD_PROMPT;
 import static uk.gov.moj.cpp.progression.aggregate.rules.CustodialSentenceRetentionRule.TOTAL_CUSTODIAL_PERIOD_PROMPT_TYPE_ID;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.CUSTODIAL;
+
+import uk.gov.justice.core.courts.DefendantJudicialResult;
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.Offence;
+
+import java.util.List;
+
+import org.junit.Test;
 
 public class CustodialSentenceRetentionRuleTest {
 

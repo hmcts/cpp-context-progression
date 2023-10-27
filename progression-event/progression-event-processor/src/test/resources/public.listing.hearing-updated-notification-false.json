@@ -1,0 +1,43 @@
+{
+  "updatedHearing":{
+    "courtCentre":{
+      "code":"B01LY00",
+      "id":"f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name":"Lavender Hill Magistrates' Court",
+      "roomId":"b4562684-9209-3ec4-a544-7f80dabd94d8"
+    },
+    "hearingDays":[
+      {
+        "courtCentreId":"f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId":"b4562684-9209-3ec4-a544-7f80dabd94d8",
+        "isCancelled":false,
+        "listedDurationMinutes":20,
+        "listingSequence":0,
+        "sittingDay":"2023-03-30T06:42:00.000Z"
+      }
+    ],
+    "hearingLanguage":"ENGLISH",
+    "id":"e58275a0-66de-4898-8de7-536da6457f33",
+    "jurisdictionType":"MAGISTRATES",
+    "prosecutionCases":[
+      {
+        "defendants":[
+          {
+            "id":"8d5be374-7aea-4f3e-a7d6-2242031a8472",
+            "offences":[
+              {
+                "id":"2cd6d8c1-6184-4a66-883e-e40c096bcf8b"
+              }
+            ]
+          }
+        ],
+        "id":"486fbb9e-aba4-4e66-980e-50a57d3f6301"
+      }
+    ],
+    "type":{
+      "description":"First hearing",
+      "id":"4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    }
+  },
+  "sendNotificationToParties": false
+}

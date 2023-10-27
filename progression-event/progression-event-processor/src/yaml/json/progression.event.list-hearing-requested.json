@@ -39,6 +39,7 @@
         "courtScheduleId": "8e837de0-743a-4a2c-9db3-b2e678c48729"
       }
     ]
-  }
+  },
+  "sendNotificationToParties": false
 
 }

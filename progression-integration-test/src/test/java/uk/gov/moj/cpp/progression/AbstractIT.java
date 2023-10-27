@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
+import static uk.gov.moj.cpp.progression.helper.NotifyStub.stubLetterNotifications;
 import static uk.gov.moj.cpp.progression.helper.NotifyStub.stubNotifications;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.HOST;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
@@ -60,6 +61,8 @@ public class AbstractIT {
     protected static final UUID USER_ID_VALUE_AS_ADMIN = randomUUID();
     protected static final String APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON = "application/vnd.progression.query.courtdocuments+json";
     protected static final String HEARING_ID_TYPE_TRIAL = randomUUID().toString();
+
+    protected static final String DEFENDANT_ID = randomUUID().toString();
     protected static final String HEARING_ID_TYPE_TRIAL_OF_ISSUE = randomUUID().toString();
     protected static final String HEARING_ID_TYPE_NON_TRIAL = randomUUID().toString();
     protected static final String REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON = "/restResource/ref-data-get-organisation.json";
@@ -126,6 +129,7 @@ public class AbstractIT {
         stubQueryCourtOURoom();
         stubQueryOrganisation(REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON);
         stubNotifications();
+        stubLetterNotifications();
         stubMaterialUploadFile();
         stubQueryEthinicityData("/restResource/ref-data-ethnicities.json", randomUUID());
         setupHearingQueryStub(fromString(HEARING_ID_TYPE_TRIAL), "stub-data/hearing.get-hearing-of-type-trial.json");
@@ -136,5 +140,7 @@ public class AbstractIT {
         setupCourtOrdersStub();
         IdMapperStub.setUp();
     }
+
+
 
 }

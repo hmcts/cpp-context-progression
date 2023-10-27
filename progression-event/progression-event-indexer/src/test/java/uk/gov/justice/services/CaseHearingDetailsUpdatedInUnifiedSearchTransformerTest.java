@@ -10,7 +10,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import com.bazaarvoice.jolt.JsonUtils;

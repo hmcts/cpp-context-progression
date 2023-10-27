@@ -140,7 +140,7 @@ public class NowsMaterialStatusEventProcessorTest {
                                 .add("firstClassLetter", false)
                                 .add("secondClassLetter", true)
                                 .add("isNotificationApi", false)
-                                .add("isCps", false)
+                                .add("isCps", true)
                                 .build())
                             .add("status", status)
                             .add("welshTranslationRequired", false)

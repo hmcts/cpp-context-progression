@@ -17,12 +17,23 @@ public class NotifyStub {
     private static final String COMMAND_URL = "/notificationnotify-service/command/api/rest/notificationnotify/notifications/";
 
     private static final String COMMAND_MEDIA_TYPE = "application/vnd.notificationnotify.email+json";
+    private static final String COMMAND_PRINT_MEDIA_TYPE = "application/vnd.notificationnotify.letter+json";
 
     public static void stubNotifications() {
         InternalEndpointMockUtils.stubPingFor("notificationnotify-service");
 
         stubFor(post(urlPathMatching(COMMAND_URL + ".*"))
                 .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE))
+                .willReturn(aResponse().withStatus(ACCEPTED.getStatusCode())
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
+    }
+
+    public static void stubLetterNotifications() {
+        InternalEndpointMockUtils.stubPingFor("notificationnotify-service");
+
+        stubFor(post(urlPathMatching(COMMAND_URL + ".*"))
+                .withHeader(CONTENT_TYPE, equalTo(COMMAND_PRINT_MEDIA_TYPE))
                 .willReturn(aResponse().withStatus(ACCEPTED.getStatusCode())
                         .withHeader("CPPID", randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)));

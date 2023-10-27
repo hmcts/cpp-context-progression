@@ -276,10 +276,10 @@ public class RefDataService {
         return Optional.ofNullable(response.payloadAsJsonObject());
     }
 
-    public Optional<JsonObject> getCourtRoomById(final UUID roomId, final JsonEnvelope event, final Requester requester) {
+    public Optional<JsonObject> getCourtCentreWithCourtRoomsById(final UUID courtCentreId, final JsonEnvelope event, final Requester requester) {
 
         final JsonObject payload = Json.createObjectBuilder()
-                .add(ID, roomId.toString())
+                .add(ID, courtCentreId.toString())
                 .build();
 
         final JsonEnvelope response = requester.request(envelop(payload)

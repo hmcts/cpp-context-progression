@@ -1,24 +1,24 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import com.google.common.io.Resources;
-import org.hamcrest.core.Is;
-import org.junit.Test;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.AllOf.allOf;
 
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
+import com.google.common.io.Resources;
+import org.hamcrest.core.Is;
+import org.junit.Test;
 
 
 public class PrisonCourtRegisterPdfPayloadGeneratorTest {

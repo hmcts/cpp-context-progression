@@ -2,6 +2,7 @@
   "association": {
     "organisationId": "2fc69990-bf59-4c4a-9489-d766b9abde9a",
     "organisationName": "Harry & Co LLP",
+    "email" : "email@email.com",
     "address": {
       "address1": "Legal House",
       "address2": "15 Sewell Street",
@@ -11,6 +12,6 @@
     },
     "status": "Active Barrister/Solicitor of record",
     "startDate": "2020-04-19T00:00:00.000Z",
-    "representationType": "PRIVATE_FUNDED"
+    "representationType": "COURT_APPOINTED"
   }
 }

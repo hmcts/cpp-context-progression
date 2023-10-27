@@ -1,14 +1,17 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.StringUtils.SPACE;
+import static uk.gov.justice.core.courts.notification.EmailChannel.emailChannel;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.moj.cpp.progression.service.utils.DefendantDetailsExtractor.getDefendantFullName;
+
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
-import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.LjaDetails;
-import uk.gov.justice.core.courts.Organisation;
-import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.Personalisation;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.notification.EmailChannel;
@@ -22,9 +25,6 @@ import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -33,12 +33,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.randomUUID;
-import static org.apache.commons.lang3.StringUtils.SPACE;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class UnscheduledHearingAllocationNotifiedEventProcessor {
@@ -102,17 +101,7 @@ public class UnscheduledHearingAllocationNotifiedEventProcessor {
     }
 
     private EmailChannel buildEmailChannel(final Hearing hearing, final ProsecutionCase prosecutionCase, final Defendant defendant, final LjaDetails ljaDetails, final String enforcementAreaEmail) {
-        final String defendantFullName;
-
-        if (nonNull(defendant.getPersonDefendant())) {
-            final Person person = defendant.getPersonDefendant().getPersonDetails();
-            defendantFullName = buildDefendantFullName(person);
-        } else {
-            final LegalEntityDefendant legalEntityDefendant = defendant.getLegalEntityDefendant();
-            final Organisation organisation = legalEntityDefendant.getOrganisation();
-            defendantFullName = organisation.getName();
-        }
-
+        final String defendantFullName = getDefendantFullName(defendant);
         final String caseURN = prosecutionCase.getProsecutionCaseIdentifier().getCaseURN();
         final ZonedDateTime hearingStartDateTime = getEarliestDate(hearing.getHearingDays());
 
@@ -127,8 +116,8 @@ public class UnscheduledHearingAllocationNotifiedEventProcessor {
 
         final Personalisation personalisation = new Personalisation(map);
 
-        return EmailChannel.emailChannel()
-                .withTemplateId(UUID.fromString(applicationParameters.getUnscheduledHearingAllocationEmailTemplateId()))
+        return emailChannel()
+                .withTemplateId(fromString(applicationParameters.getUnscheduledHearingAllocationEmailTemplateId()))
                 .withSendToAddress(enforcementAreaEmail)
                 .withPersonalisation(personalisation)
                 .build();
@@ -137,22 +126,6 @@ public class UnscheduledHearingAllocationNotifiedEventProcessor {
     private String buildCourtCentre(final LjaDetails ljaDetails){
         return ljaDetails.getLjaCode() + SPACE + ljaDetails.getLjaName();
     }
-
-    private String buildDefendantFullName(final Person personDetails) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append(personDetails.getFirstName()).append(SPACE);
-
-        if (!isNullOrEmpty(personDetails.getMiddleName())) {
-           sb.append(personDetails.getMiddleName()).append(SPACE);
-        }
-
-        sb.append(personDetails.getLastName());
-        return sb.toString();
-    }
-
-
-
-
 
     private static ZonedDateTime getEarliestDate(final List<HearingDay> hearingDays) {
         return hearingDays.stream()

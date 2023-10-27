@@ -11,10 +11,6 @@ import static uk.gov.justice.courts.progression.query.ThirdParties.thirdParties;
 import static uk.gov.justice.progression.courts.ApplicantDetails.applicantDetails;
 import static uk.gov.justice.progression.courts.RespondentDetails.respondentDetails;
 
-
-import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.BailStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -38,9 +34,12 @@ import uk.gov.justice.progression.courts.RespondentDetails;
 import uk.gov.justice.progression.courts.RespondentRepresentatives;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

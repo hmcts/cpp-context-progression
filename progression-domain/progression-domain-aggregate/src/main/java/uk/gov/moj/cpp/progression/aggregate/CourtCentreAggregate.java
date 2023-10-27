@@ -6,6 +6,7 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import static uk.gov.justice.listing.courts.CourtListPublished.courtListPublished;
 
 import uk.gov.justice.core.courts.CourtRegisterRecorded;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
@@ -16,6 +17,8 @@ import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterRecipient;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDocumentRequest;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.RecordPrisonCourtRegisterDocumentGenerated;
 import uk.gov.justice.domain.aggregate.Aggregate;
+import uk.gov.justice.listing.courts.CourtListPublished;
+import uk.gov.justice.listing.courts.PublishCourtList;
 import uk.gov.justice.progression.courts.CourtRegisterGenerated;
 import uk.gov.justice.progression.courts.CourtRegisterNotificationIgnored;
 import uk.gov.justice.progression.courts.CourtRegisterNotified;
@@ -40,9 +43,12 @@ public class CourtCentreAggregate implements Aggregate {
                 when(PrisonCourtRegisterRecorded.class).apply(e -> {
                     // Do something here if needed.
                 }),
+                when(CourtListPublished.class).apply(e -> {
+                    // Do something here if needed.
+                }),
                 when(CourtRegisterGenerated.class).apply(e -> {
                     final List<CourtRegisterDocumentRequest> courtRegisterWithRecipients = e.getCourtRegisterDocumentRequests().stream().filter(
-                            courtRegisterDocumentRequest -> nonNull(courtRegisterDocumentRequest.getRecipients()) && !courtRegisterDocumentRequest.getRecipients().isEmpty())
+                                    courtRegisterDocumentRequest -> nonNull(courtRegisterDocumentRequest.getRecipients()) && !courtRegisterDocumentRequest.getRecipients().isEmpty())
                             .collect(Collectors.toList());
 
                     if (isNotEmpty(courtRegisterWithRecipients)) {
@@ -90,7 +96,7 @@ public class CourtCentreAggregate implements Aggregate {
 
     //should be used only in test
     public void setCourtRegisterRecipients(final List<CourtRegisterRecipient> courtRegisterRecipients) {
-       this.courtRegisterRecipients = Collections.unmodifiableList(courtRegisterRecipients);
+        this.courtRegisterRecipients = Collections.unmodifiableList(courtRegisterRecipients);
     }
 
     public Stream<Object> recordPrisonCourtRegisterGenerated(final UUID courtCentreId, final RecordPrisonCourtRegisterDocumentGenerated prisonCourtRegisterDocumentGenerated) {
@@ -102,5 +108,19 @@ public class CourtCentreAggregate implements Aggregate {
                 .withHearingDate(prisonCourtRegisterDocumentGenerated.getHearingDate())
                 .withHearingId(prisonCourtRegisterDocumentGenerated.getHearingId())
                 .withCourtCentreId(courtCentreId).build()));
+    }
+
+    public Stream<Object> publishCourtList(final UUID courtCentreId, final PublishCourtList publishCourtList) {
+        return apply(Stream.of(courtListPublished()
+                .withCourtCentreId(courtCentreId)
+                .withCourtListId(publishCourtList.getCourtListId())
+                .withPublishCourtListType(publishCourtList.getPublishCourtListType())
+                .withCourtLists(publishCourtList.getCourtLists())
+                .withStartDate(publishCourtList.getStartDate())
+                .withEndDate(publishCourtList.getEndDate())
+                .withRequestedTime(publishCourtList.getRequestedTime())
+                .withWeekCommencing(publishCourtList.getWeekCommencing())
+                .withSendNotificationToParties(publishCourtList.getSendNotificationToParties())
+                .build()));
     }
 }

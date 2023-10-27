@@ -48,6 +48,7 @@ public class StubUtil {
                         .withBody(getPayload("stub-data/usersgroups.user-permissions.json"))));
 
     }
+    
 
     public static void setupListingQueryStub() {
         InternalEndpointMockUtils.stubPingFor("listing-service");

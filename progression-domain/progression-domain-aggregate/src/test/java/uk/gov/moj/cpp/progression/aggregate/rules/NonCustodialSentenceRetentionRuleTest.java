@@ -1,12 +1,13 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
-import org.junit.Test;
-import uk.gov.justice.core.courts.JurisdictionType;
-
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.NON_CUSTODIAL;
+
+import uk.gov.justice.core.courts.JurisdictionType;
+
+import org.junit.Test;
 
 public class NonCustodialSentenceRetentionRuleTest {
 

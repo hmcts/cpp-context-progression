@@ -1,10 +1,10 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
-import java.io.Serializable;
-import java.util.Objects;
-
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyPriorityHelper.periodToDays;
+
+import java.io.Serializable;
+import java.util.Objects;
 
 public class RetentionPolicy implements Serializable {
 

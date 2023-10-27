@@ -17,8 +17,6 @@ import static uk.gov.justice.core.courts.HearingResultedApplicationUpdated.heari
 import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-
-import org.hamcrest.Matchers;
 import uk.gov.justice.core.courts.ApplicationEjected;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;

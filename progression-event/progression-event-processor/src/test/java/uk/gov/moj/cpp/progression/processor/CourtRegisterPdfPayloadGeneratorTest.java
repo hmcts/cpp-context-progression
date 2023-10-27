@@ -6,8 +6,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 
-
-import org.hamcrest.Matchers;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
 import java.nio.charset.Charset;
@@ -18,6 +16,7 @@ import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 public class CourtRegisterPdfPayloadGeneratorTest {

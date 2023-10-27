@@ -39,7 +39,6 @@ import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.io.Resources;

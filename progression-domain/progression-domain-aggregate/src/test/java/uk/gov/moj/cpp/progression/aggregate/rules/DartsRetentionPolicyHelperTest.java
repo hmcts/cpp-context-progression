@@ -1,17 +1,5 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import uk.gov.justice.core.courts.DefendantJudicialResult;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-
-import java.util.List;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
@@ -22,6 +10,19 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.NON_CUSTODIAL;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getAllDefendantsOffences;
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
+
+import uk.gov.justice.core.courts.DefendantJudicialResult;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+
+import java.util.List;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Test;
 
 public class DartsRetentionPolicyHelperTest {
 

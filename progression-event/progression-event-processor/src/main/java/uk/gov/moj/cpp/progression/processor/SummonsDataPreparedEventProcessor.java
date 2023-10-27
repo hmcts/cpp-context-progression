@@ -124,7 +124,7 @@ public class SummonsDataPreparedEventProcessor {
         final SummonsDataPrepared summonsDataPrepared = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), SummonsDataPrepared.class);
 
         final UUID courtCentreId = summonsDataPrepared.getSummonsData().getCourtCentre().getId();
-        final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getCourtRoomById(courtCentreId, jsonEnvelope, requester);
+        final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getCourtCentreWithCourtRoomsById(courtCentreId, jsonEnvelope, requester);
         final JsonObject courtCentreJson = courtCentreJsonOptional.orElseThrow(() -> new IllegalArgumentException(String.format("Court centre '%s' not found", courtCentreId)));
         final String ljaCode = courtCentreJson.getString("lja", EMPTY);
         final Optional<LjaDetails> optionalLjaDetails = isNotBlank(ljaCode) ? summonsService.getLjaDetails(jsonEnvelope, ljaCode) : empty();
