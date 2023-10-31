@@ -676,12 +676,18 @@ public class HearingAggregate implements Aggregate {
         if (this.duplicate) {
             return empty();
         }
-
-        return apply(Stream.of(HearingMarkedAsDuplicate.hearingMarkedAsDuplicate()
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(HearingMarkedAsDuplicate.hearingMarkedAsDuplicate()
                 .withHearingId(hearingId)
                 .withCaseIds(prosecutionCaseIds)
                 .withDefendantIds(defendantIds)
-                .build()));
+                .build());
+
+        streamBuilder.add(DeletedHearingPopulatedToProbationCaseworker.deletedHearingPopulatedToProbationCaseworker()
+                .withHearing(filterHearingForProbationCaseWorker())
+                .build());
+
+        return apply(streamBuilder.build());
     }
 
     public Stream<Object> processHearingUpdated(final ConfirmedHearing confirmedHearing, final Hearing updatedHearing) {
@@ -1418,9 +1424,7 @@ public class HearingAggregate implements Aggregate {
             return apply(empty());
         }
 
-        Hearing filteredOutHearing = getFilteredOutHearing();
-
-        filteredOutHearing = filterOutYouth(filteredOutHearing);
+        final Hearing filteredOutHearing = filterHearingForProbationCaseWorker();
 
         if (isEmpty(filteredOutHearing.getProsecutionCases()) && isEmpty(filteredOutHearing.getCourtApplications())) {
             return apply(empty());
@@ -1435,6 +1439,13 @@ public class HearingAggregate implements Aggregate {
                     .withHearing(filteredOutHearing)
                     .build());
         }
+    }
+
+    private Hearing filterHearingForProbationCaseWorker() {
+        Hearing filteredOutHearing = getFilteredOutHearing();
+
+        filteredOutHearing = filterOutYouth(filteredOutHearing);
+        return filteredOutHearing;
     }
 
     public Stream<Object> populateHearingToVEP() {

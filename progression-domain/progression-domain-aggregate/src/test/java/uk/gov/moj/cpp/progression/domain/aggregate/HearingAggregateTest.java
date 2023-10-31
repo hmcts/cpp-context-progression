@@ -7,6 +7,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.core.courts.SeedingHearing.seedingHearing;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -116,14 +117,20 @@ public class HearingAggregateTest {
         final UUID hearingId = randomUUID();
         final List<UUID> caseIds = Arrays.asList(randomUUID(), randomUUID());
         final List<UUID> defendantIds = Arrays.asList(randomUUID(), randomUUID());
+        final Hearing hearing = Hearing
+                .hearing()
+                .withId(hearingId).build();
+        setField(hearingAggregate, "hearing", hearing);
 
         final List<Object> eventStream = hearingAggregate.markAsDuplicate(hearingId, caseIds, defendantIds).collect(toList());
-
-        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.size(), is(2));
         final HearingMarkedAsDuplicate hearingMarkedAsDuplicate = (HearingMarkedAsDuplicate) eventStream.get(0);
+        final DeletedHearingPopulatedToProbationCaseworker deletedHearingPopulatedToProbationCaseworker = (DeletedHearingPopulatedToProbationCaseworker) eventStream.get(1);
+
         assertThat(hearingMarkedAsDuplicate.getHearingId(), is(hearingId));
         assertThat(hearingMarkedAsDuplicate.getCaseIds(), is(caseIds));
         assertThat(hearingMarkedAsDuplicate.getDefendantIds(), is(defendantIds));
+        assertThat(deletedHearingPopulatedToProbationCaseworker.getHearing().getId(), is(hearingId));
     }
 
     @Test
@@ -133,7 +140,10 @@ public class HearingAggregateTest {
         final UUID hearingId = randomUUID();
         final List<UUID> caseIds = Arrays.asList(randomUUID(), randomUUID());
         final List<UUID> defendantIds = Arrays.asList(randomUUID(), randomUUID());
-
+        final Hearing hearing = Hearing
+                .hearing()
+                .withId(hearingId).build();
+        setField(hearingAggregate, "hearing", hearing);
         final List<Object> eventStream = hearingAggregate.markAsDuplicate(hearingId, caseIds, defendantIds).collect(toList());
 
         assertThat(eventStream.size(), is(0));
