@@ -440,19 +440,21 @@ public class HearingResultsCommandHandlerTest {
 
     private void checkEventsContentOfHearingResultedAndListingStatusChangedAndProsecutionCasesResulted(final UUID hearingId, final UUID caseId, final List<JsonEnvelope> events) {
 
-        final JsonEnvelope listingStatusChangedEvent = events.get(0);
+        final JsonEnvelope hearingResultedEvent = events.get(0);
+        assertThat(hearingResultedEvent.metadata().name(), is("progression.event.hearing-resulted"));
+        assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getString("id"), is(hearingId.toString()));
+        assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getString("id"), is(caseId.toString()));
+        assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournDate"), is("-999999999-01-01"));
+        assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournedHearingType"), is("AdjournmentReason"));
+
+
+        final JsonEnvelope listingStatusChangedEvent = events.get(1);
         assertThat(listingStatusChangedEvent.metadata().name(), is("progression.event.prosecutionCase-defendant-listing-status-changed-v2"));
         assertThat(listingStatusChangedEvent.payloadAsJsonObject().getJsonObject("hearing").getString("id"), is(hearingId.toString()));
         assertThat(listingStatusChangedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournDate"), is("-999999999-01-01"));
         assertThat(listingStatusChangedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournedHearingType"), is("AdjournmentReason"));
 
 
-        final JsonEnvelope hearingResultedEvent = events.get(1);
-        assertThat(hearingResultedEvent.metadata().name(), is("progression.event.hearing-resulted"));
-        assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getString("id"), is(hearingId.toString()));
-        assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getString("id"), is(caseId.toString()));
-        assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournDate"), is("-999999999-01-01"));
-        assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournedHearingType"), is("AdjournmentReason"));
 
 
 
@@ -467,20 +469,21 @@ public class HearingResultsCommandHandlerTest {
 
     private void checkEventsContentOfHearingResultedWithManuallyAddedReportingRestrictions(final UUID hearingId, final UUID caseId, final List<JsonEnvelope> events, final int expectedNumberOfReportingRestrictions) {
 
-        final JsonEnvelope listingStatusChangedEvent = events.get(0);
-        assertThat(listingStatusChangedEvent.metadata().name(), is("progression.event.prosecutionCase-defendant-listing-status-changed-v2"));
-        assertThat(listingStatusChangedEvent.payloadAsJsonObject().getJsonObject("hearing").getString("id"), is(hearingId.toString()));
-        assertThat(listingStatusChangedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournDate"), is("-999999999-01-01"));
-        assertThat(listingStatusChangedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournedHearingType"), is("AdjournmentReason"));
-
-
-        final JsonEnvelope hearingResultedEvent = events.get(1);
+        final JsonEnvelope hearingResultedEvent = events.get(0);
         assertThat(hearingResultedEvent.metadata().name(), is("progression.event.hearing-resulted"));
         assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getString("id"), is(hearingId.toString()));
         assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getString("id"), is(caseId.toString()));
         assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournDate"), is("-999999999-01-01"));
         assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournedHearingType"), is("AdjournmentReason"));
         assertThat(hearingResultedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getJsonArray("reportingRestrictions").size(), is(expectedNumberOfReportingRestrictions));
+
+
+        final JsonEnvelope listingStatusChangedEvent = events.get(1);
+        assertThat(listingStatusChangedEvent.metadata().name(), is("progression.event.prosecutionCase-defendant-listing-status-changed-v2"));
+        assertThat(listingStatusChangedEvent.payloadAsJsonObject().getJsonObject("hearing").getString("id"), is(hearingId.toString()));
+        assertThat(listingStatusChangedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournDate"), is("-999999999-01-01"));
+        assertThat(listingStatusChangedEvent.payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("lastAdjournedHearingType"), is("AdjournmentReason"));
+
 
 
 
