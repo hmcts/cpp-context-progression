@@ -320,7 +320,7 @@ public class CourtProceedingsInitiatedProcessorTest {
                         .build())
                         .collect(Collectors.toList()));
         if (isYouth) {
-            defendantBuilder.withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().withDateOfBirth(LocalDate.of(2005, 11, 11)).build()).build());
+            defendantBuilder.withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().withDateOfBirth(LocalDate.now().minusYears(10)).build()).build());
         }
         builder.withDefendants(Arrays.asList(defendantBuilder.build()));
 
