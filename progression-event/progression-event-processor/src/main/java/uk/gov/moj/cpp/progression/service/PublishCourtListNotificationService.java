@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableList;
 public class PublishCourtListNotificationService {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSS");
+    private static final String HEARING_NOTIFICATION_DATE = "hearing_notification_date";
 
     @Inject
     private DocumentGeneratorService documentGeneratorService;
@@ -57,7 +58,7 @@ public class PublishCourtListNotificationService {
         final UUID notificationId = randomUUID();
         if (isNotBlank(publishCourtListPayload.getAddressee().getEmail())) {
             final EmailChannel emailChannel = emailChannel().withPersonalisation(personalisation()
-                            .withAdditionalProperty("hearing_notification_date", publishCourtListPayload.getIssueDate())
+                            .withAdditionalProperty(HEARING_NOTIFICATION_DATE, publishCourtListPayload.getIssueDate())
                             .build())
                     .withMaterialUrl(materialUrl)
                     .withTemplateId(fromString(applicationParameters.getNotifyHearingTemplateId()))

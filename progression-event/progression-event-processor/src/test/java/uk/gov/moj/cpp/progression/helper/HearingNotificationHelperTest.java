@@ -79,7 +79,7 @@ public class HearingNotificationHelperTest {
     public static final String TEMPLATE_ID = "e4648583-eb0f-438e-aab5-5eff29f3f7b4";
     private static final String TEMPLATE_NAME = "NewHearingNotificationTemplate";
     private static final String HEARING_TYPE = "Plea";
-    private static final String DATE_OF_HEARING = "dateOfHearing";
+    private static final String HEARING_NOTIFICATION_DATE = "hearing_notification_date";
 
     @Mock
     private ProgressionService progressionService;
@@ -592,7 +592,7 @@ public class HearingNotificationHelperTest {
         assertThat(emailChannel.getSendToAddress(), is(sendToEmail));
         assertThat(emailChannel.getTemplateId(), is(templateId));
         assertThat(emailChannel.getPersonalisation(), notNullValue());
-        assertThat(emailChannel.getPersonalisation().getAdditionalProperties().containsKey(DATE_OF_HEARING),is(true));
+        assertThat(emailChannel.getPersonalisation().getAdditionalProperties().containsKey(HEARING_NOTIFICATION_DATE),is(true));
     }
 
     public JsonObject getPayload(final String path) {

@@ -65,7 +65,8 @@ public class HearingNotificationHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingNotificationHelper.class);
 
     private static final String EMPTY = "";
-    private static final String DATE_OF_HEARING = "dateOfHearing";
+    private static final String HEARING_NOTIFICATION_DATE = "hearing_notification_date";
+
     public static final String OFFENCE_TITLE = "title";
     private static final String HEARING_DATE_PATTERN = "dd/MM/yyy HH:mm a";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSS");
@@ -205,7 +206,7 @@ public class HearingNotificationHelper {
         EmailChannel emailChannel;
         emailChannel = EmailChannel.emailChannel()
                 .withPersonalisation(Personalisation.personalisation()
-                        .withAdditionalProperty(DATE_OF_HEARING, hearingNotificationInputData.getHearingDateTime().format(DateTimeFormatter.ofPattern(HEARING_DATE_PATTERN)))
+                        .withAdditionalProperty(HEARING_NOTIFICATION_DATE, hearingNotificationInputData.getHearingDateTime().format(DateTimeFormatter.ofPattern(HEARING_DATE_PATTERN)))
                         .build())
                 .withMaterialUrl(materialUrl)
                 .withTemplateId(hearingNotificationInputData.getEmailNotificationTemplateId())
