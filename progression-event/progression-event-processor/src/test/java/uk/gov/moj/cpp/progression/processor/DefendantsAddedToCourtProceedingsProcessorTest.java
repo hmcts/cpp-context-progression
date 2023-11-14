@@ -84,7 +84,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.moj.cpp.progression.utils.PayloadUtil;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantsAddedToCourtProceedingsProcessorTest {
@@ -285,7 +284,6 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
 
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
-                .withId(PROSECUTION_CASE_ID)
                 .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
                         .withCaseURN("caseUrn")
                         .build())
@@ -317,7 +315,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
         //When
         eventProcessor.process(jsonEnvelope);
-        verify(sender, times(6)).send(envelopeCaptor.capture());
+        verify(sender, times(5)).send(envelopeCaptor.capture());
 
         assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), is("progression.command.process-matched-defendants"));
         assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("prosecutionCaseId"), is(PROSECUTION_CASE_ID.toString()));
@@ -331,11 +329,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         assertThat(envelopeCaptor.getAllValues().get(3).metadata().name(), is("progression.command.add-or-store-defendants-and-listing-hearing-requests"));
         assertThat(envelopeCaptor.getAllValues().get(3).payload(), is(payload));
 
-        assertThat(envelopeCaptor.getAllValues().get(4).metadata().name(), is("progression.command.increase-listing-number-to-prosecution-case"));
-        assertThat(envelopeCaptor.getAllValues().get(5).metadata().name(), is("progression.command.update-hearing-with-new-defendant"));
-        assertThat(envelopeCaptor.getAllValues().get(4).payload().getString("prosecutionCaseId"), is(PROSECUTION_CASE_ID.toString()));
-        assertThat(envelopeCaptor.getAllValues().get(4).payload().getString("hearingId"), is(HEARING_ID_1.toString()));
-        assertThat(envelopeCaptor.getAllValues().get(4).payload().getJsonArray("offenceIds").size(), is(2));
+        assertThat(envelopeCaptor.getAllValues().get(4).metadata().name(), is("progression.command.update-hearing-with-new-defendant"));
 
         verify(listingService, never()).listCourtHearing(jsonEnvelope, listCourtHearing);
         verify(progressionService, never()).updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
