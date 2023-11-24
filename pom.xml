@@ -79,7 +79,7 @@
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
         <results.version>8.0.32</results.version>
         <notification.notify.version>7.0.18</notification.notify.version>
-        <unifiedsearch.version>8.0.3</unifiedsearch.version>
+        <unifiedsearch.version>8.0.4</unifiedsearch.version>
         <systemdocgenerator.version>8.0.51</systemdocgenerator.version>
         <applicationscourtorders.version>8.0.9</applicationscourtorders.version>
         <sjp.version>8.0.64</sjp.version>
