@@ -114,3 +114,16 @@ Feature: CaseAggregate
     Given hearing is resulted
     When you deleteHearing on a HearingAggregate with a delete hearing
     Then hearing deleted
+
+  Scenario: Update Hearing Listing Status to Hearing Resulted whenever hearing is already resulted and next hearing requested
+
+    Given hearing is resulted
+    When you updateDefendantListingStatusV3 on a HearingAggregate with a update hearing listing status with next hearings
+    Then hearing listing status resulted with next hearings
+
+
+  Scenario: Update Hearing Listing Status to Hearing sent for listing with next hearings
+
+    Given no previous events
+    When you updateDefendantListingStatusV3 on a HearingAggregate with a update hearing listing status with sent for listing with next hearings
+    Then hearing sent for listing with next hearings

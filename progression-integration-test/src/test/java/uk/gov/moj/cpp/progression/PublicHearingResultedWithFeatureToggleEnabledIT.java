@@ -9,11 +9,9 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.jboss.resteasy.util.HttpResponseCodes.SC_ACCEPTED;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
@@ -38,9 +36,11 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
@@ -252,8 +252,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
 
         final  String newHearingId;
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
-
+                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v3")) {
             sendMessage(messageProducerClientPublic,
                     PUBLIC_EVENTS_HEARING_HEARING_RESULTED, getHearingJsonObject(PUBLIC_EVENTS_HEARING_HEARING_RESULTED + "-with-grown.json", caseId,
                             hearingId, defendantId, newCourtCentreId, newCourtCentreName, reportingRestrictionId, "2021-03-29"), metadataBuilder()
@@ -261,10 +260,17 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
                             .withName(PUBLIC_EVENTS_HEARING_HEARING_RESULTED)
                             .withUserId(userId)
                             .build());
-            JsonPath message = QueueUtil.retrieveMessage(messageConsumerProsecutionCaseDefendantListingStatusChanged, isJson(Matchers.allOf(
-                    withJsonPath("$.hearing.id", not(is(hearingId))))));
-            Assert.assertNotNull(message);
-            newHearingId = message.getString("hearing.id");
+
+            final JsonEnvelope jsonEnvelope = QueueUtil.retrieveMessageAsEnvelope(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+            final JsonObject eventPayload = jsonEnvelope.payloadAsJsonObject();
+            final JsonObject listNextHearingsJsonObject = eventPayload.getJsonObject("listNextHearings");
+            Assert.assertNotNull(listNextHearingsJsonObject);
+
+            final ListNextHearingsV3 listNextHearings = jsonObjectConverter.convert(listNextHearingsJsonObject, ListNextHearingsV3.class);
+
+            newHearingId = listNextHearings.getHearings().get(0).getId().toString();
+
+            Assert.assertFalse(listNextHearings.getHearings().get(0).getId().equals(listNextHearings.getSeedingHearing().getSeedingHearingId()));
 
             verifyInMessagingQueueForHearingResultedPrivateEvent();
             verifyInMessagingQueueForProsecutionCasesResultedV2PrivateEvent();
@@ -293,7 +299,6 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         JsonPath messageDaysMatchers = QueueUtil.retrieveMessage(messageConsumerHearingPopulatedToProbationCaseWorker, isJson(Matchers.allOf(
                 withJsonPath("$.hearing.id", CoreMatchers.is(hearingId)))));
         Assert.assertNull(messageDaysMatchers);
-
     }
 
     @Test

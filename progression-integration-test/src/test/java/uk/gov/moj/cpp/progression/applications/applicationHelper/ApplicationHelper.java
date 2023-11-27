@@ -57,6 +57,12 @@ public class ApplicationHelper {
                 getCourtApplicationJson2(applicationId, caseId_1, caseId_2, fileName, hearingId));
     }
 
+    public static Response intiateCourtProceedingForApplication(final String applicationId, final String caseId, final String defendantId, final String masterDefendantId,final String hearingId, final String fileName) throws IOException {
+        return postCommand(getWriteUrl("/initiate-application"),
+                "application/vnd.progression.initiate-court-proceedings-for-application+json",
+                getCourtApplicationJson3(applicationId, caseId, defendantId, masterDefendantId, hearingId, fileName));
+    }
+
     public static Response initiateCourtProceedingsForCourtApplication(final String applicationId, final String caseId, final String hearingId, final String fileName) throws IOException {
         return postCommand(getWriteUrl("/initiate-application"),
                 "application/vnd.progression.initiate-court-proceedings-for-application+json",
@@ -109,6 +115,17 @@ public class ApplicationHelper {
                 .replace("APPLICATION_ID", applicationId)
                 .replace("CASE_ID_1", caseId_1)
                 .replace("CASE_ID_2", caseId_2)
+                .replace("HEARING_ID", hearingId);
+        return payloadJson;
+    }
+
+    private static String getCourtApplicationJson3(final String applicationId, final String caseId, final String defendantId, final String masterDefendantId, final String hearingId, final String fileName) throws IOException {
+        String payloadJson;
+        payloadJson = Resources.toString(getResource(fileName), Charset.defaultCharset())
+                .replace("APPLICATION_ID", applicationId)
+                .replace("CASE_ID", caseId)
+                .replace("DEFENDANT_ID", defendantId)
+                .replace("MASTERDEFENDANTID", masterDefendantId)
                 .replace("HEARING_ID", hearingId);
         return payloadJson;
     }

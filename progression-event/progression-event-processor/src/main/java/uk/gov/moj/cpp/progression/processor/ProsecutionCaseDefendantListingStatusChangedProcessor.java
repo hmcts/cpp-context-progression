@@ -5,6 +5,8 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV3;
+import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -27,6 +29,7 @@ import org.slf4j.LoggerFactory;
 public class ProsecutionCaseDefendantListingStatusChangedProcessor {
 
     static final String PROGRESSION_PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED_V2 = "progression.event.prosecutionCase-defendant-listing-status-changed-v2";
+    static final String PROGRESSION_PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED_V3 = "progression.event.prosecutionCase-defendant-listing-status-changed-v3";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseDefendantListingStatusChangedProcessor.class.getCanonicalName());
 
     @Inject
@@ -59,5 +62,18 @@ public class ProsecutionCaseDefendantListingStatusChangedProcessor {
         if (!CollectionUtils.isEmpty(listHearingRequests)) {
             listingService.listCourtHearing(jsonEnvelope, listCourtHearingTransformer.transform(jsonEnvelope, prosecutionCases, listHearingRequests, hearingId));
         }
+    }
+
+    @Handles(PROGRESSION_PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED_V3)
+    public void handleProsecutionCaseDefendantListingStatusChangedEventV3(final JsonEnvelope jsonEnvelope) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Received '{}' event with payload {}", PROGRESSION_PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED_V3, jsonEnvelope.toObfuscatedDebugString());
+        }
+
+        final ProsecutionCaseDefendantListingStatusChangedV3 prosecutionCaseDefendantListingStatusChanged = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), ProsecutionCaseDefendantListingStatusChangedV3.class);
+
+        final ListNextHearingsV3 listNextHearings = prosecutionCaseDefendantListingStatusChanged.getListNextHearings();
+
+        listingService.listNextCourtHearings(jsonEnvelope, listNextHearings);
     }
 }

@@ -1,7 +1,9 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static com.google.common.io.Resources.getResource;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Arrays.asList;
 import static java.util.Collections.EMPTY_LIST;
 import static java.util.Collections.emptyList;
@@ -35,6 +37,7 @@ import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
@@ -80,6 +83,7 @@ import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.NextHearing;
+import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffencesToRemove;
 import uk.gov.justice.core.courts.Plea;
@@ -94,18 +98,24 @@ import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.core.courts.YouthCourt;
 import uk.gov.justice.hearing.courts.Initiate;
+import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.listing.events.PublicListingNewDefendantAddedForCourtProceedings;
+import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.json.JsonSchemaValidator;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.exception.DataValidationException;
+import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
 
 import java.io.IOException;
@@ -114,9 +124,12 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -129,7 +142,9 @@ import com.google.common.io.Resources;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -170,6 +185,7 @@ public class ProgressionServiceTest {
     private static final String PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS = "progression.command.hearing-confirmed-update-case-status";
     private static final String PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA = "progression.command.prepare-summons-data";
     private static final String PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND = "progression.command.update-defendant-listing-status";
+    private static final String PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND_V3 = "progression.command.update-defendant-listing-status-v3";
     private static final String PUBLIC_EVENT_HEARING_DETAIL_CHANGED = "public.hearing-detail-changed";
     private static final String PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND = "progression.command.list-unscheduled-hearing";
     private static final String PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING = "progression.command.record-unscheduled-hearing";
@@ -198,6 +214,10 @@ public class ProgressionServiceTest {
     @Spy
     @InjectMocks
     private JsonObjectToObjectConverter jsonObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    @Spy
+    @InjectMocks
+    private final ObjectToJsonValueConverter objectToJsonValueConverter = new ObjectToJsonValueConverter(objectMapper);
+
     @Mock
     private Sender sender;
     @Spy
@@ -225,7 +245,10 @@ public class ProgressionServiceTest {
     private Function<Object, JsonEnvelope> enveloperFunction;
     @Mock
     private JsonEnvelope finalEnvelope;
-
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+    @Mock
+    private JsonSchemaValidator jsonSchemaValidator;
 
     @Before
     public void initMocks() {
@@ -1103,6 +1126,37 @@ public class ProgressionServiceTest {
     }
 
     @Test
+    public void shouldTransformProsecutionCaseInMultiCaseDefendantScenarioFromConfirmedHearing() {
+
+        final Optional<JsonObject> confirmedHearingJsonObject = Optional.of(getJsonObjectResponseFromJsonResource("public.listing.hearing-confirmed-11SS0342023.json"));
+        final JsonEnvelope confirmedJsonEnvelope = envelopeFrom(metadataWithRandomUUID("public.listing.hearing-confirmed"),
+                confirmedHearingJsonObject.get());
+        final HearingConfirmed hearingConfirmed = jsonObjectConverter.convert(confirmedJsonEnvelope.payloadAsJsonObject(), HearingConfirmed.class);
+        final ConfirmedHearing confirmedHearing = hearingConfirmed.getConfirmedHearing();
+
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = confirmedHearing.getProsecutionCases();
+        final LocalDate earliestHearingDate = ProgressionService.getEarliestDate(confirmedHearing.getHearingDays()).toLocalDate();
+
+        final Optional<JsonObject> prosecutionCaseJsonObject = Optional.of(getJsonObjectResponseFromJsonResource("progression.prosecution-case-11SS0342023.json"));
+        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", prosecutionCaseJsonObject.get()).build();
+
+        when(enveloper.withMetadataFrom(confirmedJsonEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any())).thenReturn(confirmedJsonEnvelope);
+
+        when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
+
+        List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, earliestHearingDate, confirmedJsonEnvelope, null);
+
+        assertThat(2, is(prosecutionCases.size()));
+        assertThat(1, is(prosecutionCases.get(0).getDefendants().size()));
+        assertThat(9, is(prosecutionCases.get(0).getDefendants().get(0).getOffences().size()));
+        assertThat(prosecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getPlea(), is(notNullValue()));
+        assertThat(prosecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getJudicialResults(), is(Matchers.nullValue()));
+    }
+
+    @Test
     public void shouldTransformCourtCentre() {
         final UUID courtCentreId = randomUUID();
         final String address1 = "ADDRESS1";
@@ -1285,6 +1339,103 @@ public class ProgressionServiceTest {
         assertThat(hearing.getCourtCentre().getLja().getWelshLjaName(), is("welshName"));
     }
 
+    @Test
+    public void shouldCreateNextHearingAndUpdateHearingListingStatusToSentForListingOnNextHearingRequested() {
+        final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .build();
+        final LocalDate hearingDay = LocalDate.now();
+        final UUID seedingHearingId = randomUUID();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .withSittingDay(hearingDay.toString())
+                .build();
+
+        final ListNextHearingsV3 listNextHearings = getListNextHearings(hearingId, singletonList(prosecutionCase), seedingHearing);
+        progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listNextHearings);
+        verify(sender).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND_V3));
+        JsonObject jsonObject = (JsonObject) envelopeCaptor.getValue().payload();
+        assertThat(jsonObject.getJsonObject("hearing").getString("id"), is(hearingId.toString()));
+        assertThat(jsonObject.getJsonObject("listNextHearings"), is(objectToJsonObjectConverter.convert(listNextHearings)));
+    }
+
+    @Test
+    public void shouldThrowDataValidationExceptionWhenHearingIsWithNoCase() {
+        expectedException.expect(DataValidationException.class);
+        expectedException.expectMessage("Hearing with no case not possible");
+        final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
+        final UUID hearingId = randomUUID();
+        final LocalDate hearingDay = LocalDate.now();
+        final UUID seedingHearingId = randomUUID();
+        final SeedingHearing seedingHearing = SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .withSittingDay(hearingDay.toString())
+                .build();
+
+        final ListNextHearingsV3 listNextHearings = getListNextHearings(hearingId, null, seedingHearing);
+        progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listNextHearings);
+    }
+
+    @Test
+    public void shouldThrowDataValidationExceptionWhenHearingRequestedWithoutNextHearings() {
+        expectedException.expect(DataValidationException.class);
+        expectedException.expectMessage("Next hearing without hearing not possible");
+        final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .build();
+
+        final ListNextHearingsV3 listNextHearings = getListNextHearings(hearingId, singletonList(prosecutionCase), null);
+        progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listNextHearings);
+    }
+
+    private ListNextHearingsV3 getListNextHearings(final UUID hearingId, final List<ProsecutionCase> prosecutionCases, final SeedingHearing seedingHearing ) {
+        final UUID bookingReferenceId = randomUUID();
+        final List<UUID> courtScheduleIds = Arrays.asList(randomUUID(), randomUUID());
+
+        final List<BookingReferenceCourtScheduleIds> bookingReferenceCourtScheduleIds = Arrays.asList(BookingReferenceCourtScheduleIds.bookingReferenceCourtScheduleIds()
+                .withBookingId(bookingReferenceId)
+                .withCourtScheduleIds(courtScheduleIds)
+                .build());
+
+        final Map<UUID, Set<UUID>> alreadyExistingAndNewBookingReferencesWithCourtScheduleIds = new HashMap<>();
+        alreadyExistingAndNewBookingReferencesWithCourtScheduleIds.put(bookingReferenceId, new HashSet<>(courtScheduleIds));
+
+        final NextHearingsRequested hearingResulted = NextHearingsRequested.nextHearingsRequested()
+                .withSeedingHearing(seedingHearing)
+                .withPreviousBookingReferencesWithCourtScheduleIds(bookingReferenceCourtScheduleIds)
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .build())
+                .build();
+
+
+        final List<HearingListingNeeds> nextHearingsList = Arrays.asList(HearingListingNeeds.hearingListingNeeds()
+                .withId(hearingId)
+                        .withProsecutionCases(prosecutionCases)
+                .build());
+        UUID seedingHearingId = null;
+        if(null != seedingHearing){
+            seedingHearingId = seedingHearing.getSeedingHearingId();
+        }
+        final ListNextHearingsV3 listNextHearings = ListNextHearingsV3.listNextHearingsV3()
+                .withSeedingHearing(seedingHearing)
+                .withHearingId(seedingHearingId)
+                .withAdjournedFromDate(LocalDate.now())
+                .withHearings(nextHearingsList)
+                .withShadowListedOffences(hearingResulted.getShadowListedOffences())
+                .build();
+        return listNextHearings;
+    }
+
+
+
     public static JsonObject getPayload(final String path) {
         String response = null;
         try {
@@ -1314,6 +1465,20 @@ public class ProgressionServiceTest {
 
     private PublicListingNewDefendantAddedForCourtProceedings getDefendantAddedPayload() {
         return publicListingNewDefendantAddedForCourtProceedings().withHearingId(randomUUID()).withCaseId(randomUUID()).withDefendantId(randomUUID()).withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withRoomId(randomUUID()).build()).withHearingDateTime(ZonedDateTime.now()).build();
+    }
+
+    /**
+     * Returns the JsonObject for the given json resource @param resourceName
+     * @param resourceName The json file resource name
+     * @return The Json Object
+     */
+    private JsonObject getJsonObjectResponseFromJsonResource(String resourceName) {
+        String response = null;
+        try {
+            response = Resources.toString(getResource(resourceName), defaultCharset());
+        } catch (final Exception ignored) {
+        }
+        return new StringToJsonObjectConverter().convert(response);
     }
 
 }

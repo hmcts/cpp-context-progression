@@ -99,6 +99,15 @@
       ]
     },
     {
+      "eventName": "progression.event.prosecutionCase-defendant-listing-status-changed-v3",
+      "fieldsToBeIgnored": [
+        "$.boxWorkTaskStatus",
+        "$.hearingListingStatus",
+        "$.listHearingRequests",
+        "$.listNextHearings"
+      ]
+    },
+    {
       "eventName": "progression.events.defendant-added",
       "fieldsToBeIgnored": [
         "$.offences[*].asnSequenceNumber",

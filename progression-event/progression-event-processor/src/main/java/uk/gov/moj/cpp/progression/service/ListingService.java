@@ -5,6 +5,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
 import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewActionName;
 
 import uk.gov.justice.core.courts.CommittingCourt;
@@ -13,6 +14,7 @@ import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListUnscheduledCourtHearing;
 import uk.gov.justice.core.courts.ListUnscheduledNextHearings;
 import uk.gov.justice.listing.courts.ListNextHearings;
+import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -80,6 +82,14 @@ public class ListingService {
             LOGGER.debug("Posting next hearings to listing for hearing '{}' ", listNextHearings.getHearingId());
         }
 
+        sender.send(Enveloper.envelop(nextHearingsJson).withName(LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS).withMetadataFrom(jsonEnvelope));
+    }
+
+    public void listNextCourtHearings(final JsonEnvelope jsonEnvelope, final ListNextHearingsV3 listNextHearings) {
+        final JsonObject nextHearingsJson = objectToJsonObjectConverter.convert(listNextHearings);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Posting next hearings to listing for hearing V3 '{}' ", listNextHearings.getHearingId());
+        }
         sender.send(Enveloper.envelop(nextHearingsJson).withName(LISTING_COMMAND_SEND_LIST_NEXT_HEARINGS).withMetadataFrom(jsonEnvelope));
     }
 

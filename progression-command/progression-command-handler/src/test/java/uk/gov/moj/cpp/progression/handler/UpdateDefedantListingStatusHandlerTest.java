@@ -63,7 +63,7 @@ public class UpdateDefedantListingStatusHandlerTest {
     private AggregateService aggregateService;
 
     @InjectMocks
-    private UpdateDefedantListingStatusHandler handler;
+    private UpdateDefendantListingStatusHandler handler;
 
     private HearingAggregate aggregate;
 
@@ -81,7 +81,7 @@ public class UpdateDefedantListingStatusHandlerTest {
 
     @Test
     public void shouldHandleCommand() {
-        assertThat(new UpdateDefedantListingStatusHandler(), isHandler(COMMAND_HANDLER)
+        assertThat(new UpdateDefendantListingStatusHandler(), isHandler(COMMAND_HANDLER)
                 .with(method("handle")
                         .thatHandles("progression.command.update-defendant-listing-status")
                 ));

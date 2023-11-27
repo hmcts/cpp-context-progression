@@ -1,14 +1,7 @@
 package uk.gov.moj.cpp.progression.event;
 
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -26,10 +19,11 @@ import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
-import uk.gov.justice.listing.courts.ListNextHearings;
+import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.progression.courts.StoreBookingReferenceCourtScheduleIds;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -43,6 +37,9 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,12 +52,14 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingResultedEventProcessor {
@@ -73,6 +72,10 @@ public class HearingResultedEventProcessor {
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Inject
+
+    private ObjectToJsonValueConverter objectToJsonValueConverter;
 
     @Inject
     private ListingService listingService;
@@ -185,7 +188,8 @@ public class HearingResultedEventProcessor {
 
         final List<HearingListingNeeds> nextHearingsList = hearingToHearingListingNeedsTransformer.transformWithSeedHearing(hearing, committingCourt, seedingHearing, combinedBookingReferencesWithCourtScheduleIds);
         if (isNotEmpty(nextHearingsList)) {
-            final ListNextHearings listNextHearings = ListNextHearings.listNextHearings()
+            LOGGER.info("progression.event.next-hearings-requested nextHearingsList not empty");
+            final ListNextHearingsV3 listNextHearings = ListNextHearingsV3.listNextHearingsV3()
                     .withHearingId(seedingHearing.getSeedingHearingId())
                     .withSeedingHearing(seedingHearing)
                     .withAdjournedFromDate(LocalDate.now())
@@ -193,8 +197,7 @@ public class HearingResultedEventProcessor {
                     .withShadowListedOffences(shadowListedOffences)
                     .build();
 
-            listingService.listNextCourtHearings(event, listNextHearings);
-            progressionService.updateHearingListingStatusToSentForListing(event, listNextHearings.getHearings(), seedingHearing);
+            progressionService.updateHearingListingStatusToSentForListing(event, listNextHearings);
         }
 
         if (!combinedBookingReferencesWithCourtScheduleIds.isEmpty()) {

@@ -2,6 +2,7 @@
   "id": "924cbf53-0b51-4633-9e99-2682be854af4",
   "isYouth": false,
   "numberOfPreviousConvictionsCited": 99,
+  "masterDefendantId": "c4c2b733-61d3-4949-82d5-72a88e8704e5",
   "offences": [
     {
       "chargeDate": "2018-08-01",

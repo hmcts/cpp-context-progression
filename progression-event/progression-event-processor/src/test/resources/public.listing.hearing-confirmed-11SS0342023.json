@@ -1,0 +1,143 @@
+{
+  "confirmedHearing": {
+    "courtCentre": {
+      "code": "C11DU00",
+      "id": "11923753-d888-344e-b596-0fd1f5710ef5",
+      "name": "Durham Crown Court",
+      "roomId": "65c69424-93c4-385c-828e-fde0eff57c63"
+    },
+    "estimatedDuration": "2 DAYS",
+    "hearingDays": [
+      {
+        "courtCentreId": "11923753-d888-344e-b596-0fd1f5710ef5",
+        "courtRoomId": "65c69424-93c4-385c-828e-fde0eff57c63",
+        "isCancelled": false,
+        "listedDurationMinutes": 720,
+        "listingSequence": 0,
+        "sittingDay": "2023-11-29T10:30:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "25d281ac-25d2-4e8c-8bc5-eba4174378a7",
+    "jurisdictionType": "CROWN",
+    "prosecutionCases": [
+      {
+        "defendants": [
+          {
+            "id": "4897ff25-0e93-4e19-bc5b-2f980bcfa207",
+            "offences": [
+              {
+                "id": "3a8526da-ec01-47b2-aed6-7cbd59e16b66",
+                "seedingHearing": {
+                  "jurisdictionType": "CROWN",
+                  "seedingHearingId": "6e209178-ae66-42e3-ac3d-6e25d8fd5b82",
+                  "sittingDay": "2023-07-03"
+                }
+              },
+              {
+                "id": "15a17ec3-3d0f-46e1-82ab-93ba1b1ca40e",
+                "seedingHearing": {
+                  "jurisdictionType": "CROWN",
+                  "seedingHearingId": "6e209178-ae66-42e3-ac3d-6e25d8fd5b82",
+                  "sittingDay": "2023-07-03"
+                }
+              },
+              {
+                "id": "688c4b2e-6aad-46e9-80fd-feef1f870255",
+                "seedingHearing": {
+                  "jurisdictionType": "CROWN",
+                  "seedingHearingId": "6e209178-ae66-42e3-ac3d-6e25d8fd5b82",
+                  "sittingDay": "2023-07-03"
+                }
+              },
+              {
+                "id": "94dd4f31-82e7-408b-9196-678e4e589a7e",
+                "seedingHearing": {
+                  "jurisdictionType": "CROWN",
+                  "seedingHearingId": "6e209178-ae66-42e3-ac3d-6e25d8fd5b82",
+                  "sittingDay": "2023-07-03"
+                }
+              },
+              {
+                "id": "4c25c4ce-be64-4368-81f9-87b824789926",
+                "seedingHearing": {
+                  "jurisdictionType": "CROWN",
+                  "seedingHearingId": "6e209178-ae66-42e3-ac3d-6e25d8fd5b82",
+                  "sittingDay": "2023-07-03"
+                }
+              },
+              {
+                "id": "9a73189c-39e7-46dc-a3d7-ce8480cf0881",
+                "seedingHearing": {
+                  "jurisdictionType": "CROWN",
+                  "seedingHearingId": "6e209178-ae66-42e3-ac3d-6e25d8fd5b82",
+                  "sittingDay": "2023-07-03"
+                }
+              },
+              {
+                "id": "c19bfa1f-b27b-4d21-80bf-e520f1622592",
+                "seedingHearing": {
+                  "jurisdictionType": "CROWN",
+                  "seedingHearingId": "6e209178-ae66-42e3-ac3d-6e25d8fd5b82",
+                  "sittingDay": "2023-07-03"
+                }
+              },
+              {
+                "id": "eab706e5-35ba-41d1-93a9-92a9794c1a27",
+                "seedingHearing": {
+                  "jurisdictionType": "CROWN",
+                  "seedingHearingId": "6e209178-ae66-42e3-ac3d-6e25d8fd5b82",
+                  "sittingDay": "2023-07-03"
+                }
+              },
+              {
+                "id": "6fe55460-2d87-44cc-8292-72b93e299e7f",
+                "seedingHearing": {
+                  "jurisdictionType": "CROWN",
+                  "seedingHearingId": "6e209178-ae66-42e3-ac3d-6e25d8fd5b82",
+                  "sittingDay": "2023-07-03"
+                }
+              }
+            ]
+          },
+          {
+            "id": "f657dd9c-1c41-4179-b4f2-fc8c91b9982a",
+            "offences": [
+              {
+                "id": "cffc1e77-35df-4e17-928e-869211f97d12",
+                "seedingHearing": {
+                  "jurisdictionType": "CROWN",
+                  "seedingHearingId": "6e209178-ae66-42e3-ac3d-6e25d8fd5b82",
+                  "sittingDay": "2023-07-03"
+                }
+              }
+            ]
+          }
+        ],
+        "id": "4027f67c-e9fb-49b9-a992-88d0885356e1"
+      },
+      {
+        "defendants": [
+          {
+            "id": "f657dd9c-1c41-4179-b4f2-fc8c91b9982a",
+            "offences": [
+              {
+                "id": "cffc1e77-35df-4e17-928e-869211f97d12",
+                "seedingHearing": {
+                  "jurisdictionType": "CROWN",
+                  "seedingHearingId": "6e209178-ae66-42e3-ac3d-6e25d8fd5b82",
+                  "sittingDay": "2023-07-03"
+                }
+              }
+            ]
+          }
+        ],
+        "id": "a1077cd0-588c-4596-9453-9d490ffa450e"
+      }
+    ],
+    "type": {
+      "description": "Trial (Backer)",
+      "id": "2b91baac-c63f-30c6-bdf0-ddfb9ae74dbe"
+    }
+  }
+}

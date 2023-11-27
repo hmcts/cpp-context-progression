@@ -46,6 +46,7 @@ import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrderOffence;
+import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.FutureSummonsHearing;
 import uk.gov.justice.core.courts.Hearing;
@@ -67,6 +68,7 @@ import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestSucceeded;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
+import uk.gov.justice.core.courts.CourtApplicationSubjectCustodialInformationUpdated;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -85,7 +87,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 1331113876243908495L;
+    private static final long serialVersionUID = 1331113876243908496L;
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80527";
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
     private ApplicationStatus applicationStatus = DRAFT;
@@ -391,6 +393,14 @@ public class ApplicationAggregate implements Aggregate {
                 .withHearingId(hearingId)
                 .build()));
     }
+
+    public Stream<Object> updateCustodialInfomrationForApplicatioNSubject(final DefendantUpdate defendantUpdate, final UUID applicationId) {
+        return apply(Stream.of(CourtApplicationSubjectCustodialInformationUpdated.courtApplicationSubjectCustodialInformationUpdated()
+                .withApplicationId(applicationId)
+                .withDefendant(defendantUpdate)
+                .build()));
+    }
+
 
     public UUID getBoxHearingId() {
         return boxHearingId;

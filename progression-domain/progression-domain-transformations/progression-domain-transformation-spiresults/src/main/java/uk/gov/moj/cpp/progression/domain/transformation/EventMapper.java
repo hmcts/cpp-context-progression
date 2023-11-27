@@ -9,27 +9,28 @@ import java.util.Map;
 
 public class EventMapper {
 
+    private static final Map<String, List<String>> EVENT_MAP = new HashMap();
+    public static final String HEARING_ID = "$.hearing.id";
+
     private EventMapper() {
     }
 
-    private static final Map<String, List<String>> EVENT_MAP = new HashMap();
-
     static {
         EVENT_MAP.put("progression.event.prosecutionCase-defendant-listing-status-changed", newArrayList(
-            "$.hearing.id"));
+                HEARING_ID));
 
         EVENT_MAP.put("progression.event.prosecutionCase-defendant-listing-status-changed-v2", newArrayList(
-                "$.hearing.id"));
+                HEARING_ID));
 
-        EVENT_MAP.put("progression.event.hearing-resulted", newArrayList(
-                "$.hearing.id"));
+        EVENT_MAP.put("progression.event.prosecutionCase-defendant-listing-status-changed-v3", newArrayList(
+                HEARING_ID));
+
+        EVENT_MAP.put("progression.event.hearing-resulted", newArrayList(HEARING_ID));
 
         EVENT_MAP.put("progression.event.hearing-resulted-case-updated", newArrayList(
         ));
 
-        EVENT_MAP.put("progression.hearing-initiate-enriched", newArrayList(
-                "$.hearing.id"
-        ));
+        EVENT_MAP.put("progression.hearing-initiate-enriched", newArrayList());
 
         EVENT_MAP.put("progression.event.court-application-added-to-case", newArrayList(
         ));
@@ -51,8 +52,7 @@ public class EventMapper {
         EVENT_MAP.put("progression.event.court-application-created", newArrayList(
         ));
 
-        EVENT_MAP.put("progression.event.hearing-application-link-created", newArrayList(
-                "$.hearing.id"
+        EVENT_MAP.put("progression.event.hearing-application-link-created", newArrayList(HEARING_ID
         ));
     }
 

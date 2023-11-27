@@ -7,6 +7,7 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
@@ -26,6 +27,7 @@ import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdat
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.MASTER_DEFENDANT_ID;
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.MATCHED_MASTER_DEFENDANT_ID;
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION;
+import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION_FOR_APPLICATION;
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.PUBLIC_CASE_DEFENDANT_CHANGED;
 
 import uk.gov.justice.core.courts.CustodialEstablishment;
@@ -362,6 +364,8 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(enveloper.withMetadataFrom(envelope, PUBLIC_CASE_DEFENDANT_CHANGED)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
 
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
+
         //When
         this.eventProcessor.handleProsecutionCaseDefendantUpdatedEvent(envelope);
 
@@ -394,6 +398,8 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(enveloper.withMetadataFrom(envelope, PUBLIC_CASE_DEFENDANT_CHANGED)).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, COMMAND_UPDATE_DEFENDANT_FOR_HEARING)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
 
         //When
         this.eventProcessor.handleProsecutionCaseDefendantUpdatedEvent(envelope);
@@ -431,6 +437,39 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
 
         verify(sender, times(2)).send(finalEnvelope);
         verify(notificationService, times(1)).sendCPSNotification(any(), any());
+    }
+
+
+
+    @Test
+    public void shouldSendUpdateDefendantToApplication_whenApplicationSummariesExists() {
+        final UUID PROSECUTOR_ID = randomUUID();
+        final String PROSECUTOR_CODE = "D24AW";
+        final String CASE_URN = "90GD8989122";
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        final UUID hearingId = randomUUID();
+        final ProsecutionCaseDefendantUpdated inputEvent = buildProsecutionCaseDefendantUpdatedObject(CASE_URN, PROSECUTOR_CODE, PROSECUTOR_ID, Arrays.asList(hearingId));
+        when(jsonObjectToObjectConverterMock.convert(payload, ProsecutionCaseDefendantUpdated.class))
+                .thenReturn(inputEvent);
+        when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse_WithApplicationSummaries()));
+
+        when(enveloper.withMetadataFrom(envelope, PUBLIC_CASE_DEFENDANT_CHANGED)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, COMMAND_UPDATE_DEFENDANT_FOR_HEARING)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION_FOR_APPLICATION)).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+
+        final JsonObject sampleJsonObject = createObjectBuilder().build();
+
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(sampleJsonObject));
+
+        this.eventProcessor.handleProsecutionCaseDefendantUpdatedEvent(envelope);
+
+        verify(sender, times(3)).send(finalEnvelope);
+
+        verify(notificationService, never()).sendCPSNotification(any(), any());
     }
 
 
@@ -598,6 +637,15 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         String response = null;
         try {
             response = Resources.toString(getResource("progression.event.prosecutioncase.defendantAssociation.cpsnotification-data.json"), defaultCharset());
+        } catch (final Exception ignored) {
+        }
+        return new StringToJsonObjectConverter().convert(response);
+    }
+
+    private JsonObject getProsecutionCaseResponse_WithApplicationSummaries() {
+        String response = null;
+        try {
+            response = Resources.toString(getResource("progression.event.prosecutioncase.application-summaries-data.json"), defaultCharset());
         } catch (final Exception ignored) {
         }
         return new StringToJsonObjectConverter().convert(response);

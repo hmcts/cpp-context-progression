@@ -1,14 +1,8 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
-
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
@@ -26,6 +20,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats;
 import uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested;
 import uk.gov.moj.cpp.progression.service.NotificationService;
@@ -38,6 +33,12 @@ import uk.gov.moj.cpp.progression.value.object.DefendantVO;
 import uk.gov.moj.cpp.progression.value.object.EmailTemplateType;
 import uk.gov.moj.cpp.progression.value.object.HearingVO;
 
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -48,16 +49,14 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.fromString;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
 
 @SuppressWarnings({"squid:S3457", "squid:S3655"})
 @ServiceComponent(EVENT_PROCESSOR)
@@ -70,6 +69,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     private static final String CPS_FLAG = "cpsFlag";
     public static final String MATCHED_DEFENDANT_CASES = "matchedDefendantCases";
     public static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION = "progression.command.update-matched-defendant-custodial-information";
+    public static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION_FOR_APPLICATION = "progression.command.update-defendant-custodial-information-for-application";
     public static final String MASTER_DEFENDANT_ID = "masterDefendantId";
     public static final String MATCHED_MASTER_DEFENDANT_ID = "matchedMasterDefendantId";
     public static final String DEFENDANTS = "defendants";
@@ -102,6 +102,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     @Inject
     private NotificationService notificationService;
 
+
     @Handles("progression.event.prosecution-case-defendant-updated")
     public void handleProsecutionCaseDefendantUpdatedEvent(final JsonEnvelope jsonEnvelope) {
         final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), ProsecutionCaseDefendantUpdated.class);
@@ -118,6 +119,9 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
                     sendDefendantUpdate(jsonEnvelope, defendant, hearingId));
         }
 
+        final Optional<JsonObject> prosecutionCaseOptional = progressionService.getProsecutionCaseDetailById(jsonEnvelope, defendant.getProsecutionCaseId().toString());
+
+
         if (nonNull(prosecutionCaseDefendantUpdated.getProsecutionAuthorityId()) && nonNull(prosecutionCaseDefendantUpdated.getUpdatedOrganisation())) {
             final UUID prosecutorId = fromString(prosecutionCaseDefendantUpdated.getProsecutionAuthorityId());
             final Optional<JsonObject> prosecutorDetails = getProsecutorById(prosecutorId, jsonEnvelope);
@@ -125,10 +129,32 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
                 final JsonObject prosecutorsJsonObject = prosecutorDetails.get();
                 final boolean isCpsProsecutor = prosecutorsJsonObject.getBoolean(CPS_FLAG, false);
                 if (isCpsProsecutor) {
-                    sendDefendantAssociationCPSNotification(jsonEnvelope, prosecutionCaseDefendantUpdated, EmailTemplateType.ASSOCIATION);
+                    sendDefendantAssociationCPSNotification(jsonEnvelope, prosecutionCaseDefendantUpdated, prosecutionCaseOptional, EmailTemplateType.ASSOCIATION);
                 }
             }
         }
+        handleUpdateDefendantCustodialInformationForApplication(jsonEnvelope, defendant, prosecutionCaseOptional);
+    }
+
+    private void handleUpdateDefendantCustodialInformationForApplication(JsonEnvelope jsonEnvelope, DefendantUpdate defendant, Optional<JsonObject> prosecutionCaseOptional) {
+        prosecutionCaseOptional.ifPresent(prosecutionCaseJson -> {
+            final String caseStatus = prosecutionCaseJson.getJsonObject("prosecutionCase").getString("caseStatus", null);
+            if (prosecutionCaseJson.containsKey("linkedApplicationsSummary") && caseStatus.equalsIgnoreCase(CaseStatusEnum.ACTIVE.name())) {
+                prosecutionCaseJson.getJsonArray("linkedApplicationsSummary").forEach(linkedApplicationSummaryJson -> {
+                    final JsonObject linkedApplicationJsonObject = (JsonObject) linkedApplicationSummaryJson;
+                    final JsonObjectBuilder updateCustodialInformationForApplicationBuilder = Json.createObjectBuilder();
+                    final String subjectId = linkedApplicationJsonObject.getString("subjectId", null);
+                    if (nonNull(subjectId) && subjectId.equalsIgnoreCase(defendant.getMasterDefendantId().toString())) {
+                        updateCustodialInformationForApplicationBuilder.add("applicationId", linkedApplicationJsonObject.getString("applicationId"));
+                        updateCustodialInformationForApplicationBuilder.add("defendant", objectToJsonObjectConverter.convert(updateDefendant(defendant)));
+                        sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION_FOR_APPLICATION).apply(updateCustodialInformationForApplicationBuilder.build()));
+                    }
+
+                });
+            }
+
+        });
+
     }
 
     @Handles("progression.event.defendant-custodial-information-update-requested")
@@ -151,14 +177,13 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     }
 
 
-    private void sendDefendantAssociationCPSNotification(final JsonEnvelope jsonEnvelope, final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdatedfinal, final EmailTemplateType templateType) {
-        final String caseId = prosecutionCaseDefendantUpdatedfinal.getDefendant().getProsecutionCaseId().toString();
-        final Optional<JsonObject> prosecutionCaseOptional = progressionService.getProsecutionCaseDetailById(jsonEnvelope, caseId);
+    private void sendDefendantAssociationCPSNotification(final JsonEnvelope jsonEnvelope, final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated, final Optional<JsonObject> prosecutionCaseOptional, final EmailTemplateType templateType) {
+        final String caseId = prosecutionCaseDefendantUpdated.getDefendant().getProsecutionCaseId().toString();
         final Optional<HearingVO> hearingVO = getHearingDetails(prosecutionCaseOptional);
         final boolean isHearingPresent = hearingVO.isPresent() && hearingVO.get().getHearingDate() != null;
 
         if (isHearingPresent) {
-            populateCPSNotificationAndSendEmail(jsonEnvelope, prosecutionCaseDefendantUpdatedfinal,
+            populateCPSNotificationAndSendEmail(jsonEnvelope, prosecutionCaseDefendantUpdated,
                     hearingVO.get(), templateType);
         } else {
             LOGGER.info("Future hearing is not found for the case : {}", caseId);
@@ -333,6 +358,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
                 .withMitigationWelsh(defendant.getMitigationWelsh())
                 .withAssociatedPersons(defendant.getAssociatedPersons())
                 .withDefenceOrganisation(defendant.getDefenceOrganisation())
+                .withAssociatedDefenceOrganisation(defendant.getAssociatedDefenceOrganisation())
                 .withPersonDefendant(defendant.getPersonDefendant())
                 .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
                 .withPncId(defendant.getPncId())

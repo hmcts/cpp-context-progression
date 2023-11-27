@@ -11,6 +11,7 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV3;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -61,6 +62,16 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
     @Handles("progression.event.prosecutionCase-defendant-listing-status-changed-v2")
     public void processV2(final JsonEnvelope event) {
         final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChanged = dedupAllReportingRestrictions(jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseDefendantListingStatusChangedV2.class));
+        final HearingEntity hearingEntity = transformHearing(prosecutionCaseDefendantListingStatusChanged.getHearing(), prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus());
+        final List<ProsecutionCase> prosecutionCases = prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases();
+
+        saveCaseDefendantHearing(prosecutionCases, hearingEntity);
+        updateHearingForMatchedDefendants(prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus(), prosecutionCases, prosecutionCaseDefendantListingStatusChanged.getHearing().getId());
+    }
+
+    @Handles("progression.event.prosecutionCase-defendant-listing-status-changed-v3")
+    public void processV3(final JsonEnvelope event) {
+        final ProsecutionCaseDefendantListingStatusChangedV3 prosecutionCaseDefendantListingStatusChanged = dedupAllReportingRestrictions(jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseDefendantListingStatusChangedV3.class));
         final HearingEntity hearingEntity = transformHearing(prosecutionCaseDefendantListingStatusChanged.getHearing(), prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus());
         final List<ProsecutionCase> prosecutionCases = prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases();
 

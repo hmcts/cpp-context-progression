@@ -16,6 +16,7 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV3;
 import uk.gov.justice.core.courts.ReportingRestriction;
 
 import java.util.ArrayList;
@@ -85,6 +86,16 @@ public class ReportingRestrictionHelper {
                 .build();
     }
 
+    public static ProsecutionCaseDefendantListingStatusChangedV3 dedupAllReportingRestrictions(final ProsecutionCaseDefendantListingStatusChangedV3 statusChanged) {
+        if (statusChanged == null) {
+            return statusChanged;
+        }
+
+        return ProsecutionCaseDefendantListingStatusChangedV3.
+                prosecutionCaseDefendantListingStatusChangedV3().withValuesFrom(statusChanged).
+                withHearing(dedupAllReportingRestrictions(statusChanged.getHearing()))
+                .build();
+    }
 
     public static Hearing dedupAllReportingRestrictions(final Hearing hearing) {
         if (hearing == null) {

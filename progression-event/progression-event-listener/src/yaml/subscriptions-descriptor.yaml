@@ -35,6 +35,9 @@ subscriptions_descriptor:
         - name: progression.event.prosecutionCase-defendant-listing-status-changed-v2
           schema_uri: http://justice.gov.uk/core/courts/prosecutionCase-defendant-listing-status-changed-v2.json
 
+        - name: progression.event.prosecutionCase-defendant-listing-status-changed-v3
+          schema_uri: http://justice.gov.uk/core/courts/prosecutionCase-defendant-listing-status-changed-v3.json
+
         - name: progression.event.prosecutionCase-defendant-hearing-result-updated
           schema_uri: http://justice.gov.uk/core/courts/prosecutionCase-defendant-hearing-result-updated.json
 
@@ -317,6 +320,9 @@ subscriptions_descriptor:
 
         - name: progression.event.new-defendant-added-to-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.new-defendant-added-to-hearing.json
+
+        - name: progression.event.court-application-subject-custodial-information-updated
+          schema_uri: http://justice.gov.uk/progression/event/court-application-subject-custodial-information-updated.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****

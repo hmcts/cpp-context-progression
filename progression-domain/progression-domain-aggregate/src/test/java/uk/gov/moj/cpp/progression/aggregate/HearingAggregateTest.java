@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
 import static com.google.common.collect.ImmutableList.of;
+import static com.google.common.io.Resources.getResource;
+import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -10,6 +12,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArguments.toMap;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments;
 
@@ -86,9 +89,15 @@ import uk.gov.justice.progression.courts.HearingMovedToUnallocated;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
+import uk.gov.justice.progression.courts.RelatedHearingRequested;
+import uk.gov.justice.progression.courts.RelatedHearingUpdated;
+import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.justice.staginghmi.courts.UpdateHearingFromHmi;
@@ -100,11 +109,16 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.json.JsonObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.google.common.io.Resources;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -118,6 +132,9 @@ public class HearingAggregateTest {
     private static final String GUILTY = "GUILTY";
     @InjectMocks
     private HearingAggregate hearingAggregate;
+
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
 
     @Test
@@ -2097,6 +2114,112 @@ public class HearingAggregateTest {
 
         assertThat(hearingDefenceCounselRemoved.getHearingId(), is(hearingId));
         assertThat(hearingDefenceCounselRemoved.getId(), is(defenceCounselId));
+    }
+
+    @Test
+    public void shouldRaiseRelatedHearingAndStatusChangeEventWithMultipleCaseAndOneDefendantAndOffences() {
+        final Optional<JsonObject> relatedHearingRequestedJsonObject =
+                Optional.of(getJsonObjectResponseFromJsonResource("json/progression.event.related-hearing-requested.json"));
+
+        final RelatedHearingRequested extendHearingRequested = jsonObjectToObjectConverter.convert(relatedHearingRequestedJsonObject.get(), RelatedHearingRequested.class);
+        final UUID seedingHearingId = extendHearingRequested.getSeedingHearing().getSeedingHearingId();
+        final UpdateRelatedHearingCommand updateRelatedHearingCommand = UpdateRelatedHearingCommand.updateRelatedHearingCommand()
+                .withHearingRequest(extendHearingRequested.getHearingRequest())
+                .withIsAdjourned(extendHearingRequested.getIsAdjourned())
+                .withSeedingHearing(extendHearingRequested.getSeedingHearing())
+                .withShadowListedOffences(extendHearingRequested.getShadowListedOffences())
+                .build();
+        final HearingListingNeeds hearingListingNeeds = updateRelatedHearingCommand.getHearingRequest();
+
+        final Optional<JsonObject> hearingJsonObject =
+                Optional.of(getJsonObjectResponseFromJsonResource("json/progression-hearing.json"));
+        final Hearing hearing = jsonObjectToObjectConverter.convert(hearingJsonObject.get(), Hearing.class);
+
+        final HearingListingStatus hearingListingStatus = HearingListingStatus.HEARING_INITIALISED;
+
+        setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", hearingListingStatus);
+
+        final List<Object> eventStream = hearingAggregate.updateRelatedHearing(hearingListingNeeds,
+                updateRelatedHearingCommand.getIsAdjourned(),
+                updateRelatedHearingCommand.getExtendedHearingFrom(),
+                updateRelatedHearingCommand.getIsPartiallyAllocated(),
+                updateRelatedHearingCommand.getSeedingHearing(),
+                updateRelatedHearingCommand.getShadowListedOffences()).collect(toList());
+
+        assertThat(eventStream.size(), is(2));
+        ProsecutionCaseDefendantListingStatusChangedV2 caseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChangedV2) eventStream.get(0);
+        assertThat(caseDefendantListingStatusChanged.getHearing().getProsecutionCases().size(), is(2));
+        assertThat(caseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(caseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(1).getDefendants().size(), is(1));
+        assertThat(caseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getId()
+                .equals(caseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(1).getDefendants().get(0).getId()), is(false));
+
+        RelatedHearingUpdated relatedHearingUpdated = (RelatedHearingUpdated) eventStream.get(1);
+        assertThat(relatedHearingUpdated.getSeedingHearing().getSeedingHearingId(), is(seedingHearingId));
+        assertThat(relatedHearingUpdated.getHearingRequest().getProsecutionCases().size(), is(2));
+        assertThat(relatedHearingUpdated.getHearingRequest().getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(relatedHearingUpdated.getHearingRequest().getProsecutionCases().get(1).getDefendants().size(), is(1));
+        assertThat(relatedHearingUpdated.getHearingRequest().getProsecutionCases().get(0).getDefendants().get(0).getId()
+                .equals(relatedHearingUpdated.getHearingRequest().getProsecutionCases().get(1).getDefendants().get(0).getId()), is(false));
+    }
+
+    @Test
+    public void shouldRaiseRelatedHearingAndStatusChangeEventWithMultipleCaseAndMultipleDefendantAndOffences() {
+        final Optional<JsonObject> relatedHearingRequestedJsonObject =
+                Optional.of(getJsonObjectResponseFromJsonResource("json/progression.event.related-hearing-requested-2.json"));
+
+        final RelatedHearingRequested extendHearingRequested = jsonObjectToObjectConverter.convert(relatedHearingRequestedJsonObject.get(), RelatedHearingRequested.class);
+        final UUID seedingHearingId = extendHearingRequested.getSeedingHearing().getSeedingHearingId();
+        final UpdateRelatedHearingCommand updateRelatedHearingCommand = UpdateRelatedHearingCommand.updateRelatedHearingCommand()
+                .withHearingRequest(extendHearingRequested.getHearingRequest())
+                .withIsAdjourned(extendHearingRequested.getIsAdjourned())
+                .withSeedingHearing(extendHearingRequested.getSeedingHearing())
+                .withShadowListedOffences(extendHearingRequested.getShadowListedOffences())
+                .build();
+        final HearingListingNeeds hearingListingNeeds = updateRelatedHearingCommand.getHearingRequest();
+
+        final Optional<JsonObject> hearingJsonObject =
+                Optional.of(getJsonObjectResponseFromJsonResource("json/progression-hearing.json"));
+        final Hearing hearing = jsonObjectToObjectConverter.convert(hearingJsonObject.get(), Hearing.class);
+
+        final HearingListingStatus hearingListingStatus = HearingListingStatus.HEARING_INITIALISED;
+
+        setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", hearingListingStatus);
+
+        final List<Object> eventStream = hearingAggregate.updateRelatedHearing(hearingListingNeeds,
+                updateRelatedHearingCommand.getIsAdjourned(),
+                updateRelatedHearingCommand.getExtendedHearingFrom(),
+                updateRelatedHearingCommand.getIsPartiallyAllocated(),
+                updateRelatedHearingCommand.getSeedingHearing(),
+                updateRelatedHearingCommand.getShadowListedOffences()).collect(toList());
+
+        assertThat(eventStream.size(), is(2));
+        ProsecutionCaseDefendantListingStatusChangedV2 caseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChangedV2) eventStream.get(0);
+        assertThat(caseDefendantListingStatusChanged.getHearing().getProsecutionCases().size(), is(2));
+        assertThat(caseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getId()
+                .equals(caseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(1).getDefendants().get(0).getId()), is(false));
+
+        RelatedHearingUpdated relatedHearingUpdated = (RelatedHearingUpdated) eventStream.get(1);
+        assertThat(relatedHearingUpdated.getSeedingHearing().getSeedingHearingId(), is(seedingHearingId));
+        assertThat(relatedHearingUpdated.getHearingRequest().getProsecutionCases().size(), is(2));
+        assertThat(relatedHearingUpdated.getHearingRequest().getProsecutionCases().get(0).getDefendants().get(0).getId()
+                .equals(relatedHearingUpdated.getHearingRequest().getProsecutionCases().get(1).getDefendants().get(0).getId()), is(false));
+    }
+
+    /**
+     * Returns the JsonObject for the given json resource @param resourceName
+     * @param resourceName The json file resource name
+     * @return The Json Object
+     */
+    private JsonObject getJsonObjectResponseFromJsonResource(String resourceName) {
+        String response = null;
+        try {
+            response = Resources.toString(getResource(resourceName), defaultCharset());
+        } catch (final Exception ignored) {
+        }
+        return new StringToJsonObjectConverter().convert(response);
     }
 
     private HearingDeleted createHearingDeleted(final Hearing hearing) {
