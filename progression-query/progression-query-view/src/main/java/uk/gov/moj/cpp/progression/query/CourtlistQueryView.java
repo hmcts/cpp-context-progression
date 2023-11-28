@@ -470,6 +470,7 @@ public class CourtlistQueryView {
         ofNullable(offence.getListingNumber()).ifPresent(listingNumber -> offenceBuilder.add(LISTING_NUMBER, listingNumber));
         ofNullable(offence.getOffenceTitleWelsh()).ifPresent(welshOffenceTitle -> offenceBuilder.add("welshOffenceTitle", welshOffenceTitle));
         ofNullable(offence.getOffenceLegislation()).ifPresent(offenceLegislation -> offenceBuilder.add("offenceLegislation", offenceLegislation));
+        ofNullable(offence.getMaxPenalty()).ifPresent(maxPenalty -> offenceBuilder.add("maxPenalty", maxPenalty));
     }
 
     private void addApplicationInformation(final JsonObjectBuilder offenceBuilder, final CourtApplication courtApplication) {

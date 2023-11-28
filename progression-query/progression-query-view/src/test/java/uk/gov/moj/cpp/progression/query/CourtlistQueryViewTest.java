@@ -247,6 +247,7 @@ public class CourtlistQueryViewTest {
                 .getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0);
         if (present) {
             assertThat(plea.getString("plea"), is("GUILTY"));
+            assertThat(plea.getString("maxPenalty"), is("Max Penalty"));
         } else {
             assertThat(plea.containsKey("plea"), is(false));
         }

@@ -40,6 +40,7 @@ public class ReferenceDataOffenceService {
     public static final String MODEOFTRIAL_CODE = "code";
     public static final String DVLA_CODE = "dvlaCode";
     public static final String ENDORSABLE_FLAG = "endorsableFlag";
+    public static final String MAX_PENALTY = "maxPenalty";
     public static final String CJS_OFFENCE_CODE = "cjsOffenceCode";
     public static final String OFFENCE_ID = "offenceId";
     public static final String OFFENCES = "offences";
@@ -148,6 +149,7 @@ public class ReferenceDataOffenceService {
         jsonObjectBuilder.add(REPORT_RESTRICT_RESULT_CODE, getString(offencePayload, REPORT_RESTRICT_RESULT_CODE).orElse(EMPTY));
         jsonObjectBuilder.add(DVLA_CODE, getString(offencePayload, DVLA_CODE).orElse(EMPTY));
         jsonObjectBuilder.add(ENDORSABLE_FLAG, getBoolean(offencePayload, ENDORSABLE_FLAG).orElse(Boolean.FALSE));
+        jsonObjectBuilder.add(MAX_PENALTY, getString(offencePayload, MAX_PENALTY).orElse(EMPTY));
 
         return jsonObjectBuilder.build();
     }

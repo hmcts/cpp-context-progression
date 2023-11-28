@@ -28,7 +28,8 @@
           "vehicleRegistration": "AA12345",
           "alcoholReadingAmount": 111,
           "alcoholReadingMethodCode": "2222"
-        }
+        },
+        "maxPenalty":""
       }
     ]
   }

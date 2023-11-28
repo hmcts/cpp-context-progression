@@ -332,7 +332,11 @@ public class UpdateOffencesHandlerTest {
         final List<Offence> offences = Stream.of(
                 Offence.offence().withId(offenceId).withOffenceCode(randomUUID().toString()).withOffenceTitle("SexualOffence1").withReportingRestrictions(Collections.singletonList(ReportingRestriction.reportingRestriction().withId(randomUUID()).withLabel(MANUAL_RESTRICTION).withOrderedDate(LocalDate.now()).build())).build()
         ).collect(Collectors.toList());
+        final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
+                SEXUAL_OFFENCE_RR_DESCRIPTION,
+                "json/referencedataoffences.offences-list.json");
 
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
         UpdateOffencesForProsecutionCase updateOffencesForProsecutionCase = prepareDatabByOffences(caseId, defendantId, offences);
 
         aggregate = getEventStreamWithOffenceandMutlipleRR(caseId, defendantId, offenceId);

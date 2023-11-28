@@ -34,6 +34,9 @@ import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+
 public class DefendantHelperTest {
 
     PersonDefendant personDefendant;
@@ -110,8 +113,13 @@ public class DefendantHelperTest {
     @Test
     public void shouldUpdateOrderIndex() {
         final Offence offenceOne = createOffence(randomUUID(), "first");
-        Offence offence = DefendantHelper.updateOrderIndex(offenceOne, 100);
+        final ArrayList<JsonObject> jsonObjects = new ArrayList<>();
+        final JsonObject jsonObjectOffence = Json.createObjectBuilder().add("maxPenalty", "Indicated").add("cjsOffenceCode", "first").build();
+        jsonObjects.add(jsonObjectOffence);
+        final Optional<List<JsonObject>> refDataOffences = Optional.of(jsonObjects);
+        Offence offence = DefendantHelper.updateOrderIndex(offenceOne, 100, refDataOffences);
         assertThat(offence.getOrderIndex(), is(100));
+        assertThat(offence.getMaxPenalty(), is("Indicated"));
     }
 
     @Test

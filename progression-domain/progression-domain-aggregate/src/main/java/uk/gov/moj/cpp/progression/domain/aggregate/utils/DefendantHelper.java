@@ -12,7 +12,9 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
+import static uk.gov.justice.services.messaging.JsonObjects.getString;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
 import uk.gov.justice.core.courts.Defendant;
@@ -381,9 +383,13 @@ public class DefendantHelper {
         );
     }
 
-    public static Offence updateOrderIndex(Offence offence, int orderIndex) {
-
-        return Offence.offence().withValuesFrom(offence)
+    public static Offence updateOrderIndex(final Offence offence,final int orderIndex, final Optional<List<JsonObject>> referenceDataOffences) {
+        final List<JsonObject> matchingRefOffences = referenceDataOffences.orElse(new ArrayList<>());
+        final Optional<JsonObject> matchedOffence = matchingRefOffences.stream().filter(jsonOffence -> getString(jsonOffence, "cjsOffenceCode").orElse("").equals(offence.getOffenceCode())).findFirst();
+        final Offence.Builder offence1 = Offence.offence();
+        offence1.withValuesFrom(offence);
+        matchedOffence.ifPresent(off -> offence1.withMaxPenalty(off.getString("maxPenalty", EMPTY)));
+        return offence1
                 .withOrderIndex(orderIndex)
                 .build();
 

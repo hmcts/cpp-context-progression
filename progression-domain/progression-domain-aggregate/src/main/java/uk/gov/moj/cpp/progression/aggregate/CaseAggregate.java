@@ -1572,11 +1572,11 @@ public class CaseAggregate implements Aggregate {
             uk.gov.justice.core.courts.Offence offence;
             Optional<uk.gov.justice.core.courts.Offence> existingOffence = this.defendantCaseOffences.get(defendantId).stream().filter(o -> o.getId().equals(commandOffence.getId())).findFirst();
             if (existingOffence.isPresent()) {
-                offence = updateOrderIndex(commandOffence, existingOffence.get().getOrderIndex());
+                offence = updateOrderIndex(commandOffence, existingOffence.get().getOrderIndex(), referenceDataOffences);
             } else {
                 offence = updateLaaApplicationReference(defendantId,
                         offenceWithSexualOffenceReportingRestriction(
-                                updateOrderIndex(commandOffence, maxOrderIndex.addAndGet(1)), referenceDataOffences));
+                                updateOrderIndex(commandOffence, maxOrderIndex.addAndGet(1), referenceDataOffences), referenceDataOffences));
             }
             return offence;
         }).collect(Collectors.toList());
