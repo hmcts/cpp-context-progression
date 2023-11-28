@@ -33,6 +33,7 @@
       ],
       "hearings": [
         {
+          "publicListNote" : "publicListNote",
           "startTime": "2023-02-20T10:00",
           "endTime": "2023-02-20T10:20",
           "hearingType": {
