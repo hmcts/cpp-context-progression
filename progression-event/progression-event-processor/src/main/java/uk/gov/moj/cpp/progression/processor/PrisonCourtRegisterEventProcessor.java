@@ -115,13 +115,12 @@ public class PrisonCourtRegisterEventProcessor {
         recipients.stream().map(JsonObject.class::cast)
                 .filter(recipient -> recipient.containsKey("emailAddress1"))
                 .flatMap(recipient -> Stream.of(
-                        new EmailPair(recipient.getString("emailAddress1"), recipient.getString("emailTemplateName")),
-                        new EmailPair(recipient.getString("emailAddress2", ""), recipient.getString("emailTemplateName")))
+                        new EmailPair(recipient.getString("emailAddress1"), recipient.getString("emailTemplateName")))
                 )
                 .filter(pair -> !Strings.isNullOrEmpty(pair.getEmail()))
                 .forEach(pair -> {
                     final JsonObjectBuilder notifyObjectBuilder = createObjectBuilder();
-                    notifyObjectBuilder.add(FIELD_NOTIFICATION_ID, fileId);
+                    notifyObjectBuilder.add(FIELD_NOTIFICATION_ID, UUID.randomUUID().toString());
                     notifyObjectBuilder.add(FIELD_TEMPLATE_ID, applicationParameters.getEmailTemplateId(pair.getTemplate()));
                     notifyObjectBuilder.add(SEND_TO_ADDRESS, pair.getEmail());
                     notifyObjectBuilder.add(FILE_ID, fileId);

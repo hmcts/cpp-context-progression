@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
@@ -190,7 +191,7 @@ public class PrisonCourtRegisterEventProcessorTest {
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegister(requestMessage);
         verify(notificationNotifyService).sendEmailNotification(eq(requestMessage), notificationJsonObjectCaptor.capture());
         assertThat(notificationJsonObjectCaptor.getValue().getString("fileId"), is(fileId.toString()));
-        assertThat(notificationJsonObjectCaptor.getValue().getString("notificationId"), is(fileId.toString()));
+        assertThat(notificationJsonObjectCaptor.getValue().getString("notificationId"), is(notNullValue()));
     }
 
 }
