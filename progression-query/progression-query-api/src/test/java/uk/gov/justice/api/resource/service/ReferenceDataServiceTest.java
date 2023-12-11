@@ -137,4 +137,16 @@ public class ReferenceDataServiceTest {
         final JsonEnvelope envelopeCapture = envelopeArgumentCaptor.getValue();
         assertEquals("referencedata.query.organisation-unit.v2", envelopeCapture.metadata().name());
     }
+
+    @Test
+    public void shouldReturnEmptyJsonWhenNoJudiciariesInReferenceData(){
+        final Envelope envelope = envelopeFrom(metadataBuilder().withId(UUID.randomUUID()).withName("ids").build(),
+                createObjectBuilder().add(FIELD_JUDICIARIES, createArrayBuilder()).build());
+
+        when(requester.requestAsAdmin(any(), eq(JsonObject.class))).thenReturn(envelope);
+
+        final Optional<JsonObject> actual = referenceDataService.getJudiciary(UUID.randomUUID());
+
+        assertThat(actual.isPresent(), equalTo(false));
+    }
 }

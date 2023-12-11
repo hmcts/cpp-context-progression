@@ -82,6 +82,7 @@ import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.SendNotificationForApplicationIgnored;
 import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
 import uk.gov.justice.core.courts.UpdateCourtApplicationToHearing;
 import uk.gov.justice.core.courts.WeekCommencingDate;
@@ -101,7 +102,6 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
-import uk.gov.moj.cpp.progression.aggregate.SendNotificationAggregate;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.ZonedDateTime;
@@ -149,7 +149,8 @@ public class CourtApplicationHandlerTest {
             HearingUpdatedWithCourtApplication.class,
             HearingPopulatedToProbationCaseworker.class,
             VejHearingPopulatedToProbationCaseworker.class,
-            SendNotificationForApplicationInitiated.class
+            SendNotificationForApplicationInitiated.class,
+            SendNotificationForApplicationIgnored.class
     );
     @Mock
     private EventSource eventSource;
@@ -175,8 +176,6 @@ public class CourtApplicationHandlerTest {
 
     private ApplicationAggregate applicationAggregate;
 
-    private SendNotificationAggregate sendNotificationAggregate;
-
     private static final String CONTACT_EMAIL_ADDRESS_PREFIX = STRING.next();
     private static final String EMAIL_ADDRESS_SUFFIX = "@justice.gov.uk";
     private static final String PROSECUTOR_OU_CODE = randomAlphanumeric(8);
@@ -186,14 +185,8 @@ public class CourtApplicationHandlerTest {
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         applicationAggregate = new ApplicationAggregate();
-        sendNotificationAggregate = new SendNotificationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        when(aggregateService.get(eventStream, SendNotificationAggregate.class)).thenReturn(sendNotificationAggregate);
-        sendNotificationAggregate.apply(new SendNotificationForApplicationInitiated.Builder()
-                .withCourtHearing(new CourtHearingRequest.Builder().build())
-                .withBoxHearing(new BoxHearingRequest.Builder().build())
-                .build());
         applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
                 .withCourtHearing(new CourtHearingRequest.Builder().build())
                 .withBoxHearing(new BoxHearingRequest.Builder().build())
@@ -291,6 +284,26 @@ public class CourtApplicationHandlerTest {
                         .withIsWelshTranslationRequired(false)
                         .build();
 
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withApplicationReference("APP00001")
+                        .withType(courtApplicationType()
+                                .withProsecutorThirdPartyFlag(false)
+                                .withSummonsTemplateType(NOT_APPLICABLE)
+                                .build())
+                        .withApplicant(buildCourtApplicationParty(randomUUID()))
+                        .withSubject(buildCourtApplicationParty(randomUUID()))
+                        .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                .withIsSJP(false)
+                                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                .withCaseStatus("ACTIVE")
+                                .build()))
+                        .build())
+                .build());
+
         final Metadata metadata = Envelope
                 .metadataBuilder()
                 .withName("progression.command.send-notification-for-application")
@@ -309,13 +322,109 @@ public class CourtApplicationHandlerTest {
                         metadata()
                                 .withName("progression.event.send-notification-for-application-initiated"),
                         payload().isJson(allOf(
-                                withJsonPath("$.courtApplication", notNullValue()))
-                        ).isJson(allOf(
+                                withJsonPath("$.courtApplication", notNullValue()),
+                                withJsonPath("$.courtApplication.applicationReference", notNullValue()),
                                 withJsonPath("$.courtHearing", notNullValue()))
-                        ).isJson(allOf(
-                                withJsonPath("$.isSJP", is(false)))
-                        ).isJson(not(
-                                withJsonPath("$.courtApplication.courtApplicationCases", nullValue()))
+                        )
+                )));
+    }
+
+    @Test
+    public void shouldRaiseIgnoreNotificationForApplicationCommand() throws Exception {
+        final SendNotificationForApplicationInitiated sendNotificationForApplication =
+                sendNotificationForApplicationInitiated()
+                        .withCourtApplication(courtApplication()
+                                .withId(randomUUID())
+                                .withType(courtApplicationType()
+                                        .withProsecutorThirdPartyFlag(false)
+                                        .withSummonsTemplateType(NOT_APPLICABLE)
+                                        .build())
+                                .withApplicant(buildCourtApplicationParty(randomUUID()))
+                                .withSubject(buildCourtApplicationParty(randomUUID()))
+                                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                        .withIsSJP(false)
+                                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                        .withCaseStatus("ACTIVE")
+                                        .build()))
+                                .build())
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                        .withIsBoxWorkRequest(true)
+                        .withIsWelshTranslationRequired(false)
+                        .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.send-notification-for-application")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<SendNotificationForApplicationInitiated> envelope = envelopeFrom(metadata, sendNotificationForApplication);
+
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+        courtApplicationHandler.sendNotificationForApplication(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.send-notification-for-application-ignored"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication", notNullValue()),
+                                withoutJsonPath("$.courtApplication.applicationReference"),
+                                withJsonPath("$.courtHearing", notNullValue()))
+                        )
+                )));
+    }
+
+    @Test
+    public void shouldRaiseIgnoreNotificationForApplicationCommandWhenApplicationNotCreated() throws Exception {
+        final SendNotificationForApplicationInitiated sendNotificationForApplication =
+                sendNotificationForApplicationInitiated()
+                        .withCourtApplication(courtApplication()
+                                .withId(randomUUID())
+                                .withType(courtApplicationType()
+                                        .withProsecutorThirdPartyFlag(false)
+                                        .withSummonsTemplateType(NOT_APPLICABLE)
+                                        .build())
+                                .withApplicant(buildCourtApplicationParty(randomUUID()))
+                                .withSubject(buildCourtApplicationParty(randomUUID()))
+                                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                        .withIsSJP(false)
+                                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                        .withCaseStatus("ACTIVE")
+                                        .build()))
+                                .build())
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                        .withIsBoxWorkRequest(false)
+                        .withIsWelshTranslationRequired(false)
+                        .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.send-notification-for-application")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<SendNotificationForApplicationInitiated> envelope = envelopeFrom(metadata, sendNotificationForApplication);
+
+        applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+
+        courtApplicationHandler.sendNotificationForApplication(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.send-notification-for-application-ignored"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication", notNullValue()),
+                                withoutJsonPath("$.courtApplication.applicationReference"),
+                                withJsonPath("$.courtHearing", notNullValue()))
                         )
                 )));
     }

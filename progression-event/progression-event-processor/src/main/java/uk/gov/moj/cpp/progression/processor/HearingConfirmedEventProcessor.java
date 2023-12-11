@@ -163,7 +163,7 @@ public class HearingConfirmedEventProcessor {
             final List<CourtApplication> courtApplications = ofNullable(hearing.getCourtApplications()).orElse(new ArrayList<>());
 
             courtApplications.forEach(courtApplication -> LOGGER.info("sending notification for Application : {}", objectToJsonObjectConverter.convert(courtApplication)));
-            courtApplications.forEach(courtApplication -> notificationService.sendNotification(jsonEnvelope, UUID.randomUUID(), courtApplication, hearing.getCourtCentre(), hearingStartDateTime, hearing.getJurisdictionType()));
+            courtApplications.forEach(courtApplication -> notificationService.sendNotification(jsonEnvelope, courtApplication, false, hearing.getCourtCentre(), hearingStartDateTime, hearing.getJurisdictionType()));
 
             if (isNotEmpty(applicationIds)) {
                 LOGGER.info("Update application status to LISTED, associate Hearing with id: {} to Applications with ids {} and generate summons", hearing.getId(), applicationIds);

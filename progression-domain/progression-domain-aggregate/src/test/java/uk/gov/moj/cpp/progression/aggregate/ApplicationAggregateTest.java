@@ -47,6 +47,7 @@ import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.SlotsBookedForApplication;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
+import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.justice.progression.courts.SendStatdecAppointmentLetter;
 import uk.gov.moj.cpp.progression.domain.Notification;
@@ -569,4 +570,59 @@ public class ApplicationAggregateTest {
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(EmailRequested.class)));
     }
+
+    @Test
+    public void shouldRaiseIgnoreEventWhenApplicationNotExist(){
+        final SendNotificationForApplicationInitiated sendNotificationForApplicationInitiated = SendNotificationForApplicationInitiated.sendNotificationForApplicationInitiated()
+                .build();
+
+        final List<Object> eventStream = aggregate.sendNotificationForApplication(sendNotificationForApplicationInitiated).collect(toList());
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0).getClass().getName(), is("uk.gov.justice.core.courts.SendNotificationForApplicationIgnored"));
+
+    }
+
+    @Test
+    public void shouldRaiseIgnoreEventWhenApplicationBoxWorkRequested(){
+        aggregate.initiateCourtApplicationProceedings(InitiateCourtApplicationProceedings
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication().withId(randomUUID())
+                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .build(), true, false);
+
+
+        final SendNotificationForApplicationInitiated sendNotificationForApplicationInitiated = SendNotificationForApplicationInitiated.sendNotificationForApplicationInitiated()
+                .withIsBoxWorkRequest(true)
+                .build();
+
+        final List<Object> eventStream = aggregate.sendNotificationForApplication(sendNotificationForApplicationInitiated).collect(toList());
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0).getClass().getName(), is("uk.gov.justice.core.courts.SendNotificationForApplicationIgnored"));
+    }
+
+    @Test
+    public void shouldRaiseNotificationEvent(){
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication().withId(randomUUID())
+                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .build();
+
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, true, false);
+
+        final SendNotificationForApplicationInitiated sendNotificationForApplicationInitiated = SendNotificationForApplicationInitiated.sendNotificationForApplicationInitiated()
+                .build();
+
+        final List<Object> eventStream = aggregate.sendNotificationForApplication(sendNotificationForApplicationInitiated).collect(toList());
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0).getClass().getName(), is("uk.gov.justice.core.courts.SendNotificationForApplicationInitiated"));
+        final SendNotificationForApplicationInitiated event =  (SendNotificationForApplicationInitiated) eventStream.get(0);
+        assertThat(event.getCourtApplication().getId(), is(initiateCourtApplicationProceedings.getCourtApplication().getId()));
+
+    }
+
 }

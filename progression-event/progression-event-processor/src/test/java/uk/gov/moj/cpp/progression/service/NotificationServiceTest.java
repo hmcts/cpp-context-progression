@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -325,13 +326,44 @@ public class NotificationServiceTest {
                         .build())
                 .build();
 
-        notificationService.sendNotification(envelope, notificationId, courtApplication, courtCentre, hearingDateTime, JurisdictionType.CROWN);
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN);
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.email"),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
-                                withJsonPath("$.notifications[0].notificationId", equalTo(notificationId.toString())))))));
+                                withJsonPath("$.notifications[0].sendToAddress", equalTo("applicant@test.com")))))));
+    }
+
+    @Test
+    public void doNotSendNotificationForTheApplicantWhenWelTranslationRequired() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(
+                                MasterDefendant.masterDefendant().withPersonDefendant(
+                                        PersonDefendant.personDefendant().withPersonDetails(
+                                                Person.person().withFirstName("Test").withLastName("Test")
+                                                        .build())
+                                                .build())
+                                        .build())
+                        .withPersonDetails(
+                                Person.person()
+                                        .withContact(
+                                                ContactNumber.contactNumber()
+                                                        .withPrimaryEmail("applicant@test.com")
+                                                        .build())
+                                        .build())
+                        .build())
+                .build();
+
+        notificationService.sendNotification(envelope, courtApplication, true, courtCentre, hearingDateTime, JurisdictionType.CROWN);
+        verify(sender, never()).send(any());
     }
 
     @Test
@@ -350,14 +382,14 @@ public class NotificationServiceTest {
                         .build())
                 .build();
 
-        notificationService.sendNotification(envelope, notificationId, courtApplication, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.email"),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
-                                withJsonPath("$.notifications[0].notificationId", equalTo(notificationId.toString())))))));
+                                withJsonPath("$.notifications[0].sendToAddress", equalTo("applicant@test.com")))))));
     }
 
     @Test
@@ -381,14 +413,14 @@ public class NotificationServiceTest {
                         .build())
                 .build();
 
-        notificationService.sendNotification(envelope, notificationId, courtApplication, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.email"),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
-                                withJsonPath("$.notifications[0].notificationId", equalTo(notificationId.toString())))))));
+                                withJsonPath("$.notifications[0].sendToAddress", equalTo("applicant@test.com")))))));
     }
 
     @Test
@@ -406,14 +438,14 @@ public class NotificationServiceTest {
                         .build())
                 .build();
 
-        notificationService.sendNotification(envelope, notificationId, courtApplication, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.email"),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
-                                withJsonPath("$.notifications[0].notificationId", equalTo(notificationId.toString())))))));
+                                withJsonPath("$.notifications[0].sendToAddress", equalTo("applicant@prosecutingauthority.com")))))));
     }
 
     @Test
@@ -450,13 +482,13 @@ public class NotificationServiceTest {
                         .build())
                 .build();
 
-        notificationService.sendNotification(envelope, notificationId, courtApplication, courtCentre, hearingDateTime, JurisdictionType.CROWN);
+        notificationService.sendNotification(envelope, courtApplication, false,  courtCentre, hearingDateTime, JurisdictionType.CROWN);
 
         verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
 
         assertThat(this.envelopeArgumentCaptor.getAllValues().get(1), jsonEnvelope(metadata().withName("progression.command.email"), payloadIsJson(allOf(
                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
-                withJsonPath("$.notifications[0].notificationId", equalTo(notificationId.toString())),
+                withJsonPath("$.notifications[0].sendToAddress", equalTo("respondents@test.com")),
                 withJsonPath("$.notifications[0].personalisation.application_reference", equalTo("applicationReference"))
         ))));
     }
@@ -489,13 +521,13 @@ public class NotificationServiceTest {
                         .build())
                 .build();
 
-        notificationService.sendNotification(envelope, notificationId, courtApplication, courtCentre, hearingDateTime, JurisdictionType.CROWN);
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN);
 
         verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
 
         assertThat(this.envelopeArgumentCaptor.getAllValues().get(1), jsonEnvelope(metadata().withName("progression.command.email"), payloadIsJson(allOf(
                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
-                withJsonPath("$.notifications[0].notificationId", equalTo(notificationId.toString()))))));
+                withJsonPath("$.notifications[0].sendToAddress", equalTo("thirdParties@test.com"))))));
     }
 
     @Test
@@ -534,12 +566,12 @@ public class NotificationServiceTest {
                         .build())
                 .build();
 
-        notificationService.sendNotification(envelope, notificationId, courtApplication, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
         verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
 
         assertThat(this.envelopeArgumentCaptor.getAllValues().get(1), jsonEnvelope(metadata().withName("progression.command.email"), payloadIsJson(allOf(
                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
-                withJsonPath("$.notifications[0].notificationId", equalTo(notificationId.toString()))))));
+                withJsonPath("$.notifications[0].sendToAddress", equalTo("respondents@organisation.com"))))));
     }
 
     @Test
@@ -579,13 +611,13 @@ public class NotificationServiceTest {
                         .build())
                 .build();
 
-        notificationService.sendNotification(envelope, notificationId, courtApplication, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
 
         verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
 
         assertThat(this.envelopeArgumentCaptor.getAllValues().get(1), jsonEnvelope(metadata().withName("progression.command.email"), payloadIsJson(allOf(
                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
-                withJsonPath("$.notifications[0].notificationId", equalTo(notificationId.toString()))))));
+                withJsonPath("$.notifications[0].sendToAddress", equalTo("defantant@test.com"))))));
     }
 
 
@@ -622,13 +654,13 @@ public class NotificationServiceTest {
                         .build())
                 .build();
 
-        notificationService.sendNotification(envelope, notificationId, courtApplication, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
 
         verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
 
         assertThat(this.envelopeArgumentCaptor.getAllValues().get(1), jsonEnvelope(metadata().withName("progression.command.email"), payloadIsJson(allOf(
                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
-                withJsonPath("$.notifications[0].notificationId", equalTo(notificationId.toString())),
+                withJsonPath("$.notifications[0].sendToAddress", equalTo("ProsecutingAuthority@test.com")),
                 withJsonPath("$.notifications[0].personalisation.time", equalTo("3:45 PM"))
         ))));
     }
@@ -661,14 +693,14 @@ public class NotificationServiceTest {
                         .build())
                 .build();
 
-        notificationService.sendNotification(envelope, notificationId, courtApplication, courtCentre, hearingDateTime, JurisdictionType.CROWN);
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.email"),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
-                                withJsonPath("$.notifications[0].notificationId", equalTo(notificationId.toString())))))));
+                                withJsonPath("$.notifications[0].sendToAddress", equalTo("applicant@test.com")))))));
 
     }
 

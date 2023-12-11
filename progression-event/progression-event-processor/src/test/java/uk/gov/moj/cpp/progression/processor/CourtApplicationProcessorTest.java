@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static com.google.common.io.Resources.getResource;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -10,6 +12,8 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -306,7 +310,65 @@ public class CourtApplicationProcessorTest {
 
     }
 
+    @Test
+    public void processDoNotSendNotificationForApplicationWhenCourtHearingRequestIsEmpty() {
+        //Given
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.send-notification-for-application-initiated");
+        SendNotificationForApplication sendNotificationForApplication = sendNotificationForApplication()
+                .withCourtApplication(courtApplication()
+                        .withApplicationReference(STRING.next())
+                        .withId(randomUUID())
+                        .withRespondents(Arrays.asList(buildMasterDefendant(), buildMasterDefendant()))
+                        .build())
+                .withIsWelshTranslationRequired(false)
+                .build();
 
+        final JsonObject payload = objectToJsonObjectConverter.convert(sendNotificationForApplication);
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), SendNotificationForApplication.class)).thenReturn(sendNotificationForApplication);
+
+        courtApplicationProcessor.sendNotificationForApplication(event);
+        verify(notificationService, never()).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+
+    }
+
+    @Test
+    public void raisePublicEventWhenWelshTranslationRequired() {
+        final UUID masterDefendantId = randomUUID();
+        final String applicationReference = STRING.next();
+        //Given
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.send-notification-for-application-initiated");
+        SendNotificationForApplication sendNotificationForApplication = sendNotificationForApplication()
+                .withCourtApplication(courtApplication()
+                        .withApplicationReference(applicationReference)
+                        .withApplicant(courtApplicationParty().withId(masterDefendantId).build())
+                        .withId(randomUUID())
+                        .withRespondents(Arrays.asList(buildMasterDefendant(), buildMasterDefendant()))
+                        .build())
+                .withIsWelshTranslationRequired(true)
+                .build();
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(sendNotificationForApplication);
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), SendNotificationForApplication.class)).thenReturn(sendNotificationForApplication);
+
+        courtApplicationProcessor.sendNotificationForApplication(event);
+        verify(notificationService, never()).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        assertThat(envelopeCaptor.getValue().metadata().name(), is("public.progression.welsh-translation-required"));
+        assertThat(envelopeCaptor.getValue().payload().toString(), isJson(allOf(
+                withJsonPath("$.welshTranslationRequired.masterDefendantId", equalTo(masterDefendantId.toString())),
+                withJsonPath("$.welshTranslationRequired.defendantName", equalTo("")),
+                withJsonPath("$.welshTranslationRequired.caseURN", equalTo(applicationReference))
+        )));
+
+    }
 
     private CourtApplicationParty buildMasterDefendant() {
         return courtApplicationParty()

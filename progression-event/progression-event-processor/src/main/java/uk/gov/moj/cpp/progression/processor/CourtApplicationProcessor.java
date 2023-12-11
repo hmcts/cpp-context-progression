@@ -542,25 +542,24 @@ public class CourtApplicationProcessor {
     @Handles("progression.event.send-notification-for-application-initiated")
     public void sendNotificationForApplication(final JsonEnvelope jsonEnvelope) {
         final SendNotificationForApplication sendNotificationForApplication = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), SendNotificationForApplication.class);
-        final CourtHearingRequest courtHearingRequest = sendNotificationForApplication.getCourtHearing();
-
         final CourtApplication courtApplication = sendNotificationForApplication.getCourtApplication();
 
         if (sendNotificationForApplication.getIsWelshTranslationRequired()) {
-            final String applicationReference = nonNull(courtApplication.getApplicant()) && nonNull(courtApplication.getApplicant().getMasterDefendant()) && !courtApplication.getApplicant().getMasterDefendant().getDefendantCase().isEmpty() ? courtApplication.getApplicant().getMasterDefendant().getDefendantCase().get(0).getCaseReference(): courtApplication.getRespondents().get(0).getMasterDefendant().getDefendantCase().get(0).getCaseReference();
             final String applicantNameFromMasterDefendant = nonNull(courtApplication.getApplicant().getMasterDefendant())  && nonNull(courtApplication.getApplicant().getMasterDefendant().getPersonDefendant()) ? courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getFirstName() : "";
             final String applicationName = nonNull(courtApplication.getApplicant().getPersonDetails()) ? courtApplication.getApplicant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getPersonDetails().getFirstName() : applicantNameFromMasterDefendant;
             final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
                     .add(MASTER_DEFENDANT_ID, courtApplication.getApplicant().getId().toString())
                     .add(DEFENDANT_NAME, applicationName)
-                    .add(CASE_URN, applicationReference);
+                    .add(CASE_URN, courtApplication.getApplicationReference());
             final JsonObjectBuilder welshTranslationRequiredBuilder = createObjectBuilder().add("welshTranslationRequired", jsonObjectBuilder.build());
             sender.send(Enveloper.envelop(welshTranslationRequiredBuilder.build())
                     .withName(PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED)
                     .withMetadataFrom(jsonEnvelope));
         }
-        notificationService.sendNotification(jsonEnvelope, courtApplication, sendNotificationForApplication.getIsWelshTranslationRequired(), courtHearingRequest.getCourtCentre(), courtHearingRequest.getEarliestStartDateTime(), courtHearingRequest.getJurisdictionType());
-
+        final CourtHearingRequest courtHearingRequest = sendNotificationForApplication.getCourtHearing();
+        if(nonNull(courtHearingRequest)) {
+            notificationService.sendNotification(jsonEnvelope, courtApplication, sendNotificationForApplication.getIsWelshTranslationRequired(), courtHearingRequest.getCourtCentre(), courtHearingRequest.getEarliestStartDateTime(), courtHearingRequest.getJurisdictionType());
+        }
     }
     @Handles("progression.event.breach-application-creation-requested")
     public void processBreachApplicationCreationRequested(final JsonEnvelope event) {

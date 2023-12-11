@@ -57,6 +57,8 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.LinkType;
+import uk.gov.justice.core.courts.SendNotificationForApplicationIgnored;
+import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
 import uk.gov.justice.core.courts.SlotsBookedForApplication;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
@@ -401,6 +403,27 @@ public class ApplicationAggregate implements Aggregate {
                 .build()));
     }
 
+    public Stream<Object> sendNotificationForApplication(final SendNotificationForApplicationInitiated sendNotificationForApplicationInitiated) {
+        if(isNull(this.initiateCourtApplicationProceedings) || Optional.ofNullable(sendNotificationForApplicationInitiated.getIsBoxWorkRequest()).orElse(false)){
+            return apply(
+                    Stream.of(SendNotificationForApplicationIgnored.sendNotificationForApplicationIgnored()
+                            .withCourtApplication(sendNotificationForApplicationInitiated.getCourtApplication())
+                            .withCourtHearing(sendNotificationForApplicationInitiated.getCourtHearing())
+                            .withBoxHearing(sendNotificationForApplicationInitiated.getBoxHearing())
+                            .withIsWelshTranslationRequired(sendNotificationForApplicationInitiated.getIsWelshTranslationRequired())
+                            .build()));
+        }
+        return apply(
+                Stream.of(SendNotificationForApplicationInitiated.sendNotificationForApplicationInitiated()
+                        .withCourtApplication(this.initiateCourtApplicationProceedings.getCourtApplication())
+                        .withCourtHearing(this.initiateCourtApplicationProceedings.getCourtHearing())
+                        .withBoxHearing(this.initiateCourtApplicationProceedings.getBoxHearing())
+                        .withSummonsApprovalRequired(this.initiateCourtApplicationProceedings.getSummonsApprovalRequired())
+                        .withIsBoxWorkRequest(sendNotificationForApplicationInitiated.getIsBoxWorkRequest())
+                        .withApplicationReferredToNewHearing(this.applicationReferredToNewHearing)
+                        .withIsWelshTranslationRequired(sendNotificationForApplicationInitiated.getIsWelshTranslationRequired())
+                        .build()));
+    }
 
     public UUID getBoxHearingId() {
         return boxHearingId;

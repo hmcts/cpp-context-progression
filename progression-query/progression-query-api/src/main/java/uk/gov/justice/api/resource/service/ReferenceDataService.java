@@ -205,7 +205,7 @@ public class ReferenceDataService {
         final Envelope<JsonObject> jsonEnvelop = requester.requestAsAdmin(envelopeFrom(metadataBuilder, queryParameters), JsonObject.class);
         final JsonArray judiciaries = jsonEnvelop.payload().getJsonArray(FIELD_JUDICIARIES);
         LOGGER.info("'referencedata.query.judiciaries {} received with payload {}", judiciaryId, jsonEnvelop.payload());
-        return isNull(judiciaries) ? empty() : of(judiciaries.getJsonObject(0));
+        return isNull(judiciaries) || judiciaries.isEmpty() ? empty() : of(judiciaries.getJsonObject(0));
     }
 
     public JsonEnvelope getCourtCentreIdsByClusterId( final UUID clusterId) {

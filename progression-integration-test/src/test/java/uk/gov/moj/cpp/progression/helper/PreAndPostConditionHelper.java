@@ -1276,6 +1276,96 @@ public class PreAndPostConditionHelper {
 
     }
 
+    public static Response sendNotification(final String caseId,
+                                                                      final String applicationId,
+                                                                      final String particulars,
+                                                                      final String applicantReceivedDate,
+                                                                      final String applicationType,
+                                                                      final Boolean appeal,
+                                                                      final Boolean applicantAppellantFlag,
+                                                                      final String paymentReference,
+                                                                      final String applicantSynonym,
+                                                                      final String applicantFirstName,
+                                                                      final String applicantLastName,
+                                                                      final String applicantNationality,
+                                                                      final String applicantRemandStatus,
+                                                                      final String applicantRepresentation,
+                                                                      final String interpreterLanguageNeeds,
+                                                                      final LocalDate applicantDoB,
+                                                                      final String applicantAddress1,
+                                                                      final String applicantAddress2,
+                                                                      final String applicantAddress3,
+                                                                      final String applicantAddress4,
+                                                                      final String applicantAddress5,
+                                                                      final String applicantPostCode,
+                                                                      final String applicationReference,
+                                                                      final String respondentOrganisationName,
+                                                                      final String respondentOrganisationAddress1,
+                                                                      final String respondentOrganisationAddress2,
+                                                                      final String respondentOrganisationAddress3,
+                                                                      final String respondentOrganisationAddress4,
+                                                                      final String respondentOrganisationAddress5,
+                                                                      final String respondentOrganisationPostcode,
+                                                                      final String respondentRepresentativeFirstName,
+                                                                      final String respondentRepresentativeLastName,
+                                                                      final String respondentRepresentativePosition,
+                                                                      final String prosecutionCaseId,
+                                                                      final String prosecutionAuthorityId,
+                                                                      final String prosecutionAuthorityCode,
+                                                                      final String prosecutionAuthorityReference,
+                                                                      final String parentApplicationId,
+                                                                      final String fileName,
+                                                                      final Boolean isBoxWorkRequest,
+                                                                      final Boolean isWelshTranslationRequired)
+            throws IOException {
+        final String body = getPayload(fileName)
+                .replace("RANDOM_CASE_ID", caseId)
+                .replace("RANDOM_APPLICATION_ID", applicationId)
+                .replace("RANDOM_PARENT_APPLICATION_ID", parentApplicationId)
+                .replaceAll("RANDOM_PARTICULARS", particulars)
+                .replaceAll("\"applicationReceivedDate\": \"2019-01-01\"", format("\"applicationReceivedDate\": \"%s\"", applicantReceivedDate))
+                .replaceAll("RANDOM_APPLICATION_TYPE", applicationType)
+                .replaceAll("\"RANDOM_APPLICATION_APPEAL\"", appeal.toString())
+                .replaceAll("\"RANDOM_APPLICATION_APPEALLANT_FLAG\"", applicantAppellantFlag.toString())
+                .replaceAll("RANDOM_PAYMENT_REFERENCE", paymentReference)
+                .replaceAll("RANDOM_APPLICANT_SYNONYM", applicantSynonym)
+                .replaceAll("RANDOM_FIRST_NAME", applicantFirstName)
+                .replaceAll("RANDOM_LAST_NAME", applicantLastName)
+                .replaceAll("RANDOM_NATIONALITY_DESCRIPTION", applicantNationality)
+                .replaceAll("RANDOM_BAIL_STATUS_DESCRIPTION", applicantRemandStatus)
+                .replaceAll("RANDOM_REPRESENTATION_ORGANISATION_NAME", applicantRepresentation)
+                .replaceAll("RANDOM_INTERPRETER_LANGUAGE_NEEDS", interpreterLanguageNeeds)
+                .replaceAll("RANDOM_DATE_OF_BIRTH", applicantDoB.toString())
+                .replaceAll("RANDOM_ADDRESS1", applicantAddress1)
+                .replaceAll("RANDOM_ADDRESS2", applicantAddress2)
+                .replaceAll("RANDOM_ADDRESS3", applicantAddress3)
+                .replaceAll("RANDOM_ADDRESS4", applicantAddress4)
+                .replaceAll("RANDOM_ADDRESS5", applicantAddress5)
+                .replaceAll("RANDOM_POSTCODE", applicantPostCode)
+                .replaceAll("RANDOM_RESPONDENT_ORGANISATION_NAME", respondentOrganisationName)
+                .replaceAll("RANDOM_RESPONDENT_ORGANISATION_ADDRESS1", respondentOrganisationAddress1)
+                .replaceAll("RANDOM_RESPONDENT_ORGANISATION_ADDRESS2", respondentOrganisationAddress2)
+                .replaceAll("RANDOM_RESPONDENT_ORGANISATION_ADDRESS3", respondentOrganisationAddress3)
+                .replaceAll("RANDOM_RESPONDENT_ORGANISATION_ADDRESS4", respondentOrganisationAddress4)
+                .replaceAll("RANDOM_RESPONDENT_ORGANISATION_ADDRESS5", respondentOrganisationAddress5)
+                .replaceAll("RANDOM_RESPONDENT_ORGANISATION_POSTCODE", respondentOrganisationPostcode)
+                .replaceAll("RANDOM_RESPONDENT_REPRESENTATIVE_FIRST_NAME", respondentRepresentativeFirstName)
+                .replaceAll("RANDOM_RESPONDENT_REPRESENTATIVE_LAST_NAME", respondentRepresentativeLastName)
+                .replaceAll("RANDOM_RESPONDENT_REPRESENTATIVE_POSITION", respondentRepresentativePosition)
+                .replaceAll("RANDOM_PROSECUTION_CASE_ID", prosecutionCaseId)
+                .replaceAll("RANDOM_PROSECUTION_AUTHORITY_ID", prosecutionAuthorityId)
+                .replaceAll("RANDOM_PROSECUTION_AUTHORITY_CODE", prosecutionAuthorityCode)
+                .replaceAll("RANDOM_PROSECUTION_AUTHORITY_REFERENCE", prosecutionAuthorityReference)
+                .replaceAll("RANDOM_REFERENCE", applicationReference)
+                .replaceAll("IS_BOXWORK_REQUEST", isBoxWorkRequest.toString())
+                .replaceAll("IS_WELSH_TRANSLATION_REQUIRED", isWelshTranslationRequired.toString());
+
+        LOGGER.info("applicationId={}, parentApplicationId={}, body={}", applicationId, parentApplicationId, body);
+        return postCommand(getWriteUrl("/send-notification-for-application"),
+                "application/vnd.progression.send-notification-for-application+json", body);
+
+    }
+
     public static Response addCourtApplicationForIngestion(final String caseId,
                                                            final String applicationId,
                                                            final String applicantId,
