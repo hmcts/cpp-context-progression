@@ -47,7 +47,6 @@ import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.Plea;
-import uk.gov.justice.core.courts.Position;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -508,7 +507,7 @@ public class CourtExtractTransformerTest {
 
             //
             assertThat(courtExtractRequested.getCompanyRepresentatives().get(0).getName(), is(FIRST_NAME + " " + LAST_NAME));
-            assertThat(courtExtractRequested.getCompanyRepresentatives().get(0).getRole(), is(Position.DIRECTOR.toString()));
+            assertThat(courtExtractRequested.getCompanyRepresentatives().get(0).getRole(), is("DIRECTOR"));
             assertThat(courtExtractRequested.getCompanyRepresentatives().get(0).getAttendanceDays().size(), is((1)));
 
             //courtApplications
@@ -1294,7 +1293,7 @@ public class CourtExtractTransformerTest {
         return asList(CompanyRepresentative.companyRepresentative()
                 .withFirstName(hearing.equals(HEARING1) ? FIRST_NAME : FIRST_NAME_2)
                 .withLastName(hearing.equals(HEARING1) ? LAST_NAME : LAST_NAME_2)
-                .withPosition(Position.DIRECTOR)
+                .withPosition("DIRECTOR")
                 .withAttendanceDays(asList(LocalDate.now()))
                 .build());
     }

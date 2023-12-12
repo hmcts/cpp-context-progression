@@ -75,12 +75,7 @@
         },
         "position": {
           "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/position.json",
-          "type": "string",
-          "enum": [
-            "DIRECTOR",
-            "SECRETARY",
-            "SOLICITOR"
-          ]
+          "type": "string"
         }
       },
       "required": [
