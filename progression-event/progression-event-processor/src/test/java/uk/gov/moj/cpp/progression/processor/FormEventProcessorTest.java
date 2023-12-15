@@ -907,7 +907,6 @@ public class FormEventProcessorTest {
         formEventProcessor.formUpdated(requestEnvelope);
         final ArgumentCaptor<JsonObject> payload = ArgumentCaptor.forClass(JsonObject.class);
         verify(cpsApiService, times(1)).sendNotification(payload.capture());
-        System.out.println(payload.getValue().toString());
     }
 
     @Test

@@ -72,7 +72,6 @@ public class UnscheduledHearingAllocationNotifiedEventProcessorTest {
     @Test
     public void unscheduledHearingAllocationNotified() {
         final JsonObject payload = getPayload("unscheduled-hearing-allocation-notified-payload.json");
-        System.out.println( payload.toString());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUID("progression.event.unscheduled-hearing-allocation-notified"), payload);
 
         when(applicationParameters.getUnscheduledHearingAllocationEmailTemplateId()).thenReturn(TEMPLATE_ID);

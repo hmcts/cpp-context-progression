@@ -23,7 +23,7 @@
         "mitigationWelsh": "a",
         "offences": [
           {
-            "id": "00000000-0000-0000-0000-000000000000",
+            "id": "00000000-0000-0000-0000-000000000001",
             "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
             "offenceCode": "a",
             "offenceTitle": "a",
@@ -107,6 +107,7 @@
                 "isFinancialResult": true,
                 "isConvictedResult": true,
                 "isAvailableForCourtExtract": true,
+                "isNewAmendment": true,
                 "amendmentDate": "0000-01-01",
                 "amendmentReason": "a",
                 "cjsCode": "a",
@@ -146,7 +147,7 @@
             ]
           },
           {
-            "id": "00000000-0000-0000-0000-000000000000",
+            "id": "00000000-0000-0000-0000-000000000002",
             "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
             "offenceCode": "a",
             "offenceTitle": "a",
@@ -230,6 +231,7 @@
                 "isFinancialResult": true,
                 "isConvictedResult": true,
                 "isAvailableForCourtExtract": true,
+                "isNewAmendment": true,
                 "amendmentDate": "0000-01-01",
                 "amendmentReason": "a",
                 "cjsCode": "a",

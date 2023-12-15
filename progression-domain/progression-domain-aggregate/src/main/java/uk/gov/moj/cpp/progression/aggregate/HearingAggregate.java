@@ -884,7 +884,7 @@ public class HearingAggregate implements Aggregate {
     private ProsecutionCase getUpdatedProsecutionCase(ProsecutionCase prosecutionCase, List<DefendantJudicialResult> hearingdefendantJudicialResults) {
         final List<Defendant> updatedDefendants = new ArrayList<>();
 
-        final boolean allDefendantProceedingConcluded = isAllDefendantProceedingConcluded(prosecutionCase, hearingdefendantJudicialResults, updatedDefendants);
+        final boolean allDefendantProceedingConcluded = isAllDefendantProceedingConcluded(prosecutionCase, updatedDefendants);
         return ProsecutionCase.prosecutionCase()
                 .withPoliceOfficerInCase(prosecutionCase.getPoliceOfficerInCase())
                 .withProsecutionCaseIdentifier(prosecutionCase.getProsecutionCaseIdentifier())

@@ -239,7 +239,7 @@ public class HearingResultHandlerTest {
     }
 
     @Test
-    public void shouldProcessCommand_whenOneDefendantHaveFinalCategoryAndOffencesOfSecondDefendantHaveFinalCategory_expectProceedingConcludedAsTrue() throws Exception {
+    public void shouldProcessCommand_whenOneDefendantHaveFinalCategoryDefendantLevelAndOffencesOfSecondDefendantHaveFinalCategory_expectProceedingConcludedAsFalse() throws Exception {
 
         aggregate.apply(createPayload().getHearing());
 
@@ -258,16 +258,16 @@ public class HearingResultHandlerTest {
         assertThat(hearingResultedEnvelope, jsonEnvelope(metadata().withName("progression.event.hearing-resulted"), payloadIsJson(CoreMatchers.allOf(
                 withJsonPath("$.hearing", notNullValue()),
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].proceedingsConcluded",
-                        is(true)),
+                        is(false)),
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].proceedingsConcluded",
-                        is(true)),
+                        is(false)),
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[1].proceedingsConcluded",
                         is(true)),
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[0].proceedingsConcluded",
                         is(true)),
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[1].proceedingsConcluded",
                         is(true)),
-                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())),
+                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(CaseStatusEnum.READY_FOR_REVIEW.getDescription())),
                 withJsonPath("$.hearing.prosecutionCases[0].cpsOrganisation", is("A01")))
 
         )));
@@ -366,7 +366,16 @@ public class HearingResultHandlerTest {
     }
 
     private HearingResult createHearingResultPayload(){
-        Offence offence1 = Offence.offence()
+        final Offence offence1 = Offence.offence()
+                .withId(randomUUID())
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.INTERMEDIARY).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.FINAL).build()))
+                .build();
+
+        final Offence offence2 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
                         .withIsAdjournmentResult(false)
@@ -386,7 +395,7 @@ public class HearingResultHandlerTest {
                 .build();
         Defendant defendant2 = Defendant.defendant()
                 .withId(randomUUID())
-                .withOffences(Arrays.asList(offence1))
+                .withOffences(Arrays.asList(offence2))
                 .build();
 
         List<Defendant> defendantList = new ArrayList<Defendant>();
@@ -446,7 +455,7 @@ public class HearingResultHandlerTest {
                 .withId(randomUUID())
                 .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
                 .withCpsOrganisation("A01")
-                .withDefendants(createDefendant(createOffences())).build();
+                .withDefendants(createDefendant(createOffences(JudicialResultCategory.FINAL))).build();
         final HearingResult hearingResult = hearingResult()
                 .withHearing(Hearing.hearing()
                         .withProsecutionCases(Arrays.asList(prosecutionCase))
@@ -469,7 +478,7 @@ public class HearingResultHandlerTest {
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withId(randomUUID())
                 .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
-                .withDefendants(createDefendant(createOffences())).build();
+                .withDefendants(createDefendant(createOffences(JudicialResultCategory.ANCILLARY))).build();
         final HearingResult hearingResult = hearingResult()
                 .withHearing(Hearing.hearing()
                         .withProsecutionCases(Arrays.asList(prosecutionCase))
@@ -1233,14 +1242,14 @@ public class HearingResultHandlerTest {
         return list -> list.isEmpty() ? null : list;
     }
 
-    private  List<Offence> createOffences(){
+    private  List<Offence> createOffences(final JudicialResultCategory judicialResultCategory){
         Offence offence1 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
                         .withIsAdjournmentResult(false)
                         .withCategory(JudicialResultCategory.INTERMEDIARY).build(), JudicialResult.judicialResult()
                         .withIsAdjournmentResult(false)
-                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
+                        .withCategory(judicialResultCategory).build()))
                 .build();
         Offence offence2 = Offence.offence()
                 .withId(randomUUID())
@@ -1248,7 +1257,7 @@ public class HearingResultHandlerTest {
                         .withIsAdjournmentResult(false)
                         .withCategory(JudicialResultCategory.INTERMEDIARY).build(), JudicialResult.judicialResult()
                         .withIsAdjournmentResult(false)
-                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
+                        .withCategory(judicialResultCategory).build()))
                 .build();
 
         return Arrays.asList(offence1, offence2);

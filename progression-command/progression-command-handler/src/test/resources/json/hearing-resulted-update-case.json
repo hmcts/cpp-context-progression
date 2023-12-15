@@ -127,6 +127,7 @@
                 "isAdjournmentResult": true,
                 "isFinancialResult": true,
                 "isConvictedResult": true,
+                "isNewAmendment": true,
                 "isAvailableForCourtExtract": true,
                 "amendmentDate": "0000-01-01",
                 "amendmentReason": "a",

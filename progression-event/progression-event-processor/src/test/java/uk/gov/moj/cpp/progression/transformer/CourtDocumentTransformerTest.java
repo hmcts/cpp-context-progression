@@ -264,7 +264,6 @@ public class CourtDocumentTransformerTest {
 
         final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
-        System.out.println(transformedPayload.get());
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(
                 withJsonPath("$.subjectDetails.prosecutionCaseSubject.caseUrn", is("URN-123")),
                 withJsonPath("$.subjectDetails.courtApplicationSubject.courtApplicationId", is(applicationId.toString())),

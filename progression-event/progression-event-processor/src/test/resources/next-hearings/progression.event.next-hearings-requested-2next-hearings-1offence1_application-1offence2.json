@@ -1,0 +1,1386 @@
+{
+  "hearing": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "bb579feb-7621-44d5-81fe-86bbc1ea223a",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "b3a7a6d8-317e-4cbf-b434-e628d7712c84",
+                "caseReference": "28DI7729296",
+                "defendantId": "e18650b5-923d-40da-865f-2215026ba508"
+              }
+            ],
+            "masterDefendantId": "e18650b5-923d-40da-865f-2215026ba508",
+            "personDefendant": {
+              "arrestSummonsNumber": "D28GC01127729296",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "9999A9999AAAA",
+                  "address2": "Woodlane",
+                  "address3": "addressline 3",
+                  "address4": "Bristol",
+                  "address5": "Avon"
+                },
+                "contact": {
+                  "home": "0207729296",
+                  "mobile": "07777729296",
+                  "primaryEmail": "REDDY.TEST017729296@gmail.com"
+                },
+                "dateOfBirth": "1981-11-11",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "PAUL13",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "COLLINGWOOD13",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "applicationReceivedDate": "2023-09-09",
+        "applicationReference": "28DI7729296",
+        "applicationStatus": "LISTED",
+        "commissionerOfOath": false,
+        "courtApplicationCases": [
+          {
+            "caseStatus": "ACTIVE",
+            "isSJP": false,
+            "prosecutionCaseId": "b3a7a6d8-317e-4cbf-b434-e628d7712c84",
+            "prosecutionCaseIdentifier": {
+              "address": {
+                "address1": "Criminal Justice Department",
+                "address2": "Derbyshire Constabulary",
+                "address3": "Butterley Hall",
+                "address4": "Ripley",
+                "address5": "Derby",
+                "postcode": "DE5 3RS"
+              },
+              "contact": {
+                "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+              },
+              "majorCreditorCode": "PO30",
+              "prosecutionAuthorityCode": "DERPF",
+              "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+              "prosecutionAuthorityName": "Derbyshire Police",
+              "prosecutionAuthorityOUCode": "0300000",
+              "caseURN": "28DI7729296"
+            }
+          }
+        ],
+        "id": "048876d1-a97e-4530-8cc4-52447b1802aa",
+        "judicialResults": [
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "category": "INTERMEDIARY",
+            "cjsCode": "4506",
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": true,
+            "isUnscheduled": false,
+            "judicialResultId": "b65b8126-6b73-4650-b972-88ee7be3446c",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                "label": "Next hearing in Crown Court",
+                "promptReference": "0fc08233-363f-4290-b195-523ca2831d77",
+                "promptSequence": 0,
+                "usergroups": [],
+                "value": "Fixed Date:15/09/2023\nTime of hearing:10:00\nCourthouse organisation name:Croydon Crown Court\nCourthouse address line 1:The Law Courts\nCourthouse address line 2:Altyre Road\nCourthouse address line 3:Croydon\nCourthouse post code:CR9 5AB\nHearing type:Plea and Trial Preparation\nEstimated duration:2 DAYS",
+                "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "150a22a8-05d0-4be1-ada7-a0d512a63b5d",
+                "label": "Defendant excused attendance at next hearing",
+                "promptReference": "defendantExcusedAttendanceAtNextHearing",
+                "promptSequence": 200,
+                "type": "BOOLEAN",
+                "usergroups": [],
+                "value": "true",
+                "welshLabel": "Nid oes rhaid i'r diffynnydd fod yn bresennol yn y gwrandawiad nesaf",
+                "welshValue": "true"
+              },
+              {
+                "courtExtract": "Y",
+                "judicialResultPromptTypeId": "9c1dcdfa-ec44-4167-bbd4-d29c3a63a7fc",
+                "label": "Unexpected circumstances meant that the case could not be heard",
+                "promptReference": "4edc8c5d-3be8-4480-898c-0b21ae708d14",
+                "promptSequence": 300,
+                "qualifier": "KU",
+                "usergroups": [],
+                "value": "",
+                "welshLabel": "Am fod amgylchiadau annisgwyl yn golygu nad oedd modd gwrando'r achos"
+              },
+              {
+                "courtExtract": "Y",
+                "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                "label": "Adjournment reasons",
+                "promptReference": "22ac8db9-b8ce-492f-960f-383f767d2c9a",
+                "promptSequence": 400,
+                "usergroups": [],
+                "value": "",
+                "welshLabel": "Rheswm dros ohirio:"
+              }
+            ],
+            "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+            "label": "Adjournment",
+            "lastSharedDateTime": "2023-09-14",
+            "level": "O",
+            "lifeDuration": false,
+            "nextHearing": {
+              "adjournmentReason": "Unexpected circumstances meant that the case could not be heard",
+              "courtCentre": {
+                "address": {
+                  "address1": "The Law Courts",
+                  "address2": "Altyre Road",
+                  "address3": "Croydon",
+                  "postcode": "CR9 5AB"
+                },
+                "code": "C01CY00",
+                "courtHearingLocation": "C01CY00",
+                "id": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+                "name": "Croydon Crown Court",
+                "psaCode": 2576,
+                "welshName": "Llys Y Goron Croydon"
+              },
+              "estimatedDuration": "2 DAYS",
+              "estimatedMinutes": 720,
+              "jurisdictionType": "CROWN",
+              "listedStartDateTime": "2023-09-15T09:00:00.000Z",
+              "type": {
+                "description": "Plea and Trial Preparation",
+                "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+              }
+            },
+            "orderedDate": "2023-09-14",
+            "orderedHearingId": "c8cbb95d-62e4-4541-9eb7-bf3212c7144b",
+            "policeSubjectLineTitle": "Adjourned",
+            "postHearingCustodyStatus": "A",
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "qualifier": "KU",
+            "rank": 132300,
+            "resultText": "A - Adjournment\nAdjourned for hearing on 15/09/2023 at 10:00, Croydon Crown Court. Reason: Unexpected circumstances meant that the case could not be heard. Defendant excused attendance at next hearing.",
+            "resultWording": "",
+            "rollUpPrompts": true,
+            "rootJudicialResultId": "b65b8126-6b73-4650-b972-88ee7be3446c",
+            "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": [],
+            "welshLabel": "Gohiriad"
+          },
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "category": "ANCILLARY",
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": true,
+            "isUnscheduled": false,
+            "judicialResultId": "0fc08233-363f-4290-b195-523ca2831d77",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "aea2ee79-47b4-4023-9a95-1b327e6e03d5",
+                "label": "Fixed Date",
+                "promptReference": "fixedDate",
+                "promptSequence": 200,
+                "type": "DATE",
+                "usergroups": [],
+                "value": "15/09/2023",
+                "welshLabel": "Dyddiad Penodol",
+                "welshValue": "15/09/2023"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                "label": "Time of hearing",
+                "promptReference": "timeOfHearing",
+                "promptSequence": 400,
+                "type": "TIME",
+                "usergroups": [],
+                "value": "10:00",
+                "welshLabel": "Amser y gwrandawiad",
+                "welshValue": "10:00"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                "label": "Courthouse organisation name",
+                "promptReference": "hCHOUSEOrganisationName",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [],
+                "value": "Croydon Crown Court",
+                "welshValue": "Croydon Crown Court"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                "label": "Courthouse address line 1",
+                "promptReference": "hCHOUSEAddress1",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [],
+                "value": "The Law Courts",
+                "welshValue": "The Law Courts"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                "label": "Courthouse address line 2",
+                "promptReference": "hCHOUSEAddress2",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [],
+                "value": "Altyre Road",
+                "welshValue": "Altyre Road"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                "label": "Courthouse address line 3",
+                "promptReference": "hCHOUSEAddress3",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [],
+                "value": "Croydon",
+                "welshValue": "Croydon"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                "label": "Courthouse post code",
+                "promptReference": "hCHOUSEPostCode",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [],
+                "value": "CR9 5AB",
+                "welshValue": "CR9 5AB"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                "label": "Hearing type",
+                "promptReference": "HTYPE",
+                "promptSequence": 700,
+                "type": "TXT",
+                "usergroups": [],
+                "value": "Plea and Trial Preparation",
+                "welshLabel": "Math o wrandawiad",
+                "welshValue": "Plea and Trial Preparation"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                "label": "Estimated duration",
+                "promptReference": "HEST",
+                "promptSequence": 800,
+                "type": "INT",
+                "usergroups": [],
+                "value": "2 DAYS",
+                "welshLabel": "Amcangyfrif amser",
+                "welshValue": "2 DAYS"
+              }
+            ],
+            "judicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+            "label": "Next hearing in Crown Court",
+            "lastSharedDateTime": "2023-09-14",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2023-09-14",
+            "orderedHearingId": "c8cbb95d-62e4-4541-9eb7-bf3212c7144b",
+            "parentJudicialResultId": "6607ad7c-ab26-4e7e-a644-00d45ab12ec2",
+            "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+            "postHearingCustodyStatus": "A",
+            "publishedAsAPrompt": true,
+            "publishedForNows": true,
+            "rank": 18800,
+            "resultDefinitionGroup": "Next hearing",
+            "resultText": "hearing on 15/09/2023 at 10:00, Croydon Crown Court",
+            "resultWording": "",
+            "rollUpPrompts": false,
+            "rootJudicialResultId": "b65b8126-6b73-4650-b972-88ee7be3446c",
+            "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": [],
+            "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+          },
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "category": "ANCILLARY",
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": true,
+            "isUnscheduled": false,
+            "judicialResultId": "4edc8c5d-3be8-4480-898c-0b21ae708d14",
+            "judicialResultTypeId": "9c1dcdfa-ec44-4167-bbd4-d29c3a63a7fc",
+            "label": "Unexpected circumstances meant that the case could not be heard",
+            "lastSharedDateTime": "2023-09-14",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2023-09-14",
+            "orderedHearingId": "c8cbb95d-62e4-4541-9eb7-bf3212c7144b",
+            "parentJudicialResultId": "22ac8db9-b8ce-492f-960f-383f767d2c9a",
+            "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+            "postHearingCustodyStatus": "A",
+            "publishedAsAPrompt": true,
+            "publishedForNows": true,
+            "rank": 55500,
+            "resultDefinitionGroup": "Adjournment reasons",
+            "resultText": "Unexpected circumstances meant that the case could not be heard",
+            "resultWording": "",
+            "rollUpPrompts": false,
+            "rootJudicialResultId": "b65b8126-6b73-4650-b972-88ee7be3446c",
+            "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": [],
+            "welshLabel": "Am fod amgylchiadau annisgwyl yn golygu nad oedd modd gwrando'r achos"
+          }
+        ],
+        "subject": {
+          "id": "bb579feb-7621-44d5-81fe-86bbc1ea223a",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "b3a7a6d8-317e-4cbf-b434-e628d7712c84",
+                "caseReference": "28DI7729296",
+                "defendantId": "e18650b5-923d-40da-865f-2215026ba508"
+              }
+            ],
+            "masterDefendantId": "e18650b5-923d-40da-865f-2215026ba508",
+            "personDefendant": {
+              "arrestSummonsNumber": "D28GC01127729296",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "9999A9999AAAA",
+                  "address2": "Woodlane",
+                  "address3": "addressline 3",
+                  "address4": "Bristol",
+                  "address5": "Avon"
+                },
+                "contact": {
+                  "home": "0207729296",
+                  "mobile": "07777729296",
+                  "primaryEmail": "REDDY.TEST017729296@gmail.com"
+                },
+                "dateOfBirth": "1981-11-11",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "PAUL13",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "COLLINGWOOD13",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CO",
+          "code": "CR05504",
+          "commrOfOathFlag": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "hearingCode": "APN",
+          "id": "4ffe655d-eeae-3ebc-aa13-94f8cd77530a",
+          "jurisdiction": "EITHER",
+          "legislation": "In accordance with rule 6.5 of the Criminal Procedure Rules.",
+          "legislationWelsh": "Yn unol â rheol 6.5 o’r Rheolau Trefniadaeth Troseddol.",
+          "linkType": "LINKED",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "offenceActiveOrder": "OFFENCE",
+          "pleaApplicableFlag": false,
+          "prosecutorThirdPartyFlag": false,
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Application to vary or revoke reporting or excepting direction",
+          "typeWelsh": "Cais i amrywio neu ddiddymu cyfarwyddyd adrodd neu gyfarwyddyd eithrio"
+        }
+      }
+    ],
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "courtHearingLocation": "B01LY01",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "defendantAttendance": [
+      {
+        "attendanceDays": [
+          {
+            "attendanceType": "NOT_PRESENT",
+            "day": "2023-09-14"
+          }
+        ],
+        "defendantId": "e18650b5-923d-40da-865f-2215026ba508"
+      }
+    ],
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "hasSharedResults": true,
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2023-09-14T22:30:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "c8cbb95d-62e4-4541-9eb7-bf3212c7144b",
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "cpsOrganisation": "A30AB00",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2023-09-14T17:41:05.381Z",
+            "id": "e18650b5-923d-40da-865f-2215026ba508",
+            "isYouth": false,
+            "masterDefendantId": "e18650b5-923d-40da-865f-2215026ba508",
+            "offences": [
+              {
+                "arrestDate": "2021-01-01",
+                "chargeDate": "2020-12-28",
+                "count": 0,
+                "dvlaOffenceCode": "TS30",
+                "endorsableFlag": true,
+                "id": "f9f929f6-9bde-4a93-8971-fcf37824e8ab",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "FINAL",
+                    "cjsCode": "1017",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "dvlaCode": "J",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "4357cba0-54af-47a4-b3f4-41412119fce5",
+                    "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "label": "Absolute discharge",
+                    "lastSharedDateTime": "2023-09-14",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2023-09-14",
+                    "orderedHearingId": "c8cbb95d-62e4-4541-9eb7-bf3212c7144b",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 53800,
+                    "resultText": "AD - Absolute discharge",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "4357cba0-54af-47a4-b3f4-41412119fce5",
+                    "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Rhyddhad diamod"
+                  }
+                ],
+                "listingNumber": 1,
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03012",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "3ebe41c9-666d-4964-aa80-a005d89927a3",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Possess /    control TV set with intent another use install without a licence",
+                "orderIndex": 1,
+                "startDate": "2019-11-28",
+                "wording": "Theft of pedal cycle."
+              },
+              {
+                "arrestDate": "2021-01-01",
+                "chargeDate": "2020-12-28",
+                "count": 0,
+                "dvlaOffenceCode": "TS30",
+                "endorsableFlag": true,
+                "id": "b3b71e47-e7ce-4257-b9b7-03afff52eca5",
+                "isDisposed": false,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "71b79f62-dcc4-407c-a095-6e21de595507",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                        "label": "Next hearing in Crown Court",
+                        "promptReference": "2100a6ee-5d50-4a60-a969-fc369de58af3",
+                        "promptSequence": 0,
+                        "usergroups": [],
+                        "value": "Fixed Date:15/09/2023\nTime of hearing:10:00\nCourthouse organisation name:Harrow Crown Court\nCourthouse address line 1:Hailsham Drive\nCourthouse address line 2:Harrow\nCourthouse address line 3:Middlesex\nCourthouse post code:HA1 4TU\nHearing type:Plea\nEstimated duration:1 DAYS",
+                        "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "d1c6dc70-6ba9-4b3d-a922-3efd9e56dd74",
+                        "promptSequence": 200,
+                        "qualifier": "GE",
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "0a431f14-dccf-48ec-8ca4-ccc782827d5b",
+                        "promptSequence": 300,
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2023-09-14",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "Hailsham Drive",
+                          "address2": "Harrow",
+                          "address3": "Middlesex",
+                          "postcode": "HA1 4TU"
+                        },
+                        "code": "C01HA00",
+                        "courtHearingLocation": "C01HA00",
+                        "id": "a05557d1-6500-35c5-86fe-6a53559cc810",
+                        "name": "Harrow Crown Court",
+                        "psaCode": 2571,
+                        "welshName": "Llys Y Goron Harrow"
+                      },
+                      "estimatedDuration": "1 DAYS",
+                      "estimatedMinutes": 360,
+                      "jurisdictionType": "CROWN",
+                      "listedStartDateTime": "2023-09-15T09:00:00.000Z",
+                      "type": {
+                        "description": "Plea",
+                        "id": "511fe0a3-1391-4954-8158-6b10eed0dad9"
+                      }
+                    },
+                    "orderedDate": "2023-09-14",
+                    "orderedHearingId": "c8cbb95d-62e4-4541-9eb7-bf3212c7144b",
+                    "policeSubjectLineTitle": "Adjourned",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "GE",
+                    "rank": 132300,
+                    "resultText": "A - Adjournment\nAdjourned for hearing on 15/09/2023 at 10:00, Harrow Crown Court. Reason: To attend or a warrant to issue. Defendant to attend the next hearing.",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "71b79f62-dcc4-407c-a095-6e21de595507",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gohiriad"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "d1c6dc70-6ba9-4b3d-a922-3efd9e56dd74",
+                    "judicialResultTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                    "label": "To attend or a warrant to issue",
+                    "lastSharedDateTime": "2023-09-14",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2023-09-14",
+                    "orderedHearingId": "c8cbb95d-62e4-4541-9eb7-bf3212c7144b",
+                    "parentJudicialResultId": "0a431f14-dccf-48ec-8ca4-ccc782827d5b",
+                    "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 22600,
+                    "resultDefinitionGroup": "Adjournment reasons",
+                    "resultText": "To attend or a warrant to issue",
+                    "resultWording": "",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "71b79f62-dcc4-407c-a095-6e21de595507",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Codi neu gyhoeddi gwarant"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "2100a6ee-5d50-4a60-a969-fc369de58af3",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "aea2ee79-47b4-4023-9a95-1b327e6e03d5",
+                        "label": "Fixed Date",
+                        "promptReference": "fixedDate",
+                        "promptSequence": 200,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "15/09/2023",
+                        "welshLabel": "Dyddiad Penodol",
+                        "welshValue": "15/09/2023"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 400,
+                        "type": "TIME",
+                        "usergroups": [],
+                        "value": "10:00",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "10:00"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Harrow Crown Court",
+                        "welshValue": "Harrow Crown Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Hailsham Drive",
+                        "welshValue": "Hailsham Drive"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Harrow",
+                        "welshValue": "Harrow"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Middlesex",
+                        "welshValue": "Middlesex"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "HA1 4TU",
+                        "welshValue": "HA1 4TU"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                        "label": "Hearing type",
+                        "promptReference": "HTYPE",
+                        "promptSequence": 700,
+                        "type": "TXT",
+                        "usergroups": [],
+                        "value": "Plea",
+                        "welshLabel": "Math o wrandawiad",
+                        "welshValue": "Plea"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                        "label": "Estimated duration",
+                        "promptReference": "HEST",
+                        "promptSequence": 800,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "1 DAYS",
+                        "welshLabel": "Amcangyfrif amser",
+                        "welshValue": "1 DAYS"
+                      }
+                    ],
+                    "judicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                    "label": "Next hearing in Crown Court",
+                    "lastSharedDateTime": "2023-09-14",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2023-09-14",
+                    "orderedHearingId": "c8cbb95d-62e4-4541-9eb7-bf3212c7144b",
+                    "parentJudicialResultId": "50666aed-a96d-4517-8903-e98896f0fadf",
+                    "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 18800,
+                    "resultDefinitionGroup": "Next hearing",
+                    "resultText": "hearing on 15/09/2023 at 10:00, Harrow Crown Court",
+                    "resultWording": "",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "71b79f62-dcc4-407c-a095-6e21de595507",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                  }
+                ],
+                "lastAdjournDate": "2023-09-14",
+                "lastAdjournedHearingType": "To attend or a warrant to issue",
+                "listingNumber": 1,
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03012",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "3ebe41c9-666d-4964-aa80-a005d89927a3",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Possess /    control TV set with intent another use install without a licence",
+                "orderIndex": 2,
+                "startDate": "2019-11-28",
+                "wording": "Aggravated vehicle taking - ( driver did not take ) and vehicle damage of £5000 or over."
+              },
+              {
+                "arrestDate": "2021-01-01",
+                "chargeDate": "2020-12-28",
+                "count": 0,
+                "dvlaOffenceCode": "TS30",
+                "endorsableFlag": true,
+                "id": "d006183e-ccb4-4c1d-b997-e2979f239b8d",
+                "isDisposed": false,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "d0358dc3-8778-447a-8ca4-8a2c48a7d878",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                        "label": "Next hearing in Crown Court",
+                        "promptReference": "d242ea3f-d776-49d6-ba5b-0d749feb7fc1",
+                        "promptSequence": 0,
+                        "usergroups": [],
+                        "value": "Fixed Date:15/09/2023\nTime of hearing:10:00\nCourthouse organisation name:Croydon Crown Court\nCourthouse address line 1:The Law Courts\nCourthouse address line 2:Altyre Road\nCourthouse address line 3:Croydon\nCourthouse post code:CR9 5AB\nHearing type:Plea and Trial Preparation\nEstimated duration:2 DAYS",
+                        "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "150a22a8-05d0-4be1-ada7-a0d512a63b5d",
+                        "label": "Defendant excused attendance at next hearing",
+                        "promptReference": "defendantExcusedAttendanceAtNextHearing",
+                        "promptSequence": 200,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshLabel": "Nid oes rhaid i'r diffynnydd fod yn bresennol yn y gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "9c1dcdfa-ec44-4167-bbd4-d29c3a63a7fc",
+                        "label": "Unexpected circumstances meant that the case could not be heard",
+                        "promptReference": "808d2995-34f7-4fd5-a778-bd30f60fe2d3",
+                        "promptSequence": 300,
+                        "qualifier": "KU",
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Am fod amgylchiadau annisgwyl yn golygu nad oedd modd gwrando'r achos"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "4644624c-8c9e-4241-9c97-235eddb26b10",
+                        "promptSequence": 400,
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2023-09-14",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "Unexpected circumstances meant that the case could not be heard",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "The Law Courts",
+                          "address2": "Altyre Road",
+                          "address3": "Croydon",
+                          "postcode": "CR9 5AB"
+                        },
+                        "code": "C01CY00",
+                        "courtHearingLocation": "C01CY00",
+                        "id": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+                        "name": "Croydon Crown Court",
+                        "psaCode": 2576,
+                        "welshName": "Llys Y Goron Croydon"
+                      },
+                      "estimatedDuration": "2 DAYS",
+                      "estimatedMinutes": 720,
+                      "jurisdictionType": "CROWN",
+                      "listedStartDateTime": "2023-09-15T09:00:00.000Z",
+                      "type": {
+                        "description": "Plea and Trial Preparation",
+                        "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+                      }
+                    },
+                    "orderedDate": "2023-09-14",
+                    "orderedHearingId": "c8cbb95d-62e4-4541-9eb7-bf3212c7144b",
+                    "policeSubjectLineTitle": "Adjourned",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "KU",
+                    "rank": 132300,
+                    "resultText": "A - Adjournment\nAdjourned for hearing on 15/09/2023 at 10:00, Croydon Crown Court. Reason: Unexpected circumstances meant that the case could not be heard. Defendant excused attendance at next hearing.",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "d0358dc3-8778-447a-8ca4-8a2c48a7d878",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gohiriad"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "d242ea3f-d776-49d6-ba5b-0d749feb7fc1",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "aea2ee79-47b4-4023-9a95-1b327e6e03d5",
+                        "label": "Fixed Date",
+                        "promptReference": "fixedDate",
+                        "promptSequence": 200,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "15/09/2023",
+                        "welshLabel": "Dyddiad Penodol",
+                        "welshValue": "15/09/2023"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 400,
+                        "type": "TIME",
+                        "usergroups": [],
+                        "value": "10:00",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "10:00"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Croydon Crown Court",
+                        "welshValue": "Croydon Crown Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "The Law Courts",
+                        "welshValue": "The Law Courts"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Altyre Road",
+                        "welshValue": "Altyre Road"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Croydon",
+                        "welshValue": "Croydon"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "CR9 5AB",
+                        "welshValue": "CR9 5AB"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                        "label": "Hearing type",
+                        "promptReference": "HTYPE",
+                        "promptSequence": 700,
+                        "type": "TXT",
+                        "usergroups": [],
+                        "value": "Plea and Trial Preparation",
+                        "welshLabel": "Math o wrandawiad",
+                        "welshValue": "Plea and Trial Preparation"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                        "label": "Estimated duration",
+                        "promptReference": "HEST",
+                        "promptSequence": 800,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "2 DAYS",
+                        "welshLabel": "Amcangyfrif amser",
+                        "welshValue": "2 DAYS"
+                      }
+                    ],
+                    "judicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                    "label": "Next hearing in Crown Court",
+                    "lastSharedDateTime": "2023-09-14",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2023-09-14",
+                    "orderedHearingId": "c8cbb95d-62e4-4541-9eb7-bf3212c7144b",
+                    "parentJudicialResultId": "95c9599e-f30f-4deb-8109-2ec93defb90d",
+                    "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 18800,
+                    "resultDefinitionGroup": "Next hearing",
+                    "resultText": "hearing on 15/09/2023 at 10:00, Croydon Crown Court",
+                    "resultWording": "",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "d0358dc3-8778-447a-8ca4-8a2c48a7d878",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "808d2995-34f7-4fd5-a778-bd30f60fe2d3",
+                    "judicialResultTypeId": "9c1dcdfa-ec44-4167-bbd4-d29c3a63a7fc",
+                    "label": "Unexpected circumstances meant that the case could not be heard",
+                    "lastSharedDateTime": "2023-09-14",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2023-09-14",
+                    "orderedHearingId": "c8cbb95d-62e4-4541-9eb7-bf3212c7144b",
+                    "parentJudicialResultId": "4644624c-8c9e-4241-9c97-235eddb26b10",
+                    "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 55500,
+                    "resultDefinitionGroup": "Adjournment reasons",
+                    "resultText": "Unexpected circumstances meant that the case could not be heard",
+                    "resultWording": "",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "d0358dc3-8778-447a-8ca4-8a2c48a7d878",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Am fod amgylchiadau annisgwyl yn golygu nad oedd modd gwrando'r achos"
+                  }
+                ],
+                "lastAdjournDate": "2023-09-14",
+                "lastAdjournedHearingType": "Unexpected circumstances meant that the case could not be heard",
+                "listingNumber": 1,
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03012",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "3ebe41c9-666d-4964-aa80-a005d89927a3",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Possess /    control TV set with intent another use install without a licence",
+                "orderIndex": 3,
+                "startDate": "2019-11-28",
+                "wording": "Use a motor vehicle without third party insurance."
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "D28GC01127729296",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "9999A9999AAAA",
+                  "address2": "Woodlane",
+                  "address3": "addressline 3",
+                  "address4": "Bristol",
+                  "address5": "Avon"
+                },
+                "contact": {
+                  "home": "0207729296",
+                  "mobile": "07777729296",
+                  "primaryEmail": "REDDY.TEST017729296@gmail.com"
+                },
+                "dateOfBirth": "1981-11-11",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "PAUL13",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "COLLINGWOOD13",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "prosecutionAuthorityReference": "D28GC01127729296",
+            "prosecutionCaseId": "b3a7a6d8-317e-4cbf-b434-e628d7712c84"
+          }
+        ],
+        "id": "b3a7a6d8-317e-4cbf-b434-e628d7712c84",
+        "initiationCode": "C",
+        "originatingOrganisation": "130SU01",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Criminal Justice Department",
+            "address2": "Derbyshire Constabulary",
+            "address3": "Butterley Hall",
+            "address4": "Ripley",
+            "address5": "Derby",
+            "postcode": "DE5 3RS"
+          },
+          "contact": {
+            "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+          },
+          "majorCreditorCode": "PO30",
+          "prosecutionAuthorityCode": "DERPF",
+          "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+          "prosecutionAuthorityName": "Derbyshire Police",
+          "prosecutionAuthorityOUCode": "0300000",
+          "caseURN": "28DI7729296"
+        }
+      }
+    ],
+    "type": {
+      "description": "First hearing",
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    }
+  },
+  "previousBookingReferencesWithCourtScheduleIds": [],
+  "seedingHearing": {
+    "jurisdictionType": "MAGISTRATES",
+    "seedingHearingId": "c8cbb95d-62e4-4541-9eb7-bf3212c7144b",
+    "sittingDay": "2023-09-14"
+  },
+  "shadowListedOffences": []
+}

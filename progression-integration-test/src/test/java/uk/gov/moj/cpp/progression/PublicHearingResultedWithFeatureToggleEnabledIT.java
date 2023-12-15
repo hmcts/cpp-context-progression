@@ -43,6 +43,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.AzureScheduleServiceStub;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.LaaAPIMServiceStub;
 
@@ -843,7 +844,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     }
 
     @Test
-    public void shouldMakeCaseStatusInactiveWhenResultsAreAddedAtHearingLevel() throws Exception{
+    public void shouldMakeCaseStatusInactiveWhenAllOffencesAreResultedFinal() throws Exception{
         try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
                 .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
             addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId, defendantId);
@@ -855,7 +856,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         try (final MessageConsumer messageConsumerHearingResultedCaseUpdatedPrivateEvent = privateEvents.createPrivateConsumer("progression.event.hearing-resulted-case-updated")) {
 
             sendMessage(messageProducerClientPublic,
-                    PUBLIC_EVENTS_HEARING_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted-defendant-proceeding-concluded-with-defendant-results-added.json", caseId,
+                    PUBLIC_EVENTS_HEARING_HEARING_RESULTED, getHearingJsonObject("public.hearing.resulted-defendant-proceeding-concluded-with-all-offences-resulted-final.json", caseId,
                             hearingId, defendantId, newCourtCentreId, newCourtCentreName, reportingRestrictionId, "2021-11-23"), metadataBuilder()
                             .withId(randomUUID())
                             .withName(PUBLIC_EVENTS_HEARING_HEARING_RESULTED)

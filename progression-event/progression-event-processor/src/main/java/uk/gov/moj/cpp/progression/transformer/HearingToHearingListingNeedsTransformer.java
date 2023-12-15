@@ -235,12 +235,16 @@ public class HearingToHearingListingNeedsTransformer {
 
         final HearingListingNeeds hearingListingNeeds = addCourtApplication(createHearingListingNeeds(nextHearing, judiciaries), courtApplication, prosecutionCases);
 
-        if (hearingListingNeedsMap.containsKey(key) && nonNull(hearingListingNeedsMap.get(key).getCourtApplications())) {
-            if(isNewApplication(hearingListingNeedsMap.get(key), courtApplication)) {
+        if (hearingListingNeedsMap.containsKey(key)) {
+            if (isNull(hearingListingNeedsMap.get(key).getCourtApplications())) {
+                final HearingListingNeeds hearingListingNeedsWithCourtApplication = addCourtApplication(hearingListingNeedsMap.get(key), courtApplication);
+                hearingListingNeedsMap.put(key, hearingListingNeedsWithCourtApplication);
+            } else if (nonNull(hearingListingNeedsMap.get(key).getCourtApplications())
+                    && isNewApplication(hearingListingNeedsMap.get(key), courtApplication)) {
                 hearingListingNeedsMap.get(key).getCourtApplications().add(courtApplication);
             }
         } else {
-             hearingListingNeedsMap.put(key, hearingListingNeeds);
+            hearingListingNeedsMap.put(key, hearingListingNeeds);
         }
 
     }
@@ -275,6 +279,16 @@ public class HearingToHearingListingNeedsTransformer {
         } else {
             hearingListingNeeds.getCourtApplications().add(courtApplication);
         }
+        return builder.build();
+    }
+
+    private HearingListingNeeds addCourtApplication(final HearingListingNeeds hearingListingNeeds, final CourtApplication courtApplication) {
+        final HearingListingNeeds.Builder builder = HearingListingNeeds.hearingListingNeeds().withValuesFrom(hearingListingNeeds);
+
+        final List<CourtApplication> courtApplications = new ArrayList<>();
+        courtApplications.add(courtApplication);
+        builder.withCourtApplications(courtApplications);
+
         return builder.build();
     }
 

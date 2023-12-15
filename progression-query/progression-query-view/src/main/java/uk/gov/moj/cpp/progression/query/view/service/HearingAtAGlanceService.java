@@ -610,7 +610,7 @@ public class HearingAtAGlanceService {
     }
 
     private static String getDefendantAge(final PersonDefendant personDefendant, final List<HearingDay> hearingDays) {
-        LOGGER.info("Calculate defendant age for defendant {} ", personDefendant);
+        LOGGER.debug("Calculate defendant age for defendant {} ", personDefendant);
         if (nonNull(personDefendant) && nonNull(personDefendant.getPersonDetails().getDateOfBirth())
                 && isNotEmpty(hearingDays)) {
             LOGGER.info("Count of hearing days provided {}", hearingDays.size());

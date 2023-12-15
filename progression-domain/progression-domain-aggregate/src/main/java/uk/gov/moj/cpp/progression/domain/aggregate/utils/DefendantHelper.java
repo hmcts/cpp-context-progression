@@ -71,23 +71,18 @@ public class DefendantHelper {
     }
 
 
-    public static boolean hearingCaseDefendantsProceedingsConcluded(final ProsecutionCase prosecutionCase, final List<DefendantJudicialResult> defendantJudicialResults) {
-        return getUpdatedDefendants(prosecutionCase, defendantJudicialResults).stream()
+    public static boolean hearingCaseDefendantsProceedingsConcluded(final ProsecutionCase prosecutionCase) {
+        return getUpdatedDefendants(prosecutionCase).stream()
                 .allMatch(defendant -> TRUE.equals(defendant.getProceedingsConcluded()));
     }
 
-    public static boolean isAllDefendantProceedingConcluded(final ProsecutionCase prosecutionCase, List<DefendantJudicialResult> hearingdefendantJudicialResults, final List<Defendant> updatedDefendants) {
+    public static boolean isAllDefendantProceedingConcluded(final ProsecutionCase prosecutionCase, final List<Defendant> updatedDefendants) {
         return prosecutionCase.getDefendants().stream().map(defendant -> {
             final List<Offence> updatedOffences = new ArrayList<>();
-            boolean proceedingConcluded;
-            if (isDefendantConcluded(hearingdefendantJudicialResults) || isCaseDefendantConcluded(defendant)) {
-                proceedingConcluded = getUpdatedDefendantsWithProceedingConcluded(defendant, updatedOffences);
-            } else {
-                proceedingConcluded = defendant.getOffences().stream()
+            final boolean proceedingConcluded = defendant.getOffences().stream()
                         .map(offence -> getUpdatedOffence(updatedOffences, offence, isConcluded(offence)))
                         .map(Offence::getProceedingsConcluded)
                         .collect(toList()).stream().allMatch(finalCategory -> finalCategory.equals(Boolean.TRUE));
-            }
 
             final Defendant updatedDefendant = getDefendant(defendant, updatedOffences, proceedingConcluded);
             updatedDefendants.add(updatedDefendant);
@@ -96,9 +91,9 @@ public class DefendantHelper {
         }).collect(toList()).stream().allMatch(proceedingConcluded -> proceedingConcluded.equals(TRUE));
     }
 
-    public static List<Defendant> getUpdatedDefendants(final ProsecutionCase prosecutionCase, final List<DefendantJudicialResult> defendantJudicialResults) {
+    public static List<Defendant> getUpdatedDefendants(final ProsecutionCase prosecutionCase) {
         return prosecutionCase.getDefendants().stream()
-                .map(defendant -> getUpdatedDefendant(defendant, defendantJudicialResults))
+                .map(DefendantHelper::getUpdatedDefendant)
                 .collect(Collectors.toList());
     }
 
@@ -125,18 +120,12 @@ public class DefendantHelper {
                 .orElse(null);
     }
 
-    private static Defendant getUpdatedDefendant(final Defendant defendant, final List<DefendantJudicialResult> defendantJudicialResults) {
+    private static Defendant getUpdatedDefendant(final Defendant defendant) {
         final List<Offence> updatedOffences = new ArrayList<>();
-        boolean proceedingConcluded;
-        if (isDefendantConcluded(defendantJudicialResults) || isCaseDefendantConcluded(defendant)) {
-            proceedingConcluded = getUpdatedDefendantsWithProceedingConcluded(defendant, updatedOffences);
-        } else {
-            proceedingConcluded = defendant.getOffences().stream()
+        final boolean proceedingConcluded = defendant.getOffences().stream()
                     .map(offence -> getUpdatedOffence(updatedOffences, offence, isConcluded(offence)))
                     .map(Offence::getProceedingsConcluded)
                     .collect(toList()).stream().allMatch(finalCategory -> finalCategory.equals(TRUE));
-        }
-
         return getDefendant(defendant, updatedOffences, proceedingConcluded);
     }
 
@@ -308,16 +297,21 @@ public class DefendantHelper {
                 .anyMatch(judicialResult -> judicialResult.getCategory().equals(JudicialResultCategory.FINAL));
     }
 
-    public static boolean isConcluded(Offence offence) {
+    public static boolean isConcluded(final Offence offence) {
         return isNotEmpty(offence.getJudicialResults()) && offence.getJudicialResults().stream()
                 .anyMatch(judicialResult -> judicialResult.getCategory().equals(JudicialResultCategory.FINAL));
     }
 
-    private static Defendant getDefendant(final Defendant defendant, final List<Offence> updatedOffences, boolean proceedingConcluded) {
+    public static boolean hasNewAmendment(final Offence offence) {
+        return nonNull(offence) && isNotEmpty(offence.getJudicialResults()) && offence.getJudicialResults().stream()
+                .anyMatch(judicialResult -> Boolean.TRUE.equals(judicialResult.getIsNewAmendment()));
+    }
+
+    public static Defendant getDefendant(final Defendant defendant, final List<Offence> updatedOffences, boolean proceedingConcluded) {
         return Defendant.defendant().withValuesFrom(defendant).withOffences(updatedOffences).withProceedingsConcluded(proceedingConcluded).build();
     }
 
-    private static Offence getUpdatedOffence(final List<Offence> updatedOffences, Offence existingOffence, boolean proceedingConcluded) {
+    public static Offence getUpdatedOffence(final List<Offence> updatedOffences, Offence existingOffence, boolean proceedingConcluded) {
         final Offence updatedOffence = Offence.offence().withValuesFrom(existingOffence).withProceedingsConcluded(proceedingConcluded).build();
         updatedOffences.add(updatedOffence);
         return updatedOffence;

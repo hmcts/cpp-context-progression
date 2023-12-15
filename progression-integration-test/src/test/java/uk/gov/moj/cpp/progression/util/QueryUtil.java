@@ -34,13 +34,9 @@ public class QueryUtil {
 
         ResponseData responseData = makeRequest(requestParams);
 
-        System.out.println("responseData: " + responseData.getPayload());
-
         while (!expectedConditions.matches(responseData) && LocalDateTime.now().isBefore(expiryTime)) {
             sleep();
             responseData = makeRequest(requestParams);
-            System.out.println("responseData: " + responseData.getPayload());
-
         }
 
         if (!expectedConditions.matches(responseData)) {
@@ -58,8 +54,7 @@ public class QueryUtil {
 
     private static ResponseData makeRequest(final RequestParams requestParams) {
         final Response response = new RestClient().query(requestParams.getUrl(), requestParams.getMediaType(), requestParams.getHeaders());
-        final String responseData = (String) response.readEntity(String.class);
-        System.out.println("RESPONSE ::" + responseData);
+        final String responseData = response.readEntity(String.class);
         return new ResponseData(Response.Status.fromStatusCode(response.getStatus()), responseData, response.getHeaders());
     }
 

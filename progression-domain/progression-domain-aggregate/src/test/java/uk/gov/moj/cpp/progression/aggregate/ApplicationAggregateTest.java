@@ -87,20 +87,6 @@ public class ApplicationAggregateTest {
         assertThat(object.getClass(), is(equalTo(ApplicationReferredToCourt.class)));
     }
 
-    /*@Test
-    public void shouldReturnBoxWorkApplicationReferred() {
-        final List<Object> eventStream = aggregate.referBoxWorkApplication(HearingListingNeeds.hearingListingNeeds()
-                .withCourtApplications(Arrays.asList(courtApplication()
-                        .withId(UUID.randomUUID())
-                        .build()))
-                .build()).collect(toList());
-        assertThat(eventStream.size(), is(2));
-        Object objectEvent = eventStream.get(1);
-        assertThat(objectEvent.getClass(), is(CoreMatchers.equalTo(BoxworkApplicationReferred.class)));
-        objectEvent = eventStream.get(0);
-        assertThat(objectEvent.getClass(), is(CoreMatchers.equalTo(CourtApplicationUpdated.class)));
-    }*/
-
     @Test
     public void shouldReturnApplicationStatusChanged() {
         final List<Object> eventStream = aggregate.updateApplicationStatus(randomUUID(), ApplicationStatus.LISTED).collect(toList());

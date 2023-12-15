@@ -524,8 +524,8 @@ public class HearingResultEventListenerTest {
                         .withWording("offence wording")
                         .withJudicialResults(
                                 newArrayList(
-                                        getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay),
-                                        getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_2, hearingDay)
+                                        getJudicialResultWithAmendment(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay),
+                                        getJudicialResultWithAmendment(randomUUID(), OFFENCE_RESULT_LABEL_2, hearingDay)
                                 )
                         )
                         .build()))
@@ -641,7 +641,7 @@ public class HearingResultEventListenerTest {
                         .withWording("offence wording")
                         .withJudicialResults(
                                 newArrayList(
-                                        getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay)
+                                        getJudicialResultWithAmendment(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay)
                                 )
                         )
                         .build()))
@@ -872,7 +872,7 @@ public class HearingResultEventListenerTest {
                         .withWording("offence wording")
                         .withJudicialResults(
                                 newArrayList(
-                                        getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay)
+                                        getJudicialResultWithAmendment(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay)
                                 )
                         )
                         .build()))
@@ -2131,8 +2131,8 @@ public class HearingResultEventListenerTest {
                         .withWording("offence wording")
                         .withJudicialResults(
                                 newArrayList(
-                                        getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay),
-                                        getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_2, hearingDay)
+                                        getJudicialResultWithAmendment(randomUUID(), OFFENCE_RESULT_LABEL_1, hearingDay),
+                                        getJudicialResultWithAmendment(randomUUID(), OFFENCE_RESULT_LABEL_2, hearingDay)
                                 )
                         )
                         .build()))
@@ -2368,10 +2368,12 @@ public class HearingResultEventListenerTest {
                                 .withJudicialResults(
                                         asList(JudicialResult.judicialResult()
                                                         .withLabel("PublishedForNowsTRUE")
+                                                        .withIsNewAmendment(Boolean.TRUE)
                                                         .withPublishedForNows(Boolean.TRUE)
                                                         .withOrderedDate(now())
                                                         .build(),
                                                 JudicialResult.judicialResult()
+                                                        .withIsNewAmendment(Boolean.TRUE)
                                                         .withLabel("PublishedForNowsFALSE")
                                                         .withPublishedForNows(Boolean.FALSE)
                                                         .withOrderedDate(now())
@@ -2406,6 +2408,14 @@ public class HearingResultEventListenerTest {
                 .build();
     }
 
+    private JudicialResult getJudicialResultWithAmendment(final UUID judicialResultId, final String resultLabel, final LocalDate hearingDate) {
+        return JudicialResult.judicialResult()
+                .withIsNewAmendment(Boolean.TRUE)
+                .withJudicialResultId(judicialResultId)
+                .withLabel(resultLabel)
+                .withOrderedDate(hearingDate)
+                .build();
+    }
 
     private JsonObject jsonFromString(final String jsonObjectStr) {
 

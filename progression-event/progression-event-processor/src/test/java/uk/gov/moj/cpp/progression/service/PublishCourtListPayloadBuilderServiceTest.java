@@ -198,7 +198,6 @@ public class PublishCourtListPayloadBuilderServiceTest {
         final JsonObject courtCentreWithCourtRooms = prepareCourtCentreWithCourtRooms();
         final AssociatedDefenceOrganisation defenceOrganisation = prepareDefenceOrganisation1();
         final JsonObject correspondenceContacts = prepareCorrespondenceCaseContacts();
-        System.out.println(correspondenceContacts);
         final Map<String, PublishCourtListPayload.PublishCourtListPayloadBuilder> defenceOrganisationPayloadBuilderByName = new HashMap<>();
         final Map<String, PublishCourtListPayload.PublishCourtListPayloadBuilder> prosecutionPayloadBuilderByName = new HashMap<>();
         final Map<String, PublishCourtListPayload.PublishCourtListPayloadBuilder> defenceAdvocatePayloadBuilderByName = new HashMap<>();
