@@ -125,6 +125,8 @@ public class CaseAtAGlanceHelperTest {
 
     private static final String CAAG_RESULT_TEXT = "code - Result Text For Caag";
     private static final String JUDICIAL_RESULT_TEXT = "code - Result Text For Judicial";
+    private static final String PNC_ID = "pncId";
+    private static final String ASN = "asn1234";
 
     private CaseAtAGlanceHelper caseAtAGlanceHelper;
 
@@ -347,6 +349,17 @@ public class CaseAtAGlanceHelperTest {
         assertThat(caagResults.get(1).getResultText(), is(CAAG_RESULT_TEXT));
         assertThat(caagResults.get(1).getUseResultText(), is(true));
         assertThat(caagResults.get(0).getId(), is(RECENT_JUDICIAL_RESULT_ID));
+    }
+
+    @Test
+    public void shouldGetDefendantPncAndAsn() {
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService);
+
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+
+        final CaagDefendants defendant1 = defendants.get(1);
+        assertThat(defendant1.getPncId(), is(PNC_ID));
+        assertThat(defendant1.getArrestSummonsNumber(), is(ASN));
     }
 
     @Test
@@ -612,7 +625,8 @@ public class CaseAtAGlanceHelperTest {
                                 .build(),
                         defendant().withId(JOHN_RAMBO_ID)
                                 .withMasterDefendantId(JOHN_RAMBO_ID)
-                                .withPersonDefendant(personDefendant().withPersonDetails(Person.person().withFirstName("John").withLastName("Rambo").build()).build())
+                                .withPncId(PNC_ID)
+                                .withPersonDefendant(personDefendant().withPersonDetails(Person.person().withFirstName("John").withLastName("Rambo").build()).withArrestSummonsNumber(ASN).build())
                                 .withOffences(singletonList(offence().withId(randomUUID()).withOffenceCode(OFFENCE_CODE).build()))
                                 .build(),
                         defendant().withId(ALAN_SMITH_ID)

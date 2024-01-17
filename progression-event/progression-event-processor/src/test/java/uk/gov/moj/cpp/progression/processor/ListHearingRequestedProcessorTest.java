@@ -333,7 +333,7 @@ public class ListHearingRequestedProcessorTest {
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any())).thenReturn(materialId);
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         listHearingRequestedProcessor.handle(requestMessage);
 
@@ -379,7 +379,7 @@ public class ListHearingRequestedProcessorTest {
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any())).thenReturn(materialId);
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         listHearingRequestedProcessor.handle(requestMessage);
 
@@ -414,7 +414,7 @@ public class ListHearingRequestedProcessorTest {
 
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(null);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any())).thenReturn(materialId);
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         listHearingRequestedProcessor.handle(requestMessage);
 
@@ -464,7 +464,7 @@ public class ListHearingRequestedProcessorTest {
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any())).thenReturn(materialsId);
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialsId);
         listHearingRequestedProcessor.handle(requestMessage);
 
         verify(notificationService, times(2)).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
@@ -510,7 +510,7 @@ public class ListHearingRequestedProcessorTest {
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any())).thenReturn(materialsId);
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialsId);
         listHearingRequestedProcessor.handle(requestMessage);
 
         verify(notificationService, times(0)).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
@@ -555,7 +555,7 @@ public class ListHearingRequestedProcessorTest {
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any())).thenReturn(materialId);
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
         listHearingRequestedProcessor.handle(requestMessage);
         verify(notificationService, times(2)).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
     }
@@ -587,7 +587,7 @@ public class ListHearingRequestedProcessorTest {
         AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder().build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any())).thenReturn(materialId);
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         listHearingRequestedProcessor.handle(requestMessage);
 

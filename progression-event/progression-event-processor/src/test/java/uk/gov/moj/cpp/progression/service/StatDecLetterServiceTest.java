@@ -6,6 +6,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
@@ -42,7 +44,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -95,10 +96,10 @@ public class StatDecLetterServiceTest {
 
         final UUID materialId = UUID.randomUUID();
 
-        when(documentGeneratorService.generateDocument(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean()))
                 .thenReturn(materialId);
 
-        when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
 
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
@@ -107,7 +108,7 @@ public class StatDecLetterServiceTest {
                         .build())
                 .build();
 
-        when(referenceDataService.getEnforcementAreaByLjaCode(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(ljaDetails);
+        when(referenceDataService.getEnforcementAreaByLjaCode(any(), any(), any())).thenReturn(ljaDetails);
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)

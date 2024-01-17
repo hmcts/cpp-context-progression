@@ -75,9 +75,11 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.SendNotificationForApplication;
@@ -97,6 +99,7 @@ import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsRejectedService;
+import uk.gov.moj.cpp.progression.service.ListHearingBoxworkService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -104,6 +107,7 @@ import uk.gov.moj.cpp.progression.service.SjpService;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -188,6 +192,9 @@ public class CourtApplicationProcessorTest {
 
     @Captor
     private ArgumentCaptor<Envelope<PublicProgressionCourtApplicationSummonsRejected>> summonsRejectedEnvelopeCaptor;
+
+    @Mock
+    private ListHearingBoxworkService listHearingBoxworkService;
 
     @DataProvider
     public static Object[][] applicationSummonsSpecification() {
@@ -1053,6 +1060,55 @@ public class CourtApplicationProcessorTest {
         verify(sender).send(captor.capture());
         final List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), is(PUBLIC_PROGRESSION_HEARING_RESULTED_APPLICATION_UPDATED));
+    }
+
+    @Test
+    public void shouldProcessHearingResultedApplicationUpdatedWhenResultedWithListHearingForBoxworkAndFixedDateHearingWithNoCourtRoom() {
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.hearing-resulted-application-updated");
+        final UUID applicationId = randomUUID();
+        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).withCourtCentre(CourtCentre.courtCentre().build())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .build();
+        final HearingResultedApplicationUpdated hearingResultedApplicationUpdated = hearingResultedApplicationUpdated()
+                .withCourtApplication(courtApplication().withId(applicationId).withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withJudicialResultTypeId(ListHearingBoxworkService.LHBW_RESULT_DEFINITION)
+                        .withNextHearing(nextHearing)
+                        .build())).build())
+                .build();
+        final JsonObject payload = objectToJsonObjectConverter.convert(hearingResultedApplicationUpdated);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+        when(listHearingBoxworkService.isLHBWResultedAndNeedToSendNotifications(hearingResultedApplicationUpdated.getCourtApplication().getJudicialResults())).thenReturn(true);
+        when(listHearingBoxworkService.getNextHearingFromLHBWResult(hearingResultedApplicationUpdated.getCourtApplication().getJudicialResults())).thenReturn(nextHearing);
+
+        courtApplicationProcessor.processHearingResultedApplicationUpdated(event);
+
+        notificationService.sendNotification(event, hearingResultedApplicationUpdated.getCourtApplication(), false, nextHearing.getCourtCentre(), nextHearing.getListedStartDateTime(), nextHearing.getJurisdictionType());
+        verify(sender).send(any());
+    }
+
+    @Test
+    public void shouldProcessHearingResultedApplicationUpdatedWhenResultedWithListHearingForBoxworkAndWeekCommencingDateHearing() {
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.hearing-resulted-application-updated");
+        final UUID applicationId = randomUUID();
+        final NextHearing nextHearing = NextHearing.nextHearing().withWeekCommencingDate(LocalDate.now())
+                .withCourtCentre(CourtCentre.courtCentre().withRoomId(randomUUID()).build())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .build();
+        final HearingResultedApplicationUpdated hearingResultedApplicationUpdated = hearingResultedApplicationUpdated()
+                .withCourtApplication(courtApplication().withId(applicationId).withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withJudicialResultTypeId(ListHearingBoxworkService.LHBW_RESULT_DEFINITION)
+                        .withNextHearing(nextHearing)
+                        .build())).build())
+                .build();
+        final JsonObject payload = objectToJsonObjectConverter.convert(hearingResultedApplicationUpdated);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+        when(listHearingBoxworkService.isLHBWResultedAndNeedToSendNotifications(hearingResultedApplicationUpdated.getCourtApplication().getJudicialResults())).thenReturn(true);
+        when(listHearingBoxworkService.getNextHearingFromLHBWResult(hearingResultedApplicationUpdated.getCourtApplication().getJudicialResults())).thenReturn(nextHearing);
+
+        courtApplicationProcessor.processHearingResultedApplicationUpdated(event);
+
+        notificationService.sendNotification(event, hearingResultedApplicationUpdated.getCourtApplication(), false, nextHearing.getCourtCentre(), nextHearing.getWeekCommencingDate().atStartOfDay(ZoneOffset.UTC), nextHearing.getJurisdictionType());
+        verify(sender).send(any());
     }
 
 

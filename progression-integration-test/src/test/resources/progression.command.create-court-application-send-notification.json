@@ -204,7 +204,7 @@
           },
           "defendantCase" : [
             {
-              "defendantId":"cd3b251d-20e8-44ad-b95e-2f81afde56a4",
+              "defendantId": "RANDOM_RESPONDENT_DEFENDANT_ID",
               "caseId": "RANDOM_CASE_ID",
               "caseReference":"3OER21313"
             }

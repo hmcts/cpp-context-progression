@@ -202,8 +202,9 @@ public class DocumentGeneratorService {
         }
     }
 
-    @Transactional(REQUIRES_NEW)
-    public UUID generateDocument(final JsonEnvelope envelope, final JsonObject documentPayload, String templateName, final Sender sender, final UUID prosecutionCaseId, final UUID applicationId) {
+        @Transactional(REQUIRES_NEW)
+    public UUID generateDocument(final JsonEnvelope envelope, final JsonObject documentPayload, String templateName,
+                                 final Sender sender, final UUID prosecutionCaseId, final UUID applicationId, final boolean isRemotePrintingRequired) {
 
         final UUID materialId = randomUUID();
 
@@ -222,7 +223,7 @@ public class DocumentGeneratorService {
                     materialId,
                     prosecutionCaseId,
                     applicationId,
-                    true);
+                    isRemotePrintingRequired);
 
         } catch (IOException | RuntimeException e) {
             LOGGER.error(ERROR_MESSAGE, e);

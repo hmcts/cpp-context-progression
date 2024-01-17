@@ -34,15 +34,18 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.UUID;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
@@ -100,6 +103,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     private String applicantAddress5;
     private String applicantPostCode;
     private String applicationReference;
+    private String respondentDefendantId;
     private String respondentOrganisationName;
     private String respondentOrganisationAddress1;
     private String respondentOrganisationAddress2;
@@ -137,6 +141,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
 
     @Test
     public void shouldSendNotificationWhenApplicationCreated() throws Exception {
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", respondentDefendantId);
         doReferCaseToCourtAndVerify();
         hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
         doHearingConfirmedAndVerify();
@@ -161,6 +166,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
 
     @Test
     public void shouldSendPublicEventWhenApplicationCreatedWithWelshTranslationRequired() throws Exception {
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", respondentDefendantId);
         doReferCaseToCourtAndVerify();
         hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
         doHearingConfirmedAndVerify();
@@ -224,6 +230,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
                 applicantAddress5,
                 applicantPostCode,
                 applicationReference,
+                respondentDefendantId,
                 respondentOrganisationName,
                 respondentOrganisationAddress1,
                 respondentOrganisationAddress2,
@@ -375,6 +382,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         applicantAddress5 = STRING.next();
         applicantPostCode = POST_CODE.next();
         applicationReference = STRING.next();
+        respondentDefendantId = randomUUID().toString();
         respondentOrganisationName = STRING.next();
         respondentOrganisationAddress1 = STRING.next();
         respondentOrganisationAddress2 = STRING.next();

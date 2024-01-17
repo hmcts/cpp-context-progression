@@ -36,6 +36,7 @@ import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocument
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.ReferBoxWorkApplicationHelper.getPostBoxWorkApplicationReferredHearing;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -72,12 +73,14 @@ public class ReferBoxWorkApplicationIT extends AbstractIT {
     private static final String PRINT_REQUESTED_PRIVATE_EVENT = "progression.event.print-requested";
     private static final String PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED = "public.progression.boxwork-application-referred";
     public static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
+    private static final String COURT_DOCUMENT_ADDED = "progression.event.court-document-added";
 
     private MessageConsumer consumerForCourtApplicationCreated;
     private MessageConsumer consumerForEmailRequested;
     private MessageConsumer consumerForPrintRequested;
     private MessageConsumer messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated;
     private MessageConsumer publicEventsConsumerForHearingExtended;
+    private MessageConsumer addCourtDocument;
 
     private String applicationId;
     private String caseId;
@@ -100,6 +103,7 @@ public class ReferBoxWorkApplicationIT extends AbstractIT {
         publicEventsConsumerForHearingExtended = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED);
         consumerForEmailRequested = privateEvents.createPrivateConsumer(EMAIL_REQUESTED_PRIVATE_EVENT);
         consumerForPrintRequested = privateEvents.createPrivateConsumer(PRINT_REQUESTED_PRIVATE_EVENT);
+        addCourtDocument = privateEvents.createPrivateConsumer(COURT_DOCUMENT_ADDED);
     }
 
     @After
@@ -145,6 +149,7 @@ public class ReferBoxWorkApplicationIT extends AbstractIT {
 
     @Test
     public void shouldSendAppointmentLetterAsEmailAttachmentForVirtualHearingWhenReferBoxWorkInitiateCourtApplicationAndDefendantHasEmailAddress() throws Exception{
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-stat-dec.json");
         initiateCourtProceedingsForCourtApplication(applicationId, caseId,"applications/progression.initiate-court-proceedings-for-statdec-application-defendant-has-emailAddress.json");
         final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
@@ -152,9 +157,12 @@ public class ReferBoxWorkApplicationIT extends AbstractIT {
         assertThat(11, is(applicationReference.length()));
         final UUID materialId = verifyEmailRequestedPrivateEvent();
         final List<String> expectedEmailDetails = newArrayList("hallie.pollich@yahoo.com");
+
+        final JsonObject addDocumentMessage = QueueUtil.retrieveMessageAsJsonObject(addCourtDocument).get();
+        assertThat(addDocumentMessage.getJsonObject("courtDocument").getString("documentTypeId"), is("460fbe94-c002-11e8-a355-529269fb1459"));
+        assertThat(addDocumentMessage.getJsonObject("courtDocument").getString("documentTypeDescription"), is("Orders, Notices & Directions"));
+
         verifyEmailNotificationIsRaisedWithAttachment(expectedEmailDetails, materialId);
-
-
     }
 
     @Test

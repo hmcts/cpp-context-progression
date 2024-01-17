@@ -12,11 +12,14 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.SummonsTemplateType.NOT_APPLICABLE;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -45,6 +48,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.MaterialDetails;
@@ -63,6 +67,10 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileRetriever;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.domain.PostalNotification;
+import uk.gov.moj.cpp.progression.service.payloads.AssociatedDefenceOrganisation;
+import uk.gov.moj.cpp.progression.service.payloads.DefenceOrganisationAddress;
 import uk.gov.moj.cpp.progression.value.object.CPSNotificationVO;
 import uk.gov.moj.cpp.progression.value.object.CaseVO;
 import uk.gov.moj.cpp.progression.value.object.DefenceOrganisationVO;
@@ -80,6 +88,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import org.junit.Before;
@@ -148,6 +157,20 @@ public class NotificationServiceTest {
     @Mock
     private JsonEnvelope envelope1;
 
+    @Mock
+    private DefenceService defenceService;
+
+    @Mock
+    private PostalService postalService;
+
+    @Mock
+    private MaterialUrlGenerator materialUrlGenerator;
+    @Mock
+    private DocumentGeneratorService documentGeneratorService;
+
+    @Mock
+    private RefDataService referenceDataService;
+
     private final ZonedDateTime hearingDateTime = ZonedDateTime.of(LocalDate.of(2019, 06, 18), LocalTime.of(14, 45), ZoneId.of("UTC"));
 
     private CourtCentre courtCentre = CourtCentre.courtCentre().withName("Test Court Centre").withAddress(Address.address()
@@ -155,6 +178,7 @@ public class NotificationServiceTest {
             .withAddress2("Test Address 2")
             .withAddress3("Test Address 3")
             .withPostcode("AS1 1DF").build()).build();
+    private final PostalNotification postalNotification = PostalNotification.builder().build();
 
     @Before
     public void setUp() {
@@ -164,6 +188,16 @@ public class NotificationServiceTest {
         this.applicationId = randomUUID();
         this.materialService = new MaterialService();
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
+
+
+        when(postalService.getPostalNotificationForCourtApplicationParty(eq(envelope), anyString(), anyString(), anyString(),
+                anyString(), anyString(), anyString(), anyString(), any(CourtCentre.class), any(CourtApplicationParty.class),
+                any(JurisdictionType.class), anyString(), any(CourtApplication.class), anyString())).thenReturn(postalNotification);
+
+        final UUID materialId = UUID.randomUUID();
+        when(documentGeneratorService.generateDocument(eq(envelope), any(JsonObject.class), eq(PostalService.POSTAL_NOTIFICATION), eq(sender), any(), any(UUID.class), eq(false))).thenReturn(materialId);
+        final String materialUrl = "http://localhost:8080/material/asPdf";
+        when(materialUrlGenerator.pdfFileStreamUrlFor(materialId)).thenReturn(materialUrl);
     }
 
     @Test
@@ -336,6 +370,85 @@ public class NotificationServiceTest {
     }
 
     @Test
+    public void sendNotificationForTheApplicantDefendantAndAssociatedToDefenceOrganisationEmail() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        final UUID defendantId = UUID.randomUUID();
+        final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder()
+                .withEmail("defence.org@test.com")
+                .build();
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+        when(defenceService.getDefenceOrganisationByDefendantId(envelope, defendantId)).thenReturn(associatedDefenceOrganisation);
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(
+                                MasterDefendant.masterDefendant()
+                                        .withDefendantCase(singletonList(DefendantCase.defendantCase().withDefendantId(defendantId).build()))
+                                        .withPersonDefendant(
+                                                PersonDefendant.personDefendant()
+                                                        .withPersonDetails(Person.person().withFirstName("Test").withLastName("Test").build())
+                                                        .build())
+                                        .build())
+                        .withPersonDetails(
+                                Person.person()
+                                        .withContact(
+                                                ContactNumber.contactNumber()
+                                                        .withPrimaryEmail("applicant@test.com")
+                                                        .build())
+                                        .build())
+                        .build())
+                .build();
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN);
+
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName("progression.command.email"),
+                payloadIsJson(
+                        allOf(
+                                withJsonPath("$.applicationId", equalTo(applicationId.toString())),
+                                withJsonPath("$.notifications[0].sendToAddress", equalTo("defence.org@test.com")))))));
+    }
+
+    @Test
+    public void sendNotificationForTheApplicantDefendantAndAssociatedToDefenceOrganisationPrint() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        final UUID defendantId = UUID.randomUUID();
+        final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder()
+                .withAddress(DefenceOrganisationAddress.defenceOrganisationAddressBuilder().withAddress1("add1").withAddress2("add2").withAddress3("add3").withAddress4("add4").withAddressPostcode("postcode").build())
+                .build();
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+        when(defenceService.getDefenceOrganisationByDefendantId(envelope, defendantId)).thenReturn(associatedDefenceOrganisation);
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(
+                                MasterDefendant.masterDefendant()
+                                        .withDefendantCase(singletonList(DefendantCase.defendantCase().withDefendantId(defendantId).build()))
+                                        .withPersonDefendant(
+                                                PersonDefendant.personDefendant()
+                                                        .withPersonDetails(Person.person().withFirstName("Test").withLastName("Test").build())
+                                                        .build())
+                                        .build())
+                        .withPersonDetails(Person.person().withContact(ContactNumber.contactNumber().withPrimaryEmail("applicant@test.com").build()).build()).build()).build();
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN);
+
+        verify(postalService).getPostalNotificationForCourtApplicationParty(eq(envelope), anyString(), anyString(),
+                eq(courtApplication.getApplicationReference()), eq(courtApplication.getType().getType()), eq(courtApplication.getType().getTypeWelsh()),
+                eq(courtApplication.getType().getLegislation()), eq(courtApplication.getType().getLegislationWelsh()), eq(courtCentre), eq(courtApplication.getApplicant()),
+                eq(JurisdictionType.CROWN), eq(courtApplication.getApplicationParticulars()), eq(courtApplication), anyString());
+        verify(postalService).sendPostalNotification(eq(envelope), eq(courtApplication.getId()), any(PostalNotification.class), any());
+    }
+
+    @Test
     public void doNotSendNotificationForTheApplicantWhenWelTranslationRequired() {
         doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
 
@@ -424,19 +537,40 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void sendNotificationForTheApplicantAsProsecutingAuthority() {
+    public void doNotSendNotificationWhenTheApplicantIsCPSProsecutingAuthority() {
+
+        final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.prosecutingAuthority().withContact(ContactNumber.contactNumber().withPrimaryEmail("applicant@prosecutingauthority.com").build()).build();
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withProsecutingAuthority(prosecutingAuthority)
+                        .build())
+                .build();
+        when(referenceDataService.getProsecutorV2(envelope, prosecutingAuthority.getProsecutionAuthorityId(), requester)).thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).build()));
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
+
+        verifyZeroInteractions(sender);
+        verifyZeroInteractions(postalService);
+    }
+
+    @Test
+    public void sendNotificationForTheApplicantAsNonCPSProsecutingAuthority() {
 
         doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
+        final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.prosecutingAuthority().withContact(ContactNumber.contactNumber().withPrimaryEmail("applicant@prosecutingauthority.com").build()).build();
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
-                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority().withContact(ContactNumber.contactNumber().withPrimaryEmail("applicant@prosecutingauthority.com").build()).build())
+                        .withProsecutingAuthority(prosecutingAuthority)
                         .build())
                 .build();
+        when(referenceDataService.getProsecutorV2(envelope, prosecutingAuthority.getProsecutionAuthorityId(), requester)).thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", false).build()));
 
         notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
 
@@ -491,6 +625,96 @@ public class NotificationServiceTest {
                 withJsonPath("$.notifications[0].sendToAddress", equalTo("respondents@test.com")),
                 withJsonPath("$.notifications[0].personalisation.application_reference", equalTo("applicationReference"))
         ))));
+    }
+
+    @Test
+    public void sendNotificationToRespondentsDefendantAndAssociatedToDefenceOrganisationEmail() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        final UUID defendantId = UUID.randomUUID();
+        final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder()
+                .withEmail("defence.org@test.com")
+                .build();
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+        when(defenceService.getDefenceOrganisationByDefendantId(envelope, defendantId)).thenReturn(associatedDefenceOrganisation);
+
+        final List<CourtApplicationParty> respondents = singletonList(
+                CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(
+                                MasterDefendant.masterDefendant()
+                                        .withDefendantCase(singletonList(DefendantCase.defendantCase().withDefendantId(defendantId).build()))
+                                        .withPersonDefendant(
+                                                PersonDefendant.personDefendant().withPersonDetails(
+                                                                Person.person().withFirstName("Test").withLastName("Test")
+                                                                        .build())
+                                                        .build())
+                                        .build())
+                        .withPersonDetails(Person.person().withContact(ContactNumber.contactNumber()
+                                .withPrimaryEmail("respondents@test.com").build()).build()).build());
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationReference("applicationReference")
+                .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withRespondents(respondents)
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withPersonDetails(Person.person().build()).build())
+                .build();
+
+        notificationService.sendNotification(envelope, courtApplication, false,  courtCentre, hearingDateTime, JurisdictionType.CROWN);
+
+        verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
+
+        assertThat(this.envelopeArgumentCaptor.getAllValues().get(0), jsonEnvelope(metadata().withName("progression.command.email"), payloadIsJson(allOf(
+                withJsonPath("$.applicationId", equalTo(applicationId.toString())),
+                withJsonPath("$.notifications[0].sendToAddress", equalTo("defence.org@test.com")),
+                withJsonPath("$.notifications[0].personalisation.application_reference", equalTo("applicationReference"))
+        ))));
+    }
+
+    @Test
+    public void sendNotificationToRespondentDefendantAndAssociatedToDefenceOrganisationPrint() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        final UUID defendantId = UUID.randomUUID();
+        final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder()
+                .withAddress(DefenceOrganisationAddress.defenceOrganisationAddressBuilder().withAddress1("add1").withAddress2("add2").withAddress3("add3").withAddress4("add4").withAddressPostcode("postcode").build())
+                .build();
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+        when(defenceService.getDefenceOrganisationByDefendantId(envelope, defendantId)).thenReturn(associatedDefenceOrganisation);
+
+        final List<CourtApplicationParty> respondents = singletonList(
+                CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(
+                                MasterDefendant.masterDefendant()
+                                        .withDefendantCase(singletonList(DefendantCase.defendantCase().withDefendantId(defendantId).build()))
+                                        .withPersonDefendant(
+                                                PersonDefendant.personDefendant().withPersonDetails(
+                                                                Person.person().withFirstName("Test").withLastName("Test")
+                                                                        .build())
+                                                        .build())
+                                        .build())
+                        .withPersonDetails(Person.person().withContact(ContactNumber.contactNumber()
+                                .withPrimaryEmail("respondents@test.com").build()).build()).build());
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withApplicationReference("applicationReference")
+                .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withRespondents(respondents)
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                      .withPersonDetails(Person.person().build()).build())
+                .build();
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN);
+
+        verify(postalService).getPostalNotificationForCourtApplicationParty(eq(envelope), anyString(), anyString(),
+                eq(courtApplication.getApplicationReference()), eq(courtApplication.getType().getType()), eq(courtApplication.getType().getTypeWelsh()),
+                eq(courtApplication.getType().getLegislation()), eq(courtApplication.getType().getLegislationWelsh()), eq(courtCentre), eq(courtApplication.getRespondents().get(0)),
+                eq(JurisdictionType.CROWN), eq(courtApplication.getApplicationParticulars()), eq(courtApplication), anyString());
+        verify(postalService).sendPostalNotification(eq(envelope), eq(courtApplication.getId()), any(PostalNotification.class), any());
     }
 
     @Test
@@ -620,18 +844,44 @@ public class NotificationServiceTest {
                 withJsonPath("$.notifications[0].sendToAddress", equalTo("defantant@test.com"))))));
     }
 
+    @Test
+    public void doNotSendNotificationWhenRespondentsIsCPSProsecutingAuthority() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+
+        final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.prosecutingAuthority().withContact(ContactNumber.contactNumber().withPrimaryEmail("ProsecutingAuthority@test.com").build()).build();
+        final List<CourtApplicationParty> respondents = singletonList(
+                CourtApplicationParty.courtApplicationParty()
+                        .withProsecutingAuthority(prosecutingAuthority)
+                        .build());
+        when(referenceDataService.getProsecutorV2(envelope, prosecutingAuthority.getProsecutionAuthorityId(), requester)).thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).build()));
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
+                .withRespondents(respondents)
+                .build();
+
+        notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES);
+
+        verifyZeroInteractions(sender);
+        verifyZeroInteractions(postalService);
+    }
 
     @Test
-    public void sendNotificationForTheRespondentsAsProsecutingAuthority() {
+    public void sendNotificationForTheRespondentsAsNonCPSProsecutingAuthority() {
 
         doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
+        final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.prosecutingAuthority().withContact(ContactNumber.contactNumber().withPrimaryEmail("ProsecutingAuthority@test.com").build()).build();
         final List<CourtApplicationParty> respondents = singletonList(
                 CourtApplicationParty.courtApplicationParty()
-                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority().withContact(ContactNumber.contactNumber().withPrimaryEmail("ProsecutingAuthority@test.com").build()).build())
+                        .withProsecutingAuthority(prosecutingAuthority)
                         .build());
+        when(referenceDataService.getProsecutorV2(envelope, prosecutingAuthority.getProsecutionAuthorityId(), requester)).thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", false).build()));
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)

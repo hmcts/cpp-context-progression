@@ -85,6 +85,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     private String applicantAddress5;
     private String applicantPostCode;
     private String applicationReference;
+    private String respondentDefendantId;
     private String respondentOrganisationName;
     private String respondentOrganisationAddress1;
     private String respondentOrganisationAddress2;
@@ -192,6 +193,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                 applicantAddress5,
                 applicantPostCode,
                 applicationReference,
+                respondentDefendantId,
                 respondentOrganisationName,
                 respondentOrganisationAddress1,
                 respondentOrganisationAddress2,
@@ -323,6 +325,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         applicantAddress5 = STRING.next();
         applicantPostCode = POST_CODE.next();
         applicationReference = STRING.next();
+        respondentDefendantId = randomUUID().toString();
         respondentOrganisationName = STRING.next();
         respondentOrganisationAddress1 = STRING.next();
         respondentOrganisationAddress2 = STRING.next();

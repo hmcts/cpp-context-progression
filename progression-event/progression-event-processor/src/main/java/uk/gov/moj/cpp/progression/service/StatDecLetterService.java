@@ -101,7 +101,7 @@ public class StatDecLetterService {
                  courtCentreJson, localJusticeArea,courtApplicationParty,jurisdictionType, documentTemplateName);
         final JsonObject documentPayload = objectToJsonObjectConverter.convert(statDacAppointmentLetterPayload);
 
-        return  documentGeneratorService.generateDocument(envelope, documentPayload, documentTemplateName, sender, null, courtApplication.getId());
+        return  documentGeneratorService.generateDocument(envelope, documentPayload, documentTemplateName, sender, null, courtApplication.getId(), true);
 
     }
 

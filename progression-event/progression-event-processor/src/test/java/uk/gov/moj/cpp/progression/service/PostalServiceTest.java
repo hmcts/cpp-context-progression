@@ -6,6 +6,8 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -47,6 +49,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
+import uk.gov.moj.cpp.progression.domain.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.PostalDefendant;
 import uk.gov.moj.cpp.progression.domain.PostalNotification;
 
@@ -67,7 +70,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
@@ -112,10 +114,10 @@ public class PostalServiceTest {
     @Test
     public void sendPostToCourtApplicationParty() {
 
-        when(documentGeneratorService.generateDocument(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean()))
                 .thenReturn(UUID.randomUUID());
 
-        when(referenceDataService.getDocumentTypeAccessData(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
+        when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
 
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
@@ -136,11 +138,10 @@ public class PostalServiceTest {
 
         final String hearingTime = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).format(hearingDateTime);
 
-        postalService.sendPostToCourtApplicationParty(
+        final PostalNotification postalNotification = postalService.getPostalNotificationForCourtApplicationParty(
                 envelope,
                 hearingDate,
                 hearingTime,
-                courtApplication.getId(),
                 courtApplication.getApplicationReference(),
                 courtApplication.getType().getType(),
                 courtApplication.getType().getTypeWelsh(),
@@ -148,8 +149,8 @@ public class PostalServiceTest {
                 courtApplication.getType().getLegislationWelsh(),
                 null,
                 courtApplication.getApplicant(),
-                caseId,
                 JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
@@ -171,7 +172,7 @@ public class PostalServiceTest {
                 .add("lja", "1234")
                 .build();
 
-        when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
 
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
@@ -226,7 +227,7 @@ public class PostalServiceTest {
                 null,
                 localJusticeArea,
                 courtApplication.getApplicant(),
-                JurisdictionType.MAGISTRATES, applicationParticulars, courtApplication, applicant, EMPTY);
+                JurisdictionType.MAGISTRATES, applicationParticulars, courtApplication, applicant, EMPTY, PostalAddressee.builder().build());
 
        verifyMagistratesCourt(postalNotification.getLjaCode(), postalNotification.getLjaName());
     }
@@ -238,7 +239,7 @@ public class PostalServiceTest {
                 .add("lja", "1234")
                 .build();
 
-        when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
 
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
@@ -293,7 +294,7 @@ public class PostalServiceTest {
                 null,
                 localJusticeArea,
                 courtApplication.getApplicant(),
-                JurisdictionType.CROWN, applicationParticulars, courtApplication, applicant, EMPTY);
+                JurisdictionType.CROWN, applicationParticulars, courtApplication, applicant, EMPTY, PostalAddressee.builder().build());
 
         verifyCrownCourt(postalNotification.getLjaCode(), postalNotification.getLjaName());
     }
@@ -310,10 +311,10 @@ public class PostalServiceTest {
                 .add("lja", "1234")
                 .build();
 
-        when(documentGeneratorService.generateDocument(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean()))
                 .thenReturn(UUID.randomUUID());
 
-        when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
 
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
@@ -322,9 +323,9 @@ public class PostalServiceTest {
                         .build())
                 .build();
 
-        when(referenceDataService.getEnforcementAreaByLjaCode(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(ljaDetails);
+        when(referenceDataService.getEnforcementAreaByLjaCode(any(), any(), any())).thenReturn(ljaDetails);
 
-        when(referenceDataService.getDocumentTypeAccessData(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
+        when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
 
         final CourtApplication courtApplication = getCourtApplication();
 
@@ -334,11 +335,10 @@ public class PostalServiceTest {
 
         final String hearingTime = dTF.format(hearingDateTime.toLocalTime());
 
-        postalService.sendPostToCourtApplicationParty(
+        final PostalNotification postalNotification = postalService.getPostalNotificationForCourtApplicationParty(
                 envelope,
                 hearingDate,
                 hearingTime,
-                applicationId,
                 "05PP1000915-01",
                 "Application to amend the requirements of a suspended sentence order",
                 "welsh - Application to amend the requirements of a suspended sentence order",
@@ -355,8 +355,8 @@ public class PostalServiceTest {
                                 .build())
                         .build(),
                 courtApplication.getApplicant(),
-                caseId,
                 JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
@@ -385,12 +385,12 @@ public class PostalServiceTest {
                 .add("oucodeL3WelshName", "Caerdydd")
                 .build();
 
-        when(documentGeneratorService.generateDocument(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean()))
                 .thenReturn(UUID.randomUUID());
 
-        when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
 
-        when(referenceDataService.getCourtCentreWithCourtRoomsById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
 
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
@@ -400,9 +400,9 @@ public class PostalServiceTest {
                         .build())
                 .build();
 
-        when(referenceDataService.getEnforcementAreaByLjaCode(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(ljaDetails);
+        when(referenceDataService.getEnforcementAreaByLjaCode(any(), any(), any())).thenReturn(ljaDetails);
 
-        when(referenceDataService.getDocumentTypeAccessData(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
+        when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
 
         final CourtApplication courtApplication = getCourtApplication();
 
@@ -412,11 +412,10 @@ public class PostalServiceTest {
 
         final String hearingTime = dTF.format(hearingDateTime.toLocalTime());
 
-        postalService.sendPostToCourtApplicationParty(
+        final PostalNotification postalNotification = postalService.getPostalNotificationForCourtApplicationParty(
                 envelope,
                 hearingDate,
                 hearingTime,
-                applicationId,
                 "05PP1000915-01",
                 "Application to amend the requirements of a suspended sentence order",
                 "welsh - Application to amend the requirements of a suspended sentence order",
@@ -433,8 +432,8 @@ public class PostalServiceTest {
                                 .build())
                         .build(),
                 courtApplication.getApplicant(),
-                caseId,
                 JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY);
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
@@ -463,12 +462,12 @@ public class PostalServiceTest {
                 .add("oucodeL3WelshName", "Caerdydd")
                 .build();
 
-        when(documentGeneratorService.generateDocument(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean()))
                 .thenReturn(UUID.randomUUID());
 
-        when(referenceDataService.getOrganisationUnitById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
 
-        when(referenceDataService.getCourtCentreWithCourtRoomsById(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(courtCentreJson));
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
 
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
@@ -478,9 +477,9 @@ public class PostalServiceTest {
                         .build())
                 .build();
 
-        when(referenceDataService.getEnforcementAreaByLjaCode(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(ljaDetails);
+        when(referenceDataService.getEnforcementAreaByLjaCode(any(), any(), any())).thenReturn(ljaDetails);
 
-        when(referenceDataService.getDocumentTypeAccessData(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
+        when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
 
         final CourtApplication courtApplication = getCourtApplication();
 
@@ -490,11 +489,10 @@ public class PostalServiceTest {
 
         final String hearingTime = dTF.format(hearingDateTime.toLocalTime());
 
-        postalService.sendPostToCourtApplicationParty(
+        final PostalNotification postalNotification = postalService.getPostalNotificationForCourtApplicationParty(
                 envelope,
                 hearingDate,
                 hearingTime,
-                applicationId,
                 "05PP1000915-01",
                 "Application to amend the requirements of a suspended sentence order",
                 "welsh - Application to amend the requirements of a suspended sentence order",
@@ -511,8 +509,9 @@ public class PostalServiceTest {
                                 .build())
                         .build(),
                 courtApplication.getApplicant(),
-                caseId,
                 JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY);
+
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender, times(1)).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),

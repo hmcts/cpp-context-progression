@@ -270,7 +270,8 @@ public class CaseAtAGlanceHelper {
             defendantMarkers.add(YOUTH_MARKER_TYPE);
         }
 
-        caagDefendantBuilder.withId(defendant.getId());
+        caagDefendantBuilder.withId(defendant.getId())
+                .withPncId(defendant.getPncId());
 
         if (nonNull(personDefendant) && nonNull(personDefendant.getPersonDetails())) {
             final Person personDetails = personDefendant.getPersonDetails();
@@ -280,7 +281,8 @@ public class CaseAtAGlanceHelper {
                     .withAge(getAge(personDetails.getDateOfBirth()))
                     .withAddress(personDetails.getAddress())
                     .withInterpreterLanguageNeeds(personDetails.getInterpreterLanguageNeeds())
-                    .withNationality(getNationalityDescription(personDetails));
+                    .withNationality(getNationalityDescription(personDetails))
+                    .withArrestSummonsNumber(personDefendant.getArrestSummonsNumber());
 
             if (nonNull(personDefendant.getBailStatus())) {
                 caagDefendantBuilder.withRemandStatus(personDefendant.getBailStatus().getDescription());

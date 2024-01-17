@@ -17,6 +17,7 @@ import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
 import static uk.gov.justice.core.courts.ConfirmedProsecutionCaseId.confirmedProsecutionCaseId;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing.prepareSummonsDataForExtendedHearing;
+import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -872,8 +873,17 @@ public class ProgressionService {
                 sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND_V3),
                         hearingListingStatusCommand));
             } else {
-                LOGGER.error("Hearing with no case not possible");
-                throw new DataValidationException("Hearing with no case not possible");
+                final JsonObjectBuilder hearingCreatedForApplicationCommandBuilder = Json.createObjectBuilder()
+                        .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
+                        .add(HEARING, objectToJsonObjectConverter.convert(hearing));
+
+                final JsonObject hearingCreatedForApplicationCommand = hearingCreatedForApplicationCommandBuilder.build();
+
+                LOGGER.info("create hearing listing status after send application for listing with payload {}", hearingCreatedForApplicationCommand);
+
+                sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND),
+                        hearingCreatedForApplicationCommand));
+                listingService.listNextCourtHearings(jsonEnvelope, listNextHearings);
             }
         });
     }
@@ -1419,7 +1429,7 @@ public class ProgressionService {
                 final JsonObject prosecutionCaseJson = getProsecutionCaseById(jsonEnvelope, pc.getId().toString());
                 if (nonNull(prosecutionCaseJson)) {
                     final ProsecutionCase prosecutionCaseEntity = jsonObjectConverter.convert(prosecutionCaseJson.getJsonObject("prosecutionCase"), ProsecutionCase.class);
-                    final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                    final ProsecutionCase prosecutionCase = prosecutionCase()
                             .withValuesFrom(prosecutionCaseEntity)
                             .withDefendants(filterDefendantsAndUpdateOffences(pc, prosecutionCaseEntity, earliestHearingDate, seedingHearing))
                             .build();
@@ -1726,4 +1736,5 @@ public class ProgressionService {
     private String getEndDateString(final NextHearing nextHearing) {
         return nextHearing.getEndDate() != null ? "End date: " + dateFormat.format(nextHearing.getEndDate()) : null;
     }
+
 }

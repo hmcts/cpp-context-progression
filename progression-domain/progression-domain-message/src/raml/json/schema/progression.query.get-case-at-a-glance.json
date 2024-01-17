@@ -146,6 +146,12 @@
           "items": {
             "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
           }
+        },
+        "pncId": {
+          "type": "string"
+        },
+        "arrestSummonsNumber": {
+          "type": "string"
         }
       },
       "required": [

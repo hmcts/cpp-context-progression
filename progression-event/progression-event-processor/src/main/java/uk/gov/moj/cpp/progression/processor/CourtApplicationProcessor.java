@@ -49,10 +49,12 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -74,6 +76,7 @@ import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
 import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsRejectedService;
+import uk.gov.moj.cpp.progression.service.ListHearingBoxworkService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -161,6 +164,9 @@ public class CourtApplicationProcessor {
 
     @Inject
     private NotificationService notificationService;
+
+    @Inject
+    private ListHearingBoxworkService listHearingBoxworkService;
 
     public static final String MATERIAL_ID = "materialId";
 
@@ -536,6 +542,15 @@ public class CourtApplicationProcessor {
 
     @Handles("progression.event.hearing-resulted-application-updated")
     public void processHearingResultedApplicationUpdated(final JsonEnvelope event) {
+        final HearingResultedApplicationUpdated hearingResultedApplicationUpdated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), HearingResultedApplicationUpdated.class);
+        final CourtApplication courtApplication = hearingResultedApplicationUpdated.getCourtApplication();
+
+        if (listHearingBoxworkService.isLHBWResultedAndNeedToSendNotifications(courtApplication.getJudicialResults())){
+            final NextHearing nextHearing = listHearingBoxworkService.getNextHearingFromLHBWResult(courtApplication.getJudicialResults());
+            final ZonedDateTime hearingStartDateTime = ofNullable(nextHearing.getListedStartDateTime()).orElseGet(() -> nextHearing.getWeekCommencingDate().atStartOfDay(ZoneOffset.UTC));
+            notificationService.sendNotification(event, courtApplication, false, nextHearing.getCourtCentre(), hearingStartDateTime, nextHearing.getJurisdictionType());
+        }
+
         sender.send(envelop(event.payloadAsJsonObject()).withName(PUBLIC_PROGRESSION_HEARING_RESULTED_APPLICATION_UPDATED).withMetadataFrom(event));
     }
 

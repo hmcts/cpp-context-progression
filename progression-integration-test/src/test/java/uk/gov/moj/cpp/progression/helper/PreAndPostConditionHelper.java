@@ -1213,6 +1213,7 @@ public class PreAndPostConditionHelper {
                                                                       final String applicantAddress5,
                                                                       final String applicantPostCode,
                                                                       final String applicationReference,
+                                                                      final String respondentDefendantId,
                                                                       final String respondentOrganisationName,
                                                                       final String respondentOrganisationAddress1,
                                                                       final String respondentOrganisationAddress2,
@@ -1254,6 +1255,7 @@ public class PreAndPostConditionHelper {
                 .replaceAll("RANDOM_ADDRESS4", applicantAddress4)
                 .replaceAll("RANDOM_ADDRESS5", applicantAddress5)
                 .replaceAll("RANDOM_POSTCODE", applicantPostCode)
+                .replaceAll("RANDOM_RESPONDENT_DEFENDANT_ID", respondentDefendantId)
                 .replaceAll("RANDOM_RESPONDENT_ORGANISATION_NAME", respondentOrganisationName)
                 .replaceAll("RANDOM_RESPONDENT_ORGANISATION_ADDRESS1", respondentOrganisationAddress1)
                 .replaceAll("RANDOM_RESPONDENT_ORGANISATION_ADDRESS2", respondentOrganisationAddress2)
