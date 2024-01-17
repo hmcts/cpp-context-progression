@@ -1457,8 +1457,6 @@ public class ProgressionServiceTest {
         return listNextHearings;
     }
 
-
-
     public static JsonObject getPayload(final String path) {
         String response = null;
         try {

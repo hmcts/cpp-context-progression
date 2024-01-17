@@ -9,6 +9,9 @@
     "mobile": {
       "type": "string"
     },
+    "work": {
+      "type": "string"
+    },
     "business": {
       "type": "string"
     },
