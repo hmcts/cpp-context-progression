@@ -186,6 +186,7 @@ import uk.gov.moj.cpp.progression.events.DefenceOrganisationAssociatedByDefenceC
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationDissociatedByDefenceContext;
 import uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated;
+import uk.gov.moj.cpp.progression.events.DefendantMatched;
 import uk.gov.moj.cpp.progression.events.DefendantNotFound;
 import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.FinanceDocumentForOnlinePleaSubmitted;
@@ -2556,6 +2557,56 @@ public class CaseAggregateTest {
     }
 
     @Test
+    public void shouldSkipMasterDefendantIdUpdateV2UponDeletedHearing() {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final CaseLinkedToHearing caseLinkedToHearing = CaseLinkedToHearing.caseLinkedToHearing()
+                .withCaseId(caseId)
+                .withHearingId(hearingId)
+                .build();
+
+        final HearingMarkedAsDuplicateForCase hearingMarkedAsDuplicateForCase = HearingMarkedAsDuplicateForCase.hearingMarkedAsDuplicateForCase()
+                .withCaseId(caseId)
+                .withHearingId(hearingId)
+                .withDefendantIds(asList(defendantId))
+                .build();
+
+        MatchDefendant matchDefendant = MatchDefendant.matchDefendant()
+                .withDefendantId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withMatchedDefendants(asList(
+                        MatchedDefendant.matchedDefendant()
+                                .withDefendantId(defendantId)
+                                .withProsecutionCaseId(caseId)
+                                .withMasterDefendantId(defendantId)
+                                .build(),
+                        MatchedDefendant.matchedDefendant()
+                                .withCourtProceedingsInitiated(ZonedDateTime.now())
+                                .withDefendantId(defendantId)
+                                .withProsecutionCaseId(caseId)
+                                .withMasterDefendantId(defendantId)
+                                .build()))
+                .build();
+        CaseAggregate caseAggregate = new CaseAggregate();
+
+        // Linking Case and Hearing
+        caseAggregate.apply(caseLinkedToHearing);
+
+        // Marking Hearing a duplicate for case
+        caseAggregate.apply(hearingMarkedAsDuplicateForCase);
+
+        final List<Object> eventStream = caseAggregate.matchPartiallyMatchedDefendants(matchDefendant).collect(toList());
+        assertThat(eventStream.size(), is(1));
+
+        //Verifying there is just one stream and that is not stream of MasterDefendantIdUpdated or MasterDefendantIdUpdatedV2
+        final DefendantMatched defendantMatched = (DefendantMatched) eventStream.get(0);
+        assertThat(defendantMatched.getDefendantId(), is(defendantId));
+        assertThat(defendantMatched.getHasDefendantAlreadyBeenDeleted(), is(false));
+
+    }
+
+    @Test
     public void shouldReapplyMiReportingRestrictions() {
         final UUID caseId = randomUUID();
 
@@ -4876,7 +4927,12 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldSkipMatchedDefendentWithoutCourtProceedingsInitiatedPartiallyMatch() {
+    public void shouldSkipMatchedDefendantWithoutCourtProceedingsInitiatedPartiallyMatch() {
+        CaseLinkedToHearing caseLinkedToHearing = CaseLinkedToHearing.caseLinkedToHearing()
+                .withCaseId(randomUUID())
+                .withHearingId(randomUUID())
+                .build();
+
         MatchDefendant matchDefendant = MatchDefendant.matchDefendant()
                 .withDefendantId(randomUUID())
                 .withProsecutionCaseId(randomUUID())
@@ -4894,6 +4950,7 @@ public class CaseAggregateTest {
                                 .build()))
                 .build();
         CaseAggregate caseAggregate = new CaseAggregate();
+        caseAggregate.apply(caseLinkedToHearing);
         Stream<Object> objectStream = caseAggregate.matchPartiallyMatchedDefendants(matchDefendant);
         Optional<Object> obj = objectStream.filter(s -> s instanceof MasterDefendantIdUpdated).findFirst();
         assertThat(obj.isPresent(), is(true));
@@ -4902,8 +4959,11 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldSkipMatchedDefendentWithoutCourtProceedingsInitiatedFullMatch() {
-
+    public void shouldSkipMatchedDefendantWithoutCourtProceedingsInitiatedFullMatch() {
+        CaseLinkedToHearing caseLinkedToHearing = CaseLinkedToHearing.caseLinkedToHearing()
+                .withCaseId(randomUUID())
+                .withHearingId(randomUUID())
+                .build();
         ExactMatchedDefendantSearchResultStored exactMatchedDefendantSearchResultStored = ExactMatchedDefendantSearchResultStored.exactMatchedDefendantSearchResultStored()
                 .withDefendantId(randomUUID())
                 .withCases(asList(Cases.cases()
@@ -4919,6 +4979,7 @@ public class CaseAggregateTest {
                                 .build()))
                         .build()))
                 .build();
+        caseAggregate.apply(caseLinkedToHearing);
         caseAggregate.apply(exactMatchedDefendantSearchResultStored);
 
 
@@ -5044,6 +5105,187 @@ public class CaseAggregateTest {
                 .build()), defendantId);
 
         assertThat(isOffenceAlreadyPlead, is(false));
+
+    }
+
+    @Test
+    public void shouldSkipMasterDefendantIdUpdatedUponDeletedHearing() {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final CaseLinkedToHearing caseLinkedToHearing = CaseLinkedToHearing.caseLinkedToHearing()
+                .withCaseId(caseId)
+                .withHearingId(hearingId)
+                .build();
+
+        final HearingMarkedAsDuplicateForCase hearingMarkedAsDuplicateForCase = HearingMarkedAsDuplicateForCase.hearingMarkedAsDuplicateForCase()
+                .withCaseId(caseId)
+                .withHearingId(hearingId)
+                .withDefendantIds(asList(defendantId))
+                .build();
+
+        MatchDefendant matchDefendant = MatchDefendant.matchDefendant()
+                .withDefendantId(randomUUID())
+                .withProsecutionCaseId(randomUUID())
+                .withMatchedDefendants(asList(
+                        MatchedDefendant.matchedDefendant()
+                                .withDefendantId(randomUUID())
+                                .withProsecutionCaseId(randomUUID())
+                                .withMasterDefendantId(randomUUID())
+                                .build(),
+                        MatchedDefendant.matchedDefendant()
+                                .withCourtProceedingsInitiated(ZonedDateTime.now())
+                                .withDefendantId(randomUUID())
+                                .withProsecutionCaseId(randomUUID())
+                                .withMasterDefendantId(randomUUID())
+                                .build()))
+                .build();
+        CaseAggregate caseAggregate = new CaseAggregate();
+        caseAggregate.apply(caseLinkedToHearing);
+        // Marking Hearing a duplicate for case
+        caseAggregate.apply(hearingMarkedAsDuplicateForCase);
+
+        Stream<Object> objectStream = caseAggregate.matchPartiallyMatchedDefendants(matchDefendant);
+
+        Optional<Object> masterDefendantIdUpdated = objectStream.filter(s -> s instanceof MasterDefendantIdUpdated).findFirst();
+        assertThat(masterDefendantIdUpdated.isPresent(), is(false));
+    }
+
+    private DefendantsAddedToCourtProceedings buildDefendantsAddedToCourtProceedingsWithPersonalAndOrganisationalDefendant(
+            final UUID caseId, final UUID defendantId, final UUID defendantId2, final UUID offenceId) {
+        ReportingRestriction reportingRestriction = ReportingRestriction.reportingRestriction().withLabel("Victim Criminal offence").withJudicialResultId(randomUUID()).build();
+        final uk.gov.justice.core.courts.Offence offence = offence()
+                .withId(offenceId)
+                .withOffenceDefinitionId(UUID.randomUUID())
+                .withOffenceCode("TFL123")
+                .withDvlaOffenceCode("BA76004")
+                .withOffenceTitle("TFL Ticket Dodger")
+                .withWording("TFL ticket dodged")
+                .withStartDate(LocalDate.of(2019, 05, 01))
+                .withReportingRestrictions(Lists.newArrayList(reportingRestriction))
+                .withCount(0)
+                .build();
+        final Defendant defendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(singletonList(offence))
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withPersonDetails(uk.gov.justice.core.courts.Person.person()
+                                .withDateOfBirth(LocalDate.now().minusYears(16))
+                                .build())
+                        .build())
+                .build();
+        final Defendant defendant2 = defendant()
+                .withId(defendantId2)
+                .withMasterDefendantId(randomUUID())
+                .withCourtProceedingsInitiated(ZonedDateTime.now())
+                .withProsecutionCaseId(caseId)
+                .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
+                        .withOrganisation(Organisation.organisation()
+                                .withAddress(Address.address()
+                                        .withAddress1("Address1")
+                                        .build())
+                                .build())
+                        .build())
+                .withOffences(singletonList(offence))
+                .build();
+
+        final ReferralReason referralReason = ReferralReason.referralReason()
+                .withId(UUID.randomUUID())
+                .withDefendantId(defendantId)
+                .withDescription("Dodged TFL tickets with passion")
+                .build();
+
+        final ReferralReason referralReason2 = ReferralReason.referralReason()
+                .withId(UUID.randomUUID())
+                .withDefendantId(defendantId2)
+                .withDescription("Dodged TFL tickets with passion")
+                .build();
+
+        final ListDefendantRequest listDefendantRequest = ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(caseId)
+                .withDefendantOffences(singletonList(offenceId))
+                .withReferralReason(referralReason)
+                .build();
+        final ListDefendantRequest listDefendantRequest2 = ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(caseId)
+                .withDefendantOffences(singletonList(offenceId))
+                .withReferralReason(referralReason2)
+                .build();
+
+        final HearingType hearingType = HearingType.hearingType().withId(UUID.randomUUID()).withDescription("TO_JAIL").build();
+        final CourtCentre courtCentre = courtCentre().withId(UUID.randomUUID()).build();
+
+        final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
+                .withCourtCentre(courtCentre).withHearingType(hearingType)
+                .withJurisdictionType(MAGISTRATES)
+                .withListDefendantRequests(asList(listDefendantRequest, listDefendantRequest2))
+                .withListedStartDateTime(ZonedDateTime.now())
+                .build();
+        return DefendantsAddedToCourtProceedings
+                .defendantsAddedToCourtProceedings()
+                .withDefendants(asList(defendant, defendant2))
+                .withListHearingRequests(singletonList(listHearingRequest))
+                .build();
+    }
+
+    private DefendantsAddedToCourtProceedings buildDefendantsAddedToCourtProceedingsWithoutDOB(
+            final UUID caseId, final UUID defendantId,  final UUID offenceId) {
+        ReportingRestriction reportingRestriction = ReportingRestriction.reportingRestriction().withLabel("Victim Criminal offence").withJudicialResultId(randomUUID()).build();
+        final uk.gov.justice.core.courts.Offence offence = offence()
+                .withId(offenceId)
+                .withOffenceDefinitionId(UUID.randomUUID())
+                .withOffenceCode("TFL123")
+                .withDvlaOffenceCode("BA76004")
+                .withOffenceTitle("TFL Ticket Dodger")
+                .withWording("TFL ticket dodged")
+                .withStartDate(LocalDate.of(2019, 05, 01))
+                .withReportingRestrictions(Lists.newArrayList(reportingRestriction))
+                .withCount(0)
+                .build();
+        final Defendant defendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(singletonList(offence))
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withPersonDetails(uk.gov.justice.core.courts.Person.person()
+                                .withFirstName("XYYZ")
+                                .withLastName("ABC")
+                                .build()
+                        )
+                        .build())
+                .build();
+
+
+        final ReferralReason referralReason = ReferralReason.referralReason()
+                .withId(UUID.randomUUID())
+                .withDefendantId(defendantId)
+                .withDescription("Dodged TFL tickets with passion")
+                .build();
+
+
+
+        final ListDefendantRequest listDefendantRequest = ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(caseId)
+                .withDefendantOffences(singletonList(offenceId))
+                .withReferralReason(referralReason)
+                .build();
+
+        final HearingType hearingType = HearingType.hearingType().withId(UUID.randomUUID()).withDescription("TO_JAIL").build();
+        final CourtCentre courtCentre = courtCentre().withId(UUID.randomUUID()).build();
+
+        final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
+                .withCourtCentre(courtCentre).withHearingType(hearingType)
+                .withJurisdictionType(MAGISTRATES)
+                .withListDefendantRequests(asList(listDefendantRequest))
+                .withListedStartDateTime(ZonedDateTime.now())
+                .build();
+
+        return DefendantsAddedToCourtProceedings
+                .defendantsAddedToCourtProceedings()
+                .withDefendants(asList(defendant))
+                .withListHearingRequests(singletonList(listHearingRequest))
+                .build();
 
     }
 
@@ -5795,6 +6037,50 @@ public class CaseAggregateTest {
         final List<Object> eventStream = caseAggregate.processLinkSplitOrMergeStreams(casesToLink).collect(toList());
         final Object formUpdatedObject = eventStream.get(0);
         assertThat(formUpdatedObject, instanceOf(MergeCases.class));
+    }
+
+    @Test
+    public void shouldMarkHearingsDuplicateOtherThanLatestHearingId() {
+        final UUID caseId = randomUUID();
+        final UUID hearingIdToLinkWithCase = randomUUID();
+        final CaseLinkedToHearing caseLinkedToHearing = CaseLinkedToHearing.caseLinkedToHearing()
+                .withCaseId(caseId)
+                .withHearingId(hearingIdToLinkWithCase)
+                .build();
+        final UUID hearingIdToMarkAsDuplicateForCase = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final HearingMarkedAsDuplicateForCase hearingMarkedAsDuplicateForCase = HearingMarkedAsDuplicateForCase.hearingMarkedAsDuplicateForCase()
+                .withCaseId(caseId)
+                .withHearingId(hearingIdToMarkAsDuplicateForCase)
+                .withDefendantIds(asList(defendantId))
+                .build();
+
+        MatchDefendant matchDefendant = MatchDefendant.matchDefendant()
+                .withDefendantId(randomUUID())
+                .withProsecutionCaseId(randomUUID())
+                .withMatchedDefendants(asList(
+                        MatchedDefendant.matchedDefendant()
+                                .withDefendantId(randomUUID())
+                                .withProsecutionCaseId(randomUUID())
+                                .withMasterDefendantId(randomUUID())
+                                .build(),
+                        MatchedDefendant.matchedDefendant()
+                                .withCourtProceedingsInitiated(ZonedDateTime.now())
+                                .withDefendantId(randomUUID())
+                                .withProsecutionCaseId(randomUUID())
+                                .withMasterDefendantId(randomUUID())
+                                .build()))
+                .build();
+        CaseAggregate caseAggregate = new CaseAggregate();
+        caseAggregate.apply(caseLinkedToHearing);
+        caseAggregate.apply(hearingMarkedAsDuplicateForCase);
+
+        Stream<Object> objectStream = caseAggregate.matchPartiallyMatchedDefendants(matchDefendant);
+
+        Optional<Object> masterDefendantIdUpdated = objectStream.filter(s -> s instanceof MasterDefendantIdUpdated).findFirst();
+        assertThat(masterDefendantIdUpdated.isPresent(), is(true));
+        assertThat(masterDefendantIdUpdated.map(s -> (MasterDefendantIdUpdated) s).get().getMatchedDefendants().size(), is(1));
     }
 }
 
