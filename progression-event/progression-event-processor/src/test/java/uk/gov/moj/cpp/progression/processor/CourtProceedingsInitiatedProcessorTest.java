@@ -176,15 +176,12 @@ public class CourtProceedingsInitiatedProcessorTest {
         this.eventProcessor.handle(requestMessage);
         verify(summonsHearingRequestService).addDefendantRequestToHearing(anyObject(), eq(listHearingRequest.getListDefendantRequests()), anyObject());
 
-        verify(sender, times(3)).send(envelopeCaptor.capture());
+        verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        assertThat("progression.command.create-hearing-defendant-request", is(envelopeCaptor.getAllValues().get(0).metadata().name()));
-        assertThat(caseId.toString(), is(envelopeCaptor.getAllValues().get(0).payload().getJsonArray("defendantRequests").getJsonObject(0).getString("prosecutionCaseId")));
+        assertThat("progression.command.create-prosecution-case", is(envelopeCaptor.getAllValues().get(0).metadata().name()));
+        assertThat(caseId.toString(), is(envelopeCaptor.getAllValues().get(0).payload().getJsonObject("prosecutionCase").getString("id")));
 
-        assertThat("progression.command.create-prosecution-case", is(envelopeCaptor.getAllValues().get(1).metadata().name()));
-        assertThat(caseId.toString(), is(envelopeCaptor.getAllValues().get(1).payload().getJsonObject("prosecutionCase").getString("id")));
-
-        final JsonArray reportingRestrictionsArray = envelopeCaptor.getAllValues().get(1).payload().getJsonObject("prosecutionCase")
+        final JsonArray reportingRestrictionsArray = envelopeCaptor.getAllValues().get(0).payload().getJsonObject("prosecutionCase")
                 .getJsonArray("defendants").getJsonObject(0)
                 .getJsonArray("offences").getJsonObject(0)
                 .getJsonArray("reportingRestrictions");
@@ -196,11 +193,11 @@ public class CourtProceedingsInitiatedProcessorTest {
         assertThat(reportingRestrictionsArray.getJsonObject(1).getString("label"), is(SEXUAL_OFFENCE_RR_DESCRIPTION));
         assertThat(reportingRestrictionsArray.getJsonObject(1).getString("orderedDate"), is(LocalDate.now().toString()));
 
-        assertThat("progression.command.update-defendant-listing-status", is(envelopeCaptor.getAllValues().get(2).metadata().name()));
-        assertThat(caseId.toString(), is(envelopeCaptor.getAllValues().get(2).payload().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getString("id")));
-        assertThat("SENT_FOR_LISTING", is(envelopeCaptor.getAllValues().get(2).payload().getString("hearingListingStatus")));
+        assertThat("progression.command.update-defendant-listing-status", is(envelopeCaptor.getAllValues().get(1).metadata().name()));
+        assertThat(caseId.toString(), is(envelopeCaptor.getAllValues().get(1).payload().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getString("id")));
+        assertThat("SENT_FOR_LISTING", is(envelopeCaptor.getAllValues().get(1).payload().getString("hearingListingStatus")));
 
-        final JsonArray reportingRestrictionsOfUpdateDefendantListingStatus = envelopeCaptor.getAllValues().get(2).payload().getJsonObject("hearing")
+        final JsonArray reportingRestrictionsOfUpdateDefendantListingStatus = envelopeCaptor.getAllValues().get(1).payload().getJsonObject("hearing")
                 .getJsonArray("prosecutionCases").getJsonObject(0)
                 .getJsonArray("defendants").getJsonObject(0)
                 .getJsonArray("offences").getJsonObject(0)
@@ -242,15 +239,12 @@ public class CourtProceedingsInitiatedProcessorTest {
         this.eventProcessor.handle(requestMessage);
         verify(summonsHearingRequestService).addDefendantRequestToHearing(anyObject(), eq(listHearingRequest.getListDefendantRequests()), anyObject());
 
-        verify(sender, times(3)).send(envelopeCaptor.capture());
+        verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        assertThat("progression.command.create-hearing-defendant-request", is(envelopeCaptor.getAllValues().get(0).metadata().name()));
-        assertThat(caseId.toString(), is(envelopeCaptor.getAllValues().get(0).payload().getJsonArray("defendantRequests").getJsonObject(0).getString("prosecutionCaseId")));
+        assertThat("progression.command.create-prosecution-case", is(envelopeCaptor.getAllValues().get(0).metadata().name()));
+        assertThat(caseId.toString(), is(envelopeCaptor.getAllValues().get(0).payload().getJsonObject("prosecutionCase").getString("id")));
 
-        assertThat("progression.command.create-prosecution-case", is(envelopeCaptor.getAllValues().get(1).metadata().name()));
-        assertThat(caseId.toString(), is(envelopeCaptor.getAllValues().get(1).payload().getJsonObject("prosecutionCase").getString("id")));
-
-        final JsonArray offencesArray = envelopeCaptor.getAllValues().get(1).payload().getJsonObject("prosecutionCase")
+        final JsonArray offencesArray = envelopeCaptor.getAllValues().get(0).payload().getJsonObject("prosecutionCase")
                 .getJsonArray("defendants").getJsonObject(0)
                 .getJsonArray("offences");
 
@@ -284,15 +278,12 @@ public class CourtProceedingsInitiatedProcessorTest {
 
         this.eventProcessor.handle(requestMessage);
 
-        verify(sender, times(3)).send(envelopeCaptor.capture());
+        verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        assertThat("progression.command.create-hearing-defendant-request", is(envelopeCaptor.getAllValues().get(0).metadata().name()));
-        assertThat(caseId.toString(), is(envelopeCaptor.getAllValues().get(0).payload().getJsonArray("defendantRequests").getJsonObject(0).getString("prosecutionCaseId")));
+        assertThat("progression.command.create-prosecution-case", is(envelopeCaptor.getAllValues().get(0).metadata().name()));
+        assertThat(caseId.toString(), is(envelopeCaptor.getAllValues().get(0).payload().getJsonObject("prosecutionCase").getString("id")));
 
-        assertThat("progression.command.create-prosecution-case", is(envelopeCaptor.getAllValues().get(1).metadata().name()));
-        assertThat(caseId.toString(), is(envelopeCaptor.getAllValues().get(1).payload().getJsonObject("prosecutionCase").getString("id")));
-
-        final JsonArray offencesArray = envelopeCaptor.getAllValues().get(1).payload().getJsonObject("prosecutionCase")
+        final JsonArray offencesArray = envelopeCaptor.getAllValues().get(0).payload().getJsonObject("prosecutionCase")
                 .getJsonArray("defendants").getJsonObject(0)
                 .getJsonArray("offences");
 

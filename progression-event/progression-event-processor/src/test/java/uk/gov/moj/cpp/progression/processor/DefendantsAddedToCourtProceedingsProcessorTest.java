@@ -53,6 +53,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -197,6 +198,42 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
         verify(listingService, times(0)).listCourtHearing(jsonEnvelope, listCourtHearing);
         verify(progressionService, times(0)).updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
+    }
+
+    @Test(expected = CaseNotFoundException.class)
+    public void shouldHandleCasesReferredToCourtEventMessageWhenProgressionCaseIsNotInViewStoreEmpty() throws Exception {
+        final UUID userId = randomUUID();
+        //Given
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(userId, "progression.event.defendants-added-to-court-proceedings").build());
+
+        defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings();
+        prosecutionCaseJsonObject = Optional.of(getProsecutionCaseResponse());
+        final GetHearingsAtAGlance hearingsAtAGlance = getCaseAtAGlanceWithFutureHearings();
+
+        final List<Hearing> futureHearings = createFutureHearings();
+
+        when(jsonObjectToObjectConverter.convert(payload, DefendantsAddedToCourtProceedings.class))
+                .thenReturn(defendantsAddedToCourtProceedings);
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                        .withCaseURN("caseUrn")
+                        .build())
+                .build();
+
+        when(progressionService.getProsecutionCaseDetailById(jsonEnvelope,
+                defendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString())).thenReturn(Optional.empty());
+
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("prosecutionCase"),
+                ProsecutionCase.class)).thenReturn(prosecutionCase);
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("hearingsAtAGlance"),
+                GetHearingsAtAGlance.class)).thenReturn(hearingsAtAGlance);
+
+        when(listingService.getFutureHearings(jsonEnvelope, "caseUrn")).thenReturn(futureHearings);
+
+        //When
+        eventProcessor.process(jsonEnvelope);
     }
 
     public List<Hearing> createFutureHearings() {

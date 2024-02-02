@@ -28,6 +28,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.listing.domain.Hearing;
+import uk.gov.moj.cpp.progression.processor.exceptions.CaseNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -154,6 +155,8 @@ public class DefendantsAddedToCourtProceedingsProcessor {
                 summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, getListDefendantRequests(listHearingRequestsForNewHearing), hearingId);
             }
 
+        } else {
+            throw new CaseNotFoundException("Prosecution case not found in view store, so retrying -->> " + prosecutionCaseId);
         }
     }
 

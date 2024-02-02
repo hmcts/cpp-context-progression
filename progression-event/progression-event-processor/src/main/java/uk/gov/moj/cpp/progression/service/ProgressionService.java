@@ -1448,6 +1448,7 @@ public class ProgressionService {
         return HearingListingNeeds.hearingListingNeeds()
                 .withCourtCentre(incomingHearing.getCourtCentre())
                 .withProsecutionCases(incomingHearing.getProsecutionCases())
+                .withCourtApplications(incomingHearing.getCourtApplications())
                 .withId(existingHearingId)
                 .withJurisdictionType(incomingHearing.getJurisdictionType())
                 .withEstimatedMinutes(30)

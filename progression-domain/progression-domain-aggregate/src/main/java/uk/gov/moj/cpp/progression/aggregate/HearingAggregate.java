@@ -164,7 +164,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 9128521802762667489L;
+    private static final long serialVersionUID = 9128521802762667490L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -856,14 +856,18 @@ public class HearingAggregate implements Aggregate {
                 .withHearingLanguage(hearingUpdatedForAllocationFields.getHearingLanguage())
                 .withCourtApplications(addOrUpdateApplication(hearing.getCourtApplications(), hearingUpdatedForAllocationFields.getCourtApplication()))
                 .build();
+
+
     }
 
     private List<CourtApplication> addOrUpdateApplication(final List<CourtApplication> courtApplications, final CourtApplication courtApplication) {
-        if (isNull(courtApplications)) {
-            return Stream.of(courtApplication).collect(toList());
-        } else if (isNull(courtApplication)) {
+
+        if (isNull(courtApplication)) {
             return courtApplications;
-        } else {
+        }
+        else if (isNull(courtApplications)) {
+            return Stream.of(courtApplication).collect(toList());
+        }  else {
             if (courtApplications.stream().anyMatch(app -> app.getId().equals(courtApplication.getId()))) {
                 return courtApplications.stream().map(app -> app.getId().equals(courtApplication.getId()) ? courtApplication : app).collect(toList());
             } else {
@@ -1468,17 +1472,21 @@ public class HearingAggregate implements Aggregate {
 
 
     public Stream<Object> updateAllocationFields(final UpdateHearingForAllocationFields updateHearingForAllocationFields) {
-        final Stream<Object> event1 = apply(Stream.of(HearingUpdatedForAllocationFields.hearingUpdatedForAllocationFields()
-                .withHearingDays(updateHearingForAllocationFields.getHearingDays())
-                .withCourtCentre(updateHearingForAllocationFields.getCourtCentre())
-                .withHearingLanguage(updateHearingForAllocationFields.getHearingLanguage())
-                .withType(updateHearingForAllocationFields.getType())
-                .withCourtApplication(updateHearingForAllocationFields.getCourtApplication())
-                .build()));
+        if(nonNull(this.hearing)) {
+            final Stream<Object> event1 = apply(Stream.of(HearingUpdatedForAllocationFields.hearingUpdatedForAllocationFields()
+                    .withHearingDays(updateHearingForAllocationFields.getHearingDays())
+                    .withCourtCentre(updateHearingForAllocationFields.getCourtCentre())
+                    .withHearingLanguage(updateHearingForAllocationFields.getHearingLanguage())
+                    .withType(updateHearingForAllocationFields.getType())
+                    .withCourtApplication(updateHearingForAllocationFields.getCourtApplication())
+                    .build()));
 
-        return Stream.concat(Stream.concat(event1,
-                populateHearingToProbationCaseWorker()),
-                populateHearingToVEP());
+            return Stream.concat(Stream.concat(event1,
+                    populateHearingToProbationCaseWorker()),
+                    populateHearingToVEP());
+        } else  {
+            return apply(empty());
+        }
     }
 
     public Stream<Object> populateHearingToProbationCaseWorker() {
@@ -1547,6 +1555,7 @@ public class HearingAggregate implements Aggregate {
                         .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                 .withCourtApplications(hearing.getCourtApplications() != null ? new ArrayList<>(hearing.getCourtApplications()) : null)
                 .build();
+
         return filteredOutHearing;
     }
 

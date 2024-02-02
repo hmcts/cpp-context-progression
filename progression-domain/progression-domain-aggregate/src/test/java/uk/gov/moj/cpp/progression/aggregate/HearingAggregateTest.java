@@ -942,6 +942,30 @@ public class HearingAggregateTest {
         assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getCourtApplications().get(1).getApplicationReference(), is("B"));
     }
 
+
+    @Test
+    public void shouldNotUpdateApplicationToHearingWhenHearingIsNotYetCreated() {
+        final UUID applicationId = randomUUID();
+
+        final ZonedDateTime sittingDay = ZonedDateTime.now().plusDays(1);
+        final List<Object> events = hearingAggregate.updateAllocationFields(UpdateHearingForAllocationFields.updateHearingForAllocationFields()
+                .withType(HearingType.hearingType().withDescription("Application").build())
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(sittingDay).build()))
+                .withHearingLanguage(HearingLanguage.WELSH)
+                .withCourtCentre(CourtCentre.courtCentre().withCode("A002").build())
+                .withCourtApplication(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withApplicationReference("B")
+                        .withSubject(CourtApplicationParty.courtApplicationParty().build())
+                        .build())
+                .build()
+        ).collect(toList());
+
+        assertThat(events.size(), is(0));
+
+
+    }
+
     @Test
     public void shouldUpdateHearingWithNewProsecutionCaseWhenHearingIsExtended() {
         final UUID hearingId = randomUUID();
@@ -2206,6 +2230,40 @@ public class HearingAggregateTest {
         assertThat(relatedHearingUpdated.getHearingRequest().getProsecutionCases().size(), is(2));
         assertThat(relatedHearingUpdated.getHearingRequest().getProsecutionCases().get(0).getDefendants().get(0).getId()
                 .equals(relatedHearingUpdated.getHearingRequest().getProsecutionCases().get(1).getDefendants().get(0).getId()), is(false));
+    }
+
+    @Test
+    public void testCommandUpdateHearingForAllocationFieldWithoutCourtApplicationInPayload() {
+        final ZonedDateTime sittingDay = ZonedDateTime.now();
+
+        final Optional<JsonObject> hearingJsonObject =
+                Optional.of(getJsonObjectResponseFromJsonResource("json/hearing-without-courtApplication.json"));
+        final Hearing hearing = jsonObjectToObjectConverter.convert(hearingJsonObject.get(), Hearing.class);
+        setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", HearingListingStatus.HEARING_INITIALISED);
+
+
+        final List<Object> events =  hearingAggregate.updateAllocationFields(UpdateHearingForAllocationFields.updateHearingForAllocationFields()
+                .withType(HearingType.hearingType().withDescription("Application").build())
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(sittingDay).build()))
+                .withHearingLanguage(HearingLanguage.WELSH)
+                .withCourtCentre(CourtCentre.courtCentre().withCode("A002").build())
+                .build()
+
+        ).collect(toList());
+
+        assertThat(events.size(), is(3));
+        assertThat(((HearingUpdatedForAllocationFields) events.get(0)).getHearingLanguage(), is(HearingLanguage.WELSH));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getHearingDays().get(0).getSittingDay(), is(sittingDay));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getType().getDescription(), is("Application"));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getCourtCentre().getCode(), is("A002"));
+        assertThat(((HearingPopulatedToProbationCaseworker) events.get(1)).getHearing().getHearingLanguage(), is(HearingLanguage.WELSH));
+
+        assertThat(((VejHearingPopulatedToProbationCaseworker) events.get(2)).getHearing().getHearingDays().get(0).getSittingDay(), is(sittingDay));
+        assertThat(((VejHearingPopulatedToProbationCaseworker) events.get(2)).getHearing().getType().getDescription(), is("Application"));
+        assertThat(((VejHearingPopulatedToProbationCaseworker) events.get(2)).getHearing().getCourtCentre().getCode(), is("A002"));
+        assertThat(((VejHearingPopulatedToProbationCaseworker) events.get(2)).getHearing().getHearingLanguage(), is(HearingLanguage.WELSH));
+
     }
 
     /**
