@@ -68,11 +68,13 @@ public class HearingMarkedAsDuplicateEventListener {
             LOGGER.debug("received event progression.event.hearing-marked-as-duplicate-for-case hearingId: {} caseId:{}", hearingId, caseId);
         }
 
-        defendantIds.forEach(defendantId -> {
-            caseDefendantHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
-            matchDefendantCaseHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
-        });
+        final HearingEntity hearingEntity = hearingRepository.findBy(hearingId);
+        if (nonNull(hearingEntity)) {
+            defendantIds.forEach(defendantId -> {
+                caseDefendantHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
+                matchDefendantCaseHearingRepository.removeByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
+            });
+        }
     }
-
 
 }

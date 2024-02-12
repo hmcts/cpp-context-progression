@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -22,6 +23,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearin
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -114,19 +116,49 @@ public class HearingMarkedAsDuplicateEventListenerTest {
         final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
         caseDefendantHearingEntity.setId(caseDefendantHearingKey);
 
+        final HearingEntity hearingEntity=new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setConfirmedDate(now());
         when(envelopeForCase.payload()).thenReturn(HearingMarkedAsDuplicateForCase.hearingMarkedAsDuplicateForCase()
                 .withHearingId(hearingId)
                 .withCaseId(caseId)
                 .withDefendantIds(asList(defendant1Id, defendant2Id))
                 .build());
-
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         doNothing().when(caseDefendantHearingRepository).removeByHearingIdAndCaseIdAndDefendantId(eq(hearingId), eq(caseId), defendantArgumentCaptor.capture());
 
         hearingMarkedAsDuplicateEventListener.hearingMarkedAsDuplicateForCase(envelopeForCase);
 
         verify(caseDefendantHearingRepository, times(2)).removeByHearingIdAndCaseIdAndDefendantId(eq(hearingId), eq(caseId), any());
         verify(matchDefendantCaseHearingRepository, times(2)).removeByHearingIdAndCaseIdAndDefendantId(eq(hearingId), eq(caseId), any());
+        verify(hearingRepository).findBy(hearingId);
+
         assertThat(defendantArgumentCaptor.getAllValues().get(0), is(defendant1Id));
         assertThat(defendantArgumentCaptor.getAllValues().get(1), is(defendant2Id));
+    }
+
+    @Test
+    public void shouldDeleteHearingCaseDefendantWhenMarkedAsDuplicateWhenHearingIsNull() {
+        final UUID hearingId = UUID.randomUUID();
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendant1Id = UUID.randomUUID();
+        final UUID defendant2Id = UUID.randomUUID();
+
+        final CaseDefendantHearingKey caseDefendantHearingKey = new CaseDefendantHearingKey(hearingId, caseId, defendant1Id);
+        final CaseDefendantHearingEntity caseDefendantHearingEntity = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity.setId(caseDefendantHearingKey);
+
+        when(envelopeForCase.payload()).thenReturn(HearingMarkedAsDuplicateForCase.hearingMarkedAsDuplicateForCase()
+                .withHearingId(hearingId)
+                .withCaseId(caseId)
+                .withDefendantIds(asList(defendant1Id, defendant2Id))
+                .build());
+        when(hearingRepository.findBy(hearingId)).thenReturn(null);
+        doNothing().when(caseDefendantHearingRepository).removeByHearingIdAndCaseIdAndDefendantId(eq(hearingId), eq(caseId), defendantArgumentCaptor.capture());
+
+        hearingMarkedAsDuplicateEventListener.hearingMarkedAsDuplicateForCase(envelopeForCase);
+
+        verify(hearingRepository).findBy(hearingId);
+
     }
 }

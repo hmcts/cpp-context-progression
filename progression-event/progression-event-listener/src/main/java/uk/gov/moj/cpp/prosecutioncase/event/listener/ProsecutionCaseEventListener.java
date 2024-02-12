@@ -123,7 +123,7 @@ public class ProsecutionCaseEventListener {
         repository.save(getProsecutionCaseEntity(updatedProsecutionCase));
         updateLinkedApplications(caseEjected);
         final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByCaseId(caseEjected.getProsecutionCaseId());
-        caseDefendantHearingEntities.stream().forEach(caseDefendantHearingEntity -> {
+        caseDefendantHearingEntities.forEach(caseDefendantHearingEntity -> {
             final HearingEntity hearingEntity = caseDefendantHearingEntity.getHearing();
             final UUID caseId = caseDefendantHearingEntity.getId().getCaseId();
             final JsonObject hearingJson = stringToJsonObjectConverter.convert(hearingEntity.getPayload());

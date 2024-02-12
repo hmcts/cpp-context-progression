@@ -165,6 +165,7 @@ public class ProsecutionCaseEventListenerTest {
     @Test
     public void shouldHandleCaseEjectedEvent() throws IOException {
         final UUID caseId = fromString("b46ddab2-3e9d-4c8c-b9ea-386a6b93d23f");
+        final UUID caseId2 = randomUUID();
         final UUID applicationId = fromString("f5decee0-27b5-4dc7-8c42-66dfbc6168d6");
         final UUID hearingId = UUID.randomUUID();
         final UUID defendantId = UUID.randomUUID();
@@ -180,6 +181,7 @@ public class ProsecutionCaseEventListenerTest {
         initiateCourtApplicationEntity.setPayload(payload.toString());
 
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withId(caseId).build();
+        final ProsecutionCase prosecutionCase2 = ProsecutionCase.prosecutionCase().withId(caseId2).build();
 
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setPayload(createPayload("/json/courtApplicationData.json"));
@@ -214,6 +216,7 @@ public class ProsecutionCaseEventListenerTest {
 
         List<ProsecutionCase> prosecutionCaseList = new ArrayList<>();
         prosecutionCaseList.add(prosecutionCase);
+        prosecutionCaseList.add(prosecutionCase2);
 
         Hearing hearing = Hearing.hearing().withId(UUID.randomUUID())
                 .withProsecutionCases(prosecutionCaseList)
