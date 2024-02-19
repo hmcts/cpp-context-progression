@@ -132,4 +132,9 @@ public class ApplicationQueryApi {
         return applicationQueryView.getCourtProceedingsForApplication(query);
     }
 
+    @Handles("progression.query.case.status-for-application")
+    public JsonEnvelope getCaseStatusForApplication(final JsonEnvelope query) {
+        return applicationQueryView.getCaseStatusForApplication(query);
+    }
+
 }

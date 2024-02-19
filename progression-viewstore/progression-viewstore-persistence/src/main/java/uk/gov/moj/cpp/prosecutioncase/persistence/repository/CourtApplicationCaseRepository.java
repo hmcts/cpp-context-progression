@@ -19,4 +19,7 @@ public interface CourtApplicationCaseRepository extends EntityRepository<CourtAp
 
     @Query("from CourtApplicationCaseEntity entity where entity.id.applicationId in (:applicationId)")
     public abstract List<CourtApplicationCaseEntity> findByApplicationId(@QueryParam("applicationId") UUID applicationId);
+
+    @Query(value = "SELECT pc.payload FROM ProsecutionCaseEntity pc,CourtApplicationCaseEntity cac WHERE cac.id.applicationId = :applicationId AND cac.id.caseId = :caseId AND pc.caseId = cac.id.caseId")
+    String findCaseStatusByApplicationId(@QueryParam("applicationId") final UUID applicationId, @QueryParam("caseId") final UUID caseId);
 }

@@ -196,4 +196,10 @@ public class ApplicationQueryApiTest {
         assertThat(response, equalTo(envelope));
     }
 
+    @Test
+    public void shouldGetCaseStatusForApplicationId() {
+        when(applicationQueryView.getCaseStatusForApplication(query)).thenReturn(response);
+        assertThat(applicationQueryApi.getCaseStatusForApplication(query), equalTo(response));
+    }
+
 }

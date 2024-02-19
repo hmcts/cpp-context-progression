@@ -143,7 +143,7 @@ public class ReferralDisqualifyWarningGenerationService {
             if (nonNull(postCode)) {
                 referralDisqualifyWarning = getWelshDocument(event, caseUrn, courtHouseCode, personDetails, systemUserId, referralDisqualifyWarning, emptyPage, postCode);
             }
-             return Optional.ofNullable(documentGeneratorService.generateDisqualificationDocument(event, filename, referralDisqualifyWarning));
+             return Optional.ofNullable(documentGeneratorService.generatePdfDocument(event, filename, referralDisqualifyWarning));
         }
         return Optional.empty();
     }

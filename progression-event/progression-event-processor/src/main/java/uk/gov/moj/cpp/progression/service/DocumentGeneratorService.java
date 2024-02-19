@@ -542,7 +542,7 @@ public class DocumentGeneratorService {
     }
 
     @Transactional(REQUIRES_NEW)
-    public UUID generateDisqualificationDocument(final JsonEnvelope originatingEnvelope, String filename, final byte[] referralDisqualifyWarningContent) {
+    public UUID generatePdfDocument(final JsonEnvelope originatingEnvelope, String filename, final byte[] referralDisqualifyWarningContent) {
         try {
             final UUID materialId = randomUUID();
             addDocumentToMaterial(originatingEnvelope, filename, new ByteArrayInputStream(referralDisqualifyWarningContent), materialId);

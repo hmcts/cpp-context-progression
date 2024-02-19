@@ -4,6 +4,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationDocument;
@@ -162,7 +163,7 @@ public class PostalService {
 
         LOGGER.info("Sending Postal Notification payload - {}", postalNotificationPayload);
 
-        final UUID materialId = documentGeneratorService.generateDocument(envelope, postalNotificationPayload, POSTAL_NOTIFICATION, sender, null, applicationId, true);
+        final UUID materialId = documentGeneratorService.generateDocument(envelope, postalNotificationPayload, POSTAL_NOTIFICATION, sender, null, applicationId, isPostable(postalNotification));
 
         final CourtDocument courtDocument = courtDocument(applicationId, materialId, envelope, linkedCaseId);
 
@@ -406,6 +407,11 @@ public class PostalService {
             return Optional.ofNullable(defenceService.getDefenceOrganisationByDefendantId(event, defendantOptional.get()));
         }
         return Optional.empty();
+    }
+
+    private boolean isPostable(final PostalNotification postalNotification) {
+        final PostalAddress postalAddress = postalNotification.getDefendant().getAddress();
+        return (nonNull(postalAddress) && isBlank(postalAddress.getPostCode())) ? Boolean.FALSE : Boolean.TRUE ;
     }
 
 }

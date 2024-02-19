@@ -37,6 +37,8 @@ public class WireMockStubUtils {
     private static final String CONTENT_TYPE_QUERY_PERMISSION = "application/vnd.usersgroups.permissions+json";
     private static final String CONTENT_TYPE_QUERY_USER_ORGANISATION = "application/vnd.usersgroups.get-organisation-details-for-user+json";
     private static final String CONTENT_TYPE_QUERY_DEFENCE_SERVICE_USER_ROLE_IN_CASE = "application/vnd.advocate.query.role-in-case-by-caseid+json";
+    private static final String CONTENT_TYPE_QUERY_HEARING_EVENT_LOG_CDES_DOCUMENT = "application/hearing.get-hearing-event-log-for-documents+json";
+
 
     static {
         configureFor(HOST, 8080);
@@ -135,6 +137,33 @@ public class WireMockStubUtils {
 
     }
 
+    public static void stubHearingEventLogs(final String caseId, final String responsePayLoad) {
+        stubPingFor("hearing-service");
+
+        stubFor(get(urlPathEqualTo(format("/hearing-service/query/api/rest/hearing/hearings/event-log?caseId={0}", caseId)))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(responsePayLoad)));
+
+        waitForStubToBeReady(format("/hearing-service/query/api/rest/hearing/hearings/event-log?caseId={0}", caseId), CONTENT_TYPE_QUERY_HEARING_EVENT_LOG_CDES_DOCUMENT);
+
+
+    }
+
+    public static void stubAaagHearingEventLogs(final String applicationId, final String responsePayLoad) {
+        stubPingFor("hearing-service");
+
+        stubFor(get(urlPathEqualTo(format("/hearing-service/query/api/rest/hearing/hearings/event-log?applicationId={0}", applicationId)))
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(responsePayLoad)));
+
+        waitForStubToBeReady(format("/hearing-service/query/api/rest/hearing/hearings/event-log?applicationId={0}", applicationId), CONTENT_TYPE_QUERY_HEARING_EVENT_LOG_CDES_DOCUMENT);
+
+
+    }
 
     public static void mockMaterialUpload() {
         stubPingFor("material-service");

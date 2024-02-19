@@ -37,9 +37,6 @@ public interface CaseProgressionDetailRepository extends EntityRepository<CasePr
     @Query(value = "SELECT cd.defendants FROM CaseProgressionDetail cd where cd.caseId = :caseId")
     List<Defendant> findCaseDefendants(@QueryParam("caseId") final UUID caseId);
 
-    @Query(value = "FROM CaseProgressionDetail cd WHERE UPPER(cd.caseUrn) = UPPER(?1)")
-    CaseProgressionDetail findCaseByCaseUrn( String caseUrn);
-
     @Query(isNative = true, value = "select * from CaseProgressionDetail caseprog where \n" +
             "caseprog.caseid=(select def.caseid from Defendant def inner join defendant_bail_document baildoc on def.defendant_id=baildoc.defendant_id where caseprog.caseid=def.caseid and baildoc.document_id=:materialId) \n" )
     public abstract CaseProgressionDetail findByMaterialId(@QueryParam("materialId") final UUID materialId);

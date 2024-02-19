@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.progression.query.view.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -17,19 +16,16 @@ import org.slf4j.LoggerFactory;
 
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.DefendantDocument;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
 import uk.gov.moj.cpp.progression.persistence.repository.DefendantDocumentRepository;
 import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
 import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
 import uk.gov.moj.cpp.progression.query.view.response.DefendantDocumentView;
-import uk.gov.moj.cpp.progression.query.view.response.DefendantView;
-import uk.gov.moj.cpp.progression.query.view.response.DefendantsView;
 import uk.gov.moj.cpp.progression.query.view.response.ProsecutingAuthority;
 import uk.gov.moj.cpp.progression.query.view.response.SearchCaseByMaterialIdView;
 /**
- * 
+ *
  * @deprecated
  *
  */
@@ -94,21 +90,6 @@ public class CaseProgressionDetailService {
 
     }
 
-    @Transactional
-    public DefendantView getDefendant(final Optional<String> defendantId) {
-        if (defendantId.isPresent()) {
-            try {
-                final Defendant defendant = (defendantRepository.findByDefendantId(UUID.fromString(defendantId.get())));
-                if(defendant != null){
-                    return new DefendantView(defendant);
-                }
-            } catch (final NoResultException nre) {
-                LOGGER.error("No defendant found for defendantId: " + defendantId, nre);
-            }
-        }
-        return null;
-    }
-
     public DefendantDocumentView getDefendantDocument(final Optional<String> caseId, final Optional<String> defendantId) {
         if (caseId.isPresent() && defendantId.isPresent()) {
             final DefendantDocument defendantDocument = defendantDocumentRepository.findLatestDefendantDocument(UUID.fromString(caseId.get()),
@@ -121,18 +102,6 @@ public class CaseProgressionDetailService {
         return null;
     }
 
-    @Transactional
-    public DefendantsView getDefendantsByCase(final UUID caseId) {
-        CaseProgressionDetail caseProgressionDetail;
-        try {
-            caseProgressionDetail = caseProgressionDetailRepo.findByCaseId(caseId);
-        } catch (final NoResultException nre) {
-            LOGGER.error("No CaseProgressionDetail found for caseId: " + caseId, nre);
-            return null;
-        }
-        return new DefendantsView(getDefendantViewList(caseProgressionDetail.getDefendants()));
-    }
-
     List<CaseStatusEnum> getCaseStatusList(final String status) {
         final List<CaseStatusEnum> listOfStatus = new ArrayList<>();
         final StringTokenizer st = new StringTokenizer(status, ",");
@@ -140,17 +109,6 @@ public class CaseProgressionDetailService {
             listOfStatus.add(CaseStatusEnum.getCaseStatusk(st.nextToken()));
         }
         return listOfStatus;
-    }
-
-    @Transactional
-    public CaseProgressionDetailView findCaseByCaseUrn(final String caseUrn) {
-        try {
-            final CaseProgressionDetail caseProgressionDetail = caseProgressionDetailRepo.findCaseByCaseUrn(caseUrn);
-            return CaseProgressionDetailView.createCaseWithoutDefendantView(caseProgressionDetail);
-        } catch (final NoResultException e) {
-            LOGGER.debug("No case found with URN='{}'", caseUrn, e);
-        }
-        return null;
     }
 
     public SearchCaseByMaterialIdView searchCaseByMaterialId(final String q) {
@@ -170,9 +128,4 @@ public class CaseProgressionDetailService {
         return searchCaseByMaterialIdView;
     }
 
-    private List<DefendantView> getDefendantViewList(final Set<Defendant> defendants) {
-        return defendants.stream()
-                .map(defendant -> new DefendantView(defendant))
-                .collect(Collectors.toList());
-    }
 }

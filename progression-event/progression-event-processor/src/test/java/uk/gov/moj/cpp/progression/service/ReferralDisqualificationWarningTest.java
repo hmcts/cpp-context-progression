@@ -208,7 +208,7 @@ public class ReferralDisqualificationWarningTest {
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(documentData);
         when(fileStorer.store(any(), any())).thenReturn(randomUUID());
         when(documentGeneratorClient.generatePdfDocument(docEnglishPayload, "NPE_RefferalDisqualificationWarning", systemUserId)).thenReturn(documentData);
-        when(documentGeneratorService.generateDisqualificationDocument(any(), any(), any())).thenReturn(materialId);
+        when(documentGeneratorService.generatePdfDocument(any(), any(), any())).thenReturn(materialId);
 
         referralDisqualifyWarningGenerationService.generateReferralDisqualifyWarning(originatingEnvelope, "caseUrn", caseId, getDefendant(), courtHouseCode);
 
@@ -285,7 +285,7 @@ public class ReferralDisqualificationWarningTest {
 
         when(pdfHelper.mergePdfDocuments(welshDocumentData, emptypage, englishDocumentData)).thenReturn(documentData);
 
-        when(documentGeneratorService.generateDisqualificationDocument(any(), any(), any())).thenReturn(materialId);
+        when(documentGeneratorService.generatePdfDocument(any(), any(), any())).thenReturn(materialId);
 
         referralDisqualifyWarningGenerationService.generateReferralDisqualifyWarning(originatingEnvelope, "caseUrn", caseId, getDefendant(), courtHouseCode);
 

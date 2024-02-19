@@ -925,11 +925,6 @@ public class PreAndPostConditionHelper {
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
-    @SafeVarargs
-    public static String pollCaseProgressionFor(final String caseId, final Matcher<? super ReadContext>... matchers) {
-        return pollForResponse(join("", "/cases/", caseId), "application/vnd.progression.query.caseprogressiondetail+json", matchers);
-    }
-
     public static String pollProsecutionCasesProgressionFor(final String caseId) {
         return pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)));
     }
@@ -1064,7 +1059,7 @@ public class PreAndPostConditionHelper {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments+json", userId);
     }
 
-    public static String getCourtDocumentsPerCase(final String userId, final String... caseId) { //clarify
+    public static String getCourtDocumentsPerCase(final String userId, final String... caseId) {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments-all+json", userId);
     }
 
@@ -1580,7 +1575,7 @@ public class PreAndPostConditionHelper {
     @SafeVarargs
     public static String getCourtDocumentFor(final String courtDocumentId, final Matcher<? super ReadContext>... matchers) {
         return poll(requestParams(getReadUrl(join("", "/courtdocuments/", courtDocumentId)), "application/vnd.progression.query.courtdocument+json").withHeader(USER_ID, UUID.randomUUID()))
-                .timeout(40, TimeUnit.SECONDS)
+                .timeout(60, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(

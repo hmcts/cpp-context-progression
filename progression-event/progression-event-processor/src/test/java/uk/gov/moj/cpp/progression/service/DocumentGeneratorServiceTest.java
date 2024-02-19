@@ -333,7 +333,7 @@ public class DocumentGeneratorServiceTest {
         when(fileStorer.store(any(), any())).thenReturn(randomUUID());
         when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn("http://materialUrl");
 
-        documentGeneratorService.generateDisqualificationDocument(originatingEnvelope, fileName, documentData);
+        documentGeneratorService.generatePdfDocument(originatingEnvelope, fileName, documentData);
         verify(fileStorer, times(1)).store(fileStorerMetaDataCaptor.capture(), fileStorerInputStreamCaptor.capture());
 
         byte[] dataSent = new byte[documentData.length];

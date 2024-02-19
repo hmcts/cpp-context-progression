@@ -167,42 +167,6 @@ rule "Query - Access control for  progression.query.caseprogressiondetail"
     $outcome.setSuccess(true);
 end
 
-rule "Query - Access control for  progression.query.cases"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.query.cases");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Probation Admin", "Court Associate"))
-  then
-    $outcome.setSuccess(true);
-end
-
-rule "Query - Access control for  progression.query.case-by-urn"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.query.case-by-urn");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks","Legal Advisers","System Users","CMS" , "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Probation Admin", "Court Associate"))
-  then
-    $outcome.setSuccess(true);
-end
-
-rule "Query - Access control for  progression.query.defendant"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.query.defendant");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Court Associate"))
-  then
-    $outcome.setSuccess(true);
-end
-
-rule "Query - Access control for  progression.query.defendants"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.query.defendants");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ,"Court Clerks",  "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Court Associate"))
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "Query - Access control for  progression.query.defendant.document"
   when
     $outcome: Outcome();
@@ -217,16 +181,6 @@ rule "Query - Access control for  progression.query.crown-court.magistrate-court
     $outcome: Outcome();
     $action: Action(name == "progression.query.crown-court.magistrate-courts");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Clerks", "Court Associate"))
-  then
-    $outcome.setSuccess(true);
-end
-
-
-rule "progression - Query - API - Cases defendant offences"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.query.defendant-offences");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer","Court Clerks", "Court Associate"))
   then
     $outcome.setSuccess(true);
 end
@@ -308,15 +262,6 @@ rule "progression - Query - API - application-extract"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.court-extract-application");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer"))
-  then
-    $outcome.setSuccess(true);
-end
-
-rule "progression - Query - API - defendant-request"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.query.defendant-request");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer"))
   then
     $outcome.setSuccess(true);
@@ -676,3 +621,13 @@ rule "Query - Access control for progression.query.cotr.details.prosecutioncase"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Query - Access control for progression.query.case.status-for-application"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.case.status-for-application");
+  then
+    $outcome.setSuccess(true);
+end
+
+

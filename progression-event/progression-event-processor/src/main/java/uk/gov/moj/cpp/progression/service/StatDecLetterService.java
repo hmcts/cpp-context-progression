@@ -7,6 +7,7 @@ import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsPayloadUtil.getCourtTime;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -101,7 +102,10 @@ public class StatDecLetterService {
                  courtCentreJson, localJusticeArea,courtApplicationParty,jurisdictionType, documentTemplateName);
         final JsonObject documentPayload = objectToJsonObjectConverter.convert(statDacAppointmentLetterPayload);
 
-        return  documentGeneratorService.generateDocument(envelope, documentPayload, documentTemplateName, sender, null, courtApplication.getId(), true);
+        final StatDecAppointmentLetterDefendantAddress statDecAppointmentLetterDefendantAddress= statDacAppointmentLetterPayload.getOrderAddressee().getAddress();
+        final boolean isPostable = (nonNull(statDecAppointmentLetterDefendantAddress) && isBlank(statDecAppointmentLetterDefendantAddress.getPostCode())) ? Boolean.FALSE : Boolean.TRUE;
+
+        return  documentGeneratorService.generateDocument(envelope, documentPayload, documentTemplateName, sender, null, courtApplication.getId(), isPostable);
 
     }
 

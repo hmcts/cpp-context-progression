@@ -80,15 +80,25 @@ public class DocumentGeneratorStub {
                 .collect(Collectors.toList());
     }
 
+    public static Optional<JsonObject> getHearingEventTemplate(final String templateName) {
+        final List<String> documentRequests = getDocumentRequestsAsStream();
+        return documentRequests.stream()
+                .map(s -> Json.createReader(new StringReader(s)).readObject())
+                .filter(json -> json.getString("templateName").equals(templateName))
+                .map(json -> json.getJsonObject("templatePayload"))
+                .findFirst();
+    }
+
     public static Optional<JSONObject> pollDocumentGenerationRequest(final Predicate<JSONObject> requestPayloadPredicate) {
         try {
-            return await().until(() ->
+            Optional<JSONObject> jsonObject = await().until(() ->
                             findAll(postRequestedFor(urlPathMatching(PATH)))
                                     .stream()
                                     .map(LoggedRequest::getBodyAsString)
                                     .map(JSONObject::new)
                                     .filter(requestPayloadPredicate).findFirst(),
                     is(not(empty())));
+            return jsonObject;
         } catch (final ConditionTimeoutException timeoutException) {
             return Optional.empty();
         }

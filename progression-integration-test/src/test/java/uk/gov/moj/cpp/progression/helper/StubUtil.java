@@ -39,6 +39,16 @@ public class StubUtil {
 
     }
 
+    public static void setupHmctsUsersGroupQueryStub(final String payload) {
+        InternalEndpointMockUtils.stubPingFor("usersgroups-service");
+        stubFor(get(urlMatching("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user"))
+                .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(payload)));
+
+    }
+
     public static void setupLoggedInUsersPermissionQueryStub() {
         InternalEndpointMockUtils.stubPingFor("usersgroups-service");
         stubFor(get(urlPathEqualTo("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permission"))

@@ -116,13 +116,6 @@ public class CaseProgressionDetailRepositoryTest {
     }
 
     @Test
-    public void shouldFindCaseByUrn() throws Exception {
-        final CaseProgressionDetail caseProgressionDetails = repository.findCaseByCaseUrn(CASE_URN_ONE);
-        assertThat(caseProgressionDetails.getCaseUrn(), equalTo(CASE_URN_ONE));
-    }
-
-
-    @Test
     public void shouldfindCaseByMaterialIdWhenMaterialIsDocument() {
 
         final CaseProgressionDetail caseProgressionDetail = repository.findByMaterialId(MATERIAL_ID);

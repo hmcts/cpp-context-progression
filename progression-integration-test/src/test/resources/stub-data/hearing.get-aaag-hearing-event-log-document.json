@@ -1,0 +1,77 @@
+{
+  "hearings": [
+    {
+      "hearingId": "d176b219-6cd5-46f8-a2c8-2901c8d7b00f",
+      "courtCentre": "0YYljLwQXg",
+      "courtRoom": "6xPFrChntF",
+      "hearingType": "eBaLjH676h",
+      "startDate": "2018-11-12",
+      "endDate": "2018-11-12",
+      "judiciary": [
+        "Recorder Adkinson Sf",
+        "Recorder Ainsworth"
+      ],
+      "applicationIds": ["%APPLICATION_ID%"],
+      "applicationReferences": [
+        "CX10FGT",
+        "CX11FGT"
+      ],
+      "caseIds": [
+        "%CASE_ID%"
+      ],
+      "caseUrns": [
+        "EXJp6ptmW2",
+        "BXJp6ptmW2"
+      ],
+      "applicants": [
+      ],
+      "respondents": [
+      ],
+      "thirdParties": [
+      ],
+      "defendantAttendees": [],
+      "prosecutionAttendees": [],
+      "hearingDates": [
+        "2018-11-12"
+      ],
+      "loggedHearingEvents": [
+        {
+          "hearingDate": "2023-07-12",
+          "courtClerks": [
+            "Alex Thomas"
+          ],
+          "eventLogs": [
+            {
+              "time": "2023-07-12T15:35:26.145Z",
+              "label": "eks6NIHbbL",
+              "note": "new note",
+              "userId": "59e01beb-fdc5-46d1-a483-6c9fabedfa18"
+            }
+          ]
+        },
+        {
+          "hearingDate": "2023-07-11",
+          "courtClerks": [
+            "Alex Thomas"
+          ],
+          "eventLogs": [
+            {
+              "time": "2023-07-11T15:35:23.743Z",
+              "label": "nFuivsqsZN",
+              "note": "testNote",
+              "userId": "59e01beb-fdc5-46d1-a483-6c9fabedfa18"
+            },
+            {
+              "time": "2023-07-11T15:35:24.916Z",
+              "label": "UIWlCJ7vzX",
+              "note": "testNote2",
+              "userId": "59e01beb-fdc5-46d1-a483-6c9fabedfa18"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "requestedTime": "15:35 on 11 Jul 2023",
+  "requestedUser": "Alex Thomas"
+}

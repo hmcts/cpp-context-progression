@@ -21,13 +21,19 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/public.progression.refer-prosecution-cases-to-court-accepted.json
 
         - name: public.progression.refer-prosecution-cases-to-court-rejected
-          schema_uri: http://justice.gov.uk/core/courts/public.progression.refer-prosecution-cases-to-court-rejected.json"
+          schema_uri: http://justice.gov.uk/core/courts/public.progression.refer-prosecution-cases-to-court-rejected.json
+
+        - name: public.progression.hearing-event-logs-document-failed
+          schema_uri: http://justice.gov.uk/core/courts/public.progression.hearing-event-logs-document-failed.json
+
+        - name: public.progression.hearing-event-logs-document-success
+          schema_uri: http://justice.gov.uk/core/courts/public.progression.hearing-event-logs-document-success.json
 
         - name: public.progression.case-defendant-changed
           schema_uri: http://justice.gov.uk/progression/courts/defendant-updated.json
 
         - name: public.progression.defendant-offences-changed
-          schema_uri: http://justice.gov.uk/progression/courts/offences-for-defendant-updated.json"
+          schema_uri: http://justice.gov.uk/progression/courts/offences-for-defendant-updated.json
 
         - name: public.hearing-detail-changed
           schema_uri: http://justice.gov.uk/json/schemas/hearing/public.hearing-detail-changed.json

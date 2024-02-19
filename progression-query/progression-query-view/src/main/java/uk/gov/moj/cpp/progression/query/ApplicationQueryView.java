@@ -11,8 +11,6 @@ import static uk.gov.justice.services.messaging.JsonObjects.getString;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 import static uk.gov.moj.cpp.progression.query.utils.ApplicationHearingQueryHelper.buildApplicationHearingResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.AssignedUser;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -38,20 +36,13 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntit
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.InitiateCourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NotificationStatusEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.utils.CourtApplicationSummary;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusRepository;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-import javax.persistence.NoResultException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -63,10 +54,23 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+import javax.persistence.NoResultException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @SuppressWarnings({"squid:S3655", "squid:S1612"})
 public class ApplicationQueryView {
 
     public static final String APPLICATION_ID_SEARCH_PARAM = "applicationId";
+    public static final String CASEID_SEARCH_PARAM = "caseId";
     private static final String APPLICATION_ID_NOT_FOUND = "### applicationId not found";
     private static final String NO_APPLICATION_FOUND_WITH_APPLICATION_ID = "### No application found with applicationId='{}'";
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationQueryView.class);
@@ -83,6 +87,9 @@ public class ApplicationQueryView {
 
     @Inject
     private CourtApplicationRepository courtApplicationRepository;
+
+    @Inject
+    private CourtApplicationCaseRepository courtApplicationCaseRepository;
 
     @Inject
     private CourtDocumentRepository courtDocumentRepository;
@@ -276,6 +283,15 @@ public class ApplicationQueryView {
         final String applicationId = getString(query.payloadAsJsonObject(), APPLICATION_ID_SEARCH_PARAM).orElse("");
         final InitiateCourtApplicationEntity applicationEntity = initiateCourtApplicationRepository.findBy(UUID.fromString(applicationId));
         return envelopeFrom(query.metadata(), stringToJsonObjectConverter.convert(applicationEntity.getPayload()));
+    }
+
+    @Handles("progression.query.case.status-for-application")
+    public JsonEnvelope getCaseStatusForApplication(final JsonEnvelope query) {
+        final String applicationId = getString(query.payloadAsJsonObject(), APPLICATION_ID_SEARCH_PARAM).orElse("");
+        final String caseId = getString(query.payloadAsJsonObject(), CASEID_SEARCH_PARAM).orElse("");
+        final String prosecutionCase = courtApplicationCaseRepository.findCaseStatusByApplicationId(UUID.fromString(applicationId), UUID.fromString(caseId));
+        final JsonObject payloadEntity = stringToJsonObjectConverter.convert(prosecutionCase);
+        return envelopeFrom(query.metadata(), payloadEntity);
     }
 
     private JsonArray buildApplicationSummaries(final List<CourtApplicationEntity> childApplications) {

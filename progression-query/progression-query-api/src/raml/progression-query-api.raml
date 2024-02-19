@@ -436,6 +436,32 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.applicationhearings+json:
                     example:  !include json/progression.query.applicationhearings.json
                     schema:  !include json/schema/progression.query.applicationhearings.json
+
+/applications/{applicationId}/case/{caseId}:
+  uriParameters:
+        applicationId:
+          description: primary key of court application to get
+          type: string
+        caseId:
+          description: Case Id
+          type: string
+  get:
+      description: |
+        Return the application details for the applicationId and caseId.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.case.status-for-application+json
+            name: progression.query.case.status-for-application
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.case.status-for-application+json:
+                    example:  !include json/progression.query.case.status-for-application.json
+                    schema:  !include json/schema/progression.query.case.status-for-application.json
+
+
 /applications/{applicationId}/extract:
   description: get court application extract content as pdf
   uriParameters:
@@ -1039,9 +1065,6 @@ protocols: [ HTTP, HTTPS ]
             example:  !include json/progression.query.trial-readiness-hearing-details.json
             schema:  !include json/schema/progression.query.trial-readiness-hearing-details.json
 
-# ***** Deprecated API - Start ********
-# ***** Do not add any new API in this section *****
-
 /cases/{caseId}:
   uriParameters:
         caseId:
@@ -1062,114 +1085,6 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.caseprogressiondetail+json:
                     example:  !include json/progression.query.caseprogressiondetail.json
                     schema:  !include json/schema/progression.query.caseprogressiondetail.json
-
-/cases:
-  get:
-      description: |
-        List of case progression details
-        ...
-        (mapping):
-            responseType: application/vnd.progression.query.cases+json
-            name: progression.query.cases
-        (mapping):
-            responseType: application/vnd.progression.query.case-by-urn+json
-            name: progression.query.case-by-urn
-        ...
-      queryParameters:
-        status:
-          description: comma separated list of case status ex ?status=xxx,yyy
-          type: string
-          example: xxx,yyy
-          required: false
-        caseId:
-          description: ID of case to search
-          type: string
-          required: false
-        urn:
-          description: ID of case to search
-          type: string
-          required: false
-      responses:
-            200:
-                description: OK
-                body:
-                  application/vnd.progression.query.cases+json:
-                    example:  !include json/progression.query.cases.json
-                    schema:  !include json/schema/progression.query.cases.json
-                  application/vnd.progression.query.case-by-urn+json:
-                    example:  !include json/progression.query.case-by-urn.json
-                    schema:  !include json/schema/progression.query.case-by-urn.json
-
-/cases/{caseId}/defendants/{defendantId}:
-  uriParameters:
-        caseId:
-          description: ID of case to get
-          type: string
-        defendantId:
-          description: ID of defendant
-          type: string
-  get:
-      description: |
-        Return the defendant progression details for the defendant Id.
-        ...
-        (mapping):
-            responseType: application/vnd.progression.query.defendant+json
-            name: progression.query.defendant
-
-        ...
-      responses:
-            200:
-                description: OK
-                body:
-                  application/vnd.progression.query.defendant+json:
-                    example:  !include json/progression.query.defendant.json
-                    schema:  !include json/schema/progression.query.defendant.json
-
-/cases/{caseId}/defendants:
-  uriParameters:
-        caseId:
-          description: ID of case to get
-          type: string
-  get:
-      description: |
-        Return the defendants progression details for the case Id.
-        ...
-        (mapping):
-            responseType: application/vnd.progression.query.defendants+json
-            name: progression.query.defendants
-        ...
-      responses:
-            200:
-                description: OK
-                body:
-                  application/vnd.progression.query.defendants+json:
-                    example:  !include json/progression.query.defendants.json
-                    schema:  !include json/schema/progression.query.defendants.json
-
-
-/cases/{caseId}/defendant/{defendantId}/offences:
-   uriParameters:
-     caseId:
-       description: The ID of the case
-       type: string
-     defendantId:
-       description: The ID of the defendant
-       type: string
-   get:
-     description: |
-       Retrieve offences data information
-       ...
-       (mapping):
-           responseType: application/vnd.progression.query.defendant-offences+json
-           name: progression.query.defendant-offences
-       ...
-     responses:
-         200:
-           description: OK
-           body:
-                 application/vnd.progression.query.defendant-offences+json:
-                   schema: !include json/schema/progression.query.defendant-offences.json
-                   example: !include json/progression.query.defendant-offences.json
 
 /partial-match-defendants:
   get:
@@ -1269,6 +1184,3 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.cotr.details.prosecutioncase+json:
             example:  !include json/progression.query.cotr.details.prosecutioncase.json
             schema:  !include json/schema/progression.query.cotr.details.prosecutioncase.json
-
-
-# Deprecated API  - End

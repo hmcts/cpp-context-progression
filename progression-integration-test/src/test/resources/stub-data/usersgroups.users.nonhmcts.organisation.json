@@ -1,0 +1,9 @@
+{
+  "userId": "%USER_ID%",
+  "firstName": "usersgroups",
+  "lastName": "context",
+  "email": "usersgroups@hmcts.gov",
+  "userType": "CPP-Support-Admin",
+  "organisationId": "a41fc38d-1f44-4da2-b449-b26396fb1d16",
+  "prosecutingAuthorityAccess": "ALL"
+}

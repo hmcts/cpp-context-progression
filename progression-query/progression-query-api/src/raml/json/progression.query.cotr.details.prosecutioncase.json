@@ -1,1 +1,18 @@
-{  "cotrDetails": [    {      "id": "68b54831-5134-415b-9679-1ec7e4b84254",      "cotrDefendants": {        "id": "300067e1-5309-4ba8-8d74-f96a113ceb1a",        "firstName": "John",        "lastName": "Smith",        "dateOfBirth": "2001-12-27",        "isDefenceServed": true      },      "hearingId": "2f8bf3c1-6244-4d77-a8cc-f2cfd8c93709",      "hearingDay": "2022-11-12T09:27:12Z",      "isProsecutionServed": false,      "isArchived": true    }  ]}
+{
+  "cotrDetails": [
+    {
+      "id": "68b54831-5134-415b-9679-1ec7e4b84254",
+      "cotrDefendants": {
+        "id": "300067e1-5309-4ba8-8d74-f96a113ceb1a",
+        "firstName": "John",
+        "lastName": "Smith",
+        "dateOfBirth": "2001-12-27",
+        "isDefenceServed": true
+      },
+      "hearingId": "2f8bf3c1-6244-4d77-a8cc-f2cfd8c93709",
+      "hearingDay": "2022-11-12T09:27:12Z",
+      "isProsecutionServed": false,
+      "isArchived": true
+    }
+  ]
+}

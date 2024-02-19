@@ -142,6 +142,7 @@ import uk.gov.justice.progression.courts.CustodyTimeLimitExtended;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdated;
 import uk.gov.justice.progression.courts.DefendantsAndListingHearingRequestsStored;
 import uk.gov.justice.progression.courts.HearingDeletedForProsecutionCase;
+import uk.gov.justice.progression.courts.HearingEventLogsDocumentCreated;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicateForCase;
 import uk.gov.justice.progression.courts.HearingRemovedForProsecutionCase;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
@@ -1902,13 +1903,66 @@ public class CaseAggregateTest {
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult);
         final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(3));
+        assertThat(eventStream.size(), is(4));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
         assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(INACTIVE.getDescription()));
         assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCpsOrganisation(), is("A01"));
 
+    }
+
+    @Test
+    public void shouldGenerateHearingEventLogDocumentWhenCaseIsInactiveWhenAllOffencesAreFinalised() {
+        final UUID caseId = randomUUID();
+
+        final UUID hearingId = randomUUID();
+        final Defendant defendant = defendant()
+                .withId(randomUUID())
+                .withProceedingsConcluded(true)
+                .withProsecutionCaseId(caseId)
+                .withOffences(
+                        singletonList(offence()
+                                .withId(UUID.randomUUID())
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(
+                                        singletonList(JudicialResult.judicialResult()
+                                                .withCategory(FINAL)
+                                                .build())).build()))
+                .build();
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus(SJP_REFERRAL.getDescription())
+                .withDefendants(singletonList(defendant))
+                .withCpsOrganisation("A01")
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
+        this.caseAggregate.apply(prosecutionCaseCreated);
+
+        final DefendantJudicialResult defendantJudicialResult = DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build())
+                .withMasterDefendantId(UUID.randomUUID())
+                .build();
+        final List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult);
+        final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+
+        assertThat(eventStream.size(), is(4));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
+        final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
+        assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(INACTIVE.getDescription()));
+        assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCpsOrganisation(), is("A01"));
+        final Object object1 = eventStream.get(3);
+        assertThat(object1.getClass(), is(equalTo(HearingEventLogsDocumentCreated.class)));
     }
 
     @Test
@@ -1966,6 +2020,82 @@ public class CaseAggregateTest {
         assertThat(caseRetentionPolicyRecorded.getJurisdictionType(), is(CROWN.name()));
         assertThat(caseRetentionPolicyRecorded.getPolicyType(), is("NON_CUSTODIAL"));
         assertThat(caseRetentionPolicyRecorded.getPeriod(), is("7Y0M0D"));
+    }
+
+    @Test
+    public void shouldGenereateHearingEventLogForActiveCase() {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final Defendant defendant = defendant()
+                .withId(randomUUID())
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(true)
+                .withOffences(
+                        singletonList(offence()
+                                .withId(randomUUID())
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(
+                                        singletonList(JudicialResult.judicialResult()
+                                                .withCategory(INTERMEDIARY)
+                                                .build())).build()))
+                .build();
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus(SJP_REFERRAL.getDescription())
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+        this.caseAggregate.apply(prosecutionCaseCreated);
+
+        final List<Object> eventStream = caseAggregate.getHearingEventLogsDocuments(caseId, Optional.empty()).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object eventOne = eventStream.get(0);
+        assertThat(eventOne.getClass(), is(equalTo(HearingEventLogsDocumentCreated.class)));
+    }
+
+    @Test
+    public void shouldGenereateHearingEventLogForApplication() {
+        final UUID caseId = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        final UUID hearingId = randomUUID();
+        final Defendant defendant = defendant()
+                .withId(randomUUID())
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(true)
+                .withOffences(
+                        singletonList(offence()
+                                .withId(randomUUID())
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(
+                                        singletonList(JudicialResult.judicialResult()
+                                                .withCategory(INTERMEDIARY)
+                                                .build())).build()))
+                .build();
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withCaseStatus(SJP_REFERRAL.getDescription())
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+        this.caseAggregate.apply(prosecutionCaseCreated);
+
+        final List<Object> eventStream = caseAggregate.getHearingEventLogsDocuments(caseId, Optional.of(applicationId)).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object eventOne = eventStream.get(0);
+        assertThat(eventOne.getClass(), is(equalTo(HearingEventLogsDocumentCreated.class)));
     }
 
     @Test
@@ -2092,7 +2222,7 @@ public class CaseAggregateTest {
 
         final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(3));
+        assertThat(eventStream.size(), is(4));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
@@ -2369,7 +2499,7 @@ public class CaseAggregateTest {
         final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, singletonList(defendantJudicialResult),
                 courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(3));
+        assertThat(eventStream.size(), is(4));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);

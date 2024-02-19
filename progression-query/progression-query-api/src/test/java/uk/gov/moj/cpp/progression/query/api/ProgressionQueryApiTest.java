@@ -45,30 +45,6 @@ public class ProgressionQueryApiTest {
     }
 
     @Test
-    public void shouldHandleCaseQuery() {
-        when(progressionQueryView.getCases(query)).thenReturn(response);
-        assertThat(progressionHearingsQueryApi.getCases(query), equalTo(response));
-    }
-
-    @Test
-    public void shouldHandleDefendantQuery() {
-        when(progressionQueryView.getDefendant(query)).thenReturn(response);
-        assertThat(progressionHearingsQueryApi.getDefendant(query), equalTo(response));
-    }
-
-    @Test
-    public void shouldHandleDefendantsQuery() {
-        when(progressionQueryView.getDefendants(query)).thenReturn(response);
-        assertThat(progressionHearingsQueryApi.getDefendants(query), equalTo(response));
-    }
-
-    @Test
-    public void shouldGetDefendantsOffenceQuery() {
-        when(progressionQueryView.findOffences(query)).thenReturn(response);
-        assertThat(progressionHearingsQueryApi.findOffences(query), equalTo(response));
-    }
-
-    @Test
     public void shouldGetDefendantDocumentQuery() {
         when(progressionQueryView.getDefendantDocument(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getDefendantDocument(query), equalTo(response));
@@ -78,12 +54,6 @@ public class ProgressionQueryApiTest {
     public void shouldGetCaseSearchByMaterialId() {
         when(progressionQueryView.searchCaseByMaterialId(query)).thenReturn(response);
         assertThat(progressionHearingsQueryApi.getCaseSearchByMaterialId(query), equalTo(response));
-    }
-
-    @Test
-    public void shouldGetCaseByUrn() {
-        when(progressionQueryView.findCaseByUrn(query)).thenReturn(response);
-        assertThat(progressionHearingsQueryApi.getCaseByUrn(query), equalTo(response));
     }
 
     @Test

@@ -1,0 +1,13 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command - Create HearingEventLogDocument"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.create-hearing-event-log-document");
+    eval($action.userId().isPresent());
+  then
+    $outcome.setSuccess(true);
+end

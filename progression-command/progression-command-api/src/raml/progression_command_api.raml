@@ -1385,3 +1385,45 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         description: Internal Server Error
       202:
         description: Accepted
+
+/hearingeventlog/{caseId}:
+  uriParameters:
+    caseId:
+      description: Case ID of the hearing event log
+      type: string
+  post:
+    description: |
+      Generate hearing event log
+      ...
+      (mapping):
+          requestType: application/vnd.progression.create-hearing-event-log-document+json
+          name: progression.create-hearing-event-log-document
+      ...
+    body:
+     application/vnd.progression.create-hearing-event-log-document+json:
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
+/hearingeventlog/case/{caseId}/application/{applicationId}:
+  uriParameters:
+    caseId:
+      description: Application ID of the hearing event log
+      type: string
+  post:
+    description: |
+      Generate hearing event log
+      ...
+      (mapping):
+          requestType: application/vnd.progression.create-aaag-hearing-event-log-document+json
+          name: progression.create-aaag-hearing-event-log-document
+      ...
+    body:
+     application/vnd.progression.create-aaag-hearing-event-log-document+json:
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted

@@ -57,7 +57,7 @@
             **/uk/gov/justice/services/domain/CaseDocuments.java,
             **/uk/gov/moj/cpp/progression/value/object/**/*
         </sonar.exclusions>
-        <cpp.platform-libraries.version>8.3.21</cpp.platform-libraries.version>
+        <cpp.platform-libraries.version>8.3.25</cpp.platform-libraries.version>
         <file-alfresco.version>2.3.0</file-alfresco.version>
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
@@ -67,9 +67,9 @@
         <material.version>8.0.12</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>8.0.48</referencedata.version>
+        <referencedata.version>8.0.50</referencedata.version>
         <listing.version>8.0.67</listing.version>
-        <hearing.version>8.0.107</hearing.version>
+        <hearing.version>8.0.115</hearing.version>
         <usersgroups.version>8.0.21</usersgroups.version>
         <defence.version>8.0.35</defence.version>
         <referencedata.offence.version>8.0.14</referencedata.offence.version>
@@ -79,10 +79,10 @@
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
         <results.version>8.0.32</results.version>
         <notification.notify.version>7.0.18</notification.notify.version>
-        <unifiedsearch.version>8.0.4</unifiedsearch.version>
-        <systemdocgenerator.version>8.0.70-</systemdocgenerator.version>
+        <unifiedsearch.version>8.0.7</unifiedsearch.version>
+        <systemdocgenerator.version>8.0.70</systemdocgenerator.version>
         <applicationscourtorders.version>8.0.9</applicationscourtorders.version>
-        <sjp.version>8.0.68</sjp.version>
+        <sjp.version>8.0.70</sjp.version>
         <jackson-data-format.version>2.8.8</jackson-data-format.version>
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>8.0.1</stagingpubhub.version>

@@ -32,40 +32,14 @@ public class ProgressionQueryApi {
         return progressionQueryView.getCaseProgressionDetails(query);
     }
 
-    @Handles("progression.query.cases")
-    public JsonEnvelope getCases(final JsonEnvelope query) {
-        return progressionQueryView.getCases(query);
-    }
-
-    @Handles("progression.query.case-by-urn")
-    public JsonEnvelope getCaseByUrn(final JsonEnvelope query) {
-        return progressionQueryView.findCaseByUrn(query);
-    }
-
     @Handles("progression.query.cases-search-by-material-id")
     public JsonEnvelope getCaseSearchByMaterialId(final JsonEnvelope query) {
         return progressionQueryView.searchCaseByMaterialId(query);
     }
 
-    @Handles("progression.query.defendant")
-    public JsonEnvelope getDefendant(final JsonEnvelope query) {
-        return progressionQueryView.getDefendant(query);
-    }
-
     @Handles("progression.query.defendant.document")
     public JsonEnvelope getDefendantDocument(final JsonEnvelope query) {
         return progressionQueryView.getDefendantDocument(query);
-    }
-
-    @Handles("progression.query.defendants")
-    public JsonEnvelope getDefendants(final JsonEnvelope query) {
-        return progressionQueryView.getDefendants(query);
-    }
-
-
-    @Handles("progression.query.defendant-offences")
-    public JsonEnvelope findOffences(final JsonEnvelope query) {
-        return progressionQueryView.findOffences(query);
     }
 
     @Handles("progression.query.hearing")

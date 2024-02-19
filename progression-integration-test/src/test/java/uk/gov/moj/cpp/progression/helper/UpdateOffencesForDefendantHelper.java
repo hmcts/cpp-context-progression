@@ -1,30 +1,17 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertTrue;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.getOffencesForDefendantId;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_OFFENCES_FOR_DEFENDANT_UPDATED;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import javax.jms.MessageConsumer;
-import javax.json.JsonObject;
 
 import com.jayway.restassured.path.json.JsonPath;
-import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,20 +100,6 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
         return jsonObject;
     }
 
-    public void verifyOffencesPleasForDefendantUpdated() {
-        final JsonPath jsRequest = new JsonPath(request);
-
-        poll(getOffencesForDefendantId(caseId, defendantId))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload()
-                                .isJson(allOf(
-                                        withJsonPath("$.offences[0].indicatedPlea.value", is("INDICATED_GUILTY"))
-                                        )
-                                ));
-    }
-
 
     /**
      * Retrieve message from queue and do additional verifications
@@ -141,46 +114,8 @@ public class UpdateOffencesForDefendantHelper extends AbstractTestHelper {
         assertThat(jsonResponse.getString("id"), is(jsRequest.getString("id")));
     }
 
-    public void verifyOffencesForDefendantUpdated() {
-        final JsonPath jsRequest = new JsonPath(request);
-
-        poll(getOffencesForDefendantId(caseId, defendantId))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload()
-                                .isJson(allOf(
-                                        withJsonPath("$.offences[0].offenceCode", is(OFFENCE_CODE)),
-                                        withJsonPath("$.offences[0].count", is(1))
-                                        )
-                                ));
-    }
-
-    public void verifyOffencesForDefendantUpdatedWithOffenceOrdering(final String caseUrn) {
-        poll(getOffencesForDefendantId(caseId, defendantId))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload()
-                                .isJson(
-                                        allOf(
-                                                withJsonPath("$.offences[0].wording", is("1")),
-                                                withJsonPath("$.offences[1].wording", is("2")),
-                                                withJsonPath("$.offences[2].wording", is("3"))
-                                        )
-                                ));
-    }
-
     public String getDefendantId() {
         return defendantId;
     }
-
-    public void verifyInMessagingQueueOffencesForDefendentUpdated() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventsConsumerForOffencesForDefendantUpdated);
-        assertTrue(message.isPresent());
-        assertThat(message.get(), isJson(withJsonPath("$.caseId", Matchers.hasToString(
-                containsString(caseId)))));
-    }
-
 
 }

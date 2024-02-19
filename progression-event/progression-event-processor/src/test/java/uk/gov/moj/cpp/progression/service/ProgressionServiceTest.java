@@ -17,6 +17,7 @@ import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
@@ -193,6 +194,7 @@ public class ProgressionServiceTest {
     private static final String PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING = "progression.command.record-unscheduled-hearing";
     private static final String PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION = "progression.command.update-hearing-for-partial-allocation";
     private static final String SENT_FOR_LISTING = "SENT_FOR_LISTING";
+    private static final String APPLICATION_AAAG = "progression.query.application.aaag.json";
 
     private static final String PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND = "progression.command.create-hearing-for-application";
     private static final String HEARING_LISTING_STATUS = "hearingListingStatus";
@@ -598,6 +600,30 @@ public class ProgressionServiceTest {
 
         assertThat(result.getCourtHearingLocation(), is(oucode));
 
+    }
+
+    @Test
+    public void shouldGetApplicationDetails() {
+
+       final UUID applicationId = randomUUID();
+        JsonEnvelope requestEnvelope = getUserEnvelope(APPLICATION_AAAG);
+        when(requester.request(any(JsonEnvelope.class), any(Class.class))).thenReturn(requestEnvelope);
+        JsonObject courtApplication = progressionService.retrieveApplication(requestEnvelope, applicationId);
+
+        assertThat(courtApplication, is(notNullValue()));
+        assertThat(courtApplication.getJsonObject("applicantDetails").getString("name"), is(notNullValue()));
+        assertThat(courtApplication.getJsonArray("respondentDetails").size(), is(greaterThan(0)));
+    }
+
+    private JsonEnvelope getUserEnvelope(String fileName) {
+        return envelopeFrom(
+                Envelope.metadataBuilder().
+                        withName("progression.query.application.aaag").
+                        withId(randomUUID()),
+                Json.createReader(getClass().getClassLoader().
+                                getResourceAsStream(fileName)).
+                        readObject()
+        );
     }
 
     private JsonObject generateJudiciariesJson() throws IOException {

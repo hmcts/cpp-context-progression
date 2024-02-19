@@ -250,6 +250,9 @@ subscriptions_descriptor:
         - name: progression.events.case-retention-length-calculated
           schema_uri: http://justice.gov.uk/progression/courts/progression.events.case-retention-length-calculated.json
 
+        - name: progression.event.hearing-event-logs-document-created
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-event-logs-document-created.json
+
         - name: progression.event.applications-resulted
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.applications-resulted.json
 

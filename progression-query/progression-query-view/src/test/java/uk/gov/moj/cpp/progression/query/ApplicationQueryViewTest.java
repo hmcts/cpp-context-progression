@@ -52,6 +52,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.InitiateCourtApplicatio
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NotificationStatusEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.utils.CourtApplicationSummary;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
@@ -90,8 +91,12 @@ public class ApplicationQueryViewTest {
     final static private String APPLICANT_MIDDLE_NAME = new StringGenerator().next();
     final static private String RESPONDENTS_ORG_NAME = new StringGenerator().next();
     final static private String APPLICATION_PROSECUTOR_NAME = new StringGenerator().next();
+    final static private String INACTIVE = "INACTIVE";
+
     @Mock
     private CourtApplicationRepository courtApplicationRepository;
+    @Mock
+    private CourtApplicationCaseRepository courtApplicationCaseRepository;
     @Mock
     private CourtDocumentRepository courtDocumentRepository;
     @Mock
@@ -498,6 +503,28 @@ public class ApplicationQueryViewTest {
         when(stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload())).thenReturn(jsonObject1);
         final JsonEnvelope jsonEnvelopeOut = applicationQueryView.getCourtProceedingsForApplication(jsonEnvelopeIn);
         assertThat(jsonEnvelopeOut.payloadAsJsonObject().getJsonObject("courtApplication"), is(notNullValue()));
+    }
+
+    @Test
+    public void shouldGetCaseStatusForApplicationID() {
+        final UUID applicationId = UUID.randomUUID();
+        final UUID caseId = UUID.randomUUID();
+
+        final JsonObject jsonObject = createObjectBuilder()
+                .add(ApplicationQueryView.APPLICATION_ID_SEARCH_PARAM, applicationId.toString())
+                .add(ApplicationQueryView.CASEID_SEARCH_PARAM, caseId.toString())
+                .build();
+        final JsonEnvelope jsonEnvelopeIn = envelopeFrom(
+                metadataBuilder().withId(randomUUID())
+                        .withName("progression.query.case.status-for-application").build(),
+                jsonObject);
+        final JsonObject jsonObject1 = createObjectBuilder().add("caseStatus", INACTIVE).build();
+
+        when(courtApplicationCaseRepository.findCaseStatusByApplicationId(applicationId, caseId)).thenReturn(INACTIVE);
+        when(stringToJsonObjectConverter.convert(INACTIVE)).thenReturn(jsonObject1);
+
+        final JsonEnvelope jsonEnvelopeOut = applicationQueryView.getCaseStatusForApplication(jsonEnvelopeIn);
+        assertThat(jsonEnvelopeOut.payloadAsJsonObject().getString("caseStatus"), is(notNullValue()));
     }
 
     private ProsecutionCase createProsecutionCase(final UUID caseId) {

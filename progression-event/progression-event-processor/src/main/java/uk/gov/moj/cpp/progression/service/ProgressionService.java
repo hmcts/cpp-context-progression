@@ -138,7 +138,9 @@ public class ProgressionService {
     private static final String PROGRESSION_QUERY_SEARCH_CASES_BY_CASEURN = "progression.query.search-cases-by-caseurn";
     private static final String PROGRESSION_QUERY_CASE_EXISTS_BY_CASEURN = "progression.query.case-exist-by-caseurn";
     private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
+    private static final String PROGRESSION_QUERY_CASE_STATUS_FOR_APPLICATION = "progression.query.case.status-for-application";
     private static final String PROGRESSION_QUERY_HEARING = "progression.query.hearing";
+    private static final String PROGRESSION_QUERY_APPLICATIONS = "progression.query.application.aaag";
     private static final String PROGRESSION_QUERY_LINKED_CASES = "progression.query.case-lsm-info";
     private static final String PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND = "progression.command.update-defendant-listing-status";
     private static final String PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND_V3 = "progression.command.update-defendant-listing-status-v3";
@@ -757,6 +759,36 @@ public class ProgressionService {
         return result;
     }
 
+    public Optional<JsonObject> getCaseStatusForApplicationId(final JsonEnvelope envelope, final String applicationId, final String caseId) {
+        Optional<JsonObject> result = Optional.empty();
+
+        final JsonObject requestParameter = createObjectBuilder()
+                .add(APPLICATION_ID, applicationId)
+                .add(CASE_ID, caseId)
+                .build();
+        LOGGER.info("applicationId {} , caseId{}   get case status for Application Id request {}", applicationId, caseId, requestParameter);
+        try {
+            final JsonEnvelope prosecutioncase = requester.requestAsAdmin(enveloper
+                    .withMetadataFrom(envelope, PROGRESSION_QUERY_CASE_STATUS_FOR_APPLICATION)
+                    .apply(requestParameter));
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("applicationId {} case status for applicationid payload {}", applicationId, prosecutioncase.toObfuscatedDebugString());
+            }
+
+            if (!prosecutioncase.payloadAsJsonObject().isEmpty()) {
+                result = Optional.of(prosecutioncase.payloadAsJsonObject());
+            }
+        } catch (final Exception e) {
+
+            LOGGER.debug(String.format("Case status not found for Application id : %s", applicationId), e.getCause());
+
+            throw new CourtApplicationAndCaseNotFoundException(String.format("Case status not found for applicationId id : %s", applicationId));
+
+        }
+        return result;
+    }
+
     public JsonObject getProsecutionCaseById(final JsonEnvelope envelope, final String caseId) {
         final JsonObject requestParameter = createObjectBuilder()
                 .add(CASE_ID, caseId)
@@ -1081,12 +1113,31 @@ public class ProgressionService {
         return result;
     }
 
+    public Optional<JsonObject> getApplication(final JsonEnvelope envelope, final String applicationId) {
+        final JsonObject requestParameter = createObjectBuilder()
+                .add("applicationId", applicationId)
+                .build();
+        final Envelope<JsonObject> requestEnvelop = envelop(requestParameter)
+                .withName(PROGRESSION_QUERY_APPLICATIONS)
+                .withMetadataFrom(envelope);
+        final Envelope<JsonObject> jsonObjectEnvelope = requester.request(requestEnvelop, JsonObject.class);
+        return Optional.of(jsonObjectEnvelope.payload());
+    }
+
     public Hearing retrieveHearing(final JsonEnvelope event, final UUID hearingId) {
         final Optional<JsonObject> hearingPayloadOptional = getHearing(event, hearingId.toString());
         if (hearingPayloadOptional.isPresent()) {
             return jsonObjectConverter.convert(hearingPayloadOptional.get().getJsonObject("hearing"), Hearing.class);
         }
         throw new IllegalStateException("Hearing not found for hearingId:" + hearingId);
+    }
+
+    public JsonObject retrieveApplication(final JsonEnvelope event, final UUID applicationId) {
+        final Optional<JsonObject> applicationPayload = getApplication(event, applicationId.toString());
+        if (applicationPayload.isPresent()) {
+            return applicationPayload.get();
+        }
+        throw new IllegalStateException("Application not found for applicationId:" + applicationId);
     }
 
 

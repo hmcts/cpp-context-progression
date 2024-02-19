@@ -39,6 +39,7 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.justice.progression.courts.CaseRetentionLengthCalculated.caseRetentionLengthCalculated;
+import static uk.gov.justice.progression.courts.HearingEventLogsDocumentCreated.hearingEventLogsDocumentCreated;
 import static uk.gov.justice.progression.courts.RetentionPolicy.retentionPolicy;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createCaseAddedToCrownCourt;
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createPsrForDefendantsRequested;
@@ -164,6 +165,7 @@ import uk.gov.justice.progression.courts.CustodyTimeLimitExtended;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdated;
 import uk.gov.justice.progression.courts.DefendantsAndListingHearingRequestsStored;
 import uk.gov.justice.progression.courts.HearingDeletedForProsecutionCase;
+import uk.gov.justice.progression.courts.HearingEventLogsDocumentCreated;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicateForCase;
 import uk.gov.justice.progression.courts.HearingRemovedForProsecutionCase;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
@@ -1381,6 +1383,7 @@ public class CaseAggregate implements Aggregate {
             final RetentionPolicy retentionPolicy = getRetentionPolicyByPriority(hearingCaseRetentionMap.values());
             streamBuilder.add(getCaseRetentionLengthCalculatedEvent(getCaseURN(prosecutionCase.getProsecutionCaseIdentifier()),
                     updatedCaseStatus, retentionPolicy));
+            streamBuilder.add(getHearingEventLogsDocumentCreated(prosecutionCase.getId()).build());
         }
 
         return apply(streamBuilder.build());
@@ -1401,6 +1404,22 @@ public class CaseAggregate implements Aggregate {
                 .withPolicyType(caseRetentionPolicyByHearing.getPolicyType().name())
                 .withPeriod(caseRetentionPolicyByHearing.getPeriod())
                 .build();
+    }
+
+    public Stream<Object> getHearingEventLogsDocuments(final UUID caseId, final Optional<UUID> applicationId) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        if(applicationId.isPresent()) {
+            streamBuilder.add(getHearingEventLogsDocumentCreated(caseId)
+                    .withApplicationId(applicationId.get()).build());
+        } else {
+            streamBuilder.add(getHearingEventLogsDocumentCreated(caseId).build());
+        }
+        return apply(streamBuilder.build());
+    }
+
+    private HearingEventLogsDocumentCreated.Builder getHearingEventLogsDocumentCreated(final UUID caseId) {
+        return hearingEventLogsDocumentCreated()
+                .withCaseId(caseId);
     }
 
     private String getCaseURN(final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {

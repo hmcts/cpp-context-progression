@@ -310,6 +310,71 @@ public class StatDecLetterServiceTest {
 
     }
 
+    @Test
+    public void testGenerateAppointmentLetterDocumentForDefendantWithForeignAddressWithoutPostCode() {
+        final ZonedDateTime hearingDateTime = ZonedDateTime.of(
+                LocalDate.of(20121, 4, 19),
+                LocalTime.of(10, 0),
+                ZoneId.of("UTC"));
+
+        final JsonObject courtCentreJson = createObjectBuilder()
+                .add("lja", "1234")
+                .build();
+
+        final UUID materialId = UUID.randomUUID();
+
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean()))
+                .thenReturn(materialId);
+
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
+
+        final JsonObject ljaDetails = createObjectBuilder()
+                .add("localJusticeArea", createObjectBuilder()
+                        .add("nationalCourtCode", "008")
+                        .add("name", "Manchester Courts")
+                        .build())
+                .build();
+
+        when(referenceDataService.getEnforcementAreaByLjaCode(any(), any(), any())).thenReturn(ljaDetails);
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType().build())
+                .withApplicationReference("05PP1000915-01")
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
+                                Person.person()
+                                        .withFirstName("John")
+                                        .withLastName("Edward")
+                                        .withDateOfBirth(LocalDate.of(1998, 8, 10))
+                                        .withContact(
+                                                ContactNumber.contactNumber()
+                                                        .withPrimaryEmail("applicant@test.com")
+                                                        .build())
+                                        .withAddress(Address.address()
+                                                .withAddress1("22 Acacia Avenue")
+                                                .withAddress2("Acacia Town")
+                                                .withAddress3("Acacia City")
+                                                .withAddress4("Test")
+                                                .build()
+                                        )
+                                        .build()).build()).build())
+                        .build())
+                .build();
+
+        assertThat(statDecLetterService.generateAppointmentLetterDocument(envelope, hearingDateTime,  courtApplication, CourtCentre.courtCentre()
+                        .withId(randomUUID())
+                        .withName("Lavendar Hill Magistrates' Court")
+                        .withAddress(Address.address()
+                                .withAddress1("Court Road")
+                                .withAddress2("Court Town")
+                                .withAddress3("Lavendar Hill, London")
+                                .withPostcode("EA22 5TF")
+                                .build())
+                        .build(),
+                courtApplication.getApplicant(),
+                JurisdictionType.MAGISTRATES, STAT_DEC_VIRTUAL_HEARING), is(materialId));
+    }
 
 
 }

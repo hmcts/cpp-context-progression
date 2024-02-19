@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/public.progression.hearing-event-logs-document-failed.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "applicationId": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "caseId",
+        "status"
+      ]
+    },
+    {
+      "required": [
+        "applicationId",
+        "status"
+      ]
+    }
+  ]
+}

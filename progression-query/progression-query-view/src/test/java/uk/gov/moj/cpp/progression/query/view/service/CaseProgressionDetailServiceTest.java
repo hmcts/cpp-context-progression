@@ -155,36 +155,4 @@ public class CaseProgressionDetailServiceTest extends AbstractProgressionQueryBa
         assertThat(cases, hasSize(1));
     }
 
-    @Test
-    public void shouldReturnDefendant() throws Exception {
-
-        final UUID defendantId = UUID.randomUUID();
-        final UUID caseId = UUID.randomUUID();
-
-        final Defendant value = getDefendants(defendantId, caseId).get(0);
-
-        when(defendantRepository.findByDefendantId(anyObject())).thenReturn(value);
-
-        final DefendantView defendant = caseProgressionDetailService
-                .getDefendant(Optional.ofNullable(defendantId.toString()));
-
-        verify(defendantRepository, times(1)).findByDefendantId(anyObject());
-        assertThat(defendant.getDefendantId(), equalTo(defendantId.toString()));
-    }
-
-    @Test
-    public void shouldReturnListOfDefendant() throws Exception {
-
-        final UUID defendantId = UUID.randomUUID();
-        final UUID caseId = UUID.randomUUID();
-        final CaseProgressionDetail caseProgressionDetail = getCaseProgressionDetail(caseId, defendantId);
-
-        when(caseProgressionDetailRepository.findByCaseId(caseId))
-                .thenReturn(caseProgressionDetail);
-
-        final DefendantsView defendants = caseProgressionDetailService.getDefendantsByCase(caseId);
-
-        verify(caseProgressionDetailRepository, times(1)).findByCaseId(caseId);
-        assertThat(defendants.getDefendants().get(0).getDefendantId(), equalTo(defendantId.toString()));
-    }
 }

@@ -79,8 +79,6 @@ public class HearingDeletedIT extends AbstractIT {
         messageConsumerHearingDeletedForProsecutionCase = privateEvents.createPrivateConsumer("progression.event.hearing-deleted-for-prosecution-case");
         messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
         messageConsumerDeletedHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.deleted-hearing-populated-to-probation-caseworker");
-
-
         HearingStub.stubInitiateHearing();
         stubDocumentCreate(randomAlphanumeric(20));
     }
