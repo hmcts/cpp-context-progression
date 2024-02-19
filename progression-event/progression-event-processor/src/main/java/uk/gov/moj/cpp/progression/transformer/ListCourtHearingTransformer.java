@@ -23,6 +23,7 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.ReferredListHearingRequest;
 import uk.gov.justice.core.courts.SjpReferral;
@@ -126,7 +127,7 @@ public class ListCourtHearingTransformer {
                     .filter(prosecutionCase -> prosecutionCase.getId()
                             .equals(prosecutionCaseId)).findFirst().orElseThrow(() -> new DataValidationException("Matching caseId missing in referral"));
 
-            listOfProsecutionCase.add(ProsecutionCase.prosecutionCase().withId(prosecutionCaseId)
+            final ProsecutionCase.Builder builder = ProsecutionCase.prosecutionCase().withId(prosecutionCaseId)
                     .withCaseStatus(matchedProsecutionCase.getCaseStatus())
                     .withDefendants(mapOfProsecutionCaseIdWithDefendants.get(prosecutionCaseId))
                     .withInitiationCode(matchedProsecutionCase.getInitiationCode())
@@ -136,8 +137,15 @@ public class ListCourtHearingTransformer {
                     .withIsCpsOrgVerifyError(matchedProsecutionCase.getIsCpsOrgVerifyError())
                     .withProsecutionCaseIdentifier(matchedProsecutionCase.getProsecutionCaseIdentifier())
                     .withStatementOfFacts(matchedProsecutionCase.getStatementOfFacts())
-                    .withStatementOfFactsWelsh(matchedProsecutionCase.getStatementOfFactsWelsh())
-                    .build());
+                    .withStatementOfFactsWelsh(matchedProsecutionCase.getStatementOfFactsWelsh());
+
+            if(nonNull(matchedProsecutionCase.getProsecutor())){
+                builder.withProsecutor(Prosecutor.prosecutor()
+                        .withValuesFrom(matchedProsecutionCase.getProsecutor())
+                        .build());
+            }
+
+            listOfProsecutionCase.add(builder.build());
 
         });
         return listOfProsecutionCase;

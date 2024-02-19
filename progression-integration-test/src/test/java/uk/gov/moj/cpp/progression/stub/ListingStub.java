@@ -24,7 +24,6 @@ import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
-
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 import java.time.ZonedDateTime;
@@ -529,5 +528,39 @@ public class ListingStub {
                         .withBody(getPayload(resource).replaceAll("HEARING_ID", hearingId))));
 
         waitForStubToBeReady(urlPath, LISTING_COTR_SEARCH_QUERY_TYPE);
+    }
+
+    public static void verifyPostListCourtHearingWithProsecutorInfo(final String caseId, final String defendantId, final String courtScheduleId) {
+        try {
+            waitAtMost(Duration.TWO_MINUTES).until(() ->
+                    getListCourtHearingRequestsAsStream()
+                            .anyMatch(
+                                    payload -> {
+                                        if (payload.has("hearings") && payload.getJSONArray("hearings").getJSONObject(0).has("prosecutionCases") &&
+                                                payload.getJSONArray("hearings").getJSONObject(0).has("bookedSlots") &&
+                                                payload.getJSONArray("hearings").getJSONObject(0).has("bookingType") &&
+                                                payload.getJSONArray("hearings").getJSONObject(0).has("priority") &&
+                                                payload.getJSONArray("hearings").getJSONObject(0).has("specialRequirements") &&
+                                                payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("specialRequirements").getString(0).equals("RSZ") &&
+                                                payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("specialRequirements").getString(1).equals("CELL") &&
+                                                payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0).has("prosecutor")
+                                        ) {
+                                            JSONObject prosecutionCase = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0);
+                                            JSONObject prosecutor = prosecutionCase.getJSONObject("prosecutor");
+                                            String id =  payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("bookedSlots").getJSONObject(0).getString("courtScheduleId");
+                                            return prosecutionCase.getString("id").equals(caseId) &&
+                                                    prosecutionCase.getJSONArray("defendants").getJSONObject(0).getString("id").equals(defendantId) &&
+                                                    courtScheduleId.equals(id) && prosecutor.getString("prosecutorCode").equals("TFL-CM");
+                                        } else {
+                                            return false;
+                                        }
+                                    }
+                            )
+
+            );
+
+        } catch (Exception e) {
+            throw new AssertionError("ListingStub.verifyPostListCourtHearingWithProsecutorInfo failed with: " + e);
+        }
     }
 }

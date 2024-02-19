@@ -41,6 +41,7 @@ import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.BailStatus;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DelegatedPowers;
+import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.IndicatedPlea;
 import uk.gov.justice.core.courts.IndicatedPleaValue;
@@ -125,8 +126,10 @@ public class CaseAtAGlanceHelperTest {
 
     private static final String CAAG_RESULT_TEXT = "code - Result Text For Caag";
     private static final String JUDICIAL_RESULT_TEXT = "code - Result Text For Judicial";
+    private static final String DRIVER_NUMBER = "JUDDE101099NP9LN";
     private static final String PNC_ID = "pncId";
     private static final String ASN = "asn1234";
+    private static final Gender DRIVER_GENDER = Gender.MALE;
 
     private CaseAtAGlanceHelper caseAtAGlanceHelper;
 
@@ -229,6 +232,8 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantSmith.getNationality(), is(NATIONALITY_DESCRIPTION));
         assertThat(defendantSmith.getAddress(), is(ADDRESS));
         assertThat(defendantSmith.getRemandStatus(), is(REMAND_STATUS));
+        assertThat(defendantSmith.getDriverNumber(), is(DRIVER_NUMBER));
+        assertThat(defendantSmith.getGender(), is(DRIVER_GENDER));
 
         final CaagDefendants defendantRambo = defendants.get(1);
         assertThat(defendantRambo.getMasterDefendantId(), is(JOHN_RAMBO_ID));
@@ -240,6 +245,8 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantRambo.getNationality(), nullValue());
         assertThat(defendantRambo.getAddress(), nullValue());
         assertThat(defendantRambo.getRemandStatus(), nullValue());
+        assertThat(defendantRambo.getDriverNumber(), nullValue());
+        assertThat(defendantRambo.getGender(), nullValue());
     }
 
     @Test
@@ -601,10 +608,12 @@ public class CaseAtAGlanceHelperTest {
                                         .withBailStatus(BailStatus.bailStatus().withDescription(REMAND_STATUS).build())
                                         .withPersonDetails(Person.person()
                                                 .withFirstName("John").withLastName("Smith")
+                                                .withGender(DRIVER_GENDER)
                                                 .withNationalityDescription(NATIONALITY_DESCRIPTION)
                                                 .withDateOfBirth(DATE_OF_BIRTH)
                                                 .withAddress(ADDRESS)
                                                 .withInterpreterLanguageNeeds(INTERPRETER_LANGUAGE_NEEDS).build())
+                                        .withDriverNumber(DRIVER_NUMBER)
                                         .build())
                                 .withDefenceOrganisation(organisation().withName(LEGAL_REP_NAME).build())
                                 .withOffences(asList(offence().withId(OFFENCE_ID)

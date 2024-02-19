@@ -282,7 +282,9 @@ public class CaseAtAGlanceHelper {
                     .withAddress(personDetails.getAddress())
                     .withInterpreterLanguageNeeds(personDetails.getInterpreterLanguageNeeds())
                     .withNationality(getNationalityDescription(personDetails))
-                    .withArrestSummonsNumber(personDefendant.getArrestSummonsNumber());
+                    .withArrestSummonsNumber(personDefendant.getArrestSummonsNumber())
+                    .withDriverNumber(personDefendant.getDriverNumber())
+                    .withGender(personDetails.getGender());
 
             if (nonNull(personDefendant.getBailStatus())) {
                 caagDefendantBuilder.withRemandStatus(personDefendant.getBailStatus().getDescription());

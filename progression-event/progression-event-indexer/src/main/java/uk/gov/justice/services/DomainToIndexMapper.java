@@ -9,6 +9,8 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAlias;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Gender;
+import uk.gov.justice.core.courts.IndicatedPlea;
+import uk.gov.justice.core.courts.IndicatedPleaValue;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Organisation;
@@ -207,13 +209,26 @@ public class DomainToIndexMapper {
                 offence1.setOffenceTitle(offence.getOffenceTitle());
                 ofNullable(offence.getVerdict()).ifPresent(v -> offence1.setVerdict(verdict(v)));
                 ofNullable(offence.getPlea()).ifPresent(plea -> offence1.setPleas(plea(plea)));
-
+                if ( ofNullable(offence.getIndicatedPlea()).isPresent()
+                        && IndicatedPleaValue.INDICATED_GUILTY.equals(offence.getIndicatedPlea().getIndicatedPleaValue())
+                        && !ofNullable(offence.getPlea()).isPresent()) {
+                    ofNullable(offence.getIndicatedPlea()).ifPresent(indicatedPlea -> offence1.setPleas(pleaGuilty(indicatedPlea)));
+                }
                 indexOffences.add(offence1);
 
             }
         }
         party.setOffences(indexOffences);
         return party;
+    }
+
+    private List<Plea> pleaGuilty(final IndicatedPlea indicatedPlea) {
+        final Plea plea = new  uk.gov.justice.services.unifiedsearch.client.domain.Plea();
+        plea.setPleaValue("INDICATED_GUILTY");
+        plea.setPleaDate(indicatedPlea.getIndicatedPleaDate().toString());
+        plea.setOriginatingHearingId(indicatedPlea.getOriginatingHearingId().toString());
+        return Collections.singletonList(plea);
+
     }
 
     private Verdict verdict(final uk.gov.justice.core.courts.Verdict orgVerdict) {

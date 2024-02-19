@@ -6,6 +6,8 @@ import static uk.gov.justice.services.DomainToIndexMapper.addressLines;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.IndicatedPlea;
+import uk.gov.justice.core.courts.IndicatedPleaValue;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.Verdict;
@@ -167,6 +169,75 @@ public class DomainToIndexMapperTest {
         assertThat(party.getOffences().get(0).getPleas().get(0).getPleaDate(), is(defendant.getOffences().get(0).getPlea().getPleaDate().toString()));
     }
 
+    @Test
+    public void shouldConvertIndicatedGuiltyPleaToActualGuiltyPleaIfActualGuiltyPleaIsNotAvailable() {
+        final Defendant defendant = Defendant.defendant()
+                .withId(UUID.randomUUID())
+                .withOffences(Collections.singletonList(Offence.offence()
+                        .withIndicatedPlea(IndicatedPlea.indicatedPlea()
+                                .withIndicatedPleaDate(LocalDate.now())
+                                .withIndicatedPleaValue(IndicatedPleaValue.INDICATED_GUILTY)
+                                .withOriginatingHearingId(UUID.randomUUID())
+                                .build())
+                        .build()))
+                .build();
+
+        final Party party = domainToIndexMapper.party(defendant);
+
+        assertThat(party.getOffences().get(0).getPleas().get(0).getOriginatingHearingId(), is(defendant.getOffences().get(0).getIndicatedPlea().getOriginatingHearingId().toString()));
+        assertThat(party.getOffences().get(0).getPleas().get(0).getPleaValue(), is("INDICATED_GUILTY"));
+        assertThat(party.getOffences().get(0).getPleas().get(0).getPleaDate(), is(defendant.getOffences().get(0).getIndicatedPlea().getIndicatedPleaDate().toString()));
+    }
+
+    @Test
+    public void shouldIgnoreIndicatedNotGuiltyPleaIfActualPleaIsPresent() {
+        final Defendant defendant = Defendant.defendant()
+                .withId(UUID.randomUUID())
+                .withOffences(Collections.singletonList(Offence.offence()
+                        .withIndicatedPlea(IndicatedPlea.indicatedPlea()
+                                .withIndicatedPleaDate(LocalDate.now())
+                                .withIndicatedPleaValue(IndicatedPleaValue.INDICATED_NOT_GUILTY)
+                                .withOriginatingHearingId(UUID.randomUUID())
+                                .build())
+                        .withPlea(Plea.plea()
+                                .withOriginatingHearingId(UUID.randomUUID())
+                                .withPleaValue("GUILTY")
+                                .withPleaDate(LocalDate.now())
+                                .build())
+                        .build()))
+                .build();
+
+        final Party party = domainToIndexMapper.party(defendant);
+
+        assertThat(party.getOffences().get(0).getPleas().get(0).getOriginatingHearingId(), is(defendant.getOffences().get(0).getPlea().getOriginatingHearingId().toString()));
+        assertThat(party.getOffences().get(0).getPleas().get(0).getPleaValue(), is(defendant.getOffences().get(0).getPlea().getPleaValue().toString()));
+        assertThat(party.getOffences().get(0).getPleas().get(0).getPleaDate(), is(defendant.getOffences().get(0).getPlea().getPleaDate().toString()));
+    }
+
+    @Test
+    public void shouldIgnoreIndicatedGuiltyPleaIfActualPleaIsPresent() {
+        final Defendant defendant = Defendant.defendant()
+                .withId(UUID.randomUUID())
+                .withOffences(Collections.singletonList(Offence.offence()
+                        .withIndicatedPlea(IndicatedPlea.indicatedPlea()
+                                .withIndicatedPleaDate(LocalDate.now())
+                                .withIndicatedPleaValue(IndicatedPleaValue.INDICATED_GUILTY)
+                                .withOriginatingHearingId(UUID.randomUUID())
+                                .build())
+                        .withPlea(Plea.plea()
+                                .withOriginatingHearingId(UUID.randomUUID())
+                                .withPleaValue("NOT_GUILTY")
+                                .withPleaDate(LocalDate.now())
+                                .build())
+                        .build()))
+                .build();
+
+        final Party party = domainToIndexMapper.party(defendant);
+
+        assertThat(party.getOffences().get(0).getPleas().get(0).getOriginatingHearingId(), is(defendant.getOffences().get(0).getPlea().getOriginatingHearingId().toString()));
+        assertThat(party.getOffences().get(0).getPleas().get(0).getPleaValue(), is(defendant.getOffences().get(0).getPlea().getPleaValue().toString()));
+        assertThat(party.getOffences().get(0).getPleas().get(0).getPleaDate(), is(defendant.getOffences().get(0).getPlea().getPleaDate().toString()));
+    }
     private Defendant createDefendant(final String courtProceedingsInitiated) {
         return Defendant.defendant()
                 .withId(UUID.randomUUID())

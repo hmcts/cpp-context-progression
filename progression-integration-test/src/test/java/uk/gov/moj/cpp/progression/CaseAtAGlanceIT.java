@@ -243,6 +243,8 @@ public class CaseAtAGlanceIT extends AbstractIT {
                                 withJsonPath("$.defendants[0].address.address1", equalTo("22")),
                                 withJsonPath("$.defendants[0].address.address2", equalTo("Acacia Avenue")),
                                 withJsonPath("$.defendants[0].dateOfBirth", equalTo(defendantDOB)),
+                                withJsonPath("$.defendants[0].driverNumber", equalTo("AACC12345")),
+                                withJsonPath("$.defendants[0].gender", equalTo("MALE")),
                                 withJsonPath("$.defendants[0].caagDefendantOffences[0].reportingRestrictions[0].id", notNullValue()),
                                 withJsonPath("$.defendants[0].caagDefendantOffences[0].reportingRestrictions[0].label", equalTo("Section 49 of the Children and Young Persons Act 1933 applies")),
                                 withJsonPath("$.defendants[0].caagDefendantOffences[0].reportingRestrictions[0].orderedDate", notNullValue()),

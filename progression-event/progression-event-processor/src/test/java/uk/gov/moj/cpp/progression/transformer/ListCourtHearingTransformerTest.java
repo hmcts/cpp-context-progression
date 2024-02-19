@@ -40,6 +40,7 @@ import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.ReferredDefendant;
 import uk.gov.justice.core.courts.ReferredHearingType;
@@ -106,6 +107,8 @@ public class ListCourtHearingTransformerTest {
     private static final String MARKER_TYPE_DESCRIPTION = "MarkerTypeDescription";
     private static final String cpsOrganisation = "A01";
     private static final String TRANSFER = "Transfer";
+    final private UUID prosecutorId = UUID.randomUUID();
+    final private String prosecutorCode = "CPS-SW";
 
     @Spy
     private final Enveloper enveloper = createEnveloper();
@@ -576,6 +579,65 @@ public class ListCourtHearingTransformerTest {
         assertThat(actual, is(now.atStartOfDay(ZoneOffset.UTC)));
     }
 
+    @Test
+    public void shouldTransformToListCourtHearingWithReferralReasonAndProsecutor() throws IOException {
+
+        final List<CourtHearingRequest> courtHearingRequests = getCourtHearingRequest();
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        final JsonObject jsonObject = Json.createObjectBuilder().add("hearingDescription", "British").build();
+
+        when(referenceDataService.getHearingType(any(), any(UUID.class), any())).thenReturn(Optional.of(jsonObject));
+        when(referenceDataService.getCourtCentre(envelopeReferral, postcode, prosecutingAuth, requester))
+                .thenReturn(CourtCentre.courtCentre().withId(courtCenterId).build());
+        when(referenceDataService.getCourtsByPostCodeAndProsecutingAuthority(any(), any(), any(), any()))
+                .thenReturn(Optional.of(Json.createObjectBuilder()
+                        .add("courts", createArrayBuilder()
+                                .add(Json.createObjectBuilder().add("oucode", "Redditch").add("oucodeL3Code", "B22KS00").build())
+                                .build())
+                        .build()));
+        when(referenceDataService.getCourtCentre("Redditch", envelopeReferral,requester))
+                .thenReturn(CourtCentre.courtCentre()
+                        .withId(courtCenterId)
+                        .withName("South Western (Lavender Hill)")
+                        .withWelshName("welshName_Test").build());
+        when(referenceDataService.getReferralReasonById(any(), any(), any()))
+                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
+
+        final ListCourtHearing listCourtHearing = listCourtHearingTransformer
+                .transform(envelopeReferral, Arrays.asList(getProsecutionCaseWithProsecutor()), courtHearingRequests.get(0), UUID.randomUUID());
+
+        assertThat(listCourtHearing.getHearings().size(), is(1));
+        assertThat(listCourtHearing.getHearings().get(0).getCourtCentre().getId(), is(courtCenterId));
+        assertThat(listCourtHearing.getHearings().get(0).getEarliestStartDateTime().toString(), is(earliestStartDateTime.toString()));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
+        validateDefendant(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0)
+                .getPersonDefendant().getPersonDetails().getAddress().getPostcode(), is(postcode));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0)
+                .getProsecutionCaseIdentifier().getProsecutionAuthorityCode(), is(prosecutingAuth));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0)
+                .getCpsOrganisation(), is(cpsOrganisation));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0)
+                .getProsecutor().getProsecutorId(), is(prosecutorId));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0)
+                .getProsecutor().getProsecutorCode(), is(prosecutorCode));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0)
+                .getCpsOrganisation(), is(cpsOrganisation));
+
+        assertThat(listCourtHearing.getHearings().get(0).getBookedSlots().get(0)
+                .getRoomId(), is("roomId1"));
+        assertThat(listCourtHearing.getHearings().get(0).getBookingType(), is("Video"));
+        assertThat(listCourtHearing.getHearings().get(0).getPriority(), is("High"));
+        assertThat(listCourtHearing.getHearings().get(0).getSpecialRequirements().size(), is(2));
+        assertThat(listCourtHearing.getHearings().get(0).getSpecialRequirements(), hasItems("RSZ", "CELL"));
+        assertThat(listCourtHearing.getHearings().get(0).getWeekCommencingDate().getStartDate(), is(LocalDate.now()));
+        assertThat(listCourtHearing.getHearings().get(0).getWeekCommencingDate().getDuration(), is(1));
+    }
+
     private List<CourtApplication> createCourtApplications() {
         final List<CourtApplication> courtApplications = new ArrayList<>();
         courtApplications.add(CourtApplication.courtApplication()
@@ -657,6 +719,12 @@ public class ListCourtHearingTransformerTest {
 
     private ProsecutionCase getProsecutionCase() {
         return getProsecutionCase(null);
+    }
+
+    private ProsecutionCase getProsecutionCaseWithProsecutor() {
+        final Prosecutor prosecutor = Prosecutor.prosecutor().withProsecutorId(prosecutorId)
+                .withProsecutorCode(prosecutorCode).build();
+        return ProsecutionCase.prosecutionCase().withValuesFrom(getProsecutionCase(null)).withProsecutor(prosecutor).build();
     }
 
     private ProsecutionCase getProsecutionCase(final LocalDate birthDate) {

@@ -152,6 +152,12 @@
         },
         "arrestSummonsNumber": {
           "type": "string"
+        },
+        "driverNumber": {
+          "type": "string"
+        },
+        "gender": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/gender"
         }
       },
       "required": [
