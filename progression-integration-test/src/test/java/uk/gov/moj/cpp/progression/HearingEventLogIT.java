@@ -41,6 +41,7 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumen
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAaagHearingEventLogs;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubGetUserOrganisation;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubHearingEventLogs;
 
 import uk.gov.justice.core.courts.CourtDocument;
@@ -266,7 +267,13 @@ public class HearingEventLogIT extends AbstractIT {
         ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", documentTypeId.toString());
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
         setupMaterialStub(materialId);
+        final String loggedInUsersResponsePayload = getPayload("stub-data/usersgroups.get-groups-by-hmcts-user.json");
         setupHmctsUsersGroupQueryStub(getPayload("stub-data/usersgroups.get-groups-by-hmcts-user.json").replace("%USER_ID%", userId));
+        final JsonObject loggedInUserObject = stringToJsonObjectConverter.convert(loggedInUsersResponsePayload);
+        final String organisation = getPayload("stub-data/usersgroups.get-hmcts-organisation-details.json")
+                .replace("%ORGANISATION_ID%", loggedInUserObject.getString("organisationId"));
+        stubGetUserOrganisation(loggedInUserObject.getString("organisationId"), organisation);
+
         final String hearinEventLogResponsePayload = getPayload("stub-data/hearing.get-hearing-event-log-document.json")
                 .replace("%CASE_ID%", caseId);
         stubHearingEventLogs(caseId, hearinEventLogResponsePayload);
@@ -319,7 +326,12 @@ public class HearingEventLogIT extends AbstractIT {
         final String courtCentreId = UUID.fromString("111bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
         String hearingId;
 
+        final String loggedInUsersResponsePayload = getPayload("stub-data/usersgroups.get-groups-by-hmcts-user.json");
         setupHmctsUsersGroupQueryStub(getPayload("stub-data/usersgroups.get-groups-by-hmcts-user.json").replace("%USER_ID%", userId));
+        final JsonObject loggedInUserObject = stringToJsonObjectConverter.convert(loggedInUsersResponsePayload);
+        final String organisation = getPayload("stub-data/usersgroups.get-hmcts-organisation-details.json")
+                .replace("%ORGANISATION_ID%", loggedInUserObject.getString("organisationId"));
+        stubGetUserOrganisation(loggedInUserObject.getString("organisationId"), organisation);
         final String hearinEventLogResponsePayload = getPayload("stub-data/hearing.get-no-hearing-event-log-document.json");
         stubHearingEventLogs(caseId, hearinEventLogResponsePayload);
 
@@ -358,7 +370,13 @@ public class HearingEventLogIT extends AbstractIT {
         final String courtCentreId = UUID.fromString("111bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
         String hearingId;
 
-        setupHmctsUsersGroupQueryStub(getPayload("stub-data/usersgroups.get-groups-by-hmcts-user.json").replace("%USER_ID%", userId));
+        final String loggedInUsersResponsePayload = getPayload("stub-data/usersgroups.get-groups-by-hmcts-user.json");
+        setupHmctsUsersGroupQueryStub(loggedInUsersResponsePayload.replace("%USER_ID%", userId));
+        final JsonObject loggedInUserObject = stringToJsonObjectConverter.convert(loggedInUsersResponsePayload);
+        final String organisation = getPayload("stub-data/usersgroups.get-hmcts-organisation-details.json")
+                .replace("%ORGANISATION_ID%", loggedInUserObject.getString("organisationId"));
+        stubGetUserOrganisation(loggedInUserObject.getString("organisationId"), organisation);
+
         final String hearinEventLogResponsePayload = getPayload("stub-data/hearing.get-no-hearing-event-log-document-application.json");
         stubAaagHearingEventLogs(applicationId.get(), hearinEventLogResponsePayload);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
@@ -408,7 +426,12 @@ public class HearingEventLogIT extends AbstractIT {
         final String courtDocumentId = randomUUID().toString();
         String hearingId;
 
-        setupHmctsUsersGroupQueryStub(getPayload("stub-data/usersgroups.get-groups-by-hmcts-user.json").replace("%USER_ID%", userId));
+        final String loggedInUsersResponsePayload = getPayload("stub-data/usersgroups.get-groups-by-hmcts-user.json");
+        setupHmctsUsersGroupQueryStub(loggedInUsersResponsePayload.replace("%USER_ID%", userId));
+        final JsonObject loggedInUserObject = stringToJsonObjectConverter.convert(loggedInUsersResponsePayload);
+        final String organisation = getPayload("stub-data/usersgroups.get-hmcts-organisation-details.json")
+                .replace("%ORGANISATION_ID%", loggedInUserObject.getString("organisationId"));
+        stubGetUserOrganisation(loggedInUserObject.getString("organisationId"), organisation);
         final String hearinEventLogResponsePayload = getPayload("stub-data/hearing.get-aaag-hearing-event-log-document.json")
                 .replace("%CASE_ID%", caseId)
                 .replace("%APPLICATION_ID%", applicationId.get());
@@ -466,7 +489,12 @@ public class HearingEventLogIT extends AbstractIT {
         String hearingId;
 
         Optional<String> applicationId = Optional.of(randomUUID().toString());
-        setupHmctsUsersGroupQueryStub(getPayload("stub-data/usersgroups.get-groups-by-hmcts-user.json").replace("%USER_ID%", userId));
+        final String loggedInUsersResponsePayload = getPayload("stub-data/usersgroups.get-groups-by-hmcts-user.json");
+        setupHmctsUsersGroupQueryStub(loggedInUsersResponsePayload.replace("%USER_ID%", userId));
+        final JsonObject loggedInUserObject = stringToJsonObjectConverter.convert(loggedInUsersResponsePayload);
+        final String organisation = getPayload("stub-data/usersgroups.get-hmcts-organisation-details.json")
+                .replace("%ORGANISATION_ID%", loggedInUserObject.getString("organisationId"));
+        stubGetUserOrganisation(loggedInUserObject.getString("organisationId"), organisation);
         givenCaseIsReferredToMags(null, TEMPLATE_NAME);
         //search for the document by application id
         ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", documentTypeId.toString());
@@ -516,8 +544,12 @@ public class HearingEventLogIT extends AbstractIT {
         final String courtCentreId = UUID.fromString("111bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
         String hearingId;
 
-        setupHmctsUsersGroupQueryStub(getPayload("stub-data/usersgroups.users.nonhmcts.organisation.json").replace("%USER_ID%", userId));
-
+        final String loggedInUsersResponsePayload = getPayload("stub-data/usersgroups.get-groups-by-hmcts-user.json");
+        setupHmctsUsersGroupQueryStub(loggedInUsersResponsePayload.replace("%USER_ID%", userId));
+        final JsonObject loggedInUserObject = stringToJsonObjectConverter.convert(loggedInUsersResponsePayload);
+        final String organisation = getPayload("stub-data/usersgroups.get-non-hmcts-organisation-details.json")
+                .replace("%ORGANISATION_ID%", loggedInUserObject.getString("organisationId"));
+        stubGetUserOrganisation(loggedInUserObject.getString("organisationId"), organisation);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
@@ -553,7 +585,7 @@ public class HearingEventLogIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotGenereateCAAGHearingEventLogDocumentForNonHmctsUser() throws Exception { //srivani
+    public void shouldNotGenereateCAAGHearingEventLogDocumentForNonHmctsUser() throws Exception {
         final String TEMPLATE_NAME = "HearingEventLog";
         final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
@@ -565,8 +597,12 @@ public class HearingEventLogIT extends AbstractIT {
         stubGetProvisionalBookedSlotsForExistingBookingId();
         givenCaseIsReferredToMags(null, TEMPLATE_NAME);
         //search for the document by application id
-        setupHmctsUsersGroupQueryStub(getPayload("stub-data/usersgroups.users.nonhmcts.organisation.json").replace("%USER_ID%", userId));
-
+        final String loggedInUsersResponsePayload = getPayload("stub-data/usersgroups.get-groups-by-hmcts-user.json");
+        setupHmctsUsersGroupQueryStub(loggedInUsersResponsePayload.replace("%USER_ID%", userId));
+        final JsonObject loggedInUserObject = stringToJsonObjectConverter.convert(loggedInUsersResponsePayload);
+        final String organisation = getPayload("stub-data/usersgroups.get-non-hmcts-organisation-details.json")
+                .replace("%ORGANISATION_ID%", loggedInUserObject.getString("organisationId"));
+        stubGetUserOrganisation(loggedInUserObject.getString("organisationId"), organisation);
         final String hearinEventLogResponsePayload = getPayload("stub-data/hearing.get-hearing-event-log-document.json")
                 .replace("%CASE_ID%", caseId);
         stubHearingEventLogs(caseId, hearinEventLogResponsePayload);

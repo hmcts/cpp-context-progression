@@ -38,6 +38,7 @@ public class WireMockStubUtils {
     private static final String CONTENT_TYPE_QUERY_USER_ORGANISATION = "application/vnd.usersgroups.get-organisation-details-for-user+json";
     private static final String CONTENT_TYPE_QUERY_DEFENCE_SERVICE_USER_ROLE_IN_CASE = "application/vnd.advocate.query.role-in-case-by-caseid+json";
     private static final String CONTENT_TYPE_QUERY_HEARING_EVENT_LOG_CDES_DOCUMENT = "application/hearing.get-hearing-event-log-for-documents+json";
+    private static final String CONTENT_TYPE_QUERY_LOGGEDIN_USER_ORGANISATION = "application/vnd.usersgroups.get-organisation-details+json";
 
 
     static {
@@ -125,6 +126,21 @@ public class WireMockStubUtils {
 
         waitForStubToBeReady(format("/users/{0}/organisation", userId), CONTENT_TYPE_QUERY_USER_ORGANISATION);
     }
+
+    public static void stubGetUserOrganisation(final String organisationId, final String responsePayLoad) {
+
+        stubPingFor("usersgroups-service");
+
+        stubFor(get(urlPathEqualTo(format("/usersgroups-service/query/api/rest/usersgroups/organisations/{0}", organisationId)))
+                        .willReturn(aResponse().withStatus(OK.getStatusCode())
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(responsePayLoad)));
+
+        waitForStubToBeReady(format("/usersgroups-service/query/api/rest/usersgroups/organisations/{0}", organisationId), CONTENT_TYPE_QUERY_LOGGEDIN_USER_ORGANISATION);
+
+    }
+
 
     public static void stubUserGroupOrganisation(final String responsePayLoad) {
         stubPingFor("usersgroups-service");

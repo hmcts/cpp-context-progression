@@ -19,8 +19,9 @@ public class UserGroupQueryService {
 
     public static final String LOGGED_IN_USER_ORGANISATION = "usersgroups.get-logged-in-user-details";
     public static final String USER_ID = "userId";
-    public static final String HMCTS_ORG_ID = "1371dfe8-8aa5-47f7-bb76-275b83fc312d";
+    public static final String HMCTS_ORGANISATION = "HMCTS";
     public static final String ORGANISATION_ID = "organisationId";
+    public static final String ORGANISATION_TYPE = "organisationType";
 
     @Inject
     @ServiceComponent(QUERY_API)
@@ -36,14 +37,20 @@ public class UserGroupQueryService {
                 .withMetadataFrom(jsonEnvelope);
 
         final Envelope<JsonObject> jsonObjectEnvelope = requester.request(envelope, JsonObject.class);
-
         final String associatedOrganisationId = jsonObjectEnvelope.payload().getString(ORGANISATION_ID, null);
-
-        if (nonNull(associatedOrganisationId) && HMCTS_ORG_ID.equals(jsonObjectEnvelope.payload().getString(ORGANISATION_ID))) {
-            organisationFlag = true;
+        final JsonObject organisationOjbect = getOrganisationDetails(jsonEnvelope, associatedOrganisationId);
+        if(nonNull(organisationOjbect) && organisationOjbect.containsKey(ORGANISATION_TYPE) && HMCTS_ORGANISATION.equals(organisationOjbect.getString(ORGANISATION_TYPE))) {
+                organisationFlag = true;
         }
-        return  organisationFlag;
-
+        return organisationFlag;
     }
 
+    private JsonObject getOrganisationDetails(final JsonEnvelope envelope, final String organisationId) {
+
+        final JsonObject organisationDetail = createObjectBuilder().add(ORGANISATION_ID, organisationId).build();
+        final Envelope<JsonObject> requestEnvelope = envelop(organisationDetail)
+                .withName("usersgroups.get-organisation-details").withMetadataFrom(envelope);
+        final Envelope<JsonObject> response = requester.request(requestEnvelope, JsonObject.class);
+        return response.payload();
+    }
 }
