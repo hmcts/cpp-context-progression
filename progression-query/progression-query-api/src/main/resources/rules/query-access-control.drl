@@ -564,6 +564,15 @@ rule "Query - Access control for progression.query.prosecutionauthorityid-by-cas
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for progression.query.prosecutorid-prosecutionauthorityid-by-case-id"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.prosecutorid-prosecutionauthorityid-by-case-id");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users", "Defence Users", "District Judge", "Access Controller", "Court Associates",  "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "Magistrates","Second Line Support","Defence Lawyers", "Eject Case Group"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for progression.query.cotr-trial-hearings"
   when
     $outcome: Outcome();

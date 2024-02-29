@@ -88,6 +88,12 @@ public class ProsecutionCaseQueryApiTest {
     }
 
     @Test
+    public void shouldHandleSearchProsecutorIdProsecutionAuthorityIdByCaseId() {
+        when(prosecutionCaseQuery.searchProsecutorIdProsecutionAuthorityId(query)).thenReturn(response);
+        assertThat(prosecutionCaseQueryApi.searchProsecutorIdProsecutionAuthorityIdByCaseId(query), equalTo(response));
+    }
+
+    @Test
     public void shouldHandleSearchForUserGroupsByMaterialId() {
         when(prosecutionCaseQuery.searchByMaterialId(query)).thenReturn(response);
         assertThat(prosecutionCaseQueryApi.searchForUserGroupsByMaterialId(query), equalTo(response));

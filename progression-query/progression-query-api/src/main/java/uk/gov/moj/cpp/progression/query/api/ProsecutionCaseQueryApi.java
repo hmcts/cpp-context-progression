@@ -149,6 +149,11 @@ public class ProsecutionCaseQueryApi {
         return prosecutionCaseQuery.searchProsecutionAuthorityId(query);
     }
 
+    @Handles("progression.query.prosecutorid-prosecutionauthorityid-by-case-id")
+    public JsonEnvelope searchProsecutorIdProsecutionAuthorityIdByCaseId(final JsonEnvelope query) {
+        return prosecutionCaseQuery.searchProsecutorIdProsecutionAuthorityId(query);
+    }
+
     @Handles("progression.query.search-cases-by-caseurn")
     public JsonEnvelope searchCaseByUrn(final JsonEnvelope query) {
         return prosecutionCaseQuery.searchCaseByCaseUrn(query);

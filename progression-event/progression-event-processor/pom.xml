@@ -93,11 +93,6 @@
             <artifactId>cpp-platform-data-utils-rest</artifactId>
             <version>${cpp.platform-libraries.version}</version>
         </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.common.library.utils</groupId>
-            <artifactId>cpp-platform-data-utils-rest</artifactId>
-            <version>${cpp.platform-libraries.version}</version>
-        </dependency>
         <!-- Test Dependencies -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
@@ -184,18 +179,6 @@
                 <exclusion>
                     <groupId>uk.gov.moj.cpp.core.domain</groupId>
                     <artifactId>common-core-domain</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
@@ -308,18 +291,6 @@
                         <groupId>uk.gov.moj.cpp.defence</groupId>
                         <artifactId>defence-query-api</artifactId>
                         <version>${defence.version}</version>
-                        <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <artifactId>*</artifactId>
-                                <groupId>*</groupId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>uk.gov.moj.cpp.referencedata</groupId>
-                        <artifactId>referencedata-query-api</artifactId>
-                        <version>${referencedata.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>

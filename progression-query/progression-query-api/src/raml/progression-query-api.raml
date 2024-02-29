@@ -324,6 +324,9 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.search-prosecution-authority-id+json
             name: progression.query.prosecutionauthorityid-by-case-id
+        (mapping):
+            responseType: application/vnd.progression.query.search-prosecutorid-prosecutionauthorityid+json
+            name: progression.query.prosecutorid-prosecutionauthorityid-by-case-id
         ...
       queryParameters:
         q:
@@ -364,6 +367,9 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.search-prosecution-authority-id+json:
                     example: !include json/progression.query.prosecution-authority-id.json
                     schema: !include json/schema/progression.query.prosecution-authority-id.json
+                  application/vnd.progression.query.search-prosecutorid-prosecutionauthorityid+json:
+                    example: !include json/progression.query.prosecutorid-prosecutionauthorityid.json
+                    schema: !include json/schema/progression.query.prosecutorid-prosecutionauthorityid.json
 
 /material/nows/{materialId}/content:
   description: get material content nows

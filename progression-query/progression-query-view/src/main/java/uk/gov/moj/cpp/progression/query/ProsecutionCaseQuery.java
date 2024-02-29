@@ -87,6 +87,9 @@ import org.slf4j.LoggerFactory;
 public class ProsecutionCaseQuery {
 
     public static final String PROSECUTION_CASE_IDENTIFIER = "prosecutionCaseIdentifier";
+    public static final String PROSECUTOR_OBJECT = "prosecutor";
+    public static final String PROSECUTOR_ID = "prosecutorId";
+    public static final String PROSECUTION_AUTHORITY_ID = "prosecutionAuthorityId";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseQuery.class);
     private static final String CASE_ID = "caseId";
     private static final String DEFENDANT_ID = "defendantId";
@@ -451,9 +454,40 @@ public class ProsecutionCaseQuery {
                 final JsonObject prosecutionCaseIdentifier = payloadEntity.getJsonObject(PROSECUTION_CASE_IDENTIFIER);
                 final Prosecutor prosecutor = new Prosecutor();
                 prosecutor.setCaseId(prosecutionCaseEntity.getCaseId());
-                prosecutor.setProsecutionAuthorityId(UUID.fromString(prosecutionCaseIdentifier.getString("prosecutionAuthorityId")));
+                prosecutor.setProsecutionAuthorityId(UUID.fromString(prosecutionCaseIdentifier.getString(PROSECUTION_AUTHORITY_ID)));
                 final JsonObjectBuilder prosecutorObject = createObjectBuilder();
-                prosecutorObject.add("prosecutor", objectToJsonObjectConverter.convert(prosecutor));
+                prosecutorObject.add(PROSECUTOR_OBJECT, objectToJsonObjectConverter.convert(prosecutor));
+                jsonArrayBuilder.add(prosecutorObject);
+            });
+        }
+        jsonObjectBuilder.add("prosecutors", jsonArrayBuilder);
+        return JsonEnvelope.envelopeFrom(
+                envelope.metadata(),
+                jsonObjectBuilder.build());
+    }
+
+    @Handles("progression.query.prosecutorid-prosecutionauthorityid-by-case-id")
+    public JsonEnvelope searchProsecutorIdProsecutionAuthorityId(final JsonEnvelope envelope) {
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
+        final String strCaseIds =
+                JsonObjects.getString(envelope.payloadAsJsonObject(), CASE_IDS_SEARCH_PARAM)
+                        .orElse(null);
+        if (StringUtils.isNotEmpty(strCaseIds)) {
+            final List<UUID> caseIdList = commaSeparatedUuidParam2UUIDs(strCaseIds);
+            final List<ProsecutionCaseEntity> prosecutionCaseEntities = prosecutionCaseRepository.findByProsecutionCaseIds(caseIdList);
+            prosecutionCaseEntities.forEach(prosecutionCaseEntity -> {
+                final JsonObject payloadEntity = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
+                final JsonObject prosecutorObjectInEntity = payloadEntity.getJsonObject(PROSECUTOR_OBJECT);
+                final UUID prosecutorId  = (null != prosecutorObjectInEntity && prosecutorObjectInEntity.containsKey(PROSECUTOR_ID))
+                        ? UUID.fromString(prosecutorObjectInEntity.getString(PROSECUTOR_ID)) : null;
+                final JsonObject prosecutionCaseIdentifier = payloadEntity.getJsonObject(PROSECUTION_CASE_IDENTIFIER);
+                final Prosecutor prosecutor = new Prosecutor();
+                prosecutor.setCaseId(prosecutionCaseEntity.getCaseId());
+                prosecutor.setProsecutionAuthorityId(UUID.fromString(prosecutionCaseIdentifier.getString(PROSECUTION_AUTHORITY_ID)));
+                prosecutor.setProsecutorId(prosecutorId);
+                final JsonObjectBuilder prosecutorObject = createObjectBuilder();
+                prosecutorObject.add(PROSECUTOR_OBJECT, objectToJsonObjectConverter.convert(prosecutor));
                 jsonArrayBuilder.add(prosecutorObject);
             });
         }
@@ -550,7 +584,7 @@ public class ProsecutionCaseQuery {
                 final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
                 final JsonObjectBuilder pciJsonBuilder = Json.createObjectBuilder();
 
-                pciJsonBuilder.add("prosecutionAuthorityId", prosecutionCaseIdentifier.getProsecutionAuthorityId().toString());
+                pciJsonBuilder.add(PROSECUTION_AUTHORITY_ID, prosecutionCaseIdentifier.getProsecutionAuthorityId().toString());
                 pciJsonBuilder.add("prosecutionAuthorityCode", prosecutionCaseIdentifier.getProsecutionAuthorityCode());
 
                 if (nonNull(prosecutionCaseIdentifier.getProsecutionAuthorityReference())) {

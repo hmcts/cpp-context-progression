@@ -91,7 +91,7 @@ public class UnscheduledHearingAllocationNotifiedEventProcessorTest {
 
         verify(notificationService, times(1)).sendEmail(eq(envelope), any(), eq(fromString("d36ba5f5-f19a-482d-8b71-c06771a41af1")), any(), any(), emailChannelsArgCaptor.capture());
         final List<EmailChannel> emailChannels = emailChannelsArgCaptor.getValue();
-        assertThat(emailChannels.size(), is(1));
+        assertThat(emailChannels.size(), is(2));
         assertThat(emailChannels.get(0).getSendToAddress(), is(ENFORCEMENT_EMAIL));
         assertThat(emailChannels.get(0).getTemplateId(), is(fromString(TEMPLATE_ID)));
         final Map<String, Object> additionalProperties = emailChannels.get(0).getPersonalisation().getAdditionalProperties();

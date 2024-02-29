@@ -596,7 +596,7 @@ public class CotrEventsProcessor {
 
     private JsonObject buildServeCotrPayload(final UUID hearingId, final UUID cotrId, final JsonObject payload) {
 
-        JsonObjectBuilder serveCotrBuilder = createObjectBuilder()
+        final JsonObjectBuilder serveCotrBuilder = createObjectBuilder()
                 .add(COTR_ID, String.valueOf(cotrId))
                 .add(HEARING_ID, String.valueOf(hearingId))
                 .add(SUBMISSION_ID, getDetails(payload, SUBMISSION_ID))

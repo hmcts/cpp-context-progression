@@ -100,13 +100,16 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
+import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.justice.staginghmi.courts.UpdateHearingFromHmi;
 import uk.gov.moj.cpp.progression.test.CoreTestTemplates;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -2280,6 +2283,47 @@ public class HearingAggregateTest {
         return new StringToJsonObjectConverter().convert(response);
     }
 
+    @Test
+    public void should_boxWorkComplete_whenHearingResulted(){
+        final Stream<Object> objectStream = hearingAggregate.boxworkComplete();
+        assertThat(objectStream.collect(toList()).size(),is(0));
+    }
+
+    @Test
+    public void shouldGetSavedListingStatusChanged(){
+        final ProsecutionCaseDefendantListingStatusChangedV2 savedListingStatusChanged = hearingAggregate.getSavedListingStatusChanged();
+        assertThat(savedListingStatusChanged.getHearingListingStatus(),is(HearingListingStatus.HEARING_RESULTED));
+    }
+
+    @Test
+    public void shouldReturnEmptyStreamWhenInputIsNull_updateListDefendantRequest(){
+        final Stream<Object> objectStream = hearingAggregate.updateListDefendantRequest(null, null);
+        assertThat(objectStream.collect(toList()).size(), is(0));
+    }
+
+    @Test
+    public void shouldReturnEmptyStreamWhenInputIsNull_createListDefendantRequest(){
+        final Stream<Object> objectStream = hearingAggregate.createListDefendantRequest(null);
+        assertThat(objectStream.collect(toList()).size(), is(0));
+    }
+
+    @Test
+    public void shouldReturnEmptyStreamWhenUnscheduledHearingListedFromThisHearingIsTrue_listUnscheduledHearing(){
+        ReflectionUtil.setField(hearingAggregate, "unscheduledHearingListedFromThisHearing",true);
+        final UUID hearingId = randomUUID();
+        final Stream<Object> objectStream = hearingAggregate.listUnscheduledHearing(Hearing.hearing().withId(hearingId).build());
+        assertThat(objectStream.collect(toList()).size(), is(0));
+    }
+
+
+    @Test
+    public void shouldRecordUnscheduledHearing(){
+        final UUID hearingId = randomUUID();
+        final List<UUID> uuidList = Stream.of(randomUUID(),randomUUID(),randomUUID()).collect(toList());
+        final Stream<Object> objectStream = hearingAggregate.recordUnscheduledHearing(hearingId, uuidList);
+        assertThat(((UnscheduledHearingRecorded)objectStream.collect(toList()).get(0)).getHearingId(), is(hearingId));
+    }
+
     private HearingDeleted createHearingDeleted(final Hearing hearing) {
         return HearingDeleted.hearingDeleted().withHearingId(hearing.getId()).build();
     }
@@ -2492,15 +2536,6 @@ public class HearingAggregateTest {
         assertThat(eventList.get(0), instanceOf(UnscheduledHearingListingRequested.class));
     }
 
-    @Test
-    public void shouldRecordUnscheduledHearing() {
-        final List<UUID> uuidList = new ArrayList<>();
-        uuidList.add(randomUUID());
-        final Stream<Object> eventStream =  hearingAggregate.recordUnscheduledHearing(randomUUID(), uuidList);
-
-        final List<?> eventList = eventStream.collect(toList());
-        assertThat(eventList.get(0), instanceOf(UnscheduledHearingRecorded.class));
-    }
 
     @Test
     public void shouldProcessHearingUpdated() {

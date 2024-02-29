@@ -27,6 +27,7 @@ import static uk.gov.moj.cpp.progression.utils.FileUtil.jsonFromString;
 
 import uk.gov.justice.core.courts.CotrPdfContent;
 import uk.gov.justice.core.courts.DefendantCotrServed;
+import uk.gov.justice.cpp.progression.FormDefendants;
 import uk.gov.justice.cpp.progression.event.CotrCreated;
 import uk.gov.justice.cpp.progression.event.ProsecutionCotrServed;
 import uk.gov.justice.cpp.progression.event.ProsecutionCotrUpdated;
@@ -61,6 +62,7 @@ import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -227,6 +229,12 @@ public class CotrEventsProcessorTest {
                 .withId(randomUUID())
                 .build();
 
+        final List<FormDefendants> formDefendants = new ArrayList<>();
+        formDefendants.add(FormDefendants.formDefendants()
+                        .withDefendantId(randomUUID())
+                        .withCpsDefendantId(randomUUID().toString())
+                .build());
+
         final Envelope<CotrCreated> eventEnvelope = Envelope.envelopeFrom(eventEnvelopeMetadata,
                 CotrCreated.cotrCreated()
                         .withCotrId(cotrId)
@@ -234,6 +242,7 @@ public class CotrEventsProcessorTest {
                         .withHearingDate(hearingDate)
                         .withSubmissionId(submissionId)
                         .withCaseId(randomUUID())
+                        .withFormDefendants(formDefendants)
                         .build());
 
         String caseHearingpayload = Resources.toString(getResource("progression-case-latest-hearings.json"), defaultCharset());
@@ -253,11 +262,12 @@ public class CotrEventsProcessorTest {
         processor.cotrCreated(eventEnvelope);
 
         ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender, times(2)).send(captor.capture());
+        verify(sender, times(3)).send(captor.capture());
 
         List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), Matchers.is("progression.command.serve-prosecution-cotr"));
-        assertThat(currentEvents.get(1).metadata().name(), Matchers.is("public.progression.cotr-created"));
+        assertThat(currentEvents.get(1).metadata().name(), Matchers.is("progression.command.update-cps-defendant-id"));
+        assertThat(currentEvents.get(2).metadata().name(), Matchers.is("public.progression.cotr-created"));
 
         assertThat(currentEvents.get(0).payload().toString(), notNullValue());
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(COTR_ID), Matchers.is(cotrId.toString()));

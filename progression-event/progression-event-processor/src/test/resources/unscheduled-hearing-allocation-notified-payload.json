@@ -260,6 +260,205 @@
             },
             "prosecutionAuthorityReference": "DEFFIVE",
             "prosecutionCaseId": "d36ba5f5-f19a-482d-8b71-c06771a41af1"
+          },
+          {
+            "courtProceedingsInitiated": "2021-02-16T12:11:08.025Z",
+            "id": "169f0667-b8ce-4236-8d98-132e68fd35a0",
+            "isYouth": false,
+            "masterDefendantId": "169f0667-b8ce-4236-8d98-132e68fd35a0",
+            "offences": [
+              {
+                "arrestDate": "2017-12-14",
+                "chargeDate": "2019-12-15",
+                "count": 0,
+                "id": "4f783537-f426-4950-b388-cfa31481c3b8",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4576",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isUnscheduled": true,
+                    "judicialResultId": "1a8e9877-3b28-4cdc-9b71-760688c57e89",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "2fa31208-5fed-4f52-a63e-c3a83cc733fa",
+                        "label": "Basis",
+                        "promptReference": "reasonForArrestIsAFailureToComplyWithThe",
+                        "promptSequence": 100,
+                        "type": "FIXL",
+                        "usergroups": [
+
+                        ],
+                        "value": "Failed to comply with the Secretary of State's requirements of post sentence supervision",
+                        "welshValue": "Failed to comply with the Secretary of State's requirements of post sentence supervision"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "3733d3bc-762d-4558-b06f-2844e7305b8a",
+                        "label": "Allocated warrant enforcer is Police",
+                        "promptReference": "warrantExecutionAllocatedTopol",
+                        "promptSequence": 500,
+                        "type": "BOOLEAN",
+                        "usergroups": [
+
+                        ],
+                        "value": "true",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 200,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon Crown Court",
+                        "welshValue": "Croydon Crown Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 200,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "The Law Courts",
+                        "welshValue": "The Law Courts"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 200,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Altyre Road",
+                        "welshValue": "Altyre Road"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 200,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon",
+                        "welshValue": "Croydon"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 200,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "CR9 5AB",
+                        "welshValue": "CR9 5AB"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse email address 1",
+                        "promptReference": "hCHOUSEEmailAddress1",
+                        "promptSequence": 200,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "London.crowncourt@cps.gov.uk",
+                        "welshValue": "London.crowncourt@cps.gov.uk"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse email address 2",
+                        "promptReference": "hCHOUSEEmailAddress2",
+                        "promptSequence": 200,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "PECSCroydonCombined@serco.com",
+                        "welshValue": "PECSCroydonCombined@serco.com"
+                      }
+                    ],
+                    "judicialResultTypeId": "ed34136f-2a13-45a4-8d4f-27075ae3a8a9",
+                    "label": "Warrant for arrest for breach of community penalty without bail",
+                    "lastSharedDateTime": "2021-02-16",
+                    "lifeDuration": false,
+                    "orderedDate": "2021-02-17",
+                    "orderedHearingId": "62372e57-c378-4591-bee8-aa2e5501a259",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 64100,
+                    "resultText": "Warrant for arrest for breach of community penalty without bail\nBasis Failed to comply with the Secretary of State's requirements of post sentence supervision\nAllocated warrant enforcer is Police true\nCourthouse organisation name Croydon Crown Court\nCourthouse address line 1 The Law Courts\nCourthouse address line 2 Altyre Road\nCourthouse address line 3 Croydon\nCourthouse post code CR9 5AB\nCourthouse email address 1 London.crowncourt@cps.gov.uk\nCourthouse email address 2 PECSCroydonCombined@serco.com",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "1a8e9877-3b28-4cdc-9b71-760688c57e89",
+                    "rootJudicialResultTypeId": "ed34136f-2a13-45a4-8d4f-27075ae3a8a9",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": true,
+                    "usergroups": [
+
+                    ]
+                  }
+                ],
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03012",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "3ebe41c9-666d-4964-aa80-a005d89927a3",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Possess /    control TV set with intent another use install without a licence",
+                "orderIndex": 1,
+                "proceedingsConcluded": false,
+                "startDate": "2019-12-12",
+                "wording": "On TEST  at  TEST  used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety. Contrary to section 3(1) and (7) of the Public Order Act 1986."
+              }
+            ],
+            "legalEntityDefendant": {
+              "organisation": {
+                "name": "org1"
+              }
+            },
+            "prosecutionAuthorityReference": "DEFFIVE",
+            "prosecutionCaseId": "d36ba5f5-f19a-482d-8b71-c06771a41af1"
           }
         ],
         "id": "d36ba5f5-f19a-482d-8b71-c06771a41af1",

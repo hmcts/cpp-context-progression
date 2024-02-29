@@ -8,6 +8,16 @@ public class Prosecutor implements Serializable {
     private UUID caseId;
     private UUID prosecutionAuthorityId;
 
+    private UUID prosecutorId;
+
+    public UUID getProsecutorId() {
+        return prosecutorId;
+    }
+
+    public void setProsecutorId(final UUID prosecutorId) {
+        this.prosecutorId = prosecutorId;
+    }
+
     public UUID getCaseId() {
         return caseId;
     }
