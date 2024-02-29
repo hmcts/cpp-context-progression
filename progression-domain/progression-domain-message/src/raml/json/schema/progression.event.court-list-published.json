@@ -128,11 +128,7 @@
               }
             },
             "required": [
-              "startTime",
-              "endTime",
-              "hearingType",
-              "restrictFromCourtList",
-              "weekCommencing"
+              "hearingType"
             ]
           }
         }

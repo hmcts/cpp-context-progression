@@ -92,6 +92,16 @@ public class PublishCourtListIT extends AbstractIT {
     }
 
     @Test
+    public void shouldRaiseSingleEmailNotificationWithAttachmentForDefenceOrganisationForDraftSingleHearing_WithMandatoryFieldsOnly() {
+        givenDefendantsAreRepresentedByDefenceOrganisation(defendantId1, defendantId2);
+
+        whenListingRaisesCourtListPublishedEvent("public.listing.court-list-published-final-single-hearing_with_mandatory_fields_only.json");
+
+        final UUID materialId = thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail();
+        andNoPostalNotificationIsRaised(materialId);
+    }
+
+    @Test
     public void shouldRaiseSingleEmailNotificationWithAttachmentForDefenceOrganisationForFinalSingleHearing() {
         givenDefendantsAreRepresentedByDefenceOrganisation(defendantId1, defendantId2);
 

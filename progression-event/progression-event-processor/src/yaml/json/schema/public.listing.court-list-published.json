@@ -111,28 +111,11 @@
                 "minItems": 1,
                 "items": {
                   "$ref": "http://justice.gov.uk/core/courts/defendant.json"
-                },
-                "applicationReference": {
-                  "type": "string"
-                },
-                "applicant": {
-                  "$ref": "http://justice.gov.uk/core/courts/applicantRespondent.json"
-                },
-                "respondents": {
-                  "type": "array",
-                  "minItems": 1,
-                  "items": {
-                    "$ref": "http://justice.gov.uk/core/courts/applicantRespondent.json"
-                  }
                 }
               }
             },
             "required": [
-              "startTime",
-              "endTime",
-              "hearingType",
-              "restrictFromCourtList",
-              "weekCommencing"
+              "hearingType"
             ]
           }
         }
