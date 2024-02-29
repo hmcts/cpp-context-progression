@@ -132,12 +132,12 @@ public class CaseHearingsQueryHelper {
 
         if (nonNull(courtCentre.getRoomId())) {
             builder.add(ROOM_ID, courtCentre.getRoomId().toString());
-            builder.add(ROOM_NAME, courtCentre.getRoomName());
+            if (nonNull(courtCentre.getRoomName())) {
+                builder.add(ROOM_NAME, courtCentre.getRoomName());
+            }
         }
-
         return builder.build();
     }
-
     public static JsonObject buildCaseHearingTypesResponse(final Map<UUID, String> hearingTypes) {
         final JsonArrayBuilder hearingTypesBuilder = createArrayBuilder();
         hearingTypes.entrySet().stream().forEach(hearingType ->

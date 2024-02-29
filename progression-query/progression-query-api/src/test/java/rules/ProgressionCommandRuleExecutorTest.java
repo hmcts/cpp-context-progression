@@ -59,7 +59,7 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
     public enum ProgressionQueryRules {
 
         ApplicationHearing("progression.query.applicationhearings", "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin",
-                "Court Administrators", "Crown Court Admin", "Judge", "Victims & Witness Care Admin", "Police Admin", "Recorders", "DJMC", "Deputies", "Magistrates");
+                "Court Administrators", "Crown Court Admin", "Judge", "Victims & Witness Care Admin", "Police Admin", "Recorders", "DJMC", "Deputies", "Magistrates","Non Police Prosecutors");
 
         private final String actionName;
         private final String[] allowedUserGroups;
