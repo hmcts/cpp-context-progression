@@ -67,13 +67,13 @@
         <material.version>8.0.12</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>8.0.52</referencedata.version>
+        <referencedata.version>8.0.53</referencedata.version>
         <listing.version>8.0.67</listing.version>
         <hearing.version>8.0.115</hearing.version>
         <usersgroups.version>8.0.21</usersgroups.version>
         <defence.version>8.0.43</defence.version>
         <referencedata.offence.version>8.0.14</referencedata.offence.version>
-        <coredomain.version>1.0.211</coredomain.version>
+        <coredomain.version>8.0.0</coredomain.version>
         <directionsmanagement.version>8.0.23</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
