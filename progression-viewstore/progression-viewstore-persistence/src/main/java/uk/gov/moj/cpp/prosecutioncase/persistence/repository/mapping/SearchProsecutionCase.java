@@ -59,7 +59,7 @@ public class SearchProsecutionCase {
         if (StringUtils.isNotEmpty(builder.getReference())) {
             searchEntity.setCaseId(builder.getCaseId());
             searchEntity.setDefendantId(builder.getDefendantId());
-            searchEntity.setReference(builder.getReference());
+            searchEntity.setReference(builder.getReference().toUpperCase());
             searchEntity.setDefendantFirstName(safeUnbox(builder.getDefendantFirstName(), searchEntity.getDefendantFirstName()));
             searchEntity.setDefendantMiddleName(safeUnbox(builder.getDefendantMiddleName(), searchEntity.getDefendantMiddleName()));
             searchEntity.setDefendantLastName(safeUnbox(builder.getDefendantLastName(), searchEntity.getDefendantLastName()));
@@ -90,7 +90,7 @@ public class SearchProsecutionCase {
         if (StringUtils.isNotEmpty(courtApplication.getApplicationReference())) {
             searchEntity.setCaseId(courtApplication.getId().toString());
             searchEntity.setDefendantId(courtApplication.getId());
-            searchEntity.setReference(courtApplication.getApplicationReference());
+            searchEntity.setReference(courtApplication.getApplicationReference().toUpperCase());
 
             final uk.gov.justice.core.courts.Person applicantPerson = courtApplication.getApplicant().getPersonDetails();
             if (nonNull(applicantPerson)) {

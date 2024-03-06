@@ -405,7 +405,7 @@ public class ProsecutionCaseQuery {
     public JsonEnvelope searchCaseByCaseUrn(final JsonEnvelope envelope) {
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         if (envelope.payloadAsJsonObject().containsKey(FIELD_CASE_URN) && StringUtils.isNotBlank(envelope.payloadAsJsonObject().getString(FIELD_CASE_URN))) {
-            final List<SearchProsecutionCaseEntity> cases = searchCaseRepository.findByCaseUrn(envelope.payloadAsJsonObject().getString(FIELD_CASE_URN));
+            final List<SearchProsecutionCaseEntity> cases = searchCaseRepository.findByCaseUrn(envelope.payloadAsJsonObject().getString(FIELD_CASE_URN).toUpperCase());
             final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
             cases.forEach(caseEntity ->
                     jsonArrayBuilder.add(stringToJsonObjectConverter.convert(SearchCaseBuilder.searchCaseBuilder()
@@ -427,7 +427,7 @@ public class ProsecutionCaseQuery {
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
 
         if (StringUtils.isNotBlank(caseUrn)) {
-            final List<SearchProsecutionCaseEntity> searchResult = searchCaseRepository.findByCaseUrn(caseUrn);
+            final List<SearchProsecutionCaseEntity> searchResult = searchCaseRepository.findByCaseUrn(caseUrn.toUpperCase());
             if (CollectionUtils.isNotEmpty(searchResult)) {
                 jsonObjectBuilder.add(CASE_ID, searchResult.get(0).getCaseId());
             }

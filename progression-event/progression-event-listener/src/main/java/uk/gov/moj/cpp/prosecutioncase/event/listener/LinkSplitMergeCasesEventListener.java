@@ -54,7 +54,7 @@ public class LinkSplitMergeCasesEventListener {
         linkCases.getCaseUrns().forEach(caseUrnToLink -> {
 
             // get case ID from caseUrn
-            final UUID caseIdToLink = UUID.fromString(searchCaseRepository.findByCaseUrn(caseUrnToLink).get(0).getCaseId());
+            final UUID caseIdToLink = UUID.fromString(searchCaseRepository.findByCaseUrn(caseUrnToLink.toUpperCase()).get(0).getCaseId());
 
             // need to insert 2 records, one for originating case, one for implicit case
             saveLSMEntity(leadCaseId, linkGroupId, caseIdToLink, LinkType.LINK);
@@ -103,7 +103,7 @@ public class LinkSplitMergeCasesEventListener {
 
         mergeCases.getCaseUrns().forEach(caseUrnToMerge -> {
                     // get case ID from caseUrn
-            final UUID caseIdToMerge = UUID.fromString(searchCaseRepository.findByCaseUrn(caseUrnToMerge).get(0).getCaseId());
+            final UUID caseIdToMerge = UUID.fromString(searchCaseRepository.findByCaseUrn(caseUrnToMerge.toUpperCase()).get(0).getCaseId());
 
                     // insert the originating merges
                     saveLSMEntity(leadCaseId, mergeGroupId, caseIdToMerge, LinkType.MERGE, caseUrnToMerge + "/M");
