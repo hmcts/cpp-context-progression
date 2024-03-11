@@ -107,4 +107,5 @@
     <include file="liquibase/add-index-search-prosecution-case-reference.xml"/>
     <include file="liquibase/add-index-case-note.xml"/>
     <include file="liquibase/create-cps-send-notification.xml"/>
+    <include file="liquibase/add-index-case-defendant-hearing-defendant-id.xml"/>
 </databaseChangeLog>
