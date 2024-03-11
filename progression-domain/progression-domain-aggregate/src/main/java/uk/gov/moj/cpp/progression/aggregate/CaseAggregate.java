@@ -47,14 +47,14 @@ import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.creat
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyPriorityHelper.getRetentionPolicyByPriority;
 import static uk.gov.moj.cpp.progression.aggregate.transformers.ProsecutionCaseTransformer.toUpdatedProsecutionCase;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getAllDefendantsOffences;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendant;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantEmail;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantJudicialResultsOfDefendantsAssociatedToTheCase;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantPostcode;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendant;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getMasterDefendant;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendantsForOnlinePlea;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedOffence;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hasNewAmendment;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendantsForOnlinePlea;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hearingCaseDefendantsProceedingsConcluded;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isConcluded;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isProceedingConcludedEventTriggered;
@@ -290,7 +290,7 @@ import org.slf4j.LoggerFactory;
         "squid:S1312", "squid:S1612", "pmd:NullAssignment"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = -2092381865833271650L;
+    private static final long serialVersionUID = -2092381865833271620L;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -488,7 +488,7 @@ public class CaseAggregate implements Aggregate {
                 when(CaseLinkedToHearing.class).apply(
                         e -> {
                             this.hearingIds.add(e.getHearingId());
-                            this.latestHearingId = e.getHearingId();
+                            latestHearingId = e.getHearingId();
                         }
                 ),
                 when(FinancialDataAdded.class).apply(this::populateFinancialData),
@@ -2098,25 +2098,24 @@ public class CaseAggregate implements Aggregate {
 
             final UUID defendantId = defendantEntry.getKey();
             final List<MatchedDefendants> matchedDefendants = transformToExactMatchedDefendants(defendantEntry.getValue());
-            if (nonNull(this.latestHearingId)) {
-                if (defendantsMap.containsKey(defendantId)) {
 
-                    streamBuilder.add(MasterDefendantIdUpdatedV2.masterDefendantIdUpdatedV2()
-                            .withProsecutionCaseId(prosecutionCaseId)
-                            .withHearingId(this.latestHearingId)
-                            .withMatchedDefendants(matchedDefendants)
-                            .withDefendant(defendantsMap.get(defendantId))
-                            .build());
-                } else {
+            if (defendantsMap.containsKey(defendantId)) {
 
-                    // Fully matched defendant events
-                    streamBuilder.add(MasterDefendantIdUpdated.masterDefendantIdUpdated()
-                            .withProsecutionCaseId(prosecutionCaseId)
-                            .withDefendantId(defendantId)
-                            .withHearingId(this.latestHearingId)
-                            .withMatchedDefendants(matchedDefendants)
-                            .build());
-                }
+                streamBuilder.add(MasterDefendantIdUpdatedV2.masterDefendantIdUpdatedV2()
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .withHearingId(latestHearingId)
+                        .withMatchedDefendants(matchedDefendants)
+                        .withDefendant(defendantsMap.get(defendantId))
+                        .build());
+            } else {
+
+                // Fully matched defendant events
+                streamBuilder.add(MasterDefendantIdUpdated.masterDefendantIdUpdated()
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .withDefendantId(defendantId)
+                        .withHearingId(latestHearingId)
+                        .withMatchedDefendants(matchedDefendants)
+                        .build());
             }
         }
         return apply(streamBuilder.build());
@@ -2211,25 +2210,23 @@ public class CaseAggregate implements Aggregate {
 
             final UUID defendantId = matchDefendant.getDefendantId();
             if (defendantsMap.containsKey(defendantId)) {
-                if (nonNull(this.latestHearingId)) {
-                    streamBuilder.add(MasterDefendantIdUpdatedV2.masterDefendantIdUpdatedV2()
-                            .withProsecutionCaseId(matchDefendant.getProsecutionCaseId())
-                            .withHearingId(this.latestHearingId)
-                            .withMatchedDefendants(transform(matchDefendant.getMatchedDefendants()))
-                            .withDefendant(defendantsMap.get(defendantId))
-                            .build());
-                }
+                streamBuilder.add(MasterDefendantIdUpdatedV2.masterDefendantIdUpdatedV2()
+                        .withProsecutionCaseId(matchDefendant.getProsecutionCaseId())
+                        .withHearingId(latestHearingId)
+                        .withMatchedDefendants(transform(matchDefendant.getMatchedDefendants()))
+                        .withDefendant(defendantsMap.get(defendantId))
+                        .build());
                 streamBuilder.add(MasterDefendantIdUpdatedIntoHearings.masterDefendantIdUpdatedIntoHearings()
                         .withDefendant(defendantsMap.get(defendantId))
                         .withMatchedDefendants(transform(matchDefendant.getMatchedDefendants()))
                         .withHearingIds(this.hearingIds.stream().collect(toList()))
                         .withProsecutionCaseId(matchDefendant.getProsecutionCaseId())
                         .build());
-            } else if (nonNull(this.latestHearingId)) {
+            } else {
                 streamBuilder.add(MasterDefendantIdUpdated.masterDefendantIdUpdated()
                         .withProsecutionCaseId(matchDefendant.getProsecutionCaseId())
                         .withDefendantId(defendantId)
-                        .withHearingId(this.latestHearingId)
+                        .withHearingId(latestHearingId)
                         .withMatchedDefendants(transform(matchDefendant.getMatchedDefendants()))
                         .build());
             }
@@ -2680,9 +2677,6 @@ public class CaseAggregate implements Aggregate {
 
     private void onHearingMarkedAsDuplicateForCase(final HearingMarkedAsDuplicateForCase hearingMarkedAsDuplicateForCase) {
         this.hearingIds.remove(hearingMarkedAsDuplicateForCase.getHearingId());
-        if(nonNull(this.latestHearingId) && this.latestHearingId.equals(hearingMarkedAsDuplicateForCase.getHearingId())){
-            this.latestHearingId = null;
-        }
     }
 
     private void onHearingDeletedForProsecutionCase(final HearingDeletedForProsecutionCase hearingDeletedForProsecutionCase) {
