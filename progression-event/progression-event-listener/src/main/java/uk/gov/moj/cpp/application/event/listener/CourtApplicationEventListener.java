@@ -112,16 +112,19 @@ public class CourtApplicationEventListener {
         final CourtApplicationAddedToCase courtApplicationAddedToCase = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationAddedToCase.class);
         final CourtApplication courtApplication = dedupAllReportingRestrictions(courtApplicationAddedToCase.getCourtApplication());
         deDupAllOffencesForCourtApplication(courtApplication);
+        final Set<UUID> caseIds = new HashSet<>();
         if (nonNull(courtApplication.getCourtApplicationCases())) {
             courtApplication.getCourtApplicationCases().forEach(courtApplicationCase -> {
                 final String caseReference = isNotBlank(courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN()) ?
                         courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN() : courtApplicationCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference();
-                addCourtApplicationToCase(courtApplication, courtApplicationCase.getProsecutionCaseId(), caseReference);
+                if (!caseIds.contains(courtApplicationCase.getProsecutionCaseId())) {
+                    addCourtApplicationToCase(courtApplication, courtApplicationCase.getProsecutionCaseId(), caseReference);
+                    caseIds.add(courtApplicationCase.getProsecutionCaseId());
+                }
             });
         }
 
         if (nonNull(courtApplication.getCourtOrder())) {
-            final Set<UUID> caseIds = new HashSet<>();
             courtApplication.getCourtOrder().getCourtOrderOffences().forEach(courtOrderOffence -> {
                 final String courtReference = isNotBlank(courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN()) ?
                         courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN() : courtOrderOffence.getProsecutionCaseIdentifier().getProsecutionAuthorityReference();

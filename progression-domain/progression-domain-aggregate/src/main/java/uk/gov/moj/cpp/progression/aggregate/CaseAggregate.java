@@ -2677,10 +2677,17 @@ public class CaseAggregate implements Aggregate {
 
     private void onHearingMarkedAsDuplicateForCase(final HearingMarkedAsDuplicateForCase hearingMarkedAsDuplicateForCase) {
         this.hearingIds.remove(hearingMarkedAsDuplicateForCase.getHearingId());
+        if(hearingMarkedAsDuplicateForCase.getHearingId().equals(latestHearingId)) {
+            latestHearingId = null;
+        }
     }
 
     private void onHearingDeletedForProsecutionCase(final HearingDeletedForProsecutionCase hearingDeletedForProsecutionCase) {
         this.hearingIds.remove(hearingDeletedForProsecutionCase.getHearingId());
+        if(hearingDeletedForProsecutionCase.getHearingId().equals(latestHearingId)) {
+            latestHearingId = null;
+        }
+
     }
 
     private void onHearingRemovedForProsecutionCase(final HearingRemovedForProsecutionCase hearingRemovedForProsecutionCase) {
@@ -3289,6 +3296,11 @@ public class CaseAggregate implements Aggregate {
         }
 
         return apply(Stream.of(editFormRequested.withLockStatus(lockStatusBuilder.build()).build()));
+    }
+
+
+    public UUID getLatestHearingId() {
+        return latestHearingId;
     }
 
     private ZonedDateTime calculateExpiryTimeWithExtension(final ZonedDateTime fromTime, final int extendTime) {

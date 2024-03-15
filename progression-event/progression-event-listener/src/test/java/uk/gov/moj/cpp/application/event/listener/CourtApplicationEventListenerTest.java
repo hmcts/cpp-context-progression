@@ -10,13 +10,16 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtOrderOffence.courtOrderOffence;
 import static uk.gov.justice.core.courts.HearingResultedApplicationUpdated.hearingResultedApplicationUpdated;
 import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import org.mockito.verification.VerificationMode;
 import uk.gov.justice.core.courts.ApplicationEjected;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -371,6 +374,52 @@ public class CourtApplicationEventListenerTest {
     }
 
     @Test
+    public void shouldHandleCourtApplicationAddedToCaseEventWihCaseURNAndCourtOrderFromSameCase() {
+        final UUID applicationId = randomUUID();
+        final CourtApplicationEntity persistedEntity = new CourtApplicationEntity();
+        persistedEntity.setApplicationId(applicationId);
+        persistedEntity.setPayload(payload.toString());
+        final UUID caseId = randomUUID();
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withCourtApplicationCases(
+                        singletonList(
+                                CourtApplicationCase.courtApplicationCase()
+                                        .withProsecutionCaseId(caseId)
+                                        .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                                                .withCaseURN("CaseURN")
+                                                .build())
+
+
+                                        .build()
+                        )
+                )
+                .withCourtOrder(CourtOrder.courtOrder().withId(randomUUID())
+                        .withOrderingCourt(CourtCentre.courtCentre().withId(randomUUID()).build())
+                        .withCourtOrderOffences(singletonList(courtOrderOffence().withOffence(offence()
+                                        .withJudicialResults(null)
+
+                                        .build())
+                                .withProsecutionCaseId(caseId)
+                                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("CaseURN").build())
+                                .build()))
+                        .build())
+                .build();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CourtApplicationAddedToCase.class))
+                .thenReturn(courtApplicationAddedToCase);
+        when(envelope.metadata()).thenReturn(metadata);
+        when(courtApplicationAddedToCase.getCourtApplication()).thenReturn(courtApplication);
+        when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
+        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        eventListener.processCourtApplicationAddedToCase(envelope);
+        verify(courtApplicationCaseRepository, times(1)).save(courtApplicationCaseArgumentCaptor.capture());
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = courtApplicationCaseArgumentCaptor.getValue();
+        assertThat(courtApplicationCaseEntity.getCaseReference(), is("CaseURN"));
+    }
+
+    @Test
     public void shouldHandleCourtApplicationAddedToCaseEventWithProAuthRef() {
         final UUID applicationId = randomUUID();
         final CourtApplicationEntity persistedEntity = new CourtApplicationEntity();
@@ -404,6 +453,7 @@ public class CourtApplicationEventListenerTest {
         final CourtApplicationCaseEntity courtApplicationCaseEntity = courtApplicationCaseArgumentCaptor.getValue();
         assertThat(courtApplicationCaseEntity.getCaseReference(), is("ProAuthRef"));
     }
+
 
     @Test
     public void shouldHandleHearingResultedApplicationUpdated() {

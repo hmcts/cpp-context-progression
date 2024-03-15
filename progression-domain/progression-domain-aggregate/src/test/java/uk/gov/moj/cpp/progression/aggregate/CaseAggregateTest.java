@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
@@ -2552,6 +2553,22 @@ public class CaseAggregateTest {
         assertThat(hearingMarkedAsDuplicateForCase.getHearingId(), is(hearingId));
         assertThat(hearingMarkedAsDuplicateForCase.getCaseId(), is(caseId));
         assertThat(hearingMarkedAsDuplicateForCase.getDefendantIds(), is(defendantIds));
+
+    }
+    @Test
+    public void shouldMarkHearingsDuplicateAndShouldNotNoLongerBeLatestHearing() {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final List<UUID> defendantIds = asList(randomUUID(), randomUUID());
+
+        caseAggregate.linkProsecutionCaseToHearing(hearingId, caseId);
+        final List<Object> eventStream = caseAggregate.markHearingAsDuplicate(hearingId, caseId, defendantIds).collect(toList());
+
+
+        assertThat(eventStream.size(), is(1));
+        final HearingMarkedAsDuplicateForCase hearingMarkedAsDuplicateForCase = (HearingMarkedAsDuplicateForCase) eventStream.get(0);
+        assertThat(caseAggregate.getLatestHearingId(), is(nullValue()));
+
 
     }
 

@@ -98,8 +98,12 @@ public class HearingApplicationLinkCreatedListener {
         } else {
             hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearingFromEvent).toString());
         }
-        final HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
+        //changes made for catchup issue with same links part of the same stream ....
         HearingApplicationKey hearingApplicationKey = new HearingApplicationKey();
+        hearingApplicationKey.setApplicationId(applicationId);
+        hearingApplicationKey.setHearingId(hearingFromEvent.getId());
+        HearingApplicationEntity hearingApplicationEntity = repository.findBy(hearingApplicationKey);
+        hearingApplicationEntity = hearingApplicationEntity == null ? new HearingApplicationEntity() : hearingApplicationEntity;
         hearingApplicationEntity.setId(hearingApplicationKey);
         hearingApplicationEntity.getId().setApplicationId(applicationId);
         hearingApplicationEntity.getId().setHearingId(hearingFromEvent.getId());
