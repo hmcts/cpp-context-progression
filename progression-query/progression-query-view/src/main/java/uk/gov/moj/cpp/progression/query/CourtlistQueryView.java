@@ -202,12 +202,14 @@ public class CourtlistQueryView {
                 .forEach(hearingFromListing -> {
                     final UUID hearingId = fromString(hearingFromListing.getString(ID));
                     final Hearing hearing = hearingsMap.get(hearingId);
-                    if (hearingFromListing.containsKey(CASE_ID)) {
-                        final UUID caseId = fromString(hearingFromListing.getString(CASE_ID));
-                        hearingsArray.add(enrichHearingFromCase(hearingFromListing, hearing, caseId));
-                    } else if (hearingFromListing.containsKey(COURT_APPLICATION_ID)) {
-                        final UUID courtApplicationId = fromString(hearingFromListing.getString(COURT_APPLICATION_ID));
-                        hearingsArray.add(enrichHearingFromCourtApplication(hearingFromListing, hearing, courtApplicationId));
+                    if(nonNull(hearing)) {
+                        if (hearingFromListing.containsKey(CASE_ID)) {
+                            final UUID caseId = fromString(hearingFromListing.getString(CASE_ID));
+                            hearingsArray.add(enrichHearingFromCase(hearingFromListing, hearing, caseId));
+                        } else if (hearingFromListing.containsKey(COURT_APPLICATION_ID)) {
+                            final UUID courtApplicationId = fromString(hearingFromListing.getString(COURT_APPLICATION_ID));
+                            hearingsArray.add(enrichHearingFromCourtApplication(hearingFromListing, hearing, courtApplicationId));
+                        }
                     }
                 });
 

@@ -81,7 +81,7 @@ Feature: CaseAggregate
 
   Scenario: Defendant has been not matched
 
-    Given no previous events
+    Given case linked to hearing
     When you matchPartiallyMatchedDefendants on a CaseAggregate with a match defendant
     Then defendant not already matched
 

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
@@ -22,12 +23,11 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.getUpdatedDefendantMatchers;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.initiateCourtProceedingsForMatchedDefendants;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 
-import com.jayway.restassured.path.json.JsonPath;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.ListingStub;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper;
 
 import java.util.Optional;
@@ -36,6 +36,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
+import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +53,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
     private String prosecutionCaseId_2;
     private String defendantId_2;
     private String hearingId;
+    private String courtCentreId;
 
     @Before
     public void setUp() {
@@ -61,6 +63,8 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
         masterDefendantId_1 = randomUUID().toString();
         prosecutionCaseId_2 = randomUUID().toString();
         defendantId_2 = randomUUID().toString();
+        hearingId = randomUUID().toString();
+        courtCentreId = randomUUID().toString();
 
     }
 
@@ -73,9 +77,17 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
             initiateCourtProceedingsForMatchedDefendants(prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
             verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
         }
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId_1, defendantId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1));
+        ListingStub.stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
+        sendMessage(messageProducerClientPublic,
+                PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
+                        prosecutionCaseId_1, hearingId, defendantId_1, courtCentreId), JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
+                        .withUserId(randomUUID().toString())
+                        .build());
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId_1, defendantId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1));
 
         // initiation of second case
         try (final MessageConsumer publicEventConsumerForProsecutionCaseCreated = publicEvents
@@ -83,6 +95,15 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
             initiateCourtProceedingsForMatchedDefendants(prosecutionCaseId_2, defendantId_2, defendantId_2);
             verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
         }
+        String hearingId2 = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId_1, defendantId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1));
+        ListingStub.stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId2);
+        sendMessage(messageProducerClientPublic,
+                PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
+                        prosecutionCaseId_2, hearingId2, defendantId_2, courtCentreId), JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
+                        .withUserId(randomUUID().toString())
+                        .build());
         prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
 
@@ -164,5 +185,14 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
         return new StringToJsonObjectConverter().convert(strPayload);
     }
 
+    private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
+                                            final String defendantId, final String courtCentreId) {
+        final String strPayload = getPayload(path)
+                .replaceAll("CASE_ID", caseId)
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("DEFENDANT_ID", defendantId)
+                .replaceAll("COURT_CENTRE_ID", courtCentreId);
+        return new StringToJsonObjectConverter().convert(strPayload);
+    }
 }
 
