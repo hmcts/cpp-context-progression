@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-viewstore</artifactId>
-        <version>8.0.171</version>
+        <version>8.0.172-SNAPSHOT</version>
     </parent>
 
     <artifactId>progression-viewstore-persistence</artifactId>
