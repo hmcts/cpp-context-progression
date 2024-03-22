@@ -2098,25 +2098,24 @@ public class CaseAggregate implements Aggregate {
 
             final UUID defendantId = defendantEntry.getKey();
             final List<MatchedDefendants> matchedDefendants = transformToExactMatchedDefendants(defendantEntry.getValue());
-            if (nonNull(this.latestHearingId)) {
-                if (defendantsMap.containsKey(defendantId)) {
 
-                    streamBuilder.add(MasterDefendantIdUpdatedV2.masterDefendantIdUpdatedV2()
-                            .withProsecutionCaseId(prosecutionCaseId)
-                            .withHearingId(this.latestHearingId)
-                            .withMatchedDefendants(matchedDefendants)
-                            .withDefendant(defendantsMap.get(defendantId))
-                            .build());
-                } else {
+            if (defendantsMap.containsKey(defendantId)) {
 
-                    // Fully matched defendant events
-                    streamBuilder.add(MasterDefendantIdUpdated.masterDefendantIdUpdated()
-                            .withProsecutionCaseId(prosecutionCaseId)
-                            .withDefendantId(defendantId)
-                            .withHearingId(this.latestHearingId)
-                            .withMatchedDefendants(matchedDefendants)
-                            .build());
-                }
+                streamBuilder.add(MasterDefendantIdUpdatedV2.masterDefendantIdUpdatedV2()
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .withHearingId(this.latestHearingId)
+                        .withMatchedDefendants(matchedDefendants)
+                        .withDefendant(defendantsMap.get(defendantId))
+                        .build());
+            } else {
+
+                // Fully matched defendant events
+                streamBuilder.add(MasterDefendantIdUpdated.masterDefendantIdUpdated()
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .withDefendantId(defendantId)
+                        .withHearingId(this.latestHearingId)
+                        .withMatchedDefendants(matchedDefendants)
+                        .build());
             }
         }
         return apply(streamBuilder.build());
@@ -2211,21 +2210,21 @@ public class CaseAggregate implements Aggregate {
 
             final UUID defendantId = matchDefendant.getDefendantId();
             if (defendantsMap.containsKey(defendantId)) {
-                if (nonNull(this.latestHearingId)) {
+
                     streamBuilder.add(MasterDefendantIdUpdatedV2.masterDefendantIdUpdatedV2()
                             .withProsecutionCaseId(matchDefendant.getProsecutionCaseId())
                             .withHearingId(this.latestHearingId)
                             .withMatchedDefendants(transform(matchDefendant.getMatchedDefendants()))
                             .withDefendant(defendantsMap.get(defendantId))
                             .build());
-                }
+
                 streamBuilder.add(MasterDefendantIdUpdatedIntoHearings.masterDefendantIdUpdatedIntoHearings()
                         .withDefendant(defendantsMap.get(defendantId))
                         .withMatchedDefendants(transform(matchDefendant.getMatchedDefendants()))
                         .withHearingIds(this.hearingIds.stream().collect(toList()))
                         .withProsecutionCaseId(matchDefendant.getProsecutionCaseId())
                         .build());
-            } else if (nonNull(this.latestHearingId)) {
+            } else {
                 streamBuilder.add(MasterDefendantIdUpdated.masterDefendantIdUpdated()
                         .withProsecutionCaseId(matchDefendant.getProsecutionCaseId())
                         .withDefendantId(defendantId)

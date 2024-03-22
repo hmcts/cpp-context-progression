@@ -24,7 +24,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
@@ -2614,7 +2613,7 @@ public class CaseAggregateTest {
         caseAggregate.apply(hearingMarkedAsDuplicateForCase);
 
         final List<Object> eventStream = caseAggregate.matchPartiallyMatchedDefendants(matchDefendant).collect(toList());
-        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.size(), is(2));
 
         //Verifying there is just one stream and that is not stream of MasterDefendantIdUpdated or MasterDefendantIdUpdatedV2
         final DefendantMatched defendantMatched = (DefendantMatched) eventStream.get(0);
@@ -5165,7 +5164,7 @@ public class CaseAggregateTest {
         Stream<Object> objectStream = caseAggregate.matchPartiallyMatchedDefendants(matchDefendant);
 
         Optional<Object> masterDefendantIdUpdated = objectStream.filter(s -> s instanceof MasterDefendantIdUpdated).findFirst();
-        assertThat(masterDefendantIdUpdated.isPresent(), is(false));
+        assertThat(masterDefendantIdUpdated.isPresent(), is(true));
     }
 
     private DefendantsAddedToCourtProceedings buildDefendantsAddedToCourtProceedingsWithPersonalAndOrganisationalDefendant(
