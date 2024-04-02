@@ -9,7 +9,7 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Stream.builder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.CourtDocumentPrintTimeUpdated.courtDocumentPrintTimeUpdated;
-import static uk.gov.justice.core.courts.CourtDocumentShared.courtDocumentShared;
+import static uk.gov.justice.core.courts.CourtDocumentSharedV2.courtDocumentSharedV2;
 import static uk.gov.justice.core.courts.CourtDocumentUpdated.courtDocumentUpdated;
 import static uk.gov.justice.core.courts.CourtsDocumentCreated.courtsDocumentCreated;
 import static uk.gov.justice.core.courts.DocumentReviewRequired.documentReviewRequired;
@@ -27,6 +27,7 @@ import uk.gov.justice.core.courts.CourtDocumentAudit;
 import uk.gov.justice.core.courts.CourtDocumentSendToCps;
 import uk.gov.justice.core.courts.CourtDocumentShareFailed;
 import uk.gov.justice.core.courts.CourtDocumentShared;
+import uk.gov.justice.core.courts.CourtDocumentSharedV2;
 import uk.gov.justice.core.courts.CourtDocumentUpdateFailed;
 import uk.gov.justice.core.courts.CourtDocumentUpdated;
 import uk.gov.justice.core.courts.CourtsDocumentAdded;
@@ -58,7 +59,7 @@ import org.slf4j.LoggerFactory;
 
 public class CourtDocumentAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 8488391302284572349L;
+    private static final long serialVersionUID = 8488391302284572449L;
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentAggregate.class);
 
     private final List<SharedCourtDocument> sharedCourtDocumentList = new ArrayList<>();
@@ -76,6 +77,9 @@ public class CourtDocumentAggregate implements Aggregate {
                         this.courtDocument = e.getCourtDocument()
                 ),
                 when(CourtDocumentShared.class).apply(e ->
+                        sharedCourtDocumentList.add(e.getSharedCourtDocument())
+                ),
+                when(CourtDocumentSharedV2.class).apply(e ->
                         sharedCourtDocumentList.add(e.getSharedCourtDocument())
                 ),
                 when(CourtDocumentUpdated.class).apply(e ->
@@ -197,6 +201,8 @@ public class CourtDocumentAggregate implements Aggregate {
 
         if (isNull(this.courtDocument.getDocumentCategory().getApplicationDocument())) {
             shareCourtDocumentBuilder.withCaseIds(getProsecutionCaseIds(this.courtDocument.getDocumentCategory()));
+        } else {
+            shareCourtDocumentBuilder.withApplicationId(this.courtDocument.getDocumentCategory().getApplicationDocument().getApplicationId());
         }
         return shareCourtDocumentBuilder.build();
     }
@@ -225,7 +231,7 @@ public class CourtDocumentAggregate implements Aggregate {
                     .withShareCourtDocumentDetails(sharedCourtDocument)
                     .build());
         } else {
-            builder.accept(courtDocumentShared()
+            builder.accept(courtDocumentSharedV2()
                     .withSharedCourtDocument(sharedCourtDocument)
                     .build());
         }

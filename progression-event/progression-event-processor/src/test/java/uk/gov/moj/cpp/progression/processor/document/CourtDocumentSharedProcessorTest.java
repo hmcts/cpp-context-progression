@@ -75,6 +75,25 @@ public class CourtDocumentSharedProcessorTest {
     }
 
     @Test
+    public void shouldPublishPublicEventWhenCourtDocumentSharedEventReceivedV2() {
+
+        final JsonObject courtDocumentPayload = buildDocumentJsonObject();
+
+        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-shared-v2"),
+                courtDocumentPayload);
+
+
+        eventProcessor.handleCourtDocumentSharedEventV2(requestMessage);
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+
+        final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
+        assertThat(commands.get(0).metadata().name(), is(PUBLIC_COURT_DOCUMENT_SHARED));
+
+    }
+
+
+    @Test
     public void shouldPublishPublicEventWhenCourtDocumentShareFailedEventReceived() {
 
         final JsonObject courtDocumentPayload = buildDocumentJsonObject();

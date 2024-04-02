@@ -59,11 +59,11 @@ public class ShareCourtDocumentIT extends AbstractIT {
     private static final String MAGISTRATES_USER_GROUP_ID = "dd8dcdcf-58d1-4e45-8450-40b0f569a7e7";
     private static final String USER_ID = "07e9cd55-0eff-4eb3-961f-0d83e259e415";
     private static final String UPLOAD_USER_ID = "5e1cc18c-76dc-47dd-99c1-d6f87385edf1";
-    private static final String PRIVATE_COURT_DOCUMENT_SHARED_EVENT = "progression.event.court-document-shared";
+    private static final String PRIVATE_COURT_DOCUMENT_SHARED_EVENT_V2= "progression.event.court-document-shared-v2";
     private static final String PRIVATE_DUPLICATE_SHARE_COURT_DOCUMENT_REQUEST_RECEIVED_EVENT = "progression.event.duplicate-share-court-document-request-received";
     private static final String PRIVATE_COURT_DOCUMENT_SHARE_FAILED_EVENT = "progression.event.court-document-share-failed";
 
-    private static final MessageConsumer messageConsumerClientPrivateForCourtDocumentShared = privateEvents.createPrivateConsumer(PRIVATE_COURT_DOCUMENT_SHARED_EVENT);
+    private static final MessageConsumer messageConsumerClientPrivateForCourtDocumentShared = privateEvents.createPrivateConsumer(PRIVATE_COURT_DOCUMENT_SHARED_EVENT_V2);
     private static final MessageConsumer messageConsumerClientPrivateForDuplicateShareCourtDocumentRequestReceivedEvent = privateEvents.createPrivateConsumer(PRIVATE_DUPLICATE_SHARE_COURT_DOCUMENT_REQUEST_RECEIVED_EVENT);
     private static final MessageConsumer messageConsumerClientPrivateForCourtDocumentShareFailedEvent = privateEvents.createPrivateConsumer(PRIVATE_COURT_DOCUMENT_SHARE_FAILED_EVENT);
     private static final MessageConsumer messageConsumerCourtDocumentShareFailedPublicEvent = publicEvents.createPublicConsumer(PUBLIC_COURT_DOCUMENT_SHARE_FAILED);

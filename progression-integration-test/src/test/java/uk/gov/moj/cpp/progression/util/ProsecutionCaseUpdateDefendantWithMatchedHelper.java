@@ -11,6 +11,8 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
+
+import java.time.LocalDate;
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
@@ -38,8 +40,12 @@ public class ProsecutionCaseUpdateDefendantWithMatchedHelper extends AbstractTes
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseUpdateDefendantWithMatchedHelper.class);
 
     private static final String WRITE_MEDIA_TYPE = "application/vnd.progression.update-defendant-for-prosecution-case+json";
+    private static final String WRITE_MEDIA_TYPE_OFFENCES = "application/vnd.progression.update-offences-for-prosecution-case+json";
 
     private static final String TEMPLATE_UPDATE_DEFENDANT_PAYLOAD = "progression.update-defendant-with-matched-for-prosecution-case.json";
+
+    private static final String TEMPLATE_UPDATE_OFFENCES_PAYLOAD = "progression.update-offences-for-matched-defendants.json";
+
 
     private final MessageConsumer publicEventsCaseDefendantChanged =
             QueueUtil.publicEvents
@@ -160,6 +166,19 @@ public class ProsecutionCaseUpdateDefendantWithMatchedHelper extends AbstractTes
     public void updateDefendant(String defendantId, String caseId, String matchedDefendantHearingId) {
         final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
         updateDefendant(jsonString, defendantId, caseId, matchedDefendantHearingId);
+    }
+
+    public void addOffenceToDefendant(String defendantId, String caseId, final String offenceId, final String offenceCode) {
+        final String jsonString = getPayload(TEMPLATE_UPDATE_OFFENCES_PAYLOAD);
+        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").put("defendantId", defendantId);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").put("prosecutionCaseId", caseId);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").getJSONArray("offences").getJSONObject(0).put("id", offenceId);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").getJSONArray("offences").getJSONObject(0).put("offenceCode", offenceCode);
+
+        String request = jsonObjectPayload.toString();
+        request = request.replace("REPORTING_RESTRICTION_ORDERED_DATE", LocalDate.now().plusDays(1).toString());
+        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE_OFFENCES, request);
     }
 
     public void updateDefendant(final String jsonString, String defendantId, String caseId, String matchedDefendantHearingId) {

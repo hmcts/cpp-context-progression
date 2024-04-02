@@ -17,13 +17,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNull;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentAudit;
 import uk.gov.justice.core.courts.CourtDocumentPrintTimeUpdated;
 import uk.gov.justice.core.courts.CourtDocumentSendToCps;
 import uk.gov.justice.core.courts.CourtDocumentShareFailed;
-import uk.gov.justice.core.courts.CourtDocumentShared;
+import uk.gov.justice.core.courts.CourtDocumentSharedV2;
 import uk.gov.justice.core.courts.CourtDocumentUpdateFailed;
 import uk.gov.justice.core.courts.CourtDocumentUpdated;
 import uk.gov.justice.core.courts.CourtsDocumentAdded;
@@ -81,13 +82,13 @@ public class CourtDocumentAggregateTest {
 
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentShared.class)));
+        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentSharedV2.class)));
 
-        final CourtDocumentShared courtDocumentShared = (CourtDocumentShared) object;
-        assertThat(courtDocumentShared.getSharedCourtDocument().getCourtDocumentId(), is(courtDocumentId));
-        assertThat(courtDocumentShared.getSharedCourtDocument().getHearingId(), is(hearingId));
-        assertThat(courtDocumentShared.getSharedCourtDocument().getUserGroupId(), is(userGroupId));
-        assertNull(courtDocumentShared.getSharedCourtDocument().getUserId());
+        final CourtDocumentSharedV2 courtDocumentSharedV2 = (CourtDocumentSharedV2) object;
+        assertThat(courtDocumentSharedV2.getSharedCourtDocument().getCourtDocumentId(), is(courtDocumentId));
+        assertThat(courtDocumentSharedV2.getSharedCourtDocument().getHearingId(), is(hearingId));
+        assertThat(courtDocumentSharedV2.getSharedCourtDocument().getUserGroupId(), is(userGroupId));
+        assertNull(courtDocumentSharedV2.getSharedCourtDocument().getUserId());
     }
 
 
@@ -104,27 +105,27 @@ public class CourtDocumentAggregateTest {
 
         assertThat(eventStream.size(), is(2));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentShared.class)));
+        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentSharedV2.class)));
 
-        final CourtDocumentShared courtDocumentShared = (CourtDocumentShared) object;
-        assertThat(courtDocumentShared.getSharedCourtDocument().getCourtDocumentId(), is(courtDocumentId));
-        assertThat(courtDocumentShared.getSharedCourtDocument().getHearingId(), is(hearingId));
-        assertThat(courtDocumentShared.getSharedCourtDocument().getUserGroupId(), is(userGroupId));
-        assertThat(courtDocumentShared.getSharedCourtDocument().getDefendantId(), is(defendantId1));
-        assertThat(courtDocumentShared.getSharedCourtDocument().getCaseIds().get(0), is(caseId));
-        assertNull(courtDocumentShared.getSharedCourtDocument().getUserId());
+        final CourtDocumentSharedV2 courtDocumentSharedV2 = (CourtDocumentSharedV2) object;
+        assertThat(courtDocumentSharedV2.getSharedCourtDocument().getCourtDocumentId(), is(courtDocumentId));
+        assertThat(courtDocumentSharedV2.getSharedCourtDocument().getHearingId(), is(hearingId));
+        assertThat(courtDocumentSharedV2.getSharedCourtDocument().getUserGroupId(), is(userGroupId));
+        assertThat(courtDocumentSharedV2.getSharedCourtDocument().getDefendantId(), is(defendantId1));
+        assertThat(courtDocumentSharedV2.getSharedCourtDocument().getCaseIds().get(0), is(caseId));
+        assertNull(courtDocumentSharedV2.getSharedCourtDocument().getUserId());
 
 
         final Object second = eventStream.get(1);
-        assertThat(second.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentShared.class)));
+        assertThat(second.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentSharedV2.class)));
 
-        final CourtDocumentShared secondCourtDocumentShared = (CourtDocumentShared) second;
-        assertThat(secondCourtDocumentShared.getSharedCourtDocument().getCourtDocumentId(), is(courtDocumentId));
-        assertThat(secondCourtDocumentShared.getSharedCourtDocument().getHearingId(), is(hearingId));
-        assertThat(secondCourtDocumentShared.getSharedCourtDocument().getUserGroupId(), is(userGroupId));
-        assertThat(secondCourtDocumentShared.getSharedCourtDocument().getDefendantId(), is(defendantId2));
-        assertThat(secondCourtDocumentShared.getSharedCourtDocument().getCaseIds().get(0), is(caseId));
-        assertNull(secondCourtDocumentShared.getSharedCourtDocument().getUserId());
+        final CourtDocumentSharedV2 secondCourtDocumentSharedV2 = (CourtDocumentSharedV2) second;
+        assertThat(secondCourtDocumentSharedV2.getSharedCourtDocument().getCourtDocumentId(), is(courtDocumentId));
+        assertThat(secondCourtDocumentSharedV2.getSharedCourtDocument().getHearingId(), is(hearingId));
+        assertThat(secondCourtDocumentSharedV2.getSharedCourtDocument().getUserGroupId(), is(userGroupId));
+        assertThat(secondCourtDocumentSharedV2.getSharedCourtDocument().getDefendantId(), is(defendantId2));
+        assertThat(secondCourtDocumentSharedV2.getSharedCourtDocument().getCaseIds().get(0), is(caseId));
+        assertNull(secondCourtDocumentSharedV2.getSharedCourtDocument().getUserId());
 
     }
 
@@ -148,6 +149,17 @@ public class CourtDocumentAggregateTest {
         this.target.createCourtDocument(courtDocument, true);
     }
 
+    private void createCourtDocumentWithApplication(final UUID applicationId) {
+        CourtDocument courtDocument = CourtDocument.courtDocument()
+                .withDocumentCategory(DocumentCategory.documentCategory()
+                        .withApplicationDocument(ApplicationDocument.applicationDocument().withApplicationId(applicationId).build())
+                        .build())
+                .withSendToCps(false)
+                .build();
+        this.target.createCourtDocument(courtDocument, true);
+
+    }
+
 
     @Test
     public void shouldReturnDuplicateRequestReceivedWhenDuplicate() {
@@ -169,6 +181,31 @@ public class CourtDocumentAggregateTest {
         assertThat(duplicateShareCourtDocumentRequestReceived.getShareCourtDocumentDetails().getHearingId(), is(hearingId));
         assertThat(duplicateShareCourtDocumentRequestReceived.getShareCourtDocumentDetails().getUserGroupId(), is(userGroupId));
         assertNull(duplicateShareCourtDocumentRequestReceived.getShareCourtDocumentDetails().getUserId());
+    }
+
+
+    @Test
+    public void shouldReturnCourtSharedEventForApplication() {
+        final UUID courtDocumentId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID userGroupId = randomUUID();
+        final UUID applicationId = randomUUID();
+        createCourtDocumentWithApplication(applicationId);
+
+        final List<Object> sharedCourtDocumentEvents = target.shareCourtDocument(courtDocumentId, hearingId, userGroupId, null).collect(toList());
+
+        assertThat(sharedCourtDocumentEvents.size(), is(1));
+        final Object object = sharedCourtDocumentEvents.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentSharedV2.class)));
+
+        final CourtDocumentSharedV2 courtDocumentSharedV2 = (CourtDocumentSharedV2) object;
+
+        assertThat(courtDocumentSharedV2.getSharedCourtDocument().getCourtDocumentId(), is(courtDocumentId));
+        assertThat(courtDocumentSharedV2.getSharedCourtDocument().getHearingId(), is(hearingId));
+        assertThat(courtDocumentSharedV2.getSharedCourtDocument().getUserGroupId(), is(userGroupId));
+        assertThat(courtDocumentSharedV2.getSharedCourtDocument().getApplicationId(), is(applicationId));
+        assertNull(courtDocumentSharedV2.getSharedCourtDocument().getUserId());
+
     }
 
     @Test

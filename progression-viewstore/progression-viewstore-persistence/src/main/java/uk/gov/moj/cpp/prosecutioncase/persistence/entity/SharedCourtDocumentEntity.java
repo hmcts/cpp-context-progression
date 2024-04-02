@@ -32,6 +32,9 @@ public class SharedCourtDocumentEntity implements Serializable {
     @Column(name = "case_id")
     private UUID caseId;
 
+    @Column(name = "application_id")
+    private UUID applicationId;
+
     @Column(name = "defendant_id")
     private UUID defendantId;
 
@@ -41,13 +44,14 @@ public class SharedCourtDocumentEntity implements Serializable {
 
     public SharedCourtDocumentEntity() {}
 
-    public SharedCourtDocumentEntity(final UUID id, final UUID courtDocumentId, final UUID hearingId, final UUID userGroupId, final UUID userId, final UUID caseId, final UUID defendantId, final Integer seqNum) {
+    public SharedCourtDocumentEntity(final UUID id, final UUID courtDocumentId, final UUID hearingId, final UUID userGroupId, final UUID userId, final UUID caseId, final UUID applicationId, final UUID defendantId, final Integer seqNum) {
         this.id = id;
         this.courtDocumentId = courtDocumentId;
         this.hearingId = hearingId;
         this.userGroupId = userGroupId;
         this.userId = userId;
         this.caseId = caseId;
+        this.applicationId = applicationId;
         this.defendantId = defendantId;
         this.seqNum = seqNum;
     }
@@ -111,4 +115,12 @@ public class SharedCourtDocumentEntity implements Serializable {
     public Integer getSeqNum() { return seqNum; }
 
     public void setSeqNum(final Integer seqNum) { this.seqNum = seqNum; }
+
+    public UUID getApplicationId() {
+        return applicationId;
+    }
+
+    public void setApplicationId(UUID applicationId) {
+        this.applicationId = applicationId;
+    }
 }

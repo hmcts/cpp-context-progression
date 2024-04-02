@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/hearing/courts/public.hearing.selected-offences-removed-from-existing-hearing.json",
+  "id": "http://justice.gov.uk/hearing/courts/public.events.listing.offences-removed-from-allocated-hearing.json",
   "type": "object",
   "properties": {
     "hearingId": {

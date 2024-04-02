@@ -358,7 +358,7 @@ public class SharedCourtDocumentsQueryViewTest {
         final CourtDocumentEntity mockCourtDocumentEntity = getMockCourtDocumentEntity(courtDocumentId);
 
         final List<SharedCourtDocumentEntity> sharedCourtDocumentEntities = new ArrayList<>();
-        IntStream.range(0, 51).forEach(operand -> sharedCourtDocumentEntities.add(new SharedCourtDocumentEntity(randomUUID(), courtDocumentId, hearingId, randomUUID(), null, null, null, null)));
+        IntStream.range(0, 51).forEach(operand -> sharedCourtDocumentEntities.add(new SharedCourtDocumentEntity(randomUUID(), courtDocumentId, hearingId, randomUUID(), null, null, null, null, null)));
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(sharedCourtDocumentEntities);
 
         final List<CourtDocumentEntity> courtDocumentEntities = new ArrayList<>();
@@ -465,11 +465,11 @@ public class SharedCourtDocumentsQueryViewTest {
 
 
     private List<SharedCourtDocumentEntity> getMockSharedCourtDocumentEntities(final UUID courtDocumentId, final UUID hearingId, final UUID groupId) {
-        return singletonList(new SharedCourtDocumentEntity(randomUUID(), courtDocumentId, hearingId, groupId, null, null, null, null));
+        return singletonList(new SharedCourtDocumentEntity(randomUUID(), courtDocumentId, hearingId, groupId, null, null, null, null, null));
     }
 
     private List<SharedCourtDocumentEntity> getMockSharedCourtDocumentEntities(final UUID courtDocumentId, final UUID hearingId, final UUID groupId, final UUID caseId, final UUID defendantId) {
-        return singletonList(new SharedCourtDocumentEntity(randomUUID(), courtDocumentId, hearingId, groupId, null, caseId, defendantId, null));
+        return singletonList(new SharedCourtDocumentEntity(randomUUID(), courtDocumentId, hearingId, groupId, null, caseId, defendantId, null, null));
     }
 
 

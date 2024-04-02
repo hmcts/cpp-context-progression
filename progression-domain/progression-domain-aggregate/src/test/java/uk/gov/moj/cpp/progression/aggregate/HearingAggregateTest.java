@@ -9,6 +9,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -1321,6 +1322,58 @@ public class HearingAggregateTest {
         List<Offence> offencesInHearing = hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences();
         assertThat(offencesInHearing.size(), is(2));
 
+    }
+
+    @Test
+    public void ShouldUpdateOffencesOfDefendantInAggregateStateForTheSameDefendant(){
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String offenceCode = new StringGenerator().next();
+        final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now())
+                                .withCourtRoomId(randomUUID()).build()))
+                        .withType(HearingType.hearingType().withDescription("Statement").build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("A001").build())
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .withJudiciary(singletonList(JudicialRole.judicialRole().build()))
+                        .withProsecutionCases(Lists.newArrayList(ProsecutionCase.prosecutionCase().withId(randomUUID())
+                                .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                                .withId(defendantId)
+                                                .withMasterDefendantId(defendantId)
+                                                .withOffences(singletonList(Offence.offence().withId(offenceId).withListingNumber(1).withOrderIndex(1).build()))
+                                                .build(),
+                                        Defendant.defendant()
+                                                .withId(randomUUID())
+                                                .withMasterDefendantId(defendantId)
+                                                .withOffences(singletonList(Offence.offence().withId(randomUUID()).withListingNumber(1).withOrderIndex(1).build()))
+                                                .build()))).build()))
+                        .build()).build());
+
+        final List<Offence> offences  =  Stream.of(
+                Offence.offence().withId(randomUUID()).withOffenceCode(randomUUID().toString()).withOrderIndex(2).withOffenceTitle("RegularOffence1").withReportingRestrictions(Collections.singletonList(ReportingRestriction.reportingRestriction().withId(randomUUID()).withLabel(YOUTH_RESTRICTION).withOrderedDate(LocalDate.now()).build())).build(),
+                Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withOrderIndex(1).withOffenceTitle("SexualOffence1").build()
+        ).collect(Collectors.toList());
+
+        List<Object> events = hearingAggregate.updateOffence(defendantId, offences).collect(toList());
+        final HearingOffencesUpdated hearingOffencesUpdated = (HearingOffencesUpdated)events.get(0);
+        assertThat(hearingOffencesUpdated.getHearingId(), is(hearingId));
+        List<Offence> offencesOfDef1InHearing = hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences();
+        assertThat(offencesOfDef1InHearing.size(), is(2));
+        assertThat(offencesOfDef1InHearing.get(0).getId(), is(offenceId));
+        assertThat(offencesOfDef1InHearing.get(0).getOffenceTitle(), is("SexualOffence1"));
+        assertThat(offencesOfDef1InHearing.get(1).getId(), not(is(offenceId)));
+        assertThat(offencesOfDef1InHearing.get(1).getOffenceTitle(), is("RegularOffence1"));
+
+
+        List<Offence> offencesOfDef2InHearing = hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(1).getOffences();
+        assertThat(offencesOfDef2InHearing.size(), is(1));
+        assertThat(offencesOfDef2InHearing.get(0).getId(), not(is(offenceId)));
+        assertThat(offencesOfDef2InHearing.get(0).getOffenceTitle(), is(nullValue()));
     }
 
     @Test

@@ -39,6 +39,8 @@ import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHel
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
+
+import java.util.Comparator;
 import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
 import uk.gov.justice.core.courts.BreachApplicationsToBeAddedToHearing;
@@ -164,7 +166,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 9128521802762667490L;
+    private static final long serialVersionUID = 9128521802762667491L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -1817,9 +1819,11 @@ public class HearingAggregate implements Aggregate {
             this.hearing.getProsecutionCases().stream()
                     .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
                     .forEach(defendant -> {
-                                if (defendant.getMasterDefendantId().equals(hearingOffencesUpdated.getDefendantId())) {
+                                if (defendant.getId().equals(hearingOffencesUpdated.getDefendantId())) {
                                     defendant.getOffences().clear();
-                                    defendant.getOffences().addAll(hearingOffencesUpdated.getUpdatedOffences());
+                                    defendant.getOffences().addAll(hearingOffencesUpdated.getUpdatedOffences().stream()
+                                            .sorted(Comparator.comparing(o -> ofNullable(o.getOrderIndex()).orElse(0)))
+                                            .collect(toList()));
                                 }
                             }
                     );

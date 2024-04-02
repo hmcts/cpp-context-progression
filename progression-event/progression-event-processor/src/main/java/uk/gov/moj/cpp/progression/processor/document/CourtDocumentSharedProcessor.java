@@ -28,6 +28,12 @@ public class CourtDocumentSharedProcessor {
         sender.send(JsonEnvelope.envelopeFrom(metadata, envelope.payload()));
     }
 
+    @Handles("progression.event.court-document-shared-v2")
+    public void handleCourtDocumentSharedEventV2(final JsonEnvelope envelope) {
+        final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_COURT_DOCUMENT_SHARED).build();
+        sender.send(JsonEnvelope.envelopeFrom(metadata, envelope.payload()));
+    }
+
     @Handles("progression.event.court-document-share-failed")
     public void handleCourtDocumentShareFailedEvent(final JsonEnvelope envelope) {
         final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_COURT_DOCUMENT_SHARE_FAILED).build();

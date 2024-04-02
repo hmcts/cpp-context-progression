@@ -108,4 +108,5 @@
     <include file="liquibase/add-index-case-note.xml"/>
     <include file="liquibase/create-cps-send-notification.xml"/>
     <include file="liquibase/add-index-case-defendant-hearing-defendant-id.xml"/>
+    <include file ="liquibase/add-applicationId-share-court-document.xml"/>
 </databaseChangeLog>

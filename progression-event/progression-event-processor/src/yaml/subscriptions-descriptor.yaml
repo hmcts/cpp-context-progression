@@ -469,6 +469,9 @@ subscriptions_descriptor:
         - name: progression.event.court-document-shared
           schema_uri: http://justice.gov.uk/core/courts/court-document-shared.json
 
+        - name: progression.event.court-document-shared-v2
+          schema_uri: http://justice.gov.uk/core/courts/court-document-shared-v2.json
+
         - name: progression.event.duplicate-share-court-document-request-received
           schema_uri: http://justice.gov.uk/core/courts/duplicate-share-court-document-request-received.json
 
@@ -596,8 +599,8 @@ subscriptions_descriptor:
         - name: public.hearing.trial-vacated
           schema_uri: http://justice.gov.uk/hearing/courts/public.hearing.trial-vacated.json
 
-        - name: public.hearing.selected-offences-removed-from-existing-hearing
-          schema_uri: http://justice.gov.uk/hearing/courts/public.hearing.selected-offences-removed-from-existing-hearing.json
+        - name: public.events.listing.offences-removed-from-allocated-hearing
+          schema_uri: http://justice.gov.uk/hearing/courts/public.events.listing.offences-removed-from-allocated-hearing.json
 
         - name: public.hearing.defence-counsel-added
           schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/defence-counsel-added.json

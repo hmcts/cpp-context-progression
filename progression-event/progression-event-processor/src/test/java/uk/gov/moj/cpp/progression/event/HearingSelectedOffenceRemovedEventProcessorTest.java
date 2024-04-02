@@ -15,12 +15,10 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import uk.gov.justice.progression.courts.HearingTrialVacated;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -28,7 +26,6 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -40,7 +37,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class HearingSelectedOffenceRemovedEventProcessorTest {
     private static final String PROGRESSION_COMMAND_REMOVE_OFFENCE_FROM_EXISTING_HEARING = "progression.command.remove-offences-from-existing-hearing";
-    private static final String PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING = "public.hearing.selected-offences-removed-from-existing-hearing";
+    private static final String PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_ALLOCATED_HEARING = "public.events.listing.offences-removed-from-allocated-hearing";
 
     @Mock
     private Sender sender;
@@ -66,7 +63,7 @@ public class HearingSelectedOffenceRemovedEventProcessorTest {
 
         OffencesRemovedFromHearing offencesRemovedFromHearing = OffencesRemovedFromHearing.offencesRemovedFromHearing().withHearingId(hearingId).withOffenceIds(Stream.of(offenceId1,offenceId2).collect(Collectors.toList())).build();
 
-        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING),
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_ALLOCATED_HEARING),
                 hearingSelectedOffenceRemoved);
         when(jsonObjectConverter.convert(hearingSelectedOffenceRemoved, OffencesRemovedFromHearing.class)).thenReturn(offencesRemovedFromHearing);
 

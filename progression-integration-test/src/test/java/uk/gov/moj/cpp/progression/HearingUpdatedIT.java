@@ -83,7 +83,7 @@ public class HearingUpdatedIT extends AbstractIT {
     private static final String PUBLIC_HEARING_DETAIL_CHANGED = "public.hearing-detail-changed";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
 
-    private static final String PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING = "public.hearing.selected-offences-removed-from-existing-hearing";
+    private static final String PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_ALLOCATED_HEARING = "public.events.listing.offences-removed-from-allocated-hearing";
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression.prosecution-cases-referred-to-court";
     private static final String PUBLIC_PROGRESSION_OFFENCES_REMOVED_FROM_EXISTING_ALLOCATED_HEARING = "public.progression.offences-removed-from-existing-allocated-hearing";
 
@@ -118,7 +118,7 @@ public class HearingUpdatedIT extends AbstractIT {
         messageConsumerHearingOffenceUpdated = privateEvents.createPrivateConsumer("progression.event.hearing-offences-updated");
         messageConsumerListingNumberUpdated = privateEvents.createPrivateConsumer("progression.event.prosecution-case-listing-number-updated");
         messageConsumerListingNumberIncreased = privateEvents.createPrivateConsumer("progression.event.prosecution-case-listing-number-increased");
-        messageConsumerClientPublicOffenceRemovedFromHearing = publicEvents.createPrivateConsumer(PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING);
+        messageConsumerClientPublicOffenceRemovedFromHearing = publicEvents.createPrivateConsumer(PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_ALLOCATED_HEARING);
         messageConsumerClientProgressionPublicOffenceRemovedFromHearing = publicEvents.createPrivateConsumer(PUBLIC_PROGRESSION_OFFENCES_REMOVED_FROM_EXISTING_ALLOCATED_HEARING);
         stubInitiateHearing();
         userId = randomUUID().toString();
@@ -472,9 +472,9 @@ public class HearingUpdatedIT extends AbstractIT {
                 withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", hearingIdFilter)),
                 withJsonPath(compile("$.hearingsAtAGlance.hearings[0].defendants[0]", offencesFilter)));
 
-        final Metadata hearingOffenceRemovedMetadata = createMetadata(PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING);
+        final Metadata hearingOffenceRemovedMetadata = createMetadata(PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_ALLOCATED_HEARING);
         final JsonObject hearingOffenceRemovedJson = getOffenceRemovedFromExistngHearingJsonObject(hearingId, offenceId1);
-        sendMessage(messageProducerClientPublic, PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING, hearingOffenceRemovedJson, hearingOffenceRemovedMetadata);
+        sendMessage(messageProducerClientPublic, PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_ALLOCATED_HEARING, hearingOffenceRemovedJson, hearingOffenceRemovedMetadata);
 
         final Filter updatedHearingIdFilter = filter(where("id").is(hearingId)
                 .and("hearingListingStatus").is("HEARING_INITIALISED"));
@@ -515,9 +515,9 @@ public class HearingUpdatedIT extends AbstractIT {
                 withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", hearingIdFilter)),
                 withJsonPath(compile("$.hearingsAtAGlance.hearings[0].defendants[0]", defendantsFilter)));
 
-        final Metadata hearingOffenceRemovedMetadata = createMetadata(PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING);
+        final Metadata hearingOffenceRemovedMetadata = createMetadata(PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_ALLOCATED_HEARING);
         final JsonObject hearingOffenceRemovedJson = getOffenceRemovedFromExistngHearingJsonObject(hearingId, offenceId1);
-        sendMessage(messageProducerClientPublic, PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_EXISTING_HEARING, hearingOffenceRemovedJson, hearingOffenceRemovedMetadata);
+        sendMessage(messageProducerClientPublic, PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_ALLOCATED_HEARING, hearingOffenceRemovedJson, hearingOffenceRemovedMetadata);
 
         final Filter updatedDefendantsFilter = filter(where("id").is(hearingId)
                 .and("hearingListingStatus").is("HEARING_INITIALISED"));
