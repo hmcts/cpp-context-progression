@@ -1,8 +1,5 @@
 package uk.gov.moj.cpp.progression.aggregate.rules;
 
-import static com.google.common.collect.ImmutableMap.of;
-import static java.lang.String.format;
-import static java.lang.String.join;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.nonNull;
@@ -16,6 +13,8 @@ import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.core.courts.Offence;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -24,6 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -34,20 +34,14 @@ public class CustodialSentenceRetentionRule implements RetentionRule {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CustodialSentenceRetentionRule.class);
     private static final String DEFAULT_CUSTODIAL_SENTENCE = "7Y0M0D";
-    private static final String SPLIT_DURATION_UNITS_REGEX = "(?<=\\d)(?=\\D)|(?=\\d)(?<=\\D)";
     private static final String PROMPT_VALUE_REGEX = "\\d(\\d)*\\s[YyMmWwDd]";
-
     static final String TOTAL_CUSTODIAL_PERIOD_PROMPT = "totalCustodialPeriod";
     static final UUID TOTAL_CUSTODIAL_PERIOD_PROMPT_TYPE_ID = fromString("b2cf5a1e-8539-45a1-a287-4be5094a0e73");
     static final UUID TIMP_RESULT_DEFINITION_ID = fromString("6cb15971-c945-4398-b7c9-3f8b743a4de3");
-
     private HearingInfo hearingInfo;
     private final List<DefendantJudicialResult> defendantJudicialResults;
     private final List<Offence> defendantsOffences;
-
-    private final Map<String, String> sentenceUnitStringMap = of("Y", "%sY0M0D", "M", "0Y%sM0D", "D", "0Y0M%sD");
     private String custodialPeriod;
-
 
     public CustodialSentenceRetentionRule(final HearingInfo hearingInfo, final List<DefendantJudicialResult> defendantJudicialResults, final List<Offence> defendantsOffences) {
         this.hearingInfo = hearingInfo;
@@ -108,12 +102,12 @@ public class CustodialSentenceRetentionRule implements RetentionRule {
         if (!isEmpty(offenceJudicialResultPrompts)) {
             allPrompts.addAll(offenceJudicialResultPrompts);
         }
-
+        final LocalDate orderedDate = jrWithTimp.get(0).getJudicialResult().getOrderedDate();
         return allPrompts.stream()
                 .filter(jrp -> TOTAL_CUSTODIAL_PERIOD_PROMPT_TYPE_ID.equals(jrp.getJudicialResultPromptTypeId()))
                 .map(JudicialResultPrompt::getValue)
                 .filter(Objects::nonNull)
-                .map(this::getCustodialPeriodStr)
+                .map(p -> getCustodialPeriodStr(p, orderedDate))
                 .collect(Collectors.toList());
     }
 
@@ -125,18 +119,29 @@ public class CustodialSentenceRetentionRule implements RetentionRule {
         return maxPeriodOptional.isPresent() ? custodialPeriodDaysMap.get(maxPeriodOptional.get()) : DEFAULT_CUSTODIAL_SENTENCE;
     }
 
-    private String getCustodialPeriodStr(final String promptValue) {
+    private String getCustodialPeriodStr(final String promptValue, final LocalDate orderedDate) {
         final Matcher matcher = compile(PROMPT_VALUE_REGEX).matcher(promptValue);
         final List<String> matches = new ArrayList<>();
         while (matcher.find()) {
             matches.add(matcher.group().replaceAll("\\s", ""));
         }
+        return formatDate(matches, orderedDate);
+    }
 
-        final String[] durationUnit = join("", matches).split(SPLIT_DURATION_UNITS_REGEX);
-        final int duration = Integer.parseInt(durationUnit[0]);
-        final String unit = durationUnit[1].toUpperCase();
+    private String formatDate(List<String> matches, final LocalDate orderedDate) {
+        final Map<String, AtomicInteger> durationMap = new HashMap<>();
+        matches.forEach(match -> {
+            final String unit = match.substring(match.length() - 1);
+            final int duration = Integer.parseInt(match.substring(0, match.length() - 1));
 
-        return "W".equals(unit) ? format(sentenceUnitStringMap.get("D"), duration * 7)
-                : format(sentenceUnitStringMap.get(unit), duration);
+            durationMap.computeIfAbsent(unit, k -> new AtomicInteger()).set(duration);
+        });
+        final LocalDate futureDate = orderedDate
+                .plusYears(durationMap.getOrDefault("Y", new AtomicInteger()).get())
+                .plusMonths(durationMap.getOrDefault("M", new AtomicInteger()).get())
+                .plusWeeks(durationMap.getOrDefault("W", new AtomicInteger()).get())
+                .plusDays(durationMap.getOrDefault("D", new AtomicInteger()).get());
+        final Period period = Period.between(orderedDate, futureDate);
+        return String.format("%sY%sM%sD", period.getYears(), period.getMonths(), period.getDays());
     }
 }
