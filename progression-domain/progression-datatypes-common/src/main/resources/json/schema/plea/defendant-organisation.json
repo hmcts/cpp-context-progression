@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/defendant-organisation.json",
+  "type": "object",
+  "description": "",
+  "properties": {
+    "orgId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "organisationName": {
+      "type": "string",
+      "description": "Name of an organisation, e.g., Marks and Spencer.",
+      "maxLength": 255
+    },
+    "companyTelephoneNumber": {
+      "type": "string",
+      "description": "",
+      "maxLength": 35
+    },
+    "aliasOrganisationNames": {
+      "description": "Also known as company name.",
+      "type": "array",
+      "minItems": 1,
+      "pattern": "^[a-zA-Z0-9-]*$",
+      "maxLength": 80,
+      "items": {
+        "type": "string"
+      }
+    },
+    "address": {
+      "$ref": "http://moj.gov.uk/cpp/progression/plea/json/schemas/defendant-organisation-address.json"
+    }
+  },
+  "required": [
+    "organisationName"
+  ],
+  "additionalProperties": false
+}

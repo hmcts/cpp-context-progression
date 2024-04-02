@@ -300,4 +300,13 @@ subscriptions_descriptor:
         - name: public.progression.breach-applications-to-be-added-to-hearing
           schema_uri: http://justice.gov.uk/progression/courts/public.progression.breach-applications-to-be-added-to-hearing.json
 
+        - name: public.progression.press-list-opa-notice-generated
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.press-list-opa-notice-generated.json
+
+        - name: public.progression.public-list-opa-notice-generated
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.public-list-opa-notice-generated.json
+
+        - name: public.progression.result-list-opa-notice-generated
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.result-list-opa-notice-generated.json
+
       event_source_name: public.event.source

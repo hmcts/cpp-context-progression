@@ -108,6 +108,9 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.case.hearingtypes+json
             name: progression.query.case.hearingtypes
+        (mapping):
+            responseType: application/vnd.progression.query.case.allhearingtypes+json
+            name: progression.query.case.allhearingtypes
         ...
       queryParameters:
         orderDate:
@@ -132,6 +135,9 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.case.hearingtypes+json:
                     example:  !include json/progression.query.case.hearingtypes.json
                     schema:  !include json/schema/progression.query.case.hearingtypes.json
+                  application/vnd.progression.query.case.allhearingtypes+json:
+                    example:  !include json/progression.query.case.allhearingtypes.json
+                    schema:  !include json/schema/progression.query.case.allhearingtypes.json
 
 /prosecutioncases/{caseId}/defendants/{defendantId}/:
   uriParameters:
@@ -1070,6 +1076,36 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.trial-readiness-details+json:
             example:  !include json/progression.query.trial-readiness-hearing-details.json
             schema:  !include json/schema/progression.query.trial-readiness-hearing-details.json
+
+/opa-notice:
+   description: get list of all opa notices
+   get:
+     description: |
+       Fetch Opa notices
+       ...
+       (mapping):
+           responseType: application/vnd.progression.query.public-list-opa-notices+json
+           name: progression.query.public-list-opa-notices
+       (mapping):
+           responseType: application/vnd.progression.query.press-list-opa-notices+json
+           name: progression.query.press-list-opa-notices
+       (mapping):
+           responseType: application/vnd.progression.query.result-list-opa-notices+json
+           name: progression.query.result-list-opa-notices
+       ...
+     responses:
+         200:
+           description: OK
+           body:
+             application/vnd.progression.query.public-list-opa-notices+json:
+               schema: !include json/schema/progression.query.opa-notices.json
+               example: !include json/progression.query.opa-notices.json
+             application/vnd.progression.query.press-list-opa-notices+json:
+               schema: !include json/schema/progression.query.opa-notices.json
+               example: !include json/progression.query.opa-notices.json
+             application/vnd.progression.query.result-list-opa-notices+json:
+               schema: !include json/schema/progression.query.opa-notices.json
+               example: !include json/progression.query.opa-notices.json
 
 /cases/{caseId}:
   uriParameters:

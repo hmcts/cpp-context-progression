@@ -352,6 +352,17 @@ public class ProsecutionCaseQuery {
         return JsonObjects.getUUID(envelope.payloadAsJsonObject(), "cotrId").get();
     }
 
+    @Handles("progression.query.case.allhearingtypes")
+    public JsonEnvelope getCaseAllHearingTypes(final JsonEnvelope envelope) {
+        final UUID caseId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), CASE_ID)
+                .orElseThrow(() -> new IllegalArgumentException("caseId parameter cannot be empty!"));
+
+        final List<HearingEntity> hearings = hearingAtAGlanceService.getCaseHearingEntities(caseId);
+        final JsonObject responsePayload = buildCaseHearingTypesResponse(getAllHearingTypes(hearings));
+        return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
+    }
+
+
     private void addCourtApplication(final GetHearingsAtAGlance getHearingAtAGlance, final List<CourtApplicationCaseEntity> courtApplicationEntities) {
         getHearingAtAGlance.getCourtApplications()
                 .addAll(courtApplicationEntities.stream()
@@ -619,6 +630,11 @@ public class ProsecutionCaseQuery {
     public Map<UUID, String> getHearingTypes(final List<HearingEntity> allHearings, final LocalDate orderDate) {
         return allHearings.stream()
                 .filter(hearing -> hasHearingOnDate(hearing, orderDate))
+                .collect(Collectors.toMap(HearingEntity::getHearingId, this::getHearingType));
+    }
+
+    private Map<UUID, String> getAllHearingTypes(final List<HearingEntity> allHearings) {
+        return allHearings.stream()
                 .collect(Collectors.toMap(HearingEntity::getHearingId, this::getHearingType));
     }
 

@@ -550,7 +550,16 @@ rule "Query - Access control for progression.query.case.hearingtypes"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.case.hearingtypes");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Defence Users", "District Judge", "Access Controller", "Court Associates",  "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "Magistrates","Second Line Support","Defence Lawyers", "Eject Case Group"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users", "Defence Users", "District Judge", "Access Controller", "Court Associates",  "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "Magistrates","Second Line Support","Defence Lawyers", "Eject Case Group"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for progression.query.case.allhearingtypes"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.case.allhearingtypes");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"))
   then
     $outcome.setSuccess(true);
 end
@@ -627,6 +636,27 @@ rule "Query - Access control for progression.query.cotr.details.prosecutioncase"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.cotr.details.prosecutioncase");
+  then
+    $outcome.setSuccess(true);
+end
+rule "Query - Access control for progression.query.public-list-opa-notices"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.public-list-opa-notices");
+  then
+    $outcome.setSuccess(true);
+end
+rule "Query - Access control for progression.query.press-list-opa-notices"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.press-list-opa-notices");
+  then
+    $outcome.setSuccess(true);
+end
+rule "Query - Access control for progression.query.result-list-opa-notices"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.result-list-opa-notices");
   then
     $outcome.setSuccess(true);
 end

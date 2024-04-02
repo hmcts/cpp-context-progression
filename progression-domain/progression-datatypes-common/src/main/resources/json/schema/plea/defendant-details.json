@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/defendant-details.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "dateOfBirth": {
+      "type": "string"
+    },
+    "organisation": {
+      "$ref": "http://moj.gov.uk/cpp/progression/plea/json/schemas/defendant-organisation.json"
+    }
+  },
+  "additionalProperties": false,
+  "oneOf": [
+    {
+      "required": [
+        "id",
+        "caseId",
+        "lastName"
+      ]
+    },
+    {
+      "required": [
+        "id",
+        "caseId",
+        "organisation"
+      ]
+    }
+  ]
+}

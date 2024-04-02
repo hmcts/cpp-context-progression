@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.helper;
 
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 
 import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CommittingCourt;
@@ -26,8 +27,10 @@ import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReferredCourtDocument;
 import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -36,6 +39,10 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
+import com.google.common.io.Resources;
 
 public class TestHelper {
 
@@ -49,7 +56,7 @@ public class TestHelper {
     public static JsonEnvelope buildJsonEnvelope() {
         return JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("name").build(),
-                Json.createObjectBuilder().build());
+                createObjectBuilder().build());
     }
 
     public static ReferredCourtDocument buildCourtDocument(UUID documentTypeId) {
@@ -357,4 +364,12 @@ public class TestHelper {
                 .build();
     }
 
+    public static JsonObject getPayload(final String path) {
+        try {
+            return new StringToJsonObjectConverter().convert(Resources.toString(Resources.getResource(path), Charset.defaultCharset()));
+        } catch (final Exception e) {
+            e.printStackTrace();
+        }
+        return createObjectBuilder().build();
+    }
 }

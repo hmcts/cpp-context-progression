@@ -4,9 +4,9 @@
 
 CONTEXT_NAME=progression
 
-FRAMEWORK_LIBRARIES_VERSION=8.0.4
-FRAMEWORK_VERSION=8.0.4
-EVENT_STORE_VERSION=8.2.0
+FRAMEWORK_LIBRARIES_VERSION=8.0.7
+FRAMEWORK_VERSION=8.0.7
+EVENT_STORE_VERSION=8.3.6
 
 DOCKER_CONTAINER_REGISTRY_HOST_NAME=crmdvrepo01
 
@@ -28,6 +28,7 @@ function runLiquibase {
   runEventBufferLiquibase
   runViewStoreLiquibase
   runSystemLiquibase
+  runJobStoreLiquibase
   runEventTrackingLiquibase
   runFileServiceLiquibase
   echo "All liquibase $LIQUIBASE_COMMAND scripts run"

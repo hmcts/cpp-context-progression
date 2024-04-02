@@ -1,0 +1,65 @@
+{
+  "confirmedHearing": {
+    "id": "HEARING_ID",
+    "type": {
+      "description": "First hearing",
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "hearingLanguage": "ENGLISH",
+    "estimatedDuration": "1 week",
+    "judiciary": [
+      {
+        "isBenchChairman": false,
+        "isDeputy": false,
+        "judicialId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "433a9f33-12fd-455c-bc2f-a1cb4c5692cb",
+          "judiciaryType": "MAGISTRATE"
+        }
+      }
+    ],
+    "courtCentre": {
+      "id": "COURT_CENTRE_ID",
+      "name": "COURT_CENTRE_NAME"
+    },
+    "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
+    "prosecutionCases": [
+      {
+        "id": "CASE_ID",
+        "defendants": [
+          {
+            "id": "DEFENDANT_ID",
+            "offences": [
+              {
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "hearingDays": [
+      {
+        "sittingDay": "2024-09-28T12:13:00.000Z",
+        "listedDurationMinutes": 0,
+        "hasSharedResults": true
+      },
+      {
+        "sittingDay": "2024-09-30T09:30:00.000Z",
+        "listedDurationMinutes": 0,
+        "hasSharedResults": true
+      },
+      {
+        "sittingDay": "2025-05-23T09:30:00.000Z",
+        "listedDurationMinutes": 0,
+        "hasSharedResults": true
+      },
+      {
+        "sittingDay": "2028-05-23T09:30:00.000Z",
+        "listedDurationMinutes": 0,
+        "hasSharedResults": true
+      }
+    ]
+  }
+}

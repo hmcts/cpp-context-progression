@@ -10,6 +10,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
+import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AssignDefendantRequestFromCurrentHearingToExtendHearing;
 import uk.gov.justice.core.courts.AssignDefendantRequestToExtendHearing;
@@ -18,6 +19,7 @@ import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
 import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated;
@@ -29,6 +31,8 @@ import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ListCourtHearing;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.OnlinePleaNotification;
 import uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SeedingHearing;
@@ -43,19 +47,30 @@ import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
+import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
+import uk.gov.moj.cpp.progression.service.CalendarService;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
+import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.PartialHearingConfirmService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
+import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.transformer.ProsecutionCasesReferredToCourtTransformer;
 
 import java.time.ZonedDateTime;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,11 +81,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,24 +96,36 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class HearingConfirmedEventProcessor {
 
+    private static final String FIRST_HEARING = "First hearing";
+    private static final long NUMBER_OF_WEEKDAYS_ELIGIBLE_FOR_ONLINE_PLEA_NOTIFICATION = 18;
     public static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression.prosecution-cases-referred-to-court";
     private static final String HEARING_INITIATE_COMMAND = "hearing.initiate";
     private static final String PRIVATE_PROGRESSION_EVENT_LINK_PROSECUTION_CASES_TO_HEARING = "progression.command-link-prosecution-cases-to-hearing";
     private static final String PRIVATE_PROGRESSION_COMMAND_EXTEND_HEARING = "progression.command.extend-hearing";
     private static final String PROGRESSION_PRIVATE_COMMAND_ERICH_HEARING_INITIATE = "progression.command-enrich-hearing-initiate";
-    private static final String PRIVATE_PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTEND_HEARING =
-            "progression.command.prepare-summons-data-for-extended-hearing";
-    private static final String PRIVATE_PROGRESSION_COMMAND_EXTEND_HEARING_DEFENDANT_REQUEST_UPDATE_REQUESTED =
-            "progression.command.extend-hearing-defendant-request-update-requested";
+    private static final String PRIVATE_PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA_FOR_EXTEND_HEARING = "progression.command.prepare-summons-data-for-extended-hearing";
+    private static final String PRIVATE_PROGRESSION_COMMAND_EXTEND_HEARING_DEFENDANT_REQUEST_UPDATE_REQUESTED = "progression.command.extend-hearing-defendant-request-update-requested";
+    private static final String EITHER_WAY_ADULT_TEMPLATE_NAME = "plea_eitherway_offences_adult";
+    private static final String EITHER_WAY_YOUTH_TEMPLATE_NAME = "plea_eitherway_offences_youth";
+    private static final String INDICTABLE_ONLY_TEMPLATE_NAME = "plea_indictable_only_offences";
+    private static final String WELSH_EITHER_WAY_ADULT_TEMPLATE_NAME = "welsh_plea_eitherway_offences_adult";
+    private static final String WELSH_EITHER_WAY_YOUTH_TEMPLATE_NAME = "welsh_plea_eitherway_offences_youth";
+    private static final String WELSH_INDICTABLE_ONLY_TEMPLATE_NAME = "welsh_plea_indictable_only_offences";
 
     private static final String NEW_HEARING_NOTIFICATION_TEMPLATE_NAME = "NewHearingNotification";
 
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(HearingConfirmedEventProcessor.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(HearingConfirmedEventProcessor.class.getName());
+    private static final String EITHER_WAY = "Either Way";
+    private static final String INDICTABLE = "Indictable";
+
+    private static final String FEATURE_OPA = "OPA";
+
     @Inject
     ProgressionService progressionService;
+
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
+
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
@@ -105,6 +134,9 @@ public class HearingConfirmedEventProcessor {
 
     @Inject
     private PartialHearingConfirmService partialHearingConfirmService;
+
+    @Inject
+    private DocumentGeneratorService documentGeneratorService;
 
     @Inject
     private ListingService listingService;
@@ -117,9 +149,22 @@ public class HearingConfirmedEventProcessor {
 
 
     @Inject
+    private RefDataService referenceDataService;
+
+    @Inject
+    private Requester requester;
+
+    @Inject
     private Sender sender;
+
     @Inject
     private Enveloper enveloper;
+
+    @Inject
+    private CalendarService calendarService;
+
+    @Inject
+    private FeatureControlGuard featureControlGuard;
 
     @Handles("public.listing.hearing-confirmed")
     public void processEvent(final JsonEnvelope jsonEnvelope) {
@@ -193,6 +238,9 @@ public class HearingConfirmedEventProcessor {
             sender.send(hearingInitiateTransformedPayload);
 
             progressionService.updateDefendantYouthForProsecutionCase(jsonEnvelope, hearingInitiate, deltaProsecutionCases);
+            if (featureControlGuard.isFeatureEnabled(FEATURE_OPA)) {
+                sendOnlinePlea(jsonEnvelope, hearing);
+            }
         }
 
         if (sendNotificationToParties) {
@@ -202,6 +250,156 @@ public class HearingConfirmedEventProcessor {
         }
     }
 
+    @SuppressWarnings("squid:S1188")
+    private void sendOnlinePlea(final JsonEnvelope jsonEnvelope, final Hearing hearing) {
+        if (FIRST_HEARING.equalsIgnoreCase(hearing.getType().getDescription())) {
+            final LocalDate hearingDay = hearing.getHearingDays().stream()
+                    .map(HearingDay::getSittingDay)
+                    .sorted()
+                    .findFirst()
+                    .orElseThrow(IllegalArgumentException::new)
+                    .toLocalDate();
+            final long numberOfWorkingDaysBetweenTodayAndHearingDay = getNumberOfWorkingDaysBetweenTodayAndHearingDay(hearingDay);
+            LOGGER.info("numberOfWorkingDaysBetweenTodayAndHearingDay: {}", numberOfWorkingDaysBetweenTodayAndHearingDay);
+
+            if (numberOfWorkingDaysBetweenTodayAndHearingDay > NUMBER_OF_WEEKDAYS_ELIGIBLE_FOR_ONLINE_PLEA_NOTIFICATION && isNotEmpty(hearing.getProsecutionCases())) {
+                final UUID courtCentreId = hearing.getCourtCentre().getId();
+                final JsonObject courtCentreLocationJson = referenceDataService.getOrganisationUnitById(courtCentreId, jsonEnvelope, requester)
+                        .orElseThrow(() -> new ReferenceDataNotFoundException("Court center ", courtCentreId.toString()));
+                final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getCourtCentreWithCourtRoomsById(courtCentreId, jsonEnvelope, requester);
+                final JsonObject courtCentreJson = courtCentreJsonOptional.orElseThrow(() -> new IllegalArgumentException(String.format("Court centre '%s' not found", hearing.getCourtCentre().getId())));
+                final boolean isWelshCourt = courtCentreJson.getBoolean("isWelsh", false);
+                final LocalDateTime hearingDate = getHearingDateTime(hearing.getHearingDays());
+                hearing.getProsecutionCases().forEach(prosecutionCase -> {
+                    final String caseReference = prosecutionCase.getProsecutionCaseIdentifier().getCaseURN();
+                    prosecutionCase.getDefendants().forEach(defendant -> {
+                        final boolean eligible = isDefendantEligibleForPostalNotification(defendant);
+                        if (eligible) {
+                            final String defendantName = getDefendantName(defendant);
+                            final OnlinePleaNotification onlinePleaNotification = OnlinePleaNotification.onlinePleaNotification()
+                                    .withPostingDate(LocalDate.now())
+                                    .withAddress(getDefendantAddress(defendant))
+                                    .withCaseReferenceNumber(caseReference)
+                                    .withOnlinePleaValidUntil(calculateOnlinePleaValidUntilDate(defendant))
+                                    .withHearingDate(hearingDate.toLocalDate())
+                                    .withDefendantName(defendantName)
+                                    .withOffences(getOffences(isWelshCourt, defendant.getOffences()))
+                                    .withCourtCentreLocation(courtCentreLocationJson.getString("oucodeL3Name"))
+                                    .withHearingTime(getHearingTime(hearingDate))
+                                    .build();
+                            final JsonObject contentForPdf = objectToJsonObjectConverter.convert(onlinePleaNotification);
+                            final String fileName = defendantName.replace(" ", "_") + RandomStringUtils.randomAlphabetic(10);
+                            final String templateName = getTemplateName(isWelshCourt, defendant);
+                            documentGeneratorService.generatePostalDocumentForOpa(sender, jsonEnvelope, contentForPdf, templateName, fileName, hearing.getId(), prosecutionCase.getId());
+                        }
+                    });
+                });
+            }
+        }
+    }
+
+    private LocalDate calculateOnlinePleaValidUntilDate(final Defendant defendant) {
+        return calendarService.plusWorkingDays(LocalDate.now(), getValidityPeriodOfOnlinePleaInDays(defendant), requester);
+    }
+
+    private static String getHearingTime(final LocalDateTime hearingDate) {
+        return hearingDate.format(DateTimeFormatter.ofPattern("hh:mm a"));
+    }
+
+    private long getValidityPeriodOfOnlinePleaInDays(final Defendant defendant) {
+        if (isEitherWayNotification(defendant)) {
+            return 11;
+        } else {
+            return 13;
+        }
+    }
+
+    @SuppressWarnings("squid:S3776")
+    private String getTemplateName(final boolean isWelshCourt, final Defendant defendant) {
+        if (isEitherWayNotification(defendant)) {
+            if (nonNull(defendant.getIsYouth()) && defendant.getIsYouth()) {
+                if (isWelshCourt) {
+                    return WELSH_EITHER_WAY_YOUTH_TEMPLATE_NAME;
+                } else {
+                    return EITHER_WAY_YOUTH_TEMPLATE_NAME;
+                }
+            } else {
+                if (isWelshCourt) {
+                    return WELSH_EITHER_WAY_ADULT_TEMPLATE_NAME;
+                } else {
+                    return EITHER_WAY_ADULT_TEMPLATE_NAME;
+                }
+            }
+        } else {
+            if (isWelshCourt) {
+                return WELSH_INDICTABLE_ONLY_TEMPLATE_NAME;
+            } else {
+                return INDICTABLE_ONLY_TEMPLATE_NAME;
+            }
+        }
+    }
+
+    private List<String> getOffences(final boolean isWelshCourt, final List<Offence> offences) {
+        if (isWelshCourt) {
+            return offences.stream()
+                    .map(Offence::getOffenceTitleWelsh)
+                    .collect(toList());
+        } else {
+            return offences.stream()
+                    .map(Offence::getOffenceTitle)
+                    .collect(toList());
+        }
+
+    }
+
+    private Address getDefendantAddress(final Defendant defendant) {
+        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails())) {
+            return defendant.getPersonDefendant().getPersonDetails().getAddress();
+        }
+        if (nonNull(defendant.getLegalEntityDefendant()) && nonNull(defendant.getLegalEntityDefendant().getOrganisation())) {
+            return defendant.getLegalEntityDefendant().getOrganisation().getAddress();
+        }
+        return null;
+    }
+
+    public String getDefendantName(Defendant defendant) {
+        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails())) {
+            return defendant.getPersonDefendant().getPersonDetails().getFirstName() + " " + defendant.getPersonDefendant().getPersonDetails().getLastName();
+        }
+        if (nonNull(defendant.getLegalEntityDefendant()) && nonNull(defendant.getLegalEntityDefendant().getOrganisation())) {
+            return defendant.getLegalEntityDefendant().getOrganisation().getName();
+        }
+        return null;
+    }
+
+    private LocalDateTime getHearingDateTime(List<HearingDay> hearingDays) {
+        return hearingDays.stream()
+                .map(HearingDay::getSittingDay)
+                .sorted()
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new)
+                .toLocalDateTime();
+    }
+
+    private boolean isEitherWayNotification(final Defendant defendant) {
+        return defendant.getOffences().stream()
+                .anyMatch(offence -> EITHER_WAY.equalsIgnoreCase(offence.getModeOfTrial()));
+    }
+
+    private boolean isDefendantEligibleForPostalNotification(final Defendant defendant) {
+        return defendant.getOffences().stream()
+                .anyMatch(offence -> EITHER_WAY.equalsIgnoreCase(offence.getModeOfTrial()) || INDICTABLE.equalsIgnoreCase(offence.getModeOfTrial()));
+    }
+
+    private long getNumberOfWorkingDaysBetweenTodayAndHearingDay(final LocalDate hearingDay) {
+        final LocalDate today = LocalDate.now();
+        final Predicate<LocalDate> isWeekend = day -> day.getDayOfWeek() == DayOfWeek.SATURDAY || day.getDayOfWeek() == DayOfWeek.SUNDAY;
+        final long daysBetween = ChronoUnit.DAYS.between(today, hearingDay);
+        return Stream.iterate(today, date -> date.plusDays(1))
+                .limit(daysBetween)
+                .filter((isWeekend).negate())
+                .count();
+    }
 
     /**
      * If partial allocation is happened in confirm process, a new list hearing request generated

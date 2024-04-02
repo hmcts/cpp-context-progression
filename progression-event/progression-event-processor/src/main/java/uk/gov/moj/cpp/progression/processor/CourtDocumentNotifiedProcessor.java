@@ -33,6 +33,7 @@ public class CourtDocumentNotifiedProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentNotifiedProcessor.class.getCanonicalName());
     private static final String FEATURE_DEFENCE_DISCLOSURE = "defenceDisclosure";
     private static final String COTR_FORM_SERVED_NOTIFICATION = "cotr-form-served";
+    private static final String OPA_FORM_SUBMITTED ="opa-form-submitted";
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
@@ -100,7 +101,9 @@ public class CourtDocumentNotifiedProcessor {
     }
 
     private boolean shouldNotifyCPS(final  CourtDocument courtDocument) {
-        if(nonNull(courtDocument.getNotificationType()) && courtDocument.getNotificationType().equalsIgnoreCase(COTR_FORM_SERVED_NOTIFICATION)) {
+        if(nonNull(courtDocument.getNotificationType()) &&
+                (courtDocument.getNotificationType().equalsIgnoreCase(COTR_FORM_SERVED_NOTIFICATION)||
+                        courtDocument.getNotificationType().equalsIgnoreCase(OPA_FORM_SUBMITTED))) {
             return true;
         }
         return  featureControlGuard.isFeatureEnabled(FEATURE_DEFENCE_DISCLOSURE);

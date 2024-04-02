@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.service;
 
 import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -44,6 +45,7 @@ import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -92,6 +94,8 @@ public class RefDataServiceTest {
     private static final String GUILTY = "GUILTY";
     private static final String NOT_GUILTY = "NOT_GUILTY";
     private static final String REFERENCE_DATA_QUERY_PET_FORM = "referencedata.query.latest-pet-form";
+    private static final String ENGLAND_AND_WALES_DIVISION = "england-and-wales";
+    private static final String REFERENCEDATA_QUERY_PUBLIC_HOLIDAYS_NAME = "referencedata.query.public-holidays";
 
     @Spy
     Enveloper enveloper = EnveloperFactory.createEnveloper();
@@ -150,6 +154,45 @@ public class RefDataServiceTest {
         assertThat(result.get().getString("title"), is("Public service vehicle - passenger use altered / defaced ticket"));
         assertThat(result.get().getString("legislation"), is("Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981."));
         verifyNoMoreInteractions(requester);
+    }
+
+    @Test
+    public void shouldReturnPublicHolidays() throws IOException {
+        final String jsonString = Resources.toString(Resources.getResource("referencedata.public-holidays.json"), Charset.defaultCharset());
+
+        final JsonObject payload = Json.createReader(new ByteArrayInputStream(jsonString.getBytes())).readObject();
+
+        final Envelope inputEnvelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(REFERENCEDATA_QUERY_PUBLIC_HOLIDAYS_NAME),
+                payload);
+        when(requester.requestAsAdmin(any(), any())).thenReturn(inputEnvelope);
+
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.offences"), JsonValue.NULL);
+
+        final List<LocalDate> holidays = refDataService.getPublicHolidays(ENGLAND_AND_WALES_DIVISION, now(), now().plusDays(11), requester);
+
+        assertThat(holidays.size(), is(3));
+        assertThat(holidays.get(0).toString(), is("2023-01-01"));
+        assertThat(holidays.get(1).toString(), is("2023-03-25"));
+        assertThat(holidays.get(2).toString(), is("2023-03-28"));
+    }
+
+    @Test
+    public void shouldReturnEmptyListWhenPublicHolidaysServiceReturnsEmptyList() {
+        final JsonObject payload = Json.createObjectBuilder().build();
+
+        final Envelope inputEnvelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(REFERENCEDATA_QUERY_PUBLIC_HOLIDAYS_NAME),
+                payload);
+        when(requester.requestAsAdmin(any(), any())).thenReturn(inputEnvelope);
+
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.offences"), JsonValue.NULL);
+
+        final List<LocalDate> holidays = refDataService.getPublicHolidays(ENGLAND_AND_WALES_DIVISION, now(), now().plusDays(11), requester);
+
+        assertThat(holidays.size(), is(0));
     }
 
     @Test

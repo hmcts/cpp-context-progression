@@ -17,6 +17,45 @@
         "asc",
         "desc"
       ]
+    },
+    "representingType": {
+      "id": "http://moj.gov.uk/cpp/progression/enums/representingType.json",
+      "type": "string",
+      "enum": [
+        "CPS"
+      ]
+    },
+    "isAdvocateDefendingOrProsecuting": {
+      "id": "http://moj.gov.uk/cpp/progression/enums/isAdvocateDefendingOrProsecuting.json",
+      "type": "string",
+      "enum": [
+        "prosecuting",
+        "defending",
+        "both"
+      ]
+    },
+    "yesNoNa": {
+      "id": "http://moj.gov.uk/cpp/progression/enums/yes-no-na.json",
+      "type": "string",
+      "enum": ["Y","N","NA"]
+    },
+    "offenceType": {
+      "id": "http://moj.gov.uk/cpp/progression/enums/offence-type.json",
+      "type": "string",
+      "enum": [
+        "adultEitherWay",
+        "adultIndictableOnly",
+        "youthGraveCrime"
+      ]
+    },
+    "opaNoticeType": {
+      "id": "http://moj.gov.uk/cpp/progression/enums/opa-notice-type.json",
+      "type": "string",
+      "enum": [
+        "PUBLIC_LIST",
+        "PRESS_LIST",
+        "RESULT_LIST"
+      ]
     }
   }
 }

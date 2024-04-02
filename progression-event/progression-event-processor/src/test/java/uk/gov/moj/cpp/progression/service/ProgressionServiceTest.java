@@ -199,6 +199,15 @@ public class ProgressionServiceTest {
     private static final String PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND = "progression.command.create-hearing-for-application";
     private static final String HEARING_LISTING_STATUS = "hearingListingStatus";
 
+    private static final String PROGRESSION_GENERATE_PUBLIC_LIST_OPA_NOTICE = "progression.event.opa-public-list-notice-requested";
+    private static final String PROGRESSION_GENERATE_PRESS_LIST_OPA_NOTICE = "progression.event.opa-press-list-notice-requested";
+    private static final String PROGRESSION_GENERATE_RESULT_LIST_OPA_NOTICE = "progression.event.opa-result-list-notice-requested";
+
+    private static final String PROGRESSION_QUERY_PUBLIC_LIST_OPA_NOTICES = "progression.query.public-list-opa-notices";
+    private static final String PROGRESSION_QUERY_PRESS_LIST_OPA_NOTICES = "progression.query.press-list-opa-notices";
+    private static final String PROGRESSION_QUERY_RESULT_LIST_OPA_NOTICES = "progression.query.result-list-opa-notices";
+
+
     private static final String EMPTY = "";
 
 
@@ -327,33 +336,33 @@ public class ProgressionServiceTest {
         verify(sender).send(envelopeArgumentCaptor.capture());
 
         assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                metadata().withName(PUBLIC_EVENT_HEARING_DETAIL_CHANGED),
-                payloadIsJson(
-                        allOf(
-                                withJsonPath("$.hearing.id", is(updatedHearing.getId().toString())),
-                                withJsonPath("$.hearing.type.description", is(updatedHearing.getType().getDescription())),
-                                withJsonPath("$.hearing.type.id", is(updatedHearing.getType().getId().toString())),
-                                withJsonPath("$.hearing.jurisdictionType", is(updatedHearing.getJurisdictionType().toString())),
-                                withJsonPath("$.hearing.reportingRestrictionReason", is(updatedHearing.getReportingRestrictionReason())),
-                                withJsonPath("$.hearing.hearingLanguage", is(updatedHearing.getHearingLanguage().toString())),
-                                withJsonPath("$.hearing.hearingDays[0].sittingDay", is(HEARING_DATE_1)),
-                                withJsonPath("$.hearing.hearingDays[1].sittingDay", is(HEARING_DATE_2)),
-                                withJsonPath("$.hearing.hearingDays[2].sittingDay", is(HEARING_DATE_3)),
-                                withJsonPath("$.hearing.courtCentre.id", is(COURT_CENTRE_ID.toString())),
-                                withJsonPath("$.hearing.courtCentre.name", is(COURT_CENTRE_NAME)),
-                                withJsonPath("$.hearing.judiciary[0].judicialId", is(JUDICIARY_ID_1.toString())),
-                                withJsonPath("$.hearing.judiciary[0].title", is(JUDICIARY_TITLE_1)),
-                                withJsonPath("$.hearing.judiciary[0].firstName", is(JUDICIARY_FIRST_NAME_1)),
-                                withJsonPath("$.hearing.judiciary[0].lastName", is(JUDICIARY_LAST_NAME_1)),
-                                withJsonPath("$.hearing.judiciary[0].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(0).getJudicialRoleType().getJudiciaryType())),
-                                withJsonPath("$.hearing.judiciary[0].isDeputy", is(updatedHearing.getJudiciary().get(0).getIsDeputy())),
-                                withJsonPath("$.hearing.judiciary[0].isBenchChairman", is(updatedHearing.getJudiciary().get(0).getIsBenchChairman())),
-                                withJsonPath("$.hearing.judiciary[1].judicialId", is(JUDICIARY_ID_2.toString())),
-                                withJsonPath("$.hearing.judiciary[1].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(1).getJudicialRoleType().getJudiciaryType())),
-                                withJsonPath("$.hearing.judiciary[1].isDeputy", is(updatedHearing.getJudiciary().get(1).getIsDeputy())),
-                                withJsonPath("$.hearing.judiciary[1].isBenchChairman", is(updatedHearing.getJudiciary().get(1).getIsBenchChairman()))
+                        metadata().withName(PUBLIC_EVENT_HEARING_DETAIL_CHANGED),
+                        payloadIsJson(
+                                allOf(
+                                        withJsonPath("$.hearing.id", is(updatedHearing.getId().toString())),
+                                        withJsonPath("$.hearing.type.description", is(updatedHearing.getType().getDescription())),
+                                        withJsonPath("$.hearing.type.id", is(updatedHearing.getType().getId().toString())),
+                                        withJsonPath("$.hearing.jurisdictionType", is(updatedHearing.getJurisdictionType().toString())),
+                                        withJsonPath("$.hearing.reportingRestrictionReason", is(updatedHearing.getReportingRestrictionReason())),
+                                        withJsonPath("$.hearing.hearingLanguage", is(updatedHearing.getHearingLanguage().toString())),
+                                        withJsonPath("$.hearing.hearingDays[0].sittingDay", is(HEARING_DATE_1)),
+                                        withJsonPath("$.hearing.hearingDays[1].sittingDay", is(HEARING_DATE_2)),
+                                        withJsonPath("$.hearing.hearingDays[2].sittingDay", is(HEARING_DATE_3)),
+                                        withJsonPath("$.hearing.courtCentre.id", is(COURT_CENTRE_ID.toString())),
+                                        withJsonPath("$.hearing.courtCentre.name", is(COURT_CENTRE_NAME)),
+                                        withJsonPath("$.hearing.judiciary[0].judicialId", is(JUDICIARY_ID_1.toString())),
+                                        withJsonPath("$.hearing.judiciary[0].title", is(JUDICIARY_TITLE_1)),
+                                        withJsonPath("$.hearing.judiciary[0].firstName", is(JUDICIARY_FIRST_NAME_1)),
+                                        withJsonPath("$.hearing.judiciary[0].lastName", is(JUDICIARY_LAST_NAME_1)),
+                                        withJsonPath("$.hearing.judiciary[0].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(0).getJudicialRoleType().getJudiciaryType())),
+                                        withJsonPath("$.hearing.judiciary[0].isDeputy", is(updatedHearing.getJudiciary().get(0).getIsDeputy())),
+                                        withJsonPath("$.hearing.judiciary[0].isBenchChairman", is(updatedHearing.getJudiciary().get(0).getIsBenchChairman())),
+                                        withJsonPath("$.hearing.judiciary[1].judicialId", is(JUDICIARY_ID_2.toString())),
+                                        withJsonPath("$.hearing.judiciary[1].judicialRoleType.judiciaryType", is(updatedHearing.getJudiciary().get(1).getJudicialRoleType().getJudiciaryType())),
+                                        withJsonPath("$.hearing.judiciary[1].isDeputy", is(updatedHearing.getJudiciary().get(1).getIsDeputy())),
+                                        withJsonPath("$.hearing.judiciary[1].isBenchChairman", is(updatedHearing.getJudiciary().get(1).getIsBenchChairman()))
+                                )
                         )
-                )
                 )
         );
     }
@@ -374,22 +383,22 @@ public class ProgressionServiceTest {
         verify(sender).send(envelopeArgumentCaptor.capture());
 
         assertThat(envelopeArgumentCaptor.getValue(), jsonEnvelope(
-                metadata().withName(PUBLIC_EVENT_HEARING_DETAIL_CHANGED),
-                payloadIsJson(
-                        allOf(
-                                withJsonPath("$.hearing.id", is(updatedHearing.getId().toString())),
-                                withJsonPath("$.hearing.type.description", is(updatedHearing.getType().getDescription())),
-                                withJsonPath("$.hearing.type.id", is(updatedHearing.getType().getId().toString())),
-                                withJsonPath("$.hearing.jurisdictionType", is(updatedHearing.getJurisdictionType().toString())),
-                                withJsonPath("$.hearing.reportingRestrictionReason", is(updatedHearing.getReportingRestrictionReason())),
-                                withJsonPath("$.hearing.hearingLanguage", is(updatedHearing.getHearingLanguage().toString())),
-                                withJsonPath("$.hearing.hearingDays[0].sittingDay", is(HEARING_DATE_1)),
-                                withJsonPath("$.hearing.hearingDays[1].sittingDay", is(HEARING_DATE_2)),
-                                withJsonPath("$.hearing.hearingDays[2].sittingDay", is(HEARING_DATE_3)),
-                                withJsonPath("$.hearing.courtCentre.id", is(COURT_CENTRE_ID.toString())),
-                                withJsonPath("$.hearing.courtCentre.name", is(COURT_CENTRE_NAME))
+                        metadata().withName(PUBLIC_EVENT_HEARING_DETAIL_CHANGED),
+                        payloadIsJson(
+                                allOf(
+                                        withJsonPath("$.hearing.id", is(updatedHearing.getId().toString())),
+                                        withJsonPath("$.hearing.type.description", is(updatedHearing.getType().getDescription())),
+                                        withJsonPath("$.hearing.type.id", is(updatedHearing.getType().getId().toString())),
+                                        withJsonPath("$.hearing.jurisdictionType", is(updatedHearing.getJurisdictionType().toString())),
+                                        withJsonPath("$.hearing.reportingRestrictionReason", is(updatedHearing.getReportingRestrictionReason())),
+                                        withJsonPath("$.hearing.hearingLanguage", is(updatedHearing.getHearingLanguage().toString())),
+                                        withJsonPath("$.hearing.hearingDays[0].sittingDay", is(HEARING_DATE_1)),
+                                        withJsonPath("$.hearing.hearingDays[1].sittingDay", is(HEARING_DATE_2)),
+                                        withJsonPath("$.hearing.hearingDays[2].sittingDay", is(HEARING_DATE_3)),
+                                        withJsonPath("$.hearing.courtCentre.id", is(COURT_CENTRE_ID.toString())),
+                                        withJsonPath("$.hearing.courtCentre.name", is(COURT_CENTRE_NAME))
+                                )
                         )
-                )
                 )
         );
     }
@@ -1565,6 +1574,50 @@ public class ProgressionServiceTest {
                 .withShadowListedOffences(hearingResulted.getShadowListedOffences())
                 .build();
         return listNextHearings;
+    }
+
+    @Test
+    public void shouldGetPublicListNotices() {
+        final JsonEnvelope jsonEnvelop = getJsonEnvelop(PROGRESSION_GENERATE_PUBLIC_LIST_OPA_NOTICE);
+        when(requester.request(any())).thenReturn(jsonEnvelop);
+
+        progressionService.getPublicListNotices(jsonEnvelop);
+
+        verify(requester).request(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_QUERY_PUBLIC_LIST_OPA_NOTICES));
+    }
+
+    @Test
+    public void shouldGetPressListNotices() {
+        final JsonEnvelope jsonEnvelop = getJsonEnvelop(PROGRESSION_GENERATE_PRESS_LIST_OPA_NOTICE);
+        when(requester.request(any())).thenReturn(jsonEnvelop);
+
+        progressionService.getPressListNotices(jsonEnvelop);
+
+        verify(requester).request(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_QUERY_PRESS_LIST_OPA_NOTICES));
+    }
+
+    @Test
+    public void shouldGetResultListNotices() {
+        final JsonEnvelope jsonEnvelop = getJsonEnvelop(PROGRESSION_GENERATE_RESULT_LIST_OPA_NOTICE);
+
+        when(requester.request(any())).thenReturn(jsonEnvelop);
+
+        progressionService.getResultListNotices(jsonEnvelop);
+
+        verify(requester).request(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_QUERY_RESULT_LIST_OPA_NOTICES));
+    }
+
+    private JsonEnvelope getJsonEnvelop(final String commandName) {
+        return envelopeFrom(
+                metadataBuilder()
+                        .createdAt(ZonedDateTime.now())
+                        .withName(commandName)
+                        .withId(randomUUID())
+                        .build(),
+                Json.createObjectBuilder().build());
     }
 
 }

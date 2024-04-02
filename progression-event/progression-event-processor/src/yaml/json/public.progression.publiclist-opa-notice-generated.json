@@ -1,0 +1,21 @@
+{
+  "opaNotice": {
+    "hearingId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+    "allocationId": "e1d32d9d-29ec-4934-a932-22a50f223966",
+    "notificationId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+    "caseUrn": "TFL12345",
+    "firstName": "Harry",
+    "middleName": "Jack",
+    "lastName": "Kane",
+    "dob": "1995-01-01",
+    "offences": [
+      {
+        "title": "Allow a vehicle / an animal to be on Gatwick Airport after being forbidden to do so by a PC / airport official",
+        "legislation": "In accordance with section 178 of the Criminal Justice Act 2003.",
+        "wording": "No Travel Card"
+      }
+    ],
+    "firstHearingDate": "2024-01-01",
+    "prosecutor": "CPS-NE"
+  }
+}

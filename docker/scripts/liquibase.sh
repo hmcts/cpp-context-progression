@@ -52,3 +52,10 @@ then
 else
     echo success!
 fi
+java -jar jobstore-liquibase.jar --url=jdbc:postgresql://${dbServerName}:5432/progressionjobstore?sslmode=require --username=${dbUserName} --password=${dbPassword} --logLevel=info update
+if [ $? -ne 0 ]
+then
+    exit 1
+else
+    echo success!
+fi

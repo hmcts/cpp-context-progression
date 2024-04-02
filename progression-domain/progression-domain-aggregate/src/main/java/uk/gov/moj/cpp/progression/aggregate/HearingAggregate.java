@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
@@ -81,6 +82,7 @@ import uk.gov.justice.core.courts.HearingListingNumberUpdated;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingOffencesUpdated;
 import uk.gov.justice.core.courts.HearingPleaUpdated;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
 import uk.gov.justice.core.courts.HearingUpdatedProcessed;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
@@ -95,6 +97,7 @@ import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
+import uk.gov.justice.core.courts.OnlinePleasAllocation;
 import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.PleaModel;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -104,6 +107,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV3;
 import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2;
 import uk.gov.justice.core.courts.ProsecutionCasesResultedV2;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.core.courts.SeedingHearing;
@@ -132,15 +136,27 @@ import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
 import uk.gov.justice.progression.courts.OffenceInHearingDeleted;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
+
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
 import uk.gov.justice.progression.courts.UnscheduledHearingAllocationNotified;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
+import uk.gov.justice.progression.event.OpaPressListNoticeDeactivated;
+import uk.gov.justice.progression.event.OpaPressListNoticeGenerated;
+import uk.gov.justice.progression.event.OpaPressListNoticeSent;
+import uk.gov.justice.progression.event.OpaPublicListNoticeDeactivated;
+import uk.gov.justice.progression.event.OpaPublicListNoticeGenerated;
+import uk.gov.justice.progression.event.OpaPublicListNoticeSent;
+import uk.gov.justice.progression.event.OpaResultListNoticeDeactivated;
+import uk.gov.justice.progression.event.OpaResultListNoticeGenerated;
+import uk.gov.justice.progression.event.OpaResultListNoticeSent;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.justice.staginghmi.courts.UpdateHearingFromHmi;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.NextHearingDetails;
+import uk.gov.moj.cpp.progression.domain.aggregate.utils.OpaNoticeHelper;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.plea.json.schemas.OpaNoticeDocument;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -180,6 +196,12 @@ public class HearingAggregate implements Aggregate {
     private Map<LocalDate, List<BookingReferenceCourtScheduleIds>> bookingReferencesAndCourtScheduleIdsForHearingDay = new HashMap<>();
     private Boolean notifyNCES = false;
 
+    private ZonedDateTime resultSharedDateTime;
+
+    //allocationId -> OpaNoticeType -> NoticeSentDate
+    private final Map<UUID, Set<LocalDate>> opaPublicListNoticesSent = new HashMap<>();
+    private final Map<UUID, Set<LocalDate>> opaPressListNoticesSent = new HashMap<>();
+    private final Map<UUID, Set<LocalDate>> opaResultListNoticesSent = new HashMap<>();
 
     @VisibleForTesting
     Hearing getHearing() {
@@ -222,6 +244,7 @@ public class HearingAggregate implements Aggregate {
                 when(HearingResulted.class).apply(e -> {
                     setHearing(e.getHearing());
                     this.committingCourt = findCommittingCourt(e.getHearing());
+                    this.resultSharedDateTime = e.getSharedTime();
                 }),
                 when(HearingDefendantRequestCreated.class).apply(e -> {
                     if (!e.getDefendantRequests().isEmpty()) {
@@ -291,6 +314,12 @@ public class HearingAggregate implements Aggregate {
                 when(ListingNumberUpdated.class).apply(this::updateListingNumbers),
                 when(HearingListingNumberUpdated.class).apply(this::updateListingNumbers),
                 when(HearingMovedToUnallocated.class).apply(this::handleHearingMovedToUnallocated),
+                when(OpaPublicListNoticeDeactivated.class).apply(this::deactivatePublicListNotice),
+                when(OpaPressListNoticeDeactivated.class).apply(this::deactivatePressListNotice),
+                when(OpaResultListNoticeDeactivated.class).apply(this::deactivateResultListNotice),
+                when(OpaPublicListNoticeSent.class).apply(this::addPublicListNoticeSent),
+                when(OpaPressListNoticeSent.class).apply(this::addPressListNoticeSent),
+                when(OpaResultListNoticeSent.class).apply(this::addResultListNoticeSent),
                 otherwiseDoNothing());
     }
 
@@ -2257,5 +2286,219 @@ public class HearingAggregate implements Aggregate {
         this.hearing.getProsecutionCases().stream().filter(prosecutionCase -> prosecutionCase.getId().equals(newDefendantAddedToHearing.getProsecutionCaseId()))
                 .forEach(prosecutionCase -> prosecutionCase.getDefendants().addAll(newDefendantAddedToHearing.getDefendants()));
 
+    }
+
+    public HearingType getHearingType() {
+        return hearing.getType();
+    }
+
+    public ZonedDateTime getHearingDate() {
+        return hearing.getEarliestNextHearingDate();
+    }
+
+    public Stream<Object> generateOpaPublicListNotice(final ProsecutionCase pCaseFromCaseAggregate,
+                                                      final UUID defendantId,
+                                                      final LocalDate triggerDate) {
+        final Prosecutor prosecutor = pCaseFromCaseAggregate.getProsecutor();
+        final OpaNoticeDocument document = OpaNoticeHelper.generateOpaPublicListNotice(pCaseFromCaseAggregate.getId(), defendantId, hearing, prosecutor);
+        final OpaPublicListNoticeGenerated event = OpaPublicListNoticeGenerated.opaPublicListNoticeGenerated()
+                .withNotificationId(randomUUID())
+                .withHearingId(hearing.getId())
+                .withDefendantId(defendantId)
+                .withTriggerDate(triggerDate)
+                .withOpaNotice(document)
+                .build();
+
+        return Stream.of(event);
+    }
+
+    public Stream<Object> generateOpaPressListNotice(final ProsecutionCase pCaseFromCaseAggregate,
+                                                     final UUID defendantId,
+                                                     final OnlinePleasAllocation pleasAllocation,
+                                                     final LocalDate triggerDate) {
+        final Prosecutor prosecutor = pCaseFromCaseAggregate.getProsecutor();
+        final OpaNoticeDocument document = OpaNoticeHelper.generateOpaPressListNotice(pCaseFromCaseAggregate.getId(), defendantId, hearing, prosecutor, pleasAllocation);
+        final OpaPressListNoticeGenerated event = OpaPressListNoticeGenerated.opaPressListNoticeGenerated()
+                .withNotificationId(randomUUID())
+                .withHearingId(hearing.getId())
+                .withDefendantId(defendantId)
+                .withTriggerDate(triggerDate)
+                .withOpaNotice(document)
+                .build();
+
+        return Stream.of(event);
+    }
+
+    public Stream<Object> generateOpaResultListNotice(final ProsecutionCase pCaseFromCaseAggregate,
+                                                      final UUID defendantId,
+                                                      final LocalDate triggerDate) {
+        final OpaNoticeDocument document = OpaNoticeHelper.generateOpaResultListNotice(pCaseFromCaseAggregate.getId(), defendantId, hearing);
+        final OpaResultListNoticeGenerated event = OpaResultListNoticeGenerated.opaResultListNoticeGenerated()
+                .withNotificationId(randomUUID())
+                .withHearingId(hearing.getId())
+                .withDefendantId(defendantId)
+                .withTriggerDate(triggerDate)
+                .withOpaNotice(document)
+                .build();
+
+        return Stream.of(event);
+    }
+
+    private boolean isYouthDefendant(final UUID defendantId) {
+        return hearing.getProsecutionCases().stream()
+                .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream().filter(d -> d.getId().equals(defendantId)))
+                .findFirst().map(Defendant::getIsYouth).orElse(false);
+    }
+
+    public boolean isPublicListNoticeAlreadySent(final UUID defendantId, final LocalDate triggerDate) {
+        return opaPublicListNoticesSent.getOrDefault(defendantId, emptySet())
+                .contains(triggerDate);
+    }
+
+    public boolean isPressListNoticeAlreadySent(final UUID defendantId, final LocalDate triggerDate) {
+        return opaPressListNoticesSent.getOrDefault(defendantId, emptySet())
+                .contains(triggerDate);
+    }
+
+    public boolean isResultListNoticeAlreadySent(final UUID defendantId, final LocalDate triggerDate) {
+        return opaResultListNoticesSent.getOrDefault(defendantId, emptySet())
+                .contains(triggerDate);
+    }
+
+    private void deactivatePublicListNotice(final OpaPublicListNoticeDeactivated event) {
+        opaPublicListNoticesSent.remove(event.getDefendantId());
+    }
+
+    private void deactivatePressListNotice(final OpaPressListNoticeDeactivated event) {
+        opaPressListNoticesSent.remove(event.getDefendantId());
+    }
+
+    private void deactivateResultListNotice(final OpaResultListNoticeDeactivated event) {
+        opaResultListNoticesSent.remove(event.getDefendantId());
+    }
+
+    private boolean isRequestDateBeforeHearingDate(final LocalDate requestDate) {
+        if(ofNullable(hearing.getHearingDays()).isPresent()) {
+            return hearing.getHearingDays().stream()
+                    .map(HearingDay::getSittingDay)
+                    .sorted()
+                    .findFirst()
+                    .map(ZonedDateTime::toLocalDate)
+                    .filter(requestDate::isBefore)
+                    .isPresent();
+        } else {
+            return false;
+        }
+    }
+
+    public boolean checkOpaPublicListCriteria(final UUID defendantId, final LocalDate requestDate) {
+        return !isYouthDefendant(defendantId)
+                && !hasSharedResults()
+                && isRequestDateBeforeHearingDate(requestDate);
+    }
+
+    public boolean checkOpaPressListCriteria(final LocalDate requestDate) {
+        return !hasSharedResults()
+                && isRequestDateBeforeHearingDate(requestDate);
+    }
+
+    public boolean checkOpaResultListCriteria(final UUID defendantId, final LocalDate requestDate) {
+        return !isYouthDefendant(defendantId)
+                && ofNullable(resultSharedDateTime)
+                .map(ZonedDateTime::toLocalDate)
+                .filter(this::isRequestDateBeforeHearingDate)
+                .map(rsd -> requestDate.isBefore(rsd.plusDays(5)))
+                .orElse(false);
+    }
+
+    public Stream<Object> generateDeactivateOpaPublicListNotice(final UUID caseId, final UUID defendantId, final UUID hearingId) {
+        final OpaPublicListNoticeDeactivated event = OpaPublicListNoticeDeactivated.opaPublicListNoticeDeactivated()
+                .withCaseId(caseId)
+                .withDefendantId(defendantId)
+                .withHearingId(hearingId)
+                .build();
+
+        return Stream.of(event);
+    }
+
+    public Stream<Object> generateDeactivateOpaPressListNotice(final UUID caseId, final UUID defendantId, final UUID hearingId) {
+        final OpaPressListNoticeDeactivated event = OpaPressListNoticeDeactivated.opaPressListNoticeDeactivated()
+                .withCaseId(caseId)
+                .withDefendantId(defendantId)
+                .withHearingId(hearingId)
+                .build();
+
+        return Stream.of(event);
+    }
+
+    public Stream<Object> generateDeactivateOpaResultListNotice(final UUID caseId, final UUID defendantId, final UUID hearingId) {
+        final OpaResultListNoticeDeactivated event = OpaResultListNoticeDeactivated.opaResultListNoticeDeactivated()
+                .withCaseId(caseId)
+                .withDefendantId(defendantId)
+                .withHearingId(hearingId)
+                .build();
+
+        return Stream.of(event);
+    }
+
+    private boolean hasSharedResults() {
+        return ofNullable(hearing.getHasSharedResults()).orElse(Boolean.FALSE);
+    }
+
+    public Stream<Object> opaPublicListNoticeSent(final UUID notificationId,
+                                                  final UUID hearingId,
+                                                  final UUID defendantId,
+                                                  final LocalDate triggerDate) {
+        return apply(Stream.of(OpaPublicListNoticeSent.opaPublicListNoticeSent()
+                .withNotificationId(notificationId)
+                .withHearingId(hearingId)
+                .withDefendantId(defendantId)
+                .withTriggerDate(triggerDate)
+                .build()));
+    }
+
+    public Stream<Object> opaPressListNoticeSent(final UUID notificationId,
+                                                 final UUID hearingId,
+                                                 final UUID defendantId,
+                                                 final LocalDate triggerDate) {
+        return apply(Stream.of(OpaPressListNoticeSent.opaPressListNoticeSent()
+                .withNotificationId(notificationId)
+                .withHearingId(hearingId)
+                .withDefendantId(defendantId)
+                .withTriggerDate(triggerDate)
+                .build()));
+    }
+
+    public Stream<Object> opaResultListNoticeSent(final UUID notificationId,
+                                                  final UUID hearingId,
+                                                  final UUID defendantId,
+                                                  final LocalDate triggerDate) {
+        return apply(Stream.of(OpaResultListNoticeSent.opaResultListNoticeSent()
+                .withNotificationId(notificationId)
+                .withHearingId(hearingId)
+                .withDefendantId(defendantId)
+                .withTriggerDate(triggerDate)
+                .build()));
+    }
+
+    private void addPublicListNoticeSent(final OpaPublicListNoticeSent event) {
+        final Set<LocalDate> sentList = opaPublicListNoticesSent.getOrDefault(event.getDefendantId(), new HashSet<>());
+        sentList.add(event.getTriggerDate());
+
+        opaPublicListNoticesSent.put(event.getDefendantId(), sentList);
+    }
+
+    private void addPressListNoticeSent(final OpaPressListNoticeSent event) {
+        final Set<LocalDate> sentList = opaPressListNoticesSent.getOrDefault(event.getDefendantId(), new HashSet<>());
+        sentList.add(event.getTriggerDate());
+
+        opaPressListNoticesSent.put(event.getDefendantId(), sentList);
+    }
+
+    private void addResultListNoticeSent(final OpaResultListNoticeSent event) {
+        final Set<LocalDate> sentList = opaResultListNoticesSent.getOrDefault(event.getDefendantId(), new HashSet<>());
+        sentList.add(event.getTriggerDate());
+
+        opaResultListNoticesSent.put(event.getDefendantId(), sentList);
     }
 }

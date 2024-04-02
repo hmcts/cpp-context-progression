@@ -141,6 +141,9 @@
         "isUnbundledDocument": {
           "type": "boolean",
           "default": false
+        },
+        "notificationType": {
+          "type": "string"
         }
       },
       "required": [

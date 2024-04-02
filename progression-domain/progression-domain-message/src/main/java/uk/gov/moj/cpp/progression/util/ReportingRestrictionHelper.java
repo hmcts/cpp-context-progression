@@ -251,7 +251,7 @@ public class ReportingRestrictionHelper {
 
     }
 
-    private static Offence dedupAllReportingRestrictionsForOffence(final Offence offence) {
+    public static Offence dedupAllReportingRestrictionsForOffence(final Offence offence) {
         if (offence == null) {
             return offence;
         }

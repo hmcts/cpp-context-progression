@@ -327,6 +327,18 @@ subscriptions_descriptor:
         - name: progression.event.court-application-subject-custodial-information-updated
           schema_uri: http://justice.gov.uk/progression/event/court-application-subject-custodial-information-updated.json
 
+        - name: progression.event.online-plea-allocation-added
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.online-plea-allocation-added.json
+
+        - name: progression.event.opa-public-list-notice-deactivated
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-public-list-notice-deactivated.json
+
+        - name: progression.event.opa-press-list-notice-deactivated
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-press-list-notice-deactivated.json
+
+        - name: progression.event.opa-result-list-notice-deactivated
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-result-list-notice-deactivated.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 
@@ -401,6 +413,7 @@ subscriptions_descriptor:
 
         - name: progression.event.form-updated
           schema_uri: http://justice.gov.uk/core/courts/form-updated.json
+
           # Deprecated API  - End
 
       event_source_name: progression

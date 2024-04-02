@@ -1335,6 +1335,27 @@ public class ProsecutionCaseQueryViewTest {
     }
 
 
+    @Test
+    public void shouldReturnCaseAllHearingTypes() throws IOException {
+        final LocalDate today = LocalDate.now();
+        final UUID caseId = randomUUID();
+        final UUID hearingId1 = randomUUID();
+        final UUID hearingId2 = randomUUID();
+        final UUID hearingId3 = randomUUID();
+
+        when(hearingAtAGlanceService.getCaseHearingEntities(caseId)).thenReturn(asList(
+                createHearingEntity(hearingId1, today, PLEAS_HEARING_TYPE_DESCRIPTION),
+                createHearingEntity(hearingId2, today.plusDays(1), SECOND_HEARING_TYPE_DESCRIPTION),
+                createHearingEntity(hearingId3, today.plusDays(2), BAIL_HEARING_TYPE_DESCRIPTION)));
+
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeForQueryHearingTypes(PROGRESSION_QUERY_CASE_HEARING_TYPES, caseId, today);
+        final JsonEnvelope response = prosecutionCaseQuery.getCaseAllHearingTypes(envelopeWithCaseId);
+        final JsonObject payload = response.payloadAsJsonObject();
+        final Map<String, String> hearingTypes = payload.getJsonArray(HEARING_TYPES).getValuesAs(JsonObject.class).stream()
+                .collect(Collectors.toMap(json->json.getString(HEARING_ID), json-> json.getString(TYPE)));
+        assertThat(hearingTypes.size(), is(3));
+    }
+
     private CourtApplication getCourtApplication() {
         return CourtApplication.courtApplication()
                 .withId(APPLICATION_ID)

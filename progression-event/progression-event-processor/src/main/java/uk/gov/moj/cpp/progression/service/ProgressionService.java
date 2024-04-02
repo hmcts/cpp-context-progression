@@ -135,6 +135,9 @@ public class ProgressionService {
     private static final String PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE = "progression.command.create-prosecution-case";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
     private static final String PROGRESSION_QUERY_SEARCH_CASES = "progression.query.search-cases";
+    private static final String PROGRESSION_QUERY_PUBLIC_LIST_OPA_NOTICES = "progression.query.public-list-opa-notices";
+    private static final String PROGRESSION_QUERY_PRESS_LIST_OPA_NOTICES = "progression.query.press-list-opa-notices";
+    private static final String PROGRESSION_QUERY_RESULT_LIST_OPA_NOTICES = "progression.query.result-list-opa-notices";
     private static final String PROGRESSION_QUERY_SEARCH_CASES_BY_CASEURN = "progression.query.search-cases-by-caseurn";
     private static final String PROGRESSION_QUERY_CASE_EXISTS_BY_CASEURN = "progression.query.case-exist-by-caseurn";
     private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
@@ -676,6 +679,30 @@ public class ProgressionService {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("search for case detail response {}", response.toObfuscatedDebugString());
         }
+
+        return Optional.of(response.payloadAsJsonObject());
+    }
+
+    public Optional<JsonObject> getPublicListNotices(final JsonEnvelope envelope) {
+        LOGGER.info("get public list notices {} ", LocalDate.now());
+
+        final JsonEnvelope response = requester.request(envelopeFrom(metadataFrom(envelope.metadata()).withName(PROGRESSION_QUERY_PUBLIC_LIST_OPA_NOTICES).build(), createObjectBuilder().build()));
+
+        return Optional.of(response.payloadAsJsonObject());
+    }
+
+    public Optional<JsonObject> getPressListNotices(final JsonEnvelope envelope) {
+        LOGGER.info("get press list notices {} ", LocalDate.now());
+
+        final JsonEnvelope response = requester.request(envelopeFrom(metadataFrom(envelope.metadata()).withName(PROGRESSION_QUERY_PRESS_LIST_OPA_NOTICES).build(), createObjectBuilder().build()));
+
+        return Optional.of(response.payloadAsJsonObject());
+    }
+
+    public Optional<JsonObject> getResultListNotices(final JsonEnvelope envelope) {
+        LOGGER.info("get result list notices {}", LocalDate.now());
+
+        final JsonEnvelope response = requester.request(envelopeFrom(metadataFrom(envelope.metadata()).withName(PROGRESSION_QUERY_RESULT_LIST_OPA_NOTICES).build(), createObjectBuilder().build()));
 
         return Optional.of(response.payloadAsJsonObject());
     }

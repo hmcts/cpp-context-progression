@@ -4,6 +4,7 @@ import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.io.Resources.getResource;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -66,6 +67,7 @@ import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
+import uk.gov.justice.core.courts.OnlinePleasAllocation;
 import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.PleaModel;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -95,6 +97,15 @@ import uk.gov.justice.progression.courts.RelatedHearingUpdated;
 import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
+import uk.gov.justice.progression.event.OpaPressListNoticeDeactivated;
+import uk.gov.justice.progression.event.OpaPressListNoticeGenerated;
+import uk.gov.justice.progression.event.OpaPressListNoticeSent;
+import uk.gov.justice.progression.event.OpaPublicListNoticeDeactivated;
+import uk.gov.justice.progression.event.OpaPublicListNoticeGenerated;
+import uk.gov.justice.progression.event.OpaPublicListNoticeSent;
+import uk.gov.justice.progression.event.OpaResultListNoticeDeactivated;
+import uk.gov.justice.progression.event.OpaResultListNoticeGenerated;
+import uk.gov.justice.progression.event.OpaResultListNoticeSent;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -112,8 +123,12 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1311,13 +1326,13 @@ public class HearingAggregateTest {
                                                 .build()))).build()))
                         .build()).build());
 
-        final List<Offence> offences  =  Stream.of(
+        final List<Offence> offences = Stream.of(
                 Offence.offence().withId(randomUUID()).withOffenceCode(randomUUID().toString()).withOffenceTitle("RegularOffence1").withReportingRestrictions(Collections.singletonList(ReportingRestriction.reportingRestriction().withId(randomUUID()).withLabel(YOUTH_RESTRICTION).withOrderedDate(LocalDate.now()).build())).build(),
                 Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withOffenceTitle("SexualOffence1").build()
         ).collect(Collectors.toList());
 
         List<Object> events = hearingAggregate.updateOffence(defendantId, offences).collect(toList());
-        final HearingOffencesUpdated hearingOffencesUpdated = (HearingOffencesUpdated)events.get(0);
+        final HearingOffencesUpdated hearingOffencesUpdated = (HearingOffencesUpdated) events.get(0);
         assertThat(hearingOffencesUpdated.getHearingId(), is(hearingId));
         List<Offence> offencesInHearing = hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences();
         assertThat(offencesInHearing.size(), is(2));
@@ -1531,9 +1546,9 @@ public class HearingAggregateTest {
 
         hearingAggregate.apply(HearingForApplicationCreatedV2.hearingForApplicationCreatedV2().withHearing(hearing).withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING).build());
 
-        final List<Object> events = hearingAggregate.processHearingResults(hearing,ZonedDateTime.now(),null, LocalDate.now()).collect(toList());
+        final List<Object> events = hearingAggregate.processHearingResults(hearing, ZonedDateTime.now(), null, LocalDate.now()).collect(toList());
 
-        ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2=  (ProsecutionCaseDefendantListingStatusChangedV2)events.stream().filter(e-> e instanceof ProsecutionCaseDefendantListingStatusChangedV2).findFirst().get();
+        ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = (ProsecutionCaseDefendantListingStatusChangedV2) events.stream().filter(e -> e instanceof ProsecutionCaseDefendantListingStatusChangedV2).findFirst().get();
 
         assertThat(prosecutionCaseDefendantListingStatusChangedV2.getHearing().getId(), is(hearingId));
 
@@ -2197,6 +2212,515 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldGetHearingType() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final ZonedDateTime inputDate = ZonedDateTime.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, inputDate, false);
+        createHearingInitiated(hearing);
+
+        final HearingType hearingType = hearingAggregate.getHearingType();
+        assertThat(hearingType.getDescription(), is("First hearing"));
+    }
+
+    @Test
+    public void shouldGetHearingDate() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final ZonedDateTime inputDate = ZonedDateTime.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, inputDate, false);
+        createHearingInitiated(hearing);
+
+        final ZonedDateTime hearingDate = hearingAggregate.getHearingDate();
+        assertThat(hearingDate, is(inputDate));
+    }
+
+    @Test
+    public void shouldGenerateOpaPublicListNotice() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now().plusDays(1), false, false);
+        createHearingInitiated(hearing);
+        final ProsecutionCase prosecutionCase = hearing.getProsecutionCases().get(0);
+
+        final Stream<Object> eventStream = hearingAggregate.generateOpaPublicListNotice(prosecutionCase, defendantId, LocalDate.now());
+        final Optional<OpaPublicListNoticeGenerated> event = eventStream.map(OpaPublicListNoticeGenerated.class::cast).findFirst();
+
+        assertThat(event.isPresent(), is(true));
+        assertThat(event.get().getOpaNotice(), is(notNullValue()));
+    }
+
+    @Test
+    public void shouldGenerateOpaPressListNotice() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now().plusDays(1), false, false);
+        createHearingInitiated(hearing);
+        final ProsecutionCase prosecutionCase = hearing.getProsecutionCases().get(0);
+        final OnlinePleasAllocation pleasAllocation = OnlinePleasAllocation.onlinePleasAllocation().build();
+
+        final Stream<Object> eventStream = hearingAggregate.generateOpaPressListNotice(prosecutionCase, defendantId, pleasAllocation, LocalDate.now());
+        final Optional<OpaPressListNoticeGenerated> event = eventStream.map(OpaPressListNoticeGenerated.class::cast).findFirst();
+
+        assertThat(event.isPresent(), is(true));
+        assertThat(event.get().getOpaNotice(), is(notNullValue()));
+    }
+
+    @Test
+    public void shouldGenerateOpaResultListNotice() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now().plusDays(1), false, false);
+        createHearingInitiated(hearing);
+        final ProsecutionCase prosecutionCase = hearing.getProsecutionCases().get(0);
+
+        final Stream<Object> eventStream = hearingAggregate.generateOpaResultListNotice(prosecutionCase, defendantId, LocalDate.now());
+        final Optional<OpaResultListNoticeGenerated> event = eventStream.map(OpaResultListNoticeGenerated.class::cast).findFirst();
+
+        assertThat(event.isPresent(), is(true));
+        assertThat(event.get().getOpaNotice(), is(notNullValue()));
+    }
+
+    @Test
+    public void shouldCheckIsPublicListNoticeAlreadySent() {
+        final UUID defendantId = randomUUID();
+
+        final Map<UUID, Set<LocalDate>> noticeSentMap = new HashMap<>();
+        noticeSentMap.put(defendantId, emptySet());
+
+        setField(hearingAggregate, "opaPublicListNoticesSent", noticeSentMap);
+
+        final boolean noticeAlreadySent = hearingAggregate.isPublicListNoticeAlreadySent(defendantId, LocalDate.now());
+
+        assertThat(noticeAlreadySent, is(false));
+    }
+
+    @Test
+    public void shouldCheckIsPublicListNoticeAlreadySentWhenNoticeAlreadySent() {
+        final UUID defendantId = randomUUID();
+        final Map<UUID, Set<LocalDate>> noticeSentMap = getNoticeSentMap(defendantId);
+
+        setField(hearingAggregate, "opaPublicListNoticesSent", noticeSentMap);
+
+        final boolean noticeAlreadySent = hearingAggregate.isPublicListNoticeAlreadySent(defendantId, LocalDate.now());
+
+        assertThat(noticeAlreadySent, is(true));
+    }
+
+    @Test
+    public void shouldCheckIsPressListNoticeAlreadySent() {
+        final UUID defendantId = randomUUID();
+
+        final Map<UUID, Set<LocalDate>> noticeSentMap = new HashMap<>();
+        noticeSentMap.put(defendantId, emptySet());
+
+        setField(hearingAggregate, "opaPressListNoticesSent", noticeSentMap);
+
+        final boolean noticeAlreadySent = hearingAggregate.isPressListNoticeAlreadySent(defendantId, LocalDate.now());
+
+        assertThat(noticeAlreadySent, is(false));
+    }
+
+    @Test
+    public void shouldCheckIsPressListNoticeAlreadySentWhenNoticeAlreadySent() {
+        final UUID defendantId = randomUUID();
+        final Map<UUID, Set<LocalDate>> noticeSentMap = getNoticeSentMap(defendantId);
+
+        setField(hearingAggregate, "opaPressListNoticesSent", noticeSentMap);
+
+        final boolean noticeAlreadySent = hearingAggregate.isPressListNoticeAlreadySent(defendantId, LocalDate.now());
+
+        assertThat(noticeAlreadySent, is(true));
+    }
+
+    @Test
+    public void shouldCheckIsResultListNoticeAlreadySent() {
+        final UUID defendantId = randomUUID();
+
+        final Map<UUID, Set<LocalDate>> noticeSentMap = new HashMap<>();
+        noticeSentMap.put(defendantId, emptySet());
+
+        setField(hearingAggregate, "opaResultListNoticesSent", noticeSentMap);
+
+        final boolean resultListNoticeAlreadySent = hearingAggregate.isResultListNoticeAlreadySent(defendantId, LocalDate.now());
+
+        assertThat(resultListNoticeAlreadySent, is(false));
+    }
+
+    @Test
+    public void shouldCheckIsResultListNoticeAlreadySentWhenNoticeAlreadySent() {
+        final UUID defendantId = randomUUID();
+        final Map<UUID, Set<LocalDate>> noticeSentMap = getNoticeSentMap(defendantId);
+
+        setField(hearingAggregate, "opaResultListNoticesSent", noticeSentMap);
+
+        final boolean resultListNoticeAlreadySent = hearingAggregate.isResultListNoticeAlreadySent(defendantId, LocalDate.now());
+
+        assertThat(resultListNoticeAlreadySent, is(true));
+    }
+
+    @Test
+    public void shouldDeactivatePublicListNotice() {
+        final UUID defendantId = randomUUID();
+        final OpaPublicListNoticeDeactivated event = OpaPublicListNoticeDeactivated.opaPublicListNoticeDeactivated().withDefendantId(defendantId).build();
+
+        final Map<UUID, Set<Object>> noticeSentMap = new HashMap<>();
+        noticeSentMap.put(defendantId, emptySet());
+
+        setField(hearingAggregate, "opaPublicListNoticesSent", noticeSentMap);
+
+        hearingAggregate.apply(event);
+
+        assertThat(noticeSentMap.containsKey(defendantId), is(false));
+    }
+
+    @Test
+    public void shouldDeactivatePressListNotice() {
+        final UUID defendantId = randomUUID();
+        final OpaPressListNoticeDeactivated event = OpaPressListNoticeDeactivated.opaPressListNoticeDeactivated().withDefendantId(defendantId).build();
+
+        final Map<UUID, Set<Object>> noticeSentMap = new HashMap<>();
+        noticeSentMap.put(defendantId, emptySet());
+
+        setField(hearingAggregate, "opaPressListNoticesSent", noticeSentMap);
+
+        hearingAggregate.apply(event);
+
+        assertThat(noticeSentMap.containsKey(defendantId), is(false));
+    }
+
+    @Test
+    public void shouldDeactivateResultListNotice() {
+        final UUID defendantId = randomUUID();
+        final OpaResultListNoticeDeactivated event = OpaResultListNoticeDeactivated.opaResultListNoticeDeactivated().withDefendantId(defendantId).build();
+
+        final Map<UUID, Set<Object>> noticeSentMap = new HashMap<>();
+        noticeSentMap.put(defendantId, emptySet());
+
+        setField(hearingAggregate, "opaResultListNoticesSent", noticeSentMap);
+
+        hearingAggregate.apply(event);
+
+        assertThat(noticeSentMap.containsKey(defendantId), is(false));
+    }
+
+    @Test
+    public void shouldCheckOpaPublicListCriteriaSuccess() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final LocalDate requestDate = LocalDate.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now().plusDays(1), false, false);
+        createHearingInitiated(hearing);
+
+        final boolean result = hearingAggregate.checkOpaPublicListCriteria(defendantId, requestDate);
+
+        assertThat(result, is(true));
+    }
+
+    @Test
+    public void shouldCheckOpaPublicListCriteriaWithYouthDefendant() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final LocalDate requestDate = LocalDate.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now().plusDays(1), true, false);
+        createHearingInitiated(hearing);
+
+        final boolean result = hearingAggregate.checkOpaPublicListCriteria(defendantId, requestDate);
+
+        assertThat(result, is(false));
+    }
+
+    @Test
+    public void shouldCheckOpaPublicListCriteriaWithResultShared() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final LocalDate requestDate = LocalDate.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now().plusDays(1), false, true);
+        createHearingInitiated(hearing);
+
+        final boolean result = hearingAggregate.checkOpaPublicListCriteria(defendantId, requestDate);
+
+        assertThat(result, is(false));
+    }
+
+    @Test
+    public void shouldCheckOpaPublicListCriteriaWithSameHearingDateAndRequestDate() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final LocalDate requestDate = LocalDate.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now(), false, false);
+        createHearingInitiated(hearing);
+
+        final boolean result = hearingAggregate.checkOpaPublicListCriteria(defendantId, requestDate);
+
+        assertThat(result, is(false));
+    }
+
+    @Test
+    public void shouldCheckOpaPressListCriteriaSuccess() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final LocalDate requestDate = LocalDate.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now().plusDays(1), false, false);
+        createHearingInitiated(hearing);
+
+        final boolean result = hearingAggregate.checkOpaPressListCriteria(requestDate);
+
+        assertThat(result, is(true));
+    }
+
+    @Test
+    public void shouldCheckOpaPressListCriteriaWithRequestDateSameAsHearingDate() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final LocalDate requestDate = LocalDate.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now(), false, false);
+        createHearingInitiated(hearing);
+
+        final boolean result = hearingAggregate.checkOpaPressListCriteria(requestDate);
+
+        assertThat(result, is(false));
+    }
+    @Test
+    public void shouldCheckOpaPressListCriteriaWithResultShared() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final LocalDate requestDate = LocalDate.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now().plusDays(1), false);
+        createHearingResulted(ZonedDateTime.now(), hearing);
+
+        final boolean result = hearingAggregate.checkOpaPressListCriteria(requestDate);
+
+        assertThat(result, is(false));
+    }
+
+    @Test
+    public void shouldCheckOpaResultListCriteriaSuccess() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final LocalDate requestDate = LocalDate.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now().plusDays(1), false);
+        createHearingResulted(ZonedDateTime.now(), hearing);
+
+
+        final boolean result = hearingAggregate.checkOpaResultListCriteria(defendantId, requestDate);
+
+        assertThat(result, is(true));
+    }
+    @Test
+    public void shouldCheckOpaResultListCriteriaWithoutResultNotShared() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final LocalDate requestDate = LocalDate.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now().plusDays(1), false);
+        createHearingResulted(null, hearing);
+
+        final boolean result = hearingAggregate.checkOpaResultListCriteria(defendantId, requestDate);
+
+        assertThat(result, is(false));
+    }
+
+
+    @Test
+    public void shouldCheckOpaResultListCriteriaWithYouth() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final LocalDate requestDate = LocalDate.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now().plusDays(1), true);
+        createHearingResulted(ZonedDateTime.now(), hearing);
+
+        final boolean result = hearingAggregate.checkOpaResultListCriteria(defendantId, requestDate);
+
+        assertThat(result, is(false));
+
+    }
+
+    @Test
+    public void shouldCheckOpaResultListCriteriaSuccessWith4daysAfterResulted() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final LocalDate requestDate = LocalDate.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now().plusDays(1), false);
+        createHearingResulted(ZonedDateTime.now().minusDays(4), hearing);
+
+        final boolean result = hearingAggregate.checkOpaResultListCriteria(defendantId, requestDate);
+
+        assertThat(result, is(true));
+    }
+
+    @Test
+    public void shouldCheckOpaResultListCriteriaWith5daysAfterResulted() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final LocalDate requestDate = LocalDate.now();
+
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now().plusDays(1), false);
+        createHearingResulted(ZonedDateTime.now().minusDays(5), hearing);
+
+        final boolean result = hearingAggregate.checkOpaResultListCriteria(defendantId, requestDate);
+
+        assertThat(result, is(false));
+    }
+
+    @Test
+    public void shouldCheckOpaResultListCriteriaWithResultedOnHearingDate() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final LocalDate requestDate = LocalDate.now();
+        final Hearing hearing = getHearing(caseId, defendantId, ZonedDateTime.now(), false);
+        createHearingResulted(ZonedDateTime.now(), hearing);
+
+        final boolean result = hearingAggregate.checkOpaResultListCriteria(defendantId, requestDate);
+
+        assertThat(result, is(false));
+    }
+
+    @Test
+    public void shouldBuildDeactivateOpaPublicListNoticeEvent() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final Stream<Object> eventStream = hearingAggregate.generateDeactivateOpaPublicListNotice(caseId, defendantId, hearingId);
+        final Optional<OpaPublicListNoticeDeactivated> optionalEvent = eventStream.map(OpaPublicListNoticeDeactivated.class::cast).findFirst();
+
+        assertThat(optionalEvent.isPresent(), is(true));
+        final OpaPublicListNoticeDeactivated event = optionalEvent.get();
+        assertThat(event.getCaseId(), is(caseId));
+        assertThat(event.getDefendantId(), is(defendantId));
+        assertThat(event.getHearingId(), is(hearingId));
+    }
+
+    @Test
+    public void shouldBuildDeactivateOpaPressListNoticeEvent() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final Stream<Object> eventStream = hearingAggregate.generateDeactivateOpaPressListNotice(caseId, defendantId, hearingId);
+        final Optional<OpaPressListNoticeDeactivated> optionalEvent = eventStream.map(OpaPressListNoticeDeactivated.class::cast).findFirst();
+
+        assertThat(optionalEvent.isPresent(), is(true));
+        final OpaPressListNoticeDeactivated event = optionalEvent.get();
+        assertThat(event.getCaseId(), is(caseId));
+        assertThat(event.getDefendantId(), is(defendantId));
+        assertThat(event.getHearingId(), is(hearingId));
+    }
+
+    @Test
+    public void shouldBuildDeactivateOpaResultListNoticeEvent() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final Stream<Object> eventStream = hearingAggregate.generateDeactivateOpaResultListNotice(caseId, defendantId, hearingId);
+        final Optional<OpaResultListNoticeDeactivated> optionalEvent = eventStream.map(OpaResultListNoticeDeactivated.class::cast).findFirst();
+
+        assertThat(optionalEvent.isPresent(), is(true));
+        final OpaResultListNoticeDeactivated event = optionalEvent.get();
+        assertThat(event.getCaseId(), is(caseId));
+        assertThat(event.getDefendantId(), is(defendantId));
+        assertThat(event.getHearingId(), is(hearingId));
+    }
+
+    @Test
+    public void shouldAddOpaPublicListNoticeEvent() {
+        final UUID notificationId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final LocalDate triggerDate = LocalDate.now();
+
+        final Map<UUID, Set<Object>> noticeSentMap = new HashMap<>();
+
+        setField(hearingAggregate, "opaPublicListNoticesSent", noticeSentMap);
+
+        final Stream<Object> eventStream = hearingAggregate.opaPublicListNoticeSent(notificationId, hearingId, defendantId, triggerDate);
+        final Optional<OpaPublicListNoticeSent> optionalEvent = eventStream.map(OpaPublicListNoticeSent.class::cast).findFirst();
+
+        assertThat(optionalEvent.isPresent(), is(true));
+        final OpaPublicListNoticeSent event = optionalEvent.get();
+        assertThat(event.getNotificationId(), is(notificationId));
+        assertThat(event.getDefendantId(), is(defendantId));
+        assertThat(event.getHearingId(), is(hearingId));
+        assertThat(event.getTriggerDate(), is(triggerDate));
+
+        hearingAggregate.opaPublicListNoticeSent(notificationId, hearingId, defendantId, LocalDate.now().minusDays(1));
+
+        final Set<Object> objects = noticeSentMap.get(defendantId);
+        assertThat(objects.size(), is(2));
+    }
+
+    @Test
+    public void shouldAddOpaPressListNoticeEvent() {
+        final UUID notificationId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final LocalDate triggerDate = LocalDate.now();
+
+        final Map<UUID, Set<Object>> noticeSentMap = new HashMap<>();
+
+        setField(hearingAggregate, "opaPressListNoticesSent", noticeSentMap);
+
+        final Stream<Object> eventStream = hearingAggregate.opaPressListNoticeSent(notificationId, hearingId, defendantId, triggerDate);
+        final Optional<OpaPressListNoticeSent> optionalEvent = eventStream.map(OpaPressListNoticeSent.class::cast).findFirst();
+
+        assertThat(optionalEvent.isPresent(), is(true));
+        final OpaPressListNoticeSent event = optionalEvent.get();
+        assertThat(event.getNotificationId(), is(notificationId));
+        assertThat(event.getDefendantId(), is(defendantId));
+        assertThat(event.getHearingId(), is(hearingId));
+        assertThat(event.getTriggerDate(), is(triggerDate));
+
+        hearingAggregate.opaPressListNoticeSent(notificationId, hearingId, defendantId, LocalDate.now().minusDays(1));
+
+        final Set<Object> objects = noticeSentMap.get(defendantId);
+        assertThat(objects.size(), is(2));
+    }
+
+    @Test
+    public void shouldAddOpaResultListNoticeEvent() {
+        final UUID notificationId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final LocalDate triggerDate = LocalDate.now();
+
+        final Map<UUID, Set<Object>> noticeSentMap = new HashMap<>();
+
+        setField(hearingAggregate, "opaResultListNoticesSent", noticeSentMap);
+
+        final Stream<Object> eventStream = hearingAggregate.opaResultListNoticeSent(notificationId, hearingId, defendantId, triggerDate);
+        final Optional<OpaResultListNoticeSent> optionalEvent = eventStream.map(OpaResultListNoticeSent.class::cast).findFirst();
+
+        assertThat(optionalEvent.isPresent(), is(true));
+        final OpaResultListNoticeSent event = optionalEvent.get();
+        assertThat(event.getNotificationId(), is(notificationId));
+        assertThat(event.getDefendantId(), is(defendantId));
+        assertThat(event.getHearingId(), is(hearingId));
+        assertThat(event.getTriggerDate(), is(triggerDate));
+
+        hearingAggregate.opaResultListNoticeSent(notificationId, hearingId, defendantId, LocalDate.now().minusDays(1));
+
+        final Set<Object> objects = noticeSentMap.get(defendantId);
+        assertThat(objects.size(), is(2));
+    }
+
+    @Test
     public void shouldRaiseRelatedHearingAndStatusChangeEventWithMultipleCaseAndOneDefendantAndOffences() {
         final Optional<JsonObject> relatedHearingRequestedJsonObject =
                 Optional.of(getJsonObjectResponseFromJsonResource("json/progression.event.related-hearing-requested.json"));
@@ -2381,8 +2905,61 @@ public class HearingAggregateTest {
         return HearingDeleted.hearingDeleted().withHearingId(hearing.getId()).build();
     }
 
+    private void createHearingInitiated(final Hearing hearing) {
+        final HearingInitiateEnriched event = HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build();
+
+        hearingAggregate.apply(event);
+    }
+
+    private void createHearingResulted(final ZonedDateTime resultedDate,  final Hearing hearing) {
+        final HearingResulted event = HearingResulted.hearingResulted().withHearing(hearing).withSharedTime(resultedDate).build();
+
+        hearingAggregate.apply(event);
+    }
+
     private HearingResulted createHearingResulted(final Hearing hearing) {
         return HearingResulted.hearingResulted().withHearing(hearing).build();
+    }
+
+    private Hearing getHearing(final UUID caseId, final UUID defendantId, final ZonedDateTime hearingDate, final boolean youth) {
+        return getHearing(caseId, defendantId, hearingDate, youth, true);
+    }
+
+    private Hearing getHearing(final UUID caseId, final UUID defendantId, final ZonedDateTime hearingDate, final boolean youth, final boolean resultShared) {
+        return Hearing.hearing()
+                .withId(randomUUID())
+                .withHasSharedResults(resultShared)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withEarliestNextHearingDate(hearingDate)
+                .withHearingDays(asList(HearingDay.hearingDay().withSittingDay(hearingDate).build()))
+                .withType(HearingType.hearingType().withDescription("First hearing").build())
+                .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
+                        .withId(caseId)
+                        .withDefendants(new ArrayList<>(asList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withIsYouth(youth)
+                                .withOffences(of(Offence.offence()
+                                        .withId(randomUUID())
+                                        .withListingNumber(1)
+                                        .build()))
+                                .build()
+                        )))
+                        .build()
+                )))
+                .withCourtApplications(new ArrayList<>(asList(CourtApplication.courtApplication()
+                        .withSubject(CourtApplicationParty.courtApplicationParty()
+                                .withMasterDefendant(MasterDefendant.masterDefendant().withIsYouth(false).build()).build())
+                        .build())))
+                .build();
+    }
+
+    private Map<UUID, Set<LocalDate>> getNoticeSentMap(final UUID defendantId) {
+        final Set<LocalDate> dateSet = new HashSet<>();
+        dateSet.add(LocalDate.now());
+        final Map<UUID, Set<LocalDate>> noticeSentMap = new HashMap<>();
+        noticeSentMap.put(defendantId, dateSet);
+
+        return noticeSentMap;
     }
 
     private Hearing getHearing(final UUID offenceId) {
@@ -2407,7 +2984,6 @@ public class HearingAggregateTest {
                         .build())))
                 .build();
     }
-
 
     private HearingDaysWithoutCourtCentreCorrected createHearingDaysWithoutCourtCentreCorrected() {
         return HearingDaysWithoutCourtCentreCorrected.hearingDaysWithoutCourtCentreCorrected()
@@ -2675,7 +3251,7 @@ public class HearingAggregateTest {
     }
 
     @Test
-    public void shouldEnrichInitiateHearingWhenHearingDefendantRequestIsPresent(){
+    public void shouldEnrichInitiateHearingWhenHearingDefendantRequestIsPresent() {
         final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
         listDefendantRequests.add(ListDefendantRequest.listDefendantRequest()
                 .withProsecutionCaseId(randomUUID())

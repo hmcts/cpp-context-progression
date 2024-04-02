@@ -4,8 +4,9 @@ FROM {base_image}
 
 ARG version
 ARG repo_loc=https://libraries-internal.mdv.cpp.nonlive/artifactory/repocentral
-ARG framework_version=8.0.4
-ARG eventstore_version=8.2.0
+ARG framework_libraries_version=8.0.7
+ARG framework_version=8.0.7
+ARG eventstore_version=8.3.6
 ARG activiti_version=5.22.0
 ARG wildfly_home=/opt/wildfly
 ARG wildfly_user=wildfly
@@ -23,6 +24,7 @@ ADD ${repo_loc}/uk/gov/justice/event-store/aggregate-snapshot-repository-liquiba
 ADD ${repo_loc}/uk/gov/justice/event-store/event-buffer-liquibase/${eventstore_version}/event-buffer-liquibase-${eventstore_version}.jar  /tmp/liquibase/event-buffer-liquibase.jar
 ADD ${repo_loc}/uk/gov/justice/event-store/event-tracking-liquibase/${eventstore_version}/event-tracking-liquibase-${eventstore_version}.jar  /tmp/liquibase/event-tracking-liquibase.jar
 ADD ${repo_loc}/uk/gov/justice/services/framework-system-liquibase/${framework_version}/framework-system-liquibase-${framework_version}.jar  /tmp/liquibase/framework-system-liquibase.jar
+ADD ${repo_loc}/uk/gov/justice/services/jobstore-liquibase/${framework_libraries_version}/jobstore-liquibase-${framework_libraries_version}.jar  /tmp/liquibase/jobstore-liquibase.jar
 ADD ${repo_loc}/uk/gov/moj/cpp/activiti/activiti-liquibase/${activiti_version}/activiti-liquibase-${activiti_version}.jar  /tmp/liquibase/activiti-liquibase.jar
 RUN chown -R ${wildfly_user}:${wildfly_user} /tmp/liquibase
 RUN chmod -R 755 /tmp/liquibase

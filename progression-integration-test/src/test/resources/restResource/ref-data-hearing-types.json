@@ -43,6 +43,17 @@
       "trialTypeFlag": true,
       "validFrom": null,
       "validTo": null
+    },
+    {
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776",
+      "seqId": 5,
+      "hearingCode": "FHG",
+      "hearingDescription": "First hearing",
+      "welshHearingDescription": "Gwrandawiad Cyntaf",
+      "defaultDurationMin": 20,
+      "trialTypeFlag": false,
+      "validFrom": null,
+      "validTo": null
     }
   ]
 }

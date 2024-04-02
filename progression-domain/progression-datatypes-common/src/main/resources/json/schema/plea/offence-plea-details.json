@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/offence-plea-details.json",
+  "type": "object",
+  "properties": {
+    "offenceId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "indicatedPlea": {
+      "type": "string"
+    },
+    "pleaDate": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/date"
+    }
+  },
+  "required": [
+    "offenceId",
+    "indicatedPlea"
+  ],
+  "additionalProperties": false
+}

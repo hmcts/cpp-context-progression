@@ -117,6 +117,13 @@ function runViewStoreLiquibase {
   echo "Finished ViewStoreLiquibase"
 }
 
+function runJobStoreLiquibase() {
+    echo "Running JobstoreLiquibase"
+    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.services:jobstore-liquibase:${FRAMEWORK_LIBRARIES_VERSION}:jar
+    java -jar target/jobstore-liquibase-${FRAMEWORK_LIBRARIES_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}jobstore --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
+    echo "Finished executing JobstoreLiquibase liquibase"
+}
+
 function runEventBufferLiquibase() {
 echo "running EventBufferLiquibase"
     mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.event-store:event-buffer-liquibase:${EVENT_STORE_VERSION}:jar
@@ -151,6 +158,7 @@ function runLiquibase {
    runEventLogAggregateSnapshotLiquibase
    runEventBufferLiquibase
    runViewStoreLiquibase
+   runJobStoreLiquibase
    runSystemLiquibase
    runEventTrackingLiquibase
    runFileServiceLiquibase

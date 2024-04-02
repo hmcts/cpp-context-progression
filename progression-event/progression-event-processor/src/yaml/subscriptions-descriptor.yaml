@@ -418,6 +418,33 @@ subscriptions_descriptor:
         - name: progression.event.court-list-published
           schema_uri: http://justice.gov.uk/cpp/progression/event/court-list-published.json
 
+        - name: progression.event.press-list-opa-notice-generated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.press-list-opa-notice-generated.json
+
+        - name: progression.event.public-list-opa-notice-generated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.public-list-opa-notice-generated.json
+
+        - name: progression.event.result-list-opa-notice-generated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.result-list-opa-notice-generated.json
+
+        - name: progression.event.opa-public-list-notice-requested
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-public-list-notice-requested.json
+
+        - name: progression.event.opa-press-list-notice-requested
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-press-list-notice-requested.json
+
+        - name: progression.event.opa-result-list-notice-requested
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-result-list-notice-requested.json
+
+        - name: progression.event.opa-public-list-notice-generated
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-public-list-notice-generated.json
+
+        - name: progression.event.opa-result-list-notice-generated
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-press-list-notice-generated.json
+
+        - name: progression.event.opa-press-list-notice-generated
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-result-list-notice-generated.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 
@@ -611,6 +638,21 @@ subscriptions_descriptor:
         - name: public.hearing.defence-counsel-removed
           schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/defence-counsel-removed.json
 
+        # Defence start
+        - name: public.defence.allocation-pleas-added
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/allocation-pleas-added.json
+
+        - name: public.defence.allocation-pleas-updated
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/allocation-pleas-updated.json
+
+        - name: public.stagingpubhub.opa-public-list-notice-sent
+          schema_uri: http://justice.gov.uk/progression/courts/progression.command.opa-notice-sent.json
+
+        - name: public.stagingpubhub.opa-press-list-notice-sent
+          schema_uri: http://justice.gov.uk/progression/courts/progression.command.opa-notice-sent.json
+
+        - name: public.stagingpubhub.opa-result-list-notice-sent
+          schema_uri: http://justice.gov.uk/progression/courts/progression.command.opa-notice-sent.json
 
         # Notification notify
         - name: public.notificationnotify.events.notification-failed

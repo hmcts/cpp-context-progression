@@ -202,6 +202,11 @@ public class ProsecutionCaseQueryApi {
         return prosecutionCaseQuery.getCotrForm(query);
     }
 
+    @Handles("progression.query.case.allhearingtypes")
+    public JsonEnvelope getCaseAllHearingTypes(final JsonEnvelope query) {
+        return prosecutionCaseQuery.getCaseAllHearingTypes(query);
+    }
+
     private JsonObject createOrganisation(final JsonObject completeOrganisationDetails) {
 
         final JsonObject address = completeOrganisationDetails.getJsonObject(ORGANISATION_ADDRESS);

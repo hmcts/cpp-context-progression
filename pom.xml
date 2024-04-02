@@ -71,7 +71,7 @@
         <listing.version>8.0.67</listing.version>
         <hearing.version>8.0.115</hearing.version>
         <usersgroups.version>8.0.21</usersgroups.version>
-        <defence.version>8.0.43</defence.version>
+        <defence.version>8.0.48</defence.version>
         <referencedata.offence.version>8.0.14</referencedata.offence.version>
         <coredomain.version>8.0.2</coredomain.version>
         <directionsmanagement.version>8.0.23</directionsmanagement.version>
@@ -80,7 +80,7 @@
         <results.version>8.0.32</results.version>
         <notification.notify.version>7.0.18</notification.notify.version>
         <unifiedsearch.version>8.0.7</unifiedsearch.version>
-        <systemdocgenerator.version>8.0.70</systemdocgenerator.version>
+        <systemdocgenerator.version>8.0.74</systemdocgenerator.version>
         <applicationscourtorders.version>8.0.9</applicationscourtorders.version>
         <sjp.version>8.0.70</sjp.version>
         <jackson-data-format.version>2.8.8</jackson-data-format.version>

@@ -129,4 +129,28 @@ public class CourtDocumentNotifiedProcessorTest {
         verify(cpsRestNotificationService).sendMaterial(transformedPayload, courtDocument.getCourtDocumentId(), jsonEnvelope);
     }
 
+    @Test
+    public void shouldProcessOPACourtDocumentSendToCPS_WhenSendToCpsTrue() {
+        final String transformedPayload = Json.createObjectBuilder().add("a", "b").build().toString();
+        when(courtDocumentTransformer.transform(any(CourtDocument.class), any(Optional.class), any(JsonEnvelope.class), any(String.class))).thenReturn(of(transformedPayload));
+
+        courtDocument = courtDocument()
+                .withCourtDocumentId(randomUUID())
+                .withDocumentCategory(documentCategory()
+                        .withCaseDocument(CaseDocument.caseDocument()
+                                .withProsecutionCaseId(fromString(prosecutionCaseId))
+                                .build())
+                        .build())
+                .withMaterials(singletonList(material().withId(randomUUID()).build()))
+                .withSendToCps(true)
+                .withNotificationType("opa-form-submitted")
+                .build();
+        final JsonObject courtDocumentJsonObject = createObjectBuilder().build();
+        when(jsonObjectConverter.convert(courtDocumentJsonObject, CourtDocument.class)).thenReturn(courtDocument);
+
+        courtDocumentNotifiedProcessor.processCourtDocumentSendToCPS(jsonEnvelope);
+        verify(courtDocumentTransformer).transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
+        verify(cpsEmailNotificationService, never()).sendEmailToCps(jsonEnvelope, courtDocument, fromString(prosecutionCaseId), prosecutionCaseJsonOptional.get());
+        verify(cpsRestNotificationService).sendMaterial(transformedPayload, courtDocument.getCourtDocumentId(), jsonEnvelope);
+    }
 }

@@ -3,13 +3,18 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 import org.slf4j.Logger;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.progression.courts.OnlinePleaAllocationAdded;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.progression.events.OnlinePleaPcqVisitedRecorded;
 import uk.gov.moj.cpp.progression.events.OnlinePleaRecorded;
+import uk.gov.justice.progression.event.OpaPressListNoticeDeactivated;
+import uk.gov.justice.progression.event.OpaPublicListNoticeDeactivated;
+import uk.gov.justice.progression.event.OpaResultListNoticeDeactivated;
 import uk.gov.moj.cpp.progression.plea.json.schemas.LegalEntityDefendant;
 import uk.gov.moj.cpp.progression.plea.json.schemas.Offence;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PersonalDetails;
@@ -18,9 +23,15 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.Address;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.OnlinePleaLegalEntityDetails;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.OnlinePleaPersonalDetails;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.PressListOpaNotice;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.PublicListOpaNotice;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ResultListOpaNotice;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.OnlinePleaRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.PressListOpaNoticeRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.PublicListOpaNoticeRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ResultListOpaNoticeRepository;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -58,6 +69,18 @@ public class OnlinePleaListener {
 
     @Inject
     private OnlinePleaRepository pleaDetailsOnlinePleaRepository;
+
+    @Inject
+    private PublicListOpaNoticeRepository publicListOpaNoticeRepository;
+
+    @Inject
+    private PressListOpaNoticeRepository pressListOpaNoticeRepository;
+
+    @Inject
+    private ResultListOpaNoticeRepository resultListOpaNoticeRepository;
+
+    @Inject
+    private Clock clock;
 
 
     @Handles("progression.event.online-plea-recorded")
@@ -99,6 +122,62 @@ public class OnlinePleaListener {
                 )).build();
 
         prosecutionCaseRepository.save(getProsecutionCaseEntity(updatedProsecutionCase));
+    }
+
+    @Handles("progression.event.online-plea-allocation-added")
+    public void onlinePleaAllocationAdded(final Envelope<OnlinePleaAllocationAdded> event) {
+        final OnlinePleaAllocationAdded pleaAllocationAdded = event.payload();
+        LOGGER.info("Received progression.event.online-plea-allocation-added event for caseId {}, hearingId {} defendantId {}",
+                pleaAllocationAdded.getCaseId(), pleaAllocationAdded.getHearingId(), pleaAllocationAdded.getDefendantId());
+
+        publicListOpaNoticeRepository.save(getPublicListOpaNotice(pleaAllocationAdded));
+        pressListOpaNoticeRepository.save(getPressListOpaNotice(pleaAllocationAdded));
+        resultListOpaNoticeRepository.save(getResultListOpaNotice(pleaAllocationAdded));
+    }
+
+    @Handles("progression.event.opa-public-list-notice-deactivated")
+    public void deactivateOpaPublicListNotice(final Envelope<OpaPublicListNoticeDeactivated> event) {
+        final OpaPublicListNoticeDeactivated deactivatedAllocation = event.payload();
+
+        LOGGER.info("Received progression.event.opa-public-list-notice-deactivated event for defendantId {}", deactivatedAllocation.getDefendantId());
+
+        publicListOpaNoticeRepository.deleteByDefendantId(deactivatedAllocation.getDefendantId());
+    }
+
+    @Handles("progression.event.opa-press-list-notice-deactivated")
+    public void deactivateOpaPressListNotice(final Envelope<OpaPressListNoticeDeactivated> event) {
+        final OpaPressListNoticeDeactivated deactivatedAllocation = event.payload();
+
+        LOGGER.info("Received progression.event.opa-press-list-notice-deactivated event for defendantId {}", deactivatedAllocation.getDefendantId());
+
+        pressListOpaNoticeRepository.deleteByDefendantId(deactivatedAllocation.getDefendantId());
+    }
+
+    @Handles("progression.event.opa-result-list-notice-deactivated")
+    public void deactivateOpaResultListNotice(final Envelope<OpaResultListNoticeDeactivated> event) {
+        final OpaResultListNoticeDeactivated deactivatedAllocation = event.payload();
+
+        LOGGER.info("Received progression.event.opa-result-list-notice-deactivated event for defendantId {}", deactivatedAllocation.getDefendantId());
+
+        resultListOpaNoticeRepository.deleteByDefendantId(deactivatedAllocation.getDefendantId());
+    }
+
+    private PublicListOpaNotice getPublicListOpaNotice(final OnlinePleaAllocationAdded pleaAllocationAdded) {
+        return new PublicListOpaNotice(pleaAllocationAdded.getCaseId(),
+                pleaAllocationAdded.getDefendantId(),
+                pleaAllocationAdded.getHearingId());
+    }
+
+    private PressListOpaNotice getPressListOpaNotice(final OnlinePleaAllocationAdded pleaAllocationAdded) {
+        return new PressListOpaNotice(pleaAllocationAdded.getCaseId(),
+                pleaAllocationAdded.getDefendantId(),
+                pleaAllocationAdded.getHearingId());
+    }
+
+    private ResultListOpaNotice getResultListOpaNotice(final OnlinePleaAllocationAdded pleaAllocationAdded) {
+        return new ResultListOpaNotice(pleaAllocationAdded.getCaseId(),
+                pleaAllocationAdded.getDefendantId(),
+                pleaAllocationAdded.getHearingId());
     }
 
     private List<Defendant> getUpdatedDefendants(final List<Defendant> allDefendants, final UUID defendantId, final List<Offence> pleadOffences) {
@@ -206,7 +285,6 @@ public class OnlinePleaListener {
         }
     }
 
-
     private static JsonObject jsonFromString(String jsonObjectStr) {
 
         final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
@@ -215,6 +293,4 @@ public class OnlinePleaListener {
 
         return object;
     }
-
-
 }

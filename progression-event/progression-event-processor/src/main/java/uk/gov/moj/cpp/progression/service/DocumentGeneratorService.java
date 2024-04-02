@@ -152,6 +152,25 @@ public class DocumentGeneratorService {
     }
 
     @Transactional(REQUIRES_NEW)
+    public void generatePostalDocumentForOpa(final Sender sender, final JsonEnvelope envelope, final JsonObject contentForPdf, final String templateName, final String fileName, final UUID hearingId, final  UUID caseId) {
+        try {
+            final UUID materialId = randomUUID();
+            final UUID userId = fromString(envelope.metadata().userId().orElseThrow(() -> new RuntimeException("UserId missing from event.")));
+            LOGGER.info("start generate PDF with case id : '{}' defendantName : {}", caseId, templateName);
+            final DocumentGeneratorClient documentGeneratorClient = documentGeneratorClientProducer.documentGeneratorClient();
+            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(contentForPdf, templateName, getSystemUserUuid());
+            LOGGER.info("start generate PDF with case id : '{}' defendantName : {}", caseId, templateName);
+            addDocumentToMaterialForOpa(sender, envelope, fileName, new ByteArrayInputStream(resultOrderAsByteArray), userId, hearingId, materialId, caseId, true);
+            LOGGER.info("added to material with material id : '{}' ", materialId);
+
+        } catch (IOException | RuntimeException e) {
+            LOGGER.error(ERROR_MESSAGE, e);
+            throw new RuntimeException("Progression : exception while generating document ", e);
+        }
+    }
+
+
+    @Transactional(REQUIRES_NEW)
     public void generateNcesDocument(final Sender sender, final JsonEnvelope originatingEnvelope,
                                      final UUID userId, final NcesNotificationRequested ncesNotificationRequested) {
         try {
@@ -351,6 +370,34 @@ public class DocumentGeneratorService {
                     .setApplicationId(applicationId)
                     .setFirstClassLetter(false)
                     .setSecondClassLetter(isRemotePrintingRequired)
+                    .build());
+
+        } catch (final FileServiceException e) {
+            LOGGER.error(ERROR_WHILE_UPLOADING_FILE, filename);
+            throw new FileUploadException(e);
+        }
+    }
+
+    private void addDocumentToMaterialForOpa(Sender sender, JsonEnvelope originatingEnvelope, final String filename, final InputStream fileContent,
+                                             final UUID userId, final UUID hearingId,
+                                             final UUID materialId,
+                                             final UUID caseId,
+                                             final boolean isRemotePrintingRequired) {
+
+        try {
+            final UUID fileId = storeFile(fileContent, filename);
+            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId);
+            final UploadMaterialContextBuilder uploadMaterialContextBuilder = new UploadMaterialContextBuilder();
+            uploadMaterialService.uploadFile(uploadMaterialContextBuilder
+                    .setSender(sender)
+                    .setOriginatingEnvelope(originatingEnvelope)
+                    .setUserId(userId)
+                    .setHearingId(hearingId)
+                    .setMaterialId(materialId)
+                    .setFileId(fileId)
+                    .setCaseId(caseId)
+                    .setFirstClassLetter(isRemotePrintingRequired)
+                    .setSecondClassLetter(false)
                     .build());
 
         } catch (final FileServiceException e) {

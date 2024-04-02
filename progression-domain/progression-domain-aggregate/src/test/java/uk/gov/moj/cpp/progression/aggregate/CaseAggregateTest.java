@@ -112,6 +112,7 @@ import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.LockStatus;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
+import uk.gov.justice.core.courts.OnlinePleasAllocation;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.PartialMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -203,9 +204,11 @@ import uk.gov.moj.cpp.progression.events.OnlinePleaRecorded;
 import uk.gov.moj.cpp.progression.events.PleaDocumentForOnlinePleaSubmitted;
 import uk.gov.moj.cpp.progression.events.SplitCases;
 import uk.gov.moj.cpp.progression.plea.json.schemas.ContactDetails;
+import uk.gov.moj.cpp.progression.plea.json.schemas.OffencePleaDetails;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleaType;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnlinePcqVisited;
+import uk.gov.moj.cpp.progression.plea.json.schemas.PleasAllocationDetails;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -1948,7 +1951,7 @@ public class CaseAggregateTest {
                 .build();
         this.caseAggregate.apply(prosecutionCaseCreated);
 
-        final DefendantJudicialResult defendantJudicialResult = DefendantJudicialResult.defendantJudicialResult()
+        final DefendantJudicialResult defendantJudicialResult = defendantJudicialResult()
                 .withJudicialResult(JudicialResult.judicialResult()
                         .withCategory(JudicialResultCategory.FINAL)
                         .build())
@@ -6143,7 +6146,95 @@ public class CaseAggregateTest {
         assertThat(masterDefendantIdUpdated.isPresent(), is(true));
         assertThat(masterDefendantIdUpdated.map(s -> (MasterDefendantIdUpdated) s).get().getMatchedDefendants().size(), is(1));
     }
+
+    @Test
+    public void shouldGenerateOnlinePleaAllocationAddedEvent() {
+        final UUID hearingId = randomUUID();
+        final UUID allocationIdOne = randomUUID();
+        final UUID allocationIdTwo = randomUUID();
+        final Map<UUID, OnlinePleasAllocation> onlinePleaAllocations = new HashMap<>();
+        final PleasAllocationDetails pleasAllocationDetails1st = getPleasAllocationDetails(allocationIdOne);
+        final PleasAllocationDetails pleasAllocationDetailsSecond = getPleasAllocationDetails(allocationIdTwo);
+
+        setField(caseAggregate, "onlinePleaAllocations", onlinePleaAllocations);
+
+        caseAggregate.addOnlinePleaAllocation(pleasAllocationDetails1st, hearingId);
+        caseAggregate.addOnlinePleaAllocation(pleasAllocationDetailsSecond, hearingId);
+
+        assertThat(onlinePleaAllocations.size(), is(2));
+        assertPleaAllocationsStoredCorrectly(onlinePleaAllocations, pleasAllocationDetails1st, hearingId);
+        assertPleaAllocationsStoredCorrectly(onlinePleaAllocations, pleasAllocationDetailsSecond, hearingId);
+    }
+
+    @Test
+    public void shouldGenerateOnlinePleaAllocationUpdatedEvent() {
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final Map<UUID, OnlinePleasAllocation> onlinePleaAllocations = new HashMap<>();
+        final PleasAllocationDetails pleasAllocationDetails1st = getPleasAllocationDetails(defendantId);
+        final OffencePleaDetails offence = getOffencePleaDetails(randomUUID(), "NOT_GUILTY");
+        final PleasAllocationDetails updatedPleasAllocation = PleasAllocationDetails.pleasAllocationDetails()
+                .withValuesFrom(pleasAllocationDetails1st)
+                .withOffencePleas(singletonList(offence)).build();
+
+        setField(caseAggregate, "onlinePleaAllocations", onlinePleaAllocations);
+
+        caseAggregate.addOnlinePleaAllocation(pleasAllocationDetails1st, hearingId);
+        caseAggregate.updateOnlinePleaAllocation(updatedPleasAllocation);
+
+        assertThat(onlinePleaAllocations.size(), is(1));
+        final OnlinePleasAllocation pleaAllocation = onlinePleaAllocations.get(pleasAllocationDetails1st.getDefendantId());
+        assertThat(pleaAllocation.getOffences().get(0).getIndicatedPlea(), is(offence.getIndicatedPlea()));
+        assertThat(pleaAllocation.getOffences().get(0).getPleaDate(), is(offence.getPleaDate()));
+        assertThat(pleaAllocation.getOffences().get(0).getOffenceId(), is(offence.getOffenceId()));
+    }
+
+
+    @Test
+    public void shouldGetOnlinePleasAllocation () {
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final Map<UUID, OnlinePleasAllocation> onlinePleaAllocations = new HashMap<>();
+        final PleasAllocationDetails pleasAllocationDetails1st = getPleasAllocationDetails(defendantId);
+
+        setField(caseAggregate, "onlinePleaAllocations", onlinePleaAllocations);
+        caseAggregate.addOnlinePleaAllocation(pleasAllocationDetails1st, hearingId);
+
+        final OnlinePleasAllocation onlinePleasAllocation = caseAggregate.getOnlinePleasAllocation(defendantId);
+
+        assertThat(defendantId, Matchers.is(onlinePleasAllocation.getDefendantId()));
+    }
+
+    private void assertPleaAllocationsStoredCorrectly(final Map<UUID, OnlinePleasAllocation> onlinePleaAllocations,
+                                                      final PleasAllocationDetails allocationDetails,
+                                                      final UUID hearingId) {
+        final OnlinePleasAllocation pleaAllocation = onlinePleaAllocations.get(allocationDetails.getDefendantId());
+
+        assertThat(pleaAllocation.getCaseId(), is(allocationDetails.getCaseId()));
+        assertThat(pleaAllocation.getDefendantId(), is(allocationDetails.getDefendantId()));
+        assertThat(pleaAllocation.getHearingId(), is(hearingId));
+        assertThat(pleaAllocation.getOffences().get(0).getIndicatedPlea(), is(allocationDetails.getOffencePleas().get(0).getIndicatedPlea()));
+        assertThat(pleaAllocation.getOffences().get(0).getPleaDate(), is(allocationDetails.getOffencePleas().get(0).getPleaDate()));
+        assertThat(pleaAllocation.getOffences().get(0).getOffenceId(), is(allocationDetails.getOffencePleas().get(0).getOffenceId()));
+    }
+
+    private PleasAllocationDetails getPleasAllocationDetails(final UUID defendantId) {
+        final OffencePleaDetails offence = getOffencePleaDetails(randomUUID(), "GUILTY");
+        final List<OffencePleaDetails> offences = Collections.singletonList(offence);
+
+        return PleasAllocationDetails.pleasAllocationDetails()
+                .withCaseId(randomUUID())
+                .withDefendantId(defendantId)
+                .withOffencePleas(offences)
+                .build();
+    }
+
+    private static OffencePleaDetails getOffencePleaDetails(final UUID id, final String indicatedPlea) {
+        return OffencePleaDetails.offencePleaDetails()
+                .withOffenceId(id)
+                .withIndicatedPlea(indicatedPlea)
+                .withPleaDate(LocalDate.now())
+                .build();
+    }
 }
-
-
-

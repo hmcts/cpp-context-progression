@@ -1427,3 +1427,32 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         description: Internal Server Error
       202:
         description: Accepted
+
+/opa-notice/request:
+  post:
+    description: |
+      Online Pleas Allocation notice request from job scheduler
+      ...
+      (mapping):
+          requestType: application/vnd.progression.request-opa-public-list-notice+json
+          name: progression.request-opa-public-list-notice
+      (mapping):
+          requestType: application/vnd.progression.request-opa-press-list-notice+json
+          name: progression.request-opa-press-list-notice
+      (mapping):
+          requestType: application/vnd.progression.request-opa-result-list-notice+json
+          name: progression.request-opa-result-list-notice
+      ...
+    body:
+      application/vnd.progression.request-opa-public-list-notice+json:
+        example: !include json/progression.request-opa-public-list-notice.json
+        schema: !include json/schema/progression.request-opa-public-list-notice.json
+      application/vnd.progression.request-opa-press-list-notice+json:
+        example: !include json/progression.request-opa-press-list-notice.json
+        schema: !include json/schema/progression.request-opa-press-list-notice.json
+      application/vnd.progression.request-opa-result-list-notice+json:
+        example: !include json/progression.request-opa-result-list-notice.json
+        schema: !include json/schema/progression.request-opa-result-list-notice.json
+    responses:
+      202:
+        description: Accepted

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.service;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -31,6 +32,7 @@ import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -82,6 +84,7 @@ public class RefDataService {
     private static final String REFERENCEDATA_QUERY_PRISONS_CUSTODY_SUITES = "referencedata.query.prisons-custody-suites";
     private static final String FIELD_APPLICATION_TYPES = "courtApplicationTypes";
     public static final String CP_RESULT_ACTION_MAPPING = "referencedata.query.result-action-mapping";
+    private static final String REFERENCEDATA_QUERY_PUBLIC_HOLIDAYS_NAME = "referencedata.query.public-holidays";
     private static final String FIELD_PRISONS_CUSTODY_SUITES = "prisons-custody-suites";
     public static final String PROSECUTOR = "shortName";
     public static final String NATIONALITY_CODE = "isoCode";
@@ -113,6 +116,7 @@ public class RefDataService {
     private static final String REFERENCEDATA_GET_ALL_DOCUMENT_TYPE_ACCESS_QUERY = "referencedata.get-all-document-type-access";
     private static final String DOCUMENT_TYPE_ACCESS = "documentsTypeAccess";
     private static final String DATE = "date";
+    private static final String PUBLIC_HOLIDAYS = "publicHolidays";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperProducer().objectMapper();
 
 
@@ -128,6 +132,32 @@ public class RefDataService {
                 DOCUMENT_TYPE_ACCESS, createObjectBuilder().add(DATE, LocalDate.now().toString()), requester)
                 .map(asDocumentsMetadataRefData())
                 .collect(Collectors.toList());
+    }
+
+    public List<LocalDate> getPublicHolidays(final String division, final LocalDate fromDate, final LocalDate toDate, final Requester requester) {
+
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(randomUUID())
+                .withName(REFERENCEDATA_QUERY_PUBLIC_HOLIDAYS_NAME);
+
+        final JsonObject params = createObjectBuilder()
+                .add("division", division)
+                .add("dateFrom", fromDate.toString())
+                .add("dateTo", toDate.toString())
+                .build();
+
+        final JsonObject payload = requester.requestAsAdmin(envelopeFrom(metadataBuilder, params), JsonObject.class).payload();
+        if (!payload.containsKey(PUBLIC_HOLIDAYS) || payload.getJsonArray(PUBLIC_HOLIDAYS).isEmpty()) {
+            return emptyList();
+        }
+
+        final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        return payload.getJsonArray(PUBLIC_HOLIDAYS).getValuesAs(JsonObject.class).stream()
+                .map(jsonObject -> jsonObject.getString(DATE))
+                .map(date -> LocalDate.parse(date, dateFormat))
+                .collect(Collectors.toList());
+
     }
 
     @SuppressWarnings({"squid:S2139"})

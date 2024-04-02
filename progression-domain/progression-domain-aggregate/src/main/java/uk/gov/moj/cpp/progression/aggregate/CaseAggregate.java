@@ -6,6 +6,7 @@ import static java.lang.String.format;
 import static java.time.ZonedDateTime.now;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -51,7 +52,10 @@ import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantEmail;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantJudicialResultsOfDefendantsAssociatedToTheCase;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantPostcode;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendant;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getMasterDefendant;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedOffence;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hasNewAmendment;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendantsForOnlinePlea;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedOffence;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hasNewAmendment;
@@ -130,6 +134,7 @@ import uk.gov.justice.core.courts.LockStatus;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
+import uk.gov.justice.core.courts.OnlinePleasAllocation;
 import uk.gov.justice.core.courts.PartialMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.PetDefendants;
@@ -169,6 +174,8 @@ import uk.gov.justice.progression.courts.HearingEventLogsDocumentCreated;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicateForCase;
 import uk.gov.justice.progression.courts.HearingRemovedForProsecutionCase;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
+import uk.gov.justice.progression.courts.OnlinePleaAllocationAdded;
+import uk.gov.justice.progression.courts.OnlinePleaAllocationUpdated;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.rules.DartsRetentionPolicyHelper;
 import uk.gov.moj.cpp.progression.aggregate.rules.HearingInfo;
@@ -251,6 +258,7 @@ import uk.gov.moj.cpp.progression.events.ValidateMergeCases;
 import uk.gov.moj.cpp.progression.events.ValidateSplitCases;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnlinePcqVisited;
+import uk.gov.moj.cpp.progression.plea.json.schemas.PleasAllocationDetails;
 import uk.gov.moj.cpp.progression.plea.json.schemas.TemplateType;
 
 import java.time.LocalDate;
@@ -351,6 +359,9 @@ public class CaseAggregate implements Aggregate {
     private final Map<UUID, List<uk.gov.justice.core.courts.Offence>> offenceProceedingConcluded = new HashMap<>();
 
     private final Map<UUID, Map<UUID, uk.gov.justice.core.courts.Offence>> defendantOffencesResultedOffenceLevel = new HashMap<>();
+
+    //Online pleas Allocation notices
+    private final Map<UUID, OnlinePleasAllocation> onlinePleaAllocations = new HashMap<>();
 
     //other
     private final Map<UUID, LocalDate> custodyTimeLimitForDefendant = new HashMap<>();
@@ -576,6 +587,9 @@ public class CaseAggregate implements Aggregate {
                             this.hearingCaseRetentionMap.put(e.getHearingId(), retentionPolicy);
                         }
                 ),
+                when(OnlinePleaAllocationAdded.class).apply(this::addOnlinePleaAllocation),
+                when(OnlinePleaAllocationUpdated.class).apply(this::updateOnlinePleaAllocation),
+
                 otherwiseDoNothing());
 
     }
@@ -3026,6 +3040,51 @@ public class CaseAggregate implements Aggregate {
 
     }
 
+    public Stream<Object> addOnlinePleaAllocation(final PleasAllocationDetails pleasAllocation, final UUID hearingId) {
+        return apply(Stream.of(
+            OnlinePleaAllocationAdded.onlinePleaAllocationAdded()
+                    .withCaseId(pleasAllocation.getCaseId())
+                    .withDefendantId(pleasAllocation.getDefendantId())
+                    .withHearingId(hearingId)
+                    .withOffences(pleasAllocation.getOffencePleas())
+                    .build()));
+    }
+
+    public Optional<Stream<Object>> updateOnlinePleaAllocation(final PleasAllocationDetails pleasAllocation) {
+        return ofNullable(onlinePleaAllocations.get(pleasAllocation.getDefendantId())).map( originalAllocation ->
+            apply(Stream.of(
+                OnlinePleaAllocationUpdated.onlinePleaAllocationUpdated()
+                        .withCaseId(originalAllocation.getCaseId())
+                        .withDefendantId(originalAllocation.getDefendantId())
+                        .withHearingId(originalAllocation.getHearingId())
+                        .withOffences(pleasAllocation.getOffencePleas())
+                        .build())));
+    }
+
+    public OnlinePleasAllocation getOnlinePleasAllocation (final UUID defendantId) {
+        return onlinePleaAllocations.get(defendantId);
+    }
+
+    private void addOnlinePleaAllocation(final OnlinePleaAllocationAdded e) {
+        final OnlinePleasAllocation pleaAllocation = OnlinePleasAllocation.onlinePleasAllocation()
+                .withCaseId(e.getCaseId())
+                .withDefendantId(e.getDefendantId())
+                .withHearingId(e.getHearingId())
+                .withOffences(e.getOffences()).build();
+        onlinePleaAllocations.put(e.getDefendantId(), pleaAllocation);
+    }
+
+
+    private void updateOnlinePleaAllocation(final OnlinePleaAllocationUpdated e) {
+        final OnlinePleasAllocation pleaAllocation = OnlinePleasAllocation.onlinePleasAllocation()
+                .withValuesFrom(onlinePleaAllocations.get(e.getDefendantId()))
+                .withOffences(e.getOffences()).build();
+
+        onlinePleaAllocations.put(e.getDefendantId(), pleaAllocation);
+    }
+
+
+
     private List<uk.gov.justice.core.courts.Defendant> filterPetDefendants(final List<uk.gov.justice.core.courts.Defendant> defendants) {
         return defendants.stream()
                 .map(this::buildDefendantForPet)
@@ -3033,7 +3092,6 @@ public class CaseAggregate implements Aggregate {
                 .map(Optional::get)
                 .collect(toList());
     }
-
 
     public Stream<Object> recordOnlinePlea(final PleadOnline pleadOnline) {
         final Stream<Object> failureEvents = createRejectionEventsForOnlinePlea(pleadOnline);
@@ -3071,6 +3129,10 @@ public class CaseAggregate implements Aggregate {
     public boolean isOffenceAlreadyPlead(final List<uk.gov.moj.cpp.progression.plea.json.schemas.Offence> offences, final UUID defendantId) {
         return ofNullable(offences).orElse(emptyList()).stream()
                 .anyMatch(offence -> isOffencePlead(offence.getId(), getExistingOffencesOfTheDefendant(defendantId)));
+    }
+
+    public Set<UUID> getLinkedHearingIds() {
+        return unmodifiableSet(hearingIds);
     }
 
     private boolean isOffencePlead(final String offenceId, final List<uk.gov.justice.core.courts.Offence> existingOffencesOfTheDefendant) {
@@ -3152,7 +3214,6 @@ public class CaseAggregate implements Aggregate {
         form.setFormLockStatus(new FormLockStatus(false, null, null, null));
         formMap.put(petId, form);
     }
-
 
     public Stream<Object> updateFormDefendants(final UUID courtFormId, final UUID caseId, final List<UUID> defendantIds, final UUID userId, final FormType formType) {
         if (!formMap.containsKey(courtFormId)) {
@@ -3533,4 +3594,3 @@ public class CaseAggregate implements Aggregate {
         return builder.build();
     }
 }
-
