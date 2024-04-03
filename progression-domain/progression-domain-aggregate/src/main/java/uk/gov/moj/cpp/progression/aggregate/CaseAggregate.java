@@ -2164,6 +2164,10 @@ public class CaseAggregate implements Aggregate {
 
     private JsonArrayBuilder convertToJsonArray(final JsonArrayBuilder jsonArrayBuilder, final Cases cases, final List<Defendants> defendants) {
         defendants.forEach(defendant -> {
+            if (isNull(defendant.getDefendantId()) || isNull(defendant.getMasterDefendantId()) || isNull(defendant.getCourtProceedingsInitiated())) {
+                return;
+            }
+
             final JsonObjectBuilder defendantJsonObjectBuilder = Json.createObjectBuilder();
             defendantJsonObjectBuilder.add("defendantId", defendant.getDefendantId());
             addToJsonObjectNullSafe(defendantJsonObjectBuilder, "masterDefendantId", defendant.getMasterDefendantId());
@@ -2172,7 +2176,7 @@ public class CaseAggregate implements Aggregate {
             defendantJsonObjectBuilder.add("prosecutionCaseId", cases.getProsecutionCaseId());
             addToJsonObjectNullSafe(defendantJsonObjectBuilder, "firstName", defendant.getFirstName());
             addToJsonObjectNullSafe(defendantJsonObjectBuilder, "middleName", defendant.getMiddleName());
-            defendantJsonObjectBuilder.add("lastName", defendant.getLastName());
+            addToJsonObjectNullSafe(defendantJsonObjectBuilder, "lastName", defendant.getLastName());
             addToJsonObjectNullSafe(defendantJsonObjectBuilder, "dateOfBirth", defendant.getDateOfBirth());
             addToJsonObjectNullSafe(defendantJsonObjectBuilder, "pncId", defendant.getPncId());
             addToJsonObjectNullSafe(defendantJsonObjectBuilder, "croNumber", defendant.getCroNumber());

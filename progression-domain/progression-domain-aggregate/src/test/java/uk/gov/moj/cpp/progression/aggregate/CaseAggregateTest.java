@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -3123,6 +3124,50 @@ public class CaseAggregateTest {
         assertThat(defendantPartialMatchCreated.getProsecutionCaseId(), is(prosecutionCase.getId()));
         assertThat(defendantPartialMatchCreated.getDefendantId(), is(defendantId));
 
+    }
+
+    @Test
+    public void shouldNotIncludeInvalidDefendantDefendantPartialMatchCreated() {
+
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+
+        final UUID defendantId = prosecutionCase.getDefendants().get(0).getId();
+        final UUID defendantId2 = randomUUID();;
+
+        final String defendantName = RandomGenerator.STRING.next();
+        final PartialMatchedDefendantSearchResultStored partialMatchedDefendantSearchResultStored = PartialMatchedDefendantSearchResultStored.partialMatchedDefendantSearchResultStored()
+                .withDefendantId(defendantId)
+                .withCases(asList(Cases.cases()
+                        .withProsecutionCaseId(prosecutionCase.getId().toString())
+                        .withDefendants(asList(Defendants.defendants()
+                                .withDefendantId(defendantId.toString())
+                                .withMasterDefendantId(defendantId.toString())
+                                .withFirstName(defendantName)
+                                .withLastName(defendantName)
+                                .withAddress(Address.address()
+                                        .withAddress1("Address1")
+                                        .build())
+                                .withCourtProceedingsInitiated(ZonedDateTime.now())
+                                .build(), Defendants.defendants()
+                                .withDefendantId(defendantId2.toString())
+                                .withMasterDefendantId(defendantId2.toString())
+                                .build()))
+                        .withCaseReference("REF")
+                        .withProsecutionCaseId("caseId")
+                        .build()))
+                .build();
+
+        this.caseAggregate.apply(partialMatchedDefendantSearchResultStored); //populate partialMatchedDefendants map so we can compare in the nextstep
+
+        final List<Object> eventStream = this.caseAggregate.storeMatchedDefendants(prosecutionCase.getId()).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+
+        final DefendantPartialMatchCreated defendantPartialMatchCreated = (DefendantPartialMatchCreated) eventStream.get(0);
+
+        assertThat(defendantPartialMatchCreated.getProsecutionCaseId(), is(prosecutionCase.getId()));
+        assertThat(defendantPartialMatchCreated.getDefendantId(), is(defendantId));
+        assertFalse(defendantPartialMatchCreated.getPayload().contains(defendantId2.toString()));
     }
 
     @Test
