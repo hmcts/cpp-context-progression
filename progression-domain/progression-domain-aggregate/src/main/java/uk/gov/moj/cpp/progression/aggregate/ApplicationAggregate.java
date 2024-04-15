@@ -178,7 +178,8 @@ public class ApplicationAggregate implements Aggregate {
         if (nonNull(courtApplication.getType()) && isNotBlank(courtApplication.getType().getCode())
                 && (APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE.equalsIgnoreCase(courtApplication.getType().getCode())
                 || APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP.equalsIgnoreCase(courtApplication.getType().getCode()))
-                && nonNull(boxHearingRequest) && TRUE.equals(boxHearingRequest.getSendAppointmentLetter())) {
+                && nonNull(boxHearingRequest) && TRUE.equals(boxHearingRequest.getSendAppointmentLetter())
+                && nonNull(boxHearingRequest.getVirtualAppointmentTime())) {
             streamBuilder.add(sendStatdecAppointmentLetter()
                     .withCourtApplication(courtApplication)
                     .withBoxHearing(boxHearingRequest)

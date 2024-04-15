@@ -17,12 +17,15 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.notification.EmailChannel;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
@@ -48,6 +51,8 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.progression.domain.constant.DateTimeFormats.TIME_HMMA;
+import static java.util.Arrays.asList;
+import static java.util.Optional.ofNullable;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StatDecNotificationServiceTest {
@@ -98,6 +103,14 @@ public class StatDecNotificationServiceTest {
     @Captor
     private ArgumentCaptor<List<EmailChannel>> emailNotificationsCaptor;
 
+    @Mock
+    private RefDataService referenceDataService;
+
+    @Mock
+    ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Mock
+    private Sender sender;
 
 
     private CourtCentre courtCentre = CourtCentre.courtCentre().withName("Test Court Centre").withAddress(Address.address()
@@ -130,12 +143,18 @@ public class StatDecNotificationServiceTest {
     @Test
     public void testSendNotificationWhenEmailIsNotPresentButAddressIsPresentForApplicant() {
 
+        final DefendantCase defendantCase = DefendantCase.defendantCase()
+                .withCaseId(randomUUID())
+                .withDefendantId(randomUUID()).build();
+
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
                 .withType(CourtApplicationType.courtApplicationType().build())
                 .withApplicationReference("05PP1000915-01")
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
-                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
+                        .withMasterDefendant(MasterDefendant.masterDefendant()
+                                .withDefendantCase(asList(defendantCase))
+                                .withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
                                 Person.person()
                                         .withFirstName("John")
                                         .withLastName("Edward")
@@ -161,8 +180,12 @@ public class StatDecNotificationServiceTest {
                 courtCentre, courtApplication.getApplicant(), JurisdictionType.MAGISTRATES, STAT_DEC_VIRTUAL_HEARING))
                 .thenReturn(materialId);
 
+        when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(ofNullable(createObjectBuilder().add("section","Orders, Notices & Directions").build()));
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(createObjectBuilder().build());
+
         statDecNotificationService.sendNotification(envelope, notificationId, courtApplication, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES, STAT_DEC_VIRTUAL_HEARING);
 
+        verify(sender).send(any());
         verify(notificationService,times(1)).sendLetter(Mockito.eq(envelope), Mockito.eq(notificationId), Mockito.eq(null), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(true));
 
     }
@@ -171,12 +194,18 @@ public class StatDecNotificationServiceTest {
     @Test
     public void testSendNotificationWhenEmailIsPresentForApplicant() {
 
+        final DefendantCase defendantCase = DefendantCase.defendantCase()
+                .withCaseId(randomUUID())
+                .withDefendantId(randomUUID()).build();
+
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
                 .withType(CourtApplicationType.courtApplicationType().build())
                 .withApplicationReference("05PP1000915-01")
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
-                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
+                        .withMasterDefendant(MasterDefendant.masterDefendant()
+                                .withDefendantCase(asList(defendantCase))
+                                .withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
                                 Person.person()
                                         .withFirstName("John")
                                         .withLastName("Edward")
@@ -205,7 +234,13 @@ public class StatDecNotificationServiceTest {
                 courtCentre, courtApplication.getApplicant(), JurisdictionType.MAGISTRATES, STAT_DEC_VIRTUAL_HEARING))
                 .thenReturn(materialId);
 
+        when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(ofNullable(createObjectBuilder().add("section","Orders, Notices & Directions").build()));
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(createObjectBuilder().build());
+
+
         statDecNotificationService.sendNotification(envelope, notificationId, courtApplication, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES, STAT_DEC_VIRTUAL_HEARING);
+
+        verify(sender).send(any());
 
         verify(notificationService, times(1)).sendEmail(
                 envelopeArgumentCaptor.capture(),notificationIdCaptor.capture(),
