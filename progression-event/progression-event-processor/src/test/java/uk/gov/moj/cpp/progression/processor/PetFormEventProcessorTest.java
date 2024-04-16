@@ -321,6 +321,7 @@ public class PetFormEventProcessorTest {
         assertThat(courtDocument1.getString(COURT_DOCUMENT_ID), Matchers.is(Matchers.notNullValue()));
         assertThat(courtDocument1.getJsonObject(DOCUMENT_CATEGORY).getJsonObject(CASE_DOCUMENT).getString(PROSECUTION_CASE_ID), Matchers.is(caseId));
         assertThat(courtDocument1.getString(DOCUMENT_TYPE_ID), Matchers.is(CASE_DOCUMENT_TYPE_ID.toString()));
+        assertThat(courtDocument1.getBoolean("sendToCps"), Matchers.is(true));
     }
 
     private void verifyPetFormPublicEvent(final String petId, final String caseId, final String userId, final JsonEnvelope envelope1) {

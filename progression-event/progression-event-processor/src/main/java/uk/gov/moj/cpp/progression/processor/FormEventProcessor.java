@@ -615,6 +615,12 @@ public class FormEventProcessor {
     private CourtDocument buildCourtDocument(final UUID caseId, final UUID materialId, final String filename, final FormType formType, final JsonObject documentData) {
 
         final DocumentCategory.Builder categoryBuilder = DocumentCategory.documentCategory();
+        final CourtDocument.Builder builder = CourtDocument.courtDocument()
+                .withCourtDocumentId(randomUUID())
+                .withDocumentTypeDescription(DOCUMENT_TYPE_DESCRIPTION)
+                .withDocumentTypeId(CASE_DOCUMENT_TYPE_ID)
+                .withMimeType(APPLICATION_PDF)
+                .withName(filename);
 
         if (FormType.BCM.equals(formType)) {
             if (nonNull(documentData.getString(DEFENDANT_ID, null))) {
@@ -625,6 +631,8 @@ public class FormEventProcessor {
             } else {
                 LOGGER.error("defendantId is not present for BCM form finalised, caseId {}", caseId);
             }
+
+            builder.withSendToCps(true).withNotificationType("bcm-form-finalised");
         } else if (FormType.PTPH.equals(formType)) {
             if (isNotEmpty(documentData.getJsonArray(DEFENDANT_IDS))) {
                 final List<UUID> defendantIdList = documentData.getJsonArray(DEFENDANT_IDS).getValuesAs(JsonString.class).stream()
@@ -647,15 +655,10 @@ public class FormEventProcessor {
                 .withUploadDateTime(ZonedDateTime.now())
                 .build();
 
-        return CourtDocument.courtDocument()
-                .withCourtDocumentId(randomUUID())
-                .withDocumentCategory(categoryBuilder.build())
-                .withDocumentTypeDescription(DOCUMENT_TYPE_DESCRIPTION)
-                .withDocumentTypeId(CASE_DOCUMENT_TYPE_ID)
-                .withMimeType(APPLICATION_PDF)
-                .withName(filename)
-                .withMaterials(singletonList(material))
-                .build();
+        builder.withDocumentCategory(categoryBuilder.build())
+                .withMaterials(singletonList(material));
+
+        return builder.build();
     }
 
     @Handles("progression.event.form-defendants-updated")
