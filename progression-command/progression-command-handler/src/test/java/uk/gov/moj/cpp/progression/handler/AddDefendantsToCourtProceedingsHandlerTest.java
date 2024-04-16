@@ -2,10 +2,14 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
+import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -16,6 +20,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -26,6 +31,7 @@ import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
@@ -33,6 +39,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.messaging.Envelope;
@@ -43,9 +50,12 @@ import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatch
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.service.MatchedDefendantLoadService;
 
+import java.io.StringReader;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -56,6 +66,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AddDefendantsToCourtProceedingsHandlerTest {
@@ -72,6 +87,12 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
     @Mock
     private MatchedDefendantLoadService matchedDefendantLoadService;
 
+    @Mock
+    private ReferenceDataOffenceService referenceDataOffenceService;
+
+    @Mock
+    private Requester requester;
+
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(DefendantsAddedToCourtProceedings.class);
 
@@ -79,6 +100,11 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
     private AddDefendantsToCourtProceedingsHandler addDefendantsToCourtProceedingsHandler;
 
     private CaseAggregate aggregate;
+
+    private static final String SEXUAL_OFFENCE_RR_DESCRIPTION = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
+    private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
+
+
 
     @Before
     public void setup() {
@@ -97,12 +123,17 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
 
     @Test
     public void shouldProcessCommandDefendantAdded() throws Exception {
+        final UUID offenceId = UUID.randomUUID();
 
         final Defendant defendant =
-                Defendant.defendant().withPersonDefendant(PersonDefendant.personDefendant().build())
+                Defendant.defendant().withPersonDefendant(PersonDefendant.personDefendant()
+                        .withPersonDetails(Person.person()
+                                .withDateOfBirth(ZonedDateTime.now().minusYears(16).toLocalDate())
+                                .build())
+                        .build())
                         .withProsecutionCaseId(UUID.randomUUID())
                         .withId(UUID.randomUUID())
-                        .withOffences(singletonList(Offence.offence().build()))
+                        .withOffences(new ArrayList<>(asList(Offence.offence().withOffenceCode("offenceCode").build())))
                         .build();
         ReferralReason referralReason = ReferralReason.referralReason()
                 .withId(UUID.randomUUID())
@@ -112,7 +143,7 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
 
         final ListDefendantRequest listDefendantRequest = ListDefendantRequest.listDefendantRequest()
                 .withProsecutionCaseId(defendant.getProsecutionCaseId())
-                .withDefendantOffences(singletonList(UUID.randomUUID()))
+                .withDefendantOffences(new ArrayList<>(asList(UUID.randomUUID())))
                 .withReferralReason(referralReason)
                 .build();
 
@@ -123,11 +154,12 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
                 .withCourtCentre(courtCentre).withHearingType(hearingType)
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
                 .withListDefendantRequests(Arrays.asList(listDefendantRequest))
+                .withListedStartDateTime(ZonedDateTime.now())
                 .build();
 
         AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = AddDefendantsToCourtProceedings.addDefendantsToCourtProceedings()
                 .withDefendants(singletonList(defendant))
-                .withListHearingRequests(singletonList(listHearingRequest))
+                .withListHearingRequests(new ArrayList<>(asList(listHearingRequest)))
                 .build();
 
         final Metadata metadata = Envelope
@@ -136,12 +168,21 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
                 .withId(UUID.randomUUID())
                 .build();
 
+
+
+        final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, "offenceCode",
+                SEXUAL_OFFENCE_RR_DESCRIPTION,
+                "json/referencedataoffences.offences-list.json");
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+
+
         final Envelope<AddDefendantsToCourtProceedings> envelope = envelopeFrom(metadata, addDefendantsToCourtProceedings);
 
         aggregate.apply(new ProsecutionCaseCreated(getProsecutionCase(), null));
         addDefendantsToCourtProceedingsHandler.handle(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
 
         assertThat(envelopeStream, streamContaining(
                 jsonEnvelope(
@@ -150,8 +191,14 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.defendants", notNullValue()))
                         ).isJson(allOf(
+                                withJsonPath("$.defendants[0].isYouth", equalTo(true)))
+                        ).isJson(allOf(
                                 withJsonPath("$.listHearingRequests", notNullValue()))
-                        )
+                        ).isJson(allOf(
+                                withJsonPath("$.defendants[0].offences[0].reportingRestrictions[0].label", equalTo(YOUTH_RESTRICTION)))
+                        ).isJson(allOf(
+                                        withJsonPath("$.defendants[0].offences[0].reportingRestrictions[1].label", equalTo(SEXUAL_OFFENCE_RR_DESCRIPTION)))
+                                )
 
                 )
         ));
@@ -167,5 +214,20 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
                         .build())
                 .withDefendants(defendants)
                 .build();
+    }
+
+    private List<JsonObject> prepareReferenceDataOffencesJsonObject(final UUID offenceId,
+                                                                    final String offenceCode,
+                                                                    final String legislation,
+                                                                    final String payloadPath) {
+        final String referenceDataOffenceJsonString = getPayload(payloadPath)
+                .replace("OFFENCE_ID", offenceId.toString())
+                .replace("OFFENCE_CODE", offenceCode)
+                .replace("LEGISLATION", legislation);
+        final JsonReader jsonReader = Json.createReader(new StringReader(referenceDataOffenceJsonString));
+
+
+        final List<JsonObject> referencedataOffencesJsonObject = jsonReader.readObject().getJsonArray("offences").getValuesAs(JsonObject.class);
+        return referencedataOffencesJsonObject;
     }
 }
