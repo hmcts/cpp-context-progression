@@ -1,15 +1,12 @@
 package uk.gov.moj.cpp.progression.domain.aggregate.utils;
 
 
+import static java.util.Objects.nonNull;
+
 import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.services.common.util.UtcClock;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
-
-import static java.util.Objects.nonNull;
 
 @SuppressWarnings({"squid:S3655", "squid:S1067", "squid:S2234"})
 public class HearingHelper {
@@ -38,22 +35,5 @@ public class HearingHelper {
         }
         return eligibleForNextHearings;
     }
-
-
-    /**
-     * This method gets the earliest listed start time from list of ListHearingRequest
-     *
-     * @param listHearingRequests  - details of listing of hearing
-     * @return get the earliest Listed start date
-     */
-    public static ZonedDateTime getEarliestListedStartDateTime(final List<ListHearingRequest> listHearingRequests) {
-
-        return listHearingRequests.stream()
-                .map(listHearingRequest-> nonNull(listHearingRequest.getListedStartDateTime()) ? listHearingRequest.getListedStartDateTime() : listHearingRequest.getEarliestStartDateTime())
-                .sorted()
-                .findFirst()
-                .orElseThrow(IllegalArgumentException::new);
-    }
-
 
 }

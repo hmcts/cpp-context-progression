@@ -34,8 +34,6 @@ public class CourtDocumentNotifiedProcessor {
     private static final String FEATURE_DEFENCE_DISCLOSURE = "defenceDisclosure";
     private static final String COTR_FORM_SERVED_NOTIFICATION = "cotr-form-served";
     private static final String OPA_FORM_SUBMITTED ="opa-form-submitted";
-    private static final String PET_FORM_FINALISED_NOTIFICATION = "pet-form-finalised";
-    private static final String BCM_FORM_FINALISED_NOTIFICATION = "bcm-form-finalised";
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
@@ -103,12 +101,9 @@ public class CourtDocumentNotifiedProcessor {
     }
 
     private boolean shouldNotifyCPS(final  CourtDocument courtDocument) {
-        final String notificationType = courtDocument.getNotificationType();
-        if(nonNull(notificationType) &&
-                (COTR_FORM_SERVED_NOTIFICATION.equalsIgnoreCase(notificationType) ||
-                        OPA_FORM_SUBMITTED.equalsIgnoreCase(notificationType) ||
-                        PET_FORM_FINALISED_NOTIFICATION.equalsIgnoreCase(notificationType) ||
-                        BCM_FORM_FINALISED_NOTIFICATION.equalsIgnoreCase(notificationType))) {
+        if(nonNull(courtDocument.getNotificationType()) &&
+                (courtDocument.getNotificationType().equalsIgnoreCase(COTR_FORM_SERVED_NOTIFICATION)||
+                        courtDocument.getNotificationType().equalsIgnoreCase(OPA_FORM_SUBMITTED))) {
             return true;
         }
         return  featureControlGuard.isFeatureEnabled(FEATURE_DEFENCE_DISCLOSURE);

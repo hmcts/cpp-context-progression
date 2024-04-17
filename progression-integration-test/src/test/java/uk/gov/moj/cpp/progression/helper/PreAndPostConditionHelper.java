@@ -498,15 +498,6 @@ public class PreAndPostConditionHelper {
                 jsonPayload.toString());
     }
 
-    public static Response addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences1(final String caseId, final String defendantId) throws IOException {
-        final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(),
-                randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), "progression.command.prosecution-case-refer-to-court-one-defendant-two-offences1.json"));
-        jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
-        return postCommand(getWriteUrl("/refertocourt"),
-                "application/vnd.progression.refer-cases-to-court+json",
-                jsonPayload.toString());
-    }
-
     public static Response addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(final String caseId, final String defendantId) throws IOException {
         final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(),
                 randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), "progression.command.prosecution-case-refer-to-court-one-grown-defendant-two-offences.json"));

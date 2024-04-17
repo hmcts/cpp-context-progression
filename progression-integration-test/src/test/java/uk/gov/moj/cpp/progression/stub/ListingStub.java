@@ -550,7 +550,7 @@ public class ListingStub {
                                             String id =  payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("bookedSlots").getJSONObject(0).getString("courtScheduleId");
                                             return prosecutionCase.getString("id").equals(caseId) &&
                                                     prosecutionCase.getJSONArray("defendants").getJSONObject(0).getString("id").equals(defendantId) &&
-                                                    courtScheduleId.equals(id) && prosecutor.getString("prosecutorCode").equals("CPS-EM");
+                                                    courtScheduleId.equals(id) && prosecutor.getString("prosecutorCode").equals("TFL-CM");
                                         } else {
                                             return false;
                                         }

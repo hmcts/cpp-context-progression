@@ -467,11 +467,6 @@ public class FormEventProcessorTest {
         assertThat(courtDocument1.getString(COURT_DOCUMENT_ID), is(notNullValue()));
         assertThat(courtDocument1.getJsonObject(DOCUMENT_CATEGORY).getJsonObject(DEFENDANT_DOCUMENT).getString(PROSECUTION_CASE_ID), is(caseId));
         assertThat(courtDocument1.getString(DOCUMENT_TYPE_ID), is(CASE_DOCUMENT_TYPE_ID.toString()));
-
-        if(courtDocument1.containsKey("notificationType")) {
-            assertThat(courtDocument1.getString("notificationType"), is("bcm-form-finalised"));
-            assertThat(courtDocument1.getBoolean("sendToCps"), is(true));
-        }
     }
 
     private void assertPublicEventCreationFromCapturedEnvelope(final String courtFormId, final String caseId, final String userId, final FormType formType, final int documentListSize, final boolean isWelsh, final JsonEnvelope envelope, final JsonObject userDetails) {

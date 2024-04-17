@@ -169,7 +169,6 @@ public class ListCourtHearingTransformer {
                 .withProsecutionCaseId(matchedDefendant.getProsecutionCaseId())
                 .withWitnessStatement(matchedDefendant.getWitnessStatement())
                 .withWitnessStatementWelsh(matchedDefendant.getWitnessStatementWelsh())
-                .withIsYouth(matchedDefendant.getIsYouth())
                 .build();
     }
 

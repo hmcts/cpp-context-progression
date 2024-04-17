@@ -1,9 +1,84 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static java.lang.String.format;
+import static java.time.ZonedDateTime.now;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Stream.builder;
+import static java.util.stream.Stream.empty;
+import static java.util.stream.Stream.of;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.Address.address;
+import static uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument.caseCpsDetailsUpdatedFromCourtDocument;
+import static uk.gov.justice.core.courts.CaseRetentionPolicyRecorded.caseRetentionPolicyRecorded;
+import static uk.gov.justice.core.courts.EditFormRequested.editFormRequested;
+import static uk.gov.justice.core.courts.FormCreated.formCreated;
+import static uk.gov.justice.core.courts.FormDefendants.formDefendants;
+import static uk.gov.justice.core.courts.FormDefendantsUpdated.formDefendantsUpdated;
+import static uk.gov.justice.core.courts.FormFinalised.formFinalised;
+import static uk.gov.justice.core.courts.FormOperationFailed.formOperationFailed;
+import static uk.gov.justice.core.courts.FormUpdated.formUpdated;
+import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged;
+import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedResent.laaDefendantProceedingConcludedResent;
+import static uk.gov.justice.core.courts.LockStatus.lockStatus;
+import static uk.gov.justice.core.courts.Organisation.organisation;
+import static uk.gov.justice.core.courts.ProsecutionCaseDefendantOrganisationUpdatedByLaa.prosecutionCaseDefendantOrganisationUpdatedByLaa;
+import static uk.gov.justice.core.courts.UpdatedOrganisation.updatedOrganisation;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import static uk.gov.justice.progression.courts.CaseRetentionLengthCalculated.caseRetentionLengthCalculated;
+import static uk.gov.justice.progression.courts.HearingEventLogsDocumentCreated.hearingEventLogsDocumentCreated;
+import static uk.gov.justice.progression.courts.RetentionPolicy.retentionPolicy;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createCaseAddedToCrownCourt;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createPsrForDefendantsRequested;
+import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createSendingCommittalHearingInformationAdded;
+import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyPriorityHelper.getRetentionPolicyByPriority;
+import static uk.gov.moj.cpp.progression.aggregate.transformers.ProsecutionCaseTransformer.toUpdatedProsecutionCase;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getAllDefendantsOffences;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendant;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantEmail;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantJudicialResultsOfDefendantsAssociatedToTheCase;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantPostcode;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendant;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getMasterDefendant;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedOffence;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hasNewAmendment;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendantsForOnlinePlea;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedOffence;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hasNewAmendment;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hearingCaseDefendantsProceedingsConcluded;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isConcluded;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isProceedingConcludedEventTriggered;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.offenceWithSexualOffenceReportingRestriction;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.sendEmailNotificationToDefendant;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updateOrderIndex;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updatedDefendantsWithProceedingConcludedState;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
+import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.NO_VALUE;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PENDING;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
+import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
+import static uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated.defendantDefenceOrganisationDisassociated;
+import static uk.gov.moj.cpp.progression.events.Reason.PLEA_ALREADY_SUBMITTED;
+import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.COMPANYONLINEPLEA;
+import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.INDIVIDUALONLINEPLEA;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
+
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllHearingOffencesUpdated;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
@@ -87,7 +162,6 @@ import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
 import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.core.courts.ReapplyMiReportingRestrictions;
 import uk.gov.justice.core.courts.ReceiveRepresentationOrderForDefendant;
-import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.core.courts.UpdatedOrganisation;
 import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
 import uk.gov.justice.domain.aggregate.Aggregate;
@@ -124,7 +198,6 @@ import uk.gov.moj.cpp.progression.domain.UnmatchedDefendant;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.Form;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.FormLockStatus;
-import uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingHelper;
 import uk.gov.moj.cpp.progression.domain.event.CaseAlreadyExistsInCrownCourt;
 import uk.gov.moj.cpp.progression.domain.event.ConvictionDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.ConvictionDateRemoved;
@@ -148,7 +221,6 @@ import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.link.LinkType;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
-import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.events.CaseNotFound;
 import uk.gov.moj.cpp.progression.events.CasesUnlinked;
 import uk.gov.moj.cpp.progression.events.CpsDefendantIdUpdated;
@@ -189,11 +261,6 @@ import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleasAllocationDetails;
 import uk.gov.moj.cpp.progression.plea.json.schemas.TemplateType;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -216,89 +283,22 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-import static java.lang.String.format;
-import static java.time.ZonedDateTime.now;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static java.util.Collections.unmodifiableSet;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.fromString;
-import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Stream.builder;
-import static java.util.stream.Stream.empty;
-import static java.util.stream.Stream.of;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static uk.gov.justice.core.courts.Address.address;
-import static uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument.caseCpsDetailsUpdatedFromCourtDocument;
-import static uk.gov.justice.core.courts.CaseRetentionPolicyRecorded.caseRetentionPolicyRecorded;
-import static uk.gov.justice.core.courts.EditFormRequested.editFormRequested;
-import static uk.gov.justice.core.courts.FormCreated.formCreated;
-import static uk.gov.justice.core.courts.FormDefendants.formDefendants;
-import static uk.gov.justice.core.courts.FormDefendantsUpdated.formDefendantsUpdated;
-import static uk.gov.justice.core.courts.FormFinalised.formFinalised;
-import static uk.gov.justice.core.courts.FormOperationFailed.formOperationFailed;
-import static uk.gov.justice.core.courts.FormUpdated.formUpdated;
-import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged;
-import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedResent.laaDefendantProceedingConcludedResent;
-import static uk.gov.justice.core.courts.LockStatus.lockStatus;
-import static uk.gov.justice.core.courts.Organisation.organisation;
-import static uk.gov.justice.core.courts.ProsecutionCaseDefendantOrganisationUpdatedByLaa.prosecutionCaseDefendantOrganisationUpdatedByLaa;
-import static uk.gov.justice.core.courts.UpdatedOrganisation.updatedOrganisation;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
-import static uk.gov.justice.progression.courts.CaseRetentionLengthCalculated.caseRetentionLengthCalculated;
-import static uk.gov.justice.progression.courts.HearingEventLogsDocumentCreated.hearingEventLogsDocumentCreated;
-import static uk.gov.justice.progression.courts.RetentionPolicy.retentionPolicy;
-import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createCaseAddedToCrownCourt;
-import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createPsrForDefendantsRequested;
-import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createSendingCommittalHearingInformationAdded;
-import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyPriorityHelper.getRetentionPolicyByPriority;
-import static uk.gov.moj.cpp.progression.aggregate.transformers.ProsecutionCaseTransformer.toUpdatedProsecutionCase;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getAllDefendantsOffences;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendant;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantEmail;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantJudicialResultsOfDefendantsAssociatedToTheCase;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantPostcode;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getMasterDefendant;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendantsForOnlinePlea;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedOffence;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hasNewAmendment;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hearingCaseDefendantsProceedingsConcluded;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isConcluded;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isProceedingConcludedEventTriggered;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.offenceWithSexualOffenceReportingRestriction;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.sendEmailNotificationToDefendant;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updateOrderIndex;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updatedDefendantsWithProceedingConcludedState;
-import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
-import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
-import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
-import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.NO_VALUE;
-import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PENDING;
-import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
-import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
-import static uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated.defendantDefenceOrganisationDisassociated;
-import static uk.gov.moj.cpp.progression.events.Reason.PLEA_ALREADY_SUBMITTED;
-import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.COMPANYONLINEPLEA;
-import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.INDIVIDUALONLINEPLEA;
-import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
-import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188", "squid:S134",
         "squid:S1312", "squid:S1612", "pmd:NullAssignment"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = -2092381865833271661L;
+    private static final long serialVersionUID = -2092381865833271650L;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -389,12 +389,6 @@ public class CaseAggregate implements Aggregate {
     private static final String UPDATE_BCM_DEFENDANT_OPERATION_IS_FAILED = "update BCM defendant operation is failed";
     public static final String GUILTY = "GUILTY";
     public static final String NOT_GUILTY = "NOT_GUILTY";
-    public static final String ENDORSABLE_FLAG = "endorsableFlag";
-    private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
-    private static final String SEXUAL_OFFENCE_RR_LABEL = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
-    private static final String SEXUAL_OFFENCE_RR_CODE = "YES";
-
-
 
     private static boolean isConcludedAtDefendantLevel(uk.gov.justice.core.courts.Defendant defendant) {
         final boolean isNotConcluded = isNotEmpty(defendant.getOffences()) && defendant.getOffences().stream()
@@ -441,7 +435,7 @@ public class CaseAggregate implements Aggregate {
                         })
                 ),
                 when(uk.gov.moj.cpp.progression.domain.event.CaseAddedToCrownCourt.class)
-                        .apply(e -> this.courtCentreId = e.getCourtCentreId()),
+                        .apply(e ->this.courtCentreId = e.getCourtCentreId()),
                 when(CaseEjected.class)
                         .apply(e ->
                                 this.caseStatus = CASE_STATUS_EJECTED
@@ -499,7 +493,7 @@ public class CaseAggregate implements Aggregate {
                                             this.defendantsMap.putIfAbsent(defendant.getId(), defendant);
                                         });
                             }
-                            this.prosecutionCase.getDefendants().addAll(e.getDefendants());
+                            this.prosecutionCase.getDefendants().add(e.getDefendants().get(0));
                         }
                 ),
                 when(CaseLinkedToHearing.class).apply(
@@ -811,7 +805,7 @@ public class CaseAggregate implements Aggregate {
             }
 
             //capture all the offences that are resulted/actioned with ANY category offence level JudicialResults
-            if (isNull(defendantOffencesResultedOffenceLevel.get(defendant.getId()))) {
+            if (isNull(defendantOffencesResultedOffenceLevel.get(defendant.getId()))){
                 defendantOffencesResultedOffenceLevel.put(defendant.getId(), new HashMap<>());
             }
             if (nonNull(defendant.getOffences())) {
@@ -839,7 +833,6 @@ public class CaseAggregate implements Aggregate {
             this.defendantFinancialDocs.put(financialDataAdded.getDefendantId(), financialDataAdded.getMaterialIds());
         }
     }
-
     private void addPetFormFinalisedDocument(final PetFormFinalised petFormFinalised) {
         if (petFormFinalised.getMaterialId() != null) {
             this.petFormFinalisedDocuments.add(petFormFinalised.getMaterialId());
@@ -1104,31 +1097,19 @@ public class CaseAggregate implements Aggregate {
         }
     }
 
-    private uk.gov.justice.core.courts.Defendant getUpdatedDefendantWithIsYouth(final uk.gov.justice.core.courts.Defendant defendant, final List<ListHearingRequest> listHearingRequests) {
-        if (nonNull(defendant.getPersonDefendant())) {
-            final LocalDate earliestHearingDate = HearingHelper.getEarliestListedStartDateTime(listHearingRequests).toLocalDate();
-            return uk.gov.justice.core.courts.Defendant.defendant()
-                    .withValuesFrom(defendant)
-                    .withIsYouth(nonNull(defendant.getPersonDefendant().getPersonDetails()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth()) && LocalDateUtils.isYouth(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth(), earliestHearingDate))
-                    .build();
-
-        }
-        return defendant;
-    }
 
     @SuppressWarnings("squid:S2589")
     public Stream<Object> createProsecutionCase(final ProsecutionCase prosecutionCase) {
         LOGGER.debug("Prosecution case is being referred To Court .");
-        if (null != exactMatchedDefendants) {
-            final List<uk.gov.justice.core.courts.Defendant> defendantList = prosecutionCase.getDefendants().stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
+        if(null != exactMatchedDefendants) {
+           final List<uk.gov.justice.core.courts.Defendant> defendantList = prosecutionCase.getDefendants().stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
             defendantList.stream().forEach(x -> DefendantHelper.getUpdatedDefendantWithMasterDefendantId(prosecutionCase, x, transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))));
         }
         return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build()));
     }
 
     public Stream<Object> defendantsAddedToCourtProceedings(final List<uk.gov.justice.core.courts.Defendant> addedDefendants,
-                                                            final List<ListHearingRequest> listHearingRequests,
-                                                            final Optional<List<JsonObject>> offencesJsonObjectOptional) {
+                                                            final List<ListHearingRequest> listHearingRequests) {
         LOGGER.debug("Defendants Added To CourtProceedings");
 
         final List<uk.gov.justice.core.courts.Defendant> newDefendantsList =
@@ -1141,19 +1122,16 @@ public class CaseAggregate implements Aggregate {
                     .build())
             );
         }
-        final List<uk.gov.justice.core.courts.Defendant> updatedDefendantsWithYouthFlag = newDefendantsList.stream().map(defendant -> getUpdatedDefendantWithIsYouth(defendant, listHearingRequests)).collect(toList());
+        final List<uk.gov.justice.core.courts.Defendant> defendantListWithMasterDefendants =  newDefendantsList.stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
 
-        final List<uk.gov.justice.core.courts.Defendant> defendantListWithMasterDefendants = updatedDefendantsWithYouthFlag.stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
-
-        final List<uk.gov.justice.core.courts.Defendant> updatedDefendantsWitMasterDefendantIdsSet = defendantListWithMasterDefendants.stream().filter(x -> getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))) != null).map(x ->
-                uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(x).withMasterDefendantId(getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))).getMasterDefendantId()
-                ).build()).collect(toList());
-        final List<UUID> updatedDefendantIds = updatedDefendantsWitMasterDefendantIdsSet.stream().map(x -> x.getId()).collect(toList());
-        updatedDefendantsWithYouthFlag.removeIf(x -> updatedDefendantIds.contains(x.getId()));
-        updatedDefendantsWithYouthFlag.addAll(updatedDefendantsWitMasterDefendantIdsSet);
-        updatedDefendantsWithYouthFlag.forEach(defendantWithYouthFlag -> populateReportingRestrictionsForOffences(offencesJsonObjectOptional, defendantWithYouthFlag, listHearingRequests));
+                final List<uk.gov.justice.core.courts.Defendant>  updatedDefendantsWitMasterDefendantIdsSet  =   defendantListWithMasterDefendants.stream().filter(x -> getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))) != null).map(x ->
+                        uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(x).withMasterDefendantId(getMasterDefendant(transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))).getMasterDefendantId()
+                        ).build()).collect(toList());
+                final List<UUID> updatedDefendantIds = updatedDefendantsWitMasterDefendantIdsSet.stream().map(x -> x.getId()).collect(toList());
+                newDefendantsList.removeIf(x -> updatedDefendantIds.contains(x.getId()));
+                newDefendantsList.addAll(updatedDefendantsWitMasterDefendantIdsSet);
         return apply(Stream.of(DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
-                .withDefendants(updatedDefendantsWithYouthFlag)
+                .withDefendants(newDefendantsList)
                 .withListHearingRequests(listHearingRequests)
                 .build())
         );
@@ -1284,7 +1262,7 @@ public class CaseAggregate implements Aggregate {
             if (!defendantsMap.containsKey(defendantId)
                     || (nonNull(defendantProceedingConcluded.get(caseId)) && defendantProceedingConcluded.get(caseId).get(defendantId))) {
 
-                if (!defendantsMap.containsKey(defendantId)) {
+                if (!defendantsMap.containsKey(defendantId)){
                     LOGGER.info("CaseAggregateInfo: updateDefendantCustodialInformationDetails case {} defendant {} condition failed [defendantsMap.containsKey()]", caseId, defendantId);
                 }
 
@@ -1346,7 +1324,6 @@ public class CaseAggregate implements Aggregate {
                         .build()));
 
     }
-
     /**
      * If All the offences of a defendant was given a final result then the proceedings of the
      * defendant is complete. All defendant proceedings completed then Case Status is INACTIVE If
@@ -1506,7 +1483,6 @@ public class CaseAggregate implements Aggregate {
 
     /**
      * Resend LAA defendant proceedings concluded outcome to LAA using BDF in case LAA system is not updated.
-     *
      * @param laaDefendantProceedingConcludedChangedList List of laaDefendantProceedingConcludedChanged events
      * @return Stream of events
      */
@@ -1568,28 +1544,28 @@ public class CaseAggregate implements Aggregate {
      */
     private boolean isAllOffencesForEachDefendantResultedFinal(final ProsecutionCase prosecutionCase) {
         final Map<UUID, Boolean> defendantsConcludedMap = defendantProceedingConcluded.get(prosecutionCase.getId());
-        if (isNull(defendantsConcludedMap) || defendantsConcludedMap.isEmpty()) {
+        if(isNull(defendantsConcludedMap) || defendantsConcludedMap.isEmpty()){
             // Execution should not arrive here.
             return false;
         }
         //Check for each defendant
         final Set<UUID> defendantsIds = defendantsConcludedMap.keySet();
-        for (final UUID defId : defendantsIds) {
+        for(final UUID defId: defendantsIds) {
             final List<uk.gov.justice.core.courts.Offence> defendantOffencesFromPayload = getCurrentDefendantOffencesFromProsecutionCase(prosecutionCase, defId);
 
             final List<uk.gov.justice.core.courts.Offence> updatedOffences = new ArrayList<>();
             updateCurrentOffencesWithProceedingsConcludedStatus(defId, defendantOffencesFromPayload, updatedOffences);
             final boolean isDefendantProceedingConcluded = checkIfDefendantProceedingsConcluded(defId, updatedOffences);
 
-            if (!isDefendantProceedingConcluded) {
+            if(!isDefendantProceedingConcluded){
                 return false;
             }
         }
         return true;
     }
 
-    private uk.gov.justice.core.courts.Offence getOffenceById(final UUID offenceId,
-                                                              final List<uk.gov.justice.core.courts.Offence> offencesList) {
+    private uk.gov.justice.core.courts.Offence getOffenceById( final UUID offenceId,
+                                                               final List<uk.gov.justice.core.courts.Offence> offencesList) {
         return Optional.ofNullable(offencesList)
                 .flatMap(currentHearingOffenceList -> currentHearingOffenceList.stream()
                         .filter(offences -> offences.getId().equals(offenceId))
@@ -1599,7 +1575,6 @@ public class CaseAggregate implements Aggregate {
 
     /**
      * Returns the list of offences from the payload by defendant ID
-     *
      * @param prosecutionCase The incoming input payload
      * @param defId           The Defendant ID
      * @return The list of offences from the payload by defendant ID
@@ -1824,7 +1799,7 @@ public class CaseAggregate implements Aggregate {
                         .withLegalAidStatus(legalAidStatus)
                         .build();
 
-                final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper.getOffencesForDefendantUpdated(Arrays.asList(updatedOffence), offencesList, prosecutionCaseId, defendantId);
+                    final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper.getOffencesForDefendantUpdated(Arrays.asList(updatedOffence), offencesList, prosecutionCaseId, defendantId);
                 if (offencesForDefendantChanged.isPresent()) {
                     streamBuilder.add(ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()
                             .withDefendantCaseOffences(newDefendantCaseOffences).build());
@@ -2713,7 +2688,7 @@ public class CaseAggregate implements Aggregate {
     private void updateDefendantAssociatedDefenceOrganisation(final DefendantDefenceOrganisationAssociated defendantDefenceOrganisationAssociated) {
         this.defendantAssociatedDefenceOrganisation.put(defendantDefenceOrganisationAssociated.getDefendantId(), defendantDefenceOrganisationAssociated.getOrganisationId());
         final boolean byRepOrder = defendantDefenceOrganisationAssociated.getRepresentationType() == RepresentationType.REPRESENTATION_ORDER;
-        this.defendantOrganisationAsscociatedByRepOrder.put(defendantDefenceOrganisationAssociated.getDefendantId(), byRepOrder);
+        this.defendantOrganisationAsscociatedByRepOrder.put(defendantDefenceOrganisationAssociated.getDefendantId(), byRepOrder) ;
     }
 
     private void updateDefendantAssociatedDefenceOrganisation(final DefenceOrganisationAssociatedByDefenceContext defenceOrganisationAssociatedByDefenceContext) {
@@ -2873,7 +2848,7 @@ public class CaseAggregate implements Aggregate {
     private void updateCurrentOffencesWithProceedingsConcludedStatus(final UUID defendantId, final List<uk.gov.justice.core.courts.Offence> defendantOffences,
                                                                      final List<uk.gov.justice.core.courts.Offence> updatedOffences) {
 
-        if (nonNull(defendantOffences)) {
+        if (nonNull(defendantOffences)){
             defendantOffences.forEach(offence -> {
                 boolean isOffenceConcluded;
                 //check current offence is newly resulted and has FINAL result
@@ -2889,8 +2864,7 @@ public class CaseAggregate implements Aggregate {
 
     /**
      * Check for all offences of defendant are resulted to FINAL
-     *
-     * @param defendantId            - Id of the defendant
+     * @param defendantId - Id of the defendant
      * @param currentUpdatedOffences - All offences of the defendant updated with proceedings concluded  flag
      * @return True if all the offences are resulted to FINAL.
      */
@@ -2907,7 +2881,7 @@ public class CaseAggregate implements Aggregate {
                     offenceProceedingsConcludedMap.put(previousOffence.getId(), isConcluded(currentOffence));
                 } else {
                     //previously resulted but not in current hearing / payload
-                    if (isOffencePreviouslyConcluded(defendantId, previousOffence.getId())) {
+                   if (isOffencePreviouslyConcluded(defendantId, previousOffence.getId())) {
                         offenceProceedingsConcludedMap.put(previousOffence.getId(), TRUE);
                     } else {
                         //not yet resulted - concluded is false
@@ -2931,7 +2905,7 @@ public class CaseAggregate implements Aggregate {
      *
      * @param caseDefendantsFromDefendantProceedingsConcluded
      * @param caseDefendantsFromCurrentHearing
-     * @return Map<UUID ,   Boolean>
+     * @return Map<UUID, Boolean>
      */
     private Map<UUID, Boolean> getOtherCaseDefendantsNotRepresentedOnCurrentHearing(final Map<UUID, Boolean> caseDefendantsFromDefendantProceedingsConcluded,
                                                                                     final List<UUID> caseDefendantsFromCurrentHearing) {
@@ -2944,6 +2918,7 @@ public class CaseAggregate implements Aggregate {
         }
         return otherCaseDefendantsNotRepresentedOnCurrentHearing;
     }
+
 
 
     private boolean isOtherCaseDefendantsProceedingsConcludedValue(final Map<UUID, Boolean> otherCaseDefendantsNotRepresentedOnCurrentHearing) {
@@ -3603,7 +3578,7 @@ public class CaseAggregate implements Aggregate {
 
     private uk.gov.justice.core.courts.Offence updateLaaApplicationReference(final UUID defendantId, final uk.gov.justice.core.courts.Offence offence) {
         final uk.gov.justice.core.courts.Offence.Builder builder = uk.gov.justice.core.courts.Offence.offence().withValuesFrom(offence);
-        if (nonNull(offence.getCount())) {
+        if(nonNull(offence.getCount())) {
             final Optional<uk.gov.justice.core.courts.Defendant> defendant = this.getProsecutionCase().getDefendants().stream()
                     .filter(caseDefendant -> caseDefendant.getId().equals(defendantId))
                     .findFirst();
@@ -3617,64 +3592,5 @@ public class CaseAggregate implements Aggregate {
             }
         }
         return builder.build();
-    }
-
-    @SuppressWarnings("squid:S1188")
-    private void populateReportingRestrictionsForOffences(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final uk.gov.justice.core.courts.Defendant defendant, final List<ListHearingRequest> listHearingRequests) {
-        final Function<JsonObject, String> offenceKey = offenceJsonObject -> offenceJsonObject.getString("cjsOffenceCode");
-
-        final List<uk.gov.justice.core.courts.Offence> offencesWithReportingRestriction = new ArrayList<>();
-        for (final uk.gov.justice.core.courts.Offence offence : defendant.getOffences()) {
-            populateReportingRestrictionForOffence(referenceDataOffencesJsonObjectOptional, defendant, offenceKey, offencesWithReportingRestriction, offence, listHearingRequests);
-        }
-        if (isNotEmpty(defendant.getOffences())) {
-            defendant.getOffences().clear();
-            defendant.getOffences().addAll(offencesWithReportingRestriction);
-        }
-    }
-
-    private void populateReportingRestrictionForOffence(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final uk.gov.justice.core.courts.Defendant defendant, final Function<JsonObject, String> offenceKey, final List<uk.gov.justice.core.courts.Offence> offencesWithReportingRestriction, final uk.gov.justice.core.courts.Offence offence, final List<ListHearingRequest> listHearingRequests) {
-        final List<ReportingRestriction> reportingRestrictions = new ArrayList<>();
-        populateYouthReportingRestriction(defendant, reportingRestrictions, listHearingRequests);
-        final uk.gov.justice.core.courts.Offence.Builder builder = new uk.gov.justice.core.courts.Offence.Builder().withValuesFrom(offence);
-        populateSexualReportingRestriction(referenceDataOffencesJsonObjectOptional, offenceKey, offence, reportingRestrictions, builder);
-
-        if (isNotEmpty(offence.getReportingRestrictions())) {
-            reportingRestrictions.addAll(offence.getReportingRestrictions());
-        }
-
-        if (isNotEmpty(reportingRestrictions)) {
-            builder.withReportingRestrictions(dedupReportingRestrictions(reportingRestrictions));
-        }
-
-        offencesWithReportingRestriction.add(builder.build());
-    }
-
-    private void populateSexualReportingRestriction(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final Function<JsonObject, String> offenceKey, final uk.gov.justice.core.courts.Offence offence, final List<ReportingRestriction> reportingRestrictions, final uk.gov.justice.core.courts.Offence.Builder builder) {
-        if (referenceDataOffencesJsonObjectOptional.isPresent()) {
-            final Map<String, JsonObject> offenceCodeMap = referenceDataOffencesJsonObjectOptional.get().stream().collect(Collectors.toMap(offenceKey, Function.identity()));
-            final JsonObject referenceDataOffenceInfo = offenceCodeMap.get(offence.getOffenceCode());
-            if (nonNull(referenceDataOffenceInfo)) {
-                builder.withEndorsableFlag(referenceDataOffenceInfo.getBoolean(ENDORSABLE_FLAG, false));
-            }
-            if (nonNull(referenceDataOffenceInfo) && equalsIgnoreCase(referenceDataOffenceInfo.getString("reportRestrictResultCode", StringUtils.EMPTY), SEXUAL_OFFENCE_RR_CODE)) {
-                reportingRestrictions.add(new ReportingRestriction.Builder()
-                        .withId(randomUUID())
-                        .withLabel(SEXUAL_OFFENCE_RR_LABEL)
-                        .withOrderedDate(LocalDate.now())
-                        .build());
-            }
-        }
-    }
-
-    private void populateYouthReportingRestriction(final uk.gov.justice.core.courts.Defendant defendant, final List<ReportingRestriction> reportingRestrictions, final List<ListHearingRequest> listHearingRequests) {
-        final LocalDate earliestHearingDate = HearingHelper.getEarliestListedStartDateTime(listHearingRequests).toLocalDate();
-
-        if (nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth()) && LocalDateUtils.isYouth(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth(), earliestHearingDate).booleanValue()) {
-            reportingRestrictions.add(new ReportingRestriction.Builder()
-                    .withId(randomUUID())
-                    .withOrderedDate(LocalDate.now())
-                    .withLabel(YOUTH_RESTRICTION).build());
-        }
     }
 }

@@ -48,6 +48,7 @@ public class StatDecLetterService {
 
     private static final String EMPTY = "";
 
+    private static final String STAT_DEC_COURT_HEARING = "NPE_StatutoryDeclarationHearing";
     private static final String ADDRESS_1 = "address1";
     private static final String ADDRESS_2 = "address2";
     private static final String ADDRESS_3 = "address3";
@@ -135,15 +136,17 @@ public class StatDecLetterService {
                     .withWelshCourtCenterName(courtCentreJson.getString("oucodeL3WelshName", EMPTY))
                     .build());
         }
-        builder.withCourtAddress(CourtAddress.builder()
-                .withAddress1(ofNullable(courtCentreJson).map(courtCenterObject -> courtCenterObject.getString(ADDRESS_1, EMPTY)).orElse(EMPTY))
-                .withAddress2(ofNullable(courtCentreJson).map(courtCenterObject -> courtCenterObject.getString(ADDRESS_2, EMPTY)).orElse(EMPTY))
-                .withAddress3(ofNullable(courtCentreJson).map(courtCenterObject -> courtCenterObject.getString(ADDRESS_3, EMPTY)).orElse(EMPTY))
-                .withAddress4(ofNullable(courtCentreJson).map(courtCenterObject -> courtCenterObject.getString(ADDRESS_4, EMPTY)).orElse(EMPTY))
-                .withAddress5(ofNullable(courtCentreJson).map(courtCenterObject -> courtCenterObject.getString(ADDRESS_5, EMPTY)).orElse(EMPTY))
-                .withPostCode(ofNullable(courtCentreJson).map(courtCenterObject -> courtCenterObject.getString(POSTCODE, EMPTY)).orElse(EMPTY))
-                .withHouse(ofNullable(courtCentre).map(CourtCentre::getName).orElse(EMPTY))
-                .build());
+        if(STAT_DEC_COURT_HEARING.equalsIgnoreCase(documentTemplateName)) {
+            builder.withCourtAddress(CourtAddress.builder()
+                    .withAddress1(ofNullable(courtCentreJson).map(courtCenterObject -> courtCenterObject.getString(ADDRESS_1, EMPTY)).orElse(EMPTY))
+                    .withAddress2(ofNullable(courtCentreJson).map(courtCenterObject -> courtCenterObject.getString(ADDRESS_2, EMPTY)).orElse(EMPTY))
+                    .withAddress3(ofNullable(courtCentreJson).map(courtCenterObject -> courtCenterObject.getString(ADDRESS_3, EMPTY)).orElse(EMPTY))
+                    .withAddress4(ofNullable(courtCentreJson).map(courtCenterObject -> courtCenterObject.getString(ADDRESS_4, EMPTY)).orElse(EMPTY))
+                    .withAddress5(ofNullable(courtCentreJson).map(courtCenterObject -> courtCenterObject.getString(ADDRESS_5, EMPTY)).orElse(EMPTY))
+                    .withPostCode(ofNullable(courtCentreJson).map(courtCenterObject -> courtCenterObject.getString(POSTCODE, EMPTY)).orElse(EMPTY))
+                    .withHouse(ofNullable(courtCentre).map(CourtCentre::getName).orElse(EMPTY))
+                    .build());
+        }
 
         //Check if the applicant is a defendant
         final Optional<MasterDefendant> defendantOptional = ofNullable(courtApplicationParty.getMasterDefendant());
