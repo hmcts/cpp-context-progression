@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -20,14 +21,23 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.core.courts.NowDocumentRequested;
+import uk.gov.justice.core.courts.NowsDocumentFailed;
+import uk.gov.justice.core.courts.NowsDocumentGenerated;
+import uk.gov.justice.core.courts.NowsDocumentSent;
+import uk.gov.justice.core.courts.RecordNowsDocumentFailed;
+import uk.gov.justice.core.courts.RecordNowsDocumentSent;
+import uk.gov.justice.core.courts.nowdocument.NowDistribution;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
+import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
+import uk.gov.justice.progression.courts.RecordNowsDocumentGenerated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
@@ -37,6 +47,8 @@ import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
 import uk.gov.moj.cpp.progression.handler.NowDocumentRequestHandler;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -44,8 +56,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -73,7 +87,11 @@ public class NowDocumentRequestHandlerTest {
     private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(NowDocumentRequested.class);
+    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
+            NowDocumentRequested.class,
+            NowsDocumentSent.class,
+            NowsDocumentGenerated.class,
+            NowsDocumentFailed.class);
 
     @Before
     public void setup() {
@@ -109,6 +127,117 @@ public class NowDocumentRequestHandlerTest {
                         ))
                 )
         );
+    }
+
+
+    @Test
+    public void shouldRecordNowsDocumentSent() throws EventStreamException {
+
+        final RecordNowsDocumentSent recordNowsDocumentSent = RecordNowsDocumentSent.recordNowsDocumentSent()
+                .withMaterialId(MATERIAL_ID)
+                .withHearingId(randomUUID())
+                .withPayloadFileId(randomUUID())
+                .withCpsProsecutionCase(false)
+                .withFileName(randomUUID().toString())
+                .withNowDistribution(NowDistribution.nowDistribution().build())
+                .withOrderAddressee(OrderAddressee.orderAddressee().build())
+                .build();
+
+        nowDocumentRequestHandler.recordNowsDocumentSent(envelope("progression.command.record-nows-document-sent", recordNowsDocumentSent));
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.nows-document-sent"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                        withJsonPath("$.materialId", is(MATERIAL_ID.toString())),
+                                        withJsonPath("$.userId", notNullValue()),
+                                        withJsonPath("$.hearingId", is(recordNowsDocumentSent.getHearingId().toString())),
+                                        withJsonPath("$.payloadFileId", is(recordNowsDocumentSent.getPayloadFileId().toString())),
+                                        withJsonPath("$.cpsProsecutionCase", is(recordNowsDocumentSent.getCpsProsecutionCase()))
+                                )))
+                )
+        );
+    }
+
+    @Test
+    public void shouldRecordNowsDocumentGenerated() throws EventStreamException {
+
+        final UUID payloadFileId = randomUUID();
+
+        final UUID systemDocGeneratorId =  randomUUID();
+
+        final RecordNowsDocumentSent recordNowsDocumentSent = RecordNowsDocumentSent.recordNowsDocumentSent()
+                .withMaterialId(MATERIAL_ID)
+                .withHearingId(randomUUID())
+                .withPayloadFileId(payloadFileId)
+                .withCpsProsecutionCase(false)
+                .withFileName(randomUUID().toString())
+                .withNowDistribution(NowDistribution.nowDistribution().build())
+                .withOrderAddressee(OrderAddressee.orderAddressee().build())
+                .build();
+
+        nowDocumentRequestHandler.recordNowsDocumentSent(envelope("progression.command.record-nows-document-sent", recordNowsDocumentSent));
+
+        final RecordNowsDocumentGenerated recordNowsDocumentGenerated = RecordNowsDocumentGenerated.recordNowsDocumentGenerated()
+                .withMaterialId(MATERIAL_ID)
+                .withPayloadFileId(payloadFileId)
+                .withSystemDocGeneratorId(systemDocGeneratorId)
+                .build();
+
+        nowDocumentRequestHandler.recordNowsDocumentGenerated(
+                envelope("progression.command.record-nows-document-generated", recordNowsDocumentGenerated));
+
+        ArgumentCaptor<Stream> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
+
+        Mockito.verify(eventStream, times(2)).append(argumentCaptor.capture());
+
+        Stream<JsonEnvelope> envelopeStream = (Stream)argumentCaptor.getValue();
+
+        assertThat(envelopeStream, streamContaining(
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.nows-document-generated"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                        withJsonPath("$.materialId", is(MATERIAL_ID.toString())),
+                                        withJsonPath("$.userId", notNullValue()),
+                                        withJsonPath("$.hearingId", is(recordNowsDocumentSent.getHearingId().toString())),
+                                        withJsonPath("$.systemDocGeneratorId", is(systemDocGeneratorId.toString())),
+                                        withJsonPath("$.cpsProsecutionCase", is(recordNowsDocumentSent.getCpsProsecutionCase()))
+                                )))
+                )
+        );
+    }
+
+    public void shouldRecordNowsDocumentFailed() throws EventStreamException {
+
+        final RecordNowsDocumentFailed recordNowsDocumentFailed = RecordNowsDocumentFailed.recordNowsDocumentFailed()
+                .withMaterialId(MATERIAL_ID)
+                .withPayloadFileId(randomUUID())
+                .withReason("Test Reason")
+                .withConversionFormat("pdf")
+                .withOriginatingSource("NOWs")
+                .withRequestedTime(ZonedDateTime.now())
+                .withTemplateIdentifier("Test Template")
+                .build();
+
+        nowDocumentRequestHandler.recordNowsDocumentFailed(envelope("progression.command.record-nows-document-failed", recordNowsDocumentFailed));
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.nows-document-failed"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                        withJsonPath("$.materialId", is(MATERIAL_ID.toString())),
+                                        withJsonPath("$.reason", is(recordNowsDocumentFailed.getReason()))
+                                )))
+                )
+        );
+
     }
 
     private Envelope<NowDocumentRequest> buildEnvelope() {

@@ -11,12 +11,20 @@ import uk.gov.justice.core.courts.EnforcementAcknowledgmentError;
 import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.core.courts.NowDocumentRequestToBeAcknowledged;
 import uk.gov.justice.core.courts.NowDocumentRequested;
+import uk.gov.justice.core.courts.NowsDocumentFailed;
+import uk.gov.justice.core.courts.NowsDocumentGenerated;
+import uk.gov.justice.core.courts.NowsDocumentSent;
 import uk.gov.justice.core.courts.NowsMaterialRequestRecorded;
 import uk.gov.justice.core.courts.NowsRequestWithAccountNumberIgnored;
 import uk.gov.justice.core.courts.NowsRequestWithAccountNumberUpdated;
+import uk.gov.justice.core.courts.RecordNowsDocumentFailed;
+import uk.gov.justice.core.courts.RecordNowsDocumentSent;
 import uk.gov.justice.core.courts.nowdocument.FinancialOrderDetails;
+import uk.gov.justice.core.courts.nowdocument.NowDistribution;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
+import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
+import uk.gov.justice.progression.courts.RecordNowsDocumentGenerated;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
@@ -51,7 +59,6 @@ public class MaterialAggregateTest {
     public void setUp() {
         aggregate = new MaterialAggregate();
     }
-
 
     @Test
     public void shouldSaveAccountNumber() {
@@ -179,10 +186,6 @@ public class MaterialAggregateTest {
         assertThat(events.get(1).getClass(), is(CoreMatchers.equalTo(EmailRequestNotSent.class)));
     }
 
-    private Notification createNotification(final UUID notificationId, final UUID templateId, final String sendToAddress, final UUID materialId) {
-        return new Notification(notificationId, templateId, sendToAddress, "replyTo@hmcts.net", Collections.emptyMap(), materialId.toString());
-    }
-
     @Test
     public void shouldRecordNowsMaterialRequest(){
         final Stream<Object> eventStream = aggregate.create(MaterialDetails.materialDetails().build());
@@ -203,5 +206,95 @@ public class MaterialAggregateTest {
         final List<Object> eventStream = aggregate.nowsMaterialStatusUpdated(randomUUID(), "status", caseSubjects, cpsDefendantIds).collect(toList());
         assertThat(eventStream.size(), is(1));
         assertThat(eventStream.get(0).getClass(), is(CoreMatchers.equalTo(MaterialStatusUpdateIgnored.class)));
+    }
+
+    @Test
+    public void shouldRecordNowsDocumentSent() {
+        final UUID materialId = randomUUID();
+
+        final UUID userId = randomUUID();
+
+        final RecordNowsDocumentSent recordNowsDocumentSent = RecordNowsDocumentSent.recordNowsDocumentSent()
+                .withMaterialId(materialId)
+                .withHearingId(randomUUID())
+                .withPayloadFileId(randomUUID())
+                .withCpsProsecutionCase(false)
+                .withFileName(randomUUID().toString())
+                .withNowDistribution(NowDistribution.nowDistribution().build())
+                .withOrderAddressee(OrderAddressee.orderAddressee().build())
+                .build();
+
+        final List<Object> events = aggregate.recordNowsDocumentSent(materialId, userId, recordNowsDocumentSent).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final NowsDocumentSent nowsDocumentSent = (NowsDocumentSent) events.get(0);
+        assertThat(nowsDocumentSent.getMaterialId(), is(materialId));
+        assertThat(nowsDocumentSent.getPayloadFileId(), is(recordNowsDocumentSent.getPayloadFileId()));
+        assertThat(nowsDocumentSent.getCpsProsecutionCase(), is(recordNowsDocumentSent.getCpsProsecutionCase()));
+    }
+
+    @Test
+    public void shouldRecordNowsDocumentFailed() {
+        final UUID materialId = randomUUID();
+
+        final RecordNowsDocumentFailed recordNowsDocumentFailed = RecordNowsDocumentFailed.recordNowsDocumentFailed()
+                .withMaterialId(materialId)
+                .withPayloadFileId(randomUUID())
+                .withReason("Test Reason")
+                .withConversionFormat("pdf")
+                .withOriginatingSource("NOWs")
+                .withRequestedTime(ZonedDateTime.now())
+                .withTemplateIdentifier("Test Template")
+                .build();
+
+        final List<Object> events = aggregate.recordNowsDocumentFailed(materialId, recordNowsDocumentFailed).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final NowsDocumentFailed nowsDocumentFailed = (NowsDocumentFailed) events.get(0);
+        assertThat(nowsDocumentFailed.getMaterialId(), is(materialId));
+        assertThat(nowsDocumentFailed.getPayloadFileId(), is(recordNowsDocumentFailed.getPayloadFileId()));
+        assertThat(nowsDocumentFailed.getReason(), is(recordNowsDocumentFailed.getReason()));
+
+    }
+
+    @Test
+    public void shouldRecordNowsDocumentGenerated() {
+        final UUID materialId = randomUUID();
+
+        final UUID userId = randomUUID();
+
+        final UUID payloadFileId = randomUUID();
+
+        final UUID systemDocGeneratorId =  randomUUID();
+
+        final RecordNowsDocumentSent recordNowsDocumentSent = RecordNowsDocumentSent.recordNowsDocumentSent()
+                .withMaterialId(materialId)
+                .withHearingId(randomUUID())
+                .withPayloadFileId(randomUUID())
+                .withCpsProsecutionCase(false)
+                .withFileName(randomUUID().toString())
+                .withNowDistribution(NowDistribution.nowDistribution().build())
+                .withOrderAddressee(OrderAddressee.orderAddressee().build())
+                .build();
+
+        aggregate.recordNowsDocumentSent(materialId, userId, recordNowsDocumentSent).collect(toList());
+
+        final RecordNowsDocumentGenerated recordNowsDocumentGenerated = RecordNowsDocumentGenerated.recordNowsDocumentGenerated()
+                .withMaterialId(materialId)
+                .withPayloadFileId(payloadFileId)
+                .withSystemDocGeneratorId(systemDocGeneratorId)
+                .build();
+
+        final List<Object> events = aggregate.recordNowsDocumentGenerated(materialId, recordNowsDocumentGenerated).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final NowsDocumentGenerated nowsDocumentGenerated = (NowsDocumentGenerated) events.get(0);
+        assertThat(nowsDocumentGenerated.getMaterialId(), is(materialId));
+        assertThat(nowsDocumentGenerated.getSystemDocGeneratorId(), is(systemDocGeneratorId));
+        assertThat(nowsDocumentGenerated.getUserId(), is(userId));
+    }
+
+    private Notification createNotification(final UUID notificationId, final UUID templateId, final String sendToAddress, final UUID materialId) {
+        return new Notification(notificationId, templateId, sendToAddress, "replyTo@hmcts.net", Collections.emptyMap(), materialId.toString());
     }
 }

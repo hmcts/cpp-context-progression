@@ -16,15 +16,24 @@ import uk.gov.justice.core.courts.EnforcementAcknowledgmentError;
 import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.core.courts.NowDocumentRequestToBeAcknowledged;
 import uk.gov.justice.core.courts.NowDocumentRequested;
+import uk.gov.justice.core.courts.NowsDocumentFailed;
+import uk.gov.justice.core.courts.NowsDocumentGenerated;
+import uk.gov.justice.core.courts.NowsDocumentSent;
 import uk.gov.justice.core.courts.NowsMaterialRequestRecorded;
 import uk.gov.justice.core.courts.NowsMaterialStatusUpdated;
 import uk.gov.justice.core.courts.NowsRequestWithAccountNumberIgnored;
 import uk.gov.justice.core.courts.NowsRequestWithAccountNumberUpdated;
+import uk.gov.justice.core.courts.RecordNowsDocumentFailed;
+import uk.gov.justice.core.courts.RecordNowsDocumentSent;
 import uk.gov.justice.core.courts.nowdocument.FinancialOrderDetails;
+import uk.gov.justice.core.courts.nowdocument.NowDistribution;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.core.courts.nowdocument.NowNotificationSuppressed;
+import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
+import uk.gov.justice.core.courts.nowdocument.ProsecutionCase;
 import uk.gov.justice.domain.aggregate.Aggregate;
+import uk.gov.justice.progression.courts.RecordNowsDocumentGenerated;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
@@ -57,6 +66,12 @@ public class MaterialAggregate implements Aggregate {
     private final List<UUID> caseIds = new ArrayList<>();
     private NowDocumentRequest nowDocumentRequest;
     private boolean isAccountNumberSavedBefore = false;
+    private UUID hearingId;
+    private Boolean cpsProsecutionCase;
+    private String fileName;
+    private NowDistribution nowDistribution;
+    private OrderAddressee orderAddressee;
+    private UUID userId;
 
     @Override
     public Object apply(final Object event) {
@@ -76,6 +91,14 @@ public class MaterialAggregate implements Aggregate {
                             caseIds.addAll(e.getNowDocumentRequest().getCases());
                         }
                  }),
+                when(NowsDocumentSent.class).apply(e -> {
+                    hearingId = e.getHearingId();
+                    cpsProsecutionCase = e.getCpsProsecutionCase();
+                    fileName = e.getFileName();
+                    nowDistribution = e.getNowDistribution();
+                    orderAddressee = e.getOrderAddressee();
+                    userId =  e.getUserId();
+                }),
                 otherwiseDoNothing()
         );
     }
@@ -103,7 +126,7 @@ public class MaterialAggregate implements Aggregate {
             streamBuilder.add(new NowsMaterialStatusUpdated(caseSubjects, cpsDefendantIds, defendantAsn, this.details, status, welshTranslationRequired));
 
             if (nonNull(nowDocumentRequest) && welshTranslationRequired) {
-                final List<String> caseUrns = this.nowDocumentRequest.getNowContent().getCases().stream().map(thecase -> thecase.getReference()).collect(Collectors.toList());
+                final List<String> caseUrns = this.nowDocumentRequest.getNowContent().getCases().stream().map(ProsecutionCase::getReference).collect(Collectors.toList());
                 streamBuilder.add(new NowDocumentNotificationSuppressed(new NowNotificationSuppressed(caseUrns, this.nowDocumentRequest.getNowContent().getDefendant().getName(), this.nowDocumentRequest.getMasterDefendantId(), this.details.getMaterialId(), this.nowDocumentRequest.getTemplateName())));
             }
 
@@ -238,6 +261,45 @@ public class MaterialAggregate implements Aggregate {
 
     public List<UUID> fetchCases(){
        LOGGER.info("fetchCases : {}", caseIds);
-       return caseIds;
+       return new ArrayList<>(caseIds);
+    }
+
+    public Stream<Object> recordNowsDocumentSent(final UUID materialId, final UUID userId, final RecordNowsDocumentSent recordNowsDocumentSent) {
+        return apply(Stream.of(NowsDocumentSent.nowsDocumentSent()
+                        .withMaterialId(materialId)
+                        .withHearingId(recordNowsDocumentSent.getHearingId())
+                        .withPayloadFileId(recordNowsDocumentSent.getPayloadFileId())
+                        .withCpsProsecutionCase(recordNowsDocumentSent.getCpsProsecutionCase())
+                        .withFileName(recordNowsDocumentSent.getFileName())
+                        .withNowDistribution(recordNowsDocumentSent.getNowDistribution())
+                        .withOrderAddressee(recordNowsDocumentSent.getOrderAddressee())
+                        .withUserId(userId)
+                .build()));
+    }
+
+    public Stream<Object> recordNowsDocumentFailed(final UUID materialId, final RecordNowsDocumentFailed recordNowsDocumentFailed) {
+        return apply(Stream.of(NowsDocumentFailed.nowsDocumentFailed()
+                .withPayloadFileId(recordNowsDocumentFailed.getPayloadFileId())
+                .withReason(recordNowsDocumentFailed.getReason())
+                .withConversionFormat(recordNowsDocumentFailed.getConversionFormat())
+                .withFailedTime(recordNowsDocumentFailed.getFailedTime())
+                .withOriginatingSource(recordNowsDocumentFailed.getOriginatingSource())
+                .withRequestedTime(recordNowsDocumentFailed.getRequestedTime())
+                .withTemplateIdentifier(recordNowsDocumentFailed.getTemplateIdentifier())
+                .withMaterialId(materialId)
+                .build()));
+    }
+
+    public Stream<Object> recordNowsDocumentGenerated(final UUID materialId, final RecordNowsDocumentGenerated recordNowsDocumentGenerated) {
+        return apply(Stream.of(NowsDocumentGenerated.nowsDocumentGenerated()
+                .withMaterialId(materialId)
+                .withHearingId(hearingId)
+                .withSystemDocGeneratorId(recordNowsDocumentGenerated.getSystemDocGeneratorId())
+                .withCpsProsecutionCase(cpsProsecutionCase)
+                .withFileName(fileName)
+                .withNowDistribution(nowDistribution)
+                .withOrderAddressee(orderAddressee)
+                .withUserId(userId)
+                .build()));
     }
 }

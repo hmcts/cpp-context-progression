@@ -1,7 +1,9 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import uk.gov.justice.core.courts.RecordPrisonCourtRegisterDocumentSent;
+import uk.gov.justice.core.courts.RecordPrisonCourtRegisterFailed;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDocumentRequest;
-import uk.gov.justice.core.courts.prisonCourtRegisterDocument.RecordPrisonCourtRegisterDocumentGenerated;
+import uk.gov.justice.progression.courts.NotifyPrisonCourtRegister;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -48,20 +50,61 @@ public class PrisonCourtRegisterHandler extends AbstractCommandHandler {
         appendEventsToStream(envelope, eventStream, events);
     }
 
-    @Handles("progression.command.record-prison-court-register-generated")
-    public void handleRecordDocumentGenerated(final Envelope<RecordPrisonCourtRegisterDocumentGenerated> envelope) throws EventStreamException {
-        LOGGER.info("progression.command.record-prison-court-register-generated {}", envelope.payload());
 
-        final RecordPrisonCourtRegisterDocumentGenerated prisonCourtRegisterDocumentGenerated = envelope.payload();
+    @Handles("progression.command.record-prison-court-register-document-sent")
+    public void recordPrisonCourtRegisterDocumentSent(final Envelope<RecordPrisonCourtRegisterDocumentSent> envelope) throws EventStreamException {
 
-        final UUID courtCentreId = prisonCourtRegisterDocumentGenerated.getCourtCentreId();
+        LOGGER.info("progression.command.record-prison-court-register-document-sent {}", envelope.payload());
 
-        final EventStream eventStream = eventSource.getStreamById(prisonCourtRegisterDocumentGenerated.getCourtCentreId());
+        final RecordPrisonCourtRegisterDocumentSent recordPrisonCourtRegisterDocumentSent = envelope.payload();
+
+        final UUID courtCentreId = recordPrisonCourtRegisterDocumentSent.getCourtCentreId();
+
+        final EventStream eventStream = eventSource.getStreamById(courtCentreId);
 
         final CourtCentreAggregate courtCentreAggregate = aggregateService.get(eventStream, CourtCentreAggregate.class);
 
-        final Stream<Object> events = courtCentreAggregate.recordPrisonCourtRegisterGenerated(courtCentreId, prisonCourtRegisterDocumentGenerated);
+        final Stream<Object> events = courtCentreAggregate.recordPrisonCourtRegisterDocumentSent(courtCentreId, recordPrisonCourtRegisterDocumentSent);
 
         appendEventsToStream(envelope, eventStream, events);
+
+    }
+
+    @Handles("progression.command.notify-prison-court-register")
+    public void handleNotifyCourtCentre(final Envelope<NotifyPrisonCourtRegister> envelope) throws EventStreamException {
+
+        LOGGER.info("progression.command.notify-prison-court-register {}", envelope.payload());
+
+        final NotifyPrisonCourtRegister notifyPrisonCourtRegister = envelope.payload();
+
+        final UUID courtCentreId = notifyPrisonCourtRegister.getCourtCentreId();
+
+        final EventStream eventStream = eventSource.getStreamById(courtCentreId);
+
+        final CourtCentreAggregate courtCentreAggregate = aggregateService.get(eventStream, CourtCentreAggregate.class);
+
+        final Stream<Object> events = courtCentreAggregate.recordPrisonCourtRegisterGenerated(courtCentreId, notifyPrisonCourtRegister);
+
+        appendEventsToStream(envelope, eventStream, events);
+
+    }
+
+    @Handles("progression.command.record-prison-court-register-failed")
+    public void handlePrisonCourtRegisterFailed(final Envelope<RecordPrisonCourtRegisterFailed> envelope) throws EventStreamException {
+
+        LOGGER.info("progression.command.record-prison-court-register-failed {}", envelope.payload());
+
+        final RecordPrisonCourtRegisterFailed recordPrisonCourtRegisterFailed = envelope.payload();
+
+        final UUID courtCentreId = recordPrisonCourtRegisterFailed.getCourtCentreId();
+
+        final EventStream eventStream = eventSource.getStreamById(courtCentreId);
+
+        final CourtCentreAggregate courtCentreAggregate = aggregateService.get(eventStream, CourtCentreAggregate.class);
+
+        final Stream<Object> events = courtCentreAggregate.recordPrisonCourtRegisterFailed(courtCentreId, recordPrisonCourtRegisterFailed);
+
+        appendEventsToStream(envelope, eventStream, events);
+
     }
 }

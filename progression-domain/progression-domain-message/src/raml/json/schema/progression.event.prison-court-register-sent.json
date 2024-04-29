@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/prison-court-register-sent.json",
+  "type": "object",
+  "properties": {
+    "courtCentreId": {
+      "description": "The court centre id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prisonCourtRegister": {
+      "$ref": "http://justice.gov.uk/core/courts/prisonCourtRegisterDocument/prisonCourtRegisterDocumentRequest.json"
+    },
+    "payloadFileId": {
+      "description": "The payload file id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "courtCentreId",
+    "prisonCourtRegister",
+    "payloadFileId"
+  ],
+  "additionalProperties": false
+}

@@ -9,9 +9,13 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.justice.listing.courts.CourtListPublished.courtListPublished;
 
 import uk.gov.justice.core.courts.CourtRegisterRecorded;
+import uk.gov.justice.core.courts.PrisonCourtRegisterFailed;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
+import uk.gov.justice.core.courts.PrisonCourtRegisterSent;
 import uk.gov.justice.core.courts.PrisonCourtRegisterWithoutRecipientsRecorded;
+import uk.gov.justice.core.courts.RecordPrisonCourtRegisterDocumentSent;
+import uk.gov.justice.core.courts.RecordPrisonCourtRegisterFailed;
 import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterDocumentRequest;
 import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterRecipient;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDocumentRequest;
@@ -23,16 +27,21 @@ import uk.gov.justice.progression.courts.CourtRegisterGenerated;
 import uk.gov.justice.progression.courts.CourtRegisterNotificationIgnored;
 import uk.gov.justice.progression.courts.CourtRegisterNotified;
 import uk.gov.justice.progression.courts.NotifyCourtRegister;
+import uk.gov.justice.progression.courts.NotifyPrisonCourtRegister;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CourtCentreAggregate implements Aggregate {
-    private static final long serialVersionUID = 101L;
+    private static final long serialVersionUID = 102L;
     private List<CourtRegisterRecipient> courtRegisterRecipients;
+
+    private final Map<UUID, PrisonCourtRegisterDocumentRequest> prisonCourtRegisterMap = new HashMap<>();
 
     @Override
     public Object apply(final Object event) {
@@ -54,6 +63,10 @@ public class CourtCentreAggregate implements Aggregate {
                     if (isNotEmpty(courtRegisterWithRecipients)) {
                         this.courtRegisterRecipients = courtRegisterWithRecipients.stream().findFirst().get().getRecipients();
                     }
+                }),
+                when(PrisonCourtRegisterSent.class).apply(e -> {
+                    final PrisonCourtRegisterDocumentRequest prisonCourtRegister = e.getPrisonCourtRegister();
+                    prisonCourtRegisterMap.put(e.getPayloadFileId(), prisonCourtRegister);
                 }),
                 otherwiseDoNothing()
         );
@@ -93,6 +106,52 @@ public class CourtCentreAggregate implements Aggregate {
                 .withSystemDocGeneratorId(notifyCourtRegister.getSystemDocGeneratorId())
                 .withCourtCentreId(notifyCourtRegister.getCourtCentreId()).build()));
     }
+
+
+    public Stream<Object> recordPrisonCourtRegisterGenerated(final UUID courtCentreId, final NotifyPrisonCourtRegister notifyPrisonCourtRegister) {
+
+        final UUID payloadFileId = notifyPrisonCourtRegister.getPayloadFileId();
+
+        final PrisonCourtRegisterDocumentRequest prisonCourtRegisterDocumentRequest = prisonCourtRegisterMap.get(payloadFileId);
+
+        return apply(Stream.of(PrisonCourtRegisterGenerated.prisonCourtRegisterGenerated()
+                .withRecipients(prisonCourtRegisterDocumentRequest.getRecipients())
+                .withDefendant(prisonCourtRegisterDocumentRequest.getDefendant())
+                .withFileId(notifyPrisonCourtRegister.getSystemDocGeneratorId())
+                .withHearingVenue(prisonCourtRegisterDocumentRequest.getHearingVenue())
+                .withHearingDate(prisonCourtRegisterDocumentRequest.getHearingDate())
+                .withHearingId(prisonCourtRegisterDocumentRequest.getHearingId())
+                .withCourtCentreId(courtCentreId).build()));
+    }
+
+    public Stream<Object> recordPrisonCourtRegisterDocumentSent(final UUID courtCentreId, final RecordPrisonCourtRegisterDocumentSent recordPrisonCourtRegisterDocumentSent) {
+        return apply(Stream.of(PrisonCourtRegisterSent.prisonCourtRegisterSent()
+                .withPrisonCourtRegister(PrisonCourtRegisterDocumentRequest.prisonCourtRegisterDocumentRequest()
+                        .withCourtCentreId(courtCentreId)
+                        .withRecipients(recordPrisonCourtRegisterDocumentSent.getRecipients())
+                        .withDefendant(recordPrisonCourtRegisterDocumentSent.getDefendant())
+                        .withHearingId(recordPrisonCourtRegisterDocumentSent.getHearingId())
+                        .withHearingVenue(recordPrisonCourtRegisterDocumentSent.getHearingVenue())
+                        .withHearingDate(recordPrisonCourtRegisterDocumentSent.getHearingDate())
+                        .build())
+                .withPayloadFileId(recordPrisonCourtRegisterDocumentSent.getPayloadFileId())
+                .withCourtCentreId(courtCentreId)
+                .build()));
+    }
+
+    public Stream<Object> recordPrisonCourtRegisterFailed(final UUID courtCentreId, RecordPrisonCourtRegisterFailed recordPrisonCourtRegisterFailed) {
+        return apply(Stream.of(PrisonCourtRegisterFailed.prisonCourtRegisterFailed()
+                .withPayloadFileId(recordPrisonCourtRegisterFailed.getPayloadFileId())
+                .withReason(recordPrisonCourtRegisterFailed.getReason())
+                .withConversionFormat(recordPrisonCourtRegisterFailed.getConversionFormat())
+                .withFailedTime(recordPrisonCourtRegisterFailed.getFailedTime())
+                .withOriginatingSource(recordPrisonCourtRegisterFailed.getOriginatingSource())
+                .withRequestedTime(recordPrisonCourtRegisterFailed.getRequestedTime())
+                .withTemplateIdentifier(recordPrisonCourtRegisterFailed.getTemplateIdentifier())
+                .withCourtCentreId(courtCentreId)
+                .build()));
+    }
+
 
     //should be used only in test
     public void setCourtRegisterRecipients(final List<CourtRegisterRecipient> courtRegisterRecipients) {
