@@ -454,6 +454,9 @@ subscriptions_descriptor:
         - name: progression.event.cases-referred-to-court
           schema_uri: http://justice.gov.uk/core/courts/cases-referred-to-court.json
 
+        - name: progression.event.cases-referred-to-court-v2
+          schema_uri: http://justice.gov.uk/core/courts/cases-referred-to-court-V2.json
+
         - name: progression.events.new-case-document-received
           schema_uri: http://justice.gov.uk/core/courts/new-case-document-received.json
 

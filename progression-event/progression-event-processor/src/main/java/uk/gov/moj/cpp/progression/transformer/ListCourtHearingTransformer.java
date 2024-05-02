@@ -4,6 +4,8 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
+import static java.util.Arrays.asList;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
@@ -19,6 +21,7 @@ import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -35,6 +38,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.MissingRequiredFieldException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.time.LocalDate;
@@ -73,6 +77,9 @@ public class ListCourtHearingTransformer {
 
     @Inject
     private RefDataService referenceDataService;
+
+    @Inject
+    private ProgressionService progressionService;
 
     private static final String POSTCODE_IS_MISSING = "Postcode is missing for";
 
@@ -311,6 +318,26 @@ public class ListCourtHearingTransformer {
         return ListCourtHearing.listCourtHearing().withHearings(hearingsList).build();
     }
 
+    public ListCourtHearing transformSjpReferralNextHearing(final JsonEnvelope jsonEnvelope,
+                                      final List<ProsecutionCase> prosecutionCases,
+                                      final UUID hearingId, final NextHearing nextHearing, final List<ReferredListHearingRequest> referredListHearingRequests) {
+
+        LOGGER.debug("Transforming SJP reference with nextHearing  to ListCourtHearing");
+
+        final HearingListingNeeds hearings = HearingListingNeeds.hearingListingNeeds()
+                .withId(hearingId)
+                .withProsecutionCases(prosecutionCases)
+                .withCourtCentre(progressionService.transformCourtCentre(nextHearing.getCourtCentre(), jsonEnvelope))
+                .withBookedSlots(nextHearing.getHmiSlots())
+                .withListedStartDateTime(nextHearing.getListedStartDateTime())
+                .withEstimatedMinutes(nextHearing.getEstimatedMinutes())
+                .withType(nextHearing.getType())
+                .withJurisdictionType(MAGISTRATES)
+                .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, referredListHearingRequests.stream().flatMap(r->r.getListDefendantRequests().stream()).collect(Collectors.toList())))
+                .build();
+
+        return ListCourtHearing.listCourtHearing().withHearings(asList(hearings)).build();
+    }
 
     public ListCourtHearing transform(final JsonEnvelope jsonEnvelope, final List<ProsecutionCase> prosecutionCases,
                                       final List<ListHearingRequest> listHearingRequests, final UUID hearingId) {

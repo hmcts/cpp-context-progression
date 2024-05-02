@@ -3,10 +3,13 @@ package uk.gov.moj.cpp.progression.aggregate;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.core.courts.NextHearing.nextHearing;
 
 import uk.gov.justice.core.courts.CasesReferredToCourt;
 import uk.gov.justice.core.courts.CourtProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtReferral;
+import uk.gov.justice.core.courts.CasesReferredToCourtV2;
+
 import uk.gov.justice.core.courts.ReferredCourtDocument;
 import uk.gov.justice.core.courts.ReferredProsecutionCase;
 import uk.gov.justice.core.courts.SjpCourtReferral;
@@ -45,5 +48,15 @@ public class CasesReferredToCourtAggregateTest {
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtProceedingsInitiated.class)));
+    }
+
+    @Test
+    public void shouldReturnCasesReferredToCourtV2() {
+        final SjpCourtReferral courtReferralV2 = new SjpCourtReferral(new ArrayList<ReferredCourtDocument>(),  null,nextHearing().build(), new ArrayList<ReferredProsecutionCase>(),null);
+        final List<Object> eventStream = aggregate.referCasesToCourt(courtReferralV2).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CasesReferredToCourtV2.class)));
     }
 }

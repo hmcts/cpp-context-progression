@@ -5,6 +5,7 @@ import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -24,7 +25,6 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
@@ -143,7 +143,10 @@ public class HearingResultedApplicationUpdatedIT extends AbstractIT {
         TimeUnit.MILLISECONDS.sleep(4000);
 
         // THEN
-        final Matcher[] caseMatcher = {withJsonPath("$.caseId", equalTo(caseId))};
+        final Matcher[] caseMatcher = {
+                withJsonPath("$.caseId", equalTo(caseId)),
+                withJsonPath("$.applications[*].applicationStatus", hasItem(ApplicationStatus.FINALISED.toString())),
+        };
         final Optional<JsonObject> courtApplicationResponseJsonObject = findBy(caseMatcher);
         assertTrue(courtApplicationResponseJsonObject.isPresent());
 

@@ -21,6 +21,7 @@ import static uk.gov.moj.cpp.progression.service.RefDataService.SHORT_NAME;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Ethnicity;
+import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
@@ -85,7 +86,7 @@ public class ReferredProsecutionCaseTransformer {
         return value;
     }
 
-    public ProsecutionCase transform(final ReferredProsecutionCase referredProsecutionCase, final JsonEnvelope
+    public ProsecutionCase transform(final ReferredProsecutionCase referredProsecutionCase, final HearingLanguage hearingLanguage, final JsonEnvelope
             jsonEnvelope) {
 
 
@@ -94,7 +95,7 @@ public class ReferredProsecutionCaseTransformer {
                         .getProsecutionCaseIdentifier()))
                 .withDefendants(referredProsecutionCase.getDefendants().stream()
                         .map(referredDefendant -> transform(referredDefendant, jsonEnvelope, referredProsecutionCase
-                                .getInitiationCode()))
+                                .getInitiationCode(), hearingLanguage))
                         .collect(Collectors.toList()))
                 .withId(referredProsecutionCase.getId())
                 .withStatementOfFactsWelsh(referredProsecutionCase.getStatementOfFactsWelsh())
@@ -128,7 +129,7 @@ public class ReferredProsecutionCaseTransformer {
     }
 
     public Defendant transform(final ReferredDefendant referredDefendant, final JsonEnvelope jsonEnvelope, final
-    InitiationCode initiationCode) {
+    InitiationCode initiationCode, final HearingLanguage hearingLanguage) {
         String pnCid = null;
         if (nonNull(referredDefendant.getPersonDefendant())) {
             pnCid = referredDefendant.getPersonDefendant().getPncId();
@@ -141,7 +142,7 @@ public class ReferredProsecutionCaseTransformer {
                 .withId(referredDefendant.getId())
                 .withMasterDefendantId(referredDefendant.getId())
                 .withCourtProceedingsInitiated(jsonEnvelope.metadata().createdAt().orElse(ZonedDateTime.now(ZoneId.of("UTC"))))
-                .withPersonDefendant(transform(referredDefendant.getPersonDefendant(), jsonEnvelope))
+                .withPersonDefendant(transform(referredDefendant.getPersonDefendant(), hearingLanguage, jsonEnvelope))
                 .withWitnessStatementWelsh(referredDefendant.getWitnessStatementWelsh())
                 .withWitnessStatement(referredDefendant.getWitnessStatement())
                 .withProsecutionCaseId(referredDefendant.getProsecutionCaseId())
@@ -161,7 +162,7 @@ public class ReferredProsecutionCaseTransformer {
                 .build();
     }
 
-    public PersonDefendant transform(final ReferredPersonDefendant personDefendant, final
+    public PersonDefendant transform(final ReferredPersonDefendant personDefendant, final HearingLanguage hearingLanguage, final
     JsonEnvelope jsonEnvelope) {
         if (nonNull(personDefendant)) {
             final JsonObject selfDefinedEthnicityJson = getEthnicityJson(personDefendant.getSelfDefinedEthnicityId(),
@@ -179,7 +180,7 @@ public class ReferredProsecutionCaseTransformer {
                     .build();
 
             return PersonDefendant.personDefendant()
-                    .withPersonDetails(transform(personDefendant.getPersonDetails(), ethnicity, jsonEnvelope))
+                    .withPersonDetails(transform(personDefendant.getPersonDetails(), ethnicity, hearingLanguage, jsonEnvelope))
                     .withArrestSummonsNumber(personDefendant.getArrestSummonsNumber())
                     .withBailStatus(personDefendant.getBailStatus())
                     .withCustodyTimeLimit(personDefendant.getCustodyTimeLimit())
@@ -244,7 +245,7 @@ public class ReferredProsecutionCaseTransformer {
         return offence;
     }
 
-    public Person transform(final ReferredPerson referredPerson, final Ethnicity ethnicity, final JsonEnvelope jsonEnvelope) {
+    public Person transform(final ReferredPerson referredPerson, final Ethnicity ethnicity, final HearingLanguage hearingLanguage, final JsonEnvelope jsonEnvelope) {
         final JsonObject nationalityJson = getNationalityJson(referredPerson.getNationalityId(), jsonEnvelope);
         final JsonObject additionalNationalityJson = getNationalityJson(referredPerson.getAdditionalNationalityId(),
                 jsonEnvelope);
@@ -261,6 +262,7 @@ public class ReferredProsecutionCaseTransformer {
                 .withEthnicity(ethnicity)
                 .withFirstName(referredPerson.getFirstName())
                 .withGender(referredPerson.getGender())
+                .withHearingLanguageNeeds(hearingLanguage)
                 .withInterpreterLanguageNeeds(referredPerson.getInterpreterLanguageNeeds())
                 .withLastName(referredPerson.getLastName())
                 .withMiddleName(referredPerson.getMiddleName())
@@ -279,7 +281,7 @@ public class ReferredProsecutionCaseTransformer {
     public AssociatedPerson transform(final ReferredAssociatedPerson referredAssociatedPerson, final JsonEnvelope
             jsonEnvelope) {
         return AssociatedPerson.associatedPerson()
-                .withPerson(transform(referredAssociatedPerson.getPerson(), null, jsonEnvelope))
+                .withPerson(transform(referredAssociatedPerson.getPerson(), null,null, jsonEnvelope))
                 .withRole(referredAssociatedPerson.getRole())
                 .build();
     }

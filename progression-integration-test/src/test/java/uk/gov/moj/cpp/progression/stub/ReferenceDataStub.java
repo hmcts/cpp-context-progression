@@ -567,4 +567,17 @@ public class ReferenceDataStub {
         waitForStubToBeReady(COUNTRY_BY_POSTCODE_ENDPOINT+ ".*", COUNTRY_BY_POSTCODE_CONTENT_TYPE);
     }
 
+    public static void stubQueryCourtRoomById(final String courtCentreId) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+
+            final String payload = getPayload("restResource/referencedata-query-court-room-by-court-centre-id.json");
+
+            final String urlPath = "/referencedata-service/query/api/rest/referencedata/courtrooms/" + courtCentreId;
+            stubFor(get(urlMatching(urlPath))
+                    .willReturn(aResponse().withStatus(SC_OK)
+                            .withHeader("CPPID", randomUUID().toString())
+                            .withHeader("Content-Type", APPLICATION_JSON)
+                            .withBody(payload)));
+            waitForStubToBeReady(urlPath, "application/vnd.referencedata.ou-courtroom+json");
+    }
 }

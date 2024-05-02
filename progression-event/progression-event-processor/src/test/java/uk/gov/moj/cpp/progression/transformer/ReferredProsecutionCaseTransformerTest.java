@@ -14,6 +14,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.HearingLanguage.ENGLISH;
+import static uk.gov.justice.core.courts.HearingLanguage.WELSH;
 import static uk.gov.justice.core.courts.Verdict.verdict;
 import static uk.gov.justice.core.courts.VerdictType.verdictType;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
@@ -192,13 +194,14 @@ public class ReferredProsecutionCaseTransformerTest {
                 .build();
 
         // Run the test
-        final Person result = referredProsecutionCaseTransformer.transform(referredPerson, ethnicity, jsonEnvelope);
+        final Person result = referredProsecutionCaseTransformer.transform(referredPerson, ethnicity, WELSH, jsonEnvelope);
 
         //Verify the results
         assertThat(lastName.toString(), is(result.getLastName()));
         assertThat("N12", is(result.getAdditionalNationalityCode()));
         assertThat("E12", is(result.getEthnicity().getObservedEthnicityCode()));
         assertThat("E13", is(result.getEthnicity().getSelfDefinedEthnicityCode()));
+        assertThat(result.getHearingLanguageNeeds(), is(WELSH));
     }
 
     @Test
@@ -222,7 +225,7 @@ public class ReferredProsecutionCaseTransformerTest {
         when(referenceDataService.getNationality(jsonEnvelope, nationalityId, requester)).thenThrow(new ReferenceDataNotFoundException("Country Nationality", nationalityId.toString()));
 
         // Run the test
-        final Person result = referredProsecutionCaseTransformer.transform(referredPerson, null, jsonEnvelope);
+        final Person result = referredProsecutionCaseTransformer.transform(referredPerson, null, null, jsonEnvelope);
 
         verifyNoMoreInteractions(referenceDataService);
     }
@@ -240,11 +243,12 @@ public class ReferredProsecutionCaseTransformerTest {
         when(referenceDataService.getNationality(any(), any(), any())).thenReturn(of(getNationalityObject()));
 
         // Run the test
-        final PersonDefendant result = referredProsecutionCaseTransformer.transform(referredPersonDefendant,
+        final PersonDefendant result = referredProsecutionCaseTransformer.transform(referredPersonDefendant, ENGLISH,
                 jsonEnvelope);
 
         // Verify the results
         assertThat("E12", is(result.getPersonDetails().getEthnicity().getObservedEthnicityCode()));
+        assertThat(ENGLISH , is(result.getPersonDetails().getHearingLanguageNeeds()));
     }
 
     @Test
@@ -261,7 +265,7 @@ public class ReferredProsecutionCaseTransformerTest {
 
         // Run the test
         referredProsecutionCaseTransformer.transform
-                (referredPersonDefendant, jsonEnvelope);
+                (referredPersonDefendant, WELSH, jsonEnvelope);
 
         verifyNoMoreInteractions(referenceDataService);
     }
@@ -391,7 +395,7 @@ public class ReferredProsecutionCaseTransformerTest {
 
         // Run the test
         final Defendant result = referredProsecutionCaseTransformer.transform
-                (referredDefendant, jsonEnvelope, InitiationCode.C);
+                (referredDefendant, jsonEnvelope, InitiationCode.C, WELSH);
 
         //Verify the results
         assertThat("Indictable", is(result.getOffences().get(0).getModeOfTrial()));
@@ -433,10 +437,11 @@ public class ReferredProsecutionCaseTransformerTest {
 
         // Run the test
         final ProsecutionCase result = referredProsecutionCaseTransformer.transform
-                (referredProsecutionCase, jsonEnvelope);
+                (referredProsecutionCase, WELSH, jsonEnvelope);
 
         //Verify the results
         assertThat("E12", is(result.getDefendants().get(0).getPersonDefendant().getPersonDetails().getEthnicity().getSelfDefinedEthnicityCode()));
+        assertThat(WELSH, is(result.getDefendants().get(0).getPersonDefendant().getPersonDetails().getHearingLanguageNeeds()));
     }
 
     @Test
@@ -450,7 +455,7 @@ public class ReferredProsecutionCaseTransformerTest {
 
         // Run the test
         final ProsecutionCase result = referredProsecutionCaseTransformer.transform
-                (referredProsecutionCase, jsonEnvelope);
+                (referredProsecutionCase, ENGLISH, jsonEnvelope);
 
         //Verify the results
         assertThat(Gender.FEMALE, is(result.getDefendants().get(0).getAssociatedPersons().get(0).getPerson()
@@ -474,7 +479,7 @@ public class ReferredProsecutionCaseTransformerTest {
 
         // Run the test
         final ProsecutionCase result = referredProsecutionCaseTransformer.transform
-                (referredProsecutionCase, buildJsonEnvelope());
+                (referredProsecutionCase, WELSH, buildJsonEnvelope());
 
         verifyNoMoreInteractions(referenceDataService);
     }
@@ -491,7 +496,7 @@ public class ReferredProsecutionCaseTransformerTest {
 
         // Run the test
         final ProsecutionCase result = referredProsecutionCaseTransformer.transform
-                (referredProsecutionCase, jsonEnvelope);
+                (referredProsecutionCase, WELSH,jsonEnvelope);
 
         verify(referenceDataService, times(0)).getProsecutor(any(), any(), any());
 

@@ -14,6 +14,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static java.util.Arrays.asList;
+import static java.time.ZonedDateTime.now;
+import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
@@ -23,6 +26,7 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialRole;
@@ -33,6 +37,7 @@ import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
@@ -59,6 +64,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.io.IOException;
@@ -73,6 +79,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 
@@ -129,7 +136,8 @@ public class ListCourtHearingTransformerTest {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
     @Mock
     private Function<Object, JsonEnvelope> objectJsonEnvelopeFunction;
-
+    @Mock
+    private ProgressionService progressionService;
 
     @Before
     public void initMocks() {
@@ -182,6 +190,61 @@ public class ListCourtHearingTransformerTest {
                 .getProsecutionCaseIdentifier().getProsecutionAuthorityCode(), is(prosecutingAuth));
         assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0)
                 .getCpsOrganisation(), is(cpsOrganisation));
+    }
+
+
+    @Test
+    public void shouldTransformSJPReferToListCourtHearing() throws IOException {
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        final CourtCentre courtCentre = createCourtCentre();
+        when(progressionService.transformCourtCentre(any(), any())).thenReturn(courtCentre);
+        when(referenceDataService.getReferralReasonByReferralReasonId(any(), any(), any()))
+                .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
+
+        final NextHearing nextHearing = createNextHearing();
+        final List<ListDefendantRequest> listDefendantRequests = asList(ListDefendantRequest.listDefendantRequest()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withDefendantOffences(asList(offenceId))
+                .withHearingLanguageNeeds(HearingLanguage.ENGLISH)
+                .withReferralReason(ReferralReason.referralReason().withDefendantId(defendantId)
+                        .withDescription("not guilty for pcnr").build())
+                .build());
+        final ReferredListHearingRequest listHearingRequest = ReferredListHearingRequest.referredListHearingRequest()
+                .withListDefendantRequests(listDefendantRequests)
+                .build();
+        final ListCourtHearing listCourtHearing = listCourtHearingTransformer
+                .transformSjpReferralNextHearing(envelopeReferral, Arrays.asList(getProsecutionCase()), UUID.randomUUID(), nextHearing, asList(listHearingRequest));
+
+        final HearingListingNeeds hearingListingNeeds = listCourtHearing.getHearings().get(0);
+        assertThat(listCourtHearing.getHearings().size(), is(1));
+        assertThat(hearingListingNeeds.getEstimatedMinutes(), is(nextHearing.getEstimatedMinutes()));
+        assertThat(hearingListingNeeds.getListedStartDateTime(), is(nextHearing.getListedStartDateTime()));
+        assertThat(hearingListingNeeds.getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
+        assertThat(hearingListingNeeds.getJurisdictionType(), is(MAGISTRATES));
+
+        assertThat(hearingListingNeeds.getType().getId(), is(nextHearing.getType().getId()));
+        assertThat(hearingListingNeeds.getType().getDescription(), is(nextHearing.getType().getDescription()));
+
+        assertThat(hearingListingNeeds.getCourtCentre().getId(), is(courtCentre.getId()));
+        assertThat(hearingListingNeeds.getCourtCentre().getName(), is(courtCentre.getName()));
+        assertThat(hearingListingNeeds.getCourtCentre().getRoomName(), is(courtCentre.getRoomName()));
+        assertThat(hearingListingNeeds.getCourtCentre().getAddress().getAddress1(), is(courtCentre.getAddress().getAddress1()));
+        assertThat(hearingListingNeeds.getCourtCentre().getAddress().getPostcode(), is(courtCentre.getAddress().getPostcode()));
+
+        assertThat(hearingListingNeeds.getDefendantListingNeeds().get(0).getHearingLanguageNeeds(), is(HearingLanguage.ENGLISH));
+
+        final RotaSlot actualRotaSlot = nextHearing.getHmiSlots().get(0);
+        final RotaSlot transformedRotaSlot = hearingListingNeeds.getBookedSlots().get(0);
+        assertThat(transformedRotaSlot.getRoomId(), is(actualRotaSlot.getRoomId()));
+        assertThat(transformedRotaSlot.getCourtCentreId(), is(actualRotaSlot.getCourtCentreId()));
+        assertThat(transformedRotaSlot.getOucode(), is(actualRotaSlot.getOucode()));
+        assertThat(transformedRotaSlot.getSession(), is(actualRotaSlot.getSession()));
+        assertThat(transformedRotaSlot.getStartTime(), is(actualRotaSlot.getStartTime()));
+        assertThat(transformedRotaSlot.getCourtRoomId(), is(actualRotaSlot.getCourtRoomId()));
     }
 
     @Test
@@ -1003,6 +1066,43 @@ public class ListCourtHearingTransformerTest {
                 .build();
 
         return Arrays.asList(slot1, slot2);
+    }
+
+    private NextHearing createNextHearing(){
+        return new NextHearing.Builder()
+                .withHmiSlots(asList(createHmiSlot()))
+                .withType(HearingType.hearingType()
+                        .withId(randomUUID())
+                        .withDescription("TRT")
+                        .build())
+                .withListedStartDateTime(now())
+                .withEstimatedMinutes(10)
+                .build();
+    }
+
+    private RotaSlot createHmiSlot(){
+        return new RotaSlot.Builder()
+                        .withRoomId(randomUUID().toString())
+                        .withCourtCentreId(randomUUID().toString())
+                        .withCourtRoomId(12)
+                        .withOucode("MAGOX")
+                        .withSession("session")
+                        .withCourtScheduleId(randomUUID().toString())
+                        .withDuration(10)
+                        .withStartTime(now())
+                        .build();
+    }
+
+    private CourtCentre createCourtCentre(){
+        return new CourtCentre.Builder()
+                .withId(courtCenterId)
+                .withName("Lavender Hill")
+                .withAddress(Address.address()
+                        .withAddress1("address1")
+                        .withPostcode("CB2 5MN")
+                        .build())
+                .withRoomName("CourtRoom 04")
+                .build();
     }
 
 }

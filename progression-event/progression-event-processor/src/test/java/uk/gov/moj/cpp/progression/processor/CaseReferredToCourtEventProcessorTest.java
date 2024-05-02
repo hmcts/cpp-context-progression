@@ -6,13 +6,17 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.HearingLanguage.ENGLISH;
+import static uk.gov.justice.core.courts.HearingLanguage.WELSH;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.HearingLanguage;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReferralReason;
@@ -139,7 +143,7 @@ public class CaseReferredToCourtEventProcessorTest {
     @Test
     public void shouldHandleCasesReferredToCourtEventMessage() throws Exception {
         // Setup
-        final SjpCourtReferral sjpCourtReferral = getCourtReferral(false);
+        final SjpCourtReferral sjpCourtReferral = getCourtReferral(false, false, WELSH);
 
         final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing().build();
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().build();
@@ -155,8 +159,8 @@ public class CaseReferredToCourtEventProcessorTest {
                 (Json.createObjectBuilder().build()));
         when(progressionService.getReferralReasonByReferralReasonId(any(), any()))
                 .thenReturn(Json.createObjectBuilder().add("reason", "reason for referral").build());
-        when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any
-                (JsonEnvelope.class))).thenReturn(prosecutionCase);
+        when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any(HearingLanguage.class),
+                any(JsonEnvelope.class))).thenReturn(prosecutionCase);
         when(referredCourtDocumentTransformer.transform(any(ReferredCourtDocument.class), any
                 (JsonEnvelope.class))).thenReturn(courtDocument);
         when(listCourtHearingTransformer.transform(any(), any(), any(), any(), any())).thenReturn
@@ -180,12 +184,14 @@ public class CaseReferredToCourtEventProcessorTest {
         verify(progressionService).createProsecutionCases(any(), any());
         verify(progressionService).createCourtDocument(any(), any());
         verify(summonsHearingRequestService).addDefendantRequestToHearing(eq(jsonEnvelope), any(), any(UUID.class));
+        verify(referredProsecutionCaseTransformer).transform(any(ReferredProsecutionCase.class), eq(WELSH), eq(jsonEnvelope));
+
     }
 
     @Test
     public void shouldHandleExceptionsOnMissingRequiredData() throws Exception {
         // Setup
-        final SjpCourtReferral sjpCourtReferral = getCourtReferral(false);
+        final SjpCourtReferral sjpCourtReferral = getCourtReferral(false, false, WELSH);
         //Given
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
@@ -195,7 +201,7 @@ public class CaseReferredToCourtEventProcessorTest {
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
                 (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
 
-        when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any
+        when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any(HearingLanguage.class), any
                 (JsonEnvelope.class))).thenThrow(new MissingRequiredFieldException("value"));
 
         //When
@@ -204,12 +210,14 @@ public class CaseReferredToCourtEventProcessorTest {
         verify(messageService).sendMessage(any(JsonEnvelope.class), any(JsonObject.class), any(String.class));
         verifyNoMoreInteractions(referredCourtDocumentTransformer);
         verifyNoMoreInteractions(listCourtHearingTransformer);
+        verifyNoMoreInteractions(referredProsecutionCaseTransformer);
+
     }
 
     @Test
     public void shouldHandleExceptionsOnRefData() throws Exception {
         // Setup
-        final SjpCourtReferral sjpCourtReferral = getCourtReferral(false);
+        final SjpCourtReferral sjpCourtReferral = getCourtReferral(false, false, ENGLISH);
         //Given
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
@@ -219,7 +227,7 @@ public class CaseReferredToCourtEventProcessorTest {
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
                 (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
 
-        when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any
+        when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any(HearingLanguage.class), any
                 (JsonEnvelope.class))).thenThrow(new ReferenceDataNotFoundException("Key", "value"));
 
 
@@ -229,12 +237,14 @@ public class CaseReferredToCourtEventProcessorTest {
         verify(messageService).sendMessage(any(JsonEnvelope.class), any(JsonObject.class), any(String.class));
         verifyNoMoreInteractions(referredCourtDocumentTransformer);
         verifyNoMoreInteractions(listCourtHearingTransformer);
+        verifyNoMoreInteractions(referredProsecutionCaseTransformer);
+
     }
 
     @Test
     public void shouldHandleExceptionsOnSearch() throws Exception {
         // Setup
-        final SjpCourtReferral sjpCourtReferral = getCourtReferral(false);
+        final SjpCourtReferral sjpCourtReferral = getCourtReferral(false, false, ENGLISH);
         //Given
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
@@ -251,13 +261,15 @@ public class CaseReferredToCourtEventProcessorTest {
         verifyNoMoreInteractions(referredProsecutionCaseTransformer);
         verifyNoMoreInteractions(referredCourtDocumentTransformer);
         verifyNoMoreInteractions(listCourtHearingTransformer);
+        verifyNoMoreInteractions(referredProsecutionCaseTransformer);
+
 
     }
 
     @Test
     public void shouldHandleCasesReferredToCourtWithDisqualificationEventMessage() throws Exception {
         // Setup
-        final SjpCourtReferral sjpCourtReferral = getCourtReferral(true);
+        final SjpCourtReferral sjpCourtReferral = getCourtReferral(true, false, null);
         final String caseURN = sjpCourtReferral.getProsecutionCases().get(0).getProsecutionCaseIdentifier().getCaseURN();
 
         final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing().build();
@@ -276,7 +288,7 @@ public class CaseReferredToCourtEventProcessorTest {
                 .thenReturn(Json.createObjectBuilder().add("reason", "For disqualification")
                         .build());
 
-        when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any
+        when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any(HearingLanguage.class), any
                 (JsonEnvelope.class))).thenReturn(prosecutionCase);
         when(referredCourtDocumentTransformer.transform(any(ReferredCourtDocument.class), any
                 (JsonEnvelope.class))).thenReturn(courtDocument);
@@ -301,10 +313,12 @@ public class CaseReferredToCourtEventProcessorTest {
         verify(progressionService).createCourtDocument(any(), any());
         verify(summonsHearingRequestService).addDefendantRequestToHearing(eq(jsonEnvelope), any(), any(UUID.class));
         verify(referralDisqualifyWarningGenerationService).generateReferralDisqualifyWarning(eq(jsonEnvelope), any(), any(), any(ReferredDefendant.class), any());
+        verify(referredProsecutionCaseTransformer).transform(any(ReferredProsecutionCase.class), eq(ENGLISH), eq(jsonEnvelope));
+
 
     }
 
-    private SjpCourtReferral getCourtReferral(final Boolean disqualificationFlag) {
+    private SjpCourtReferral getCourtReferral(final Boolean disqualificationFlag, final Boolean hasNextHearing, final HearingLanguage hearingLanguage) {
         String referralReason = null;
         final SjpReferral sjpReferral = SjpReferral.sjpReferral()
                 .withNoticeDate(LocalDate.of(2018, 01, 01))
@@ -323,6 +337,7 @@ public class CaseReferredToCourtEventProcessorTest {
                 .withListDefendantRequests(Arrays.asList(ListDefendantRequest.listDefendantRequest()
                         .withProsecutionCaseId(prosecutionCaseId)
                         .withDefendantOffences(Arrays.asList(offenceId))
+                        .withHearingLanguageNeeds(hearingLanguage)
                         .withReferralReason(ReferralReason.referralReason().withDefendantId(defendantId)
                                 .withId(referralReasonId)
                                 .withDescription(referralReason).build())
@@ -345,10 +360,61 @@ public class CaseReferredToCourtEventProcessorTest {
                         .build()))
                 .build();
 
-        return SjpCourtReferral.sjpCourtReferral()
+        final SjpCourtReferral.Builder builder = new SjpCourtReferral.Builder()
                 .withSjpReferral(sjpReferral)
                 .withProsecutionCases(Arrays.asList(referredProsecutionCase))
-                .withListHearingRequests(Arrays.asList(listHearingRequest))
-                .build();
+                .withListHearingRequests(Arrays.asList(listHearingRequest));
+
+        if (hasNextHearing) {
+            builder.withNextHearing(NextHearing.nextHearing().build());
+        }
+        return builder.build();
+    }
+
+    @Test
+    public void shouldHandleSJPCasesReferredToCourtEventMessage() throws Exception {
+
+        final SjpCourtReferral sjpCourtReferral = getCourtReferral(false, true, ENGLISH);
+
+        final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing().build();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().build();
+        final CourtDocument courtDocument = CourtDocument.courtDocument().build();
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
+        when(jsonObjectToObjectConverter.convert(courtReferralJson, SjpCourtReferral.class))
+                .thenReturn(sjpCourtReferral);
+
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
+                (Json.createObjectBuilder().build()));
+        when(progressionService.getReferralReasonByReferralReasonId(any(), any()))
+                .thenReturn(Json.createObjectBuilder().add("reason", "reason for referral").build());
+        when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any(HearingLanguage.class), any
+                (JsonEnvelope.class))).thenReturn(prosecutionCase);
+        when(referredCourtDocumentTransformer.transform(any(ReferredCourtDocument.class), any
+                (JsonEnvelope.class))).thenReturn(courtDocument);
+        when(listCourtHearingTransformer.transformSjpReferralNextHearing(any(), any(), any(), any(), any())).thenReturn
+                (listCourtHearing);
+
+
+        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command" +
+                ".create-prosecution-case")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command.create-hearing-defendant-request")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+
+        when(jsonEnvelope.metadata()).thenReturn(metadataBuilder()
+                .withId(randomUUID())
+                .withName("progression.event.cases-referred-to-court")
+                .withUserId(randomUUID().toString()).build());
+
+        this.eventProcessor.referSJPCasesToCourt(jsonEnvelope);
+        verify(listingService).listCourtHearing(jsonEnvelope, listCourtHearing);
+        verify(progressionService).createProsecutionCases(any(), any());
+        verify(progressionService).createCourtDocument(any(), any());
+        verify(summonsHearingRequestService).addDefendantRequestToHearing(eq(jsonEnvelope), any(), any(UUID.class));
+        verify(referredProsecutionCaseTransformer).transform(any(ReferredProsecutionCase.class), eq(ENGLISH), eq(jsonEnvelope));
+
+
     }
 }

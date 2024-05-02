@@ -3,6 +3,9 @@ package uk.gov.moj.cpp.progression.aggregate;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import static java.util.Objects.nonNull;
+import static uk.gov.justice.core.courts.CasesReferredToCourtV2.casesReferredToCourtV2;
+import static  java.util.stream.Stream.of;
 
 import uk.gov.justice.core.courts.CasesReferredToCourt;
 import uk.gov.justice.core.courts.CourtProceedingsInitiated;
@@ -38,7 +41,12 @@ public class CasesReferredToCourtAggregate implements Aggregate {
 
     public Stream<Object> referCasesToCourt(final SjpCourtReferral courtReferral) {
         LOGGER.debug("Cases are being referred To Court.");
-        return apply(Stream.of(CasesReferredToCourt.casesReferredToCourt().withCourtReferral(courtReferral).build()));
+
+        if (nonNull(courtReferral.getNextHearing())) {
+            return apply(of(casesReferredToCourtV2().withCourtReferral(courtReferral).build()));
+        } else {
+            return apply(Stream.of(CasesReferredToCourt.casesReferredToCourt().withCourtReferral(courtReferral).build()));
+        }
     }
 
 
