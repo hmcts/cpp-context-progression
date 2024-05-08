@@ -26,7 +26,6 @@ import javax.jms.MessageConsumer;
 
 import com.jayway.restassured.path.json.JsonPath;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class PostCaseProsecutorUpdateNextHearingPopulatesProsecutorDetailsIT extends AbstractIT {
@@ -46,7 +45,6 @@ public class PostCaseProsecutorUpdateNextHearingPopulatesProsecutorDetailsIT ext
         stubInitiateHearing();
     }
 
-    @Ignore ("need to fix by DD-32605")
     @Test
     public void shouldUpdateCaseProsecutorAndNextHearingHasUpdatedProsecutorDetails() throws Exception {
         // Create Prosecution Case
