@@ -438,7 +438,7 @@ public class AddCourtDocumentIT extends AbstractIT {
 
         verifyCasesForSearchCriteria("Billy", new Matcher[]{
                 withJsonPath("$.searchResults.[*].defendantName", hasItem(containsString("Billy"))),
-                withJsonPath("$.searchResults.[*].cpsProsecutor", hasItem(containsString("CPS-EM")))
+                withJsonPath("$.searchResults.[*].cpsProsecutor", hasItem(containsString("TFL-CM")))
         });
     }
 

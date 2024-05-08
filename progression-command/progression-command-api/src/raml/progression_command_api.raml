@@ -1291,9 +1291,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       (mapping):
         requestType: application/vnd.progression.update-pet-detail+json
         name: progression.update-pet-detail
-      (mapping):
-        requestType: application/vnd.progression.release-pet-form+json
-        name: progression.release-pet-form
       ...
     body:
       application/vnd.progression.update-pet-form+json:
@@ -1311,11 +1308,6 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
           !include json/progression.update-pet-detail.json
         schema:
           !include json/schema/progression.update-pet-detail.json
-      application/vnd.progression.release-pet-form+json:
-         example:
-           !include json/progression.release-pet-form.json
-         schema:
-           !include json/schema/progression.release-pet-form.json
 
     responses:
       202:

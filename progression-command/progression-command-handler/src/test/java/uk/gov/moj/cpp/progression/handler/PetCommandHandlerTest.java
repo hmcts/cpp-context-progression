@@ -27,7 +27,6 @@ import uk.gov.justice.core.courts.PetFormCreated;
 import uk.gov.justice.core.courts.PetFormDefendantUpdated;
 import uk.gov.justice.core.courts.PetFormFinalised;
 import uk.gov.justice.core.courts.PetFormReceived;
-import uk.gov.justice.core.courts.PetFormReleased;
 import uk.gov.justice.core.courts.PetFormUpdated;
 import uk.gov.justice.core.courts.ReceivePetDetail;
 import uk.gov.justice.core.courts.ReceivePetForm;
@@ -45,7 +44,6 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
-import uk.gov.moj.cpp.progression.command.ReleasePetForm;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -63,8 +61,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class PetCommandHandlerTest {
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            PetFormCreated.class, PetFormReceived.class, PetFormUpdated.class, PetFormDefendantUpdated.class, PetFormFinalised.class, PetDetailUpdated.class, PetDetailReceived.class,
-            PetFormReleased.class);
+            PetFormCreated.class, PetFormReceived.class, PetFormUpdated.class, PetFormDefendantUpdated.class, PetFormFinalised.class, PetDetailUpdated.class, PetDetailReceived.class);
 
     @Mock
     private EventSource eventSource;
@@ -383,41 +380,5 @@ public class PetCommandHandlerTest {
                         ))
         ));
 
-    }
-
-    @Test
-    public void shouldHandleReleasePetForm() throws EventStreamException {
-
-        final ReleasePetForm releasePetForm = ReleasePetForm.releasePetForm()
-                .withPetId(randomUUID())
-                .withCaseId(randomUUID())
-                .build();
-
-        final Metadata metadata = Envelope
-                .metadataBuilder()
-                .withName("progression.command.release-pet-form")
-                .withId(randomUUID())
-                .build();
-
-        final Envelope<ReleasePetForm> envelope = envelopeFrom(metadata, releasePetForm);
-
-        when(caseAggregate.releasePetForm(any(), any(), any()))
-                .thenReturn(Stream.of(PetFormReleased.petFormReleased()
-                        .withCaseId(releasePetForm.getCaseId())
-                        .withPetId(releasePetForm.getPetId())
-                        .build()));
-
-        petCommandHandler.handleReleasePetForm(envelope);
-
-        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-        assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.event.pet-form-released"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.caseId", is(releasePetForm.getCaseId().toString())),
-                                withJsonPath("$.petId", is(releasePetForm.getPetId().toString())))
-                        ))
-        ));
     }
 }

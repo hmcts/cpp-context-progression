@@ -52,7 +52,10 @@ import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantEmail;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantJudicialResultsOfDefendantsAssociatedToTheCase;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantPostcode;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendant;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getMasterDefendant;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedOffence;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hasNewAmendment;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendantsForOnlinePlea;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedOffence;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hasNewAmendment;
@@ -141,7 +144,6 @@ import uk.gov.justice.core.courts.PetFormCreated;
 import uk.gov.justice.core.courts.PetFormDefendantUpdated;
 import uk.gov.justice.core.courts.PetFormFinalised;
 import uk.gov.justice.core.courts.PetFormReceived;
-import uk.gov.justice.core.courts.PetFormReleased;
 import uk.gov.justice.core.courts.PetFormUpdated;
 import uk.gov.justice.core.courts.PetOperationFailed;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -567,7 +569,7 @@ public class CaseAggregate implements Aggregate {
 
                 when(EditFormRequested.class).apply(this::editFormRequest),
                 when(FormUpdated.class).apply(this::updateFormOnFormUpdate),
-                when(PetFormReleased.class).apply(this::updateFormOnPetFormRelease),
+                when(PetFormUpdated.class).apply(this::updateFormOnPetFormUpdate),
                 when(PetFormDefendantUpdated.class).apply(this::updateFormOnPetFormDefendantUpdated),
                 when(PetDetailUpdated.class).apply(this::onPetDetailUpdated),
                 when(PetFormCreated.class).apply(this::onPetFormCreated),
@@ -2982,15 +2984,6 @@ public class CaseAggregate implements Aggregate {
                 .build()));
     }
 
-    public Stream<Object> releasePetForm(final UUID caseId, final UUID petId, final UUID userId) {
-
-        return apply(Stream.of(PetFormReleased.petFormReleased()
-                .withCaseId(caseId)
-                .withPetId(petId)
-                .withUserId(userId)
-                .build()));
-    }
-
     public Stream<Object> finalisePetForm(final UUID caseId,
                                           final UUID petId, final UUID userId,
                                           final List<String> finalisedFormData) {
@@ -3404,16 +3397,16 @@ public class CaseAggregate implements Aggregate {
         }
     }
 
-    private void updateFormOnPetFormRelease(final PetFormReleased petFormReleased) {
-        final Form form = formMap.get(petFormReleased.getPetId());
+    private void updateFormOnPetFormUpdate(final PetFormUpdated petFormUpdated) {
+        final Form form = formMap.get(petFormUpdated.getPetId());
         final FormLockStatus lockStatus = form.getFormLockStatus();
-        if (petFormReleased.getUserId().equals(lockStatus.getLockedBy())) {
+        if (petFormUpdated.getUserId().equals(lockStatus.getLockedBy())) {
             lockStatus.setLockedBy(null);
             lockStatus.setLocked(false);
             lockStatus.setLockExpiryTime(null);
             lockStatus.setLockRequestedBy(null);
             form.setFormLockStatus(lockStatus);
-            formMap.put(petFormReleased.getPetId(), form);
+            formMap.put(petFormUpdated.getPetId(), form);
         }
     }
 

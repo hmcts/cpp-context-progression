@@ -1,14 +1,14 @@
 package uk.gov.moj.cpp.progression.command;
 
-import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
-import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
-
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
+
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 @ServiceComponent(COMMAND_API)
 public class PetFormApi {
@@ -51,10 +51,4 @@ public class PetFormApi {
                 .withMetadataFrom(envelope));
     }
 
-    @Handles("progression.release-pet-form")
-    public void releasePetForm(final JsonEnvelope envelope) {
-        sender.send(envelop(envelope.payloadAsJsonObject())
-                .withName("progression.command.release-pet-form")
-                .withMetadataFrom(envelope));
-    }
 }

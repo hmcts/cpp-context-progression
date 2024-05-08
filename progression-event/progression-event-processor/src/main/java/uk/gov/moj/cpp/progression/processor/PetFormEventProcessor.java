@@ -141,22 +141,6 @@ public class PetFormEventProcessor {
         ));
     }
 
-    @Handles("progression.event.pet-form-released")
-    public void petFormReleased(final JsonEnvelope event) {
-        LOGGER.info("progression.event.pet-form-released event received with petId: {} for case: {}", event.payloadAsJsonObject().getString(PET_ID), event.payloadAsJsonObject().getString(CASE_ID));
-
-        final JsonObject formReleased = event.payloadAsJsonObject();
-        final JsonObjectBuilder publicEventBuilder = createObjectBuilder();
-        publicEventBuilder.add(PET_ID, formReleased.getString(PET_ID))
-                .add(CASE_ID, formReleased.getString(CASE_ID));
-        publicEventBuilder.add(UPDATED_BY, getUpdatedBy(event, formReleased.getString(USER_ID, null), formReleased.getString(USER_NAME, null)));
-
-        sender.send(envelopeFrom(
-                metadataFrom(event.metadata()).withName("public.progression.pet-form-released"),
-                publicEventBuilder.build()
-        ));
-    }
-
     @Handles("progression.event.pet-form-finalised")
     public void petFormFinalised(final JsonEnvelope event) {
         LOGGER.info("progression.event.pet-form-finalised event received with petId: {} for case: {}", event.payloadAsJsonObject().getString(PET_ID), event.payloadAsJsonObject().getString(CASE_ID));
@@ -265,8 +249,6 @@ public class PetFormEventProcessor {
                 .withMimeType(APPLICATION_PDF)
                 .withName(filename)
                 .withMaterials(Collections.singletonList(material))
-                .withSendToCps(true)
-                .withNotificationType("pet-form-finalised")
                 .build();
     }
 
