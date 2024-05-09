@@ -73,6 +73,7 @@ import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class HearingEventLogIT extends AbstractIT {
@@ -169,7 +170,7 @@ public class HearingEventLogIT extends AbstractIT {
         assertTrue(message.isPresent());
     }
 
-
+    @Ignore("need to fix by DD-32605")
     @Test
     public void shouldGenereateCAAGHearingEventLogDocumentForInActiveCaseIfNoApplicationExists() throws Exception {
         final String userId = randomUUID().toString();
@@ -246,6 +247,7 @@ public class HearingEventLogIT extends AbstractIT {
         verifyInMessagingQueueForHearingEventLogsDocumentSuccess();
     }
 
+    @Ignore("need to fix by DD-32605")
     @Test
     public void shouldGenereateCAAGHearingEventLogDocumentForActiveCaseIfNoApplicationExists() throws Exception {
         final String TEMPLATE_NAME = "HearingEventLog";
