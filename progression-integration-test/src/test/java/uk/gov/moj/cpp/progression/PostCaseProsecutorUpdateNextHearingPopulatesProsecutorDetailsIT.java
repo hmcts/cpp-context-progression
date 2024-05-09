@@ -46,7 +46,6 @@ public class PostCaseProsecutorUpdateNextHearingPopulatesProsecutorDetailsIT ext
         stubInitiateHearing();
     }
 
-    @Ignore("need to fix by DD-32605")
     @Test
     public void shouldUpdateCaseProsecutorAndNextHearingHasUpdatedProsecutorDetails() throws Exception {
         // Create Prosecution Case

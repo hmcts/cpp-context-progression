@@ -1,5 +1,35 @@
 package uk.gov.moj.cpp.progression;
 
+import com.google.common.io.Resources;
+import com.jayway.awaitility.Awaitility;
+import com.jayway.awaitility.Duration;
+import com.jayway.restassured.response.Response;
+import org.apache.http.HttpStatus;
+import org.hamcrest.Matcher;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.HearingStub;
+import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.UUID;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -43,38 +73,6 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAaagHearingEventLogs;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubGetUserOrganisation;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubHearingEventLogs;
-
-import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.json.JsonObject;
-
-import com.google.common.io.Resources;
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.Duration;
-import com.jayway.restassured.response.Response;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
 
 public class HearingEventLogIT extends AbstractIT {
 
@@ -170,7 +168,6 @@ public class HearingEventLogIT extends AbstractIT {
         assertTrue(message.isPresent());
     }
 
-    @Ignore("need to fix by DD-32605")
     @Test
     public void shouldGenereateCAAGHearingEventLogDocumentForInActiveCaseIfNoApplicationExists() throws Exception {
         final String userId = randomUUID().toString();
@@ -247,9 +244,8 @@ public class HearingEventLogIT extends AbstractIT {
         verifyInMessagingQueueForHearingEventLogsDocumentSuccess();
     }
 
-    @Ignore("need to fix by DD-32605")
     @Test
-    public void shouldGenereateCAAGHearingEventLogDocumentForActiveCaseIfNoApplicationExists() throws Exception {
+    public void shouldGenerateCAAGHearingEventLogDocumentForActiveCaseIfNoApplicationExists() throws Exception {
         final String TEMPLATE_NAME = "HearingEventLog";
         final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
@@ -312,9 +308,9 @@ public class HearingEventLogIT extends AbstractIT {
 
         final String payload = pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(ACTIVE.getDescription(), caseId));
         final JsonObject caseObject = stringToJsonObjectConverter.convert(payload);
-
         verifyInMessagingQueueForCasesReferredToCourts();
         verifyCaagHearingEventLog(caseId);
+
         verifyHearingEventsLogsDocumentRequested(courtDocumentId, caseId, defendantId, materialId, applicationId, caseObject.getJsonObject("prosecutionCase").getString("caseStatus"));
         verifyInMessagingQueueForHearingEventLogsDocumentSuccess();
     }
@@ -670,7 +666,7 @@ public class HearingEventLogIT extends AbstractIT {
 
     private void verifyHearingEventsLogsDocumentRequested(final String courtDocumentId, final String caseId, final String defendantId, final String materialId, final Optional<String> applicationId, final String caseStatus) throws Exception {
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerHearingLogDocumentCreated);
-        Awaitility.await().atMost(Duration.TEN_SECONDS).until(() -> assertThat(message.isPresent(), is(true)));
+        Awaitility.await().atMost(Duration.ONE_MINUTE).until(() -> assertThat(message.isPresent(), is(true)));
 
         if (applicationId.isPresent() && !applicationId.get().isEmpty()) {
             assertThat(message.get().getString("caseId"), is(notNullValue()));
@@ -802,8 +798,8 @@ public class HearingEventLogIT extends AbstractIT {
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
         final String actualDocument = getCourtDocumentFor(courtDocumentId, allOf(
-                        withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId)),
-                        withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(false))
+                withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId)),
+                withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(false))
                 )
         );
     }
@@ -817,8 +813,8 @@ public class HearingEventLogIT extends AbstractIT {
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
         final String actualDocument = getCourtDocumentFor(courtDocumentId, allOf(
-                        withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId)),
-                        withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId))
+                withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId)),
+                withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId))
                 )
         );
     }
