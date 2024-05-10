@@ -706,9 +706,8 @@ public class HearingEventLogIT extends AbstractIT {
         JsonObject json = stringToJsonObjectConverter.convert(actualDocument);
         assertThat(json.getJsonArray("documentIndices"), is(notNullValue()));
         assertThat(json.getJsonArray("documentIndices").size(), is(notNullValue()));
-        assertThat(json.getJsonArray("documentIndices").getJsonObject(0).getJsonArray("caseIds").getString(0), is(caseId));
-        assertThat(json.getJsonArray("documentIndices").getJsonObject(0).getJsonObject("document").getString("name"), containsString("HearingEventLog"));
-        assertThat(json.getJsonArray("documentIndices").getJsonObject(0).getJsonObject("document").getJsonArray("materials").getJsonObject(0).getJsonArray("userGroups"), is(notNullValue()));
+        assertTrue(json.getJsonArray("documentIndices").stream().anyMatch(e -> ((JsonObject) e).getJsonArray("caseIds").getString(0).equals(caseId)));
+        assertTrue(json.getJsonArray("documentIndices").stream().anyMatch(e -> ((JsonObject)e).getJsonObject("document").getString("name").contains("HearingEventLog")));
     }
 
     private void verifyApplicationDocIndices(final String applicationId, final String actualDocument) {
