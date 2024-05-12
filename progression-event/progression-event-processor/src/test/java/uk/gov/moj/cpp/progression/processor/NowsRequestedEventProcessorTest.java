@@ -162,11 +162,18 @@ public class NowsRequestedEventProcessorTest {
 
     @Test
     public void shouldGenerateNowAndStoreWithVisibleUserGroupInFileStore() {
+        final UUID userId = UUID.randomUUID();
+        final String fileName = "filename";
+        final String templateName = "templateName";
 
         final NowDocumentRequest nowDocumentRequest = nowsRequestedTemplateWithVisibleUsers();
         final NowDocumentRequested nowDocumentRequested = NowDocumentRequested.nowDocumentRequested()
                 .withNowDocumentRequest(nowDocumentRequest)
                 .withMaterialId(nowDocumentRequest.getMaterialId())
+                .withFileName(fileName)
+                .withCpsProsecutionCase(false)
+                .withTemplateName(templateName)
+                .withUserId(userId)
                 .build();
 
         UUID fileId = randomUUID();
@@ -212,11 +219,18 @@ public class NowsRequestedEventProcessorTest {
     @Test
     public void shouldGenerateNowAndStoreWithNotVisibleUserGroupInFileStore() {
 
-        final UUID systemUserid = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
+        final String fileName = "filename";
+        final String templateName = "templateName";
+
         final NowDocumentRequest nowDocumentRequest = nowsRequestedTemplateWithNonVisibleUsers();
         final NowDocumentRequested nowDocumentRequested = NowDocumentRequested.nowDocumentRequested()
                 .withNowDocumentRequest(nowDocumentRequest)
                 .withMaterialId(nowDocumentRequest.getMaterialId())
+                .withFileName(fileName)
+                .withCpsProsecutionCase(false)
+                .withTemplateName(templateName)
+                .withUserId(userId)
                 .build();
 
         when(fileService.storePayload(nowContentArgumentCaptor.capture(), stringArgumentCaptor.capture(), any())).thenReturn(randomUUID());
@@ -227,7 +241,7 @@ public class NowsRequestedEventProcessorTest {
 
         verify(systemDocGeneratorService).generateDocument(any(), any());
         verify(fileService).storePayload(any(), any(), any());
-        assertThat(stringArgumentCaptor.getValue(), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
+        assertThat(stringArgumentCaptor.getValue(), is(fileName));
 
         verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
         final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
@@ -248,10 +262,18 @@ public class NowsRequestedEventProcessorTest {
 
     @Test
     public void shouldGenerateNowAndStoreInFileStore() {
+        final UUID userId = randomUUID();
+        final String fileName = "filename";
+        final String templateName = "templateName";
+
         final NowDocumentRequest nowDocumentRequest = nowsRequestedTemplate();
         final NowDocumentRequested nowDocumentRequested = NowDocumentRequested.nowDocumentRequested()
                 .withNowDocumentRequest(nowDocumentRequest)
                 .withMaterialId(nowDocumentRequest.getMaterialId())
+                .withFileName(fileName)
+                .withCpsProsecutionCase(false)
+                .withTemplateName(templateName)
+                .withUserId(userId)
                 .build();
 
         when(fileService.storePayload(nowContentArgumentCaptor.capture(), stringArgumentCaptor.capture(), any())).thenReturn(randomUUID());
@@ -262,7 +284,7 @@ public class NowsRequestedEventProcessorTest {
 
         verify(systemDocGeneratorService).generateDocument(any(), any());
         verify(fileService).storePayload(any(), any(), any());
-        assertThat(stringArgumentCaptor.getValue(), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
+        assertThat(stringArgumentCaptor.getValue(), is(startsWith(fileName)));
 
         verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
         final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
@@ -280,6 +302,11 @@ public class NowsRequestedEventProcessorTest {
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Crown Court Admin"));
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains(MAGISTRATES));
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Court Associate"));
+
+        final DefaultEnvelope<?> sentCommandEnvelope = this.envelopeArgumentCaptor.getAllValues().get(1);
+        final JsonObject sentCommand = (JsonObject)sentCommandEnvelope.payload();
+        assertThat(sentCommand.getString("fileName"), is(fileName));
+        assertThat(sentCommand.getBoolean("cpsProsecutionCase"), is(false));
     }
 
     private JsonEnvelope envelope(final NowsDocumentGenerated nowsDocumentGenerated) {

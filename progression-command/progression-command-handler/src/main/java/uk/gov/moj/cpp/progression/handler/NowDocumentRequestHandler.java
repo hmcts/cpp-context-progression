@@ -43,14 +43,14 @@ public class NowDocumentRequestHandler {
     @Handles(PROGRESSION_COMMAND_REQUEST_NOW_DOCUMENT)
     public void handleAddNowDocumentRequest(final Envelope<NowDocumentRequest> envelope) throws EventStreamException {
         final NowDocumentRequest nowDocumentRequest = envelope.payload();
-
         final UUID materialId = nowDocumentRequest.getMaterialId();
+        final UUID userId = fromString(envelope.metadata().userId().orElseThrow(() -> new RuntimeException("UserId missing from event.")));
 
         final EventStream eventStream = eventSource.getStreamById(nowDocumentRequest.getMaterialId());
 
         final MaterialAggregate materialAggregate = aggregateService.get(eventStream, MaterialAggregate.class);
 
-        final Stream<Object> events = materialAggregate.createNowDocumentRequest(materialId, nowDocumentRequest);
+        final Stream<Object> events = materialAggregate.createNowDocumentRequest(materialId, nowDocumentRequest, userId);
 
         appendEventsToStream(envelope, eventStream, events);
     }

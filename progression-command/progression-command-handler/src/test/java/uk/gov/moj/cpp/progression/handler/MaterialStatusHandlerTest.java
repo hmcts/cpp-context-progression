@@ -25,6 +25,7 @@ import uk.gov.justice.core.courts.UpdateNowsMaterialStatus;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.core.courts.nowdocument.Nowdefendant;
+import uk.gov.justice.core.courts.nowdocument.OrderCourt;
 import uk.gov.justice.core.courts.nowdocument.ProsecutionCase;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -43,6 +44,7 @@ import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -255,11 +257,13 @@ public class MaterialStatusHandlerTest {
                     .withMaterialId(materialId)
                     .withCases(cases)
                     .withNowContent(NowDocumentContent.nowDocumentContent()
+                            .withCases(Collections.singletonList(ProsecutionCase.prosecutionCase().withIsCps(false).build()))
+                            .withOrderingCourt(OrderCourt.orderCourt().withWelshCourtCentre(false).build())
                             .withDefendant(Nowdefendant.nowdefendant().withProsecutingAuthorityReference("ref").build())
                             .build())
                     .build();
 
-        Envelope<NowDocumentRequest> buildEnvelope =  Envelope.envelopeFrom(metadataWithRandomUUID(ADD_NOW_DOCUMENT_REQUEST_COMMAND_NAME),
+        Envelope<NowDocumentRequest> buildEnvelope =  Envelope.envelopeFrom(metadataWithRandomUUID(ADD_NOW_DOCUMENT_REQUEST_COMMAND_NAME).withUserId(randomUUID().toString()),
                 nowDocumentRequest);
         nowDocumentRequestHandler.handleAddNowDocumentRequest(buildEnvelope);
 

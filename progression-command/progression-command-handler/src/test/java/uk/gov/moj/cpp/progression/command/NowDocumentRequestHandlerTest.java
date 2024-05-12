@@ -30,6 +30,8 @@ import uk.gov.justice.core.courts.nowdocument.NowDistribution;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
+import uk.gov.justice.core.courts.nowdocument.OrderCourt;
+import uk.gov.justice.core.courts.nowdocument.ProsecutionCase;
 import uk.gov.justice.progression.courts.RecordNowsDocumentGenerated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -49,6 +51,7 @@ import uk.gov.moj.cpp.progression.handler.NowDocumentRequestHandler;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -244,7 +247,14 @@ public class NowDocumentRequestHandlerTest {
 
         final NowDocumentRequest nowDocumentRequest = NowDocumentRequest.nowDocumentRequest()
                 .withMaterialId(MATERIAL_ID)
-                .withNowContent(NowDocumentContent.nowDocumentContent().build())
+                .withNowContent(NowDocumentContent.nowDocumentContent()
+                        .withCases(Collections.singletonList(ProsecutionCase.prosecutionCase()
+                                        .withIsCps(false)
+                                .build()))
+                        .withOrderingCourt(OrderCourt.orderCourt()
+                                .withWelshCourtCentre(false)
+                                .build())
+                        .build())
                 .build();
 
         return envelope(ADD_NOW_DOCUMENT_REQUEST_COMMAND_NAME, nowDocumentRequest);

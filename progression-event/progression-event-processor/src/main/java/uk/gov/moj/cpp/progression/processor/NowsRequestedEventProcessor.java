@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
@@ -16,9 +15,7 @@ import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.NowDocument;
 import uk.gov.justice.core.courts.NowDocumentRequested;
 import uk.gov.justice.core.courts.NowsDocumentGenerated;
-import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
-import uk.gov.justice.core.courts.nowdocument.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -38,7 +35,6 @@ import uk.gov.moj.cpp.progression.service.UsersGroupService;
 
 import java.io.StringReader;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -77,8 +73,9 @@ public class NowsRequestedEventProcessor {
     protected static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
     private static final String PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED = "public.progression.now-document-requested";
     private static final Logger LOGGER = LoggerFactory.getLogger(NowsRequestedEventProcessor.class);
-    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private static final String PROGRESSION_COMMAND_RECORD_NOWS_DOCUMENT_SENT = "progression.command.record-nows-document-sent";
+    public static final String MATERIAL_ID = "materialId";
+    public static final String NOW_DOCUMENT_REQUEST = "nowDocumentRequest";
     private final Sender sender;
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter;
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter;
@@ -132,11 +129,9 @@ public class NowsRequestedEventProcessor {
 
         final UUID materialId = nowDocumentRequest.getMaterialId();
 
-        final String templateName = getTemplateName(nowDocumentRequest);
+        final String templateName = nowDocumentRequested.getTemplateName();
 
-        final String orderName = nowDocumentRequest.getNowContent().getOrderName();
-
-        final String fileName = getTimeStampAmendedFileName(orderName);
+        final String fileName = nowDocumentRequested.getFileName();
 
         final JsonObject nowDocumentContentJson = objectToJsonObjectConverter.convert(nowDocumentRequest.getNowContent());
 
@@ -147,11 +142,11 @@ public class NowsRequestedEventProcessor {
         sendRequestToGenerateDocumentAsync(envelope, templateName, materialId.toString(), payloadFileId);
 
         final JsonObjectBuilder payloadBuilder = createObjectBuilder()
-                .add("materialId", materialId.toString())
+                .add(MATERIAL_ID, materialId.toString())
                 .add("payloadFileId", payloadFileId.toString())
                 .add("hearingId", hearingId.toString())
                 .add("fileName", fileName)
-                .add("cpsProsecutionCase", isCpsProsecutionCase(nowDocumentRequest.getNowContent()));
+                .add("cpsProsecutionCase", nowDocumentRequested.getCpsProsecutionCase());
 
         if (nonNull(nowDocumentRequest.getNowDistribution())) {
             payloadBuilder.add("nowDistribution", objectToJsonObjectConverter.convert(nowDocumentRequest.getNowDistribution()));
@@ -164,7 +159,11 @@ public class NowsRequestedEventProcessor {
                 .withName(PROGRESSION_COMMAND_RECORD_NOWS_DOCUMENT_SENT)
                 .withMetadataFrom(envelope));
 
-        sender.send(envelop(envelope.payloadAsJsonObject())
+        final JsonObjectBuilder publicMessageBuilder = createObjectBuilder()
+                .add(MATERIAL_ID, requestJson.getString(MATERIAL_ID))
+                .add(NOW_DOCUMENT_REQUEST, requestJson.getJsonObject(NOW_DOCUMENT_REQUEST));
+
+        sender.send(envelop(publicMessageBuilder.build())
                 .withName(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED)
                 .withMetadataFrom(envelope));
     }
@@ -184,30 +183,6 @@ public class NowsRequestedEventProcessor {
                 envelope.metadata().name(), nowsDocumentGenerated.getUserId().toString());
 
         documentGeneratorService.addDocumentToMaterial(sender, jsonEnvelope, nowsDocumentGenerated);
-    }
-
-    private boolean isCpsProsecutionCase(final NowDocumentContent nowContent) {
-        return nowContent.getCases().stream()
-                .filter(pc -> nonNull(pc.getIsCps()))
-                .filter(ProsecutionCase::getIsCps)
-                .findFirst()
-                .map(ProsecutionCase::getIsCps)
-                .orElse(false);
-    }
-
-    private String getTimeStampAmendedFileName(final String fileName) {
-        return format("%s_%s.pdf", fileName, ZonedDateTime.now().format(TIMESTAMP_FORMATTER));
-    }
-
-    private String getTemplateName(NowDocumentRequest nowDocumentRequest) {
-
-        final Boolean isWelshCourtCentre = nowDocumentRequest.getNowContent().getOrderingCourt().getWelshCourtCentre();
-        if (nonNull(isWelshCourtCentre) && isWelshCourtCentre
-                && nonNull(nowDocumentRequest.getBilingualTemplateName())
-                && !nowDocumentRequest.getBilingualTemplateName().isEmpty()) {
-            return nowDocumentRequest.getBilingualTemplateName();
-        }
-        return nowDocumentRequest.getTemplateName();
     }
 
     private void sendRequestToGenerateDocumentAsync(
