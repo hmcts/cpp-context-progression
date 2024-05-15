@@ -295,6 +295,9 @@ subscriptions_descriptor:
         - name: progression.event.pet-form-updated
           schema_uri: http://justice.gov.uk/core/courts/pet-form-updated.json
 
+        - name: progression.event.pet-form-released
+          schema_uri: http://justice.gov.uk/core/courts/pet-form-released.json
+
         - name: progression.event.pet-detail-updated
           schema_uri: http://justice.gov.uk/core/courts/pet-detail-updated.json
 

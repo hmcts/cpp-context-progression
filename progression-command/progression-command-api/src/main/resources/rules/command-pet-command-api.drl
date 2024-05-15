@@ -24,6 +24,15 @@ rule "Command - Rule for Update Pet Form"
     $outcome.setSuccess(true);
 end
 
+rule "Command - Rule for Release Pet Form"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.release-pet-form");
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.petFormGrantAccessPermission()));
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Command - Rule for Update Pet Detail"
   when
     $outcome: Outcome();

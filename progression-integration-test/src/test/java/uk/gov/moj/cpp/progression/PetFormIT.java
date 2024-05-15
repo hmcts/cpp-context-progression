@@ -96,6 +96,7 @@ public class PetFormIT extends AbstractIT {
     private MessageConsumer consumerForCpsPetFormSubmited;
     private MessageConsumer consumerForPetDetailUpdated;
     private MessageConsumer consumerForPetFormUpdated;
+    private MessageConsumer consumerForPetFormReleased;
     private MessageConsumer consumerForPetFormDefendantUpdated;
     private MessageConsumer consumerForPetFormFinalised;
     private MessageConsumer consumerForCourtsDocumentAdded;
@@ -119,6 +120,7 @@ public class PetFormIT extends AbstractIT {
         consumerForPetFormFinalised.close();
         consumerForCourtsDocumentAdded.close();
         consumerForPetFormUpdated.close();
+        consumerForPetFormReleased.close();
         consumerForCpsPetFormSubmited.close();
         messageProducerClientPublic.close();
         publicMessageConsumer.close();
@@ -158,6 +160,7 @@ public class PetFormIT extends AbstractIT {
         consumerForCpsPetFormSubmited = publicEvents.createPublicConsumer("public.prosecutioncasefile.cps-serve-pet-submitted");
         consumerForPetDetailUpdated = publicEvents.createPublicConsumer("public.progression.pet-detail-updated");
         consumerForPetFormUpdated = publicEvents.createPublicConsumer("public.progression.pet-form-updated");
+        consumerForPetFormReleased = publicEvents.createPublicConsumer("public.progression.pet-form-released");
         consumerForPetFormDefendantUpdated = publicEvents.createPublicConsumer("public.progression.pet-form-defendant-updated");
         consumerForPetFormFinalised = publicEvents.createPublicConsumer("public.progression.pet-form-finalised");
         consumerForCourtsDocumentAdded = privateEvents.createPrivateConsumer("progression.event.court-document-added");
@@ -528,6 +531,11 @@ public class PetFormIT extends AbstractIT {
         assertTrue(message.isPresent());
     }
 
+    private void verifyInMessagingQueueForPetFormReleased() {
+        final Optional<JsonObject> message = retrieveMessageAsJsonObject(consumerForPetFormReleased);
+        assertTrue(message.isPresent());
+    }
+
     private void verifyInMessagingQueueForPetFormFinalised() {
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(consumerForPetFormFinalised);
         assertTrue(message.isPresent());
@@ -645,5 +653,76 @@ public class PetFormIT extends AbstractIT {
         return message.get();
     }
 
+    @Test
+    public void shouldReleasePetForm() throws IOException {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID formId = randomUUID();
 
+        addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId.toString(), defendantId.toString());
+        final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId.toString(), defendantId.toString(),
+                newArrayList(
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[1].id", is("4789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
+                )
+
+        );
+
+        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
+        final JsonObject caseObject = stringToJsonObjectConverter.convert(responseForCaseQuery);
+
+        final JsonObject payload = createObjectBuilder()
+                .add("petId", petId.toString())
+                .add("caseId", caseId.toString())
+                .add("formId", formId.toString())
+                .add("petDefendants", createArrayBuilder().add(createObjectBuilder().add("defendantId", defendantId.toString())
+                        .build()))
+                .add("petFormData", createObjectBuilder().build().toString()).build();
+
+        final Response responseForCreatePetForm = postCommand(getWriteUrl(CREATE_PET_FORM_ENDPOINT), CREATE_PET_FORM_MEDIA_TYPE, payload.toString());
+        assertThat(responseForCreatePetForm.getStatusCode(), is(ACCEPTED.getStatusCode()));
+        verifyInMessagingQueueForPetFormCreated();
+
+        //query pets by caseId
+        queryAndVerifyPetCaseDetail(caseId, petId, defendantId, false);
+
+        //edit form to check lock status
+        //when form is unlocked
+        final UUID userId = randomUUID();
+        UsersAndGroupsStub.stubGetUsersAndGroupsUserDetailsQuery(userId.toString());
+        final String editFormEndpointUrl = EDIT_FORM_ENDPOINT
+                .replaceAll("%caseId%", caseId.toString())
+                .replaceAll("%courtFormId%", petId.toString());
+        final Response responseForEditForm = postCommandWithUserId(getWriteUrl(editFormEndpointUrl), REQUEST_EDIT_FORM_MEDIA_TYPE,
+                createObjectBuilder()
+                        .build()
+                        .toString(),
+                userId.toString());
+        assertThat(responseForEditForm.getStatusCode(), Matchers.is(ACCEPTED.getStatusCode()));
+
+        JsonObject editRequestedEvent = verifyInMessagingQueueForEditFormRequested();
+        assertEditFormRequestedFromEventStream(caseId, petId, null, null, false, editRequestedEvent);
+
+        //when form is locked
+        final UUID userId2 = randomUUID();
+        final Response responseForEditForm2 = postCommandWithUserId(getWriteUrl(editFormEndpointUrl), REQUEST_EDIT_FORM_MEDIA_TYPE,
+                createObjectBuilder()
+                        .build()
+                        .toString(),
+                userId2.toString());
+        assertThat(responseForEditForm2.getStatusCode(), Matchers.is(ACCEPTED.getStatusCode()));
+
+        JsonObject editRequestedEvent2 = verifyInMessagingQueueForEditFormRequested();
+        assertEditFormRequestedFromEventStream(caseId, petId, userId, userId2, true, editRequestedEvent2);
+
+        // update pet form
+        final JsonObject payloadForUpdate = createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .build();
+
+        final Response response = postCommand(getWriteUrl(format(UPDATE_PET_FORM_ENDPOINT, petId)), "application/vnd.progression.release-pet-form+json", payloadForUpdate.toString());
+        assertThat(response.getStatusCode(), is(ACCEPTED.getStatusCode()));
+
+        verifyInMessagingQueueForPetFormReleased();
+    }
 }

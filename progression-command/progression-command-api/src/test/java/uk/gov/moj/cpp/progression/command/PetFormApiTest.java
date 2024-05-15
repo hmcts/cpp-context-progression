@@ -150,4 +150,27 @@ public class PetFormApiTest {
         assertThat(capturedEnvelope.payload(), is(payload));
     }
 
+    @Test
+    public void shouldHandleReleasePetForm() {
+        final JsonObject payload = createObjectBuilder()
+                .add("caseId", createObjectBuilder().build())
+                .build();
+
+        final Metadata metadata = Envelope.metadataBuilder()
+                .withName("progression.release-pet-form")
+                .withId(randomUUID())
+                .withUserId(randomUUID().toString())
+                .build();
+
+        final JsonEnvelope commandEnvelope = new DefaultJsonEnvelopeProvider().envelopeFrom(metadata, payload);
+
+        petFormApi.releasePetForm(commandEnvelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final Envelope capturedEnvelope = envelopeCaptor.getValue();
+        assertThat(capturedEnvelope.metadata().name(), is("progression.command.release-pet-form"));
+        assertThat(capturedEnvelope.payload(), is(payload));
+    }
+
 }

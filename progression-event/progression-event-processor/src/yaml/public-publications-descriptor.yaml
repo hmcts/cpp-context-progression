@@ -255,6 +255,9 @@ subscriptions_descriptor:
         - name: public.progression.pet-form-updated
           schema_uri: http://justice.gov.uk/core/courts/public-pet-form-updated.json
 
+        - name: public.progression.pet-form-released
+          schema_uri: http://justice.gov.uk/core/courts/public-pet-form-released.json
+
         - name: public.progression.pet-detail-updated
           schema_uri: http://justice.gov.uk/core/courts/public-pet-detail-updated.json
 

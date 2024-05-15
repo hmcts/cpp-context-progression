@@ -22,6 +22,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.command.ReleasePetForm;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -195,5 +196,26 @@ public class PetCommandHandler {
                 userIdUUID);
 
         eventStream.append(events.map(toEnvelopeWithMetadataFrom(envelope)));
+    }
+
+    @Handles("progression.command.release-pet-form")
+    public void handleReleasePetForm(final Envelope<ReleasePetForm> releasePetFormEnvelope) throws EventStreamException {
+        final ReleasePetForm releasePetForm = releasePetFormEnvelope.payload();
+
+        LOGGER.info("progression.command.release-pet-form with petId: {} for case: {}", releasePetForm.getPetId(), releasePetForm.getCaseId());
+
+        final Optional<String> userId = releasePetFormEnvelope.metadata().userId();
+        UUID userIdUUID = null;
+        if (userId.isPresent()) {
+            userIdUUID = fromString(userId.get());
+        }
+        final EventStream eventStream = eventSource.getStreamById(releasePetForm.getCaseId());
+
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+        final Stream<Object> events = caseAggregate.releasePetForm(releasePetForm.getCaseId(),
+                releasePetForm.getPetId(),
+                userIdUUID);
+
+        eventStream.append(events.map(toEnvelopeWithMetadataFrom(releasePetFormEnvelope)));
     }
 }
