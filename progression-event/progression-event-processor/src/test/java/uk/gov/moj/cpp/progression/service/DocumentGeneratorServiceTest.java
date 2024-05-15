@@ -12,18 +12,20 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.ACCOUNTING_DIVISION_CODE;
+import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.FINANCIAL_ORDER_DETAILS;
 import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.NCES_DOCUMENT_TEMPLATE_NAME;
+import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentRequestTemplate;
 
 import uk.gov.justice.core.courts.FormType;
-import uk.gov.justice.core.courts.NowsDocumentGenerated;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.nces.DocumentContent;
 import uk.gov.justice.core.courts.nces.NcesNotificationRequested;
-import uk.gov.justice.core.courts.nowdocument.NowDistribution;
-import uk.gov.justice.core.courts.nowdocument.Nowaddress;
+import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -144,38 +146,31 @@ public class DocumentGeneratorServiceTest {
     }
 
     @Test
-    public void shouldGenerateNowDocumentWithLetterFlagsAsFalseWhenDocumentNotPostable() {
+    public void shouldGenerateNowDocumentWithLetterFlagsAsFalseWhenDocumentNotPostable() throws Exception {
         when(nowDocumentValidator.isPostable(any(OrderAddressee.class))).thenReturn(FALSE);
         shouldGenerateNow(FALSE);
     }
 
+    public void shouldGenerateNow(final boolean expectedLetterFlag) throws Exception {
 
-    public void shouldGenerateNow(final boolean expectedLetterFlag) {
+        final NowDocumentRequest nowDocumentRequest = generateNowDocumentRequestTemplate(randomUUID(), JurisdictionType.CROWN, false);
 
+        final UUID systemUserId = randomUUID();
+        final byte[] documentData = {34, 56, 78, 90};
+        final JsonObject nowsDocumentOrderJson = mock(JsonObject.class);
+        final ObjectMapper mapper = new ObjectMapper();
+        final JsonObject nowDocumentContentJson = createNowDocumentContent();
+        final JsonNode node = mapper.readTree(nowDocumentContentJson.toString());
+        when(objectMapper.valueToTree(any())).thenReturn(node);
+        when(objectToJsonObjectConverter.convert(nowDocumentRequest.getNowContent())).thenReturn(nowDocumentContentJson);
+        when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
+        when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(documentData);
+        when(fileStorer.store(any(), any())).thenReturn(randomUUID());
         when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn("http://materialUrl");
-
         when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
 
         final UUID userId = randomUUID();
-
-        final NowsDocumentGenerated nowsDocumentGenerated = NowsDocumentGenerated.nowsDocumentGenerated()
-                .withMaterialId(randomUUID())
-                .withHearingId(randomUUID())
-                .withSystemDocGeneratorId(randomUUID())
-                .withFileName(randomUUID().toString())
-                .withUserId(userId)
-                .withNowDistribution(NowDistribution.nowDistribution()
-                        .withEmail(true)
-                        .withFirstClassLetter(expectedLetterFlag)
-                        .withSecondClassLetter(expectedLetterFlag)
-                        .build())
-                .withOrderAddressee(OrderAddressee.orderAddressee()
-                        .withAddress(Nowaddress.nowaddress()
-                                .withEmailAddress1("emailAddress1@test.com")
-                                .withEmailAddress2("emailAddress2@test.com")
-                                .build()).build())
-                .withCpsProsecutionCase(false)
-                .build();
 
         final Set<DefendantCaseOffences> defendantCaseOffences = new HashSet<>();
         defendantCaseOffences.add(DefendantCaseOffences.defendantCaseOffences()
@@ -202,17 +197,30 @@ public class DocumentGeneratorServiceTest {
                         .build())
                 .build();
 
-        documentGeneratorService.addDocumentToMaterial(sender, originatingEnvelope, nowsDocumentGenerated);
+        when(objectToJsonObjectConverter.convert(nowsDocumentOrder)).thenReturn(nowsDocumentOrderJson);
 
+        when(documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, nowDocumentRequest.getTemplateName(), systemUserId)).thenReturn(documentData);
+
+        documentGeneratorService.generateNow(sender, originatingEnvelope, userId, nowDocumentRequest);
+
+        verify(fileStorer, times(1)).store(fileStorerMetaDataCaptor.capture(), fileStorerInputStreamCaptor.capture());
+
+        byte[] dataSent = new byte[documentData.length];
+        fileStorerInputStreamCaptor.getValue().read(dataSent, 0, documentData.length);
+        assertThat(documentData, is(dataSent));
 
         verify(uploadMaterialService, times(1)).uploadFile(uploadMaterialContextArgumentCaptor.capture());
         UploadMaterialContext uploadMaterialContext = uploadMaterialContextArgumentCaptor.getValue();
-        assertThat(uploadMaterialContext.getMaterialId(), is(nowsDocumentGenerated.getMaterialId()));
+        assertThat(uploadMaterialContext.getMaterialId(), is(nowDocumentRequest.getMaterialId()));
         assertThat(uploadMaterialContext.getEmailNotifications().size(), is(2));
         assertThat(uploadMaterialContext.getEmailNotifications().get(0).getSendToAddress(), is("emailAddress1@test.com"));
         assertThat(uploadMaterialContext.getEmailNotifications().get(1).getSendToAddress(), is("emailAddress2@test.com"));
         assertThat(uploadMaterialContext.isFirstClassLetter(), is(expectedLetterFlag));
         assertThat(uploadMaterialContext.isSecondClassLetter(), is(expectedLetterFlag));
+
+        verify(documentGeneratorClient, times(1)).generatePdfDocument(nowDocumentContentArgumentCaptor.capture(), anyString(), any(UUID.class));
+        JsonObject nowDocumentContentContext = nowDocumentContentArgumentCaptor.getValue();
+        assertThat(nowDocumentContentContext.getJsonObject(FINANCIAL_ORDER_DETAILS).getString(ACCOUNTING_DIVISION_CODE), is("077"));
     }
 
     @Test

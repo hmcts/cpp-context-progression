@@ -80,7 +80,7 @@
         <results.version>8.0.32</results.version>
         <notification.notify.version>7.0.18</notification.notify.version>
         <unifiedsearch.version>8.0.7</unifiedsearch.version>
-        <systemdocgenerator.version>8.0.81</systemdocgenerator.version>
+        <systemdocgenerator.version>8.0.82</systemdocgenerator.version>
         <applicationscourtorders.version>8.0.9</applicationscourtorders.version>
         <sjp.version>8.0.70</sjp.version>
         <jackson-data-format.version>2.8.8</jackson-data-format.version>

@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -20,16 +19,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import uk.gov.justice.core.courts.PrisonCourtRegisterFailed;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
-import uk.gov.justice.core.courts.PrisonCourtRegisterSent;
 import uk.gov.justice.core.courts.PrisonCourtRegisterWithoutRecipientsRecorded;
-import uk.gov.justice.core.courts.RecordPrisonCourtRegisterDocumentSent;
-import uk.gov.justice.core.courts.RecordPrisonCourtRegisterFailed;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDocumentRequest;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterRecipient;
-import uk.gov.justice.progression.courts.NotifyPrisonCourtRegister;
+import uk.gov.justice.core.courts.prisonCourtRegisterDocument.RecordPrisonCourtRegisterDocumentGenerated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -52,10 +47,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -64,12 +57,8 @@ public class PrisonCourtRegisterHandlerTest {
 
     private static final String ADD_PRISON_COURT_REGISTER_COMMAND_NAME = "progression.command.add-prison-court-register";
     private static final String RECORD_PRISON_COURT_REGISTER_GENERATED_COMMAND_NAME = "progression.command.record-prison-court-register-generated";
-    private static final String RECORD_PRISON_COURT_REGISTER_SENT_COMMAND_NAME = "progression.command.record-prison-court-register-sent";
-    private static final String PRISON_COURT_REGISTER_FAILED_COMMAND_NAME = "progression.command.record-prison-court-register-failed";
     private static final UUID COURT_CENTRE_ID = randomUUID();
-    private static final UUID PAYLOAD_FILE_ID = randomUUID();
-
-    private static final UUID SYSTEM_DOCUMENT_ID = randomUUID();
+    private static final UUID FILE_ID = randomUUID();
 
     @Mock
     private EventSource eventSource;
@@ -89,12 +78,7 @@ public class PrisonCourtRegisterHandlerTest {
     private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            PrisonCourtRegisterRecorded.class,
-            PrisonCourtRegisterWithoutRecipientsRecorded.class,
-            PrisonCourtRegisterGenerated.class,
-            PrisonCourtRegisterSent.class,
-            PrisonCourtRegisterFailed.class);
+    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(PrisonCourtRegisterRecorded.class, PrisonCourtRegisterWithoutRecipientsRecorded.class, PrisonCourtRegisterGenerated.class);
 
     @Before
     public void setup() {
@@ -148,55 +132,16 @@ public class PrisonCourtRegisterHandlerTest {
 
     @Test
     public void shouldCreateRegisterGeneratedEvent() throws Exception {
+        prisonCourtRegisterHandler.handleRecordDocumentGenerated(buildRecordRegisterGeneratedEnvelope());
 
-        prisonCourtRegisterHandler.recordPrisonCourtRegisterDocumentSent(buildRecordPrisonCourtRegisterSentEnvelope());
-
-        prisonCourtRegisterHandler.handleNotifyCourtCentre(buildRecordRegisterGeneratedEnvelope());
-
-        ArgumentCaptor<Stream> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
-
-        Mockito.verify(eventStream, times(2)).append(argumentCaptor.capture());
-
-        Stream<JsonEnvelope> envelopeStream = (Stream)argumentCaptor.getValue();
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
         assertThat(envelopeStream, streamContaining(
                 jsonEnvelope(
                         metadata().withName("progression.event.prison-court-register-generated"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.courtCentreId", is(COURT_CENTRE_ID.toString())),
-                                withJsonPath("$.fileId", is(SYSTEM_DOCUMENT_ID.toString())))))));
-    }
-
-    @Test
-    public void shouldRecordPrisonCourtRegisterDocumentSent() throws Exception {
-
-        prisonCourtRegisterHandler.recordPrisonCourtRegisterDocumentSent(buildRecordPrisonCourtRegisterSentEnvelope());
-
-        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-
-        assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata().withName("progression.event.prison-court-register-sent"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.courtCentreId", is(COURT_CENTRE_ID.toString())),
-                                withJsonPath("$.payloadFileId", is(PAYLOAD_FILE_ID.toString()))
-                        )))));
-    }
-
-    @Test
-    public void shouldHandlePrisonCourtRegisterFailed() throws Exception {
-
-        prisonCourtRegisterHandler.handlePrisonCourtRegisterFailed(buildPrisonCourtRegisterFailedEnvelope());
-
-        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-
-        assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata().withName("progression.event.prison-court-register-failed"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.courtCentreId", is(COURT_CENTRE_ID.toString())),
-                                withJsonPath("$.payloadFileId", is(PAYLOAD_FILE_ID.toString())),
-                                withJsonPath("$.reason", is("Test"))
+                                withJsonPath("$.fileId", is(FILE_ID.toString()))
                         )))));
     }
 
@@ -218,40 +163,15 @@ public class PrisonCourtRegisterHandlerTest {
         return envelope(ADD_PRISON_COURT_REGISTER_COMMAND_NAME, prisonCourtRegisterDocumentRequest);
     }
 
-    private Envelope<NotifyPrisonCourtRegister> buildRecordRegisterGeneratedEnvelope() {
+    private Envelope<RecordPrisonCourtRegisterDocumentGenerated> buildRecordRegisterGeneratedEnvelope() {
 
-        final NotifyPrisonCourtRegister notifyPrisonCourtRegister = NotifyPrisonCourtRegister.notifyPrisonCourtRegister()
+        final RecordPrisonCourtRegisterDocumentGenerated recordPrisonCourtRegisterDocumentGenerated = RecordPrisonCourtRegisterDocumentGenerated.recordPrisonCourtRegisterDocumentGenerated()
                 .withCourtCentreId(COURT_CENTRE_ID)
-                .withPayloadFileId(PAYLOAD_FILE_ID)
-                .withSystemDocGeneratorId(SYSTEM_DOCUMENT_ID)
+                .withFileId(FILE_ID)
                 .build();
 
-        return envelope(RECORD_PRISON_COURT_REGISTER_GENERATED_COMMAND_NAME, notifyPrisonCourtRegister);
+        return envelope(RECORD_PRISON_COURT_REGISTER_GENERATED_COMMAND_NAME, recordPrisonCourtRegisterDocumentGenerated);
     }
-
-    private Envelope<RecordPrisonCourtRegisterDocumentSent> buildRecordPrisonCourtRegisterSentEnvelope() {
-
-        final RecordPrisonCourtRegisterDocumentSent recordPrisonCourtRegisterDocumentSent = RecordPrisonCourtRegisterDocumentSent
-                .recordPrisonCourtRegisterDocumentSent()
-                .withCourtCentreId(COURT_CENTRE_ID)
-                .withPayloadFileId(PAYLOAD_FILE_ID)
-                .build();
-
-        return envelope(RECORD_PRISON_COURT_REGISTER_SENT_COMMAND_NAME, recordPrisonCourtRegisterDocumentSent);
-    }
-
-    private Envelope<RecordPrisonCourtRegisterFailed> buildPrisonCourtRegisterFailedEnvelope() {
-
-        final RecordPrisonCourtRegisterFailed recordPrisonCourtRegisterFailed = RecordPrisonCourtRegisterFailed
-                .recordPrisonCourtRegisterFailed()
-                .withCourtCentreId(COURT_CENTRE_ID)
-                .withPayloadFileId(PAYLOAD_FILE_ID)
-                .withReason("Test")
-                .build();
-
-        return envelope(PRISON_COURT_REGISTER_FAILED_COMMAND_NAME, recordPrisonCourtRegisterFailed);
-    }
-
 
     private <T> Envelope<T> envelope(final String name, final T t) {
         final MetadataBuilder metadataBuilder = metadataFrom(metadataWithRandomUUID(name).withUserId(randomUUID().toString()).build());

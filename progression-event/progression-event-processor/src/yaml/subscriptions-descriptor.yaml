@@ -160,9 +160,6 @@ subscriptions_descriptor:
         - name: progression.event.now-document-requested
           schema_uri: http://justice.gov.uk/core/courts/now-document-requested.json
 
-        - name: progression.event.nows-document-generated
-          schema_uri: http://justice.gov.uk/core/courts/nows-document-generated.json
-
         - name: progression.event.court-register-notified
           schema_uri: http://justice.gov.uk/progression/courts/court-register-notified.json
 
@@ -684,9 +681,6 @@ subscriptions_descriptor:
         #System doc generator
         - name: public.systemdocgenerator.events.document-available
           schema_uri: http://moj.gov.uk/cpp/json/schemas/systemdocgenerator/events/public/document-available.json
-
-        - name: public.systemdocgenerator.events.generation-failed
-          schema_uri: http://moj.gov.uk/cpp/json/schemas/systemdocgenerator/events/public/generation-failed.json
 
         # Allocated Hearing Deleted
         - name: public.events.listing.allocated-hearing-deleted

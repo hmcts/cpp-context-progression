@@ -18,8 +18,6 @@ import javax.inject.Inject;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static java.util.UUID.fromString;
-
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class StagingEnforcementResponseHandler extends AbstractCommandHandler {
 
@@ -43,11 +41,10 @@ public class StagingEnforcementResponseHandler extends AbstractCommandHandler {
 
         final EnforceFinancialImpositionAcknowledgement command = this.jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), EnforceFinancialImpositionAcknowledgement.class);
         final UUID materialId = command.getMaterialId();
-        final UUID userId = fromString(envelope.metadata().userId().orElseThrow(() -> new RuntimeException("UserId missing from event.")));
 
         final EventStream eventStream = eventSource.getStreamById(materialId);
         final MaterialAggregate materialAggregate = aggregateService.get(eventStream, MaterialAggregate.class);
-        final Stream<Object> events = materialAggregate.saveAccountNumber(command.getMaterialId(), command.getRequestId(), command.getAcknowledgement().getAccountNumber(), userId);
+        final Stream<Object> events = materialAggregate.saveAccountNumber(command.getMaterialId(), command.getRequestId(), command.getAcknowledgement().getAccountNumber());
         appendEventsToStream(envelope, eventStream, events);
     }
 

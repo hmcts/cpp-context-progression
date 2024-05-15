@@ -7,15 +7,17 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.fileservice.api.FileServiceException;
+import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
-import uk.gov.moj.cpp.progression.service.ConversionFormat;
-import uk.gov.moj.cpp.progression.service.DocumentGenerationRequest;
-import uk.gov.moj.cpp.progression.service.FileService;
 import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
-import uk.gov.moj.cpp.progression.service.SystemDocGeneratorService;
+import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,14 +29,11 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import com.google.common.base.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class PrisonCourtRegisterEventProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PrisonCourtRegisterEventProcessor.class);
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private static final String PRISON_COURT_REGISTER_TEMPLATE = "OEE_Layout5";
     private static final String FIELD_RECIPIENTS = "recipients";
@@ -44,12 +43,23 @@ public class PrisonCourtRegisterEventProcessor {
     private static final String FILE_ID = "fileId";
     private static final String PERSONALISATION = "personalisation";
     private static final String DEFENDANT = "defendant";
-    private static final String COURT_CENTRE_ID = "courtCentreId";
     private static final String HEARING_VENUE = "hearingVenue";
-    private static final String PRISON_COURT_REGISTER = "PRISON_COURT_REGISTER";
     private static final String HEARING_ID = "hearingId";
     private static final String HEARING_DATE = "hearingDate";
-    private static final String PROGRESSION_COMMAND_RECORD_PRISON_COURT_REGISTER_DOCUMENT_SENT = "progression.command.record-prison-court-register-document-sent";
+
+    private static final String PROGRESSION_COMMAND_RECORD_PRISON_COURT_REGISTER_GENERATED = "progression.command.record-prison-court-register-generated";
+
+    @Inject
+    private FileStorer fileStorer;
+
+    @Inject
+    private DocumentGeneratorClientProducer documentGeneratorClientProducer;
+
+    @Inject
+    private PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator;
+
+    @Inject
+    private SystemUserProvider systemUserProvider;
 
     @Inject
     private Sender sender;
@@ -63,51 +73,34 @@ public class PrisonCourtRegisterEventProcessor {
     @Inject
     private UtcClock utcClock;
 
-    @Inject
-    private SystemDocGeneratorService systemDocGeneratorService;
-
-    @Inject
-    private FileService fileService;
-
-    @Inject
-    private PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator;
-
     @SuppressWarnings("squid:S1160")
     @Handles("progression.event.prison-court-register-recorded")
-    public void generatePrisonCourtRegister(final JsonEnvelope envelope) {
-        LOGGER.info("progression.event.prison-court-register-recorded {}", envelope.payload());
+    public void generatePrisonCourtRegister(final JsonEnvelope envelope) throws IOException, FileServiceException {
         final JsonObject payload = envelope.payloadAsJsonObject();
+        final byte[] pdfDocumentInBytes = this.generateDocument(PRISON_COURT_REGISTER_TEMPLATE, prisonCourtRegisterPdfPayloadGenerator.mapPayload(payload));
+        final String filename = String.format("PrisonCourtRegister_%s.pdf", utcClock.now().format(TIMESTAMP_FORMATTER));
+        final JsonObject metadata = createObjectBuilder().add("fileName", filename).build();
+        final UUID fileId = fileStorer.store(metadata, new ByteArrayInputStream(pdfDocumentInBytes));
 
         final JsonObject prisonCourtRegister = payload.getJsonObject("prisonCourtRegister");
 
-        final String courtCentreId = prisonCourtRegister.getString(COURT_CENTRE_ID);
-
-        final JsonObject mappedPayload = prisonCourtRegisterPdfPayloadGenerator.mapPayload(payload);
-
-        final String fileName = String.format("PrisonCourtRegister_%s.pdf", utcClock.now().format(TIMESTAMP_FORMATTER));
-
-        final UUID fileId = fileService.storePayload(mappedPayload, fileName, PRISON_COURT_REGISTER_TEMPLATE);
-
-        sendRequestToGenerateDocumentAsync(envelope, courtCentreId, fileId);
-
         final JsonObjectBuilder payloadBuilder = createObjectBuilder()
-                .add(COURT_CENTRE_ID, prisonCourtRegister.getString(COURT_CENTRE_ID))
+                .add("courtCentreId", prisonCourtRegister.getString("courtCentreId"))
                 .add(DEFENDANT, prisonCourtRegister.getJsonObject(DEFENDANT))
                 .add(HEARING_VENUE, prisonCourtRegister.getJsonObject(HEARING_VENUE))
                 .add(HEARING_ID, prisonCourtRegister.getString(HEARING_ID))
                 .add(HEARING_DATE, prisonCourtRegister.getString(HEARING_DATE))
-                .add("payloadFileId", fileId.toString())
+                .add(FILE_ID, fileId.toString())
                 .add(FIELD_RECIPIENTS, prisonCourtRegister.getJsonArray(FIELD_RECIPIENTS));
 
         sender.send(envelop(payloadBuilder.build())
-                .withName(PROGRESSION_COMMAND_RECORD_PRISON_COURT_REGISTER_DOCUMENT_SENT)
+                .withName(PROGRESSION_COMMAND_RECORD_PRISON_COURT_REGISTER_GENERATED)
                 .withMetadataFrom(envelope));
     }
 
     @SuppressWarnings("squid:S1160")
     @Handles("progression.event.prison-court-register-generated")
     public void sendPrisonCourtRegister(final JsonEnvelope envelope) {
-        LOGGER.info("progression.event.prison-court-register-generated {}", envelope.payload());
         final JsonObject payload = envelope.payloadAsJsonObject();
 
         final JsonObject defendant = payload.getJsonObject(DEFENDANT);
@@ -140,23 +133,20 @@ public class PrisonCourtRegisterEventProcessor {
                 });
     }
 
-    private void sendRequestToGenerateDocumentAsync(
-            final JsonEnvelope envelope, final String courtCentreId, final UUID fileId) {
-
-        final DocumentGenerationRequest documentGenerationRequest = new DocumentGenerationRequest(
-                PRISON_COURT_REGISTER,
-                PRISON_COURT_REGISTER_TEMPLATE,
-                ConversionFormat.PDF,
-                courtCentreId,
-                fileId);
-
-        systemDocGeneratorService.generateDocument(documentGenerationRequest, envelope);
-    }
-
     private String generateURN(JsonObject defendant) {
         final Optional<JsonObject> op = defendant.getJsonArray("prosecutionCasesOrApplications").stream()
                 .map(JsonObject.class::cast).findFirst();
         return op.isPresent() ? op.get().getString("caseOrApplicationReference") : "";
+    }
+
+    private byte[] generateDocument(final String template, final JsonObject payload) throws IOException {
+        return this.documentGeneratorClientProducer.documentGeneratorClient()
+                .generatePdfDocument(payload, template, getSystemUser());
+    }
+
+    private UUID getSystemUser() {
+        return systemUserProvider.getContextSystemUserId()
+                .orElseThrow(() -> new RuntimeException("systemUserProvider.getContextSystemUserId() not available"));
     }
 
     class EmailPair {

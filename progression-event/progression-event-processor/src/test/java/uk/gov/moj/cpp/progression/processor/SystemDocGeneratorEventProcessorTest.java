@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
@@ -11,10 +10,8 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -50,7 +47,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SystemDocGeneratorEventProcessorTest {
@@ -64,9 +60,6 @@ public class SystemDocGeneratorEventProcessorTest {
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
-    @Spy
-    private JsonObjectToObjectConverter jsonObjectConverter;
-
     @Mock
     private Sender sender;
 
@@ -79,7 +72,6 @@ public class SystemDocGeneratorEventProcessorTest {
     @Before
     public void setUp() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
-        setField(this.jsonObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
     }
 
     @Test
@@ -104,142 +96,6 @@ public class SystemDocGeneratorEventProcessorTest {
         when(envelope.metadata()).thenReturn(getMetadataFrom(randomUUID().toString(), courtCentreId));
         when(fileService.retrieve(any())).thenReturn(java.util.Optional.of(getFileReference()));
         systemDocGeneratorEventProcessor.handleDocumentAvailable(envelope);
-    }
-
-    @Test
-    public void shouldProcessPrisonCourtRegisterDocumentAvailable() throws FileServiceException {
-
-        final UUID courtCentreId = UUID.randomUUID();
-
-        final UUID fileId = UUID.randomUUID();
-
-        final JsonEnvelope jsonEnvelope = envelopeFrom(
-                MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.document-available"),
-                Json.createObjectBuilder()
-                        .add("originatingSource", "PRISON_COURT_REGISTER")
-                        .add("templateIdentifier", "OEE_Layout5")
-                        .add("conversionFormat", "pdf")
-                        .add("sourceCorrelationId", courtCentreId.toString())
-                        .add("payloadFileServiceId", fileId.toString())
-                        .add("documentFileServiceId", UUID.randomUUID().toString())
-                        .build());
-
-        systemDocGeneratorEventProcessor.handleDocumentAvailable(jsonEnvelope);
-
-        verify(sender).send(envelopeCaptor.capture());
-        final Envelope<JsonObject> privateEvent = envelopeCaptor.getValue();
-
-        assertThat(privateEvent.metadata().name(),
-                equalTo("progression.command.notify-prison-court-register"));
-
-        final JsonObject actualPayload = privateEvent.payload();
-        assertThat(actualPayload.getString("courtCentreId"), equalTo(courtCentreId.toString()));
-
-    }
-
-    @Test
-    public void shouldFailedPrisonCourtRegister() {
-
-        final UUID courtCentreId = UUID.randomUUID();
-
-        final UUID fileId = UUID.randomUUID();
-
-        final JsonEnvelope jsonEnvelope = envelopeFrom(
-                MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.generation-failed"),
-                Json.createObjectBuilder()
-                        .add("originatingSource", "PRISON_COURT_REGISTER")
-                        .add("templateIdentifier", "OEE_Layout5")
-                        .add("conversionFormat", "pdf")
-                        .add("sourceCorrelationId", courtCentreId.toString())
-                        .add("payloadFileServiceId", fileId.toString())
-                        .add("requestedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
-                        .add("failedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
-                        .add("reason", "Test Reason")
-                        .build());
-
-        systemDocGeneratorEventProcessor.handleDocumentGenerationFailed(jsonEnvelope);
-
-        verify(sender).send(envelopeCaptor.capture());
-        final Envelope<JsonObject> privateEvent = envelopeCaptor.getValue();
-
-        assertThat(privateEvent.metadata().name(),
-                equalTo("progression.command.record-prison-court-register-failed"));
-
-        final JsonObject actualPayload = privateEvent.payload();
-        assertThat(actualPayload.getString("courtCentreId"), equalTo(courtCentreId.toString()));
-        assertThat(actualPayload.getString("reason"), equalTo("Test Reason"));
-
-    }
-
-    @Test
-    public void shouldProcessNowsDocumentAvailable() throws FileServiceException {
-
-        final UUID materialId = UUID.randomUUID();
-
-        final UUID fileId = UUID.randomUUID();
-
-        final UUID systemDocGeneratorId = UUID.randomUUID();
-
-        final JsonEnvelope jsonEnvelope = envelopeFrom(
-                MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.document-available"),
-                Json.createObjectBuilder()
-                        .add("originatingSource", "NOWs")
-                        .add("templateIdentifier", "OEE_Layout6")
-                        .add("conversionFormat", "pdf")
-                        .add("sourceCorrelationId", materialId.toString())
-                        .add("payloadFileServiceId", fileId.toString())
-                        .add("documentFileServiceId", systemDocGeneratorId.toString())
-                        .build());
-
-        systemDocGeneratorEventProcessor.handleDocumentAvailable(jsonEnvelope);
-
-        verify(sender).send(envelopeCaptor.capture());
-        final Envelope<JsonObject> privateEvent = envelopeCaptor.getValue();
-
-        assertThat(privateEvent.metadata().name(),
-                equalTo("progression.command.record-nows-document-generated"));
-
-        final JsonObject actualPayload = privateEvent.payload();
-        assertThat(actualPayload.getString("materialId"), equalTo(materialId.toString()));
-        assertThat(actualPayload.getString("payloadFileId"), equalTo(fileId.toString()));
-        assertThat(actualPayload.getString("systemDocGeneratorId"), equalTo(systemDocGeneratorId.toString()));
-
-    }
-
-
-    @Test
-    public void shouldProcessWhenNowsFailedToGenerate() {
-
-        final UUID materialId = UUID.randomUUID();
-
-        final UUID fileId = UUID.randomUUID();
-
-        final JsonEnvelope jsonEnvelope = envelopeFrom(
-                MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.generation-failed"),
-                Json.createObjectBuilder()
-                        .add("originatingSource", "NOWs")
-                        .add("templateIdentifier", "OEE_Layout6")
-                        .add("conversionFormat", "pdf")
-                        .add("sourceCorrelationId", materialId.toString())
-                        .add("payloadFileServiceId", fileId.toString())
-                        .add("requestedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
-                        .add("failedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
-                        .add("reason", "Test Reason")
-                        .build());
-
-        systemDocGeneratorEventProcessor.handleDocumentGenerationFailed(jsonEnvelope);
-
-        verify(sender).send(envelopeCaptor.capture());
-        final Envelope<JsonObject> privateEvent = envelopeCaptor.getValue();
-
-        assertThat(privateEvent.metadata().name(),
-                equalTo("progression.command.record-nows-document-failed"));
-
-        final JsonObject actualPayload = privateEvent.payload();
-        assertThat(actualPayload.getString("materialId"), equalTo(materialId.toString()));
-        assertThat(actualPayload.getString("reason"), equalTo("Test Reason"));
-        assertThat(actualPayload.getString("payloadFileId"), equalTo(fileId.toString()));
-
     }
 
     private Metadata getMetadataFrom(final String userId, final UUID courtCentreId) {
