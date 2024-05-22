@@ -45,6 +45,9 @@ import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @SuppressWarnings({"squid:S3655"})
 @ServiceComponent(EVENT_PROCESSOR)
 public class CourtDocumentAddedProcessor {
@@ -91,6 +94,8 @@ public class CourtDocumentAddedProcessor {
     @Inject
     private FeatureControlGuard featureControlGuard;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentAddedProcessor.class);
+
     @Handles("progression.event.court-document-added")
     public void handleCourtDocumentAddEvent(final JsonEnvelope envelope) {
         final CourtsDocumentAdded courtsDocumentAdded = jsonObjectConverter.convert(envelope.payloadAsJsonObject(), CourtsDocumentAdded.class);
@@ -101,6 +106,7 @@ public class CourtDocumentAddedProcessor {
         final Optional<UUID> caseId = getCaseIdFromDocuments(courtDocument.getDocumentCategory());
         if (caseId.isPresent()) {
             prosecutor = getProsecutor(envelope, caseId.get());
+            LOGGER.info("prosecutor - {}", prosecutor);
             sendUpdateCaseForCpsProsecutionCommandWhenProsecutorIsAbsent(envelope, payload, prosecutor, caseId.get());
         }
 

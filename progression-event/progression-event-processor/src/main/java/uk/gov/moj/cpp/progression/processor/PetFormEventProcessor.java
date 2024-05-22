@@ -265,6 +265,8 @@ public class PetFormEventProcessor {
                 .withMimeType(APPLICATION_PDF)
                 .withName(filename)
                 .withMaterials(Collections.singletonList(material))
+                .withSendToCps(true)
+                .withNotificationType("pet-form-finalised")
                 .build();
     }
 

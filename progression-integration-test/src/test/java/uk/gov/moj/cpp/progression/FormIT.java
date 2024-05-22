@@ -266,7 +266,8 @@ public class FormIT extends AbstractIT {
         assertThat(responseForFinaliseForm.getStatusCode(), is(ACCEPTED.getStatusCode()));
 
         verifyInMessagingQueueForFormFinalised();
-        verifyInMessagingQueueForAddCourtDocument();
+        final JsonObject jsonObject = verifyInMessagingQueueForAddCourtDocument();
+        assertThat(jsonObject.getJsonObject("courtDocument").getBoolean("sendToCps"), is(true));
     }
 
 
