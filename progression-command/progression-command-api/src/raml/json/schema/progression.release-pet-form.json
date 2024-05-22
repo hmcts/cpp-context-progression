@@ -3,6 +3,10 @@
   "id": "http://moj.gov.uk/cpp/progression/command/release-pet-form.json",
   "type": "object",
   "properties": {
+    "petId": {
+      "description": "Pet Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
     "caseId": {
       "description": "Case Id",
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
