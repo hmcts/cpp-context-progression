@@ -577,6 +577,9 @@ subscriptions_descriptor:
         - name: progression.event.defendant-custodial-information-update-requested
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-custodial-information-update-requested.json
 
+        - name: progression.event.document-with-prosecution-case-id-added
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.document-with-prosecution-case-id.json-added.json
+
         - name: progression.event.breach-applications-to-be-added-to-hearing
           schema_uri: http://justice.gov.uk/core/courts/breach-applications-to-be-added-to-hearing.json
 

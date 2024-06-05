@@ -1118,6 +1118,10 @@ public class PreAndPostConditionHelper {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments-all+json", userId);
     }
 
+    public static String getCourtDocumentsPerCase(final String userId, final String caseId, final Matcher[] matchers) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments-all+json", userId, matchers);
+    }
+
     public static String getUploadCourtDocumentsByCase(final String userId, final String caseId) {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments+json", userId, status().is(OK), withJsonPath("$.documentIndices[0].caseIds[0]", CoreMatchers.is(caseId)));
     }

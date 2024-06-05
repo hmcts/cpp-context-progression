@@ -26,6 +26,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -127,11 +128,22 @@ public class FormCommandHandler {
         final Stream<Object> events = caseAggregate.finaliseForm(finaliseForm.getCaseId(),
                 finaliseForm.getCourtFormId(),
                 fromString(userId),
-                finaliseForm.getFinalisedFormData());
+                finaliseForm.getFinalisedFormData(),
+                getLatestSittingDay(caseAggregate.getLatestHearingId()));
 
         eventStream.append(events.map(toEnvelopeWithMetadataFrom(envelope)));
     }
 
+    private ZonedDateTime getLatestSittingDay(final UUID hearingId) {
+        if (nonNull(hearingId)) {
+            final EventStream eventStream = eventSource.getStreamById(hearingId);
+            final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+            if (nonNull(hearingAggregate)) {
+                return hearingAggregate.getLatestSittingDay();
+            }
+        }
+        return null;
+    }
 
     @Handles("progression.command.update-form-defendants")
     public void updateFormDefendants(final Envelope<UpdateFormDefendants> envelope) throws EventStreamException {

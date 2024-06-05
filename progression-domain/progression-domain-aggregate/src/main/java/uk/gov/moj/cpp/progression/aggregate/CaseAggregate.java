@@ -92,6 +92,7 @@ import uk.gov.justice.core.courts.CaseRetentionPolicyRecorded;
 import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
 import uk.gov.justice.core.courts.CpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CustodialEstablishment;
@@ -107,6 +108,7 @@ import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
 import uk.gov.justice.core.courts.EditFormRequested;
+import uk.gov.justice.core.courts.DocumentWithProsecutionCaseIdAdded;
 import uk.gov.justice.core.courts.ExactMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.FinancialDataAdded;
@@ -915,6 +917,27 @@ public class CaseAggregate implements Aggregate {
                 .withOffenceId(offenceId)
                 .build()));
     }
+
+    public Stream<Object> addDocument(final CourtDocument courtDocument) {
+        LOGGER.debug("Court document being added");
+
+        final Stream.Builder<Object> streamBuilder = prepareEventsForAddDocument(courtDocument);
+
+        return apply(streamBuilder.build());
+    }
+
+    public Stream.Builder<Object> prepareEventsForAddDocument(final CourtDocument courtDocument) {
+
+        final Stream.Builder<Object> streamBuilder = builder();
+
+        streamBuilder.add(DocumentWithProsecutionCaseIdAdded.documentWithProsecutionCaseIdAdded()
+                .withCourtDocument(courtDocument)
+                .withProsecutionCase(prosecutionCase)
+                .build());
+
+        return streamBuilder;
+    }
+
 
     private Map<UUID, Set<UUID>> sendingSheetToDefendantOffenceMap(final JsonObject payload) {
         final JsonArray jsonDefendants = payload.getJsonObject(HEARING_PAYLOAD_PROPERTY).getJsonArray("defendants");
@@ -3289,7 +3312,7 @@ public class CaseAggregate implements Aggregate {
     }
 
 
-    public Stream<Object> finaliseForm(final UUID caseId, final UUID courtFormId, final UUID userId, final List<String> finalisedFormData) {
+    public Stream<Object> finaliseForm(final UUID caseId, final UUID courtFormId, final UUID userId, final List<String> finalisedFormData, final ZonedDateTime hearingDateTime) {
         final UUID submissionId = nonNull(formMap.get(courtFormId)) ? formMap.get(courtFormId).getSubmissionId() : null;
         if (isNull(prosecutionCase)) {
             return apply(Stream.of(formOperationFailed()
@@ -3324,6 +3347,7 @@ public class CaseAggregate implements Aggregate {
                         .withCaseURN(caseURN)
                         .withSubmissionId(submissionId)
                         .withMaterialId(UUID.randomUUID())
+                        .withHearingDateTime(hearingDateTime)
                         .build())
                 .collect(toList());
 

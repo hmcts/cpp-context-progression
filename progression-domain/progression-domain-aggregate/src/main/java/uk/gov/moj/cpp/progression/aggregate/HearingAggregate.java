@@ -2501,4 +2501,15 @@ public class HearingAggregate implements Aggregate {
 
         opaResultListNoticesSent.put(event.getDefendantId(), sentList);
     }
+
+    public ZonedDateTime getLatestSittingDay() {
+        if (isNotEmpty(hearing.getHearingDays()) && hearing.getHearingDays().stream()
+                .anyMatch(hd -> nonNull(hd) && nonNull(hd.getSittingDay()))) {
+            return hearing.getHearingDays().stream()
+                    .filter(hd -> nonNull(hd) && nonNull(hd.getSittingDay()))
+                    .max(Comparator.comparing(HearingDay::getSittingDay))
+                    .get().getSittingDay();
+        }
+        return null;
+    }
 }

@@ -300,6 +300,9 @@ subscriptions_descriptor:
         - name: public.progression.cotr-operation-failed
           schema_uri: http://justice.gov.uk/core/courts/cotr-operation-failed.json
 
+        - name: public.progression.document-added
+          schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.document-added.json
+
         - name: public.progression.breach-applications-to-be-added-to-hearing
           schema_uri: http://justice.gov.uk/progression/courts/public.progression.breach-applications-to-be-added-to-hearing.json
 

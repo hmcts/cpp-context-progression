@@ -8,10 +8,99 @@
     },
     "vacatedTrialReasonId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingDateTime": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "hasInterpreter": {
+      "type": "boolean"
+    },
+    "caseDetails": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "#/definitions/hearingCaseDetail"
+      }
+    },
+    "applicationDetails": {
+      "description": "Optional field, for when trial is vacated. Application information",
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "#/definitions/applicationDetail"
+      }
+    },
+    "jurisdictionType": {
+      "$ref": "http://justice.gov.uk/core/courts/jurisdictionType.json"
     }
   },
   "required": [
     "hearingId"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "definitions": {
+    "hearingCaseDetail": {
+      "type": "object",
+      "properties": {
+        "caseId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "caseURN": {
+          "type": "string"
+        },
+        "defendantDetails": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "defendantId": {
+              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+            },
+            "defendantFirstName": {
+              "type": "string"
+            },
+            "defendantLastName": {
+              "type": "string"
+            },
+            "defendantRemandStatus": {
+              "type": "string"
+            },
+            "interpreterLanguageNeeds": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "applicationDetail": {
+      "type": "object",
+      "properties": {
+        "applicationId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "applicationReference": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "object",
+          "properties": {
+            "defendantId": {
+              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+            },
+            "defendantFirstName": {
+              "type": "string"
+            },
+            "defendantLastName": {
+              "type": "string"
+            },
+            "defendantRemandStatus": {
+              "type": "string"
+            },
+            "interpreterLanguageNeeds": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
 }

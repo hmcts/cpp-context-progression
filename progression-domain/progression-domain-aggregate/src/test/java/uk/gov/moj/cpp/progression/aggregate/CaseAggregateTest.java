@@ -72,6 +72,7 @@ import uk.gov.justice.core.courts.CaseRetentionPolicyRecorded;
 import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
 import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.Defendant;
@@ -85,6 +86,7 @@ import uk.gov.justice.core.courts.Defendants;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DefendantsAndListingHearingRequestsAdded;
 import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
+import uk.gov.justice.core.courts.DocumentWithProsecutionCaseIdAdded;
 import uk.gov.justice.core.courts.EditFormRequested;
 import uk.gov.justice.core.courts.ExactMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.ExtendHearing;
@@ -231,6 +233,7 @@ import javax.json.JsonObject;
 
 import com.google.common.collect.Lists;
 import org.hamcrest.Matchers;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -397,6 +400,16 @@ public class CaseAggregateTest {
         assertThat(response.size(), is(2));
         assertThat(response.get(0).getClass().toString(), is(CaseMarkersUpdated.class.toString()));
         assertThat(response.get(1).getClass().toString(), is(CaseMarkersSharedWithHearings.class.toString()));
+    }
+
+    @Test
+    public void shouldReturnDocumentAdded() {
+
+        final List<Object> eventStream = caseAggregate.addDocument(CourtDocument.courtDocument().build()).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object documentWithProsecutionCaseIdAdded = eventStream.get(0);
+        assertThat(documentWithProsecutionCaseIdAdded.getClass(), is(CoreMatchers.<Class<?>>equalTo(DocumentWithProsecutionCaseIdAdded.class)));
     }
 
     @Test
@@ -3445,7 +3458,7 @@ public class CaseAggregateTest {
     public void shouldGenerateFormFinalised() {
         final UUID caseId = randomUUID();
         final UUID userId = randomUUID();
-
+        final ZonedDateTime hearingDateTime = ZonedDateTime.now();
         final Map<UUID, Form> formMap = new HashMap<>();
         final UUID courtFormId = randomUUID();
         final UUID offenceId = randomUUID();
@@ -3483,7 +3496,11 @@ public class CaseAggregateTest {
 
         setField(caseAggregate, "prosecutionCase", prosecutionCase);
 
-        final List<Object> eventStream = caseAggregate.finaliseForm(caseId, courtFormId, userId, asList("{}", "{}", "{}")).collect(toList());
+        final List<Object> eventStream = caseAggregate.finaliseForm(caseId,
+                courtFormId,
+                userId,
+                asList("{}", "{}", "{}"),
+                hearingDateTime).collect(toList());
         assertFormFinalisedFromEventStream(caseId, courtFormId, userId, defendantId, offenceId, BCM, eventStream);
     }
 
@@ -3492,7 +3509,7 @@ public class CaseAggregateTest {
     public void shouldNotGenerateFormFinalised_WhenIdDoesNotExist_VerifyFormOperationFailedEvent() {
         final UUID caseId = randomUUID();
         final UUID userId = randomUUID();
-
+        final ZonedDateTime hearingDateTime = ZonedDateTime.now();
         final Map<UUID, Form> formMap = new HashMap<>();
         final UUID courtFormId = randomUUID();
         final UUID offenceId = randomUUID();
@@ -3525,7 +3542,7 @@ public class CaseAggregateTest {
         setField(caseAggregate, "prosecutionCase", prosecutionCase);
 
         final UUID courtFormId3 = randomUUID();
-        final List<Object> eventStream = caseAggregate.finaliseForm(caseId, courtFormId3, userId, asList("{}", "{}", "{}")).collect(toList());
+        final List<Object> eventStream = caseAggregate.finaliseForm(caseId, courtFormId3, userId, asList("{}", "{}", "{}"), hearingDateTime).collect(toList());
         assertFormOperationFailedFromEventStream(caseId, courtFormId3, FORM_FINALISATION_COMMAND_NAME,
                 format(MESSAGE_FOR_COURT_FORM_ID_NOT_PRESENT, courtFormId3), null, eventStream);
     }
@@ -3535,7 +3552,7 @@ public class CaseAggregateTest {
     public void shouldNotGenerateFormFinalised_WhenProsecutionCaseIsNull_VerifyFormOperationFailedEvent() {
         final UUID caseId = randomUUID();
         final UUID userId = randomUUID();
-
+        final ZonedDateTime hearingDateTime = ZonedDateTime.now();
         final Map<UUID, Form> formMap = new HashMap<>();
         final UUID courtFormId = randomUUID();
         final UUID offenceId = randomUUID();
@@ -3554,7 +3571,7 @@ public class CaseAggregateTest {
         ProsecutionCase prosecutionCase = null;
         setField(caseAggregate, "prosecutionCase", prosecutionCase);
 
-        final List<Object> eventStream = caseAggregate.finaliseForm(caseId, courtFormId, userId, asList("{}", "{}", "{}")).collect(toList());
+        final List<Object> eventStream = caseAggregate.finaliseForm(caseId, courtFormId, userId, asList("{}", "{}", "{}"), hearingDateTime).collect(toList());
         assertFormOperationFailedFromEventStream(caseId, courtFormId, FORM_FINALISATION_COMMAND_NAME,
                 format(MESSAGE_FOR_PROSECUTION_NULL, caseId), null, eventStream);
     }

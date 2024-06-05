@@ -39,6 +39,10 @@
     "materialId": {
       "description": "Materail id associated with bcm/ptph form when it gets finalised",
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingDateTime": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [

@@ -1,40 +1,13 @@
 package uk.gov.moj.cpp.progression;
 
-import com.google.common.io.Resources;
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.Duration;
-import com.jayway.restassured.response.Response;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
-
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.json.JsonObject;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.UUID;
-
+import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -73,6 +46,37 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAaagHearingEventLogs;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubGetUserOrganisation;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubHearingEventLogs;
+
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.moj.cpp.progression.stub.HearingStub;
+import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.json.JsonObject;
+
+import com.google.common.io.Resources;
+import com.jayway.awaitility.Awaitility;
+import com.jayway.awaitility.Duration;
+import com.jayway.restassured.response.Response;
+import org.apache.http.HttpStatus;
+import org.hamcrest.Matcher;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class HearingEventLogIT extends AbstractIT {
 
@@ -245,7 +249,7 @@ public class HearingEventLogIT extends AbstractIT {
     }
 
     @Test
-    public void shouldGenerateCAAGHearingEventLogDocumentForActiveCaseIfNoApplicationExists() throws Exception {
+    public void shouldGenereateCAAGHearingEventLogDocumentForActiveCaseIfNoApplicationExists() throws Exception {
         final String TEMPLATE_NAME = "HearingEventLog";
         final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
@@ -308,9 +312,9 @@ public class HearingEventLogIT extends AbstractIT {
 
         final String payload = pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(ACTIVE.getDescription(), caseId));
         final JsonObject caseObject = stringToJsonObjectConverter.convert(payload);
+
         verifyInMessagingQueueForCasesReferredToCourts();
         verifyCaagHearingEventLog(caseId);
-
         verifyHearingEventsLogsDocumentRequested(courtDocumentId, caseId, defendantId, materialId, applicationId, caseObject.getJsonObject("prosecutionCase").getString("caseStatus"));
         verifyInMessagingQueueForHearingEventLogsDocumentSuccess();
     }
@@ -666,48 +670,34 @@ public class HearingEventLogIT extends AbstractIT {
 
     private void verifyHearingEventsLogsDocumentRequested(final String courtDocumentId, final String caseId, final String defendantId, final String materialId, final Optional<String> applicationId, final String caseStatus) throws Exception {
         final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerHearingLogDocumentCreated);
-        Awaitility.await().atMost(Duration.ONE_MINUTE).until(() -> assertThat(message.isPresent(), is(true)));
+        Awaitility.await().atMost(Duration.TEN_SECONDS).until(() -> assertThat(message.isPresent(), is(true)));
 
         if (applicationId.isPresent() && !applicationId.get().isEmpty()) {
             assertThat(message.get().getString("caseId"), is(notNullValue()));
             assertThat(message.get().getString("applicationId"), is(notNullValue()));
-            verifyHearingEventsLogsDocumentGenerated(applicationId.get(), TEMPLATE_NAME);
+            verifyHearingEventsLogsDocumentGenerated(TEMPLATE_NAME);
             verifyAddApplicationCourtDocument(courtDocumentId, caseId, defendantId, materialId, applicationId.get());
             final String actualDocument = getCourtDocumentsByApplication(UUID.randomUUID().toString(), applicationId.get());
             verifyApplicationDocIndices(applicationId.get(), actualDocument);
         } else {
             assertThat(message.get().getString("caseId"), is(notNullValue()));
-            verifyHearingEventsLogsDocumentGenerated(caseId, TEMPLATE_NAME);
+            verifyHearingEventsLogsDocumentGenerated(TEMPLATE_NAME);
             verifyAddCourtDocument(courtDocumentId, caseId, defendantId, materialId);
-            final String actualDocument = getCourtDocumentsPerCase(UUID.randomUUID().toString(), caseId);
-            verifyCaseDocIndices(caseId, actualDocument);
+            getCourtDocumentsPerCase(UUID.randomUUID().toString(), caseId, verifyCaseDocIndices(caseId));
         }
 
         verifyMaterialCreated();
 
     }
 
+    private Matcher[]  verifyCaseDocIndices(final String caseId ) {
 
-    private void verifyCaagHearingEventsLogsDocumentRequested(final String courtDocumentId, final String caseId, final String defendantId, final String materialId) throws Exception {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerHearingLogDocumentCreated);
-        assertTrue(message.isPresent());
-        assertThat(message.get().getString("caseId"), is(notNullValue()));
-
-        verifyHearingEventsLogsDocumentGenerated(caseId, TEMPLATE_NAME);
-        verifyAddCourtDocument(courtDocumentId, caseId, defendantId, materialId);
-        final String actualDocument = getCourtDocumentsPerCase(UUID.randomUUID().toString(), caseId);
-        verifyCaseDocIndices(caseId, actualDocument);
-
-        verifyMaterialCreated();
-
-    }
-
-    private void verifyCaseDocIndices(final String caseId, final String actualDocument) {
-        JsonObject json = stringToJsonObjectConverter.convert(actualDocument);
-        assertThat(json.getJsonArray("documentIndices"), is(notNullValue()));
-        assertThat(json.getJsonArray("documentIndices").size(), is(notNullValue()));
-        assertTrue(json.getJsonArray("documentIndices").stream().anyMatch(e -> ((JsonObject) e).getJsonArray("caseIds").getString(0).equals(caseId)));
-        assertTrue(json.getJsonArray("documentIndices").stream().anyMatch(e -> ((JsonObject)e).getJsonObject("document").getString("name").contains("HearingEventLog")));
+        Matcher[] matcher = {
+                withJsonPath("$.documentIndices[*].caseIds[*]", hasItem(caseId)),
+                withJsonPath("$.documentIndices[*].document.name", hasItem(containsString("HearingEventLog"))),
+                withJsonPath("$.documentIndices[*].document.materials[*].userGroups[*]", hasItem(notNullValue()))
+        };
+        return matcher;
     }
 
     private void verifyApplicationDocIndices(final String applicationId, final String actualDocument) {
@@ -719,19 +709,22 @@ public class HearingEventLogIT extends AbstractIT {
         assertThat(json.getJsonArray("documentIndices").getJsonObject(0).getJsonObject("document").getJsonArray("materials").getJsonObject(0).getJsonArray("userGroups"), is(notNullValue()));
     }
 
-    private void verifyHearingEventsLogsDocumentGenerated(final String caseId, final String TEMPLATE_NAME) throws Exception {
-        final Optional<JsonObject> documentGenerationRequest = getHearingEventTemplate(TEMPLATE_NAME);
+    private void verifyHearingEventsLogsDocumentGenerated( final String TEMPLATE_NAME)  {
+        await().with().timeout(30, SECONDS)
+                .until(() -> {
+                    final Optional<JsonObject> documentGenerationRequest = getHearingEventTemplate(TEMPLATE_NAME);
 
-        assertThat(documentGenerationRequest.isPresent(), is(true));
-        assertThat(documentGenerationRequest, notNullValue());
-        // only high level validation done in integration test (rest covered in unit tests)
+                    assertThat(documentGenerationRequest.isPresent(), is(true));
+                    assertThat(documentGenerationRequest, notNullValue());
+                    // only high level validation done in integration test (rest covered in unit tests)
 
-        assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("courtCentre"), is(notNullValue()));
-        assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("courtRoom"), is(notNullValue()));
-        assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("hearingType"), is(notNullValue()));
-        assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("startDate"), is(notNullValue()));
-        assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("endDate"), is(notNullValue()));
-        assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getJsonArray("judiciary").size(), is(2));
+                    assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("courtCentre"), is(notNullValue()));
+                    assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("courtRoom"), is(notNullValue()));
+                    assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("hearingType"), is(notNullValue()));
+                    assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("startDate"), is(notNullValue()));
+                    assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("endDate"), is(notNullValue()));
+                    assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getJsonArray("judiciary").size(), is(2));
+                });
     }
 
     private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged) {
@@ -797,8 +790,8 @@ public class HearingEventLogIT extends AbstractIT {
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
         final String actualDocument = getCourtDocumentFor(courtDocumentId, allOf(
-                withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId)),
-                withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(false))
+                        withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId)),
+                        withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(false))
                 )
         );
     }
@@ -812,8 +805,8 @@ public class HearingEventLogIT extends AbstractIT {
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
         final String actualDocument = getCourtDocumentFor(courtDocumentId, allOf(
-                withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId)),
-                withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId))
+                        withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId)),
+                        withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId))
                 )
         );
     }

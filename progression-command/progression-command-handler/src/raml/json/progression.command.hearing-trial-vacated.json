@@ -1,4 +1,35 @@
 {
   "hearingId": "f93d22ee-e06b-48e1-8e50-133ff475d025",
-  "vacatedTrialReasonId": "e93d22ee-e06b-48e1-8e50-133ff475d026"
+  "vacatedTrialReasonId": "e93d22ee-e06b-48e1-8e50-133ff475d026",
+  "hasInterpreter": false,
+  "hearingDateTime": "2022-08-24T01:46:36.068Z",
+  "caseDetails": [
+    {
+      "caseId": "22ff0722-c287-11e9-9cb5-2a2ae2dbcce4",
+      "caseUrn": "TFL122222",
+      "defendantDetails": [
+        {
+          "defendantId":"32ff0722-c287-11e9-9cb5-2a2ae2dbcce4",
+          "defendantFirstName": "Abbie",
+          "defendantLastName": "ARMSTRONG",
+          "defendantRemandStatus": "status",
+          "interpreterLanguageNeeds": "Turkish"
+        }
+      ]
+    }
+  ],
+  "applicationDetails": [
+    {
+      "applicationId": "32ff0722-c287-11e9-9cb5-2a2ae2dbcce4",
+      "applicationReference": "TFL34652354",
+      "subject": {
+        "defendantId":"42ff0722-c287-11e9-9cb5-2a2ae2dbcce4",
+        "defendantFirstName": "John",
+        "defendantLastName": "DOE",
+        "defendantRemandStatus": "status",
+        "interpreterLanguageNeeds": "Turkish"
+      }
+    }
+  ],
+  "jurisdictionType": "MAGISTRATES"
 }

@@ -76,6 +76,7 @@ public class FormEventProcessor {
     public static final String ID = "id";
     public static final String CASE_ID = "caseId";
     public static final String CASE_URN = "caseURN";
+    public static final String HEARING_DATE_TIME = "hearingDateTime";
     public static final String DOCUMENT_META_DATA = "documentMetaData";
     public static final String MATERIAL_ID = "materialId";
     public static final String USER_ID = "userId";
@@ -521,6 +522,7 @@ public class FormEventProcessor {
         final UUID courtFormId = fromString(formFinalised.getString(COURT_FORM_ID));
         final UUID caseId = fromString(formFinalised.getString(CASE_ID));
         final String caseURN = formFinalised.getString(CASE_URN, null);
+        final String hearingDateTime = formFinalised.getString(HEARING_DATE_TIME, null);
         final FormType formType = FormType.valueOf(formFinalised.getString(FORM_TYPE));
         final String submissionId = formFinalised.getString(SUBMISSION_ID, null);
         final UUID materialId = fromString(formFinalised.getString(MATERIAL_ID));
@@ -543,7 +545,8 @@ public class FormEventProcessor {
                 .add(CASE_ID, caseId.toString())
                 .add(UPDATED_BY, getUpdatedBy(event, formFinalised.getString(USER_ID, null), formFinalised.getString(USER_NAME, null)))
                 .add(CASE_URN, nonNull(caseURN) ? caseURN : "")
-                .add(DOCUMENT_META_DATA, documentMetadataArrayBuilder.build());
+                .add(DOCUMENT_META_DATA, documentMetadataArrayBuilder.build())
+                .add(HEARING_DATE_TIME, hearingDateTime);
         if (isNotEmpty(submissionId)) {
             payload.add(SUBMISSION_ID, submissionId);
         }

@@ -3,6 +3,7 @@
   "courtFormId": "%courtFormId%",
   "formType": "%formType%",
   "userId": "%userId%",
+  "hearingDateTime": "2024-12-22T10:45:00Z",
   "finalisedFormData": [
     {
       "id": "Jane JOHNSON, 22 May 1976 + 1",

@@ -277,7 +277,7 @@ public class FormEventProcessorTest {
         final String caseId = randomUUID().toString();
         final String userId = randomUUID().toString();
         final String fileName = "Jane JOHNSON, 22 May 1976, created on 22 December 10:45 2022.pdf";
-
+        final ZonedDateTime hearingDateTime = ZonedDateTime.parse("2024-05-28T22:23:12.414Z");
         final String inputEvent = Resources.toString(getResource("finalised-form-data.json"), defaultCharset())
                 .replaceAll("%caseId%", caseId)
                 .replaceAll("%courtFormId%", courtFormId)
@@ -292,7 +292,8 @@ public class FormEventProcessorTest {
                 .add("courtFormId", courtFormId)
                 .add("formType", FormType.BCM.name())
                 .add("userId", userId)
-                .add(MATERIAL_ID, UUID.randomUUID().toString());
+                .add(MATERIAL_ID, UUID.randomUUID().toString())
+                .add("hearingDateTime", hearingDateTime.toString());
 
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PROGRESSION_EVENT_FORM_FINALISED)
@@ -326,7 +327,7 @@ public class FormEventProcessorTest {
         final String caseId = randomUUID().toString();
         final String userId = randomUUID().toString();
         final String fileName = "Jane JOHNSON, 22 May 1976, created on 22 December 10:45 2022.pdf";
-
+        final ZonedDateTime hearingDateTime = ZonedDateTime.parse("2024-05-28T22:23:12.414Z");
         final String inputEvent = Resources.toString(getResource("ptph-finalised-form-data.json"), defaultCharset())
                 .replaceAll("%caseId%", caseId)
                 .replaceAll("%courtFormId%", courtFormId)
@@ -341,8 +342,8 @@ public class FormEventProcessorTest {
                 .add("courtFormId", courtFormId)
                 .add("formType", FormType.PTPH.name())
                 .add("userId", userId)
-                .add(MATERIAL_ID, UUID.randomUUID().toString());
-
+                .add(MATERIAL_ID, UUID.randomUUID().toString())
+                .add("hearingDateTime", hearingDateTime.toString());
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PROGRESSION_EVENT_FORM_FINALISED)
                         .withUserId(FormEventProcessorTest.userId)
@@ -369,7 +370,7 @@ public class FormEventProcessorTest {
         final String caseId = randomUUID().toString();
         final String userId = randomUUID().toString();
         final String fileName = "Jane JOHNSON, 22 May 1976, created on 22 December 10:45 2022.pdf";
-
+        final ZonedDateTime hearingDateTime = ZonedDateTime.parse("2024-05-28T22:23:12.414Z");
         final String inputEvent = Resources.toString(getResource("finalised-form-data-with-welsh-data.json"), defaultCharset())
                 .replaceAll("%caseId%", caseId)
                 .replaceAll("%courtFormId%", courtFormId)
@@ -385,7 +386,8 @@ public class FormEventProcessorTest {
                 .add("formType", FormType.BCM.name())
                 .add("userId", userId)
                 .add(MATERIAL_ID, UUID.randomUUID().toString())
-        ;
+                .add("hearingDateTime", hearingDateTime.toString());
+
 
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PROGRESSION_EVENT_FORM_FINALISED)

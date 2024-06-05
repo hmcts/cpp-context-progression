@@ -53,6 +53,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.FormLockStatus;
 
 import java.time.ZonedDateTime;
@@ -96,6 +97,8 @@ public class FormCommandHandlerTest {
 
     @Mock
     private CaseAggregate caseAggregate;
+    @Mock
+    private HearingAggregate hearingAggregate;
 
     @InjectMocks
     @Spy
@@ -240,11 +243,14 @@ public class FormCommandHandlerTest {
 
     @Test
     public void shouldHandleFinaliseForm() throws EventStreamException {
+        final ZonedDateTime hearingDateTime = ZonedDateTime.parse("2024-05-28T22:23:12.414Z");
+        final String latestHearingId = randomUUID().toString();
 
         final FinaliseForm finaliseForm = finaliseForm()
                 .withCourtFormId(randomUUID())
                 .withCaseId(randomUUID())
                 .withFinalisedFormData(asList("{}", "{}", "{}"))
+                .withHearingDateTime(hearingDateTime)
                 .build();
 
         final UUID userId = randomUUID();
@@ -256,13 +262,20 @@ public class FormCommandHandlerTest {
                 .build();
 
         final Envelope<FinaliseForm> envelope = envelopeFrom(metadata, finaliseForm);
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(caseAggregate.getLatestHearingId()).thenReturn(UUID.fromString(latestHearingId));
+        when(hearingAggregate.getHearingDate()).thenReturn(hearingDateTime);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+        when(hearingAggregate.getHearingDate()).thenReturn(hearingDateTime);
 
-        when(caseAggregate.finaliseForm(any(), any(), any(), anyList()))
+        when(caseAggregate.finaliseForm(any(), any(), any(), anyList(), any()))
                 .thenReturn(Stream.of(formFinalised()
                         .withCaseId(finaliseForm.getCaseId())
                         .withCourtFormId(finaliseForm.getCourtFormId())
                         .withFinalisedFormData(asList("{}", "{}", "{}"))
                         .withUserId(userId)
+                        .withHearingDateTime(hearingDateTime)
                         .build()));
 
         formCommandHandler.handleFinaliseForm(envelope);
@@ -276,7 +289,9 @@ public class FormCommandHandlerTest {
                                 withJsonPath("$.caseId", is(finaliseForm.getCaseId().toString())),
                                 withJsonPath("$.courtFormId", is(finaliseForm.getCourtFormId().toString())),
                                 withJsonPath("$.finalisedFormData", is(asList("{}", "{}", "{}"))),
-                                withJsonPath("$.userId", is(userId.toString())))
+                                withJsonPath("$.userId", is(userId.toString())),
+                                withJsonPath("$.hearingDateTime", is(hearingDateTime.toString()))
+                                )
                         ))
         ));
     }

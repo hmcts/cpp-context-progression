@@ -20,6 +20,9 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import uk.gov.justice.core.courts.AddCourtDocumentV2;
 import uk.gov.justice.core.courts.AddMaterialV2;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -41,6 +44,8 @@ import uk.gov.justice.core.courts.SharedCourtDocument;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.event.SendToCpsFlagUpdated;
 
+import javax.json.JsonObject;
+
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,11 +56,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.json.JsonObject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class CourtDocumentAggregate implements Aggregate {
 
