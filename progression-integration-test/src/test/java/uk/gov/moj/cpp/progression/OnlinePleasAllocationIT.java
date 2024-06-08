@@ -47,9 +47,10 @@ import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.jms.JMSException;
@@ -540,6 +541,7 @@ public class OnlinePleasAllocationIT extends AbstractIT {
     private JsonObject getHearingWithSingleCaseJsonObject(final String path, final String caseId, final String hearingId,
                                                           final String defendantId, final String courtCentreId, final String bailStatusCode,
                                                           final String bailStatusDescription, final String bailStatusId) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         return stringToJsonObjectConverter.convert(
                 getPayload(path)
                         .replaceAll("CASE_ID", caseId)
@@ -549,6 +551,8 @@ public class OnlinePleasAllocationIT extends AbstractIT {
                         .replaceAll("BAIL_STATUS_ID", bailStatusId)
                         .replaceAll("BAIL_STATUS_CODE", bailStatusCode)
                         .replaceAll("BAIL_STATUS_DESCRIPTION", bailStatusDescription)
+                        .replaceAll("SITTING_DAY", formatter.format(LocalDateTime.now().plusMonths(1)))
+                        .replaceAll("SHARED_TIME", formatter.format(LocalDateTime.now().minusDays(1)))
         );
     }
 
