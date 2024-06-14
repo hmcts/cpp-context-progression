@@ -17,6 +17,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
@@ -25,6 +26,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MatchDefendantCaseHeari
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
+import uk.gov.moj.cpp.util.FileUtil;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -39,6 +41,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 
@@ -81,6 +84,8 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
 
     @Mock
     private MatchDefendantCaseHearingRepository matchDefendantCaseHearingRepository;
+    @Spy
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Before
     public void setUp() {
@@ -232,5 +237,30 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
         matchDefendantCaseHearingEntity.setId(randomUUID());
         matchDefendantCaseHearingEntity.setDefendantId(defendantId);
         return matchDefendantCaseHearingEntity;
+    }
+
+    @Test
+    public void processV2ShouldHandleProsecutionCaseDefendantHearingResultEvent1() throws Exception {
+
+        final String eventPayload = FileUtil.getPayload("json/progression.event.prosecutionCase-defendant-listing-status-changed-v2.json");
+        final JsonObject eventPayloadJsonObject = stringToJsonObjectConverter.convert(eventPayload);
+
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+
+        final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = getMatchDefendantCaseHearingEntity();
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(caseId, defendantId)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
+        when(envelope.payloadAsJsonObject()).thenReturn(eventPayloadJsonObject);
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder().build());
+        when(jsonObjectToObjectConverter.convert(eventPayloadJsonObject, ProsecutionCaseDefendantListingStatusChangedV2.class)).thenReturn(getEnvelopeForV2(HearingListingStatus.HEARING_INITIALISED));
+
+        when(envelope.metadata()).thenReturn(metadata);
+
+        eventListener.processV2(envelope);
+        verify(caseDefendantHearingRepository).save(argumentCaptorCaseDefendantHearingEntity.capture());
     }
 }

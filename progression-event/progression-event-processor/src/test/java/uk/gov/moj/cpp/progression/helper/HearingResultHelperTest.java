@@ -2,8 +2,6 @@ package uk.gov.moj.cpp.progression.helper;
 
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplicationWithJudicialResults;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplicationWithJudicialResultsUnderCourtApplicationCases;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplicationWithJudicialResultsUnderCourtOrders;
@@ -15,11 +13,13 @@ import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearing;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildOffence;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
 
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -81,6 +81,15 @@ public class HearingResultHelperTest {
                         asList(buildJudicialResult(buildNextHearing(randomUUID()))))));
         final boolean doesNextHearingExist = new HearingResultHelper().doHearingContainNextHearingResults(hearing);
         MatcherAssert.assertThat(doesNextHearingExist, CoreMatchers.is(true));
+    }
+    @Test
+    public void shouldReturnAllJudicialResults(){
+        final UUID hearingId = randomUUID();
+        final List<JudicialResult> judicialResults = new ArrayList<>();
+        judicialResults.add(buildJudicialResult(buildNextHearing(hearingId)));
+        final CourtApplication courtApplication = buildCourtApplicationWithJudicialResults(randomUUID(), judicialResults);
+        final List<JudicialResult> judicialResultList = new HearingResultHelper().getAllJudicialResultsFromApplication(courtApplication);
+        MatcherAssert.assertThat(judicialResultList.size(), CoreMatchers.is(2));
     }
 
     @Test

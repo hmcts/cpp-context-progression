@@ -1,10 +1,13 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -55,10 +58,45 @@ public class HearingApplicationLinkCreatedListener {
     public void process(final JsonEnvelope event) {
         final HearingApplicationLinkCreated hearingApplicationLinkCreated
                 = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingApplicationLinkCreated.class);
-        repository.save(transformHearingApplicationEntity
-                (hearingApplicationLinkCreated.getHearing(), hearingApplicationLinkCreated.getApplicationId(),
-                        hearingApplicationLinkCreated.getHearingListingStatus()));
 
+        final Hearing hearing = hearingApplicationLinkCreated.getHearing();
+
+        final Hearing dedupedHearing = Hearing.hearing().
+                withValuesFrom(hearing).
+                withProsecutionCases(hearing.getProsecutionCases()).
+                withCourtApplications(dedupAllCourtApplications(hearing.getCourtApplications())).
+                build();
+
+        final HearingApplicationLinkCreated updatedHearingApplicationLinkCreated = HearingApplicationLinkCreated.hearingApplicationLinkCreated()
+                .withValuesFrom(hearingApplicationLinkCreated)
+                .withHearing(dedupedHearing)
+                .build();
+
+        repository.save(transformHearingApplicationEntity
+                (updatedHearingApplicationLinkCreated.getHearing(), updatedHearingApplicationLinkCreated.getApplicationId(),
+                        updatedHearingApplicationLinkCreated.getHearingListingStatus()));
+
+    }
+
+    public static List<CourtApplication> dedupAllCourtApplications(final List<CourtApplication> courtApplications) {
+        if (isNull(courtApplications)) {
+            return courtApplications;
+        }
+
+        final Set<CourtApplication> uniqueCourtApplications = courtApplications.stream().collect(Collectors.toSet());
+        final List<CourtApplication> updatedCourtApplications = uniqueCourtApplications.stream().collect(toList());
+
+        updatedCourtApplications.stream().forEach(courtApplication -> {
+            final List<JudicialResult> judicialResults = courtApplication.getJudicialResults();
+            if (nonNull(judicialResults)) {
+                final Set<JudicialResult> uniqueJudicialResults = judicialResults.stream().collect(Collectors.toSet());
+
+                judicialResults.clear();
+                judicialResults.addAll(uniqueJudicialResults.stream().collect(toList()));
+            }
+        });
+
+        return updatedCourtApplications;
     }
 
     @Handles("progression.event.hearing-deleted-for-court-application")

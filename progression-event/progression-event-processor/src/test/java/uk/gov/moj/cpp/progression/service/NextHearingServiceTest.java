@@ -22,9 +22,11 @@ import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -35,6 +37,7 @@ import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -449,4 +452,65 @@ public class NextHearingServiceTest {
         assertThat(reportingRestriction.getId(), is(reportingRestrictionId));
     }
 
+    @Test
+    public void shouldNotReturnDuplicateApplicationWhenBothProsectionCaseAndApplicationPresent() {
+        final List<JudicialResult> judicialResults = new ArrayList<>();
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+
+        final Hearing hearing = buildHearingWithCourtApplications(
+                asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
+                        of(buildDefendant(DEFENDANT_ID_1,
+                                of(buildOffence(OFFENCE_ID_1,
+                                        asList(buildJudicialResult(buildNextHearing(HEARING_ID_1))),
+                                        singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
+                                        .collect(Collectors.toList())
+                        )).collect(Collectors.toList()))),
+                asList(CourtApplication.courtApplication()
+                        .withId(PROSECUTION_CASE_ID_1)
+                        .withJudicialResults(judicialResults)
+                        .build()));
+
+        final CommittingCourt committingCourt = TestHelper.buildCommittingCourt();
+        final Optional<CommittingCourt> committingCourtOptional = Optional.of(committingCourt);
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(committingCourtOptional);
+
+        final NextHearingDetails nextHearingDetails = service.getNextHearingDetails(hearing, true, null);
+        assertThat(nextHearingDetails.getHearingListingNeedsList().size(), is(1));
+    }
+
+    @Test
+    public void shouldNotReturnDuplicateApplicationWhenOnlyApplicationPresent() {
+        final List<JudicialResult> judicialResults = new ArrayList<>();
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+
+        final Hearing hearing = buildHearingWithCourtApplications(null,
+                asList(CourtApplication.courtApplication()
+                        .withId(PROSECUTION_CASE_ID_1)
+                        .withJudicialResults(judicialResults)
+                        .build()));
+
+        final CommittingCourt committingCourt = TestHelper.buildCommittingCourt();
+        final Optional<CommittingCourt> committingCourtOptional = Optional.of(committingCourt);
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(committingCourtOptional);
+
+        final NextHearingDetails nextHearingDetails = service.getNextHearingDetails(hearing, true, null);
+        assertThat(nextHearingDetails.getHearingListingNeedsList().size(), is(1));
+    }
+
+    private Hearing buildHearingWithCourtApplications(final List<ProsecutionCase> prosecutionCases,
+                                                      final List<CourtApplication> courtApplications) {
+        return Hearing.hearing()
+                .withId(UUID.randomUUID())
+                .withProsecutionCases(prosecutionCases)
+                .withCourtApplications(courtApplications)
+                .build();
+    }
 }

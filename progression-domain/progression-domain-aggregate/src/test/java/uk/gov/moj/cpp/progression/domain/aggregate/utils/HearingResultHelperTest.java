@@ -11,6 +11,8 @@ import static org.hamcrest.Matchers.is;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -19,8 +21,11 @@ import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.justice.core.courts.Verdict;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -825,6 +830,98 @@ public class HearingResultHelperTest {
                 .withIsUnscheduled(true)
                 .withNextHearing(nextHearing)
                 .withIsNewAmendment(isNewAmendment)
+                .build();
+    }
+
+    @Test
+    public void shouldReturnOneHearingWhenOneNextHearingAvailableForOneOffenceForOneDefendantInOneProsecutionCaseWithCourtApplication() {
+        final List<JudicialResult> judicialResults = new ArrayList<>();
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+
+        final Hearing hearing = buildHearingWithCourtApplications(
+                asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
+                        of(buildDefendant(DEFENDANT_ID_1,
+                                of(buildOffence(OFFENCE_ID_1,
+                                        asList(buildUnscheduledJudicialResult(buildNextHearing(HEARING_ID_1))),
+                                        singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
+                                        .collect(Collectors.toList())
+                        )).collect(Collectors.toList()))),
+                asList(CourtApplication.courtApplication()
+                        .withId(PROSECUTION_CASE_ID_1)
+                        .withJudicialResults(judicialResults)
+                        .build()));
+
+        final NextHearingDetails nextHearingDetails = HearingResultHelper.createRelatedHearings(hearing, false, null, null);
+        assertThat(nextHearingDetails.getHearingListingNeedsList().size(), is(1));
+
+        final HearingListingNeeds hearingListingNeeds = nextHearingDetails.getHearingListingNeedsList().get(0);
+        assertHearing(hearingListingNeeds, HEARING_ID_1, 1);
+
+        final ProsecutionCase prosecutionCase = hearingListingNeeds.getProsecutionCases().get(0);
+        assertProsecutionCase(prosecutionCase, PROSECUTION_CASE_ID_1, 1);
+
+        final Defendant defendant = prosecutionCase.getDefendants().get(0);
+        assertDefendant(defendant, DEFENDANT_ID_1, 1);
+
+        final Offence offence = defendant.getOffences().get(0);
+        assertOffence(offence, OFFENCE_ID_1);
+
+        final ReportingRestriction reportingRestriction = offence.getReportingRestrictions().get(0);
+        assertReportingRestriction(reportingRestriction, REPORTING_RESTRICTION_ID_1);
+    }
+
+    @Test
+    public void shouldReturnOneHearingWhenOneNextHearingAvailableForOneOffenceForOneDefendantNoProsecutionCaseWithCourtApplication() {
+        final List<JudicialResult> judicialResults = new ArrayList<>();
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+        judicialResults.add(buildJudicialResult(buildNextHearing(HEARING_ID_1)));
+
+        final Hearing hearing = buildHearingWithCourtApplications(null,
+                asList(CourtApplication.courtApplication()
+                        .withId(PROSECUTION_CASE_ID_1)
+                        .withJudicialResults(judicialResults)
+                        .build()));
+
+        final NextHearingDetails nextHearingDetails = HearingResultHelper.createRelatedHearings(hearing, false, null, null);
+        assertThat(nextHearingDetails.getHearingListingNeedsList().size(), is(1));
+    }
+
+    @Test
+    public void shouldReturnFalseForApplicationContainsNewNextHearingWhenNextHearingResultsNotAmended_NoDuplicateJudicialResults() {
+        final Hearing hearing = buildHearingWithCourtApplications(
+                emptyList(),
+                asList(buildCourtApplicationsWithCourtOrderRelatedNextHearingJudicialResults(PROSECUTION_CASE_ID_1, false)));
+
+        assertThat(HearingResultHelper.doHearingContainNewOrAmendedNextHearingResults(hearing), is(false));
+    }
+
+    private CourtApplication buildCourtApplicationsWithCourtOrderRelatedNextHearingJudicialResults(final UUID caseId, final boolean isNewAmendment) {
+        return CourtApplication.courtApplication()
+                .withId(caseId)
+                .withCourtOrder(CourtOrder.courtOrder()
+                        .withCourtOrderOffences(Arrays.asList(CourtOrderOffence.courtOrderOffence()
+                                        .withOffence(Offence.offence()
+                                                .withId(randomUUID())
+                                                .withJudicialResults(new ArrayList(Arrays.asList(buildRelatedNextHearingJudicialResultWithAmendmentAs(buildNextHearing(HEARING_ID_1), isNewAmendment))))
+                                                .withVerdict(Verdict.verdict().withOffenceId(randomUUID()).build())
+                                                .build())
+                                        .build(),
+                                CourtOrderOffence.courtOrderOffence()
+                                        .withOffence(Offence.offence()
+                                                .withId(randomUUID())
+                                                .withJudicialResults(new ArrayList(Arrays.asList(buildRelatedNextHearingJudicialResultWithAmendmentAs(buildNextHearing(HEARING_ID_1), isNewAmendment))))
+                                                .withListingNumber(11)
+                                                .build())
+                                        .build()))
+                        .build())
+                .withJudicialResults(new ArrayList(Arrays.asList(buildRelatedNextHearingJudicialResultWithAmendmentAs(buildNextHearing(HEARING_ID_1), isNewAmendment))))
                 .build();
     }
 }

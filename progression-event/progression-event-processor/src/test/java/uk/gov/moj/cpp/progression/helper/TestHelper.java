@@ -38,9 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 
 import com.google.common.io.Resources;
 
@@ -124,6 +122,11 @@ public class TestHelper {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
                 .withJudicialResults(judicialResults)
+                .withCourtApplicationCases(Arrays.asList(CourtApplicationCase.courtApplicationCase()
+                        .withOffences(Arrays.asList(Offence.offence()
+                                .withJudicialResults(judicialResults)
+                                .build()))
+                        .build()))
                 .build();
     }
 

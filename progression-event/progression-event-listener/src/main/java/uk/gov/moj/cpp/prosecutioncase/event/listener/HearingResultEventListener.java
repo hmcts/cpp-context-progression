@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.lang.Boolean.FALSE;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
@@ -89,13 +90,27 @@ public class HearingResultEventListener {
 
         //To save hearing result in current hearing and removing the defendant and case proceeding flag in it.
         final HearingResulted hearingResulted = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingResulted.class);
-        if(hearingResulted.getHearing().getProsecutionCases() != null) {
-            hearingResulted.getHearing().getProsecutionCases().stream().forEach(c -> deDupAllOffencesForProsecutionCase(c));
+
+        final Hearing hearing = hearingResulted.getHearing();
+
+        final Hearing dedupedHearing = Hearing.hearing().
+                withValuesFrom(hearing).
+                withProsecutionCases(hearing.getProsecutionCases()).
+                withCourtApplications(dedupAllCourtApplications(hearing.getCourtApplications())).
+                build();
+
+        final HearingResulted updatedHearingResulted = HearingResulted.hearingResulted()
+                .withValuesFrom(hearingResulted)
+                .withHearing(dedupedHearing)
+                .build();
+
+        if(updatedHearingResulted.getHearing().getProsecutionCases() != null) {
+            updatedHearingResulted.getHearing().getProsecutionCases().stream().forEach(c -> deDupAllOffencesForProsecutionCase(c));
         }
-        final HearingEntity currentHearingEntity = hearingRepository.findBy(hearingResulted.getHearing().getId());
+        final HearingEntity currentHearingEntity = hearingRepository.findBy(updatedHearingResulted.getHearing().getId());
         final JsonObject currentHearingJson = jsonFromString(currentHearingEntity.getPayload());
         final Hearing originalCurrentHearing = jsonObjectConverter.convert(currentHearingJson, Hearing.class);
-        final Hearing updatedHearing = dedupAllReportingRestrictions(getUpdatedHearingForResulted(hearingResulted.getHearing(), originalCurrentHearing, hearingResulted.getHearingDay()));
+        final Hearing updatedHearing = dedupAllReportingRestrictions(getUpdatedHearingForResulted(updatedHearingResulted.getHearing(), originalCurrentHearing, updatedHearingResulted.getHearingDay()));
         if(updatedHearing.getProsecutionCases() != null) {
             updatedHearing.getProsecutionCases().stream().forEach(c -> deDupAllOffencesForProsecutionCase(c));
         }
@@ -115,7 +130,7 @@ public class HearingResultEventListener {
                 final Hearing originalHearing = jsonObjectConverter.convert(hearingJson, Hearing.class);
                 final Boolean hasSharedResults = originalHearing.getHasSharedResults();
                 if (FALSE.equals(hasSharedResults)) {
-                    final Hearing updatedNonResultedHearing = getUpdatedHearingForNonResulted(originalHearing, hearingResulted.getHearing());
+                    final Hearing updatedNonResultedHearing = getUpdatedHearingForNonResulted(originalHearing, updatedHearingResulted.getHearing());
                     final String payload = objectToJsonObjectConverter.convert(updatedNonResultedHearing).toString();
                     originalHearingEntity.setPayload(payload);
                     hearingRepository.save(originalHearingEntity);
@@ -123,6 +138,27 @@ public class HearingResultEventListener {
                 }
             }
         }
+    }
+
+    public static List<CourtApplication> dedupAllCourtApplications(final List<CourtApplication> courtApplications) {
+        if (isNull(courtApplications)) {
+            return courtApplications;
+        }
+
+        final Set<CourtApplication> uniqueCourtApplications = courtApplications.stream().collect(Collectors.toSet());
+        final List<CourtApplication> updatedCourtApplications = uniqueCourtApplications.stream().collect(toList());
+
+        updatedCourtApplications.stream().forEach(courtApplication -> {
+            final List<JudicialResult> judicialResults = courtApplication.getJudicialResults();
+            if (nonNull(judicialResults)) {
+                final Set<JudicialResult> uniqueJudicialResults = judicialResults.stream().collect(Collectors.toSet());
+
+                judicialResults.clear();
+                judicialResults.addAll(uniqueJudicialResults.stream().collect(toList()));
+            }
+        });
+
+        return updatedCourtApplications;
     }
 
     private void deDupAllOffencesForProsecutionCase(final ProsecutionCase prosecutionCase) {

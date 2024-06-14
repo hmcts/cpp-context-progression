@@ -57,6 +57,7 @@ import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
 import uk.gov.justice.core.courts.HearingUpdatedProcessed;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LaaReference;
@@ -65,6 +66,7 @@ import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ListingNumberUpdated;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.OnlinePleasAllocation;
@@ -117,7 +119,6 @@ import uk.gov.justice.staginghmi.courts.UpdateHearingFromHmi;
 import uk.gov.moj.cpp.progression.test.CoreTestTemplates;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -149,6 +150,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class HearingAggregateTest {
 
     private static final String GUILTY = "GUILTY";
+    private final static String COMMITTING_COURT_CODE = "CCCODE";
+    private final static String COMMITTING_COURT_NAME = "Committing Court";
     @InjectMocks
     private HearingAggregate hearingAggregate;
 
@@ -3281,5 +3284,74 @@ public class HearingAggregateTest {
         final Stream<Object> eventStream = hearingAggregate.updateDefendant(randomUUID(),defendantUpdate,false);
         final List events = eventStream.collect(toList());
         assertThat(events.get(0), Matchers.instanceOf(HearingDefendantUpdated.class));
+    }
+
+    @Test
+    public void shouldProsecutionCaseDefendantListingStatusChangedV2EventEmittedWithHearingListingStatusWhenHearingResultedForApplication_NoDuplicateJudicialResults() {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withCourtOrder(CourtOrder.courtOrder()
+                                .withCourtOrderOffences(Arrays.asList(CourtOrderOffence.courtOrderOffence()
+                                                .withOffence(Offence.offence()
+                                                        .withId(randomUUID())
+                                                        .withJudicialResults(new ArrayList(Arrays.asList(buildRelatedNextHearingJudicialResultWithAmendmentAs(buildNextHearing(hearingId), false))))
+                                                        .withVerdict(Verdict.verdict().withOffenceId(randomUUID()).build())
+                                                        .build())
+                                                .build(),
+                                        CourtOrderOffence.courtOrderOffence()
+                                                .withOffence(Offence.offence()
+                                                        .withId(randomUUID())
+                                                        .withJudicialResults(new ArrayList(Arrays.asList(buildRelatedNextHearingJudicialResultWithAmendmentAs(buildNextHearing(hearingId), false))))
+                                                        .withListingNumber(11)
+                                                        .build())
+                                                .build()))
+                                .build())
+                        .withJudicialResults(new ArrayList(asList(buildRelatedNextHearingJudicialResultWithAmendmentAs(buildNextHearing(hearingId),false))))
+                        .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                                .withOffences(new ArrayList<>(asList(Offence.offence()
+                                                .withId(offenceId1)
+                                                .withVerdict(Verdict.verdict().withOffenceId(offenceId1).build())
+                                                .build(),
+                                        Offence.offence()
+                                                .withId(offenceId2)
+                                                .withListingNumber(11)
+                                                .build())))
+                                .build()))
+                        .build()))
+                .build();
+
+        hearingAggregate.apply(HearingForApplicationCreatedV2.hearingForApplicationCreatedV2().withHearing(hearing).withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING).build());
+
+        final List<Object> events = hearingAggregate.processHearingResults(hearing, ZonedDateTime.now(), null, LocalDate.now()).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = (ProsecutionCaseDefendantListingStatusChangedV2) events.stream().filter(e -> e instanceof ProsecutionCaseDefendantListingStatusChangedV2).findFirst().get();
+        assertThat(prosecutionCaseDefendantListingStatusChangedV2.getHearing().getCourtApplications().get(0).getJudicialResults().size(), is(1));
+    }
+
+    private JudicialResult buildRelatedNextHearingJudicialResultWithAmendmentAs(final NextHearing nextHearing, final boolean isNewAmendment) {
+        return JudicialResult.judicialResult()
+                .withIsUnscheduled(true)
+                .withNextHearing(nextHearing)
+                .withIsNewAmendment(isNewAmendment)
+                .withOrderedDate(LocalDate.now())
+                .build();
+    }
+
+    private static NextHearing buildNextHearing(final UUID existingHearingId) {
+        return NextHearing.nextHearing()
+                .withExistingHearingId(existingHearingId)
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withCode(COMMITTING_COURT_CODE)
+                        .withName(COMMITTING_COURT_NAME)
+                        .build())
+                .build();
     }
 }

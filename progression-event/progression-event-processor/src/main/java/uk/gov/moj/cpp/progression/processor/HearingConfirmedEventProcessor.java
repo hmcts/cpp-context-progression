@@ -501,9 +501,10 @@ public class HearingConfirmedEventProcessor {
                 sender.send(caseReferToCourt);
             });
             progressionService.updateHearingListingStatusToHearingInitiated(jsonEnvelope, hearingInitiate);
+        } else {
+            LOGGER.info("hearing-confirmed event populate hearing to probation caseworker for hearingId '{}' ", hearingInitiate.getHearing().getId());
+            progressionService.populateHearingToProbationCaseworker(jsonEnvelope, hearingInitiate.getHearing().getId());
         }
-        LOGGER.info("hearing-confirmed event populate hearing to probation caseworker for hearingId '{}' ", hearingInitiate.getHearing().getId());
-        progressionService.populateHearingToProbationCaseworker(jsonEnvelope, hearingInitiate.getHearing().getId());
     }
 
     private static ZonedDateTime getEarliestDate(final List<HearingDay> hearingDays) {
@@ -552,8 +553,6 @@ public class HearingConfirmedEventProcessor {
 
         sender.send(hearingExtendTransformedPayload);
 
-        LOGGER.info("hearing-confirmed event populate hearing to probation caseworker for hearingId '{}' ", confirmedHearing.getId());
-        progressionService.populateHearingToProbationCaseworker(jsonEnvelope, confirmedHearing.getId());
         final Boolean fullExtension = confirmedHearing.getFullExtension();
         if (nonNull(fullExtension) && fullExtension.booleanValue()) {
             progressionService.sendListingCommandToDeleteHearing(jsonEnvelope, confirmedHearing.getId());

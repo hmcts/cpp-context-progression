@@ -52,6 +52,7 @@ public class HearingApplicationLinkCreatedListenerTest {
     public static final String COURT_APPLICATIONS = "courtApplications";
     public static final String COURT_APPLICATION_CASES = "courtApplicationCases";
     public static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
+    public static final String JUDICIAL_RESULTS = "judicialResults";
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
@@ -184,9 +185,21 @@ public class HearingApplicationLinkCreatedListenerTest {
                         .build()))
                 .build();
 
+        final List<JudicialResult> judicialResults = new ArrayList<>();
+        final JudicialResult judicialResult = JudicialResult.judicialResult()
+                .withJudicialResultId(UUID.randomUUID())
+                .withPublishedForNows(false)
+                .withResultText("Sample")
+                .build();
+        judicialResults.add(judicialResult);
+        judicialResults.add(judicialResult);
+        judicialResults.add(judicialResult);
+        judicialResults.add(judicialResult);
+
         final Hearing hearing = Hearing.hearing().withId(HEARING_ID)
                 .withCourtApplications(singletonList(courtApplication()
                         .withId(APPLICATION_ID)
+                        .withJudicialResults(judicialResults)
                         .withCourtApplicationCases(singletonList(courtApplicationCase()
                                 .withProsecutionCaseId(CASE_ID2).build())).build()))
                 .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
@@ -217,6 +230,7 @@ public class HearingApplicationLinkCreatedListenerTest {
         assertThat(payloadJson.getJsonArray(PROSECUTION_CASES).getJsonObject(0).getString(ID), is(CASE_ID.toString()));
         assertThat(payloadJson.getJsonArray(PROSECUTION_CASES).getJsonObject(1).getString(ID), is(CASE_ID2.toString()));
         assertThat(payloadJson.getJsonArray(COURT_APPLICATIONS).getJsonObject(0).getString(ID), is(APPLICATION_ID.toString()));
+        assertThat(payloadJson.getJsonArray(COURT_APPLICATIONS).getJsonObject(0).getJsonArray(JUDICIAL_RESULTS).size(), is(1));
         assertThat(payloadJson.getJsonArray(COURT_APPLICATIONS).getJsonObject(0).getJsonArray(COURT_APPLICATION_CASES).getJsonObject(0).getString(PROSECUTION_CASE_ID), is(CASE_ID2.toString()));
     }
 

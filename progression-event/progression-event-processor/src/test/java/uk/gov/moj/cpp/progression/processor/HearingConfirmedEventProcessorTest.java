@@ -33,6 +33,7 @@ import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
@@ -43,6 +44,7 @@ import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.Offence;
@@ -85,7 +87,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 
@@ -629,7 +630,6 @@ public class HearingConfirmedEventProcessorTest {
         verify(objectToJsonObjectConverter, times(2)).convert(any());
         verify(progressionService).transformHearingToHearingListingNeeds(any(), any());
         verify(progressionService).transformToHearingFrom(any(), any());
-        verify(progressionService).populateHearingToProbationCaseworker(eq(envelope), eq(hearingId));
     }
 
     @Test(expected = CourtApplicationAndCaseNotFoundException.class)
@@ -745,7 +745,6 @@ public class HearingConfirmedEventProcessorTest {
         verify(objectToJsonObjectConverter, times(2)).convert(any());
         verify(progressionService).transformHearingToHearingListingNeeds(any(), any());
         verify(progressionService).transformToHearingFrom(any(), any());
-        verify(progressionService).populateHearingToProbationCaseworker(eq(envelope), eq(hearingId));
         verify(progressionService).sendListingCommandToDeleteHearing(eq(envelope), eq(hearingId));
     }
 
@@ -970,7 +969,6 @@ public class HearingConfirmedEventProcessorTest {
 
         //Then
         verify(sender, times(2)).send(finalEnvelope);
-        verify(progressionService).populateHearingToProbationCaseworker(any(JsonEnvelope.class), any(UUID.class));
     }
 
     @Test
@@ -1231,6 +1229,37 @@ public class HearingConfirmedEventProcessorTest {
                         .build()))
                 .withHearingId(seedingHearingId)
                 .build();
+    }
+
+    @Test
+    public void shouldCallInitiateHearingWhenProsecutionCasesNotPresent() throws Exception {
+        final Initiate arbitraryInitiateObj = initiate().withHearing(
+                Hearing.hearing()
+                        .withId(UUID.randomUUID())
+                        .withHearingDays(Arrays.asList(HearingDay.hearingDay().build()))
+                        .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
+                                        .withId(randomUUID())
+                                        .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                                        .withJudicialResultId(randomUUID())
+                                                .build()))
+                                .build()))
+                        .build()
+        ).build();
+        //Given
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        //When
+        when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), Initiate.class))
+                .thenReturn(arbitraryInitiateObj);
+
+
+        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
+
+        eventProcessor.processHearingInitiatedEnrichedEvent(envelope);
+
+        //Then
+        verify(sender, times(1)).send(finalEnvelope);
+        verify(progressionService).populateHearingToProbationCaseworker(any(JsonEnvelope.class), any(UUID.class));
     }
 
 }

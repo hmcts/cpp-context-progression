@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.moj.cpp.progression.event.util.DuplicateOffencesHelper.filterDuplicateOffencesByIdForHearing;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllApplications;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 
 import uk.gov.justice.core.courts.Defendant;
@@ -61,7 +62,9 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
 
     @Handles("progression.event.prosecutionCase-defendant-listing-status-changed-v2")
     public void processV2(final JsonEnvelope event) {
-        final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChanged = dedupAllReportingRestrictions(jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseDefendantListingStatusChangedV2.class));
+        final ProsecutionCaseDefendantListingStatusChangedV2 updatedProsecutionCaseDefendantListingStatusChanged = dedupAllApplications(jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseDefendantListingStatusChangedV2.class));
+
+        final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChanged = dedupAllReportingRestrictions(updatedProsecutionCaseDefendantListingStatusChanged);
         final HearingEntity hearingEntity = transformHearing(prosecutionCaseDefendantListingStatusChanged.getHearing(), prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus());
         final List<ProsecutionCase> prosecutionCases = prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases();
 
@@ -71,7 +74,9 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
 
     @Handles("progression.event.prosecutionCase-defendant-listing-status-changed-v3")
     public void processV3(final JsonEnvelope event) {
-        final ProsecutionCaseDefendantListingStatusChangedV3 prosecutionCaseDefendantListingStatusChanged = dedupAllReportingRestrictions(jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseDefendantListingStatusChangedV3.class));
+        final ProsecutionCaseDefendantListingStatusChangedV3 updatedProsecutionCaseDefendantListingStatusChanged = dedupAllApplications(jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseDefendantListingStatusChangedV3.class));
+
+        final ProsecutionCaseDefendantListingStatusChangedV3 prosecutionCaseDefendantListingStatusChanged = dedupAllReportingRestrictions(updatedProsecutionCaseDefendantListingStatusChanged);
         final HearingEntity hearingEntity = transformHearing(prosecutionCaseDefendantListingStatusChanged.getHearing(), prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus());
         final List<ProsecutionCase> prosecutionCases = prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases();
 

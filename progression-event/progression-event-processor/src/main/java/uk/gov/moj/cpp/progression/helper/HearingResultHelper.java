@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -39,7 +40,10 @@ public class HearingResultHelper {
     }
 
     public List<JudicialResult> getAllJudicialResultsFromApplication(final CourtApplication courtApplication){
-        final List<JudicialResult> judicialResults = ofNullable(courtApplication.getJudicialResults()).orElseGet(ArrayList::new);
+        final List<JudicialResult> judicialResults = courtApplication.getJudicialResults();
+        final List<JudicialResult> updatedJudicialResults = Optional.ofNullable(judicialResults)
+                .map(ArrayList::new)
+                .orElseGet(ArrayList::new);
 
         ofNullable(courtApplication.getCourtOrder())
                 .map(CourtOrder::getCourtOrderOffences)
@@ -47,14 +51,14 @@ public class HearingResultHelper {
                 .stream()
                 .map(CourtOrderOffence::getOffence)
                 .flatMap(o -> ofNullable(o.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty))
-                .forEach(judicialResults::add);
+                .forEach(updatedJudicialResults::add);
 
         ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .flatMap(cac -> ofNullable(cac.getOffences()).map(Collection::stream).orElseGet(Stream::empty))
                 .flatMap(o -> ofNullable(o.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty))
-                .forEach(judicialResults::add);
+                .forEach(updatedJudicialResults::add);
 
-        return judicialResults;
+        return updatedJudicialResults;
     }
 
     private boolean doProsecutionCasesContainNextHearingResults(final List<ProsecutionCase> prosecutionCases) {

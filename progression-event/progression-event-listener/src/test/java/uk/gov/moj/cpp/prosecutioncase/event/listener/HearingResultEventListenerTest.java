@@ -276,6 +276,17 @@ public class HearingResultEventListenerTest {
     @Test
     public void shouldUpdateHearingResultForCourtApplication() {
         final UUID hearingId = randomUUID();
+        final List<JudicialResult> judicialResults = new ArrayList<>();
+        final JudicialResult judicialResult = JudicialResult.judicialResult()
+                .withJudicialResultId(UUID.randomUUID())
+                .withPublishedForNows(false)
+                .withResultText("Sample")
+                .build();
+        judicialResults.add(judicialResult);
+        judicialResults.add(judicialResult);
+        judicialResults.add(judicialResult);
+        judicialResults.add(judicialResult);
+
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
                 .withId(randomUUID())
@@ -287,6 +298,7 @@ public class HearingResultEventListenerTest {
                         .withCourtOrderOffences(singletonList(courtOrderOffence().withOffence(offence().build()).build()))
                         .build())
                 .withRespondents(singletonList(CourtApplicationParty.courtApplicationParty().build()))
+                .withJudicialResults(judicialResults)
                 .build();
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
@@ -322,6 +334,7 @@ public class HearingResultEventListenerTest {
         assertThat(savedHearing1.getId(), is(hearingId));
         assertThat(savedHearing1.getCourtApplications(), notNullValue());
         assertThat(savedHearing1.getCourtApplications().get(0).getApplicationStatus(), is(ApplicationStatus.IN_PROGRESS));
+        assertThat(savedHearing1.getCourtApplications().get(0).getJudicialResults().size(), is(1));
     }
 
     @Test

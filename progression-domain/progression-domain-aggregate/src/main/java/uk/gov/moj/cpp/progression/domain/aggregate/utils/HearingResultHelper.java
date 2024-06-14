@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.domain.aggregate.utils;
 import static java.lang.Boolean.TRUE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
@@ -156,7 +157,7 @@ public class HearingResultHelper {
      */
     public static boolean hasNewNextHearingsAndNextHearingOutsideOfMultiDaysHearing(final Hearing hearing) {
 
-        boolean haveProsecutionCasesContainNewNextHearing = isNotEmpty(hearing.getProsecutionCases()) && hearing.getProsecutionCases().stream()
+        final boolean haveProsecutionCasesContainNewNextHearing = isNotEmpty(hearing.getProsecutionCases()) && hearing.getProsecutionCases().stream()
                 .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
                 .flatMap(defendant -> defendant.getOffences().stream())
                 .filter(offence -> isNotEmpty(offence.getJudicialResults()))
@@ -168,7 +169,7 @@ public class HearingResultHelper {
                                     || isNextHearingOutsideOfMultiDaysHearing(nextHearing, hearing));
                 });
 
-        boolean haveCourtApplicationContainNewNextHearing = isNotEmpty(hearing.getCourtApplications()) && hearing.getCourtApplications().stream()
+        final boolean haveCourtApplicationContainNewNextHearing = isNotEmpty(hearing.getCourtApplications()) && hearing.getCourtApplications().stream()
                 .flatMap(courtApplication -> getAllJudicialResultsFromApplication(courtApplication).stream())
                 .anyMatch(judicialResult -> {
                     final NextHearing nextHearing = judicialResult.getNextHearing();
@@ -193,7 +194,7 @@ public class HearingResultHelper {
                 .orElseGet(Stream::empty)
                 .collect(toList());
 
-        final Set<UUID> hearingIds = getAllocatedHearingIds(prosecutionCases);
+        final Set<UUID> hearingIds = getAllocatedHearingIds(prosecutionCases, courtApplications);
         final Map<UUID, ProsecutionCase> prosecutionCaseMap = getProsecutionCasesMap(prosecutionCases);
         final Map<UUID, Map<UUID, Map<UUID, Set<UUID>>>> hearingsMap = new HashMap<>();
         final Map<UUID, List<CourtApplication>> hearingsMap2 = new HashMap<>();
@@ -220,7 +221,9 @@ public class HearingResultHelper {
             });
             addProsecutionCasesAndCourtApplicationsToHearingListingNeeds(nextHearings, hearingListingNeedsList, hearingId, prosecutionCasesToBeAdded, hearingsMap2.get(hearingId));
         });
-        hearingsMap2.forEach((hearingId, applications) -> addCourtApplicationsToHearingListingNeeds(nextHearings, hearingListingNeedsList, hearingId, applications));
+        if (hearingsMap.isEmpty()) {
+            hearingsMap2.forEach((hearingId, applications) -> addCourtApplicationsToHearingListingNeeds(nextHearings, hearingListingNeedsList, hearingId, applications));
+        }
         return new NextHearingDetails(hearingsMap, hearingListingNeedsList, nextHearings);
     }
 
@@ -246,6 +249,7 @@ public class HearingResultHelper {
         return Optional.empty();
     }
 
+    @SuppressWarnings("squid:S1126")
     public static boolean unscheduledNextHearingsRequiredFor(final Hearing hearing) {
         if (!isNull(hearing.getCourtApplications()) && hearing.getCourtApplications().stream()
                 .anyMatch(HearingResultHelper::checksIfUnscheduledHearingNeedsToBeCreated)) {
@@ -319,7 +323,7 @@ public class HearingResultHelper {
                 .collect(Collectors.toMap(ProsecutionCase::getId, pc -> pc));
     }
 
-    private static Set<UUID> getAllocatedHearingIds(final List<ProsecutionCase> prosecutionCases) {
+    private static Set<UUID> getAllocatedHearingIds(final List<ProsecutionCase> prosecutionCases, final List<CourtApplication> courtApplications) {
         final Set<UUID> hearingIds = new HashSet<>();
         prosecutionCases.stream()
                 .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
@@ -332,7 +336,21 @@ public class HearingResultHelper {
                         hearingIds.add(nextHearing.getExistingHearingId());
                     }
                 });
+        final List<JudicialResult> judicialResults = ofNullable(courtApplications).map(Collection::stream).orElseGet(Stream::empty)
+                .flatMap(courtApplication -> getAllJudicialResultsFromApplication(courtApplication).stream())
+                .collect(Collectors.toList());
+
+        judicialResults.forEach(judicialResult -> getExistingHearingId(judicialResult).ifPresent(hearingIds::add));
+
         return hearingIds;
+    }
+
+    private static Optional<UUID> getExistingHearingId(JudicialResult judicialResult) {
+        final NextHearing nextHearing = judicialResult.getNextHearing();
+        if (doesExistingHearingIdPresent(nextHearing)) {
+            return ofNullable(nextHearing.getExistingHearingId());
+        }
+        return empty();
     }
 
     private static boolean doesExistingHearingIdPresent(final NextHearing nextHearing) {
@@ -447,7 +465,12 @@ public class HearingResultHelper {
                 final NextHearing nextHearing = judicialResult.getNextHearing();
                 if (doesExistingHearingIdPresent(nextHearing) && (nextHearing.getExistingHearingId().equals(hearingId))) {
                     final List<CourtApplication> courtApplicationList = hearingsMap2.getOrDefault(hearingId, new ArrayList<>());
-                    courtApplicationList.add(courtApplication);
+                    final boolean containsObject = courtApplicationList.stream()
+                                    .anyMatch(courtApplication1 -> courtApplication1.getId().equals(courtApplication.getId()));
+                    if (!containsObject) {
+                        courtApplicationList.add(courtApplication);
+                    }
+
                     hearingsMap2.put(hearingId, courtApplicationList);
                     nextHearings.put(hearingId, nextHearing);
                 }
@@ -492,7 +515,10 @@ public class HearingResultHelper {
     }
 
     private static List<JudicialResult> getAllJudicialResultsFromApplication(final CourtApplication courtApplication) {
-        final List<JudicialResult> judicialResults = ofNullable(courtApplication.getJudicialResults()).orElseGet(ArrayList::new);
+        final List<JudicialResult> judicialResults = courtApplication.getJudicialResults();
+        final List<JudicialResult> updatedJudicialResults = Optional.ofNullable(judicialResults)
+                        .map(ArrayList::new)
+                        .orElseGet(ArrayList::new);
 
         ofNullable(courtApplication.getCourtOrder())
                 .map(CourtOrder::getCourtOrderOffences)
@@ -500,14 +526,14 @@ public class HearingResultHelper {
                 .stream()
                 .map(CourtOrderOffence::getOffence)
                 .flatMap(o -> ofNullable(o.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty))
-                .forEach(judicialResults::add);
+                .forEach(updatedJudicialResults::add);
 
         ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .flatMap(cac -> ofNullable(cac.getOffences()).map(Collection::stream).orElseGet(Stream::empty))
                 .flatMap(o -> ofNullable(o.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty))
-                .forEach(judicialResults::add);
+                .forEach(updatedJudicialResults::add);
 
-        return judicialResults;
+        return updatedJudicialResults;
     }
 
     private static boolean hasCommittingCourt(JudicialResult judicialResult) {

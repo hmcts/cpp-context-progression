@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllApplications;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictionsForCourtApplications;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestriction;
@@ -21,11 +22,13 @@ import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV3;
 import uk.gov.justice.core.courts.ReportingRestriction;
 
 import java.time.LocalDate;
@@ -190,5 +193,158 @@ public class ReportingRestrictionHelperTest {
 
         final CourtApplication courtApplication1 = dedupAllReportingRestrictions(courtApplication);
         assertThat(courtApplication1, notNullValue());
+    }
+
+    @Test
+    public void testDedupAllApplications() {
+        final ImmutableList<ReportingRestriction> rrs = of(newRR("A", LocalDate.now()), newRR("A", LocalDate.now().minusDays(10)), newRR("A", LocalDate.now().minusDays(7)));
+
+        final List<ListHearingRequest> listHearingRequests = new ArrayList<>();
+        listHearingRequests.add(ListHearingRequest.listHearingRequest()
+                .withHearingType(HearingType.hearingType()
+                        .withId(UUID.randomUUID())
+                        .build())
+                .build());
+
+
+        final List<JudicialResult> judicialResults = new ArrayList<>();
+        JudicialResult jr1 = JudicialResult.judicialResult()
+                .withJudicialResultId(UUID.randomUUID())
+                .withOrderedDate(LocalDate.now())
+                .withResultText("ResultText")
+                .build();
+        judicialResults.add(jr1);
+        judicialResults.add(jr1);
+        judicialResults.add(jr1);
+        judicialResults.add(JudicialResult.judicialResult()
+                .withJudicialResultId(UUID.randomUUID())
+                .withResultText("ResultText")
+                .build());
+
+        final List<JudicialResult> judicialResults1 = new ArrayList<>();
+        JudicialResult jr2 = JudicialResult.judicialResult()
+                .withJudicialResultId(UUID.randomUUID())
+                .withOrderedDate(LocalDate.now())
+                .withResultText("ResultText1")
+                .build();
+        judicialResults.add(jr2);
+
+        final List<CourtOrderOffence> courtOrderOffences = new ArrayList<>();
+        courtOrderOffences.add(CourtOrderOffence.courtOrderOffence().build());
+
+        final List<CourtApplication> courtApplications = new ArrayList<>();
+        final CourtApplication c1 = CourtApplication.courtApplication()
+                .withId(UUID.randomUUID())
+                .withJudicialResults(judicialResults)
+                .withCourtOrder(CourtOrder.courtOrder()
+                        .withCourtOrderOffences(courtOrderOffences)
+                        .build())
+                .build();
+        courtApplications.add(c1);
+        courtApplications.add(c1);
+        courtApplications.add(c1);
+        courtApplications.add(c1);
+        courtApplications.add(CourtApplication.courtApplication()
+                        .withId(UUID.randomUUID())
+                        .withJudicialResults(judicialResults1)
+                        .withCourtOrder(CourtOrder.courtOrder()
+                                .withCourtOrderOffences(courtOrderOffences)
+                                .build())
+                .build());
+
+        final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = ProsecutionCaseDefendantListingStatusChangedV2.
+                prosecutionCaseDefendantListingStatusChangedV2().
+                withListHearingRequests(listHearingRequests).
+                withHearing(Hearing.hearing()
+                        .withCourtApplications(courtApplications)
+                        .withProsecutionCases(asList(ProsecutionCase.
+                                prosecutionCase().
+                                withDefendants(asList(Defendant.
+                                        defendant().
+                                        withOffences(asList(Offence.
+                                                offence().
+                                                withReportingRestrictions(rrs).
+                                                build())).
+                                        build())).
+                                build())).
+                        build()).
+                build();
+
+        final ProsecutionCaseDefendantListingStatusChangedV2 actual = dedupAllApplications(prosecutionCaseDefendantListingStatusChangedV2);
+
+        final List<CourtApplication> updatedCourtApplications = actual.getHearing().getCourtApplications();
+        assertThat(updatedCourtApplications, hasSize(2));
+    }
+
+    @Test
+    public void testDedupAllApplicationsV3() {
+        final ImmutableList<ReportingRestriction> rrs = of(newRR("A", LocalDate.now()), newRR("A", LocalDate.now().minusDays(10)), newRR("A", LocalDate.now().minusDays(7)));
+
+        final List<JudicialResult> judicialResults = new ArrayList<>();
+        JudicialResult jr1 = JudicialResult.judicialResult()
+                .withJudicialResultId(UUID.randomUUID())
+                .withOrderedDate(LocalDate.now())
+                .withResultText("ResultText")
+                .build();
+        judicialResults.add(jr1);
+        judicialResults.add(jr1);
+        judicialResults.add(jr1);
+        judicialResults.add(JudicialResult.judicialResult()
+                .withJudicialResultId(UUID.randomUUID())
+                .withResultText("ResultText")
+                .build());
+
+        final List<JudicialResult> judicialResults1 = new ArrayList<>();
+        JudicialResult jr2 = JudicialResult.judicialResult()
+                .withJudicialResultId(UUID.randomUUID())
+                .withOrderedDate(LocalDate.now())
+                .withResultText("ResultText1")
+                .build();
+        judicialResults.add(jr2);
+
+        final List<CourtOrderOffence> courtOrderOffences = new ArrayList<>();
+        courtOrderOffences.add(CourtOrderOffence.courtOrderOffence().build());
+
+        final List<CourtApplication> courtApplications = new ArrayList<>();
+        final CourtApplication c1 = CourtApplication.courtApplication()
+                .withId(UUID.randomUUID())
+                .withJudicialResults(judicialResults)
+                .withCourtOrder(CourtOrder.courtOrder()
+                        .withCourtOrderOffences(courtOrderOffences)
+                        .build())
+                .build();
+        courtApplications.add(c1);
+        courtApplications.add(c1);
+        courtApplications.add(c1);
+        courtApplications.add(c1);
+        courtApplications.add(CourtApplication.courtApplication()
+                .withId(UUID.randomUUID())
+                .withJudicialResults(judicialResults1)
+                .withCourtOrder(CourtOrder.courtOrder()
+                        .withCourtOrderOffences(courtOrderOffences)
+                        .build())
+                .build());
+
+        final ProsecutionCaseDefendantListingStatusChangedV3 prosecutionCaseDefendantListingStatusChangedV3 = ProsecutionCaseDefendantListingStatusChangedV3.
+                prosecutionCaseDefendantListingStatusChangedV3().
+                withHearing(Hearing.hearing()
+                        .withCourtApplications(courtApplications)
+                        .withProsecutionCases(asList(ProsecutionCase.
+                                prosecutionCase().
+                                withDefendants(asList(Defendant.
+                                        defendant().
+                                        withOffences(asList(Offence.
+                                                offence().
+                                                withReportingRestrictions(rrs).
+                                                build())).
+                                        build())).
+                                build())).
+                        build()).
+                build();
+
+        final ProsecutionCaseDefendantListingStatusChangedV3 actual = dedupAllApplications(prosecutionCaseDefendantListingStatusChangedV3);
+
+        final List<CourtApplication> updatedCourtApplications = actual.getHearing().getCourtApplications();
+        assertThat(updatedCourtApplications, hasSize(2));
     }
 }

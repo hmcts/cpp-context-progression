@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.util;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
@@ -12,6 +14,7 @@ import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
@@ -23,6 +26,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ReportingRestrictionHelper {
 
@@ -299,5 +304,70 @@ public class ReportingRestrictionHelper {
         }
 
         return reportingRestriction1;
+    }
+
+    public static ProsecutionCaseDefendantListingStatusChangedV2 dedupAllApplications(final ProsecutionCaseDefendantListingStatusChangedV2 statusChanged) {
+        if (isNull(statusChanged)) {
+            return statusChanged;
+        }
+
+        final Hearing hearing = statusChanged.getHearing();
+        Hearing dedupedHearing = null;
+
+        if (nonNull(hearing)) {
+            dedupedHearing = Hearing.hearing().
+                    withValuesFrom(hearing).
+                    withProsecutionCases(hearing.getProsecutionCases()).
+                    withCourtApplications(dedupAllCourtApplications(hearing.getCourtApplications())).
+                    build();
+        }
+
+        return ProsecutionCaseDefendantListingStatusChangedV2.
+                prosecutionCaseDefendantListingStatusChangedV2().withValuesFrom(statusChanged).
+                withHearing(dedupedHearing)
+                .build();
+    }
+
+    public static ProsecutionCaseDefendantListingStatusChangedV3 dedupAllApplications(final ProsecutionCaseDefendantListingStatusChangedV3 statusChanged) {
+        if (isNull(statusChanged)) {
+            return statusChanged;
+        }
+
+        final Hearing hearing = statusChanged.getHearing();
+        Hearing dedupedHearing = null;
+
+        if (nonNull(hearing)) {
+            dedupedHearing = Hearing.hearing().
+                    withValuesFrom(hearing).
+                    withProsecutionCases(hearing.getProsecutionCases()).
+                    withCourtApplications(dedupAllCourtApplications(hearing.getCourtApplications())).
+                    build();
+        }
+
+        return ProsecutionCaseDefendantListingStatusChangedV3.
+                prosecutionCaseDefendantListingStatusChangedV3().withValuesFrom(statusChanged).
+                withHearing(dedupedHearing)
+                .build();
+    }
+
+    public static List<CourtApplication> dedupAllCourtApplications(final List<CourtApplication> courtApplications) {
+        if (isNull(courtApplications)) {
+            return courtApplications;
+        }
+
+        final Set<CourtApplication> uniqueCourtApplications = courtApplications.stream().collect(Collectors.toSet());
+        final List<CourtApplication> updatedCourtApplications = uniqueCourtApplications.stream().collect(toList());
+
+        updatedCourtApplications.stream().forEach(courtApplication -> {
+            final List<JudicialResult> judicialResults = courtApplication.getJudicialResults();
+            if (nonNull(judicialResults)) {
+                final Set<JudicialResult> uniqueJudicialResults = judicialResults.stream().collect(Collectors.toSet());
+
+                judicialResults.clear();
+                judicialResults.addAll(uniqueJudicialResults.stream().collect(toList()));
+            }
+        });
+
+        return updatedCourtApplications;
     }
 }

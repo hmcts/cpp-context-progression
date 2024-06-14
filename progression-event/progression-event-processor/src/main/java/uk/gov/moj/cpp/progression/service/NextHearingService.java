@@ -94,9 +94,9 @@ public class NextHearingService {
             });
             addToHearingListingNeeds(nextHearings, hearingListingNeedsList, hearingId, prosecutionCasesToBeAdded, hearingsMap2.get(hearingId));
         });
-
-        hearingsMap2.forEach((hearingId, applications) -> addToHearingListingNeeds(nextHearings, hearingListingNeedsList, hearingId, applications));
-
+        if(hearingsMap.isEmpty()) {
+            hearingsMap2.forEach((hearingId, applications) -> addToHearingListingNeeds(nextHearings, hearingListingNeedsList, hearingId, applications));
+        }
         return new NextHearingDetails(hearingListingNeedsList, nextHearings);
     }
 
@@ -107,7 +107,11 @@ public class NextHearingService {
                 final NextHearing nextHearing = judicialResult.getNextHearing();
                 if (doesExistingHearingIdPresent(nextHearing) && (nextHearing.getExistingHearingId().equals(hearingId))) {
                     final List<CourtApplication> courtApplicationList = hearingsMap2.getOrDefault(hearingId, new ArrayList<>());
-                    courtApplicationList.add(courtApplication);
+                    final boolean containsObject = courtApplicationList.stream()
+                            .anyMatch(courtApplication1 -> courtApplication1.getId().equals(courtApplication.getId()));
+                    if (!containsObject) {
+                        courtApplicationList.add(courtApplication);
+                    }
                     hearingsMap2.put(hearingId, courtApplicationList);
                     nextHearings.put(hearingId, nextHearing);
                 }
