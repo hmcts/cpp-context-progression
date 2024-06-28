@@ -121,13 +121,23 @@ public class CourtlistQueryView {
             if (isNotEmpty(hearingIds)) {
                 final Map<UUID, Hearing> hearingsMap = getHearingsMap(hearingIds);
                 if (!hearingsMap.isEmpty()) {
-                    documentPayload = addLjaInformation(documentPayload, hearingsMap.get(hearingIds.get(0)).getCourtCentre());
+                    documentPayload = addLjaInformation(documentPayload, getCourtCentreFromHearingMap(hearingsMap));
                     documentPayload = addHearingInformation(documentPayload, hearingsMap);
                 }
             }
             return envelopeFrom(query.metadata(), documentPayload);
         }
         return envelopeFrom(query.metadata(), Json.createObjectBuilder().build());
+    }
+
+    private CourtCentre getCourtCentreFromHearingMap(final Map<UUID, Hearing> hearingsMap) {
+
+        return hearingsMap.values().stream()
+                .filter(hearing -> nonNull(hearing))
+                .filter(hearing -> nonNull(hearing.getCourtCentre()))
+                .map(Hearing::getCourtCentre)
+                .findFirst().orElse(null);
+
     }
 
     private Map<UUID, Hearing> getHearingsMap(final List<UUID> hearingIds) {
@@ -202,7 +212,7 @@ public class CourtlistQueryView {
                 .forEach(hearingFromListing -> {
                     final UUID hearingId = fromString(hearingFromListing.getString(ID));
                     final Hearing hearing = hearingsMap.get(hearingId);
-                    if(nonNull(hearing)) {
+                    if (nonNull(hearing)) {
                         if (hearingFromListing.containsKey(CASE_ID)) {
                             final UUID caseId = fromString(hearingFromListing.getString(CASE_ID));
                             hearingsArray.add(enrichHearingFromCase(hearingFromListing, hearing, caseId));
@@ -399,7 +409,7 @@ public class CourtlistQueryView {
 
         defenceOrganisation.ifPresent(org -> defendantJsonBuilder.add("defenceOrganization", org));
 
-        final List<Offence> offencesFromHearing = getOffencesFromHearing(defendant, hearing,prosecutionCase);
+        final List<Offence> offencesFromHearing = getOffencesFromHearing(defendant, hearing, prosecutionCase);
 
         final JsonArrayBuilder offencesArray = createArrayBuilder();
         JsonObject newDefendantFromListing = defendantJsonBuilder.build();
@@ -412,7 +422,7 @@ public class CourtlistQueryView {
                                 if (offence.getId().equals(offenceId)) {
                                     final JsonObjectBuilder offenceBuilder = Json.createObjectBuilder();
 
-                                    if(nonNull(offencesFromHearing)) {
+                                    if (nonNull(offencesFromHearing)) {
                                         offencesFromHearing.forEach(offence1 -> {
                                             if (offence1.getId().equals(offenceId)) {
                                                 buildOffence(offenceBuilder, offence, offence1);
@@ -436,9 +446,9 @@ public class CourtlistQueryView {
         return newDefendantFromListing;
     }
 
-    private List<Offence> getOffencesFromHearing(final Defendant defendant, final Hearing hearing, final ProsecutionCase prosecutionCase){
+    private List<Offence> getOffencesFromHearing(final Defendant defendant, final Hearing hearing, final ProsecutionCase prosecutionCase) {
         final AtomicReference<List<Offence>> offencesFromHearing = new AtomicReference<>();
-        if(nonNull(hearing.getProsecutionCases())) {
+        if (nonNull(hearing.getProsecutionCases())) {
             hearing.getProsecutionCases().forEach(pc -> {
                 if (pc.getId().equals(prosecutionCase.getId())) {
                     pc.getDefendants().forEach(defendant1 -> {
@@ -522,7 +532,7 @@ public class CourtlistQueryView {
     }
 
     private void setPleaAndPleaDateIfNotIndicatedNotGuilty(final JsonObjectBuilder offenceBuilder, final String plea, LocalDate pleaDate) {
-        if(!plea.equals(IndicatedPleaValue.INDICATED_NOT_GUILTY.name())){
+        if (!plea.equals(IndicatedPleaValue.INDICATED_NOT_GUILTY.name())) {
             offenceBuilder.add("plea", plea);
             offenceBuilder.add("pleaDate", pleaDate.format(DATE_FORMATTER));
         }
@@ -559,7 +569,7 @@ public class CourtlistQueryView {
     }
 
     private JsonObject addLjaInformation(JsonObject documentPayload, final CourtCentre courtCentre) {
-
+        if (nonNull(courtCentre)) {
         final LjaDetails ljaDetails = courtCentre.getLja();
         if (nonNull(ljaDetails)) {
             documentPayload = addProperty(documentPayload, "ljaCode", ljaDetails.getLjaCode());
@@ -567,6 +577,7 @@ public class CourtlistQueryView {
             if (nonNull(ljaDetails.getWelshLjaName())) {
                 documentPayload = addProperty(documentPayload, "welshLjaName", ljaDetails.getWelshLjaName());
             }
+        }
         }
         return documentPayload;
     }

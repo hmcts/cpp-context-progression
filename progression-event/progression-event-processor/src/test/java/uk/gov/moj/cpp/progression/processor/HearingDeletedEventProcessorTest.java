@@ -16,6 +16,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.progression.courts.HearingDeleted;
+import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -143,5 +144,48 @@ public class HearingDeletedEventProcessorTest {
         assertThat(thirdCommandEvent.payload().toString(), isJson(allOf(
                 withJsonPath("$.hearingId", equalTo(hearingId.toString())),
                 withJsonPath("$.courtApplicationId", equalTo(courtApplicationId.toString())))));
+    }
+
+    @Test
+    public void shouldCallDeleteCaseCommandFroDeletedCases(){
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId1 = randomUUID();
+        final UUID prosecutionCaseId2 = randomUUID();
+
+        final JsonObject offencesRemovedFromHearing = createObjectBuilder()
+                .add("hearingId", hearingId.toString())
+                .add("prosecutionCaseIds", Json.createArrayBuilder()
+                        .add(prosecutionCaseId1.toString())
+                        .add(prosecutionCaseId2.toString())
+                        .build())
+                .build();
+
+        final JsonEnvelope event = envelopeFrom(metadataWithRandomUUID("progression.events.offences-removed-from-hearing"),
+                offencesRemovedFromHearing);
+
+
+        when(jsonObjectConverter.convert(event.payloadAsJsonObject(), OffencesRemovedFromHearing.class))
+                .thenReturn(OffencesRemovedFromHearing.offencesRemovedFromHearing()
+                        .withHearingId(hearingId)
+                        .withProsecutionCaseIds(Arrays.asList(prosecutionCaseId1, prosecutionCaseId2))
+                        .build());
+
+        hearingDeletedEventProcessor.handleOffenceInHearingRemoved(event);
+
+        verify(this.sender, times(2)).send(this.senderJsonEnvelopeCaptor.capture());
+
+        final JsonEnvelope firstCommandEvent = this.senderJsonEnvelopeCaptor.getAllValues().get(0);
+        final JsonEnvelope secondCommandEvent = this.senderJsonEnvelopeCaptor.getAllValues().get(1);
+
+        assertThat(firstCommandEvent.metadata().name(), is("progression.command.delete-hearing-for-prosecution-case"));
+        assertThat(firstCommandEvent.payload().toString(), isJson(allOf(
+                withJsonPath("$.hearingId", equalTo(hearingId.toString())),
+                withJsonPath("$.prosecutionCaseId", equalTo(prosecutionCaseId1.toString())))));
+
+        assertThat(secondCommandEvent.metadata().name(), is("progression.command.delete-hearing-for-prosecution-case"));
+        assertThat(secondCommandEvent.payload().toString(), isJson(allOf(
+                withJsonPath("$.hearingId", equalTo(hearingId.toString())),
+                withJsonPath("$.prosecutionCaseId", equalTo(prosecutionCaseId2.toString())))));
+
     }
 }

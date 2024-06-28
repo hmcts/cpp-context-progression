@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.indexer.jolt;
 
+import static com.jayway.jsonassert.JsonAssert.with;
 import static org.junit.Assert.assertNotNull;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJson;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJsonViaPath;
@@ -36,6 +37,7 @@ public class ProsecutionCaseDefendantUpdatedTransformationTest {
         final JsonObject outputDefendantJson = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
         final DocumentContext prosecutionCase = JsonPath.parse(inputJson);
         verifyCaseDefendantUpdated(prosecutionCase, outputDefendantJson);
+        with(outputDefendantJson.toString()).assertNotDefined("$.caseStatus");
     }
 
 }

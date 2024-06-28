@@ -2,6 +2,9 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
@@ -37,6 +40,7 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.service.LegalStatusReferenceDataService;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -119,7 +123,7 @@ public class RecordLAAReferenceToOffenceHandlerTest {
                 CASE_ID, DEFENDANT_ID, DEFENDANT_ID_2, OFFENCE_ID);
 
         aggregate.apply(new ProsecutionCaseCreated(getProsecutionCase(), null));
-        aggregate.defendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(), defendantsAddedToCourtProceedings.getListHearingRequests()).collect(toList());
+        aggregate.defendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(), defendantsAddedToCourtProceedings.getListHearingRequests(),  Optional.of(createJsonList())).collect(toList());
 
         final JsonObject jsonObject = generateRecordLAAReferenceForOffence();
 
@@ -179,20 +183,20 @@ public class RecordLAAReferenceToOffenceHandlerTest {
         uk.gov.justice.core.courts.Defendant defendant = uk.gov.justice.core.courts.Defendant.defendant()
                 .withId(defendantId)
                 .withProsecutionCaseId(caseId)
-                .withOffences(Collections.singletonList(offence))
+                .withOffences(new ArrayList<>(asList(offence)))
                 .build();
 
         //Add duplicate defendant
         uk.gov.justice.core.courts.Defendant defendant1 = uk.gov.justice.core.courts.Defendant.defendant()
                 .withId(defendantId)
                 .withProsecutionCaseId(caseId)
-                .withOffences(Collections.singletonList(offence))
+                .withOffences(new ArrayList<>(asList(offence)))
                 .build();
 
         uk.gov.justice.core.courts.Defendant defendant2 = uk.gov.justice.core.courts.Defendant.defendant()
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
-                .withOffences(Collections.singletonList(offence))
+                .withOffences(new ArrayList<>(asList(offence)))
                 .build();
 
         ReferralReason referralReason = ReferralReason.referralReason()
@@ -225,11 +229,12 @@ public class RecordLAAReferenceToOffenceHandlerTest {
                 .withCourtCentre(courtCentre).withHearingType(hearingType)
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
                 .withListDefendantRequests(Arrays.asList(listDefendantRequest, listDefendantRequest2))
+                .withListedStartDateTime(ZonedDateTime.now())
                 .build();
 
         return DefendantsAddedToCourtProceedings
                 .defendantsAddedToCourtProceedings()
-                .withDefendants(Arrays.asList(defendant, defendant1, defendant2))
+                .withDefendants(new ArrayList<>(Arrays.asList(defendant, defendant1, defendant2)))
                 .withListHearingRequests(Collections.singletonList(listHearingRequest))
                 .build();
 
@@ -243,6 +248,13 @@ public class RecordLAAReferenceToOffenceHandlerTest {
                         .build())
                 .withDefendants(defendants)
                 .build();
+    }
+
+    private List<JsonObject> createJsonList() {
+        return Arrays.asList(createArrayBuilder().add(
+                createObjectBuilder()
+                        .add("cjsOffenceCode", "TTH105HY")
+                        .build()).build().getJsonObject(0));
     }
 
 }

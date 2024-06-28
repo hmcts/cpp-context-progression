@@ -572,10 +572,11 @@ public class CourtApplicationProcessor {
                     .withMetadataFrom(jsonEnvelope));
         }
         final CourtHearingRequest courtHearingRequest = sendNotificationForApplication.getCourtHearing();
-        if(nonNull(courtHearingRequest)) {
+        if(nonNull(courtHearingRequest) && (isNull(courtHearingRequest.getCourtCentre().getRoomId()) || nonNull(courtHearingRequest.getWeekCommencingDate()))) {
             notificationService.sendNotification(jsonEnvelope, courtApplication, sendNotificationForApplication.getIsWelshTranslationRequired(), courtHearingRequest.getCourtCentre(), courtHearingRequest.getEarliestStartDateTime(), courtHearingRequest.getJurisdictionType());
         }
     }
+
     @Handles("progression.event.breach-application-creation-requested")
     public void processBreachApplicationCreationRequested(final JsonEnvelope event) {
         if (LOGGER.isInfoEnabled()) {
@@ -668,13 +669,12 @@ public class CourtApplicationProcessor {
     private List<ProsecutionCase> getProsecutionCases(final JsonEnvelope event, final CourtApplication application) {
         final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
         final Stream<CourtApplicationCase> courtApplicationCases = ofNullable(application.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty);
-        final List<MasterDefendant> masterDefendantList = getDistinctMasterDefendants(application);
-        if (isAllActiveCases(courtApplicationCases) && isNotEmpty(masterDefendantList)) {
+        if (isAllActiveCases(courtApplicationCases)) {
             ofNullable(application.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty).forEach(courtApplicationCase -> {
                 final Optional<JsonObject> prosecutionCaseDetailById = progressionService.getProsecutionCaseDetailById(event, courtApplicationCase.getProsecutionCaseId().toString());
                 if (prosecutionCaseDetailById.isPresent()) {
                     final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseDetailById.get().getJsonObject(PROSECUTION_CASE), ProsecutionCase.class);
-                    final ProsecutionCase updatedProsecutionCase = createProsecutionCase(prosecutionCase, masterDefendantList);
+                    final ProsecutionCase updatedProsecutionCase = createProsecutionCase(prosecutionCase);
                     if (isNotEmpty(updatedProsecutionCase.getDefendants())) {
                         prosecutionCases.add(updatedProsecutionCase);
                     }
@@ -686,8 +686,8 @@ public class CourtApplicationProcessor {
         return isNotEmpty(prosecutionCases) ? prosecutionCases : null;
     }
 
-    private ProsecutionCase createProsecutionCase(final ProsecutionCase prosecutionCase, final List<MasterDefendant> masterDefendantList) {
-        final List<Defendant> defendants = prosecutionCase.getDefendants().stream().filter(defendant -> containsMasterDefendant(masterDefendantList, defendant))
+    private ProsecutionCase createProsecutionCase(final ProsecutionCase prosecutionCase) {
+        final List<Defendant> defendants = prosecutionCase.getDefendants().stream()
                 .map(defendant -> defendant().withValuesFrom(defendant).withDefendantCaseJudicialResults(null).build())
                 .collect(toList());
         final List<Defendant> defendantList = defendants.stream()
@@ -705,29 +705,8 @@ public class CourtApplicationProcessor {
         return defendant().withValuesFrom(defendant).withOffences(offences).build();
     }
 
-    public boolean containsMasterDefendant(final List<MasterDefendant> masterDefendantList, final Defendant defendant) {
-        return masterDefendantList.stream().anyMatch(masterDefendant -> masterDefendant.getMasterDefendantId().equals(defendant.getMasterDefendantId()));
-    }
 
-    public List<MasterDefendant> getDistinctMasterDefendants(final CourtApplication application) {
 
-        final Optional<MasterDefendant> applicant = ofNullable(application.getApplicant().getMasterDefendant());
-
-        final Optional<MasterDefendant> subject = ofNullable(application.getSubject().getMasterDefendant());
-
-        final List<Optional<MasterDefendant>> respondents = ofNullable(application.getRespondents()).map(Collection::stream)
-                .orElseGet(Stream::empty).map(respondent -> ofNullable(respondent.getMasterDefendant())).collect(toList());
-
-        final List<MasterDefendant> masterDefendants = respondents.stream()
-                .filter(Optional::isPresent).map(Optional::get)
-                .collect(toList());
-
-        applicant.ifPresent(masterDefendants::add);
-
-        subject.ifPresent(masterDefendants::add);
-
-        return masterDefendants.stream().filter(distinctByKey(MasterDefendant::getMasterDefendantId)).collect(toList());
-    }
 
     @Handles("progression.event.breach-applications-to-be-added-to-hearing")
     public void processBreachApplicationsTobeAddedToHearing(final JsonEnvelope event) {

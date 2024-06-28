@@ -1,0 +1,46 @@
+{
+  "boxWorkTaskStatus": "COMPLETE",
+  "boxWorkAssignedUserId": "207f6f5e-7a47-4a78-83aa-871182501be6",
+  "hearing": {
+    "courtApplications": [
+    ],
+    "prosecutionCases": [
+    ],
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court"
+    },
+    "hasSharedResults": true,
+    "judiciary": [
+      {
+        "judicialId": "66e93f60-5a48-40d5-b406-37a53ed6d5c2",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+          "judiciaryType": "Recorder1"
+        }
+      },
+      {
+        "judicialId": "79a91058-2235-42ec-a339-860d8f46ab58",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+          "judiciaryType": "Recorder"
+        }
+      }
+    ],
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 10,
+        "listingSequence":2,
+        "sittingDay": "2020-02-13T11:40:00.000Z"
+      }
+    ],
+    "id": "bc306de9-f63d-4d6b-bea4-e7e531ef2d1d",
+    "isBoxHearing": true,
+    "jurisdictionType": "MAGISTRATES",
+    "type": {
+      "description": "Application",
+      "id": "3449743b-95d6-4836-8941-57f588b52068"
+    }
+  },
+  "hearingListingStatus": "HEARING_RESULTED"
+}

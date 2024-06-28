@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsToRemove;
 import uk.gov.justice.core.courts.Hearing;
@@ -28,6 +29,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
+import uk.gov.moj.cpp.util.FileUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,7 +55,7 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
     @Mock
     private HearingRepository hearingRepository;
     @Mock
-    CaseDefendantHearingRepository caseDefendantHearingRepository;
+    private CaseDefendantHearingRepository caseDefendantHearingRepository;
     @InjectMocks
     private HearingUpdatedForPartialAllocationEventListener hearingUpdatedForPartialAllocationEventListener;
     @Mock
@@ -131,6 +133,26 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
         verify(caseDefendantHearingRepository, times(1)).remove(caseDefendantHearingEntity);
     }
 
+
+    @Test
+    public void hearingWithDefenceCounselsExtendedForCase() throws IOException {
+        hearing = createHearingWithDefenceCounsels();
+        final JsonObject payload = converter.convert(hearingUpdatedForPartialAllocationEventPayload);
+        final HearingUpdatedForPartialAllocation hearingUpdatedForPartialAllocation = createHearingUpdatedForPartialAllocation(payload);
+        final HearingEntity hearingEntity = createHearingEntityWithDefenceCounsels();
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingUpdatedForPartialAllocation).thenReturn(hearing);
+        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(this.jsonObject);
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        hearingUpdatedForPartialAllocationEventListener.hearingUpdatedForPartialAllocation(jsonEnvelope);
+
+        verify(hearingRepository, times(1)).findBy(hearingId);
+        verify(hearingRepository, times(1)).save(hearingEntity);
+        verify(objectToJsonObjectConverter, times(1)).convert(hearing);
+        verify(caseDefendantHearingRepository, times(1)).findByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
+    }
+
     private HearingEntity createHearingEntity() {
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
@@ -139,6 +161,23 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
         hearingEntity.setPayload(hearingPayload);
         return hearingEntity;
 
+    }
+
+    private HearingEntity createHearingEntityWithDefenceCounsels() throws IOException {
+        hearingPayload =  FileUtil.getPayload("json/hearing-payload-coming-from-db-with-defence-counsels.json")
+                .replaceAll("HEARING_ID", hearingId.toString())
+                .replaceAll("CASE_ID", caseId.toString())
+                .replaceAll("DEFENDANT_ID1", defendantId.toString())
+                .replaceAll("DEFENDANT_ID2", offenceId.toString())
+                .replaceAll("OFFENCE_ID1", defendant2Id.toString())
+                .replaceAll("OFFENCE_ID2", offence2Id.toString());
+
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setResultLines(new HashSet<>());
+        hearingEntity.setPayload(hearingPayload);
+        return hearingEntity;
     }
 
     private Hearing createHearing() {
@@ -163,6 +202,28 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
                                         .build())))
                                 .build()))).build();
 
+        return hearing;
+    }
+
+    private Hearing createHearingWithDefenceCounsels() {
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(Arrays.asList(ProsecutionCase.prosecutionCase()
+                                .withId(caseId)
+                                .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
+                                        .withId(defendantId)
+                                        .withOffences(new ArrayList<>(Arrays.asList(Offence.offence()
+                                                .withId(offenceId)
+                                                .build())))
+                                        .build())))
+                                .build())))
+                .withDefenceCounsels(new ArrayList<>(Arrays.asList(DefenceCounsel.defenceCounsel()
+                        .withId(UUID.randomUUID())
+                        .withDefendants(new ArrayList<>(Arrays.asList(defendantId)))
+                        .build(), DefenceCounsel.defenceCounsel()
+                        .withId(UUID.randomUUID())
+                        .withDefendants(new ArrayList<>(Arrays.asList(defendant2Id)))
+                        .build()))).build();
         return hearing;
     }
 
@@ -195,5 +256,20 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
                         .build()))
                 .build();
 
+    }
+
+    public HearingEntity buildHearingEntityProperties() throws IOException {
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        hearingEntity.setPayload(FileUtil.getPayload("json/hearing-payload-coming-from-db-with-defence-counsels.json")
+                .replaceAll("HEARING_ID", hearingId.toString())
+                .replaceAll("CASE_ID", caseId.toString())
+                .replaceAll("DEFENDANT_ID1", defendantId.toString())
+                .replaceAll("DEFENDANT_ID2", offenceId.toString())
+                .replaceAll("OFFENCE_ID1", defendant2Id.toString())
+                .replaceAll("OFFENCE_ID2", offence2Id.toString()));
+
+        return hearingEntity;
     }
 }

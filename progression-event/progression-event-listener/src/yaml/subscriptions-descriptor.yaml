@@ -338,6 +338,8 @@ subscriptions_descriptor:
 
         - name: progression.event.opa-result-list-notice-deactivated
           schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-result-list-notice-deactivated.json
+        - name: progression.event.hearing-resulted-bdf
+          schema_uri: http://moj.gov.uk/cpp/progression/court/progression.event.hearing-resulted-bdf.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****

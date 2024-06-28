@@ -58,7 +58,7 @@ public class DefendantsListingStatusChangedTransformer extends BaseCourtApplicat
                                   final Hearing hearing,
                                   final List<ProsecutionCase> prosecutionCases,
                                   final Map<UUID, CaseDetails> caseDocumentsMap) {
-        if (prosecutionCases != null) {
+        if (CollectionUtils.isNotEmpty(prosecutionCases)) {
             for (final ProsecutionCase prosecutionCase : prosecutionCases) {
                 final List<String> defendantIds = new ArrayList<>();
                 final List<Defendant> defendants = prosecutionCase.getDefendants();

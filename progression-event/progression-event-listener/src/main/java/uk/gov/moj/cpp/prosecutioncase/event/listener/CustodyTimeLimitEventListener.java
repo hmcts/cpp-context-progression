@@ -4,6 +4,8 @@ import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.CustodyTimeLimit;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -37,6 +39,7 @@ import javax.json.JsonReader;
 
 @ServiceComponent(EVENT_LISTENER)
 public class CustodyTimeLimitEventListener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustodyTimeLimitEventListener.class);
 
     @Inject
     private HearingRepository hearingRepository;
@@ -89,6 +92,12 @@ public class CustodyTimeLimitEventListener {
 
     private void updateCustodyTimeLimitForHearing(final UUID hearingId, final LocalDate extendedTimeLimit, final UUID offenceId) {
         final HearingEntity hearingEntity = hearingRepository.findBy(hearingId);
+        if(hearingEntity == null){
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Hearing can't be found in view store. hearingId : {}", hearingId);
+            }
+            return;
+        }
         final JsonObject dbHearingJsonObject = jsonFromString(hearingEntity.getPayload());
 
         final Hearing dbHearing = jsonObjectConverter.convert(dbHearingJsonObject, Hearing.class);

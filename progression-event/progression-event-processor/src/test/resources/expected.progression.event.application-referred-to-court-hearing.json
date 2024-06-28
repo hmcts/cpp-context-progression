@@ -79,56 +79,6 @@
                 }
               ],
               "caseStatus": "ACTIVE"
-            },
-            {
-              "prosecutionCaseId": "CASE_ID_2",
-              "prosecutionCaseIdentifier": {
-                "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
-                "prosecutionAuthorityCode": "TFL",
-                "caseURN": "TFL4359536"
-              },
-              "isSJP": false,
-              "offences": [
-                {
-                  "allocationDecision": {
-                    "allocationDecisionDate": "2020-04-14",
-                    "motReasonCode": "01",
-                    "motReasonDescription": "Summary-only offence",
-                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
-                    "offenceId": "28b3d444-ae80-4920-a70f-ef01e128188e",
-                    "originatingHearingId": "5914d601-7c26-4900-b3d6-e8d27bcd058d",
-                    "sequenceNumber": 90
-                  },
-                  "aquittalDate": "2020-04-14",
-                  "chargeDate": "2020-03-14",
-                  "count": 1,
-                  "id": "28b3d444-ae80-4920-a70f-ef01e128188e",
-                  "isDisposed": true,
-                  "modeOfTrial": "Summary",
-                  "notifiedPlea": {
-                    "notifiedPleaDate": "2020-04-14",
-                    "notifiedPleaValue": "NO_NOTIFICATION",
-                    "offenceId": "28b3d444-ae80-4920-a70f-ef01e128188e"
-                  },
-                  "offenceCode": "CA03012",
-                  "offenceDefinitionId": "3ebe41c9-666d-4964-aa80-a005d89927a3",
-                  "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
-                  "offenceLegislationWelsh": "",
-                  "offenceTitle": "Possess / control TV set with intent another use install without a licence",
-                  "offenceTitleWelsh": "",
-                  "orderIndex": 1,
-                  "plea": {
-                    "offenceId": "28b3d444-ae80-4920-a70f-ef01e128188e",
-                    "originatingHearingId": "5914d601-7c26-4900-b3d6-e8d27bcd058d",
-                    "pleaDate": "2020-04-14",
-                    "pleaValue": "NOT_GUILTY"
-                  },
-                  "startDate": "2020-03-10",
-                  "wording": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
-                  "wordingWelsh": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 "
-                }
-              ],
-              "caseStatus": "ACTIVE"
             }
           ],
           "subject": {
@@ -188,6 +138,14 @@
       "earliestStartDateTime": "2015-01-11T05:27:17.210Z",
       "endDate": "2015-01-10",
       "estimatedMinutes": 20,
+      "weekCommencingDate": {
+        "duration" : 20,
+        "startDate" : "2015-01-11"
+      },
+      "type": {
+        "description": "Sentence",
+        "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06e"
+      },
       "jurisdictionType": "MAGISTRATES",
       "listedStartDateTime": "2015-01-12T05:27:17.210Z",
       "prosecutionCases": [
@@ -208,15 +166,8 @@
           ],
           "id": "CASE_ID_1"
         }
-      ],
-      "type": {
-        "description": "Sentence",
-        "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06e"
-      },
-      "weekCommencingDate": {
-        "duration": 20,
-        "startDate": "2015-01-11"
-      }
+      ]
     }
   ]
 }
+

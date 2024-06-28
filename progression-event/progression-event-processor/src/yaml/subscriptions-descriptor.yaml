@@ -583,6 +583,10 @@ subscriptions_descriptor:
         - name: progression.event.breach-applications-to-be-added-to-hearing
           schema_uri: http://justice.gov.uk/core/courts/breach-applications-to-be-added-to-hearing.json
 
+        - name: progression.events.offences-removed-from-hearing
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.offences-removed-from-hearing.json
+
+
           # Deprecated API  - End
       event_source_name: progression
 

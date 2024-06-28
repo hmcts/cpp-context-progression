@@ -127,19 +127,22 @@ public class DefendantsAddedToCourtProceedingsProcessor {
                         payload
                 ));
 
-                // find from future hearings the 1st matched hearing
-                final UUID hearingId = getMatchedHearingId(futureHearings, listHearingRequestsForExistingHearing.get(0));
-                LOGGER.info("Adding newly added defendants on case '{} to existing hearing '{}'", prosecutionCaseId, hearingId);
-                final List<UUID> offenceList = defendantsAddedToCourtProceedings.getDefendants().stream()
-                        .flatMap(r -> r.getOffences().stream()).map(Offence::getId).collect(toList());
-                final JsonArrayBuilder offenceIdJsonArrayBuilder = Json.createArrayBuilder();
-                offenceList.stream().forEach(id -> offenceIdJsonArrayBuilder.add(id.toString()));
-                increaseListingNumber(jsonEnvelope, prosecutionCase.getId(), hearingId, offenceIdJsonArrayBuilder.build());
-                summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, getListDefendantRequests(listHearingRequestsForExistingHearing), hearingId);
-                sender.send(envelopeFrom(
-                        metadataFrom(jsonEnvelope.metadata()).withName("progression.command.update-hearing-with-new-defendant"),
-                        tranformToUpdateHearing(hearingId, prosecutionCaseId, defendantsAddedToCourtProceedings.getDefendants())
-                ));
+                // run the commands("progression.command.update-hearing-with-new-defendant" and  "progression.command.create-hearing-defendant-request") for each future hearings
+                futureHearings.forEach(futureHearing -> {
+                    LOGGER.info("Adding newly added defendants on case '{} to existing hearing '{}'", prosecutionCaseId, futureHearing.getId());
+                    final List<UUID> offenceList = defendantsAddedToCourtProceedings.getDefendants().stream()
+                            .flatMap(r -> r.getOffences().stream()).map(Offence::getId).collect(toList());
+                    final JsonArrayBuilder offenceIdJsonArrayBuilder = Json.createArrayBuilder();
+                    offenceList.stream().forEach(id -> offenceIdJsonArrayBuilder.add(id.toString()));
+                    increaseListingNumber(jsonEnvelope, prosecutionCase.getId(), futureHearing.getId(), offenceIdJsonArrayBuilder.build());
+                    summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, getListDefendantRequests(listHearingRequestsForExistingHearing), futureHearing.getId());
+                    sender.send(envelopeFrom(
+                            metadataFrom(jsonEnvelope.metadata()).withName("progression.command.update-hearing-with-new-defendant"),
+                            tranformToUpdateHearing(futureHearing.getId(), prosecutionCaseId, defendantsAddedToCourtProceedings.getDefendants())
+                    ));
+
+                });
+
             }
 
             final List<ListHearingRequest> listHearingRequestsForNewHearing = listHearingRequestByFutureAndNewHearings.getNewDefendantsToCreateNewHearings().getListHearingRequests();
@@ -244,10 +247,6 @@ public class DefendantsAddedToCourtProceedingsProcessor {
         return new ListHearingRequestByFutureAndNewHearings(newDefendantsAddedToExistingHearings, newDefendantsToCreateNewHearings);
     }
 
-    private UUID getMatchedHearingId(final List<Hearing> futureHearings, final ListHearingRequest listHearingRequest) {
-        // this will not be null as the method is invoked only when a hearing match is identified earlier
-        return futureHearings.stream().filter(getHearingMatchedPredicate(listHearingRequest)).map(Hearing::getId).findFirst().orElse(null);
-    }
 
     private Predicate<Hearing> getHearingMatchedPredicate(final ListHearingRequest listHearingRequest) {
         return hearing ->

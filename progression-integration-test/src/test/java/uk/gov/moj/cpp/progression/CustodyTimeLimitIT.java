@@ -9,8 +9,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithTwoProsecutionCases;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
@@ -33,7 +35,9 @@ import org.junit.Before;
 import org.junit.Test;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.AwaitUtil;
+import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -50,12 +54,17 @@ public class CustodyTimeLimitIT extends AbstractIT {
     private static final String HEARING_QUERY = "application/vnd.progression.query.hearing+json";
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
     private static final String PUBLIC_HEARING_RESULTED_WITH_CTL_EXTENSION = "public.events.hearing.hearing-resulted-with-ctl-extension";
+    private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
+    private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FOR_TWO_CASE_ONE_DEFENDANT_FILE = "public.listing.hearing-confirmed-two-cases-one-defendant.json";
+    private static final String PUBLIC_EVENTS_LISTING_HEARING_DELETED = "public.events.listing.hearing-deleted";
 
     private MessageProducer messageProducerClientPublic;
     private MessageConsumer prosecutionCaseDefendantListingStatusChanged;
     private MessageConsumer extendCustodyTimeLimitResulted;
     private MessageConsumer custodyTimeLimitExtended;
     private MessageConsumer custodyTimeLimitExtendedPublicEvent;
+    private MessageConsumer messageConsumerHearingDeleted ;
+    private MessageConsumer messageConsumerOffenceDeleted ;
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
@@ -87,7 +96,8 @@ public class CustodyTimeLimitIT extends AbstractIT {
         extendCustodyTimeLimitResulted = privateEvents.createPrivateConsumer("progression.events.extend-custody-time-limit-resulted");
         custodyTimeLimitExtended = privateEvents.createPrivateConsumer("progression.events.custody-time-limit-extended");
         custodyTimeLimitExtendedPublicEvent = publicEvents.createPublicConsumer("public.events.progression.custody-time-limit-extended");
-
+        messageConsumerHearingDeleted = privateEvents.createPrivateConsumer("progression.event.hearing-deleted");
+        messageConsumerOffenceDeleted = privateEvents.createPrivateConsumer("progression.events.offences-removed-from-hearing");
     }
 
     @After
@@ -97,6 +107,8 @@ public class CustodyTimeLimitIT extends AbstractIT {
         extendCustodyTimeLimitResulted.close();
         custodyTimeLimitExtended.close();
         custodyTimeLimitExtendedPublicEvent.close();
+        messageConsumerHearingDeleted.close();
+        messageConsumerOffenceDeleted.close();
     }
 
     @Test
@@ -112,6 +124,94 @@ public class CustodyTimeLimitIT extends AbstractIT {
         final String initialHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
         final String hearingIdForCTLExtension = randomUUID().toString();
 
+        sendMessage(messageProducerClientPublic,
+                PUBLIC_HEARING_RESULTED_V2, getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_WITH_CTL_EXTENSION + ".json", caseId,
+                        hearingIdForCTLExtension, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId), JsonEnvelope.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PUBLIC_HEARING_RESULTED_V2)
+                        .withUserId(userId)
+                        .build());
+
+        final Matcher[] defendantMatchers = new Matcher[] {
+                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.timeLimit", equalTo(extendedCustodyTimeLimit)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.isCtlExtended", equalTo(true)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.daysSpent", equalTo(44))
+        };
+
+        pollProsecutionCasesProgressionFor(caseId, defendantMatchers);
+
+        final int ctlExpiryCountDown = (int) DAYS.between(LocalDate.now(), LocalDate.parse(extendedCustodyTimeLimit));
+        final Matcher[] prosecutionCasesProgressionForCAAG = new Matcher[]{
+                withJsonPath("$.defendants[0].id", is(defendantId)),
+                withJsonPath("$.defendants[0].ctlExpiryDate", is(extendedCustodyTimeLimit)),
+                withJsonPath("$.defendants[0].ctlExpiryCountDown", is(ctlExpiryCountDown)),
+                withJsonPath("$.defendants[0].caagDefendantOffences[0].custodyTimeLimit.timeLimit", is(extendedCustodyTimeLimit)),
+                withJsonPath("$.defendants[0].caagDefendantOffences[0].custodyTimeLimit.daysSpent", is(44))
+        };
+
+        pollProsecutionCasesProgressionForCAAG(caseId, prosecutionCasesProgressionForCAAG);
+
+        verifyInMessagingQueueForExtendCustodyTimeLimitResulted(hearingIdForCTLExtension, caseId, offenceId, extendedCustodyTimeLimit);
+        verifyInMessagingQueueForCustodyTimeLimitExtended(initialHearingId, offenceId, extendedCustodyTimeLimit);
+        verifyInMessagingQueueForCustodyTimeLimitExtendedPublicEvent(initialHearingId, offenceId, extendedCustodyTimeLimit);
+        verifyOffenceUpdatedWithCustodyTimeLimitAndCpsDefendantId(initialHearingId, extendedCustodyTimeLimit);
+
+    }
+
+    @Test
+    public void shouldUpdateOffenceCustodyTimeLimitForHearings() throws Exception {
+        final String caseId2 = randomUUID().toString();
+        final String defendantId2 = randomUUID().toString();
+        final String courtCentreId = randomUUID().toString();
+
+        stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
+        final String extendedCustodyTimeLimit = "2022-09-10";
+
+        // GIVEN hearing1 with case1
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        verifyAddCourtDocumentForCase();
+
+        final String initialHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+
+        // GIVEN hearing2 with case1 and case2
+        addProsecutionCaseToCrownCourtWithTwoProsecutionCases(caseId, caseId2, defendantId, defendantId2);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        final String extendedHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+
+        doHearingConfirmedAndVerifyForTwoProsecutionCaseAndOneDefendants(extendedHearingId, caseId, caseId2, defendantId, defendantId2, courtCentreId, userId);
+        doVerifyProsecutionCaseDefendantListingStatusChanged();
+
+        // Then case1 was removed from hearing2
+        final Metadata hearingOffenceRemovedMetadata = JsonEnvelope.metadataBuilder()
+                .withId(randomUUID())
+                .withName("public.events.listing.offences-removed-from-allocated-hearing")
+                .withUserId(userId)
+                .build();
+
+        final JsonObject hearingOffenceRemovedJson = getOffenceRemovedFromExistngHearingJsonObject(extendedHearingId, "3789ab16-0bb7-4ef1-87ef-c936bf0364f1");
+        sendMessage(messageProducerClientPublic, "public.events.listing.offences-removed-from-allocated-hearing", hearingOffenceRemovedJson, hearingOffenceRemovedMetadata);
+        verifyInMessagingQueueForOffenceDeleted();
+
+        // When hearing2 was deleted
+        final Metadata metadata = metadataBuilder()
+                .withId(randomUUID())
+                .withName(PUBLIC_EVENTS_LISTING_HEARING_DELETED)
+                .withUserId(userId)
+                .build();
+        final JsonObject hearingDeletedJson = getHearingMarkedAsDeletedObject(extendedHearingId);
+
+        sendMessage(messageProducerClientPublic,
+                PUBLIC_EVENTS_LISTING_HEARING_DELETED, hearingDeletedJson, metadata);
+
+        verifyInMessagingQueueForHearingDeleted();
+
+        final String hearingIdForCTLExtension = randomUUID().toString();
+
+        // Then Hearing1 resulted with custody time limit extended
         sendMessage(messageProducerClientPublic,
                 PUBLIC_HEARING_RESULTED_V2, getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_WITH_CTL_EXTENSION + ".json", caseId,
                         hearingIdForCTLExtension, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId), JsonEnvelope.metadataBuilder()
@@ -238,6 +338,53 @@ public class CustodyTimeLimitIT extends AbstractIT {
                 .replaceAll("%RANDOM_CPS_DEFENDANT_ID%", cpsDefendantId);
 
         return body;
+    }
+
+    private void doHearingConfirmedAndVerifyForTwoProsecutionCaseAndOneDefendants(String hearingId, String caseId1, String caseId2, String defendantId1, String defendantId2, String courtCentreId, String userId) {
+
+        final Metadata metadata = metadataBuilder()
+                .withId(randomUUID())
+                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
+                .withUserId(userId)
+                .build();
+
+        final JsonObject hearingConfirmedJson = stringToJsonObjectConverter.convert(
+                getPayload(PUBLIC_LISTING_HEARING_CONFIRMED_FOR_TWO_CASE_ONE_DEFENDANT_FILE)
+                        .replaceAll("CASE_ID_1", caseId1)
+                        .replaceAll("CASE_ID_2", caseId2)
+                        .replaceAll("HEARING_ID", hearingId)
+                        .replaceAll("DEFENDANT_ID_1", defendantId1)
+                        .replaceAll("DEFENDANT_ID_2", defendantId2)
+                        .replaceAll("COURT_CENTRE_ID", courtCentreId));
+
+        sendMessage(messageProducerClientPublic,
+                PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
+
+    }
+
+    private JsonObject getOffenceRemovedFromExistngHearingJsonObject(final String hearingId,final String offenceIdToRemove) {
+        return stringToJsonObjectConverter.convert(
+                getPayload("public.hearing.selected-offences-removed-from-existing-hearing.json")
+                        .replaceAll("HEARING_ID", hearingId)
+                        .replaceAll("OFFENCE_ID_TO_REMOVE", offenceIdToRemove)
+        );
+    }
+
+    private JsonObject getHearingMarkedAsDeletedObject(final String hearingId) {
+        return new StringToJsonObjectConverter().convert(
+                getPayload("public.events.listing.hearing-deleted.json")
+                        .replaceAll("HEARING_ID", hearingId)
+        );
+    }
+
+    private void verifyInMessagingQueueForOffenceDeleted() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerOffenceDeleted);
+        assertTrue(message.isPresent());
+    }
+
+    private void verifyInMessagingQueueForHearingDeleted() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerHearingDeleted);
+        assertTrue(message.isPresent());
     }
 }
 

@@ -33,7 +33,6 @@ public class ProsecutionCaseDefendantUpdatedTransformer implements Transform {
         final List<Party> parties = new ArrayList<>();
         caseDetails.setCaseId(prosecutionCaseId.toString());
         caseDetails.set_case_type("PROSECUTION");
-        caseDetails.setCaseStatus("ACTIVE");
         parties.add(domainToIndexMapper.party(defendant));
         caseDetails.setParties(parties);
         return caseDetails;

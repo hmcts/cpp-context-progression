@@ -1,5 +1,8 @@
 package uk.gov.justice.services;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJson;
 
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -142,5 +145,16 @@ public class DefendantsListingStatusChangedTransformerTest {
         final JsonObject output = objectToJsonObjectConverter.convert(defendantsListingStatusChangedTransformer.transform(input));
 
         hearingVerificationHelper.verifyDefendant(inputDC, output, 0, 0, 0);
+    }
+
+    @Test
+    public void shouldNotGiveExceptionWhenPayloadDoesNotHaveCaseAndApplication() {
+
+        final JsonObject inputJson = readJson("/progression.event.prosecution-case-defendant-listing-status-changed-without-case-application.json");
+        final Map<String, Object> input = JsonUtils.jsonToMap(new ByteArrayInputStream(inputJson.toString().getBytes()));
+        final JsonObject output = objectToJsonObjectConverter.convert(defendantsListingStatusChangedTransformer.transform(input));
+
+        assertThat(output, is(notNullValue()));
+
     }
 }

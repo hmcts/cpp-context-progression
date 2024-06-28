@@ -12,6 +12,7 @@ import java.util.List;
 import javax.json.JsonArrayBuilder;
 import uk.gov.justice.progression.courts.HearingDeleted;
 import uk.gov.justice.progression.courts.OffenceInHearingDeleted;
+import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -87,6 +88,16 @@ public class HearingDeletedEventProcessor {
 
         offenceInHearingDeleted.getProsecutionCaseIds().forEach(prosecutionCaseId ->
                 sendCommandDecreaseListingNumberForProsecutionCase(jsonEnvelope, prosecutionCaseId, offenceInHearingDeleted.getOffenceIds())
+        );
+    }
+
+    @Handles("progression.events.offences-removed-from-hearing")
+    public void handleOffenceInHearingRemoved(final JsonEnvelope jsonEnvelope){
+        final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
+        final OffencesRemovedFromHearing offencesRemovedFromHearing = jsonObjectToObjectConverter.convert(payload, OffencesRemovedFromHearing.class);
+
+        offencesRemovedFromHearing.getProsecutionCaseIds().forEach(prosecutionCaseId ->
+                sendCommandDeleteHearingForProsecutionCase(jsonEnvelope, offencesRemovedFromHearing.getHearingId(), prosecutionCaseId)
         );
     }
 

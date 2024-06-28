@@ -11,6 +11,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
@@ -64,6 +65,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-send-notification.json";
+    private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON_WITH_ROOM = "progression.command.create-court-application-send-notification-with-room.json";
     public static final String PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON = "progression.command.send-notification-for-application.json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FILE = "public.listing.hearing-confirmed.json";
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -137,6 +139,19 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         consumerForEmailRequested.close();
         consumerForPublicEvent.close();
         consumerForIgnoreEvent.close();
+    }
+
+    @Test
+    public void shouldNotSendNotificationWhenApplicationCreatedAndRoomIdIsSet() throws Exception {
+        doReferCaseToCourtAndVerify();
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+        doHearingConfirmedAndVerify();
+        final String parentApplicationId = randomUUID().toString();
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON_WITH_ROOM, parentApplicationId);
+        verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
+        doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, parentApplicationId, false, false);
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForEmailRequested);
+        assertFalse(message.isPresent());
     }
 
     @Test

@@ -86,6 +86,7 @@ import uk.gov.justice.core.courts.SendNotificationForApplication;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
 import uk.gov.justice.core.courts.SummonsTemplateType;
 import uk.gov.justice.core.courts.SummonsType;
+import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -318,6 +319,104 @@ public class CourtApplicationProcessorTest {
     }
 
     @Test
+    public void processSendNotificationForApplicationShouldNotSendNotificationWhenCourtRoomIsSet() {
+        //Given
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.send-notification-for-application-initiated");
+        SendNotificationForApplication sendNotificationForApplication = sendNotificationForApplication()
+                .withCourtApplication(courtApplication()
+                        .withApplicationReference(STRING.next())
+                        .withId(randomUUID())
+                        .withRespondents(Arrays.asList(buildMasterDefendant(), buildMasterDefendant()))
+                        .build())
+                .withIsWelshTranslationRequired(false)
+                .withCourtHearing(courtHearingRequest()
+                        .withCourtCentre(CourtCentre.courtCentre().withRoomId(randomUUID()).build())
+                        .withEarliestStartDateTime(ZonedDateTime.now())
+                        .build())
+                .build();
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(sendNotificationForApplication);
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), SendNotificationForApplication.class)).thenReturn(sendNotificationForApplication);
+
+
+        courtApplicationProcessor.sendNotificationForApplication(event);
+        verify(notificationService, never()).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+
+        courtApplicationProcessor.sendNotificationForApplication(event);
+        verify(notificationService, never()).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+
+    }
+
+    @Test
+    public void processSendNotificationForApplicationShouldSendNotificationWhenCourtRoomIsSetAndWeekCommencingDateIsSet() {
+        //Given
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.send-notification-for-application-initiated");
+        SendNotificationForApplication sendNotificationForApplication = sendNotificationForApplication()
+                .withCourtApplication(courtApplication()
+                        .withApplicationReference(STRING.next())
+                        .withId(randomUUID())
+                        .withRespondents(Arrays.asList(buildMasterDefendant(), buildMasterDefendant()))
+                        .build())
+                .withIsWelshTranslationRequired(false)
+                .withCourtHearing(courtHearingRequest()
+                        .withCourtCentre(CourtCentre.courtCentre().withRoomId(randomUUID()).build())
+                        .withEarliestStartDateTime(ZonedDateTime.now())
+                        .withWeekCommencingDate(WeekCommencingDate.weekCommencingDate().withStartDate(LocalDate.now()).build())
+                        .build())
+                .build();
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(sendNotificationForApplication);
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), SendNotificationForApplication.class)).thenReturn(sendNotificationForApplication);
+
+
+        courtApplicationProcessor.sendNotificationForApplication(event);
+        verify(notificationService, times(1)).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+
+        courtApplicationProcessor.sendNotificationForApplication(event);
+        verify(notificationService, times(2)).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+
+    }
+
+    @Test
+    public void processSendNotificationForApplicationShouldSendNotificationWhenCourtRoomIsNotSetAndWeekCommencingDateIsSet() {
+        //Given
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.send-notification-for-application-initiated");
+        SendNotificationForApplication sendNotificationForApplication = sendNotificationForApplication()
+                .withCourtApplication(courtApplication()
+                        .withApplicationReference(STRING.next())
+                        .withId(randomUUID())
+                        .withRespondents(Arrays.asList(buildMasterDefendant(), buildMasterDefendant()))
+                        .build())
+                .withIsWelshTranslationRequired(false)
+                .withCourtHearing(courtHearingRequest()
+                        .withCourtCentre(CourtCentre.courtCentre().build())
+                        .withEarliestStartDateTime(ZonedDateTime.now())
+                        .withWeekCommencingDate(WeekCommencingDate.weekCommencingDate().withStartDate(LocalDate.now()).build())
+                        .build())
+                .build();
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(sendNotificationForApplication);
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), SendNotificationForApplication.class)).thenReturn(sendNotificationForApplication);
+
+
+        courtApplicationProcessor.sendNotificationForApplication(event);
+        verify(notificationService, times(1)).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+
+        courtApplicationProcessor.sendNotificationForApplication(event);
+        verify(notificationService, times(2)).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+
+    }
+
+    @Test
     public void processDoNotSendNotificationForApplicationWhenCourtHearingRequestIsEmpty() {
         //Given
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.send-notification-for-application-initiated");
@@ -472,9 +571,7 @@ public class CourtApplicationProcessorTest {
         final UUID applicationId = randomUUID();
 
         final String caseId_1 = randomUUID().toString();
-        final String caseId_2 = randomUUID().toString();
         final String masterDefendantId1 = randomUUID().toString();
-        final String masterDefendantId2 = randomUUID().toString();
 
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-boxwork");
 
@@ -482,7 +579,6 @@ public class CourtApplicationProcessorTest {
         inputPayload = inputPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
                 .replaceAll("RANDOM_ARN", STRING.next())
                 .replace("CASE_ID_1", caseId_1)
-                .replace("CASE_ID_2", caseId_2)
                 .replace("MASTER_DEFENDANT_ID", masterDefendantId1);
 
         final JsonObject payload = stringToJsonObjectConverter.convert(inputPayload);
@@ -495,9 +591,6 @@ public class CourtApplicationProcessorTest {
                                         .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
                                 )))).build()));
 
-        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_2)))
-                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId_2).add("defendants", createArrayBuilder()
-                        .add(createObjectBuilder().add("masterDefendantId", masterDefendantId2)))).build()));
 
         //When
         courtApplicationProcessor.processBoxWorkApplication(event);
@@ -512,7 +605,6 @@ public class CourtApplicationProcessorTest {
         String expectedPayload = Resources.toString(getResource("expected.progression.event.application-referred-to-boxwork-without-case.json"), defaultCharset());
         expectedPayload = expectedPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
                 .replace("CASE_ID_1", caseId_1)
-                .replace("CASE_ID_2", caseId_2)
                 .replace("MASTER_DEFENDANT_ID", masterDefendantId1);
 
         assertEquals(expectedPayload, currentEvents.get(0).payload().toString(), getCustomComparator());
@@ -529,7 +621,7 @@ public class CourtApplicationProcessorTest {
 
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-boxwork");
 
-        String inputPayload = Resources.toString(getResource("progression.event.application-referred-to-boxwork.json"), defaultCharset());
+        String inputPayload = Resources.toString(getResource("progression.event.application-referred-to-boxwork-with-multiple-case.json"), defaultCharset());
         inputPayload = inputPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
                 .replaceAll("RANDOM_ARN", STRING.next())
                 .replace("CASE_ID_1", caseId_1)
@@ -595,9 +687,7 @@ public class CourtApplicationProcessorTest {
         final UUID applicationId = randomUUID();
 
         final String caseId_1 = randomUUID().toString();
-        final String caseId_2 = randomUUID().toString();
         final String masterDefendantId1 = randomUUID().toString();
-        final String masterDefendantId2 = randomUUID().toString();
         final String OFFENCE_ID_1 = randomUUID().toString();
         final String OFFENCE_ID_2 = randomUUID().toString();
 
@@ -607,7 +697,6 @@ public class CourtApplicationProcessorTest {
         inputPayload = inputPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
                 .replaceAll("RANDOM_ARN", STRING.next())
                 .replace("CASE_ID_1", caseId_1)
-                .replace("CASE_ID_2", caseId_2)
                 .replace("MASTER_DEFENDANT_ID", masterDefendantId1);
 
         final JsonObject payload = stringToJsonObjectConverter.convert(inputPayload);
@@ -623,10 +712,6 @@ public class CourtApplicationProcessorTest {
                         ))
                 ).build()));
 
-        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_2)))
-                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId_2).add("defendants", createArrayBuilder()
-                        .add(createObjectBuilder().add("masterDefendantId", masterDefendantId2)))).build()));
-
         //When
         courtApplicationProcessor.processBoxWorkApplication(event);
 
@@ -640,7 +725,6 @@ public class CourtApplicationProcessorTest {
         String expectedPayload = Resources.toString(getResource("expected.progression.event.application-referred-to-boxwork.json"), defaultCharset());
         expectedPayload = expectedPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
                 .replace("CASE_ID_1", caseId_1)
-                .replace("CASE_ID_2", caseId_2)
                 .replace("MASTER_DEFENDANT_ID", masterDefendantId1)
                 .replace("OFFENCE_ID_1", OFFENCE_ID_1)
                 .replace("OFFENCE_ID_2", OFFENCE_ID_2);
@@ -657,15 +741,12 @@ public class CourtApplicationProcessorTest {
 
         String inputPayload = Resources.toString(getResource("progression.event.application-referred-to-court-hearing.json"), defaultCharset());
         final String caseId_1 = randomUUID().toString();
-        final String caseId_2 = randomUUID().toString();
         final String masterDefendantId1 = randomUUID().toString();
-        final String masterDefendantId2 = randomUUID().toString();
         final String OFFENCE_ID_1 = randomUUID().toString();
         final String OFFENCE_ID_2 = randomUUID().toString();
         inputPayload = inputPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
                 .replaceAll("RANDOM_ARN", STRING.next())
                 .replace("CASE_ID_1", caseId_1)
-                .replace("CASE_ID_2", caseId_2)
                 .replace("MASTER_DEFENDANT_ID", masterDefendantId1);
 
         final JsonObject payload = stringToJsonObjectConverter.convert(inputPayload);
@@ -681,11 +762,7 @@ public class CourtApplicationProcessorTest {
                                                 .add(createObjectBuilder().add("id", OFFENCE_ID_2).add("proceedingsConcluded", false)))
                                 ))).build()));
 
-        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_2)))
-                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase",
-                        createObjectBuilder().add("id", caseId_2)
-                                .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId2).add("offences", createArrayBuilder().add(createObjectBuilder()))))
-                ).build()));
+
 
         //When
         courtApplicationProcessor.processCourtApplicationReferredToCourtHearing(event);
@@ -696,10 +773,11 @@ public class CourtApplicationProcessorTest {
         final ListCourtHearing expectedListCourtHearing = captor.getValue();
         String expectedPayload = Resources.toString(getResource("expected.progression.event.application-referred-to-court-hearing.json"), defaultCharset());
         expectedPayload = expectedPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
-                .replace("CASE_ID_1", caseId_1).replace("CASE_ID_2", caseId_2)
+                .replace("CASE_ID_1", caseId_1)
                 .replace("MASTER_DEFENDANT_ID", masterDefendantId1)
                 .replace("OFFENCE_ID_1", OFFENCE_ID_1)
                 .replace("OFFENCE_ID_2", OFFENCE_ID_2);
+
         assertEquals(expectedPayload, objectToJsonObjectConverter.convert(expectedListCourtHearing).toString(), new CustomComparator(STRICT,
                 new Customization("hearings[0].id", (o1, o2) -> o1 != null && o2 != null),
                 new Customization("hearings[0].courtApplications[0].id", (o1, o2) -> o1 != null && o2 != null)

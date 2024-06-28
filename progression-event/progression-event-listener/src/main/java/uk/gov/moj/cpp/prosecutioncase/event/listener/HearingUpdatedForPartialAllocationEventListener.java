@@ -21,8 +21,10 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearin
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 import java.io.StringReader;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -72,7 +74,9 @@ public class HearingUpdatedForPartialAllocationEventListener {
         final JsonObject dbHearingJsonObject = jsonFromString(dbHearingEntity.getPayload());
         final Hearing dbHearing = jsonObjectToObjectConverter.convert(dbHearingJsonObject, Hearing.class);
 
-        removeProsecutionCasesFromHearing(dbHearing, caseDefendantOffenceMap);
+        final Set<UUID> removedDefendantIdsFromHearing = new HashSet<>();
+        removeProsecutionCasesFromHearing(dbHearing, caseDefendantOffenceMap, removedDefendantIdsFromHearing);
+        removeDefenceCounselsFromHearing(dbHearing, removedDefendantIdsFromHearing);
 
         final JsonObject updatedJsonObject = objectToJsonObjectConverter.convert(dbHearing);
         dbHearingEntity.setPayload(updatedJsonObject.toString());
@@ -105,7 +109,7 @@ public class HearingUpdatedForPartialAllocationEventListener {
         return object;
     }
 
-    private void removeProsecutionCasesFromHearing(final Hearing hearing, final Map<UUID, Map<UUID, List<UUID>>> caseDefendantOffenceMap) {
+    private void removeProsecutionCasesFromHearing(final Hearing hearing, final Map<UUID, Map<UUID, List<UUID>>> caseDefendantOffenceMap, final Set<UUID> removedDefendantIdsFromHearing) {
         hearing.getProsecutionCases().forEach(prosecutionCase -> {
 
             prosecutionCase.getDefendants().forEach(defendant -> {
@@ -118,6 +122,7 @@ public class HearingUpdatedForPartialAllocationEventListener {
                 );
 
                 if (defendant.getOffences().isEmpty()) {
+                    removedDefendantIdsFromHearing.add(defendant.getId());
                     removeFromCaseDefendantHearingMappingTable(hearing.getId(), prosecutionCase.getId(), defendant.getId()); //remove defendant from mapping table since it will be deleted in the next step
                 }
             });
@@ -127,4 +132,10 @@ public class HearingUpdatedForPartialAllocationEventListener {
         hearing.getProsecutionCases().removeIf(prosecutionCase -> prosecutionCase.getDefendants().isEmpty()); //remove case if all defendants are already removed
     }
 
+    private void removeDefenceCounselsFromHearing(final Hearing hearing, final Set<UUID> removedDefendantIdsFromHearing) {
+        if(nonNull(hearing.getDefenceCounsels()) && !hearing.getDefenceCounsels().isEmpty()) {
+            hearing.getDefenceCounsels().forEach(defenceCounsel -> defenceCounsel.getDefendants().removeIf(removedDefendantIdsFromHearing::contains));
+            hearing.getDefenceCounsels().removeIf(defenceCounsel -> defenceCounsel.getDefendants().isEmpty());
+        }
+    }
 }

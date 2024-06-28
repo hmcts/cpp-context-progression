@@ -348,4 +348,64 @@ public class CustodyTimeLimitEventListenerTest {
         assertThat(hearings2Offence2.getCustodyTimeLimit().getTimeLimit(), is(timeLimit));
         assertThat(hearings2Offence2.getCustodyTimeLimit().getIsCtlExtended(), nullValue());
     }
+
+    @Test
+    public void shouldProcessCustodyTimeLimitExtendedWhenHearingDeletedToReplayDLQ() throws IOException {
+        final UUID hearing1Id = randomUUID();
+        final UUID hearing2Id = randomUUID();
+        final UUID offence1Id = randomUUID();
+        final UUID offence2Id = randomUUID();
+        final UUID caseId = randomUUID();
+        final LocalDate extendedCTL = LocalDate.now().plusDays(56);
+        final LocalDate timeLimit = LocalDate.now();
+
+        final HearingEntity hearingEntity1 = new HearingEntity();
+        hearingEntity1.setHearingId(hearing1Id);
+        final HearingEntity hearingEntity2 = new HearingEntity();
+        hearingEntity2.setHearingId(hearing2Id);
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(caseId);
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
+                        .withOffences(new ArrayList<>(Arrays.asList(Offence.offence()
+                                .withId(offence1Id)
+                                .build(), Offence.offence()
+                                .withId(offence2Id)
+                                .withCustodyTimeLimit(CustodyTimeLimit.custodyTimeLimit()
+                                        .withTimeLimit(timeLimit)
+                                        .build())
+                                .build())))
+                        .build())))
+                .build();
+        hearingEntity1.setPayload(objectMapper.writeValueAsString(Hearing.hearing()
+                .withId(hearing1Id)
+                .withProsecutionCases(Arrays.asList(prosecutionCase))
+                .build()));
+
+        prosecutionCaseEntity.setPayload(objectMapper.writeValueAsString(prosecutionCase));
+
+        when(custodyTimeLimitExtendedEnvelope.payload()).thenReturn(CustodyTimeLimitExtended.custodyTimeLimitExtended()
+                .withHearingIds(Arrays.asList(hearing1Id, hearing2Id))
+                .withOffenceId(offence1Id)
+                .withExtendedTimeLimit(extendedCTL)
+                .build());
+
+        when(hearingRepository.findBy(hearing1Id)).thenReturn(hearingEntity1);
+        when(hearingRepository.findBy(hearing2Id)).thenReturn(null);
+
+        custodyTimeLimitEventListener.processCustodyTimeLimitExtended(custodyTimeLimitExtendedEnvelope);
+
+        verify(hearingRepository, times(1)).save(hearingEntityArgumentCaptor.capture());
+
+        final List<HearingEntity> allCaptorValues = hearingEntityArgumentCaptor.getAllValues();
+        final HearingEntity savedHearingEntity1 = allCaptorValues.get(0);
+
+        final Hearing dbHearing1 = objectMapper.readValue(savedHearingEntity1.getPayload(), Hearing.class);
+        final Offence hearing1sOffence1 = dbHearing1.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0);
+        final Offence hearings1Offence2 = dbHearing1.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(1);
+        assertThat(hearing1sOffence1.getCustodyTimeLimit().getTimeLimit(), is(extendedCTL));
+        assertThat(hearings1Offence2.getCustodyTimeLimit().getTimeLimit(), is(timeLimit));
+
+    }
 }

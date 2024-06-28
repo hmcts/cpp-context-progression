@@ -354,7 +354,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
         //When
         eventProcessor.process(jsonEnvelope);
-        verify(sender, times(6)).send(envelopeCaptor.capture());
+        verify(sender, times(10)).send(envelopeCaptor.capture());
 
         assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), is("progression.command.process-matched-defendants"));
         assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("prosecutionCaseId"), is(PROSECUTION_CASE_ID.toString()));

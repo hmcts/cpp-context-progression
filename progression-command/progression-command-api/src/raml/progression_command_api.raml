@@ -1464,3 +1464,21 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
     responses:
       202:
         description: Accepted
+/hearings/{hearingId}/result-bdf:
+  post:
+    description:  |
+      Republish hearing details in unified search
+      ...
+      (mapping):
+          requestType: application/vnd.progression.result-hearing-bdf+json
+          name: progression.result-hearing-bdf
+      ...
+    body:
+      application/vnd.progression.result-hearing-bdf+json:
+        example:
+          !include json/progression.result-hearing-bdf.json
+        schema:
+          !include json/schema/progression.result-hearing-bdf.json
+    responses:
+      202:
+        description: OK

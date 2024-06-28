@@ -153,6 +153,7 @@ import uk.gov.justice.progression.event.OpaResultListNoticeGenerated;
 import uk.gov.justice.progression.event.OpaResultListNoticeSent;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.justice.staginghmi.courts.UpdateHearingFromHmi;
+import uk.gov.moj.cpp.progression.court.HearingResultedBdf;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.NextHearingDetails;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.OpaNoticeHelper;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
@@ -995,6 +996,11 @@ public class HearingAggregate implements Aggregate {
         }
 
         return populateHearingObjectStream(hearingId);
+    }
+    public Stream<Object> resultHearingByBdf(final UUID hearingId) {
+        return apply(Stream.of(HearingResultedBdf.hearingResultedBdf()
+                .withHearingId(hearingId)
+                .build()));
     }
 
     private Stream<Object> populateHearingObjectStream(final UUID hearingId) {
