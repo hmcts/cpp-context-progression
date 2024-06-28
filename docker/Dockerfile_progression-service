@@ -5,8 +5,8 @@ FROM {base_image}
 ARG version
 ARG repo_loc=https://libraries-internal.mdv.cpp.nonlive/artifactory/repocentral
 ARG framework_libraries_version=8.0.7
-ARG framework_version=8.0.7
-ARG eventstore_version=8.3.6
+ARG framework_version=8.0.8
+ARG eventstore_version=8.3.8
 ARG activiti_version=5.22.0
 ARG wildfly_home=/opt/wildfly
 ARG wildfly_user=wildfly

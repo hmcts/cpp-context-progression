@@ -17,7 +17,7 @@
 #
 ##################################################################################################
 
-FRAMEWORK_VERSION=8.0.4
+FRAMEWORK_VERSION=8.0.8
 CONTEXT_NAME="progression"
 USER_NAME="admin"
 PASSWORD="admin"
@@ -41,8 +41,17 @@ if [ -z "$1" ]; then
   java -jar "$JAR" -l -u "$USER_NAME" -pw "$PASSWORD" -cn "$CONTEXT_NAME"
 elif [ "$1" == "--help" ]; then
   java -jar "$JAR" --help -u "$USER_NAME" -pw "$PASSWORD" -cn "$CONTEXT_NAME"
+fi
+
+COMMAND=$1
+
+if [ ! -z "$2" ]; then
+  COMMAND_RUNTIME_ID=$2
+  echo "Running command '$COMMAND' with command runtime id '$COMMAND_RUNTIME_ID'"
+  echo
+  echo "Starting JMX client..."
+  java -jar "$JAR" -c "$COMMAND" -crid "$COMMAND_RUNTIME_ID" -u "$USER_NAME" -pw "$PASSWORD" -cn "$CONTEXT_NAME"
 else
-  COMMAND=$1
   echo "Running command '$COMMAND'"
   echo
   echo "Starting JMX client..."

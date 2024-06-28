@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>10.9.5</version>
+        <version>10.9.10</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -57,7 +57,7 @@
             **/uk/gov/justice/services/domain/CaseDocuments.java,
             **/uk/gov/moj/cpp/progression/value/object/**/*
         </sonar.exclusions>
-        <cpp.platform-libraries.version>8.3.25</cpp.platform-libraries.version>
+        <cpp.platform-libraries.version>8.3.28</cpp.platform-libraries.version>
         <file-alfresco.version>2.3.0</file-alfresco.version>
         <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
@@ -97,12 +97,6 @@
                     <archiveClasses>true</archiveClasses>
                     <attachClasses>true</attachClasses>
                 </configuration>
-            </plugin>
-            <!-- added  plugin to fix  SRE-19114 -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>sonar-maven-plugin</artifactId>
-                <version>3.11.0.3922</version>
             </plugin>
 
         </plugins>
