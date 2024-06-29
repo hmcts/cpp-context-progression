@@ -2,9 +2,13 @@ package uk.gov.moj.cpp.progression.query.api;
 
 
 import static java.util.Objects.nonNull;
+import static java.util.UUID.fromString;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.addProperty;
 
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -13,6 +17,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 import uk.gov.moj.cpp.progression.query.api.service.CourtOrderService;
 import uk.gov.moj.cpp.progression.query.api.service.OrganisationService;
+import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
 
 import java.util.Optional;
 import java.util.Set;
@@ -42,6 +47,8 @@ public class ProsecutionCaseQueryApi {
     private static final String ORGANISATION_ADDRESS = "organisationAddress";
     private static final String CASE_ID = "caseId";
     private static final String REPRESENTATION = "representation";
+    public static final String NON_CPS_PROSECUTORS = "Non CPS Prosecutors";
+    public static final String ORGANISATION_MIS_MATCH = "OrganisationMisMatch";
 
     @Inject
     private Requester requester;
@@ -55,12 +62,29 @@ public class ProsecutionCaseQueryApi {
     @Inject
     private CourtOrderService courtOrderService;
 
+    @Inject
+    private UsersGroupQueryService usersGroupQueryService;
+
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @SuppressWarnings("squid:S3655")
     @Handles("progression.query.prosecutioncase")
     public JsonEnvelope getCaseProsecutionCase(final JsonEnvelope query) {
 
         final JsonEnvelope appQueryResponse = prosecutionCaseQuery.getProsecutionCase(query);
         final JsonObject queryViewPayload = appQueryResponse.payloadAsJsonObject();
         final JsonObject prosecutionCase = appQueryResponse.payloadAsJsonObject().getJsonObject("prosecutionCase");
+
+        final UUID userId = query.metadata().userId().isPresent() ? fromString(query.metadata().userId().get()) : null;
+
+        final ProsecutionCase prosecutionCaseObject = jsonObjectToObjectConverter.convert(prosecutionCase, ProsecutionCase.class);
+
+        final Optional<String> orgMatch  = usersGroupQueryService.validateNonCPSUserOrg(query.metadata(), userId, NON_CPS_PROSECUTORS, prosecutionCaseObject.getProsecutionCaseIdentifier().getProsecutionAuthorityCode());
+
+        if(orgMatch.isPresent() && ORGANISATION_MIS_MATCH.equals(orgMatch.get())){
+            throw new ForbiddenRequestException("Forbidden!! Non CPS Prosecutor user cannot view court documents if it is not belongs to the same Prosecuting Authority of the user logged in");
+        }
 
         if (nonNull(prosecutionCase)) {
             final JsonArray defendants = prosecutionCase.getJsonArray(DEFENDANTS);

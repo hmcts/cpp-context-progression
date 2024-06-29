@@ -116,11 +116,12 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
 
 
         addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
-        addCourtDocumentCaseLevel("expected/expected.progression.add-court-document-for-email-caselevel.json", caseId, docId);
-
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
                 withJsonPath("$.hearingsAtAGlance.id", is(caseId))
         )));
+        addCourtDocumentCaseLevel("expected/expected.progression.add-court-document-for-email-caselevel.json", caseId, docId);
+
+
         verifyInMessagingQueueForPublicCourtDocumentAdded();
         verifyInMessagingQueueForEmailSendForDocumentAdded(caseId, defendant1FirstName, defendant1LastName, defendant2FirstName, defendant2LastName, false);
     }

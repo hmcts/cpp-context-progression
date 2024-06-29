@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 import static java.util.Objects.nonNull;
+import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -17,6 +18,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.query.ApplicationQueryView;
+import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +35,9 @@ public class ApplicationQueryApi {
 
     public static final String ASSIGNED_USER_FIELD_NAME = "assignedUser";
     public static final String LINKED_CASES = "linkedCases";
+    private static final String NON_CPS_PROSECUTORS = "Non CPS Prosecutors";
+    private static final String GROUPS = "groups";
+    public static final String GROUP_NAME = "groupName";
 
     @Inject
     private Requester requester;
@@ -52,13 +57,16 @@ public class ApplicationQueryApi {
     @Inject
     private UserDetailsLoader userDetailsLoader;
 
+    @Inject
+    private UsersGroupQueryService usersGroupQueryService;
+
     @Handles("progression.query.application")
     public JsonEnvelope getApplication(final JsonEnvelope query) {
         final JsonEnvelope appQueryResponse = applicationQueryView.getApplication(query);
         JsonEnvelope response = appQueryResponse;
         final JsonObject jsonObject = appQueryResponse.payloadAsJsonObject();
         if (jsonObject.containsKey(ASSIGNED_USER_FIELD_NAME)) {
-            final UUID id = UUID.fromString(jsonObject.getJsonObject(ASSIGNED_USER_FIELD_NAME).getString("userId"));
+            final UUID id = fromString(jsonObject.getJsonObject(ASSIGNED_USER_FIELD_NAME).getString("userId"));
             final UserGroupsUserDetails userGroupsUserDetails = userDetailsLoader.getUserById(requester, query, id);
             final AssignedUser assignedUser = AssignedUser.assignedUser()
                     .withLastName(userGroupsUserDetails.getLastName())
@@ -101,16 +109,22 @@ public class ApplicationQueryApi {
     }
 
     @Handles("progression.query.application.aaag-for-defence")
+    @SuppressWarnings("squid:S3655")
     public JsonEnvelope getCourtApplicationForApplicationAtAGlanceForDefence(final JsonEnvelope query) {
         final Metadata metadata = metadataFrom(query.metadata())
                 .withName("progression.query.application.aaag").build();
+        final UUID userId = metadata.userId().isPresent() ? fromString(metadata.userId().get()) : null;
+        final boolean isNonCPSUserWithValidProsecutingAuthority =  usersGroupQueryService.getUserGroups(metadata, userId).getJsonArray(GROUPS).getValuesAs(JsonObject.class).stream()
+                .anyMatch(userGroup -> NON_CPS_PROSECUTORS.equals(userGroup.getString(GROUP_NAME)));
+
+
         final JsonEnvelope applicationAaagEnvelope = envelopeFrom(metadata, query.payload());
         final JsonEnvelope jsonEnvelope = applicationQueryView.getCourtApplicationForApplicationAtAGlance(applicationAaagEnvelope);
         if (!jsonEnvelope.payloadAsJsonObject().containsKey(LINKED_CASES)) {
             throw new ForbiddenRequestException("Cannot view application details, no linked cases found for the application");
         } else {
             final JsonArray linkedCases = jsonEnvelope.payloadAsJsonObject().getJsonArray(LINKED_CASES);
-            if (nonNull(linkedCases)) {
+            if (!isNonCPSUserWithValidProsecutingAuthority && nonNull(linkedCases)) {
                 final Optional<JsonValue> linkedCase = linkedCases.stream()
                         .filter(lc -> defenceQueryService.isUserProsecutingOrDefendingCase(query, ((JsonObject) lc).getString("prosecutionCaseId")))
                         .findFirst();

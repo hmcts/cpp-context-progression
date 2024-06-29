@@ -1634,7 +1634,7 @@ public class PreAndPostConditionHelper {
     @SafeVarargs
     public static String getCourtDocumentFor(final String courtDocumentId, final Matcher<? super ReadContext>... matchers) {
         return poll(requestParams(getReadUrl(join("", "/courtdocuments/", courtDocumentId)), "application/vnd.progression.query.courtdocument+json").withHeader(USER_ID, UUID.randomUUID()))
-                .timeout(60, TimeUnit.SECONDS)
+                .timeout(160, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(

@@ -16,10 +16,12 @@ import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.removeProperty
 import uk.gov.justice.api.resource.service.DefenceQueryService;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.courts.progression.query.Courtdocuments;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -29,7 +31,10 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.query.ApplicationQueryView;
 import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
+import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 import uk.gov.moj.cpp.progression.query.SharedCourtDocumentsQueryView;
+import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +64,8 @@ public class CourtDocumentQueryApi {
     static final String CASE_ID = "caseId";
     public static final String DEFENDANT_ID = "defendantId";
     public static final String APPLICATION_ID = "applicationId";
+    public static final String NON_CPS_PROSECUTORS = "Non CPS Prosecutors";
+    public static final String ORGANISATION_MIS_MATCH = "OrganisationMisMatch";
 
     @Inject
     private Requester requester;
@@ -89,6 +96,18 @@ public class CourtDocumentQueryApi {
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Inject
+    private UsersGroupQueryService usersGroupQueryService;
+
+    @Inject
+    private ProsecutionCaseRepository prosecutionCaseRepository;
+
+    @Inject
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
+
+    @Inject
+    private ProsecutionCaseQuery prosecutionCaseQuery;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentQueryApi.class);
 
@@ -172,13 +191,31 @@ public class CourtDocumentQueryApi {
     }
 
 
+    @SuppressWarnings("squid:S3655")
     @Handles(COURT_DOCUMENTS_SEARCH_PROSECUTION)
     public JsonEnvelope searchCourtDocumentsForProsecution(final JsonEnvelope query) {
+
+        boolean isProsecutingCase = true;
 
         if (!query.payloadAsJsonObject().containsKey(CASE_ID) && !query.payloadAsJsonObject().containsKey(APPLICATION_ID)) {
             throw new BadRequestException(String.format("%s no search parameter specified ", COURT_DOCUMENTS_SEARCH_PROSECUTION));
         }
-        final boolean isProsecutingCase = defenceQueryService.isUserProsecutingCase(query, query.payloadAsJsonObject().getString(CASE_ID));
+        final UUID userId = query.metadata().userId().isPresent() ? fromString(query.metadata().userId().get()) : null;
+
+        final JsonEnvelope appQueryResponse = prosecutionCaseQuery.getProsecutionCase(query);
+        final JsonObject prosecutionCase = appQueryResponse.payloadAsJsonObject().getJsonObject("prosecutionCase");
+
+        final ProsecutionCase prosecutionCaseObj = jsonObjectToObjectConverter.convert(prosecutionCase, ProsecutionCase.class);
+
+        final Optional<String> orgMatch  = usersGroupQueryService.validateNonCPSUserOrg(query.metadata(), userId, NON_CPS_PROSECUTORS, prosecutionCaseObj.getProsecutionCaseIdentifier().getProsecutionAuthorityCode());
+
+        if(orgMatch.isPresent()) {
+            if (ORGANISATION_MIS_MATCH.equals(orgMatch.get())) {
+                throw new ForbiddenRequestException("Forbidden!! Non CPS Prosecutor user cannot view court documents if it is not belongs to the same Prosecuting Authority of the user logged in");
+            }
+        } else {
+            isProsecutingCase = defenceQueryService.isUserProsecutingCase(query, query.payloadAsJsonObject().getString(CASE_ID));
+        }
 
         if (!query.payloadAsJsonObject().containsKey(APPLICATION_ID) && !isProsecutingCase) {
             throw new ForbiddenRequestException("Forbidden!! Cannot view court documents, user not prosecuting the case");

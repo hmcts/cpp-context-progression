@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.command;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -10,6 +11,7 @@ import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.removeProperty;
 
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
@@ -21,6 +23,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.command.api.UserDetailsLoader;
 import uk.gov.moj.cpp.progression.command.service.DefenceQueryService;
+import uk.gov.moj.cpp.progression.command.service.ProsecutionCaseQueryService;
+import uk.gov.moj.cpp.progression.command.service.UserGroupQueryService;
 import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
@@ -37,12 +41,20 @@ public class AddCourtDocumentApi {
     private static final String IS_UNBUNDLED_DOCUMENT = "isUnbundledDocument";
     public static final String COURT_DOCUMENT = "courtDocument";
     public static final String DOCUMENT_TYPE_ID = "documentTypeId";
+    private static final String NON_CPS_PROSECUTORS = "Non CPS Prosecutors";
+    private static final String ORGANISATION_MIS_MATCH = "OrganisationMisMatch";
 
     @Inject
     private RefDataService referenceDataService;
 
     @Inject
     private DefenceQueryService defenceQueryService;
+
+    @Inject
+    private UserGroupQueryService userGroupQueryService;
+
+    @Inject
+    private ProsecutionCaseQueryService prosecutionCaseQueryService;
 
     @Inject
     private Sender sender;
@@ -62,12 +74,16 @@ public class AddCourtDocumentApi {
         sender.send(envelopeFrom(prepareMetadataForAddCourtDocument(envelope), preparePayloadForAddCourtDocument(envelope)));
     }
 
+    @SuppressWarnings("squid:S3655")
     @Handles("progression.add-court-document-for-prosecutor")
     public void handleAddCourtDocumentForProsecutor(final JsonEnvelope envelope) {
         final Optional<DocumentTypeAccessReferenceData> documentTypeAccessReferenceData = referenceDataService.getDocumentTypeAccessReferenceData(requester, getDocumentTypeId(envelope));
         final Optional<UUID> caseId = getCaseId(envelope.payloadAsJsonObject());
-        if (caseId.isPresent() && !defenceQueryService.isUserProsecutingCase(envelope, caseId.get())) {
-            throw new ForbiddenRequestException("Forbidden!! Cannot view court documents, user not prosecuting the case");
+        final UUID userId = envelope.metadata().userId().isPresent() ? fromString(envelope.metadata().userId().get()) : null;
+
+        if (caseId.isPresent()) {
+            final Optional<JsonObject> prosecutionCase = prosecutionCaseQueryService.getProsecutionCase(envelope, caseId.get());
+            checkForbiddenRequest(envelope, caseId, userId, prosecutionCase);
         }
 
         if (documentTypeAccessReferenceData.isPresent() && toBoolean(documentTypeAccessReferenceData.get().getDefenceOnly())) {
@@ -75,6 +91,21 @@ public class AddCourtDocumentApi {
         }
 
         sender.send(envelopeFrom(prepareMetadataForAddCourtDocument(envelope), preparePayloadForAddCourtDocument(envelope)));
+    }
+
+    @SuppressWarnings("squid:S3655")
+    private void checkForbiddenRequest(final JsonEnvelope envelope, final Optional<UUID> caseId, final UUID userId, final Optional<JsonObject> prosecutionCase) {
+        if (prosecutionCase.isPresent()) {
+            final ProsecutionCase prosecutionCaseObj = jsonObjectToObjectConverter.convert(prosecutionCase.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
+            final Optional<String> orgMatch = userGroupQueryService.validateNonCPSUserOrg(envelope, userId, NON_CPS_PROSECUTORS, prosecutionCaseObj.getProsecutionCaseIdentifier().getProsecutionAuthorityCode());
+            if (orgMatch.isPresent()) {
+                if (ORGANISATION_MIS_MATCH.equals(orgMatch.get())) {
+                    throw new ForbiddenRequestException("Forbidden!! Non CPS Prosecutor user cannot view court documents if it is not belongs to the same Prosecuting Authority of the user logged in");
+                }
+            } else if (!defenceQueryService.isUserProsecutingCase(envelope, caseId.get())) {
+                throw new ForbiddenRequestException("Forbidden!! Cannot view court documents, user not prosecuting the case");
+            }
+        }
     }
 
     private Optional<UUID> getCaseId(final JsonObject payloadAsJsonObject) {

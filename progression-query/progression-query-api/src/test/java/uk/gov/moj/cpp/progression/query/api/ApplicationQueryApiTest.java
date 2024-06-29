@@ -19,6 +19,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.query.ApplicationQueryView;
+import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
 
 import java.util.HashSet;
 import java.util.UUID;
@@ -78,6 +79,9 @@ public class ApplicationQueryApiTest {
 
     @Mock
     private DefenceQueryService defenceQueryService;
+
+    @Mock
+    private UsersGroupQueryService usersGroupQueryService;
 
     private Object suppliedObject;
 
@@ -156,6 +160,11 @@ public class ApplicationQueryApiTest {
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
 
         when(applicationQueryView.getCourtApplicationForApplicationAtAGlance(any())).thenReturn(envelope);
+        when(usersGroupQueryService.getUserGroups(any(), any())).thenReturn(Json.createObjectBuilder()
+                .add("groups", createArrayBuilder()
+                        .add(createObjectBuilder().add("groupName", "Non CPS Prosecutors").build())
+                        .build())
+                .build());
 
         applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope);
     }
@@ -173,6 +182,10 @@ public class ApplicationQueryApiTest {
 
         when(applicationQueryView.getCourtApplicationForApplicationAtAGlance(any())).thenReturn(envelope);
         when(defenceQueryService.isUserProsecutingOrDefendingCase(envelope, caseId)).thenReturn(false);
+        when(usersGroupQueryService.getUserGroups(any(), any())).thenReturn(Json.createObjectBuilder()
+                .add("groups", createArrayBuilder()
+                        .build())
+                .build());
 
         applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope);
     }
@@ -190,6 +203,11 @@ public class ApplicationQueryApiTest {
 
         when(applicationQueryView.getCourtApplicationForApplicationAtAGlance(any())).thenReturn(envelope);
         when(defenceQueryService.isUserProsecutingOrDefendingCase(envelope, caseId)).thenReturn(true);
+        when(usersGroupQueryService.getUserGroups(any(), any())).thenReturn(Json.createObjectBuilder()
+                .add("groups", createArrayBuilder()
+                        .add(createObjectBuilder().add("groupName", "Non CPS Prosecutors").build())
+                        .build())
+                .build());
 
         JsonEnvelope response = applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope);
 

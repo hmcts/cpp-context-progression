@@ -1,6 +1,7 @@
 package uk.gov.justice.api.resource.service;
 
 import static java.util.Collections.emptyList;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
@@ -23,6 +24,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.json.JsonString;
+import javax.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,7 @@ public class DefenceQueryService {
     private static final String DEFENDING = "defending";
     private static final String IS_ADVOCATE_DEFENDING_OR_PROSECUTING = "isAdvocateDefendingOrProsecuting";
 
+
     @Inject
     @ServiceComponent(QUERY_API)
     private Requester requester;
@@ -44,9 +47,14 @@ public class DefenceQueryService {
     private Enveloper enveloper;
 
     public boolean isUserProsecutingCase(final JsonEnvelope jsonEnvelope, final String caseId) {
+
         final JsonEnvelope roleInCaseEnvelope = queryRoleInCase(jsonEnvelope, caseId);
 
-        return Optional.ofNullable(roleInCaseEnvelope)
+        if (isNull(roleInCaseEnvelope) || !JsonValue.ValueType.OBJECT.equals(roleInCaseEnvelope.payload().getValueType())) {
+            return false;
+        }
+
+        return Optional.of(roleInCaseEnvelope)
                 .map(JsonEnvelope::payloadAsJsonObject)
                 .filter(json -> nonNull(json.get(IS_ADVOCATE_DEFENDING_OR_PROSECUTING)))
                 .map(json -> PROSECUTING.equals(json.getString(IS_ADVOCATE_DEFENDING_OR_PROSECUTING))
@@ -57,7 +65,11 @@ public class DefenceQueryService {
     public boolean isUserProsecutingOrDefendingCase(final Envelope<?> jsonEnvelope, final String caseId) {
         final JsonEnvelope roleInCaseEnvelope = queryRoleInCase(jsonEnvelope, caseId);
 
-        return Optional.ofNullable(roleInCaseEnvelope)
+        if (roleInCaseEnvelope == null || !JsonValue.ValueType.OBJECT.equals(roleInCaseEnvelope.payload().getValueType())) {
+            return false;
+        }
+
+        return Optional.of(roleInCaseEnvelope)
                 .map(JsonEnvelope::payloadAsJsonObject)
                 .filter(json -> nonNull(json.get(IS_ADVOCATE_DEFENDING_OR_PROSECUTING)))
                 .map(json -> PROSECUTING.equals(json.getString(IS_ADVOCATE_DEFENDING_OR_PROSECUTING))

@@ -3,12 +3,14 @@ package uk.gov.moj.cpp.progression;
 import com.google.common.io.Resources;
 import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 import uk.gov.moj.cpp.progression.util.FileUtil;
 
@@ -19,6 +21,7 @@ import java.util.UUID;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -37,6 +40,7 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAdvocateRoleInCaseByCaseId;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupDefenceClientPermission;
@@ -47,6 +51,9 @@ public class CourtDocumentQueryIT extends AbstractIT {
     private static final String USER_ID = "07e9cd55-0eff-4eb3-961f-0d83e259e415";
     private static final String CHAMBER_USER_ID = "f5966b76-6e73-4be8-8780-ce542a46c8a4";
     private static final String ADVOCATE_USER_ID = "8d365984-0643-4b1a-81c6-3a0f7b750ddf";
+    private String caseId;
+    private String docId;
+    private String defendantId;
 
     @BeforeClass
     public static void setup() {
@@ -55,14 +62,20 @@ public class CourtDocumentQueryIT extends AbstractIT {
         setupAsAuthorisedUser(fromString(ADVOCATE_USER_ID), "stub-data/usersgroups.get-advocateuser-groups-by-user.json");
     }
 
+    @Before
+    public void setUp() throws IOException {
+        caseId = UUID.randomUUID().toString();
+        docId = UUID.randomUUID().toString();
+        defendantId = UUID.randomUUID().toString();
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
+
+    }
+
 
     @Test
     public void shouldGetCourtDocumentsForGivenDefendantLevelDocsBasedOnRBAC() throws IOException {
-
-
-        final String caseId = UUID.randomUUID().toString();
-        final String docId = UUID.randomUUID().toString();
-        final String defendantId = UUID.randomUUID().toString();
         final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
 
         //Doc Type Ref Data
@@ -88,11 +101,6 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
     @Test
     public void shouldGetCourtDocumentsForGivenCaseLevelAndDefendantLevelDocsBasedOnRBAC() throws IOException {
-
-
-        final String caseId = UUID.randomUUID().toString();
-        final String docId = UUID.randomUUID().toString();
-        final String defendantId = UUID.randomUUID().toString();
         final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-seqnum.json");
@@ -132,10 +140,6 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
     @Test
     public void shouldGetCourtDocumentsForGivenCaseLevelAndDefendantLevelDocsGetOnlyDefendantBasedOnRBAC() throws IOException {
-
-        final String caseId = UUID.randomUUID().toString();
-        final String docId = UUID.randomUUID().toString();
-        final String defendantId = UUID.randomUUID().toString();
         final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
@@ -176,11 +180,6 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
     @Test
     public void shouldGetCourtDocumentsForGivenCaseLevelDocsBasedOnRBAC() throws IOException {
-
-
-        final String caseId = UUID.randomUUID().toString();
-        final String docId = UUID.randomUUID().toString();
-        final String defendantId = UUID.randomUUID().toString();
         final String docTypeId = UUID.randomUUID().toString();
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-seqnum.json");
@@ -217,10 +216,6 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
     @Test
     public void shouldNotGetCourtDocumentsForGivenCaseLevelDocsBasedOnRBAC() throws IOException {
-
-        final String caseId = UUID.randomUUID().toString();
-        final String docId = UUID.randomUUID().toString();
-        final String defendantId = UUID.randomUUID().toString();
         final String docTypeId = UUID.randomUUID().toString();
 
         //Case Level Document 1
@@ -248,9 +243,6 @@ public class CourtDocumentQueryIT extends AbstractIT {
     @Test
     public void shouldGetAllCourtDocumentsForGivenCaseLevelDocsBasedOnRBAC() throws IOException {
 
-        final String caseId = UUID.randomUUID().toString();
-        final String docId = UUID.randomUUID().toString();
-        final String defendantId = UUID.randomUUID().toString();
         final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-seqnum.json");
         //Case Level Document 1
@@ -282,7 +274,6 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
     @Test
     public void shouldSendForbiddenAsUserNotAllowedToAccess() throws IOException {
-        final String caseId = UUID.randomUUID().toString();
         getCourtDocumentsByDefendantForDefence(USER_ID, caseId, status().is(FORBIDDEN));
 
     }
@@ -290,9 +281,6 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
     @Test
     public void shouldGetAllCourtDocumentsForGivenCaseAndDefendantToDefenceUser() throws IOException {
-        final String caseId = UUID.randomUUID().toString();
-        final String docId = UUID.randomUUID().toString();
-        final String defendantId = UUID.randomUUID().toString();
         final String docTypeId = "460fbc00-c002-11e8-a355-529269fb1459";
         final String organisationId = UUID.randomUUID().toString();
 
@@ -367,7 +355,6 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
     @Test
     public void shouldBeForbiddenWhenUserRoleInCaseIsDefending() {
-        final String caseId = UUID.randomUUID().toString();
 
         final String userRoleInCase = getPayload("stub-data/defence.advocate.query.role-in-case-by-caseid.json")
                 .replace("%CASE_ID%", caseId)
@@ -380,16 +367,12 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
     @Test
     public void shouldSearchCourtDocumentByCaseIDWhenTheUserRoleInCaseIsProsecutorOrBothProsecutorAndDefence() throws IOException {
-        final String caseId = UUID.randomUUID().toString();
-
         final String userRoleInCase = getPayload("stub-data/defence.advocate.query.role-in-case-by-caseid.json")
                 .replace("%CASE_ID%", caseId)
                 .replace("%USER_ROLE_IN_CASE%", "prosecuting");
 
         stubAdvocateRoleInCaseByCaseId(caseId, userRoleInCase);
 
-        final String docId = UUID.randomUUID().toString();
-        final String defendantId = UUID.randomUUID().toString();
         final String docTypeId = "460f8974-c002-11e8-a355-529269fb1459";
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-with-advocates.json");
 

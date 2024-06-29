@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
@@ -15,6 +17,7 @@ import static uk.gov.moj.cpp.progression.helper.AddCourtDocumentHelper.addCourtD
 import static uk.gov.moj.cpp.progression.helper.EventSelector.PUBLIC_COURT_DOCUMENT_SHARED;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.PUBLIC_COURT_DOCUMENT_SHARE_FAILED;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addRemoveCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocuments;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCase;
@@ -96,6 +99,10 @@ public class ShareCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithNoCaseLevelDocs() throws IOException {
+        addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+                withJsonPath("$.hearingsAtAGlance.id", is(caseId))
+        )));
         addCourtDocumentDefendantLevel("progression.add-court-document-defendant-level.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
         shareCourtDocument(defendantLevelDocumentId1, HEARING_ID_TYPE_TRIAL, MAGISTRATES_USER_GROUP_ID, "progression.share-court-document.json");
         verifyInMessagingQueue(messageConsumerClientPrivateForCourtDocumentShared);
@@ -123,7 +130,10 @@ public class ShareCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithCaseLevelDocs() throws IOException {
-
+        addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+                withJsonPath("$.hearingsAtAGlance.id", is(caseId))
+        )));
         addCourtDocumentDefendantLevel("progression.add-court-document.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
 
         addCourtDocumentCaseLevel("progression.add-court-document-case-level.json", caseId, caseLevelDocumentId);
@@ -145,7 +155,10 @@ public class ShareCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithMultiDefendantWithHearingTypeTrial() throws IOException {
-
+        addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+                withJsonPath("$.hearingsAtAGlance.id", is(caseId))
+        )));
         addCourtDocumentDefendantLevel("progression.add-court-document.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
 
 
@@ -174,7 +187,10 @@ public class ShareCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithMultiDefendantWithHearingTypeTrialOfIssue() throws IOException {
-
+        addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+                withJsonPath("$.hearingsAtAGlance.id", is(caseId))
+        )));
         addCourtDocumentDefendantLevel("progression.add-court-document.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
 
         String resourceCaseLevel = "progression.add-court-document-case-level.json";
@@ -196,7 +212,10 @@ public class ShareCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithNonTrialHearingType() throws IOException {
-
+        addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+                withJsonPath("$.hearingsAtAGlance.id", is(caseId))
+        )));
         addCourtDocumentDefendantLevel("progression.add-court-document.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
 
         String resourceCaseLevel = "progression.add-court-document-case-level.json";
@@ -214,6 +233,10 @@ public class ShareCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldRaiseDuplicateShareCourtDocumentRequestReceivedWhenDocumentAlreadySharedWithMagistratesAndPublicSuccessMessage() throws IOException {
+        addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+                withJsonPath("$.hearingsAtAGlance.id", is(caseId))
+        )));
         addCourtDocumentDefendantLevel("progression.add-court-document-defendant-level.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
 
 

@@ -80,7 +80,7 @@ rule "Query - Access control for  progression.query.courtdocuments.for.prosecuti
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.courtdocuments.for.prosecution");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates",  "Non CPS Prosecutors"))
   then
     $outcome.setSuccess(true);
 end
@@ -90,7 +90,7 @@ rule "Query - Access control for  progression.query.prosecutioncase"
     $outcome: Outcome();
     $action: Action(name == "progression.query.prosecutioncase");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
-    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "CPS" ,"Defence Lawyers", "Advocates","Non Police Prosecutors"))
+    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "CPS" ,"Defence Lawyers", "Advocates","Non Police Prosecutors", "Non CPS Prosecutors"))
   then
     $outcome.setSuccess(true);
 end
@@ -235,7 +235,7 @@ rule "progression - Query - API - material-content for prosecution"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.material-content-for-prosecution");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates", "Non CPS Prosecutors"))
   then
     $outcome.setSuccess(true);
 end
@@ -309,7 +309,7 @@ rule "Query - Access control for  progression.query.application.aaag-for-defence
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.application.aaag-for-defence");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates", "Non CPS Prosecutors"))
   then
     $outcome.setSuccess(true);
 end

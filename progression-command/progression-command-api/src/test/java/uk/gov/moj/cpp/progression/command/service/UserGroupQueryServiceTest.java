@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.command.service;
 
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -8,10 +9,15 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 
+import java.util.Optional;
 import java.util.UUID;
+
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -61,6 +67,40 @@ public class UserGroupQueryServiceTest {
         when(requester.request(any(JsonEnvelope.class), any(Class.class))).thenReturn(buildNoMatchingOrganisationJsonEnvelope());
         assertThat(userGroupQueryService.doesUserBelongsToHmctsOrganisation(jsonEnvelope, userId), is(false));
     }
+
+    @Test
+    public void shouldReturnTrueForValidateNonCPSUserOrg() {
+        final MetadataBuilder metadataBuilder = Envelope.metadataBuilder().withId(UUID.randomUUID())
+                .withName("test");
+        final Envelope envelope = Envelope.envelopeFrom(metadataBuilder.build(), getUserGroupsResponse());
+        when(requester.request(any(), any())).thenReturn(envelope);
+
+        final Optional<String> isNonCPSUserOrg = userGroupQueryService.validateNonCPSUserOrg(jsonEnvelope, randomUUID(), "Non CPS Prosecutors", "DVLA");
+
+        assertThat(isNonCPSUserOrg.isPresent(), is(true));
+        assertThat(isNonCPSUserOrg.get(), is("OrganisationMatch"));
+    }
+
+    @Test
+    public void shouldReturnFalseForValidateNonCPSUserOrg() {
+        final MetadataBuilder metadataBuilder = Envelope.metadataBuilder().withId(UUID.randomUUID())
+                .withName("test");
+        final Envelope envelope = Envelope.envelopeFrom(metadataBuilder.build(), getUserGroupsResponse());
+        when(requester.request(any(), any())).thenReturn(envelope);
+
+        final Optional<String> isNonCPSUserOrg = userGroupQueryService.validateNonCPSUserOrg(jsonEnvelope, randomUUID(), "Non CPS Prosecutors", "DVLA1");
+
+        assertThat(isNonCPSUserOrg.isPresent(), is(true));
+        assertThat(isNonCPSUserOrg.get(), is("OrganisationMisMatch"));
+    }
+
+    private JsonObject getUserGroupsResponse() {
+        final JsonArrayBuilder groupsArray = createArrayBuilder();
+        groupsArray.add(createObjectBuilder().add("groupId", String.valueOf(randomUUID())).add("groupName", "Non CPS Prosecutors"));
+        groupsArray.add(createObjectBuilder().add("groupId", String.valueOf(randomUUID())).add("groupName", "DVLA Prosectutors").add("prosecutingAuthority" , "DVLA"));
+        return createObjectBuilder().add("groups", groupsArray).build();
+    }
+
 
 
 

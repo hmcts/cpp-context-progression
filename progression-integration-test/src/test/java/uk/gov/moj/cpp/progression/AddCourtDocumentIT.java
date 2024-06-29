@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -20,6 +21,7 @@ import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.PUBLIC_EVENT_COURT_DOCUMENT_UPADTED;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addRemoveCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCase;
@@ -99,7 +101,7 @@ public class AddCourtDocumentIT extends AbstractIT {
 
 
     @Before
-    public void setup() {
+    public void setup() throws IOException {
 
         caseId = randomUUID().toString();
         docId = randomUUID().toString();
@@ -113,6 +115,10 @@ public class AddCourtDocumentIT extends AbstractIT {
     @Test
     public void shouldAddCourtDocumentAndThenUpdateIt() throws IOException {
         //Given
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
+
         verifyAddCourtDocument(null,"460f7ec0-c002-11e8-a355-529269fb1459");
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
@@ -147,6 +153,9 @@ public class AddCourtDocumentIT extends AbstractIT {
     @Test
     public void shouldAddCourtDocumentAndVerifyUpdateFailedEvent() throws IOException {
         //Given
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
         verifyAddCourtDocument(null, "460f7ec0-c002-11e8-a355-529269fb1459");
 
         stubQueryDocumentTypeData("/restResource/ref-invalid-data-document-type.json");
@@ -172,6 +181,10 @@ public class AddCourtDocumentIT extends AbstractIT {
         final String userId = "dd8dcdcf-58d1-4e45-8450-40b0f569a7e7";
         final String materialId = "5e1cc18c-76dc-47dd-99c1-d6f87385edf1";
         //Given
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
+
         verifyAddCourtDocument(null, "460f7ec0-c002-11e8-a355-529269fb1459");
 
         setupAsAuthorisedUser(UUID.fromString(userId), "stub-data/usersgroups.get-support-groups-by-user.json");
@@ -195,6 +208,10 @@ public class AddCourtDocumentIT extends AbstractIT {
 
         //Given
         final String body = prepareAddCourtDocumentPayload(null);
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
+
         //When
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
                 "application/vnd.progression.add-court-document+json",
@@ -218,6 +235,9 @@ public class AddCourtDocumentIT extends AbstractIT {
     public void shouldAddCourtDocumentV2AndForbidToQueryWhenNoRbacMatches() throws IOException {
 
         //Given
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
         final String body = prepareAddCourtDocumentPayloadV2();
         //When
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
@@ -243,6 +263,9 @@ public class AddCourtDocumentIT extends AbstractIT {
     public void shouldGetForbiddenExceptionWhenAddCourtDocumentAndNoRBACRulesMatches() throws IOException {
 
         //Given
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
         final String body = prepareAddCourtDocumentPayload(null);
         //When
         //postCommand()
@@ -255,11 +278,11 @@ public class AddCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldThrowBadRequestWhenDefendantIdNotMatching() throws IOException {
-        final String caseId = UUID.randomUUID().toString();
-        final String docId = UUID.randomUUID().toString();
-        final String defendantId = UUID.randomUUID().toString();
         final String docTypeId = UUID.randomUUID().toString();
         final String organisationId = UUID.randomUUID().toString();
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
 
         final String organisation = getPayload("stub-data/usersgroups.get-organisation-details.json")
                 .replace("%ORGANISATION_ID%", organisationId);
@@ -287,9 +310,9 @@ public class AddCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldThrowForbiddenInCaseDefenceUserIsNotAssociatedOrGranted() throws IOException {
-        final String caseId = UUID.randomUUID().toString();
-        final String docId = UUID.randomUUID().toString();
-        final String defendantId = UUID.randomUUID().toString();
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
         final String docTypeId = UUID.randomUUID().toString();
         final String organisationId = UUID.randomUUID().toString();
 
@@ -320,9 +343,9 @@ public class AddCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldAddDocumentIfTheLoggedInUserIsGranted() throws IOException {
-        final String caseId = UUID.randomUUID().toString();
-        final String docId = UUID.randomUUID().toString();
-        final String defendantId = UUID.randomUUID().toString();
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
         final String docTypeId = UUID.randomUUID().toString();
         final String organisationId = UUID.randomUUID().toString();
 

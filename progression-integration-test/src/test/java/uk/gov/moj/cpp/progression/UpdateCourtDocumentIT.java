@@ -2,18 +2,22 @@ package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.USER_ID;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
@@ -25,6 +29,7 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.Metadata;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -69,7 +74,7 @@ public class UpdateCourtDocumentIT extends AbstractIT {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         documentId = randomUUID();
@@ -84,6 +89,11 @@ public class UpdateCourtDocumentIT extends AbstractIT {
         publicMessageProducer = publicEvents.createPublicProducer();
         printRequestedConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PRINT_REQUESTED);
         printTimeUpdatedConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PRINT_TIME_UPDATED);
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
+
     }
 
     @Test
