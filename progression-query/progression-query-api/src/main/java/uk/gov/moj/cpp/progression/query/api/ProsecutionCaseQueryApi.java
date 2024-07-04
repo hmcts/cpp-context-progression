@@ -76,17 +76,9 @@ public class ProsecutionCaseQueryApi {
         final JsonObject queryViewPayload = appQueryResponse.payloadAsJsonObject();
         final JsonObject prosecutionCase = appQueryResponse.payloadAsJsonObject().getJsonObject("prosecutionCase");
 
-        final UUID userId = query.metadata().userId().isPresent() ? fromString(query.metadata().userId().get()) : null;
-
-        final ProsecutionCase prosecutionCaseObject = jsonObjectToObjectConverter.convert(prosecutionCase, ProsecutionCase.class);
-
-        final Optional<String> orgMatch  = usersGroupQueryService.validateNonCPSUserOrg(query.metadata(), userId, NON_CPS_PROSECUTORS, prosecutionCaseObject.getProsecutionCaseIdentifier().getProsecutionAuthorityCode());
-
-        if(orgMatch.isPresent() && ORGANISATION_MIS_MATCH.equals(orgMatch.get())){
-            throw new ForbiddenRequestException("Forbidden!! Non CPS Prosecutor user cannot view court documents if it is not belongs to the same Prosecuting Authority of the user logged in");
-        }
-
         if (nonNull(prosecutionCase)) {
+            isNonCPSProsecutorWithValidProsecutingAuthority(query, prosecutionCase);
+
             final JsonArray defendants = prosecutionCase.getJsonArray(DEFENDANTS);
             final JsonArrayBuilder activeCourtOrdersArrayBuilder = Json.createArrayBuilder();
 
@@ -247,5 +239,15 @@ public class ProsecutionCaseQueryApi {
     @Handles("progression.query.cotr.details.prosecutioncase")
     public JsonEnvelope getCotrDetailsProsecutionCase(final JsonEnvelope query){
         return prosecutionCaseQuery.getCotrDetailsByCaseId(query);
+    }
+
+    @SuppressWarnings("squid:S3655")
+    private void isNonCPSProsecutorWithValidProsecutingAuthority(final JsonEnvelope query, final JsonObject prosecutionCase) {
+        final UUID userId = query.metadata().userId().isPresent() ? fromString(query.metadata().userId().get()) : null;
+        final ProsecutionCase prosecutionCaseObject = jsonObjectToObjectConverter.convert(prosecutionCase, ProsecutionCase.class);
+        final Optional<String> orgMatch  = usersGroupQueryService.validateNonCPSUserOrg(query.metadata(), userId, NON_CPS_PROSECUTORS, prosecutionCaseObject.getProsecutionCaseIdentifier().getProsecutionAuthorityCode());
+        if(orgMatch.isPresent() && ORGANISATION_MIS_MATCH.equals(orgMatch.get())){
+            throw new ForbiddenRequestException("Forbidden!! Non CPS Prosecutor user cannot view court documents if it is not belongs to the same Prosecuting Authority of the user logged in");
+        }
     }
 }

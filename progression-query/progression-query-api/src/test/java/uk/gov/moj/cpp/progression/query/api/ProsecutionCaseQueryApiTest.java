@@ -124,6 +124,24 @@ public class ProsecutionCaseQueryApiTest {
     }
 
     @Test
+    public void shouldHandleProsecutionCaseQueryWithNoRecord() {
+
+        final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY, randomUUID());
+        final JsonObject emptyPayload = createObjectBuilder().build();
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, emptyPayload);
+
+        final String caseId = randomUUID().toString();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add(CASE_ID, caseId).build();
+        final JsonEnvelope queryEnvelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+
+        when(prosecutionCaseQuery.getProsecutionCase(queryEnvelope)).thenReturn(envelope);
+
+        final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getCaseProsecutionCase(queryEnvelope);
+
+        assertThat(actualProsecutionCaseResponse.payloadAsJsonObject(), equalTo(emptyPayload));
+    }
+
+    @Test
     public void shouldHandleProsecutionCaseQueryWithCourtOrders() {
         final JsonObject prosecutionCasePayload = readJson(PROSECUTION_CASE_QUERY_VIEW_JSON, JsonObject.class);
         final JsonObject courtOrdersPayload = readJson(DEFENDANT_WITH_COURT_ORDERS_JSON, JsonObject.class);
