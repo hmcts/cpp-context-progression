@@ -45,6 +45,7 @@ import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.core.courts.ProsecutionCasesResulted;
 import uk.gov.justice.hearing.courts.HearingResult;
@@ -60,6 +61,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.GroupCaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 
@@ -68,7 +71,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -114,12 +119,20 @@ public class HearingResultHandlerTest {
     private final static String COMMITTING_MAGS_COURT_CODE = "MGCODE";
     private final static String COMMITTING_MAGS_COURT_NAME = "Committing Mag Court";
 
+    @Mock
+    private GroupCaseAggregate groupCaseAggregate;
+
+    @Mock
+    private CaseAggregate caseAggregate;
 
     @Before
     public void setup() {
         aggregate = new HearingAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
+        when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
     }
 
     @Test
@@ -128,6 +141,156 @@ public class HearingResultHandlerTest {
                 .with(method("handle")
                         .thatHandles("progression.command.hearing-result")
                 ));
+    }
+
+    @Test
+    public void shouldHandleProcessUpdateDefendantStatusWithoutGroupCases() throws EventStreamException {
+        Offence offence1 = Offence.offence()
+                .withId(randomUUID())
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
+                .build();
+        Offence offence2 = Offence.offence()
+                .withId(randomUUID())
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
+                .build();
+
+        Defendant defendant = Defendant.defendant()
+                .withId(randomUUID())
+                .withOffences(Arrays.asList(offence1, offence2))
+                .build();
+        Defendant defendant2 = Defendant.defendant()
+                .withId(randomUUID())
+                .withOffences(Arrays.asList(offence1, offence2))
+                .build();
+
+        List<Defendant> defendantList = new ArrayList<Defendant>();
+        defendantList.add(defendant);
+        defendantList.add(defendant2);
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(randomUUID())
+                .withIsGroupMaster(Boolean.FALSE)
+                .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
+                .withCpsOrganisation("A01")
+                .withDefendants(defendantList).build();
+        final HearingResult hearingResult = hearingResult()
+                .withHearing(Hearing.hearing()
+                        .withProsecutionCases(Arrays.asList(prosecutionCase))
+                        .withId(UUID.randomUUID())
+                        .build())
+                .build();
+
+        aggregate.apply(hearingResult.getHearing());
+
+        final Metadata metadata = getMetadata();
+
+        final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+
+        hearingResultHandler.handle(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        final List<Envelope> envelopes = envelopeStream.map(value -> (Envelope) value).collect(Collectors.toList());
+
+        final JsonEnvelope  hearingResultedEnvelope = (JsonEnvelope)envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+        assertThat(hearingResultedEnvelope, jsonEnvelope(metadata().withName("progression.event.hearing-resulted"), payloadIsJson(CoreMatchers.allOf(
+                withJsonPath("$.hearing", notNullValue()),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[1].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[0].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[1].offences[1].proceedingsConcluded",
+                        is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())),
+                withJsonPath("$.hearing.prosecutionCases[0].cpsOrganisation", is("A01")))
+
+        )));
+    }
+
+    @Test
+    public void shouldHandleProcessUpdateDefendantStatusWithGroupCases() throws EventStreamException {
+        Offence offence1 = Offence.offence()
+                .withId(randomUUID())
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
+                .build();
+        Offence offence2 = Offence.offence()
+                .withId(randomUUID())
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.FINAL).build(), JudicialResult.judicialResult()
+                        .withIsAdjournmentResult(false)
+                        .withCategory(JudicialResultCategory.ANCILLARY).build()))
+                .build();
+
+        Defendant defendant = Defendant.defendant()
+                .withId(randomUUID())
+                .withOffences(Arrays.asList(offence1, offence2))
+                .build();
+
+        List<Defendant> defendantList = new ArrayList<Defendant>();
+        defendantList.add(defendant);
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(randomUUID())
+                .withIsGroupMaster(Boolean.TRUE)
+                .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
+                .withCpsOrganisation("A01")
+                .withDefendants(defendantList).build();
+        final ProsecutionCase prosecutionMemberCase = ProsecutionCase.prosecutionCase()
+                .withId(randomUUID())
+                .withIsGroupMaster(Boolean.FALSE)
+                .withCaseStatus(CaseStatusEnum.READY_FOR_REVIEW.getDescription())
+                .withCpsOrganisation("A01")
+                .withDefendants(defendantList).build();
+        final HearingResult hearingResult = hearingResult()
+                .withHearing(Hearing.hearing()
+                        .withIsGroupProceedings(Boolean.TRUE)
+                        .withProsecutionCases(Arrays.asList(prosecutionCase, prosecutionMemberCase))
+                        .withId(UUID.randomUUID())
+                        .build())
+                .build();
+
+        aggregate.apply(hearingResult.getHearing());
+
+        final Metadata metadata = getMetadata();
+
+        final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+        Set<UUID> prosecutionCasesUUIDs = new HashSet<>();
+        prosecutionCasesUUIDs.add(prosecutionCase.getId());
+        prosecutionCasesUUIDs.add(prosecutionMemberCase.getId());
+        when(groupCaseAggregate.getMemberCases()).thenReturn(prosecutionCasesUUIDs);
+        when(caseAggregate.getProsecutionCase()).thenReturn(prosecutionMemberCase);
+        hearingResultHandler.handle(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        final List<Envelope> envelopes = envelopeStream.map(value -> (Envelope) value).collect(Collectors.toList());
+
+        final JsonEnvelope  hearingResultedEnvelope = (JsonEnvelope)envelopes.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-resulted")).findFirst().get();
+
+        assertThat(hearingResultedEnvelope, jsonEnvelope(metadata().withName("progression.event.hearing-resulted"), payloadIsJson(CoreMatchers.allOf(
+                withJsonPath("$.hearing", notNullValue()),
+                withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())),
+                withJsonPath("$.hearing.prosecutionCases[0].cpsOrganisation", is("A01")))
+
+        )));
     }
 
     @Test

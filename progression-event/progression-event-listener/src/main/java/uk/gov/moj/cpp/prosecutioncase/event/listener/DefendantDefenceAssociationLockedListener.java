@@ -1,7 +1,9 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.UUID.fromString;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -12,16 +14,17 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.StringReader;
 import java.util.Optional;
 import java.util.UUID;
 
-import static java.util.UUID.fromString;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_LISTENER)
 public class DefendantDefenceAssociationLockedListener {
@@ -98,6 +101,9 @@ public class DefendantDefenceAssociationLockedListener {
     private ProsecutionCaseEntity getProsecutionCaseEntity(final ProsecutionCase prosecutionCase) {
         final ProsecutionCaseEntity pCaseEntity = new ProsecutionCaseEntity();
         pCaseEntity.setCaseId(prosecutionCase.getId());
+        if (nonNull(prosecutionCase.getGroupId())) {
+            pCaseEntity.setGroupId(prosecutionCase.getGroupId());
+        }
         pCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
         return pCaseEntity;
     }

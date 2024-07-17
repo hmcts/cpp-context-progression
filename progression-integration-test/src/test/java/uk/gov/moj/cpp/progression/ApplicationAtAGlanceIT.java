@@ -230,7 +230,6 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                                 withJsonPath("$.applicationDetails.applicationType", equalTo(applicationType)),
                                 withJsonPath("$.applicationDetails.appeal", equalTo(appeal)),
                                 withJsonPath("$.applicationDetails.applicantAppellantFlag", equalTo(applicantAppellantFlag)),
-                                withJsonPath("$.applicationDetails.feePayable", equalTo(false)),
                                 withJsonPath("$.applicationDetails.aagResults.length()", equalTo(1)),
                                 withJsonPath("$.applicationDetails.aagResults[0].id", equalTo("f8e926eb-704a-457a-a794-8c3ad40d3113")),
                                 withJsonPath("$.applicationDetails.aagResults[0].label", equalTo("wording for results")),

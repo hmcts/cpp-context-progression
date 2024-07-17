@@ -135,24 +135,9 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
             }
 
             final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase()
-                    .withPoliceOfficerInCase(prosecutionCaseInRepository.getPoliceOfficerInCase())
-                    .withProsecutionCaseIdentifier(prosecutionCaseInRepository.getProsecutionCaseIdentifier())
-                    .withProsecutor(prosecutionCaseInRepository.getProsecutor())
-                    .withId(prosecutionCaseInRepository.getId())
+                    .withValuesFrom(prosecutionCaseInRepository)
                     .withDefendants(dedupAllReportingRestrictionsForDefendants(prosecutionCaseInRepository.getDefendants()))
-                    .withInitiationCode(prosecutionCaseInRepository.getInitiationCode())
-                    .withOriginatingOrganisation(prosecutionCaseInRepository.getOriginatingOrganisation())
-                    .withCpsOrganisation(prosecutionCaseInRepository.getCpsOrganisation())
-                    .withCpsOrganisationId(prosecutionCaseInRepository.getCpsOrganisationId())
-                    .withIsCpsOrgVerifyError(prosecutionCaseInRepository.getIsCpsOrgVerifyError())
-                    .withStatementOfFacts(prosecutionCaseInRepository.getStatementOfFacts())
-                    .withStatementOfFactsWelsh(prosecutionCaseInRepository.getStatementOfFactsWelsh())
-                    .withCaseMarkers(prosecutionCaseInRepository.getCaseMarkers())
-                    .withAppealProceedingsPending(prosecutionCaseInRepository.getAppealProceedingsPending())
-                    .withBreachProceedingsPending(prosecutionCaseInRepository.getBreachProceedingsPending())
-                    .withRemovalReason(prosecutionCaseInRepository.getRemovalReason())
                     .withCaseStatus(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus())
-                    .withTrialReceiptType(prosecutionCaseInRepository.getTrialReceiptType())
                     .build();
             repository.save(getProsecutionCaseEntity(updatedProsecutionCase));
             updateSearchable(updatedProsecutionCase);
@@ -567,6 +552,9 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     private ProsecutionCaseEntity getProsecutionCaseEntity(final ProsecutionCase prosecutionCase) {
         final ProsecutionCaseEntity pCaseEntity = new ProsecutionCaseEntity();
         pCaseEntity.setCaseId(prosecutionCase.getId());
+        if (nonNull(prosecutionCase.getGroupId())) {
+            pCaseEntity.setGroupId(prosecutionCase.getGroupId());
+        }
         pCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
         return pCaseEntity;
     }

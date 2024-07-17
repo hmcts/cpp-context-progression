@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -61,6 +62,7 @@ public class CourtProceedingsInitiatedProcessor {
     private static final String SEXUAL_OFFENCE_RR_LABEL = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
     private static final String SEXUAL_OFFENCE_RR_CODE = "YES";
     public static final String ENDORSABLE_FLAG = "endorsableFlag";
+    private static final String PUBLIC_PROGRESSION_EVENTS_GROUP_PROSECUTION_CASES_CREATED = "public.progression.group-prosecution-cases-created";
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -95,16 +97,33 @@ public class CourtProceedingsInitiatedProcessor {
     public void handle(final JsonEnvelope jsonEnvelope) {
         final JsonObject event = jsonEnvelope.payloadAsJsonObject();
         final UUID hearingId = randomUUID();
+        LOGGER.info("progression.event.court-proceedings-initiated is executed for hearingId {} ", hearingId);
         final CourtReferral courtReferral = jsonObjectToObjectConverter.convert(
                 event.getJsonObject("courtReferral"), CourtReferral.class);
+        final boolean isGroupCases = isGroupCases(courtReferral.getProsecutionCases());
+        LOGGER.info("progression.event.court-proceedings-initiated is executed for isGroupCases {}", isGroupCases);
+
+        if (isGroupCases) {
+            final JsonObject payload = createObjectBuilder()
+                    .add("groupId", courtReferral.getProsecutionCases().get(0).getGroupId().toString())
+                    .build();
+            sender.send(Enveloper.envelop(payload)
+                    .withName(PUBLIC_PROGRESSION_EVENTS_GROUP_PROSECUTION_CASES_CREATED)
+                    .withMetadataFrom(jsonEnvelope));
+        }
 
         enrichOffencesWithReportingRestriction(jsonEnvelope, courtReferral);
 
-        final List<ListDefendantRequest> listDefendantRequests = courtReferral.getListHearingRequests().stream().map(ListHearingRequest::getListDefendantRequests).flatMap(Collection::stream).collect(Collectors.toList());
-        summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, listDefendantRequests, hearingId);
-        final ListCourtHearing listCourtHearing = prepareListCourtHearing(jsonEnvelope, courtReferral, hearingId);
-        progressionService.createProsecutionCases(jsonEnvelope, getProsecutionCasesList(jsonEnvelope, courtReferral.getProsecutionCases()));
-        progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing, courtReferral.getListHearingRequests());
+        if (!isGroupCases) {
+            LOGGER.info("progression.event.court-proceedings-initiated is executed for non group cases ");
+            final List<ListDefendantRequest> listDefendantRequests = courtReferral.getListHearingRequests().stream().map(ListHearingRequest::getListDefendantRequests).flatMap(Collection::stream).collect(Collectors.toList());
+            summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope, listDefendantRequests, hearingId);
+            progressionService.createProsecutionCases(jsonEnvelope, getProsecutionCasesList(jsonEnvelope, courtReferral.getProsecutionCases()));
+        }
+
+        final ListCourtHearing listCourtHearing = prepareListCourtHearing(jsonEnvelope, courtReferral, hearingId, isGroupCases);
+        progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing.getHearings(), null, courtReferral.getListHearingRequests(), isGroupCases, courtReferral.getProsecutionCases().size());
+
     }
 
     private void enrichOffencesWithReportingRestriction(final JsonEnvelope jsonEnvelope, final CourtReferral courtReferral) {
@@ -196,8 +215,12 @@ public class CourtProceedingsInitiatedProcessor {
         return true;
     }
 
-    private ListCourtHearing prepareListCourtHearing(final JsonEnvelope jsonEnvelope, final CourtReferral courtReferral, final UUID hearingId) {
+    private ListCourtHearing prepareListCourtHearing(final JsonEnvelope jsonEnvelope, final CourtReferral courtReferral, final UUID hearingId, final Boolean isGroupProceedings) {
         return listCourtHearingTransformer
-                .transform(jsonEnvelope, courtReferral.getProsecutionCases(), courtReferral.getListHearingRequests(), hearingId);
+                .transform(jsonEnvelope, courtReferral.getProsecutionCases(), courtReferral.getListHearingRequests(), hearingId, isGroupProceedings);
+    }
+
+    private boolean isGroupCases(final List<ProsecutionCase> prosecutionCases) {
+        return prosecutionCases.stream().filter(prosecutionCase -> nonNull(prosecutionCase.getIsGroupMaster())).anyMatch(ProsecutionCase::getIsGroupMaster);
     }
 }

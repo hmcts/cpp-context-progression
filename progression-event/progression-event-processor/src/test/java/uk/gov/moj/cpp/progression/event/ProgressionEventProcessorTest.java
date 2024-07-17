@@ -11,7 +11,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotSame;
 import static org.mockito.ArgumentCaptor.forClass;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -48,6 +50,7 @@ import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Plea;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
 import uk.gov.moj.cpp.progression.service.ListingService;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer;
@@ -55,6 +58,8 @@ import uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -81,6 +86,7 @@ public class ProgressionEventProcessorTest {
     private static final String PROGRESSION_EVENTS_SENDING_SHEET_COMPLETED = "progression.events.sending-sheet-completed";
     private static final String GUILTY = "GUILTY";
     private static final String USER_ID = "userId";
+    private static final String RELATED_URN = "urn";
 
     final ArgumentCaptor<HashMap> captor = forClass(HashMap.class);
     @Spy
@@ -116,6 +122,9 @@ public class ProgressionEventProcessorTest {
 
     @Mock
     private JsonObject jsonObject;
+
+    @Mock
+    private ProgressionService progressionService;
 
     @InjectMocks
     private ProgressionEventProcessor progressionEventProcessor;
@@ -328,18 +337,52 @@ public class ProgressionEventProcessorTest {
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseCreated.class)).thenReturn(ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(ProsecutionCase.prosecutionCase()
                         .withId(fromString(CASE_ID))
+                        .withRelatedUrn(RELATED_URN)
                         .build())
                 .build());
+
+        final Optional<JsonObject> searchResult = of(jsonObject);
+        when(progressionService.searchCaseDetailByReference(event, RELATED_URN)).thenReturn(searchResult);
+        when(searchResult.get().getJsonArray(any())).thenReturn(createArrayBuilder().build());
         // when
         progressionEventProcessor.publishProsecutionCaseCreatedEvent(event);
         // then
-        verify(sender, times(2)).send(envelopeCaptor.capture());
+        verify(sender, times(3)).send(envelopeCaptor.capture());
 
         assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), Is.is("public.progression.prosecution-case-created"));
         assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("caseId"), Is.is(CASE_ID));
 
-        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(), Is.is("progression.command.process-matched-defendants"));
-        assertThat(envelopeCaptor.getAllValues().get(1).payload().getString("prosecutionCaseId"), Is.is(CASE_ID));
+        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(), Is.is("progression.command.add-related-reference"));
+        assertThat(envelopeCaptor.getAllValues().get(1).payload().getString("relatedReference"), Is.is(RELATED_URN));
+
+        assertThat(envelopeCaptor.getAllValues().get(2).metadata().name(), Is.is("progression.command.process-matched-defendants"));
+        assertThat(envelopeCaptor.getAllValues().get(2).payload().getString("prosecutionCaseId"), Is.is(CASE_ID));
+    }
+
+    @Test
+    public void shouldNotPublishProsecutionCaseCreatedEventForGroupCases() {
+        // given
+        final JsonEnvelope event = createEnvelope(
+                "progression.event.prosecution-case-created",
+                createObjectBuilder().add("caseId", CASE_ID).build());
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseCreated.class)).thenReturn(ProsecutionCaseCreated.prosecutionCaseCreated()
+                .withProsecutionCase(ProsecutionCase.prosecutionCase()
+                        .withId(fromString(CASE_ID))
+                        .withGroupId(randomUUID())
+                        .withRelatedUrn(RELATED_URN)
+                        .build())
+                .build());
+
+        final Optional<JsonObject> searchResult = of(jsonObject);
+        when(progressionService.searchCaseDetailByReference(event, RELATED_URN)).thenReturn(searchResult);
+        when(searchResult.get().getJsonArray(any())).thenReturn(createArrayBuilder().build());
+        // when
+        progressionEventProcessor.publishProsecutionCaseCreatedEvent(event);
+        // then
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+        List values = envelopeCaptor.getAllValues();
+
+        assertNotSame(envelopeCaptor.getAllValues().get(0).metadata().name(), Is.is("public.progression.prosecution-case-created"));
     }
 
     @Test

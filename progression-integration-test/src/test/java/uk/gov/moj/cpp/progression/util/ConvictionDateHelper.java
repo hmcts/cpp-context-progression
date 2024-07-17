@@ -16,7 +16,6 @@ import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import java.nio.charset.Charset;
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 

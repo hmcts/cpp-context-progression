@@ -426,7 +426,7 @@ public class NotificationService {
                 .add(SENT_TIME, sentTime);
 
         if(nonNull(completedAt)) {
-                jsonObjectBuilder.add(COMPLETED_AT, completedAt);
+            jsonObjectBuilder.add(COMPLETED_AT, completedAt);
         }
 
         final JsonObject notificationSucceededPayload = jsonObjectBuilder.build();
@@ -650,7 +650,7 @@ public class NotificationService {
 
     private boolean isAssociatedDefenceOrganisationEmailOrAddress(final Optional<AssociatedDefenceOrganisation> associatedDefenceOrganisation){
         return  associatedDefenceOrganisation.isPresent() && nonNull(associatedDefenceOrganisation.get().getEmail())
-        || associatedDefenceOrganisation.isPresent() && nonNull(associatedDefenceOrganisation.get().getAddress());
+                || associatedDefenceOrganisation.isPresent() && nonNull(associatedDefenceOrganisation.get().getAddress());
     }
 
     private Optional<Address> getApplicantAddress(final CourtApplicationParty courtApplicationParty) {

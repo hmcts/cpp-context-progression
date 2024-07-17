@@ -39,11 +39,13 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
+import uk.gov.justice.core.courts.CourtApplicationPayment;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiateIgnored;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.CourtFeeForCivilApplicationUpdated;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.DefendantUpdate;
@@ -531,4 +533,11 @@ public class ApplicationAggregate implements Aggregate {
                 .build();
     }
 
+    public Stream<Object> handleEditCourtFeeForCivilApplication(final UUID applicationId, final CourtApplicationPayment courtApplicationPayment) {
+        return apply(Stream.of(
+                        CourtFeeForCivilApplicationUpdated.courtFeeForCivilApplicationUpdated()
+                                .withApplicationId(applicationId)
+                                .withCourtApplicationPayment(courtApplicationPayment)
+                                .build()));
+    }
 }

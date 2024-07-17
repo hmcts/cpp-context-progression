@@ -37,9 +37,7 @@
   "applicationReference": "1add158c-1",
   "applicationStatus": "EJECTED",
   "courtApplicationPayment": {
-    "isFeeExempt": true,
-    "isFeePaid": true,
-    "isFeeUndertakingAttached": true
+    "paymentReference": "a"
   },
   "id": "8449d43f-aa2f-4c36-ab25-763b86ae3c8a",
   "judicialResults": [

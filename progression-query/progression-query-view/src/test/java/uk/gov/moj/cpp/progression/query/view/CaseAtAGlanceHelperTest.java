@@ -12,6 +12,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.Address.address;
@@ -39,8 +40,11 @@ import static uk.gov.moj.cpp.progression.query.view.CaseAtAGlanceHelper.YOUTH_MA
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.BailStatus;
+import uk.gov.justice.core.courts.CivilFees;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DelegatedPowers;
+import uk.gov.justice.core.courts.FeeStatus;
+import uk.gov.justice.core.courts.FeeType;
 import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.IndicatedPlea;
@@ -59,6 +63,9 @@ import uk.gov.justice.progression.courts.CaseDetails;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.ProsecutorDetails;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CivilFeeEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CivilFeeRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.RelatedReferenceRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -136,9 +143,15 @@ public class CaseAtAGlanceHelperTest {
     @Mock
     private ReferenceDataService referenceDataService;
 
+    @Mock
+    private CivilFeeRepository civilFeeRepository;
+
+    @Mock
+    private RelatedReferenceRepository relatedReferenceRepository;
+
     @Test
     public void shouldReturnEmptyCaseDetailsWhenNoDataFound() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase().build(), new ArrayList<>(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase().build(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final CaseDetails caseDetails = caseAtAGlanceHelper.getCaseDetails();
 
         assertThat(caseDetails, notNullValue());
@@ -151,7 +164,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetCaseDetailsFromProsecutionCase() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final CaseDetails caseDetails = caseAtAGlanceHelper.getCaseDetails();
 
         assertThat(caseDetails, notNullValue());
@@ -163,7 +176,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetCaseDetailsWithCaseStatusAndReason() {
 
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final CaseDetails caseDetails = caseAtAGlanceHelper.getCaseDetails();
 
         assertThat(caseDetails, notNullValue());
@@ -173,7 +186,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetEmptyProsecutorDetailsFromProsecutionCase() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase().build(), new ArrayList<>(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase().build(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final ProsecutorDetails prosecutorDetails = caseAtAGlanceHelper.getProsecutorDetails();
 
         assertThat(prosecutorDetails, notNullValue());
@@ -183,7 +196,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetProsecutorDetailsFromProsecutionCase() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         when(referenceDataService.getProsecutor(anyString())).thenReturn(getProsecutorFromReferenceData(randomUUID().toString()));
 
         final ProsecutorDetails prosecutorDetails = caseAtAGlanceHelper.getProsecutorDetails();
@@ -200,7 +213,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetProsecutorDetailsFromProsecutionCaseWhenProsecutorIsNotNull() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithProsecutor(), new ArrayList<>(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithProsecutor(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         when(referenceDataService.getProsecutor(anyString())).thenReturn(getProsecutorFromReferenceData(randomUUID().toString()));
 
         final ProsecutorDetails prosecutorDetails = caseAtAGlanceHelper.getProsecutorDetails();
@@ -217,7 +230,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetDefendantPersonalDetails() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
         assertThat(defendants, notNullValue());
         assertThat(defendants.size(), is(3));
@@ -252,7 +265,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetDefendantPersonalDetailsWithMultipleNationalities() {
 
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
 
         assertThat(defendants, notNullValue());
@@ -268,7 +281,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetDefendantMarkerWhenDefendantYouth() {
 
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
 
         assertThat(defendants, notNullValue());
@@ -282,7 +295,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetDefendantOffenceDetails() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
 
         final CaagDefendants defendantSmith = defendants.get(0);
@@ -327,7 +340,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetDefendantOffenceResultDetails() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
         final CaagDefendants defendantSmith = defendants.get(0);
 
@@ -344,7 +357,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetDefendantOffenceResultDetailsInDescendingOrder() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
 
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
 
@@ -360,7 +373,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetDefendantPncAndAsn() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
 
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
 
@@ -371,7 +384,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetDefendantWithLegalAidStatus() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
         final CaagDefendants defendantSmith = defendants.get(0);
         assertThat(defendantSmith.getLegalAidStatus(), is(LEGAL_AID_STATUS));
@@ -379,7 +392,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetDefendantLegalEntityOrganisationDetails() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithDefendantLegalEntity(), new ArrayList<>(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithDefendantLegalEntity(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
 
         assertThat(defendants, notNullValue());
@@ -393,7 +406,7 @@ public class CaseAtAGlanceHelperTest {
 
     @Test
     public void shouldGetCaagDefendantsListReturnThreeSetOfResults() {
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
 
         final CaagDefendants firstDefendant = defendants.get(0);
@@ -450,7 +463,7 @@ public class CaseAtAGlanceHelperTest {
                         .build()))
                 .build();
 
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, getCaseHearings(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
 
         assertThat(defendants.get(0).getCtlExpiryDate(), nullValue());
@@ -484,7 +497,7 @@ public class CaseAtAGlanceHelperTest {
                         .build()))
                 .build();
 
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, getCaseHearings(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
 
         assertThat(defendants.get(0).getCtlExpiryDate(), is(timeLimit1));
@@ -518,7 +531,7 @@ public class CaseAtAGlanceHelperTest {
                         .build()))
                 .build();
 
-        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, getCaseHearings(), referenceDataService);
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
 
         assertThat(defendants.get(0).getCtlExpiryDate(), is(timeLimit1));
@@ -780,4 +793,88 @@ public class CaseAtAGlanceHelperTest {
                                 .build()))
                         .build());
     }
+
+    @Test
+    public void shouldGetCivilDetailsFromProsecutionCase() {
+        final CivilFeeEntity civilFeeEntity = new CivilFeeEntity(UUID.randomUUID(), uk.gov.moj.cpp.progression.domain.constant.FeeType.INITIAL, uk.gov.moj.cpp.progression.domain.constant.FeeStatus.OUTSTANDING,"paymentRef");
+        when(civilFeeRepository.findBy(any())).thenReturn(civilFeeEntity);
+
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCivilCaseDetails(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
+        final CaseDetails caseDetails = caseAtAGlanceHelper.getCaseDetails();
+
+        assertThat(caseDetails, notNullValue());
+        assertThat(caseDetails.getCivilFees().size(), is(1));
+        assertThat(caseDetails.getIsCivil(), is(true));
+        assertThat(caseDetails.getIsGroupMaster(), is(true));
+    }
+
+    private ProsecutionCase getProsecutionCaseWithCivilCaseDetails() {
+        return prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(CASE_URN)
+                        .withProsecutionAuthorityId(randomUUID())
+                        .withProsecutionAuthorityCode(PROSECUTION_AUTHORITY_CODE)
+                        .withProsecutionAuthorityReference(PROSECUTION_AUTHORITY_REFERENCE)
+                        .build())
+                .withIsCpsOrgVerifyError(true)
+                .withCaseStatus(CASE_STATUS)
+                .withRemovalReason(REMOVAL_REASON)
+                .withInitiationCode(InitiationCode.J)
+                .withCivilFees(asList(CivilFees.civilFees()
+                        .withFeeId(UUID.randomUUID())
+                        .withFeeStatus(FeeStatus.OUTSTANDING)
+                        .withFeeType(FeeType.INITIAL)
+                        .withPaymentReference("paymentReference001")
+                        .build()))
+                .withIsCivil(true)
+                .withIsGroupMaster(true)
+                .withIsGroupMember(true)
+                .withGroupId(UUID.randomUUID())
+                .withCaseMarkers(asList(marker().withId(randomUUID()).withMarkerTypeDescription("Vulnerable or intimidated victim").build(),
+                        marker().withId(randomUUID()).withMarkerTypeDescription("Prohibited Weapons").build()))
+                .withDefendants(asList(defendant().withId(JOHN_SMITH_ID)
+                                .withMasterDefendantId(JOHN_SMITH_MASTER_ID)
+                                .withPersonDefendant(personDefendant()
+                                        .withBailStatus(BailStatus.bailStatus().withDescription(REMAND_STATUS).build())
+                                        .withPersonDetails(Person.person()
+                                                .withFirstName("John").withLastName("Smith")
+                                                .withNationalityDescription(NATIONALITY_DESCRIPTION)
+                                                .withDateOfBirth(DATE_OF_BIRTH)
+                                                .withAddress(ADDRESS)
+                                                .withInterpreterLanguageNeeds(INTERPRETER_LANGUAGE_NEEDS).build())
+                                        .build())
+                                .withDefenceOrganisation(organisation().withName(LEGAL_REP_NAME).build())
+                                .withOffences(asList(offence().withId(OFFENCE_ID)
+                                                .withOffenceCode(OFFENCE_CODE)
+                                                .withOffenceTitle(OFFENCE_TITLE)
+                                                .withOffenceTitleWelsh(OFFENCE_TITLE_WELSH)
+                                                .withCount(2)
+                                                .withOrderIndex(2)
+                                                .withPlea(plea().withPleaDate(PLEA_DATE).withPleaValue(PLEA_GUILTY).build())
+                                                .withVerdict(verdict().withVerdictDate(VERDICT_DATE).withVerdictType(VerdictType.verdictType().withCategory(GUILTY).build()).build())
+                                                .withOffenceLegislation(OFFENCE_LEGISLATION)
+                                                .withStartDate(LocalDate.now())
+                                                .withEndDate(LocalDate.now())
+                                                .withJudicialResults(emptyList())
+                                                .build(),
+                                        offence().withId(randomUUID()).withOffenceCode(OTHER_OFFENCE_CODE).build()))
+                                .withLegalAidStatus(LEGAL_AID_STATUS)
+                                .build(),
+                        defendant().withId(JOHN_RAMBO_ID)
+                                .withMasterDefendantId(JOHN_RAMBO_ID)
+                                .withPersonDefendant(personDefendant().withPersonDetails(Person.person().withFirstName("John").withLastName("Rambo").build()).build())
+                                .withOffences(singletonList(offence().withId(randomUUID()).withOffenceCode(OFFENCE_CODE).build()))
+                                .build(),
+                        defendant().withId(ALAN_SMITH_ID)
+                                .withMasterDefendantId(ALAN_SMITH_ID)
+                                .withIsYouth(Boolean.TRUE)
+                                .withPersonDefendant(personDefendant()
+                                        .withPersonDetails(Person.person().withFirstName("Alan").withLastName("Smith")
+                                                .withNationalityDescription(NATIONALITY_DESCRIPTION)
+                                                .withAdditionalNationalityDescription(ADD_NATIONALITY_DESCRIPTION)
+                                                .build()).build())
+                                .withOffences(singletonList(offence().withId(randomUUID()).withOffenceCode(OFFENCE_CODE).build()))
+                                .build()))
+                .build();
+    }
+
 }

@@ -153,6 +153,25 @@ public class ListingStub {
         }
     }
 
+    public static String verifyPostListCourtHearingForGroupCase(final String containsText) {
+        try {
+            return waitAtMost(Duration.ONE_MINUTE).until(() -> {
+                        final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStream();
+                        return listCourtHearingRequestsAsStream
+                                .filter(payload -> payload.has("hearings") &&
+                                        payload.getJSONArray("hearings").getJSONObject(0).has("prosecutionCases"))
+                                .map(JSONObject::toString)
+                                .filter(s -> s.contains(containsText))
+                                .findFirst()
+                                .orElse("{}");
+                    }, JsonPathMatchers.hasJsonPath("$.hearings")
+            );
+
+        } catch (Exception e) {
+            throw new AssertionError("ListingStub.verifyPostListCourtHearing failed with: " + e);
+        }
+    }
+
     public static void verifyPostListCourtHearing(final String caseId, final String defendantId, final boolean isYouth) {
         try {
             waitAtMost(Duration.ONE_MINUTE).until(() ->

@@ -93,3 +93,12 @@ rule "Command - API - Action - progression.generate-nows"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Access control for progression.update-civil-fees"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.update-civil-fees");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate", "CTSC Admin"))
+  then
+    $outcome.setSuccess(true);
+end

@@ -58,9 +58,10 @@ public class ProsecutionCaseDefendantListingStatusChangedProcessor {
         final List<ProsecutionCase> prosecutionCases = prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases();
         final List<ListHearingRequest> listHearingRequests = prosecutionCaseDefendantListingStatusChanged.getListHearingRequests();
         final UUID hearingId = prosecutionCaseDefendantListingStatusChanged.getHearing().getId();
+        final Boolean isGroupProceedings = prosecutionCaseDefendantListingStatusChanged.getHearing().getIsGroupProceedings();
 
         if (!CollectionUtils.isEmpty(listHearingRequests)) {
-            listingService.listCourtHearing(jsonEnvelope, listCourtHearingTransformer.transform(jsonEnvelope, prosecutionCases, listHearingRequests, hearingId));
+            listingService.listCourtHearing(jsonEnvelope, listCourtHearingTransformer.transform(jsonEnvelope, prosecutionCases, listHearingRequests, hearingId, isGroupProceedings));
         }
     }
 

@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.progression.event;
 
+import static java.util.Arrays.asList;
+import static java.util.Objects.isNull;
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.CourtCentre;
@@ -17,22 +20,23 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.command.AddRelatedReference;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
 import uk.gov.moj.cpp.progression.service.ListingService;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,10 +77,13 @@ public class ProgressionEventProcessor {
     @Inject
     private SendingSheetCompleteTransformer sendingSheetCompleteTransformer;
 
+    @Inject
+    private ProgressionService progressionService;
+
     @Handles("progression.events.sentence-hearing-date-added")
     public void publishSentenceHearingAddedPublicEvent(final JsonEnvelope event) {
         final String caseId = event.payloadAsJsonObject().getString(CASE_ID);
-        final JsonObject payload = Json.createObjectBuilder().add(CASE_ID, caseId).build();
+        final JsonObject payload = createObjectBuilder().add(CASE_ID, caseId).build();
         sender.send(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_SENTENCE_HEARING_DATE_ADDED).apply(payload));
     }
 
@@ -84,7 +91,7 @@ public class ProgressionEventProcessor {
     public void publishCaseAddedToCrownCourtPublicEvent(final JsonEnvelope event) {
         final String caseId = event.payloadAsJsonObject().getString(CASE_ID);
         LOGGER.debug("Raising public event for case added to crown court for caseId: {}", caseId);
-        final JsonObject payload = Json.createObjectBuilder().add(CASE_ID, caseId).
+        final JsonObject payload = createObjectBuilder().add(CASE_ID, caseId).
                 add(COURT_CENTRE_ID, event.payloadAsJsonObject().getString(COURT_CENTRE_ID)).build();
         sender.send(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_CASE_ADDED_TO_CROWN_COURT).apply(payload));
     }
@@ -92,7 +99,7 @@ public class ProgressionEventProcessor {
     @Handles("progression.events.case-already-exists-in-crown-court")
     public void publishCaseAlreadyExistsInCrownCourtEvent(final JsonEnvelope event) {
         final String caseId = event.payloadAsJsonObject().getString(CASE_ID);
-        final JsonObject payload = Json.createObjectBuilder().add(CASE_ID, caseId).build();
+        final JsonObject payload = createObjectBuilder().add(CASE_ID, caseId).build();
         sender.send(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_CASE_ADDED_TO_CROWN_COURT_EXISTS).apply(payload));
     }
 
@@ -101,39 +108,39 @@ public class ProgressionEventProcessor {
     public void publishSendingSheetCompletedEvent(final JsonEnvelope event) {
         final SendingSheetCompleted sendingSheetCompleted = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), SendingSheetCompleted.class);
         final ProsecutionCase prosecutionCase = sendingSheetCompleteTransformer.transformToProsecutionCase(sendingSheetCompleted, event);
-        final JsonObject pCasePayload = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).build();
+        final JsonObject pCasePayload = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).build();
         LOGGER.info("prosecution case is being created '{}' ", pCasePayload);
 
         final List<DefendantListingNeeds> listDefendantListingNeeds = prosecutionCase.getDefendants().stream().map(defendant -> DefendantListingNeeds.defendantListingNeeds()
                 .withDefendantId(defendant.getId()).withProsecutionCaseId(prosecutionCase.getId()).build()).collect(Collectors.toList());
 
 
-        final boolean allGuiltyPlea =prosecutionCase.getDefendants().stream().flatMap(defendant -> defendant.getOffences().stream())
+        final boolean allGuiltyPlea = prosecutionCase.getDefendants().stream().flatMap(defendant -> defendant.getOffences().stream())
                 .map(offence -> offence.getPlea())
                 .allMatch(plea -> Objects.nonNull(plea) && plea.getPleaValue().equals(GUILTY));
 
-        HearingType hearingType= HearingType.hearingType()
+        HearingType hearingType = HearingType.hearingType()
                 .withId(UUID.fromString("06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"))
                 .withDescription("Plea & Trial Preparation")
                 .build();
 
-        Integer estimatedMinutes= 20;
+        Integer estimatedMinutes = 20;
 
-        if (allGuiltyPlea){
-            hearingType= HearingType.hearingType()
+        if (allGuiltyPlea) {
+            hearingType = HearingType.hearingType()
                     .withId(UUID.fromString("5ae4c090-0f70-4694-b4fc-707633d2b430"))
                     .withDescription("Sentence")
                     .build();
-            estimatedMinutes=30;
+            estimatedMinutes = 30;
         }
 
         final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing()
-                .withHearings(Arrays.asList(HearingListingNeeds.hearingListingNeeds()
+                .withHearings(asList(HearingListingNeeds.hearingListingNeeds()
                         .withCourtCentre(CourtCentre.courtCentre()
                                 .withId(sendingSheetCompleted.getCrownCourtHearing().getCourtCentreId())
                                 .withName(sendingSheetCompleted.getCrownCourtHearing().getCourtCentreName())
                                 .build())
-                        .withProsecutionCases(Arrays.asList(prosecutionCase))
+                        .withProsecutionCases(asList(prosecutionCase))
                         .withEarliestStartDateTime(LocalDate.parse(sendingSheetCompleted.getCrownCourtHearing().getCcHearingDate()).atStartOfDay(ZoneId.systemDefault()))
                         .withId(UUID.randomUUID())
                         .withJurisdictionType(JurisdictionType.CROWN)
@@ -154,33 +161,57 @@ public class ProgressionEventProcessor {
     @Handles("progression.events.sending-sheet-previously-completed")
     public void publishSendingSheetPreviouslyCompletedEvent(final JsonEnvelope event) {
         final String caseId = event.payloadAsJsonObject().getString(CASE_ID);
-        final JsonObject payload = Json.createObjectBuilder().add(CASE_ID, caseId).build();
+        final JsonObject payload = createObjectBuilder().add(CASE_ID, caseId).build();
         sender.send(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_SENDING_SHEET_PREVIOUSLY_COMPLETED).apply(payload));
     }
 
     @Handles("progression.events.sending-sheet-invalidated")
     public void publishSendingSheetInvalidatedEvent(final JsonEnvelope event) {
         final String caseId = event.payloadAsJsonObject().getString(CASE_ID);
-        final JsonObject payload = Json.createObjectBuilder().add(CASE_ID, caseId).build();
+        final JsonObject payload = createObjectBuilder().add(CASE_ID, caseId).build();
         sender.send(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_SENDING_SHEET_INVALIDATED).apply(payload));
     }
 
     @Handles("progression.event.prosecution-case-created")
     public void publishProsecutionCaseCreatedEvent(final JsonEnvelope event) {
-        sender.send(Enveloper.envelop(event.payload())
-                .withName(PUBLIC_PROGRESSION_EVENTS_PROSECUTION_CASE_CREATED)
-                .withMetadataFrom(event));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Received 'progression.event.prosecution-case-created:' event with payload: {}", event.toObfuscatedDebugString());
+        }
 
         final ProsecutionCaseCreated prosecutionCaseCreated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseCreated.class);
         final ProsecutionCase prosecutionCase = prosecutionCaseCreated.getProsecutionCase();
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("prosecutionCaseId", prosecutionCase.getId().toString())
-                .build();
+        if (isNull(prosecutionCase.getGroupId())) {
+            LOGGER.info("Raising public message public.progression.prosecution-case-created for Case '{}'  ", prosecutionCase.getId());
+            sender.send(Enveloper.envelop(event.payload())
+                    .withName(PUBLIC_PROGRESSION_EVENTS_PROSECUTION_CASE_CREATED)
+                    .withMetadataFrom(event));
+        }
 
-        sender.send(Enveloper.envelop(jsonObject)
-                .withName("progression.command.process-matched-defendants")
-                .withMetadataFrom(event));
+        final String relatedUrn = prosecutionCase.getRelatedUrn();
+        if (StringUtils.isNotBlank(relatedUrn)) {
+            final String caseId = prosecutionCase.getId().toString();
+            LOGGER.info("fire command to add the related reference urn");
+            final AddRelatedReference addRelatedReference = AddRelatedReference
+                    .addRelatedReference()
+                    .withRelatedReference(relatedUrn)
+                    .withProsecutionCaseId(UUID.fromString(caseId))
+                    .build();
+            final JsonObject jsonObject = objectToJsonObjectConverter.convert(addRelatedReference);
+            sender.send(Enveloper.envelop(jsonObject)
+                    .withName("progression.command.add-related-reference")
+                    .withMetadataFrom(event));
+        }
+
+        if (isNull(prosecutionCase.getIsGroupMember()) || !prosecutionCase.getIsGroupMember()) {
+            final JsonObject jsonObject = createObjectBuilder()
+                    .add("prosecutionCaseId", prosecutionCase.getId().toString())
+                    .build();
+
+            sender.send(Enveloper.envelop(jsonObject)
+                    .withName("progression.command.process-matched-defendants")
+                    .withMetadataFrom(event));
+        }
     }
 
     @Handles("progression.event.now-document-notification-suppressed")
@@ -189,7 +220,6 @@ public class ProgressionEventProcessor {
                 .withName(PUBLIC_PROGRESSION_EVENTS_NOW_NOTIFICATION_SUPPRESSED)
                 .withMetadataFrom(event));
     }
-
 
 }
 

@@ -237,13 +237,21 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         (mapping):
             requestType: application/vnd.progression.initiate-court-proceedings+json
             name: progression.initiate-court-proceedings
+        (mapping):
+            requestType: application/vnd.progression.initiate-court-proceedings-for-group-cases+json
+            name: progression.initiate-court-proceedings-for-group-cases
         ...
       body:
         application/vnd.progression.initiate-court-proceedings+json:
             example:
-             !include json/progression.initiate-court-proceedings.json
+              !include json/progression.initiate-court-proceedings.json
             schema:
-             !include json/schema/progression.initiate-court-proceedings.json
+              !include json/schema/progression.initiate-court-proceedings.json
+        application/vnd.progression.initiate-court-proceedings-for-group-cases+json:
+            example:
+              !include json/progression.initiate-court-proceedings-for-group-cases.json
+            schema:
+              !include json/schema/progression.initiate-court-proceedings-for-group-cases.json
       responses:
             202:
                 description: OK
@@ -363,6 +371,15 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       (mapping):
           requestType: application/vnd.progression.update-cps-prosecutor-details+json
           name: progression.update-cps-prosecutor-details
+      (mapping):
+          requestType: application/vnd.progression.remove-case-from-group-cases+json
+          name: progression.remove-case-from-group-cases
+      (mapping):
+          requestType: application/vnd.progression.add-related-reference+json
+          name: progression.add-related-reference
+      (mapping):
+          requestType: application/vnd.progression.delete-related-reference+json
+          name: progression.delete-related-reference
 
       ...
     body:
@@ -374,6 +391,15 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       application/vnd.progression.update-cps-prosecutor-details+json:
         example: !include json/progression.update-cps-prosecutor-details.json
         schema:  !include json/schema/progression.update-cps-prosecutor-details.json
+      application/vnd.progression.remove-case-from-group-cases+json:
+        example: !include json/progression.remove-case-from-group-cases.json
+        schema:  !include json/schema/progression.remove-case-from-group-cases.json
+      application/vnd.progression.add-related-reference+json:
+        example: !include json/progression.add-related-reference.json
+        schema:  !include json/schema/progression.add-related-reference.json
+      application/vnd.progression.delete-related-reference+json:
+        example: !include json/progression.delete-related-reference.json
+        schema:  !include json/schema/progression.delete-related-reference.json
 
     responses:
           202:
@@ -1393,6 +1419,42 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         description: Internal Server Error
       202:
         description: Accepted
+
+/cases/update-civil-fees:
+  post:
+    description: |
+      Add/Update Civil fee.
+      ...
+      (mapping):
+          requestType: application/vnd.progression.update-civil-fees+json
+          name: progression.update-civil-fees
+      ...
+    body:
+      application/vnd.progression.update-civil-fees+json:
+        example:
+          !include json/progression.update-civil-fees.json
+        schema:
+          !include json/schema/progression.update-civil-fees.json
+
+/edit-application-fee:
+  post:
+      description: |
+        Edit court fee for civil application.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.edit-court-fee-for-civil-application+json
+            name: progression.edit-court-fee-for-civil-application
+        (mapping):
+            requestType: application/vnd.progression.edit-court-fee-for-civil-application+json
+            name: progression.edit-court-fee-for-civil-application
+        ...
+      body:
+        application/vnd.progression.edit-court-fee-for-civil-application+json:
+            example: !include json/progression.edit-court-fee-for-civil-application.json
+            schema: !include json/schema/progression.edit-court-fee-for-civil-application.json
+      responses:
+            202:
+                description: OK
 
 /hearingeventlog/{caseId}:
   uriParameters:

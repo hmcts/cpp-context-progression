@@ -23,10 +23,38 @@
             "initiationCode": {
               "type": "string"
             },
+            "civilFees": {
+              "type": "array",
+              "items": {
+                "$ref": "http://justice.gov.uk/core/courts/civilFees.json"
+              }
+            },
+            "groupId": {
+              "description": "Indicates the Staging.CivilProsecutor assigned group id for bulk cases",
+              "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+            },
+            "isCivil": {
+              "description": "Marker to indicate that MoJ offence reference data should be used as opposed to criminal offence reference data",
+              "type": "boolean"
+            },
+            "isGroupMember": {
+              "description": "Indicates if a case is part of a group of cases within the hearing",
+              "type": "boolean"
+            },
+            "isGroupMaster": {
+              "description": "Indicates which case within a group (isGroupMember = true) is the master and should be returned by the backend to the UI",
+              "type": "boolean"
+            },
             "caseMarkers": {
               "type": "array",
               "items": {
                 "type": "string"
+              }
+            },
+            "relatedReferenceList": {
+              "type": "array",
+              "items": {
+                "$ref": "http://justice.gov.uk/progression/query/related-reference.json"
               }
             }
           }

@@ -68,6 +68,21 @@ public class ProsecutionCaseQueryApi {
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
+    @Handles("progression.query.prosecutioncase-details")
+    public JsonEnvelope getCaseProsecutionCaseDetails(final JsonEnvelope query) {
+        return prosecutionCaseQuery.getProsecutionCaseDetails(query);
+    }
+
+    @Handles("progression.query.mastercase-details")
+    public JsonEnvelope getProsecutionMasterCaseDetails(final JsonEnvelope query) {
+        return prosecutionCaseQuery.getProsecutionMasterCaseDetails(query);
+    }
+
+    @Handles("progression.query.group-member-cases")
+    public JsonEnvelope geGroupMemberCases(final JsonEnvelope query) {
+        return prosecutionCaseQuery.getGroupMemberCases(query);
+    }
+
     @SuppressWarnings("squid:S3655")
     @Handles("progression.query.prosecutioncase")
     public JsonEnvelope getCaseProsecutionCase(final JsonEnvelope query) {

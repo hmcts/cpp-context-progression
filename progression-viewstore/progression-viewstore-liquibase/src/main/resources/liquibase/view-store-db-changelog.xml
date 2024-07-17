@@ -110,4 +110,7 @@
     <include file="liquibase/add-index-case-defendant-hearing-defendant-id.xml"/>
     <include file ="liquibase/add-applicationId-share-court-document.xml"/>
     <include file="liquibase/create-opa-notice.xml"/>
+    <include file="liquibase/create-civil-fee.xml"/>
+    <include file="liquibase/alter-table-prosecution-case-add-column-group-id.xml"/>
+    <include file="liquibase/create-related-reference.xml"/>
 </databaseChangeLog>

@@ -1,1 +1,36 @@
-{  "$schema": "http://json-schema.org/draft-04/schema#",  "id": "http://justice.gov.uk/core/courts/cotr-operation-failed.json",  "type": "object",  "properties": {    "cotrId": {      "description": "Cotr Id",      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"    },    "caseId": {      "description": "Case Id",      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"    },    "submissionId": {      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"    },    "operation": {      "description": "Form Operation",      "type": "string"    },    "message": {      "description": "Message",      "type": "string"    }  },  "required": [    "caseId",    "submissionId",    "operation",    "message"  ],  "additionalProperties": false}
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/cotr-operation-failed.json",
+  "type": "object",
+  "properties": {
+    "cotrId": {
+      "description": "Cotr Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "Case Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "submissionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "operation": {
+      "description": "Form Operation",
+      "type": "string"
+    },
+    "message": {
+      "description": "Message",
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "submissionId",
+    "operation",
+    "message"
+  ],
+  "additionalProperties": false
+}
+
+
+

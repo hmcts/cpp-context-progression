@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.lang.Boolean.TRUE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
@@ -15,6 +17,7 @@ import uk.gov.justice.core.courts.CaseNoteAdded;
 import uk.gov.justice.core.courts.CaseNoteAddedV2;
 import uk.gov.justice.core.courts.CaseNoteEdited;
 import uk.gov.justice.core.courts.CaseNoteEditedV2;
+import uk.gov.justice.core.courts.CivilFees;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -29,14 +32,18 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.domain.constant.FeeStatus;
+import uk.gov.moj.cpp.progression.domain.constant.FeeType;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseNoteEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CivilFeeEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.InitiateCourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseNoteRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CivilFeeRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
@@ -85,6 +92,9 @@ public class ProsecutionCaseEventListener {
     private HearingRepository hearingRepository;
 
     @Inject
+    private CivilFeeRepository civilFeeRepository;
+
+    @Inject
     private SearchProsecutionCase searchCase;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseEventListener.class);
@@ -101,6 +111,9 @@ public class ProsecutionCaseEventListener {
         defendants.stream().forEach(d -> filterDuplicateOffencesById(d.getOffences()));
 
         repository.save(getProsecutionCaseEntity(ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase).withDefendants(defendants).build()));
+        if (nonNull(prosecutionCase.getIsCivil()) && TRUE.equals(prosecutionCase.getIsCivil())) {
+            addCivilFeeToCivilCase(prosecutionCase);
+        }
         makeSearchable(prosecutionCase);
     }
 
@@ -111,6 +124,12 @@ public class ProsecutionCaseEventListener {
         final Set<UUID> offenceIds = new HashSet<>();
         offences.removeIf(e -> !offenceIds.add(e.getId()));
         LOGGER.info("Removing duplicate offence, offences count:{} and offences count after filtering:{} ", offences.size(), offenceIds.size());
+    }
+
+    private void addCivilFeeToCivilCase(final ProsecutionCase prosecutionCase) {
+        if (isNotEmpty(prosecutionCase.getCivilFees())) {
+            civilFeeRepository.save(getCivilFeeEntity(prosecutionCase));
+        }
     }
 
     @Handles("progression.event.case-ejected")
@@ -182,6 +201,9 @@ public class ProsecutionCaseEventListener {
     private ProsecutionCaseEntity getProsecutionCaseEntity(final ProsecutionCase prosecutionCase) {
         final ProsecutionCaseEntity pCaseEntity = new ProsecutionCaseEntity();
         pCaseEntity.setCaseId(prosecutionCase.getId());
+        if (nonNull(prosecutionCase.getGroupId())) {
+            pCaseEntity.setGroupId(prosecutionCase.getGroupId());
+        }
         pCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
         return pCaseEntity;
     }
@@ -238,5 +260,34 @@ public class ProsecutionCaseEventListener {
         final CaseNoteEntity caseNoteEntity = caseNoteRepository.findBy(caseNotePinned.getCaseNoteId());
         caseNoteEntity.setPinned(caseNotePinned.getIsPinned());
         caseNoteRepository.save(caseNoteEntity);
+    }
+
+    private CivilFeeEntity getCivilFeeEntity(final ProsecutionCase prosecutionCase) {
+        final CivilFees civilFees = prosecutionCase.getCivilFees().get(0);
+        final CivilFeeEntity civilFeeEntity = new CivilFeeEntity();
+        civilFeeEntity.setFeeId(civilFees.getFeeId());
+
+        civilFeeEntity.setFeeStatus(FeeStatus.OUTSTANDING);
+        if(civilFees.getFeeStatus() != null) {
+            civilFeeEntity.setFeeStatus(FeeStatus.valueOf(civilFees.getFeeStatus().name()));
+        }
+
+        civilFeeEntity.setPaymentReference(civilFees.getPaymentReference());
+
+        civilFeeEntity.setFeeType(FeeType.INITIAL);
+        if (civilFees.getFeeType() != null) {
+            civilFeeEntity.setFeeType(FeeType.valueOf(civilFees.getFeeType().name()));
+        }
+
+        civilFeeEntity.setOffenceId(getOffenceID(prosecutionCase));
+        if (nonNull(prosecutionCase.getProsecutor())) {
+            civilFeeEntity.setProsecutorId(prosecutionCase.getProsecutor().getProsecutorId());
+        }
+        return civilFeeEntity;
+    }
+
+    private UUID getOffenceID(final ProsecutionCase prosecutionCase) {
+        //civil case has always one defendant and one offence
+        return prosecutionCase.getDefendants().get(0).getOffences().get(0).getId();
     }
 }

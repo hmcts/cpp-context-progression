@@ -458,6 +458,22 @@ baseUri:  message://command/handler/message/progression
             schema: !include json/schema/progression.command.update-case-defendant-with-driver-number.json
             example: !include json/progression.command.update-case-defendant-with-driver-number.json
 
+        application/vnd.progression.command.update-civil-fees+json:
+            example: !include json/progression.command.update-civil-fees.json
+            schema:  !include json/schema/progression.command.update-civil-fees.json
+
+        application/vnd.progression.command.initiate-court-proceedings-for-group-cases+json:
+            example: !include json/progression.command.initiate-court-proceedings-for-group-cases.json
+            schema: !include json/schema/progression.command.initiate-court-proceedings-for-group-cases.json
+
+        application/vnd.progression.command.edit-court-fee-for-civil-application+json:
+            example: !include json/progression.command.edit-court-fee-for-civil-application.json
+            schema:  !include json/schema/progression.command.edit-court-fee-for-civil-application.json
+
+        application/vnd.progression.command.remove-case-from-group-cases+json:
+            example: !include json/progression.command.remove-case-from-group-cases.json
+            schema:  !include json/schema/progression.command.remove-case-from-group-cases.json
+
         application/vnd.progression.command.publish-court-list+json:
             schema: !include json/schema/progression.command.publish-court-list.json
             example: !include json/progression.command.publish-court-list.json
@@ -652,6 +668,14 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.create-prosecution-case-in-hearing+json:
             schema: !include json/schema/progression.command.create-prosecution-case-in-hearing.json
             example: !include json/progression.command.create-prosecution-case-in-hearing.json
+
+        application/vnd.progression.command.add-related-reference+json:
+            schema: !include json/schema/progression.command.add-related-reference.json
+            example: !include json/progression.command.add-related-reference.json
+        application/vnd.progression.command.delete-related-reference+json:
+            schema: !include json/schema/progression.command.delete-related-reference.json
+            example: !include json/progression.command.delete-related-reference.json
+
         application/vnd.progression.command.create-hearing-event-log-document+json:
         application/vnd.progression.command.create-aaag-hearing-event-log-document+json:
 

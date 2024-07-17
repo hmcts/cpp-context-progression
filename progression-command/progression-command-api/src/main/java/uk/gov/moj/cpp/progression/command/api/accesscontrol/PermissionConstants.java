@@ -56,6 +56,6 @@ public class PermissionConstants {
     }
 
     public static String[] getUsersForCourtProceedingsForApplication() {
-        return new String[]{"Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin", "Court Associate"};
+        return new String[]{"Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin", "Court Associate", "NCES"};
     }
 }

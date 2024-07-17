@@ -35,6 +35,27 @@
         "paymentReference": {
           "type": "string"
         },
+        "feeStatus": {
+          "$ref": "#/definitions/civilFeeStatus"
+        },
+        "contestedFeeStatus": {
+          "$ref": "#/definitions/civilFeeStatus"
+        },
+        "contestedPaymentReference": {
+          "type": "string"
+        },
+        "isExParte": {
+          "description": "Persists ex parte value on offence (constant)",
+          "type": "boolean"
+        },
+        "isCivil": {
+          "description": "is civil application",
+          "type": "boolean"
+        },
+        "isGroupCaseApplication": {
+          "description": "is application for group cases",
+          "type": "boolean"
+        },
         "aagResults": {
           "type": "array",
           "minItems": 1,
@@ -374,6 +395,19 @@
         "value"
       ],
       "additionalProperties": false
+    },
+    "civilFeeStatus": {
+      "description": "Indicates status of the fee according to fix list",
+      "type": "string",
+      "enum": [
+        "OUTSTANDING",
+        "SATISFIED",
+        "REFUNDED",
+        "WAIVED",
+        "PAYMENT_UNDERTAKING_MADE",
+        "REDUCED",
+        "NOT_APPLICABLE"
+      ]
     }
   }
 }

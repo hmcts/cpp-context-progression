@@ -85,7 +85,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.moj.cpp.progression.utils.PayloadUtil;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantsAddedToCourtProceedingsProcessorTest {
@@ -291,7 +290,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         when(listingService.getFutureHearings(jsonEnvelope, "caseUrn")).thenReturn(futureHearings);
 
 
-        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(), any(List.class), any())).thenReturn(listCourtHearing);
+        when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(), any(List.class), any(), any())).thenReturn(listCourtHearing);
 
         //When
         eventProcessor.process(jsonEnvelope);

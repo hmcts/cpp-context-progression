@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.anyOf;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.ApplicationStatus.LISTED;
+import static uk.gov.justice.core.courts.CivilOffence.civilOffence;
 import static uk.gov.justice.hearing.courts.Initiate.initiate;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -43,6 +45,7 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ListCourtHearing;
@@ -370,6 +373,7 @@ public class HearingConfirmedEventProcessorTest {
                                 .withDescription("Trial")
                                 .build())
                         .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                                .withIsCivil(false)
                                 .withDefendants(singletonList(Defendant.defendant()
                                         .withId(randomUUID())
                                         .withOffences(singletonList(Offence.offence()
@@ -390,8 +394,68 @@ public class HearingConfirmedEventProcessorTest {
         eventProcessor.processEvent(envelope);
 
         verify(sender, times(2)).send(finalEnvelope);
-        verify(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        verify(progressionService, times(1)).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
         verify(documentGeneratorService,times(0)).generatePostalDocumentForOpa(any(),any(),any(),any(),any(),any(),any());
+    }
+
+    @Test
+    public void shouldHandleHearingConfirmedWithCasesEventMessageAndForBulkCaseDoesNotPrepareSummons(){
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID caseId = randomUUID();
+
+        final ConfirmedProsecutionCase confirmedProsecutionCase = createConfirmedProsecutionCase(caseId, defendantId, offenceId);
+        final ConfirmedHearing confirmedHearing = ConfirmedHearing.confirmedHearing()
+                .withId(randomUUID())
+                .withProsecutionCases(singletonList(confirmedProsecutionCase))
+                .withIsGroupProceedings(true)
+                .build();
+        JsonObject prosecutionCaseJson = createProsecutionCaseJson(offenceId, defendantId, caseId);
+        ProsecutionCase prosecutionCase = createProsecutionCase(offenceId, defendantId, caseId);
+
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(randomUUID())
+                .withSeedingHearing(SeedingHearing.seedingHearing().build())
+                .withProsecutionCases(Arrays.asList(prosecutionCase))
+                .build();
+
+        final JsonObject hearingInProgressionJson = createHearingJson(objectToJsonObjectConverter.convert(hearingInProgression));
+
+        when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
+        doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class)).thenReturn(prosecutionCase);
+        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(
+                Hearing.hearing()
+                        .withId(randomUUID())
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                                .withIsCivil(true)
+                                .withDefendants(singletonList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(singletonList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .build()))
+                                        .build()))
+                                .build()))
+                        .build());
+        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+        when(progressionService.getHearing(any(), any())).thenReturn(of(hearingInProgressionJson));
+        when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
+        when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
+        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
+
+        eventProcessor.processEvent(envelope);
+
+        verify(sender, times(2)).send(finalEnvelope);
+        verify(progressionService, never()).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
     }
 
     @Test
@@ -411,6 +475,7 @@ public class HearingConfirmedEventProcessorTest {
                         .build())
                 .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
                         .withId(randomUUID())
+                        .withIsCivil(false)
                         .withDefendants(singletonList(Defendant.defendant()
                                 .withId(randomUUID())
                                 .withOffences(singletonList(Offence.offence()
@@ -490,6 +555,7 @@ public class HearingConfirmedEventProcessorTest {
                 .withSeedingHearing(seedingHearing)
                 .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
                         .withId(randomUUID())
+                        .withIsCivil(false)
                         .withDefendants(singletonList(Defendant.defendant()
                                 .withId(randomUUID())
                                 .withOffences(Arrays.asList(Offence.offence()
@@ -608,6 +674,7 @@ public class HearingConfirmedEventProcessorTest {
                         .withId(UUID.randomUUID())
                         .withHearingDays(Arrays.asList(HearingDay.hearingDay().build()))
                         .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                                .withIsCivil(false)
                                 .withDefendants(Arrays.asList(Defendant.defendant()
                                         .withId(UUID.randomUUID())
                                         .withOffences(Arrays.asList(Offence.offence()
@@ -679,6 +746,7 @@ public class HearingConfirmedEventProcessorTest {
         when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
         when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
+        when(progressionService.getHearing(any(), any())).thenReturn(of(hearingInProgressionJson));
         when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
         when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
 
@@ -818,6 +886,7 @@ public class HearingConfirmedEventProcessorTest {
                         .build())
                 .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
                         .withId(randomUUID())
+                        .withIsCivil(false)
                         .withDefendants(singletonList(Defendant.defendant()
                                 .withId(randomUUID())
                                 .withOffences(singletonList(Offence.offence()
@@ -885,10 +954,12 @@ public class HearingConfirmedEventProcessorTest {
                 .withSeedingHearing(seedingHearing)
                 .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
                         .withId(randomUUID())
+                        .withIsCivil(true)
                         .withDefendants(singletonList(Defendant.defendant()
                                 .withId(randomUUID())
                                 .withOffences(singletonList(Offence.offence()
                                         .withId(randomUUID())
+                                        .withCivilOffence(civilOffence().withIsExParte(true).build())
                                         .build()))
                                 .build()))
                         .build()))
@@ -928,6 +999,7 @@ public class HearingConfirmedEventProcessorTest {
                         .withId(UUID.randomUUID())
                         .withHearingDays(Arrays.asList(HearingDay.hearingDay().build()))
                         .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
+                                .withIsCivil(false)
                                 .withDefendants(Arrays.asList(Defendant.defendant()
                                         .withId(UUID.randomUUID())
                                         .withOffences(Arrays.asList(Offence.offence()

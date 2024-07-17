@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/update-case-group-info.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCaseId": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "isGroupMaster": {
+        "type": "boolean"
+    },
+    "isGroupMember": {
+        "type": "boolean"
+    }
+  },
+  "required": [
+    "prosecutionCaseId",
+    "isGroupMaster",
+    "isGroupMember"
+  ]
+}

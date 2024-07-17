@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.anyList;
@@ -61,8 +63,8 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.hamcrest.core.Is;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -73,6 +75,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.mockito.internal.verification.VerificationModeFactory;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -154,11 +157,11 @@ public class CourtProceedingsInitiatedProcessorTest {
         final UUID offenceId = UUID.randomUUID();
         final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
 
-        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, defendantId, offenceId, offenceCode,true);
+        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, defendantId, offenceId, offenceCode, true);
 
         final ListHearingRequest listHearingRequest = populateListHearingRequest(caseId, defendantId, offenceId);
 
-        final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode, SEXUAL_OFFENCE_RR_DESCRIPTION,"/referencedataoffences.offences-list.json");
+        final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode, SEXUAL_OFFENCE_RR_DESCRIPTION, "/referencedataoffences.offences-list.json");
 
         final JsonEnvelope requestMessage = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-proceedings-initiated"),
@@ -167,6 +170,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         //When
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
+        when(courtReferralJson.getJsonArray("prosecutionCases")).thenReturn(createArrayBuilder().add(createObjectBuilder()).build());
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
@@ -187,7 +191,7 @@ public class CourtProceedingsInitiatedProcessorTest {
                 .getJsonArray("reportingRestrictions");
 
 
-        assertThat(reportingRestrictionsArray.size(),is(2));
+        assertThat(reportingRestrictionsArray.size(), is(2));
         assertThat(reportingRestrictionsArray.getJsonObject(0).getString("label"), is(YOUTH_OFFENCE_RR_DESCRIPTION));
         assertThat(reportingRestrictionsArray.getJsonObject(0).getString("orderedDate"), is(LocalDate.now().toString()));
         assertThat(reportingRestrictionsArray.getJsonObject(1).getString("label"), is(SEXUAL_OFFENCE_RR_DESCRIPTION));
@@ -211,18 +215,18 @@ public class CourtProceedingsInitiatedProcessorTest {
     }
 
     @Test
-    public void  shouldNotIncludeRestrictionsListIfReferenceDataQueryReturnsNoRR() throws IOException {
+    public void shouldNotIncludeRestrictionsListIfReferenceDataQueryReturnsNoRR() throws IOException {
         //Given
         final UUID caseId = UUID.randomUUID();
         final UUID defendantId = UUID.randomUUID();
         final UUID offenceId = UUID.randomUUID();
         final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
 
-        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, defendantId, offenceId, offenceCode,false);
+        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, defendantId, offenceId, offenceCode, false);
 
         final ListHearingRequest listHearingRequest = populateListHearingRequest(caseId, defendantId, offenceId);
 
-        final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode, SEXUAL_OFFENCE_RR_DESCRIPTION,"/referencedataoffences.offences-list-withoutRR.json");
+        final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode, SEXUAL_OFFENCE_RR_DESCRIPTION, "/referencedataoffences.offences-list-withoutRR.json");
 
         final JsonEnvelope requestMessage = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-proceedings-initiated"),
@@ -231,6 +235,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         //When
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
+        when(courtReferralJson.getJsonArray("prosecutionCases")).thenReturn(createArrayBuilder().add(createObjectBuilder()).build());
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
@@ -248,19 +253,19 @@ public class CourtProceedingsInitiatedProcessorTest {
                 .getJsonArray("defendants").getJsonObject(0)
                 .getJsonArray("offences");
 
-        assertThat(offencesArray.size(),is(1));
-        assertThat(offencesArray.getJsonObject(0).containsKey("reportingRestrictions"),is(false));
+        assertThat(offencesArray.size(), is(1));
+        assertThat(offencesArray.getJsonObject(0).containsKey("reportingRestrictions"), is(false));
     }
 
     @Test
-    public void  shouldIncludeYouthRRIfReferenceDataQueryReturnsNoRRButDefendantIsYouth() throws IOException {
+    public void shouldIncludeYouthRRIfReferenceDataQueryReturnsNoRRButDefendantIsYouth() throws IOException {
         //Given
         final UUID caseId = UUID.randomUUID();
         final UUID defendantId = UUID.randomUUID();
         final UUID offenceId = UUID.randomUUID();
         final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
 
-        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, defendantId, offenceId, offenceCode,true);
+        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, defendantId, offenceId, offenceCode, true);
 
         final ListHearingRequest listHearingRequest = populateListHearingRequest(caseId, defendantId, offenceId);
 
@@ -271,6 +276,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         //When
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
+        when(courtReferralJson.getJsonArray("prosecutionCases")).thenReturn(createArrayBuilder().add(createObjectBuilder()).build());
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
@@ -287,8 +293,8 @@ public class CourtProceedingsInitiatedProcessorTest {
                 .getJsonArray("defendants").getJsonObject(0)
                 .getJsonArray("offences");
 
-        assertThat(offencesArray.size(),is(1));
-        assertThat(offencesArray.getJsonObject(0).containsKey("reportingRestrictions"),is(true));
+        assertThat(offencesArray.size(), is(1));
+        assertThat(offencesArray.getJsonObject(0).containsKey("reportingRestrictions"), is(true));
 
         final JsonObject reportingRestrictionJsonObject = offencesArray.getJsonObject(0).getJsonArray("reportingRestrictions").getJsonObject(0);
         assertThat(reportingRestrictionJsonObject.getString("label"), is(YOUTH_OFFENCE_RR_DESCRIPTION));
@@ -319,7 +325,27 @@ public class CourtProceedingsInitiatedProcessorTest {
         return builder.build();
     }
 
+    private ProsecutionCase getProsecutionCaseForGroupCases(final UUID groupId, final UUID caseId, final UUID defendantId, final UUID offenceId, final String offenceCode, final boolean isYouth, final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
+        final ProsecutionCase.Builder builder = new ProsecutionCase.Builder().withId(caseId)
+                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier)
+                .withGroupId(groupId)
+                .withIsGroupMaster(true);
 
+        final Defendant.Builder defendantBuilder = new Defendant.Builder()
+                .withId(defendantId)
+                .withOffences(Stream.of(Offence.offence()
+                        .withId(offenceId)
+                        .withOffenceCode(offenceCode)
+                        .build())
+                        .collect(Collectors.toList()));
+        if (isYouth) {
+            defendantBuilder.withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().withDateOfBirth(LocalDate.of(2005, 11, 11)).build()).build());
+        }
+        builder.withDefendants(Arrays.asList(defendantBuilder.build()));
+
+
+        return builder.build();
+    }
 
     private List<JsonObject> prepareReferenceDataOffencesJsonObject(final UUID offenceId,
                                                                     final String offenceCode,
@@ -343,8 +369,43 @@ public class CourtProceedingsInitiatedProcessorTest {
                         .withDefendantId(defendantId)
                         .withDefendantOffences(Arrays.asList(offenceId))
                         .build()))
-                .withListedStartDateTime(new ZonedDateTimeGenerator(Period.ofDays(20),ZonedDateTime.now(), DateGenerator.Direction.FUTURE).next())
+                .withListedStartDateTime(new ZonedDateTimeGenerator(Period.ofDays(20), ZonedDateTime.now(), DateGenerator.Direction.FUTURE).next())
                 .build();
+    }
+
+    @Test
+    public void shouldSendPublicMessageInCaseOfGroupCases() throws IOException {
+        //Given
+        final UUID caseId = UUID.randomUUID();
+        final UUID groupId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+
+        final ProsecutionCase prosecutionCase = getProsecutionCaseForGroupCases(groupId, caseId, defendantId, offenceId, offenceCode, true, ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build());
+
+        final ListHearingRequest listHearingRequest = populateListHearingRequest(caseId, defendantId, offenceId);
+
+        final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode, SEXUAL_OFFENCE_RR_DESCRIPTION, "/referencedataoffences.offences-list.json");
+
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-proceedings-initiated"),
+                payload);
+
+        //When
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
+        when(courtReferralJson.getJsonArray("prosecutionCases")).thenReturn(createArrayBuilder().add(createObjectBuilder()).build());
+        when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
+        when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
+        when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+
+        this.eventProcessor.handle(requestMessage);
+        verify(sender, VerificationModeFactory.times(2)).send(envelopeCaptor.capture());
+
+        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), Is.is("public.progression.group-prosecution-cases-created"));
+        assertThat(envelopeCaptor.getAllValues().get(0).payload().getString("groupId"), Is.is(groupId.toString()));
     }
 
 }

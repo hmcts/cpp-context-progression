@@ -163,7 +163,7 @@ public class CaseReferredToCourtEventProcessorTest {
                 any(JsonEnvelope.class))).thenReturn(prosecutionCase);
         when(referredCourtDocumentTransformer.transform(any(ReferredCourtDocument.class), any
                 (JsonEnvelope.class))).thenReturn(courtDocument);
-        when(listCourtHearingTransformer.transform(any(), any(), any(), any(), any())).thenReturn
+        when(listCourtHearingTransformer.transform(any(), any(), any(), any(), any(UUID.class))).thenReturn
                 (listCourtHearing);
 
 
@@ -292,7 +292,7 @@ public class CaseReferredToCourtEventProcessorTest {
                 (JsonEnvelope.class))).thenReturn(prosecutionCase);
         when(referredCourtDocumentTransformer.transform(any(ReferredCourtDocument.class), any
                 (JsonEnvelope.class))).thenReturn(courtDocument);
-        when(listCourtHearingTransformer.transform(any(), any(), any(), any(), any())).thenReturn
+        when(listCourtHearingTransformer.transform(any(), any(), any(), any(), any(UUID.class))).thenReturn
                 (listCourtHearing);
 
         when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command" +

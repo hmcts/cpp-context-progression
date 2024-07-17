@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -16,6 +17,7 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
 import static uk.gov.justice.core.courts.ConfirmedProsecutionCaseId.confirmedProsecutionCaseId;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
+import static uk.gov.justice.core.courts.FeeType.CONTESTED;
 import static uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing.prepareSummonsDataForExtendedHearing;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -28,6 +30,8 @@ import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.BoxworkApplicationReferred;
+import uk.gov.justice.core.courts.CivilFees;
+import uk.gov.justice.core.courts.CivilFeesUpdated;
 import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
@@ -170,6 +174,7 @@ public class ProgressionService {
     private static final String PROGRESSION_COMMAND_HEARING_RESULTED_UPDATE_CASE = "progression.command.hearing-resulted-update-case";
     private static final String PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS = "progression.command.hearing-confirmed-update-case-status";
     private static final String PROGRESSION_COMMAND_UPDATE_HEARING_FOR_PARTIAL_ALLOCATION = "progression.command.update-hearing-for-partial-allocation";
+    private static final String PROGRESSION_COMMAND_UPDATE_CIVIL_FEES = "progression.command.update-civil-fees";
     public static final String CASE_STATUS = "caseStatus";
     private static final String COURT_APPLICATIONS = "courtApplications";
     public static final String UNSCHEDULED_HEARING_IDS = "unscheduledHearingIds";
@@ -250,7 +255,7 @@ public class ProgressionService {
         return prosecutionCasesArrayBuilder.build();
     }
 
-    private Hearing transformHearingListingNeeds(final HearingListingNeeds hearingListingNeeds, final SeedingHearing seedingHearing) {
+    private Hearing transformHearingListingNeeds(final HearingListingNeeds hearingListingNeeds, final SeedingHearing seedingHearing, final Boolean isGroupProceedings, final Integer numberOfGroupCases) {
         final ZonedDateTime hearingDateTime = nonNull(hearingListingNeeds.getEarliestStartDateTime()) ?
                 hearingListingNeeds.getEarliestStartDateTime() : hearingListingNeeds.getListedStartDateTime();
 
@@ -265,6 +270,8 @@ public class ProgressionService {
                 .withProsecutionCases(hearingListingNeeds.getProsecutionCases())
                 .withSeedingHearing(seedingHearing)
                 .withCourtApplications(removeJudicialResults(hearingListingNeeds.getCourtApplications()))
+                .withNumberOfGroupCases(numberOfGroupCases)
+                .withIsGroupProceedings(isGroupProceedings)
                 .build();
     }
 
@@ -757,7 +764,6 @@ public class ProgressionService {
 
     public Optional<JsonObject> getProsecutionCaseDetailById(final JsonEnvelope envelope, final String caseId) {
         Optional<JsonObject> result = Optional.empty();
-
         final JsonObject requestParameter = createObjectBuilder()
                 .add(CASE_ID, caseId)
                 .build();
@@ -866,10 +872,9 @@ public class ProgressionService {
      * @param hearings       - the hearings to update the status for
      * @param seedingHearing - The originating hearing details
      */
-    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<HearingListingNeeds> hearings, final SeedingHearing seedingHearing, final List<ListHearingRequest> listHearingRequests) {
+    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<HearingListingNeeds> hearings, final SeedingHearing seedingHearing, final List<ListHearingRequest> listHearingRequests, final Boolean isGroupProceedings, final Integer numberOfGroupCases) {
         hearings.forEach(hearingListingNeeds -> {
-            final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds, seedingHearing);
-
+            final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds, seedingHearing, isGroupProceedings, numberOfGroupCases);
             if (isNotEmpty(hearing.getProsecutionCases())) {
                 final JsonObjectBuilder hearingListingStatusCommandBuilder = Json.createObjectBuilder()
                         .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
@@ -905,7 +910,7 @@ public class ProgressionService {
     public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final ListNextHearingsV3 listNextHearings) {
         final SeedingHearing seedingHearing = listNextHearings.getSeedingHearing();
         listNextHearings.getHearings().forEach(hearingListingNeeds -> {
-            final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds, seedingHearing);
+            final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds, seedingHearing, false, null);
 
             if (isNotEmpty(hearing.getProsecutionCases())) {
                 final JsonObjectBuilder hearingListingStatusCommandBuilder = Json.createObjectBuilder()
@@ -960,16 +965,16 @@ public class ProgressionService {
         return null;
     }
 
+    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<HearingListingNeeds> hearings, final SeedingHearing seedingHearing) {
+        updateHearingListingStatusToSentForListing(jsonEnvelope, hearings, seedingHearing, null, false, null);
+    }
+
     public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final ListCourtHearing listCourtHearing, final List<ListHearingRequest> listHearingRequests) {
-        updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing.getHearings(), null, listHearingRequests);
+        updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing.getHearings(), null, listHearingRequests, false, null);
     }
 
     public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final ListCourtHearing listCourtHearing) {
-        updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing.getHearings(), null, null);
-    }
-
-    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<HearingListingNeeds> hearings, final SeedingHearing seedingHearing) {
-        updateHearingListingStatusToSentForListing(jsonEnvelope, hearings, seedingHearing, null);
+        updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing.getHearings(), null);
     }
 
     public void listUnscheduledHearings(final JsonEnvelope jsonEnvelope, final Hearing hearing) {
@@ -1218,6 +1223,7 @@ public class ProgressionService {
                 .withCourtApplications(extractCourtApplications(confirmedHearing, jsonEnvelope))
                 .withShadowListedOffences(listingService.getShadowListedOffenceIds(jsonEnvelope, confirmedHearing.getId()))
                 .withEstimatedDuration(confirmedHearing.getEstimatedDuration())
+                .withIsGroupProceedings(confirmedHearing.getIsGroupProceedings())
                 .build();
     }
 
@@ -1815,5 +1821,27 @@ public class ProgressionService {
     private String getEndDateString(final NextHearing nextHearing) {
         return nextHearing.getEndDate() != null ? "End date: " + dateFormat.format(nextHearing.getEndDate()) : null;
     }
+
+    public void updateCivilFees(final JsonEnvelope envelope, final ProsecutionCase prosecutionCase) {
+        if (TRUE.equals(prosecutionCase.getIsCivil())) {
+            LOGGER.info("Update fee type has been started for this case id {}", prosecutionCase.getId());
+            final List<CivilFees> updatedCivilFeeList = prosecutionCase.getCivilFees().stream()
+                    .map(civilFees -> CivilFees.civilFees()
+                            .withValuesFrom(civilFees)
+                            .withFeeType(CONTESTED)
+                            .build()).collect(toList());
+
+            final CivilFeesUpdated civilFeesUpdated = CivilFeesUpdated.civilFeesUpdated()
+                    .withCaseId(prosecutionCase.getId())
+                    .withCivilFees(updatedCivilFeeList)
+                    .build();
+            final JsonObject payload = objectToJsonObjectConverter.convert(civilFeesUpdated);
+
+            final Metadata commandMetadata = metadataFrom(envelope.metadata())
+                    .withName(PROGRESSION_COMMAND_UPDATE_CIVIL_FEES).build();
+            sender.send(envelopeFrom(commandMetadata, payload));
+        }
+    }
+
 
 }

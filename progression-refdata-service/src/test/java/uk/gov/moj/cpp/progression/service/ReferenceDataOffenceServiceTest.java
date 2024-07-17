@@ -221,10 +221,51 @@ public class ReferenceDataOffenceServiceTest {
         assertThat(offencesJsonObject.isPresent(), is(false));
     }
 
+    @Test
+    public void shouldReturnTitleAndLegislationWhenDocumentIsNotPresent() throws IOException {
+
+        final String offenceCode = randomAlphanumeric(8);
+
+        final JsonEnvelope responseEnvelope = prepareResponseEnvelopeForOffencesList(offenceCode,"/referencedataoffences.offence-without-document.json");
+
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder()
+                .withId(randomUUID())
+                .withName("referencedataoffences.query.offences-list"), JsonValue.NULL);
+
+        when(requester.request(any())).thenReturn(responseEnvelope);
+
+        final Optional<JsonObject> offenceJsonObject = referenceDataOffenceService.getOffenceByCjsCode(offenceCode, envelope, requester);
+
+        verify(requester).request(envelopeArgumentCaptor.capture());
+
+        final DefaultEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();
+        MatcherAssert.assertThat(capturedEnvelope.metadata().name(), is("referencedataoffences.query.offences-list"));
+
+        assertThat(offenceJsonObject.isPresent(), is(true));
+        JsonObject offence = offenceJsonObject.get();
+
+        assertThat(offence.getString("title"), is("title"));
+        assertThat(offence.getString("legislation"), is("legislation"));
+        assertThat(offence.getString("welshoffencetitle"), is("titleWelsh"));
+        assertThat(offence.getString("welshlegislation"), is("legislationWelsh"));
+
+    }
+
     private static JsonEnvelope prepareResponseEnvelopeForOffencesList(final String offenceCode1, final String offenceCode2,final String fileName) throws IOException {
         final String jsonString = givenPayload(fileName).toString()
                 .replace("OFFENCE_CODE_1", offenceCode1)
                 .replace("OFFENCE_CODE_2", offenceCode2);
+        try {
+            final JsonReader jsonReader = Json.createReader(new StringReader(jsonString));
+            return createEnvelope("referencedataoffences.query.offences-list", jsonReader.readObject());
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static JsonEnvelope prepareResponseEnvelopeForOffencesList(final String offenceCode, final String fileName) throws IOException {
+        final String jsonString = givenPayload(fileName).toString()
+                .replace("OFFENCE_CODE", offenceCode);
         try {
             final JsonReader jsonReader = Json.createReader(new StringReader(jsonString));
             return createEnvelope("referencedataoffences.query.offences-list", jsonReader.readObject());

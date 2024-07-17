@@ -95,6 +95,37 @@ rule "Query - Access control for  progression.query.prosecutioncase"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.prosecutioncase-details"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.prosecutioncase-details");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
+    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for  progression.query.mastercase-details"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.mastercase-details");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
+    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group"))
+  then
+    $outcome.setSuccess(true);
+end
+
+
+rule "Query - Access control for  progression.query.group-member-cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.group-member-cases");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
+    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "CPS" ,"Defence Lawyers", "Advocates"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.prosecutioncase.caag"
   when
     $outcome: Outcome();
@@ -657,6 +688,15 @@ rule "Query - Access control for progression.query.result-list-opa-notices"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.result-list-opa-notices");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - related reference urn"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.related-references");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin", "Court Associate"));
   then
     $outcome.setSuccess(true);
 end

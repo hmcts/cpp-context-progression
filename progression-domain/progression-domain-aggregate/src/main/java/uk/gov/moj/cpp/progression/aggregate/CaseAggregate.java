@@ -71,6 +71,7 @@ import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.NO_V
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PENDING;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
+import static uk.gov.moj.cpp.progression.events.CivilCaseExists.civilCaseExists;
 import static uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated.defendantDefenceOrganisationDisassociated;
 import static uk.gov.moj.cpp.progression.events.Reason.PLEA_ALREADY_SUBMITTED;
 import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.COMPANYONLINEPLEA;
@@ -85,6 +86,7 @@ import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
 import uk.gov.justice.core.courts.CaseEjected;
+import uk.gov.justice.core.courts.CaseGroupInfoUpdated;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CaseMarkersSharedWithHearings;
 import uk.gov.justice.core.courts.CaseMarkersUpdated;
@@ -92,6 +94,8 @@ import uk.gov.justice.core.courts.CaseNoteAddedV2;
 import uk.gov.justice.core.courts.CaseNoteEditedV2;
 import uk.gov.justice.core.courts.CaseRetentionPolicyRecorded;
 import uk.gov.justice.core.courts.Cases;
+import uk.gov.justice.core.courts.CivilFees;
+import uk.gov.justice.core.courts.CivilFeesUpdated;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -255,6 +259,8 @@ import uk.gov.moj.cpp.progression.events.OnlinePleaDocumentUploadedAsCaseMateria
 import uk.gov.moj.cpp.progression.events.OnlinePleaPcqVisitedRecorded;
 import uk.gov.moj.cpp.progression.events.OnlinePleaRecorded;
 import uk.gov.moj.cpp.progression.events.PleaDocumentForOnlinePleaSubmitted;
+import uk.gov.moj.cpp.progression.events.RelatedReferenceAdded;
+import uk.gov.moj.cpp.progression.events.RelatedReferenceDeleted;
 import uk.gov.moj.cpp.progression.events.RepresentationType;
 import uk.gov.moj.cpp.progression.events.SplitCases;
 import uk.gov.moj.cpp.progression.events.UnlinkedCases;
@@ -299,8 +305,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188", "squid:S134",
-        "squid:S1312", "squid:S1612", "pmd:NullAssignment"})
+@SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188", "squid:S2384", "pmd:NullAssignment", "squid:S134", "squid:S1312", "squid:S1612", "pmd:NullAssignment"})
 public class CaseAggregate implements Aggregate {
 
     private static final long serialVersionUID = -2092381865833271660L;
@@ -572,6 +577,9 @@ public class CaseAggregate implements Aggregate {
                                                 this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences()));
                             }
                         }
+                ),
+                when(CaseGroupInfoUpdated.class).apply(
+                        e -> this.prosecutionCase = e.getProsecutionCase()
                 ),
                 when(CaseCpsDetailsUpdatedFromCourtDocument.class).apply(this::handleCaseCpsDetailsUpdatedFromCourtDocument),
                 when(CpsDefendantIdUpdated.class).apply(this::handleCpsDefendantIdUpdated),
@@ -1145,8 +1153,17 @@ public class CaseAggregate implements Aggregate {
     @SuppressWarnings("squid:S2589")
     public Stream<Object> createProsecutionCase(final ProsecutionCase prosecutionCase) {
         LOGGER.debug("Prosecution case is being referred To Court .");
+        if (nonNull(this.prosecutionCase) && nonNull(this.prosecutionCase.getIsCivil())
+                && this.prosecutionCase.getIsCivil() && isNull(this.prosecutionCase.getGroupId())) {
+            return apply(Stream.of(
+                    civilCaseExists()
+                            .withCaseUrn(prosecutionCase.getProsecutionCaseIdentifier().getCaseURN())
+                            .withProsecutionCaseId(prosecutionCase.getId())
+                            .build())
+            );
+        }
         if (null != exactMatchedDefendants) {
-            final List<uk.gov.justice.core.courts.Defendant> defendantList = prosecutionCase.getDefendants().stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
+           final List<uk.gov.justice.core.courts.Defendant> defendantList = prosecutionCase.getDefendants().stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
             defendantList.stream().forEach(x -> DefendantHelper.getUpdatedDefendantWithMasterDefendantId(prosecutionCase, x, transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))));
         }
         return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build()));
@@ -2361,6 +2378,18 @@ public class CaseAggregate implements Aggregate {
                 }
         );
         return apply(streamBuilder.build());
+    }
+
+    public Stream<Object> addRelatedReference(RelatedReferenceAdded relatedReferenceAdded) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(relatedReferenceAdded);
+        return streamBuilder.build();
+    }
+
+    public Stream<Object> deleteRelatedReference(RelatedReferenceDeleted relatedReferenceDeleted) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(relatedReferenceDeleted);
+        return streamBuilder.build();
     }
 
     public Stream<Object> processLinkSplitOrMergeStreams(final List<CasesToLink> casesToLink) {
@@ -3712,5 +3741,23 @@ public class CaseAggregate implements Aggregate {
                     .withOrderedDate(LocalDate.now())
                     .withLabel(YOUTH_RESTRICTION).build());
         }
+    }
+
+    public Stream<Object> updateCivilFees(final UUID caseId, final List<CivilFees> civilFees) {
+        return apply(Stream.of(CivilFeesUpdated
+                .civilFeesUpdated()
+                .withCaseId(caseId)
+                .withCivilFees(civilFees)
+                .build()));
+    }
+
+    public Stream<Object> updateCaseGroupInfo(final Boolean isGroupMaster, final Boolean isGroupMember) {
+        return apply(Stream.of(CaseGroupInfoUpdated.caseGroupInfoUpdated()
+                .withProsecutionCase(ProsecutionCase.prosecutionCase()
+                        .withValuesFrom(this.prosecutionCase)
+                        .withIsGroupMember(isGroupMember)
+                        .withIsGroupMaster(isGroupMaster)
+                        .build())
+                .build()));
     }
 }

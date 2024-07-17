@@ -1,0 +1,55 @@
+{
+  "matchedDefendantCases": [
+    {
+      "caseId": "3305-eb0e-478f-8ae4-f2c7966961e3",
+      "caseUrn": "TFL122222",
+      "relatedUrn": "TFL122222",
+      "matchedMasterDefendantId": "3305de0e-eb0e-478f-8ae4-f2c7966961e3",
+      "defendants": [
+        {
+          "id": "3305de0e-eb0e-478f-8ae4-f2c7966961e3",
+          "masterDefendantId": "3305de0e-eb0e-478f-8ae4-f2c7966961e3",
+          "hasBeenResulted": "false",
+          "firstName": "Edward",
+          "middleName": "",
+          "lastName": "Harrison",
+          "offences": [
+            {
+              "offenceTitle": "Robbery"
+            }
+          ],
+          "nextHearing": {
+            "hearingId": "2205de0e-eb0e-478f-8ae4-f2c7966961e3",
+            "type": "Trial",
+            "hearingDay": "2020-03-23T10:00:00.000Z"
+          }
+        }
+      ]
+    }
+  ],
+  "linkedCases": [
+    {
+      "caseId": "6a670438-7455-11ea-bc55-0242ac130003",
+      "caseUrn": "TFL122223",
+      "linkGroupId": "2205de0e-eb0e-478f-8ae4-f2c7966961e3",
+      "defendants": [
+        {
+          "id": "afcba42a-7455-11ea-bc55-0242ac130003",
+          "masterDefendantId": "3305de0e-eb0e-478f-8ae4-f2c7966961e3",
+          "firstName": "John",
+          "middleName": "",
+          "lastName": "Doe",
+          "offences": [
+            {
+              "offenceTitle": "Robbery"
+            }
+          ],
+          "nextHearing": {
+            "type": "Trial",
+            "hearingDay": "2020-03-23T10:00:00.000Z"
+          }
+        }
+      ]
+    }
+  ]
+}

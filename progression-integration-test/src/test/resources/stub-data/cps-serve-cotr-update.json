@@ -1,1 +1,25 @@
-{  "submissionId": "%SUBMISSION_ID%",  "caseId": "%CASE_ID%",  "formDefendants": [    {      "defendantId": "68e55356-7683-4cb7-a1a2-d0f94286a6d3"    }  ],  "defendantSubject": [    {      "defendants": {        "prosecutorDefendantId": "68e55356-7683-4cb7-a1a2-d0f94286a6d3",        "cpsDefendantId": "68e55356-7683-4cb7-a1a2-d0f94286a6d3",        "asn": "1234567890TH"      }    }  ],  "tag": "tag",  "trialDate": "1980-01-24",  "certifyThatTheProsecutionIsTrialReady": "Y",  "formCompletedOnBehalfOfProsecutionBy" : "formCompletedOnBehalfOfProsecutionBy",  "furtherProsecutionInformationProvidedAfterCertification": "furtherProsecutionInformationProvidedAfterCertification",  "certificationDate" : "1980-01-24",  "cotrId": "%COTR_ID%"}
+{
+  "submissionId": "%SUBMISSION_ID%",
+  "caseId": "%CASE_ID%",
+  "formDefendants": [
+    {
+      "defendantId": "68e55356-7683-4cb7-a1a2-d0f94286a6d3"
+    }
+  ],
+  "defendantSubject": [
+    {
+      "defendants": {
+        "prosecutorDefendantId": "68e55356-7683-4cb7-a1a2-d0f94286a6d3",
+        "cpsDefendantId": "68e55356-7683-4cb7-a1a2-d0f94286a6d3",
+        "asn": "1234567890TH"
+      }
+    }
+  ],
+  "tag": "tag",
+  "trialDate": "1980-01-24",
+  "certifyThatTheProsecutionIsTrialReady": "Y",
+  "formCompletedOnBehalfOfProsecutionBy" : "formCompletedOnBehalfOfProsecutionBy",
+  "furtherProsecutionInformationProvidedAfterCertification": "furtherProsecutionInformationProvidedAfterCertification",
+  "certificationDate" : "1980-01-24",
+  "cotrId": "%COTR_ID%"
+}

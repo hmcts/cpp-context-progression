@@ -111,6 +111,12 @@ protocols: [ HTTP, HTTPS ]
         (mapping):
             responseType: application/vnd.progression.query.case.allhearingtypes+json
             name: progression.query.case.allhearingtypes
+        (mapping):
+            responseType: application/vnd.progression.query.prosecutioncase-details+json
+            name: progression.query.prosecutioncase-details
+        (mapping):
+            responseType: application/vnd.progression.query.related-references+json
+            name: progression.query.related-references
         ...
       queryParameters:
         orderDate:
@@ -138,6 +144,11 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.case.allhearingtypes+json:
                     example:  !include json/progression.query.case.allhearingtypes.json
                     schema:  !include json/schema/progression.query.case.allhearingtypes.json
+                  application/vnd.progression.query.prosecutioncase-details+json:
+                    example:  !include json/progression.query.prosecutioncase-details.json
+                    schema:  !include json/schema/progression.query.prosecutioncase-details.json
+                  application/vnd.progression.query.related-references+json:
+                    schema:  !include json/schema/progression.query.related-references.json
 
 /prosecutioncases/{caseId}/defendants/{defendantId}/:
   uriParameters:
@@ -162,6 +173,34 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.case-defendant-hearings+json:
                     example:  !include json/progression.query.case-defendant-hearings.json
                     schema:  !include json/schema/progression.query.case-defendant-hearings.json
+
+/prosecutioncases/group/{groupId}:
+  uriParameters:
+        groupId:
+          description: ID of group cases
+          type: string
+  description: get member cases for group
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.group-member-cases+json
+          name: progression.query.group-member-cases
+      (mapping):
+          responseType: application/vnd.progression.query.mastercase-details+json
+          name: progression.query.mastercase-details
+
+      ...
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.group-member-cases+json:
+             example:  !include json/progression.query.group-member-cases.json
+             schema:  !include json/schema/progression.query.group-member-cases.json
+          application/vnd.progression.query.mastercase-details+json:
+             example:  !include json/progression.query.mastercase-details.json
+             schema:  !include json/schema/progression.query.mastercase-details.json
 
 /defendant-requests/{defendantId}:
   uriParameters:

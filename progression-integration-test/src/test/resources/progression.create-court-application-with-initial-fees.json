@@ -1,0 +1,141 @@
+{
+  "courtApplication": {
+    "id": "RANDOM_APPLICATION_ID",
+    "applicationStatus": "DRAFT",
+    "courtApplicationPayment": {
+      "isFeePaid": true,
+      "isFeeUndertakingAttached": true,
+      "isFeeExempt": true,
+      "paymentReference": "someRef"
+    },
+    "commissionerOfOath": false,
+    "applicationReceivedDate": "2021-08-03",
+    "type": {
+      "id": "0826fc90-6c49-3a1f-9fc6-b0547679f348",
+      "type": "Application for a sexual offences prevention order",
+      "categoryCode": "VP",
+      "jurisdiction": "MAGISTRATES",
+      "linkType": "STANDALONE",
+      "code": "SX03531",
+      "legislation": "In accordance with section 104(5) of the Sexual Offences Act 2003.",
+      "appealFlag": false,
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "hearingCode": "APN",
+      "applicantAppellantFlag": false,
+      "pleaApplicableFlag": false,
+      "offenceActiveOrder": "NOT_APPLICABLE",
+      "commrOfOathFlag": false,
+      "breachType": "NOT_APPLICABLE",
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": false,
+      "listingNotifTemplate": "NOT_APPLICABLE",
+      "boxworkNotifTemplate": "NOT_APPLICABLE",
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": false
+    },
+    "applicant": {
+      "id": "f64bc07f-9c83-4e0f-a2e5-960e9be863b8",
+      "personDetails": {
+        "firstName": "RANDOM_INDIVIDUAL_FIRST_NAME",
+        "lastName": "RANDOM_INDIVIDUAL_LAST_NAME",
+        "address": {
+          "address1": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS1",
+          "postcode": "CR0 7QP"
+        },
+        "gender": "NOT_SPECIFIED"
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "respondents": [
+      {
+        "id": "dfe3affc-ebda-4ff6-ad9b-846d0b967b73",
+        "organisation": {
+          "name": "RANDOM_RESPONDENT_ORGANISATION_NAME",
+          "address": {
+            "address1": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS1",
+            "address2": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS2",
+            "postcode": "CR0 7QP"
+          }
+        },
+        "organisationPersons": [
+          {
+            "person": {
+              "firstName": "RANDOM_RESPONDENT_REPRESENTATIVE_FIRST_NAME",
+              "lastName": "RANDOM_RESPONDENT_REPRESENTATIVE_LAST_NAME",
+              "gender": "NOT_SPECIFIED"
+            },
+            "role": "RANDOM_RESPONDENT_REPRESENTATIVE_POSITION"
+          }
+        ],
+        "summonsRequired" : false,
+        "notificationRequired" : false
+      },
+      {
+        "id": "adce7ec1-9be1-4506-be25-9724b19f44f6",
+        "personDetails": {
+          "firstName": "RANDOM_INDIVIDUAL_FIRST_NAME",
+          "lastName": "RANDOM_INDIVIDUAL_LAST_NAME",
+          "address": {
+            "address1": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS1",
+            "address2": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS2",
+            "postcode": "CR0 7QP"
+          },
+          "gender": "NOT_SPECIFIED"
+        },
+        "representationOrganisation": {
+          "name": "RANDOM_INDIVIDUAL_ORG_NAME",
+          "address": {
+            "address1": "RANDOM_INDIVIDUAL_ORG_ADDRESS"
+          },
+          "contact": {
+            "primaryEmail": "RANDOM_REP_EMAIL@hmcts.net"
+          }
+        },
+        "summonsRequired" : false,
+        "notificationRequired" : false
+      }
+    ],
+    "subject": {
+      "id": "f64bc07f-9c83-4e0f-a2e5-960e9be863b8",
+      "personDetails": {
+        "firstName": "RANDOM_INDIVIDUAL_FIRST_NAME",
+        "lastName": "RANDOM_INDIVIDUAL_LAST_NAME",
+        "address": {
+          "address1": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS1",
+          "postcode": "CR0 7QP"
+        },
+        "gender": "NOT_SPECIFIED"
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    }
+  },
+  "courtHearing": {
+    "hearingType": {
+      "id": "3449743b-95d6-4836-8941-57f588b52068",
+      "description": "Application"
+    },
+    "estimatedMinutes": 20,
+    "earliestStartDateTime": "2021-08-02T09:00:00.000Z",
+    "jurisdictionType": "MAGISTRATES",
+    "bookedSlots": [
+      {
+        "startTime": "2021-08-02T09:00:00.000Z",
+        "duration": 1,
+        "courtScheduleId": "94d3317c-d44a-3fdc-a547-c4df62c5fcb9",
+        "session": "AD",
+        "oucode": "B01LY00",
+        "courtRoomId": 2330,
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+      }
+    ],
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    }
+  }
+}

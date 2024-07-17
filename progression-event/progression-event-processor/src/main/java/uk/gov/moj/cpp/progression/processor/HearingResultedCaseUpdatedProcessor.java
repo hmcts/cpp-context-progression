@@ -14,6 +14,8 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.pojo.PrisonCustodySuite;
 import uk.gov.moj.cpp.progression.helper.CustodialEstablishmentUpdateHelper;
+import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UpdateDefendantService;
 
@@ -24,6 +26,9 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static java.util.Collections.singletonList;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingResultedCaseUpdatedProcessor {
@@ -48,6 +53,12 @@ public class HearingResultedCaseUpdatedProcessor {
     private CustodialEstablishmentUpdateHelper custodialEstablishmentUpdateHelper;
 
     @Inject
+    private ProgressionService progressionService;
+
+    @Inject
+    private HearingResultHelper hearingResultHelper;
+
+    @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingResultedCaseUpdatedProcessor.class.getCanonicalName());
@@ -59,10 +70,16 @@ public class HearingResultedCaseUpdatedProcessor {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Received Hearing Resulted Case Updated with payload : {}", jsonEnvelope.toObfuscatedDebugString());
         }
+        final HearingResultedCaseUpdated hearingResultedCaseUpdated = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingResultedCaseUpdated.class);
+
+        final boolean isHearingAdjourned = hearingResultHelper.doProsecutionCasesContainNextHearingResults(singletonList(hearingResultedCaseUpdated.getProsecutionCase()));
+        if (isHearingAdjourned) {
+            LOGGER.info("Update civil fee process has been started.");
+            progressionService.updateCivilFees(jsonEnvelope, hearingResultedCaseUpdated.getProsecutionCase());
+        }
+
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED)
                 .apply(jsonEnvelope.payload()));
-
-        final HearingResultedCaseUpdated hearingResultedCaseUpdated = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingResultedCaseUpdated.class);
 
         //update defendant custodial establishment when hearing resulted with Prison / Hospital selected
         if (nonNull(hearingResultedCaseUpdated.getProsecutionCase()) && nonNull(hearingResultedCaseUpdated.getProsecutionCase().getDefendants())) {

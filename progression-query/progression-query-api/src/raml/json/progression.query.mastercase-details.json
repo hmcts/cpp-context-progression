@@ -1,0 +1,16 @@
+{
+    "masterCase": {
+        "id": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+        "prosecutionCaseIdentifier": {
+            "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+            "prosecutionAuthorityCode": "TFL",
+            "oldProsecutionAuthorityCode": "DVLA",
+            "prosecutionAuthorityReference": "TFL12345"
+        },
+        "originatingOrganisation": "G01FT01AB",
+        "prosecutorCosts": "300",
+        "initiationCode": "Z",
+        "hasReportingRestrictions": true,
+        "caseStatus": "SJP Referral"
+    }
+}

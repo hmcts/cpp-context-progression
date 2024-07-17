@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.query.view;
 
-import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -17,6 +16,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPayment;
 import uk.gov.justice.core.courts.CourtApplicationType;
+import uk.gov.justice.core.courts.CourtCivilApplication;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
@@ -56,9 +56,15 @@ public class ApplicationAtAGlanceHelper {
 
         final CourtApplicationPayment courtApplicationPayment = courtApplication.getCourtApplicationPayment();
         if (nonNull(courtApplicationPayment)) {
-            applicationBuilder.withFeePayable(FALSE.equals(courtApplicationPayment.getIsFeeExempt()))
-                    .withPaymentReference(courtApplicationPayment.getPaymentReference());
+            applicationBuilder.withPaymentReference(courtApplicationPayment.getPaymentReference());
         }
+
+        final CourtCivilApplication courtCivilApplication = courtApplication.getCourtCivilApplication();
+        if(nonNull(courtCivilApplication)){
+            applicationBuilder.withIsCivil(courtCivilApplication.getIsCivil());
+            applicationBuilder.withIsExParte(courtCivilApplication.getIsExParte());
+        }
+        applicationBuilder.withIsGroupCaseApplication(courtApplication.getIsGroupCaseApplication());
 
         final CourtApplicationType type = courtApplication.getType();
         if (nonNull(type)) {

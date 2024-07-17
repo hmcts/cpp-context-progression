@@ -234,7 +234,7 @@ public class HearingResultedEventProcessor {
         final UUID hearingId = hearingForApplicationCreated.getHearing().getId();
 
         if (!isEmpty(listHearingRequests)) {
-            listingService.listCourtHearing(jsonEnvelope, listCourtHearingTransformer.transform(jsonEnvelope, prosecutionCases, listHearingRequests, hearingId));
+            listingService.listCourtHearing(jsonEnvelope, listCourtHearingTransformer.transform(jsonEnvelope, prosecutionCases, listHearingRequests, hearingId, hearing.getIsGroupProceedings()));
         }
     }
 

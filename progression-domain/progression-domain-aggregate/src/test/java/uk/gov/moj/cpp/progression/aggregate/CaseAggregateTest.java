@@ -1020,6 +1020,54 @@ public class CaseAggregateTest {
     }
 
     @Test
+    public void shouldUpdateCaseStatusToInactiveOnlyToACaseForWhichProceedingsAreConcludedInCaseOfRelatedHearing() {
+        final String caseURN1 = "case" + string(6).next();
+        final UUID caseId1 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID offenceId = randomUUID();
+        final List<uk.gov.justice.core.courts.Defendant> defendants2withProceedingsConcludedFalse = getDefendantsWithMasterDefendantId(caseId1, defendantId1, masterDefendantId, offenceId, false);
+
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
+
+        final ProsecutionCase prosecutionCase1 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN1))
+                .withDefendants(defendants2withProceedingsConcludedFalse)
+                .withGroupId(randomUUID()).withIsCivil(true).withId(caseId1)
+                .withCaseStatus(ACTIVE.getDescription())
+                .build();
+        this.caseAggregate.createProsecutionCase(prosecutionCase1);
+
+        final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
+        final HearingResultedCaseUpdated hearingResultedCase1UpdatedWithActiveCaseStatus = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase1).build();
+
+        final Stream<Object> eventStreamWithInActiveCase1Status = this.caseAggregate.updateCase(hearingResultedCase1UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        caseAggregate.apply(hearingResultedCase1UpdatedWithActiveCaseStatus);
+
+        final HearingResultedCaseUpdated hearingResultedCase1UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCase1Status.collect(toList()).get(0);
+        assertCaseStatus(hearingResultedCase1UpdateInActiveAfterAggregate, caseId1, ACTIVE);
+
+        final UUID caseId2 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final List<uk.gov.justice.core.courts.Defendant> defendants2withProceedingsConcludedTrue = getDefendantsWithMasterDefendantId(caseId2, defendantId2, masterDefendantId, offenceId2, true);
+
+        final ProsecutionCase prosecutionCase2 = prosecutionCase().withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN1))
+                .withDefendants(defendants2withProceedingsConcludedTrue).withGroupId(randomUUID()).withIsCivil(true).withId(caseId2).withCaseStatus(ACTIVE.getDescription()).build();
+        this.caseAggregate.createProsecutionCase(prosecutionCase2);
+
+        final HearingResultedCaseUpdated hearingResultedCase2UpdatedWithActiveCaseStatus = HearingResultedCaseUpdated.hearingResultedCaseUpdated().withProsecutionCase(prosecutionCase2).build();
+
+        final Stream<Object> eventStreamWithInActiveCase2Status = this.caseAggregate.updateCase(hearingResultedCase2UpdatedWithActiveCaseStatus.getProsecutionCase(), defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        caseAggregate.apply(hearingResultedCase2UpdatedWithActiveCaseStatus);
+
+        final HearingResultedCaseUpdated hearingResultedCase2UpdateInActiveAfterAggregate = (HearingResultedCaseUpdated) eventStreamWithInActiveCase2Status.collect(toList()).get(0);
+        assertCaseStatus(hearingResultedCase2UpdateInActiveAfterAggregate, caseId2, INACTIVE);
+    }
+
+    @Test
     public void shouldAddNewCaseDocumentReceivedEvent() {
         final UUID caseId = randomUUID();
         final NewCaseDocumentReceivedEvent newCaseDocumentReceivedEvent =

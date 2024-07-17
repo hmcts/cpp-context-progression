@@ -20,6 +20,8 @@ public interface ProsecutionCaseRepository extends EntityRepository<ProsecutionC
 
     ProsecutionCaseEntity findOptionalByCaseId(UUID id);
 
+    List<ProsecutionCaseEntity> findByGroupId(final UUID groupId);
+
     @Query("FROM ProsecutionCaseEntity pce where pce.caseId in (:caseIds)")
     List<ProsecutionCaseEntity> findByProsecutionCaseIds(
             @QueryParam("caseIds") final List<UUID> caseIds);

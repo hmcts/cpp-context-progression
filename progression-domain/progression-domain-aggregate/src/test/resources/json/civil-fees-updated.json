@@ -1,0 +1,14 @@
+{
+  "_metadata": {
+    "name": "progression.event.civil-fees-updated"
+  },
+  "caseId":"bba187ad-2a4c-4cb2-acf9-d4c5e114e3d1",
+  "civilFees": [
+    {
+      "feeId":"57b03d4a-cb60-41e8-9746-cb05b2d19350",
+      "feeType":"INITIAL",
+      "feeStatus":"OUTSTANDING",
+      "paymentReference": "REF005"
+    }
+  ]
+}

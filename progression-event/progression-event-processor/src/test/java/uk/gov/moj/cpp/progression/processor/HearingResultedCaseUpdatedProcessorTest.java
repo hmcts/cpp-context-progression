@@ -5,6 +5,8 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment;
@@ -25,13 +27,14 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.CustodialEstablishmentUpdateHelper;
+import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UpdateDefendantService;
 
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -70,6 +73,9 @@ public class HearingResultedCaseUpdatedProcessorTest {
     private Function<Object, JsonEnvelope> enveloperFunction;
 
     @Mock
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Mock
     private CustodialEstablishmentUpdateHelper custodialEstablishmentUpdateHelper;
 
     @Mock
@@ -83,8 +89,12 @@ public class HearingResultedCaseUpdatedProcessorTest {
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     @Spy
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
-    @Spy
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+
+    @Mock
+    private HearingResultHelper resultHelper;
+
+    @Mock
+    private ProgressionService progressionService;
 
     @Before
     public void initMocks() {
@@ -93,17 +103,42 @@ public class HearingResultedCaseUpdatedProcessorTest {
 
     @Test
     public void shouldHandleProsecutionCaseOffencesUpdatedEventMessage() throws Exception {
-        //Given
-        when(envelope.payload()).thenReturn(payload);
-        when(envelope.payloadAsJsonObject()).thenReturn(Json.createObjectBuilder().build());
+        //When
+        when(jsonObjectToObjectConverter.convert(any(), any())).thenReturn(mock(HearingResultedCaseUpdated.class));
+        when(resultHelper.doProsecutionCasesContainNextHearingResults(any())).thenReturn(false);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(enveloper.withMetadataFrom(envelope, "public.progression.hearing-resulted-case-updated")).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
 
-        //When
         this.eventProcessor.process(envelope);
 
         //Then
         verify(sender).send(finalEnvelope);
+        verify(jsonObjectToObjectConverter).convert(any(),any());
+        verify(resultHelper).doProsecutionCasesContainNextHearingResults(any());
+        verify(progressionService,times(0)).updateCivilFees(any(),any());
+        verify(envelope).payloadAsJsonObject();
+        verify(enveloper).withMetadataFrom(envelope,"public.progression.hearing-resulted-case-updated");
+    }
+
+    @Test
+    public void shouldHandleProsecutionCaseOffencesUpdatedEventMessageWhenHearingIsAdjourned() throws Exception {
+        //When
+        when(jsonObjectToObjectConverter.convert(any(), any())).thenReturn(mock(HearingResultedCaseUpdated.class));
+        when(resultHelper.doProsecutionCasesContainNextHearingResults(any())).thenReturn(true);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(enveloper.withMetadataFrom(envelope, "public.progression.hearing-resulted-case-updated")).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+
+        this.eventProcessor.process(envelope);
+
+        //Then
+        verify(sender).send(finalEnvelope);
+        verify(jsonObjectToObjectConverter).convert(any(),any());
+        verify(resultHelper).doProsecutionCasesContainNextHearingResults(any());
+        verify(progressionService).updateCivilFees(any(),any());
+        verify(envelope).payloadAsJsonObject();
+        verify(enveloper).withMetadataFrom(envelope,"public.progression.hearing-resulted-case-updated");
     }
 
     @Test
@@ -116,6 +151,8 @@ public class HearingResultedCaseUpdatedProcessorTest {
                 .withProsecutionCase(prosecutionCase().withId(caseId).withDefendants(singletonList(defendant1)).build())
                 .build();
 
+        when(jsonObjectToObjectConverter.convert(any(), any())).thenReturn(hearingResultedCaseUpdated);
+        when(resultHelper.doProsecutionCasesContainNextHearingResults(any())).thenReturn(false);
         when(custodialEstablishmentUpdateHelper.getDefendantsResultedWithCustodialEstablishmentUpdate(defendant1, emptyList())).thenReturn(of(custodialEstablishment1));
 
         final JsonEnvelope event = envelopeFrom(
@@ -126,6 +163,4 @@ public class HearingResultedCaseUpdatedProcessorTest {
 
         verify(updateDefendantService).updateDefendantCustodialEstablishment(event.metadata(), defendant1, custodialEstablishment1);
     }
-
-
 }
