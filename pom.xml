@@ -10,7 +10,7 @@
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>8.0.192-SNAPSHOT</version>
+    <version>8.0.193-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
@@ -72,7 +72,7 @@
         <hearing.version>8.0.133</hearing.version>
         <usersgroups.version>8.0.37</usersgroups.version>
         <defence.version>8.0.54</defence.version>
-        <referencedata.offence.version>8.0.14</referencedata.offence.version>
+        <referencedata.offence.version>8.0.23</referencedata.offence.version>
         <coredomain.version>8.0.3</coredomain.version>
         <directionsmanagement.version>8.0.23</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
