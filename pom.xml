@@ -68,26 +68,26 @@
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>8.0.67</referencedata.version>
-        <listing.version>8.0.67</listing.version>
-        <hearing.version>8.0.133</hearing.version>
-        <usersgroups.version>8.0.37</usersgroups.version>
-        <defence.version>8.0.54</defence.version>
+        <listing.version>8.0.91</listing.version>
+        <hearing.version>8.0.136</hearing.version>
+        <usersgroups.version>8.0.39</usersgroups.version>
+        <defence.version>8.0.55</defence.version>
         <referencedata.offence.version>8.0.23</referencedata.offence.version>
         <coredomain.version>8.0.3</coredomain.version>
-        <directionsmanagement.version>8.0.23</directionsmanagement.version>
+        <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
-        <results.version>8.0.32</results.version>
-        <notification.notify.version>7.0.18</notification.notify.version>
+        <results.version>8.0.54</results.version>
+        <notification.notify.version>8.0.16</notification.notify.version>
         <unifiedsearch.version>8.0.10</unifiedsearch.version>
         <systemdocgenerator.version>8.0.91</systemdocgenerator.version>
-        <applicationscourtorders.version>8.0.9</applicationscourtorders.version>
-        <sjp.version>8.0.79</sjp.version>
+        <applicationscourtorders.version>8.0.31</applicationscourtorders.version>
+        <sjp.version>8.0.86</sjp.version>
         <jackson-data-format.version>2.8.8</jackson-data-format.version>
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>8.0.1</stagingpubhub.version>
         <pdfbox.version>2.0.11</pdfbox.version>
-        <correspondence.version>8.0.17</correspondence.version>
+        <correspondence.version>8.0.26</correspondence.version>
     </properties>
     <build>
         <plugins>

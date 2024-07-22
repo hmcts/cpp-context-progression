@@ -62,7 +62,7 @@ public class CustodialSentenceRetentionRuleTest {
     public void shouldReturnTrueWhenDefendantJudicialResultsHadJudicialResultTypeCustodialTIMP() {
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(DefendantJudicialResult.defendantJudicialResult()
                 .withJudicialResult(JudicialResult.judicialResult()
-                        .withOrderedDate(LocalDate.now())
+                        .withOrderedDate(LocalDate.of(2024, 07, 04))
                         .withJudicialResultTypeId(TIMP_RESULT_DEFINITION_ID)
                         .withJudicialResultPrompts(asList(judicialResultPrompt()
                                         .withJudicialResultPromptTypeId(TOTAL_CUSTODIAL_PERIOD_PROMPT_TYPE_ID)
@@ -86,7 +86,7 @@ public class CustodialSentenceRetentionRuleTest {
     public void shouldReturnTrueWhenDefendantJudicialResultsHadJudicialResultTypeCustodialTIMP_Multi() {
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(DefendantJudicialResult.defendantJudicialResult()
                 .withJudicialResult(JudicialResult.judicialResult()
-                        .withOrderedDate(LocalDate.now())
+                        .withOrderedDate(LocalDate.of(2024, 07, 04))
                         .withJudicialResultTypeId(TIMP_RESULT_DEFINITION_ID)
                         .withJudicialResultPrompts(asList(judicialResultPrompt()
                                         .withJudicialResultPromptTypeId(TOTAL_CUSTODIAL_PERIOD_PROMPT_TYPE_ID)
@@ -110,7 +110,7 @@ public class CustodialSentenceRetentionRuleTest {
     public void shouldReturnDefault7YearSentenceWhenCustodialSentenceAwardedLessThan7Years() {
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(DefendantJudicialResult.defendantJudicialResult()
                 .withJudicialResult(JudicialResult.judicialResult()
-                        .withOrderedDate(LocalDate.now())
+                        .withOrderedDate(LocalDate.of(2024, 07, 04))
                         .withJudicialResultTypeId(TIMP_RESULT_DEFINITION_ID)
                         .withJudicialResultPrompts(asList(judicialResultPrompt()
                                         .withJudicialResultPromptTypeId(TOTAL_CUSTODIAL_PERIOD_PROMPT_TYPE_ID)
@@ -159,7 +159,7 @@ public class CustodialSentenceRetentionRuleTest {
 
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(DefendantJudicialResult.defendantJudicialResult()
                 .withJudicialResult(JudicialResult.judicialResult()
-                        .withOrderedDate(LocalDate.now())
+                        .withOrderedDate(LocalDate.of(2024, 07, 04))
                         .withJudicialResultTypeId(TIMP_RESULT_DEFINITION_ID)
                         .build()).build());
 
@@ -231,7 +231,7 @@ public class CustodialSentenceRetentionRuleTest {
 
         final List<DefendantJudicialResult> defendantJudicialResults = asList(DefendantJudicialResult.defendantJudicialResult()
                         .withJudicialResult(JudicialResult.judicialResult()
-                                .withOrderedDate(LocalDate.now().minusDays(20))
+                                .withOrderedDate(LocalDate.of(2024, 07, 04).minusDays(20))
                                 .withJudicialResultTypeId(TIMP_RESULT_DEFINITION_ID)
                                 .withJudicialResultPrompts(singletonList(judicialResultPrompt()
                                         .withJudicialResultPromptTypeId(TOTAL_CUSTODIAL_PERIOD_PROMPT_TYPE_ID)
