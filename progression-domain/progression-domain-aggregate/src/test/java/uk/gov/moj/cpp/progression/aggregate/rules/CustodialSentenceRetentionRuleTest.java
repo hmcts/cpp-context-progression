@@ -231,7 +231,7 @@ public class CustodialSentenceRetentionRuleTest {
 
         final List<DefendantJudicialResult> defendantJudicialResults = asList(DefendantJudicialResult.defendantJudicialResult()
                         .withJudicialResult(JudicialResult.judicialResult()
-                                .withOrderedDate(LocalDate.now().minusDays(20))
+                                .withOrderedDate(LocalDate.of(2024, 06, 01))
                                 .withJudicialResultTypeId(TIMP_RESULT_DEFINITION_ID)
                                 .withJudicialResultPrompts(singletonList(judicialResultPrompt()
                                         .withJudicialResultPromptTypeId(TOTAL_CUSTODIAL_PERIOD_PROMPT_TYPE_ID)
