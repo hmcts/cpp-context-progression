@@ -7,7 +7,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-parent</artifactId>
-        <version>8.0.195-CPAW-DLQ-SNAPSHOT</version>
+        <version>8.0.197-CPAW-DLQ-SNAPSHOT</version>
     </parent>
 
     <properties>

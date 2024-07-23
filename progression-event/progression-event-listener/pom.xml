@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-event</artifactId>
-        <version>8.0.195-CPAW-DLQ-SNAPSHOT</version>
+        <version>8.0.197-CPAW-DLQ-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event-listener</artifactId>
     <packaging>war</packaging>
@@ -88,7 +88,7 @@
                                 <artifactItem>
                                     <artifactId>mireportdata-progression-event-listener</artifactId>
                                     <groupId>uk.gov.moj.cpp.mi.reportdata</groupId>
-                                    <version>RELEASE</version>
+                                    <version>8.0.54</version>
                                     <classifier>listener-tests</classifier>
                                     <type>jar</type>
                                     <outputDirectory>${project.build.directory}/test-classes
