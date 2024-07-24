@@ -1,4 +1,34 @@
 {
   "hearingId": "HEARING_ID",
-  "vacatedTrialReasonId": "REASON_ID"
+  "vacatedTrialReasonId": "REASON_ID",
+  "hasInterpreter": false,
+  "hearingDateTime": "2022-08-24T01:46:36.068Z",
+  "caseDetails": [
+    {
+      "caseId": "22ff0722-c287-11e9-9cb5-2a2ae2dbcce4",
+      "caseUrn": "TFL122222",
+      "defendantDetails": [
+        {
+          "defendantId":"32ff0722-c287-11e9-9cb5-2a2ae2dbcce4",
+          "defendantFirstName": "Abbie",
+          "defendantLastName": "ARMSTRONG",
+          "defendantRemandStatus": "status",
+          "interpreterLanguageNeeds": "Hindi"
+        }
+      ]
+    }
+  ],
+  "applicationDetails": [
+    {
+      "applicationId": "32ff0722-c287-11e9-9cb5-2a2ae2dbcce4",
+      "applicationReference": "TFL34652354",
+      "subject": {
+        "defendantId":"42ff0722-c287-11e9-9cb5-2a2ae2dbcce4",
+        "defendantFirstName": "John",
+        "defendantLastName": "DOE",
+        "defendantRemandStatus": "status",
+        "interpreterLanguageNeeds": "Hindi"
+      }
+    }
+  ]
 }
