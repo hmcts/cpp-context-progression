@@ -3,7 +3,7 @@
     <parent>
         <artifactId>progression-domain-transformations</artifactId>
         <groupId>uk.gov.moj.cpp.progression</groupId>
-        <version>8.0.199-CPAW-DLQ-SNAPSHOT</version>
+        <version>8.0.200-CPAW-DLQ-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
