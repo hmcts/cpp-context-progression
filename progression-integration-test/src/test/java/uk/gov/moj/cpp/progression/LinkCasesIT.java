@@ -1,9 +1,14 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.deleteRelatedReference;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCaseLsmInfoFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getRelatedReference;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.linkCases;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.mergeCase;
@@ -19,6 +24,8 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.json.JsonObject;
 
@@ -37,6 +44,7 @@ public class LinkCasesIT extends AbstractIT {
     private final String unlinkCasesPayloadJson = "progression.command.unlink-cases.json";
 
     private static final String INITIAL_COURT_PROCEEDINGS_WITH_MULTIPLE_DEFENDANTS = "ingestion/progression.command.initiate-court-proceedings-multiple-defendants.json";
+    private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_WITH_RELATED_URN_JSON = "ingestion/progression.command.initiate-court-proceedings-with-related-urn.json";
 
     private String prosecutionCaseId_1;
     private String caseUrn_1;
@@ -137,5 +145,25 @@ public class LinkCasesIT extends AbstractIT {
                 1,
                 new String[]{prosecutionCaseId_1},
                 new String[]{defendantId_1});
+    }
+
+    @Test
+    public void shouldRelatedReferenceUrnOnCaseCreation() throws IOException {
+
+        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_WITH_RELATED_URN_JSON, prosecutionCaseId_2, defendantId_2, randomUUID().toString(), materialIdActive, materialIdDeleted, referralReasonId, caseUrn_2, listedStartDateTime, earliestStartDateTime, defendantDOB, caseUrn_1);
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_2, getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList()));
+
+        final List<Matcher> matchers = new ArrayList<>();
+        matchers.add(withJsonPath("$.relatedReferenceList[0].prosecutionCaseId", is(prosecutionCaseId_2)));
+        final Matcher[] relatedReferenceMatchers = matchers.toArray(new Matcher[matchers.size()]);
+
+        JsonObject responseAsJson = new StringToJsonObjectConverter().convert(getRelatedReference(prosecutionCaseId_2, relatedReferenceMatchers));
+        final String relatedReference = responseAsJson.getJsonArray("relatedReferenceList").getJsonObject(0).getString("relatedReference");
+        final String relatedReferenceId = responseAsJson.getJsonArray("relatedReferenceList").getJsonObject(0).getString("relatedReferenceId");
+
+        assertThat(relatedReference, is(caseUrn_1));
+
+        deleteRelatedReference(prosecutionCaseId_2, relatedReferenceId);
+
     }
 }

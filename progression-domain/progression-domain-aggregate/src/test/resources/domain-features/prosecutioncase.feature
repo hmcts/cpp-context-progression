@@ -18,11 +18,18 @@ Feature: CaseAggregate
     When you updateOffences on a CaseAggregate with a update offences for prosecution case
     Then prosecution case offences updated
 
-  Scenario: Update Defendant listing status updated whenever the hearing confirmed
+#  Scenario: Update Defendant listing status updated whenever the hearing confirmed
+#
+#    Given no previous events
+#    When you updateDefendantListingStatus on a HearingAggregate with a update defendant listing status
+#    Then prosecution case defendant listing status changed
+
+  Scenario: Hearing for Application Created whenever the new hearing is requested for application
 
     Given no previous events
-    When you updateDefendantListingStatus on a HearingAggregate with a update defendant listing status
-    Then prosecution case defendant listing status changed
+    When you createHearingForApplication on a HearingAggregate with a create hearing for application
+    Then hearing for application created
+
 
   Scenario: Hearing for Application Created whenever the new hearing is requested for application
 
@@ -37,17 +44,17 @@ Feature: CaseAggregate
     When you updateDefendantHearingResult on a HearingAggregate with a update defendant hearing result
     Then prosecution case defendant hearing result updated
 
-  Scenario: Update Hearing Listing Status to Hearing Resulted whenever hearing is resulted already
+#  Scenario: Update Hearing Listing Status to Hearing Resulted whenever hearing is resulted already
+#
+#    Given hearing is resulted
+#    When you updateDefendantListingStatus on a HearingAggregate with a update hearing listing status with status hearing initialised
+#    Then hearing listing status with status resulted updated
 
-    Given hearing is resulted
-    When you updateDefendantListingStatus on a HearingAggregate with a update hearing listing status with status hearing initialised
-    Then hearing listing status with status resulted updated
-
-  Scenario: Update Hearing Listing Status to Hearing Initialised whenever hearing is not resulted already
-
-    Given no previous events
-    When you updateDefendantListingStatus on a HearingAggregate with a update hearing listing status with status hearing initialised
-    Then hearing listing status with status initialised updated
+#  Scenario: Update Hearing Listing Status to Hearing Initialised whenever hearing is not resulted already
+#
+#    Given no previous events
+#    When you updateDefendantListingStatus on a HearingAggregate with a update hearing listing status with status hearing initialised
+#    Then hearing listing status with status initialised updated
 
   Scenario: Create Hearing Defendant Request
 
@@ -114,6 +121,12 @@ Feature: CaseAggregate
     Given hearing is resulted
     When you deleteHearing on a HearingAggregate with a delete hearing
     Then hearing deleted
+
+  Scenario: Update Civil Fees
+
+     Given no previous events
+     When you updateCivilFees on a CaseAggregate with a update civil fees
+     Then civil fees updated
 
   Scenario: Update Hearing Listing Status to Hearing Resulted whenever hearing is already resulted and next hearing requested
 

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.transformer;
 
+import static java.lang.Boolean.TRUE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -192,7 +193,7 @@ public class HearingToHearingListingNeedsTransformer {
         if (hearingListingNeedsMap.containsKey(key)) {
             hearingListingNeeds = hearingListingNeedsMap.get(key);
         } else {
-            hearingListingNeeds = createHearingListingNeeds(nextHearing, hearing.getJudiciary());
+            hearingListingNeeds = createHearingListingNeeds(nextHearing, hearing.getJudiciary(), prosecutionCase.getIsGroupMaster());
             hearingListingNeedsMap.put(key, hearingListingNeeds);
         }
 
@@ -233,7 +234,7 @@ public class HearingToHearingListingNeedsTransformer {
 
         final String key = getKey(bookingReferenceCourtScheduleIdMap, nextHearing, bookingReference);
 
-        final HearingListingNeeds hearingListingNeeds = addCourtApplication(createHearingListingNeeds(nextHearing, judiciaries), courtApplication, prosecutionCases);
+        final HearingListingNeeds hearingListingNeeds = addCourtApplication(createHearingListingNeeds(nextHearing, judiciaries, false), courtApplication, prosecutionCases);
 
         if (hearingListingNeedsMap.containsKey(key)) {
             if (isNull(hearingListingNeedsMap.get(key).getCourtApplications())) {
@@ -347,7 +348,7 @@ public class HearingToHearingListingNeedsTransformer {
         return offenceInNeeds;
     }
 
-    private HearingListingNeeds createHearingListingNeeds(final NextHearing nextHearing, final List<JudicialRole> judiciaries) {
+    private HearingListingNeeds createHearingListingNeeds(final NextHearing nextHearing, final List<JudicialRole> judiciaries, final Boolean isGroupProceedings) {
         WeekCommencingDate weekCommencingDate = null;
         if (nonNull(nextHearing.getWeekCommencingDate())) {
             weekCommencingDate = WeekCommencingDate.weekCommencingDate()
@@ -356,7 +357,7 @@ public class HearingToHearingListingNeedsTransformer {
                     .build();
         }
 
-        return HearingListingNeeds.hearingListingNeeds()
+        final HearingListingNeeds.Builder hearingListingNeedsBuilder = HearingListingNeeds.hearingListingNeeds()
                 .withBookingReference(nextHearing.getBookingReference())
                 .withBookedSlots(nextHearing.getHmiSlots())
                 .withCourtCentre(nextHearing.getCourtCentre())
@@ -376,8 +377,12 @@ public class HearingToHearingListingNeedsTransformer {
                 .withDefendantListingNeeds(null)
                 .withEarliestStartDateTime(null)
                 .withEndDate(null)
-                .withId(randomUUID())
-                .build();
+                .withId(randomUUID());
+
+        if(TRUE.equals(isGroupProceedings)) {
+            hearingListingNeedsBuilder.withIsGroupProceedings(TRUE);
+        }
+        return hearingListingNeedsBuilder.build();
     }
 
     private String createMapKey(final NextHearing nextHearing) {

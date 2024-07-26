@@ -418,6 +418,30 @@ subscriptions_descriptor:
         - name: progression.event.prosecution-cotr-updated
           schema_uri: http://justice.gov.uk/cpp/progression/event/prosecution-cotr-updated.json
 
+        - name: progression.event.civil-fees-updated
+          schema_uri: http://justice.gov.uk/core/courts/civil-fees-updated.json
+
+        - name: progression.event.civil-bulk-proceedings-initiated
+          schema_uri: http://justice.gov.uk/core/courts/civil-bulk-proceedings-initiated.json
+
+        - name: progression.event.court-fee-for-civil-application-updated
+          schema_uri: http://justice.gov.uk/core/courts/court-fee-for-civil-application-updated.json
+
+        - name: progression.event.case-removed-from-group-cases
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.case-removed-from-group-cases.json
+
+        - name: progression.event.civil-case-exists
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.civil-case-exists.json
+
+        - name: progression.event.last-case-to-be-removed-from-group-cases-rejected
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.last-case-to-be-removed-from-group-cases-rejected.json
+
+        - name: progression.event.related-reference-added
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.related-reference-added.json
+
+        - name: progression.event.related-reference-deleted
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.related-reference-deleted.json
+
         - name: progression.event.court-list-published
           schema_uri: http://justice.gov.uk/cpp/progression/event/court-list-published.json
 

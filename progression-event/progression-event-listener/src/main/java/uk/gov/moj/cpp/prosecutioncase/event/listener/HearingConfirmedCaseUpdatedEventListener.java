@@ -62,6 +62,9 @@ public class HearingConfirmedCaseUpdatedEventListener {
 
         final ProsecutionCaseEntity updatedCaseEntity = new ProsecutionCaseEntity();
         updatedCaseEntity.setCaseId(updatedProsecutionCase.getId());
+        if (nonNull(updatedProsecutionCase.getGroupId())) {
+            updatedCaseEntity.setGroupId(updatedProsecutionCase.getGroupId());
+        }
         updatedCaseEntity.setPayload(objectToJsonObjectConverter.convert(updatedProsecutionCase).toString());
 
         prosecutionCaseRepository.save(updatedCaseEntity);

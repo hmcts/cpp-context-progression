@@ -38,6 +38,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 import uk.gov.moj.cpp.util.FileUtil;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import javax.json.JsonArray;

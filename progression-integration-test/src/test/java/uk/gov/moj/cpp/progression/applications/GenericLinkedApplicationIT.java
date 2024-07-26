@@ -14,7 +14,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.justice.core.courts.ApplicationExternalCreatorType.PROSECUTOR;
 
-import uk.gov.justice.core.courts.ApplicationExternalCreatorType;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 

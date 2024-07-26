@@ -20,6 +20,7 @@
         "initiationCode": "J",
         "statementOfFacts": "You did it",
         "statementOfFactsWelsh": "You did it in Welsh",
+        "relatedUrn": "TTH105HY",
         "defendants": [
           {
             "id": "RANDOM_DEFENDANT_ID",

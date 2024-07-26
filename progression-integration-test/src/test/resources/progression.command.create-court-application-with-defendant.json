@@ -57,7 +57,7 @@
             "firstName": "a",
             "middleName": "a",
             "lastName": "a",
-            "dateOfBirth": "0000-01-01",
+            "dateOfBirth": "1000-01-01",
             "nationalityId": "00000000-0000-0000-0000-000000000000",
             "nationalityCode": "a",
             "nationalityDescription": "a",
@@ -110,7 +110,7 @@
             "code": "B",
             "description": "Conditional Bail"
           },
-          "custodyTimeLimit": "0000-01-01",
+          "custodyTimeLimit": "1000-01-01",
           "perceivedBirthYear": 0,
           "driverNumber": "a",
           "driverLicenceCode": "FULL",
@@ -152,17 +152,17 @@
             "modeOfTrial": "a",
             "wording": "a",
             "wordingWelsh": "a",
-            "startDate": "0000-01-01",
-            "endDate": "0000-01-01",
-            "arrestDate": "0000-01-01",
-            "chargeDate": "0000-01-01",
-            "dateOfInformation": "0000-01-01",
+            "startDate": "1000-01-01",
+            "endDate": "1000-01-01",
+            "arrestDate": "1000-01-01",
+            "chargeDate": "1000-01-01",
+            "dateOfInformation": "1000-01-01",
             "orderIndex": 0,
             "count": 0,
-            "convictionDate": "0000-01-01",
+            "convictionDate": "1000-01-01",
             "notifiedPlea": {
               "offenceId": "88cdf36e-92e3-41b0-8277-19d9dba3f06f",
-              "notifiedPleaDate": "0000-01-01",
+              "notifiedPleaDate": "1000-01-01",
               "notifiedPleaValue": "NOTIFIED_GUILTY"
             },
 
@@ -172,7 +172,7 @@
               "alcoholReadingMethodCode": "a",
               "vehicleCode": "LARGE_GOODS_VEHICLE"
             },
-            "aquittalDate": "0000-01-01"
+            "aquittalDate": "1000-01-01"
 
           }
         ],

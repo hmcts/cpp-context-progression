@@ -238,7 +238,7 @@
               "firstName": "RANDOM_RESPONDENT_REPRESENTATIVE_FIRST_NAME",
               "middleName": "a",
               "lastName": "RANDOM_RESPONDENT_REPRESENTATIVE_LAST_NAME",
-              "dateOfBirth": "0000-01-01",
+              "dateOfBirth": "1000-01-01",
               "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
               "nationalityCode": "a",
               "nationalityDescription": "a",

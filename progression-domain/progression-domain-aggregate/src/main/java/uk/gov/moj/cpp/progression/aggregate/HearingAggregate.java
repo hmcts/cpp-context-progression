@@ -40,8 +40,6 @@ import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHel
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
-
-import java.util.Comparator;
 import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
 import uk.gov.justice.core.courts.BreachApplicationsToBeAddedToHearing;
@@ -136,7 +134,6 @@ import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
 import uk.gov.justice.progression.courts.OffenceInHearingDeleted;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
-
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
 import uk.gov.justice.progression.courts.UnscheduledHearingAllocationNotified;
@@ -163,6 +160,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -354,7 +352,6 @@ public class HearingAggregate implements Aggregate {
         return null;
     }
 
-    @SuppressWarnings("pmd:NullAssignment")
     public Stream<Object> enrichInitiateHearing(final Hearing hearing) {
         if (!listDefendantRequests.isEmpty()) {
             final Hearing.Builder hearingBuilder = hearing();
@@ -377,7 +374,9 @@ public class HearingAggregate implements Aggregate {
                         .map(ListDefendantRequest::getReferralReason)
                         .collect(toList());
 
-                hearingBuilder.withDefendantReferralReasons(isNotEmpty(referralReasons) ? referralReasons : null);
+                if(isNotEmpty(referralReasons)) {
+                    hearingBuilder.withDefendantReferralReasons(referralReasons);
+                }
             }
 
             final Hearing enrichedHearing = hearingBuilder
@@ -397,12 +396,22 @@ public class HearingAggregate implements Aggregate {
                     .withProsecutionCounsels(hearing.getProsecutionCounsels())
                     .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
                     .withType(hearing.getType())
+                    .withIsGroupProceedings(hearing.getIsGroupProceedings())
+                    .withNumberOfGroupCases(hearing.getNumberOfGroupCases())
                     .build();
 
             return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(enrichedHearing).build()));
         }
 
-        return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build()));
+
+        final Hearing.Builder enrichedHearing = Hearing.hearing()
+                .withValuesFrom(hearing);
+
+        if (nonNull(this.hearing)) {
+            enrichedHearing.withNumberOfGroupCases(this.hearing.getNumberOfGroupCases());
+        }
+
+        return apply(Stream.of(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(enrichedHearing.build()).build()));
     }
 
     public Stream<Object> createHearingForApplication(final Hearing hearing, final HearingListingStatus hearingListingStatus, final List<ListHearingRequest> listHearingRequests) {
@@ -939,6 +948,9 @@ public class HearingAggregate implements Aggregate {
                 .withRemovalReason(prosecutionCase.getRemovalReason())
                 .withCaseStatus(allDefendantProceedingConcluded ? CaseStatusEnum.INACTIVE.getDescription() : prosecutionCase.getCaseStatus())
                 .withTrialReceiptType(prosecutionCase.getTrialReceiptType())
+                .withIsCivil(prosecutionCase.getIsCivil())
+                .withIsGroupMember(prosecutionCase.getIsGroupMember())
+                .withIsGroupMaster(prosecutionCase.getIsGroupMaster())
                 .build();
     }
 
@@ -1984,6 +1996,7 @@ public class HearingAggregate implements Aggregate {
                 .withDefendantJudicialResults(hearing.getDefendantJudicialResults())
                 .withIsBoxHearing(hearing.getIsBoxHearing())
                 .withId(hearing.getId())
+                .withIsGroupProceedings(hearing.getIsGroupProceedings())
                 .withHearingDays(hearing.getHearingDays())
                 .withCourtCentre(hearing.getCourtCentre())
                 .withJurisdictionType(hearing.getJurisdictionType())

@@ -61,7 +61,7 @@ public class HearingResultHelper {
         return updatedJudicialResults;
     }
 
-    private boolean doProsecutionCasesContainNextHearingResults(final List<ProsecutionCase> prosecutionCases) {
+    public boolean doProsecutionCasesContainNextHearingResults(final List<ProsecutionCase> prosecutionCases) {
         if (isNotEmpty(prosecutionCases)) {
             final long count = prosecutionCases.stream()
                     .map(ProsecutionCase::getDefendants)

@@ -7,12 +7,17 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.core.courts.Address.address;
+import static uk.gov.justice.core.courts.AssociatedPerson.associatedPerson;
 import static uk.gov.justice.core.courts.ListDefendantRequest.listDefendantRequest;
+import static uk.gov.justice.core.courts.Person.person;
 import static uk.gov.justice.core.courts.ReferralReason.referralReason;
 import static uk.gov.justice.core.courts.SummonsApprovedOutcome.summonsApprovedOutcome;
 import static uk.gov.justice.core.courts.SummonsData.summonsData;
 import static uk.gov.justice.core.courts.summons.SummonsAddress.summonsAddress;
 
+import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.LjaDetails;
@@ -36,7 +41,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-public class SummonDataPreparedEventProcessorTestHelper {
+public class DataPreparedEventProcessorTestHelper {
 
     private static final String CJS_OFFENCE_CODE = "code123";
     private static final ZonedDateTime HEARING_DATE_TIME = ZonedDateTimes.fromString("2018-04-01T13:00:00.000Z");
@@ -401,6 +406,27 @@ public class SummonDataPreparedEventProcessorTestHelper {
         assertThat(referralReason.getString("referralText"), is("reason text"));
         assertThat(referralReason.getString("referralTextWelsh"), is("welsh reason text"));
         assertThat(referralReason.getString("referralReasonWelsh"), is("Reason for Welsh"));
+    }
+
+    public static AssociatedPerson getAssociatedPerson() {
+        return associatedPerson().withPerson(
+                person()
+                        .withFirstName("parent first name")
+                        .withMiddleName("parent middle name")
+                        .withLastName("parent last name")
+                        .withAddress(getAddress("parent line 1", "", "", "", "", ""))
+                        .build()).build();
+    }
+
+    public static Address getAddress(final String line1, final String line2, final String line3, final String line4, final String line5, final String postcode) {
+        return address()
+                .withAddress1(line1)
+                .withAddress2(line2)
+                .withAddress3(line3)
+                .withAddress4(line4)
+                .withAddress5(line5)
+                .withPostcode(postcode)
+                .build();
     }
 
 }

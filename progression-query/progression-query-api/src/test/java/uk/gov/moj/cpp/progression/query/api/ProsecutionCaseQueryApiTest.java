@@ -60,6 +60,10 @@ public class ProsecutionCaseQueryApiTest {
 
     private static final String PROSECUTION_CASE_QUERY = "progression.query.prosecutioncase";
     private static final String COTR_CASE_QUERY = "progression.query.cotr.details.prosecutioncase";
+    private static final String PROSECUTION_CASE_QUERY_DETAILS = "progression.query.prosecutioncase-details";
+    private static final String GROUP_MEMBER_CASES_QUERY_DETAILS = "progression.query.group-member-cases";
+    private static final String GROUP_MEMBER_CASES_QUERY_VIEW_JSON = "json/groupMemberCasesQueryResponse.json";
+
 
 
     @Mock
@@ -160,6 +164,51 @@ public class ProsecutionCaseQueryApiTest {
         final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getCaseProsecutionCase(queryEnvelope);
 
         final JsonObject expectedProsecutionCaseResponse = readJson(PROSECUTION_CASE_QUERY_API_EXPECTED_WITH_COURT_ORDERS_JSON, JsonObject.class);
+
+        assertThat(actualProsecutionCaseResponse.payloadAsJsonObject(), equalTo(expectedProsecutionCaseResponse));
+    }
+
+    @Test
+    public void shouldHandleProsecutionCaseDetailsQuery() {
+        final JsonObject prosecutionCasePayload = QueryClientTestBase.readJson(PROSECUTION_CASE_QUERY_VIEW_JSON, JsonObject.class);
+
+        final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY_DETAILS, randomUUID());
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
+
+        when(prosecutionCaseQuery.getProsecutionCaseDetails(query)).thenReturn(envelope);
+        final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getCaseProsecutionCaseDetails(query);
+
+        final JsonObject expectedProsecutionCaseResponse = QueryClientTestBase.readJson(PROSECUTION_CASE_QUERY_API_EXPECTED_WIT_NO_COURT_ORDERS_JSON, JsonObject.class);
+
+        assertThat(actualProsecutionCaseResponse.payloadAsJsonObject(), equalTo(expectedProsecutionCaseResponse));
+    }
+
+    @Test
+    public void shouldHandleGroupMasterCaseDetailsQuery() {
+        final JsonObject prosecutionCasePayload = QueryClientTestBase.readJson(PROSECUTION_CASE_QUERY_VIEW_JSON, JsonObject.class);
+
+        final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY_DETAILS, randomUUID());
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
+
+        when(prosecutionCaseQuery.getProsecutionMasterCaseDetails(query)).thenReturn(envelope);
+        final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getProsecutionMasterCaseDetails(query);
+
+        final JsonObject expectedProsecutionCaseResponse = QueryClientTestBase.readJson(PROSECUTION_CASE_QUERY_API_EXPECTED_WIT_NO_COURT_ORDERS_JSON, JsonObject.class);
+
+        assertThat(actualProsecutionCaseResponse.payloadAsJsonObject(), equalTo(expectedProsecutionCaseResponse));
+    }
+
+    @Test
+    public void shouldHandleGroupMemberCasesQuery() {
+        final JsonObject prosecutionCasePayload = QueryClientTestBase.readJson(GROUP_MEMBER_CASES_QUERY_VIEW_JSON, JsonObject.class);
+
+        final Metadata metadata = QueryClientTestBase.metadataFor(GROUP_MEMBER_CASES_QUERY_DETAILS, randomUUID());
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
+
+        when(prosecutionCaseQuery.getGroupMemberCases(query)).thenReturn(envelope);
+        final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.geGroupMemberCases(query);
+
+        final JsonObject expectedProsecutionCaseResponse = QueryClientTestBase.readJson(GROUP_MEMBER_CASES_QUERY_VIEW_JSON, JsonObject.class);
 
         assertThat(actualProsecutionCaseResponse.payloadAsJsonObject(), equalTo(expectedProsecutionCaseResponse));
     }

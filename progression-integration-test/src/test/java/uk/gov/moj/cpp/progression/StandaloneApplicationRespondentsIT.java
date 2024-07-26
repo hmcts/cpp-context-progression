@@ -22,7 +22,7 @@ import com.jayway.restassured.response.Response;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class StanaloneApplicationRespondentsIT extends AbstractIT {
+public class StandaloneApplicationRespondentsIT extends AbstractIT {
 
     private static CourtApplicationsHelper.CourtApplicationRandomValues randomValues;
 

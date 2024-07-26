@@ -208,7 +208,7 @@
               "firstName": "a",
               "middleName": "a",
               "lastName": "a",
-              "dateOfBirth": "0000-01-01",
+              "dateOfBirth": "1000-01-01",
               "nationalityId": "00000000-0000-0000-0000-000000000000",
               "nationalityCode": "a",
               "nationalityDescription": "a",
@@ -284,7 +284,7 @@
                   "firstName": "a",
                   "middleName": "a",
                   "lastName": "a",
-                  "dateOfBirth": "0000-01-01",
+                  "dateOfBirth": "1000-01-01",
                   "nationalityId": "00000000-0000-0000-0000-000000000000",
                   "nationalityCode": "a",
                   "nationalityDescription": "a",
@@ -485,7 +485,7 @@
                     "isFinancialResult": true,
                     "isConvictedResult": true,
                     "isAvailableForCourtExtract": true,
-                    "amendmentDate": "0000-01-01",
+                    "amendmentDate": "1000-01-01",
                     "amendmentReason": "a",
                     "cjsCode": "a",
                     "rank": 0.1,
@@ -506,7 +506,7 @@
                       "firstName": "a",
                       "lastName": "a"
                     },
-                    "approvedDate": "0000-01-01",
+                    "approvedDate": "1000-01-01",
                     "usergroups": [
                       "a"
                     ],
@@ -724,7 +724,7 @@
                     "isFinancialResult": true,
                     "isConvictedResult": true,
                     "isAvailableForCourtExtract": true,
-                    "amendmentDate": "0000-01-01",
+                    "amendmentDate": "1000-01-01",
                     "amendmentReason": "a",
                     "cjsCode": "a",
                     "rank": 0.1,
@@ -745,7 +745,7 @@
                       "firstName": "a",
                       "lastName": "a"
                     },
-                    "approvedDate": "0000-01-01",
+                    "approvedDate": "1000-01-01",
                     "usergroups": [
                       "a"
                     ],

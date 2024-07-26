@@ -71,11 +71,11 @@ public class MaterialAggregate implements Aggregate {
                         isAccountNumberSavedBefore = true
                 ),
                 when(NowDocumentRequested.class).apply(e -> {
-                        nowDocumentRequest = e.getNowDocumentRequest();
-                        if (isNotEmpty(e.getNowDocumentRequest().getCases())) {
-                            caseIds.addAll(e.getNowDocumentRequest().getCases());
-                        }
-                 }),
+                    nowDocumentRequest = e.getNowDocumentRequest();
+                    if (isNotEmpty(e.getNowDocumentRequest().getCases())) {
+                        caseIds.addAll(e.getNowDocumentRequest().getCases());
+                    }
+                }),
                 otherwiseDoNothing()
         );
     }
@@ -87,7 +87,7 @@ public class MaterialAggregate implements Aggregate {
     }
 
     public Stream<Object> nowsMaterialStatusUpdated(final UUID materialId, final String status, final List<CaseSubjects> caseSubjects,
-                                                     final List<String> cpsDefendantIds) {
+                                                    final List<String> cpsDefendantIds) {
         final Stream.Builder streamBuilder = Stream.builder();
         if (checkMaterialHasValidNotification(details)) {
 
@@ -237,7 +237,7 @@ public class MaterialAggregate implements Aggregate {
     }
 
     public List<UUID> fetchCases(){
-       LOGGER.info("fetchCases : {}", caseIds);
-       return caseIds;
+        LOGGER.info("fetchCases : {}", caseIds);
+        return caseIds;
     }
 }

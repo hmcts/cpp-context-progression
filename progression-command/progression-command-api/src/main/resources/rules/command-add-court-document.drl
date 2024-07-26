@@ -9,7 +9,7 @@ rule "Command - add court document"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.add-court-document");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "System Users", "Defence Users", "District Judge", "Court Associate", "Probation Admin", "Second Line Support", "Deputies", "DJMC", "Youth Offending Service Admin", "Judge", "Recorders", "Defence Lawyers", "Advocates","Police Admin","Non Police Prosecutors"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "System Users", "Defence Users", "District Judge", "Court Associate", "Probation Admin", "Second Line Support", "Deputies", "DJMC", "Youth Offending Service Admin", "Judge", "Recorders", "Defence Lawyers", "Advocates","Police Admin","Non Police Prosecutors", "NCES"))
     and eval(rbacProvider.isLoggedInUserAllowedToUploadDocument($action))
   then
     $outcome.setSuccess(true);
@@ -29,7 +29,7 @@ rule "Command - add court document-v2"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.add-court-document-v2");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "System Users", "Defence Users", "District Judge", "Court Associate", "Probation Admin", "Second Line Support", "Deputies", "DJMC", "Youth Offending Service Admin", "Judge", "Recorders"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "System Users", "Defence Users", "District Judge", "Court Associate", "Probation Admin", "Second Line Support", "Deputies", "DJMC", "Youth Offending Service Admin", "Judge", "Recorders", "NCES"))
     and eval(rbacProvider.isLoggedInUserAllowedToUploadDocument($action))
   then
     $outcome.setSuccess(true);

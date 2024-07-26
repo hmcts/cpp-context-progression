@@ -9,15 +9,19 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
 import static uk.gov.justice.progression.courts.CaagDefendants.caagDefendants;
 import static uk.gov.justice.progression.courts.LegalEntityDefendant.legalEntityDefendant;
 
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.CivilFees;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.IndicatedPlea;
+import uk.gov.justice.core.courts.FeeStatus;
+import uk.gov.justice.core.courts.FeeType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.core.courts.Marker;
@@ -39,7 +43,11 @@ import uk.gov.justice.progression.courts.Defendants;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.Offences;
 import uk.gov.justice.progression.courts.ProsecutorDetails;
+import uk.gov.justice.progression.query.RelatedReference;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CivilFeeEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CivilFeeRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.RelatedReferenceRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -71,11 +79,15 @@ public class CaseAtAGlanceHelper {
     private final ProsecutionCase prosecutionCase;
     private final List<Hearings> hearingsList;
     private final ReferenceDataService referenceDataService;
+    private final CivilFeeRepository civilFeeRepository;
+    private final RelatedReferenceRepository relatedReferenceRepository;
 
-    public CaseAtAGlanceHelper(final ProsecutionCase prosecutionCase, final List<Hearings> hearingsList, final ReferenceDataService referenceDataService) {
+    public CaseAtAGlanceHelper(final ProsecutionCase prosecutionCase, final List<Hearings> hearingsList, final ReferenceDataService referenceDataService, final CivilFeeRepository civilFeeRepository, final RelatedReferenceRepository relatedReferenceRepository) {
         this.prosecutionCase = prosecutionCase;
         this.hearingsList = new ArrayList<>(hearingsList);
         this.referenceDataService = referenceDataService;
+        this.civilFeeRepository = civilFeeRepository;
+        this.relatedReferenceRepository = relatedReferenceRepository;
     }
 
     static Integer getAge(final LocalDate dateOfBirth) {
@@ -95,12 +107,69 @@ public class CaseAtAGlanceHelper {
 
         caseDetailsBuilder.withCaseStatus(prosecutionCase.getCaseStatus());
         caseDetailsBuilder.withRemovalReason(prosecutionCase.getRemovalReason());
+        final List<RelatedReference> relatedReferences = getRelatedReferences(prosecutionCase.getId());
+
+        if(CollectionUtils.isNotEmpty(relatedReferences)) {
+            caseDetailsBuilder.withRelatedReferenceList(relatedReferences);
+        }
+
 
         if (prosecutionCase.getInitiationCode() != null) {
             caseDetailsBuilder.withInitiationCode(
                     prosecutionCase.getInitiationCode().toString());
         }
+        if(nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil()){
+            getCivilDetails(prosecutionCase, caseDetailsBuilder);
+        }
+
         return caseDetailsBuilder.build();
+    }
+    private List<RelatedReference> getRelatedReferences(final UUID caseId) {
+        return relatedReferenceRepository
+                .findByProsecutionCaseId(caseId)
+                .stream()
+                .map(e -> RelatedReference.relatedReference()
+                        .withRelatedReference(e.getReference())
+                        .withRelatedReferenceId(e.getId())
+                        .withProsecutionCaseId(e.getProsecutionCaseId())
+                        .build())
+                .collect(toList());
+    }
+
+    private void getCivilDetails(ProsecutionCase prosecutionCase, CaseDetails.Builder caseDetailsBuilder) {
+        caseDetailsBuilder.withIsCivil(prosecutionCase.getIsCivil());
+
+        if(isNotEmpty(prosecutionCase.getCivilFees())){
+            caseDetailsBuilder.withCivilFees(getCivilFeeEntity(prosecutionCase));
+        }
+
+        if(nonNull(prosecutionCase.getIsGroupMaster())){
+            caseDetailsBuilder.withIsGroupMaster(prosecutionCase.getIsGroupMaster());
+        }
+        if(nonNull(prosecutionCase.getGroupId())){
+            caseDetailsBuilder.withGroupId(prosecutionCase.getGroupId());
+        }
+        if(nonNull(prosecutionCase.getIsGroupMember())){
+            caseDetailsBuilder.withIsGroupMember(prosecutionCase.getIsGroupMember());
+        }
+    }
+
+    public List<CivilFees> getCivilFeeEntity(ProsecutionCase prosecutionCase){
+        final List<CivilFees> civilFeesList = new ArrayList<>();
+
+        if(nonNull(prosecutionCase.getCivilFees())){
+            prosecutionCase.getCivilFees().forEach(civilFee -> {
+                final CivilFeeEntity civilFeeEntity = civilFeeRepository.findBy(civilFee.getFeeId());
+                civilFeesList.add(CivilFees.civilFees()
+                        .withFeeId(civilFeeEntity.getFeeId())
+                        .withFeeType(FeeType.valueOf(civilFeeEntity.getFeeType().name()))
+                        .withFeeStatus(FeeStatus.valueOf(civilFeeEntity.getFeeStatus().name()))
+                        .withPaymentReference(civilFeeEntity.getPaymentReference())
+                        .build());
+            });
+        }
+
+        return civilFeesList;
     }
 
     public ProsecutorDetails getProsecutorDetails() {

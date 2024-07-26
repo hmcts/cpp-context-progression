@@ -47,7 +47,7 @@
           "spiOutApplicableFlag" : false,
           "offenceActiveOrder" : "NOT_APPLICABLE"
         },
-        "applicationReceivedDate": "0000-01-01",
+        "applicationReceivedDate": "1000-01-01",
         "applicant": {
           "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
           "synonym": "a",
@@ -58,7 +58,7 @@
             "firstName": "a",
             "middleName": "a",
             "lastName": "a",
-            "dateOfBirth": "0000-01-01",
+            "dateOfBirth": "1000-01-01",
             "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
             "nationalityCode": "a",
             "nationalityDescription": "a",
@@ -126,7 +126,7 @@
                 "firstName": "a",
                 "middleName": "a",
                 "lastName": "a",
-                "dateOfBirth": "0000-01-01",
+                "dateOfBirth": "1000-01-01",
                 "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                 "nationalityCode": "a",
                 "nationalityDescription": "a",

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/edit-court-fee-for-civil-application.json",
+  "type": "object",
+  "properties": {
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtApplicationPayment": {
+      "description": "The details of payment or fee exemption for the application",
+      "$ref": "#/definitions/courtApplicationPayment"
+    }
+  },
+  "required": [
+    "applicationId"
+  ],
+  "definitions": {
+    "courtApplicationPayment": {
+      "properties": {
+        "feeStatus": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/civilFeeStatus"
+        },
+        "paymentReference": {
+          "description": "The reference for the payment or exemption",
+          "type": "string"
+        },
+        "contestedFeeStatus": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/civilFeeStatus"
+        },
+        "contestedPaymentReference": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

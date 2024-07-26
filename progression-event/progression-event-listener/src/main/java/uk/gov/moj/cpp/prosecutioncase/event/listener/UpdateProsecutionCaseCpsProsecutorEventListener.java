@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 
@@ -127,6 +128,9 @@ public class UpdateProsecutionCaseCpsProsecutorEventListener {
     private ProsecutionCaseEntity getProsecutionCaseEntity(final ProsecutionCase prosecutionCase) {
         final ProsecutionCaseEntity pCaseEntity = new ProsecutionCaseEntity();
         pCaseEntity.setCaseId(prosecutionCase.getId());
+        if (nonNull(prosecutionCase.getGroupId())) {
+            pCaseEntity.setGroupId(prosecutionCase.getGroupId());
+        }
         pCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
         return pCaseEntity;
     }

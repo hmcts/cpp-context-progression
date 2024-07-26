@@ -1,7 +1,8 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.ContactNumber;
@@ -23,16 +24,18 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearin
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_LISTENER)
 public class DefendantDefenceOrganisationSavedListener {
@@ -149,6 +152,9 @@ public class DefendantDefenceOrganisationSavedListener {
     private ProsecutionCaseEntity getProsecutionCaseEntity(final ProsecutionCase prosecutionCase) {
         final ProsecutionCaseEntity pCaseEntity = new ProsecutionCaseEntity();
         pCaseEntity.setCaseId(prosecutionCase.getId());
+        if (nonNull(prosecutionCase.getGroupId())) {
+            pCaseEntity.setGroupId(prosecutionCase.getGroupId());
+        }
         pCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
         return pCaseEntity;
     }

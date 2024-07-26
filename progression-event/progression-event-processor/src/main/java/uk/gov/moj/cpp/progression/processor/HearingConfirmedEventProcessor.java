@@ -166,6 +166,7 @@ public class HearingConfirmedEventProcessor {
     @Inject
     private FeatureControlGuard featureControlGuard;
 
+    @SuppressWarnings("squid:S3776")
     @Handles("public.listing.hearing-confirmed")
     public void processEvent(final JsonEnvelope jsonEnvelope) {
 
@@ -196,7 +197,10 @@ public class HearingConfirmedEventProcessor {
                     .withHearing(progressionService.transformConfirmedHearing(confirmedHearing, jsonEnvelope, seedingHearing))
                     .build();
 
-            final List<ProsecutionCase> deltaProsecutionCases = processDeltaProsecutionCases(jsonEnvelope, confirmedHearing, hearingInProgression, seedingHearing, hearingInitiate);
+            List<ProsecutionCase> deltaProsecutionCases = Collections.emptyList();
+            if(!Optional.ofNullable(confirmedHearing.getIsGroupProceedings()).orElse(false)) {
+                deltaProsecutionCases = processDeltaProsecutionCases(jsonEnvelope, confirmedHearing, hearingInProgression, seedingHearing, hearingInitiate);
+            }
 
             final List<UUID> applicationIds = confirmedHearing.getCourtApplicationIds();
             final List<ConfirmedProsecutionCase> confirmedProsecutionCases = confirmedHearing.getProsecutionCases();
@@ -228,7 +232,9 @@ public class HearingConfirmedEventProcessor {
                     .forEach(prosecutionCase -> progressionService.increaseListingNumber(jsonEnvelope, prosecutionCase, hearing.getId()));
 
 
-            progressionService.prepareSummonsData(jsonEnvelope, confirmedHearing);
+            if (!isBulkCase(confirmedHearing)) {
+                progressionService.prepareSummonsData(jsonEnvelope, confirmedHearing);
+            }
 
             final JsonObject hearingInitiateCommand = objectToJsonObjectConverter.convert(hearingInitiate);
             final JsonEnvelope hearingInitiateTransformedPayload = enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_PRIVATE_COMMAND_ERICH_HEARING_INITIATE).apply(hearingInitiateCommand);
@@ -400,6 +406,10 @@ public class HearingConfirmedEventProcessor {
                 .filter((isWeekend).negate())
                 .count();
     }
+    private boolean isBulkCase(final ConfirmedHearing confirmedHearing) {
+        return nonNull(confirmedHearing.getIsGroupProceedings()) && confirmedHearing.getIsGroupProceedings();
+    }
+
 
     /**
      * If partial allocation is happened in confirm process, a new list hearing request generated

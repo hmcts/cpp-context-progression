@@ -8,10 +8,18 @@ rule "Command - Rule for edit court proceedings for application"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.edit-court-proceedings-for-application");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Probation Admin" , "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Court Associate" ));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Probation Admin" , "Crown Court Admin", "Listing Officers", "NCES", "Court Administrators", "Legal Advisers", "Court Associate" ));
   then
     $outcome.setSuccess(true);
 end
 
+rule "Command - Rule for edit court fee for civil application"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.edit-court-fee-for-civil-application");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Court Associate", "CTSC Admin"));
+  then
+    $outcome.setSuccess(true);
+end
 
 

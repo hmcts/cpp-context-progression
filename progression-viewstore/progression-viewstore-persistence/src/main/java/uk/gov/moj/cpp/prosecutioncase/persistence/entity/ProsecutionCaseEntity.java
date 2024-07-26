@@ -21,6 +21,9 @@ public class ProsecutionCaseEntity implements Serializable {
     @Column(name = "payload")
     private String payload;
 
+    @Column(name = "group_id")
+    private UUID groupId;
+
     public UUID getCaseId() {
         return caseId;
     }
@@ -35,5 +38,13 @@ public class ProsecutionCaseEntity implements Serializable {
 
     public void setPayload(final String payload) {
         this.payload = payload;
+    }
+
+    public UUID getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(final UUID groupId) {
+        this.groupId = groupId;
     }
 }

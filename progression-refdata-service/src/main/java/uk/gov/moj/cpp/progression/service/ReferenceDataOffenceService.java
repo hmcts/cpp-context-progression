@@ -50,6 +50,7 @@ public class ReferenceDataOffenceService {
     private static final String DETAILS = "details";
     private static final String ENGLISH = "english";
     private static final String WELSH = "welsh";
+    public static final String EX_PARTE = "exParte";
 
 
     public Optional<JsonObject> getOffenceById(final UUID offenceId, final JsonEnvelope envelope, final Requester requester) {
@@ -107,10 +108,20 @@ public class ReferenceDataOffenceService {
     }
 
     public Optional<List<JsonObject>> getMultipleOffencesByOffenceCodeList(final List<String> cjsOffenceCodes, final JsonEnvelope envelope, final Requester requester) {
-        final JsonObject requestParameter = createObjectBuilder()
+        return getMultipleOffencesByOffenceCodeList(cjsOffenceCodes, envelope, requester, null);
+    }
+
+    public Optional<List<JsonObject>> getMultipleOffencesByOffenceCodeList(final List<String> cjsOffenceCodes, final JsonEnvelope envelope, final Requester requester, final String sowRef) {
+
+        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
                 .add("cjsoffencecode", cjsOffenceCodes.stream()
-                        .collect(Collectors.joining(",")))
-                .build();
+                        .collect(Collectors.joining(",")));
+
+        if (sowRef != null) {
+            jsonObjectBuilder.add("sowRef", sowRef);
+        }
+
+        final JsonObject requestParameter = jsonObjectBuilder.build();
 
         LOGGER.info("cjsoffencecodes {} ref data request {}", cjsOffenceCodes, requestParameter);
 
@@ -138,19 +149,27 @@ public class ReferenceDataOffenceService {
 
     private JsonObject generateOffenceJsonObject(final JsonObject offencePayload) {
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        final JsonObject offenceDocument = offencePayload.getJsonObject(DETAILS).getJsonObject(DOCUMENT);
-        jsonObjectBuilder.add(OFFENCE_TITLE, getValue(offenceDocument.getJsonObject(ENGLISH), OFFENCE_TITLE));
-        jsonObjectBuilder.add(LEGISLATION, getValue(offenceDocument.getJsonObject(ENGLISH), LEGISLATION));
-        jsonObjectBuilder.add(WELSH_OFFENCE_TITLE, getValue(offenceDocument.getJsonObject(WELSH), WELSH_OFFENCE_TITLE));
-        jsonObjectBuilder.add(LEGISLATION_WELSH, getValue(offenceDocument.getJsonObject(WELSH), LEGISLATION_WELSH));
         jsonObjectBuilder.add(CJS_OFFENCE_CODE, getString(offencePayload, CJS_OFFENCE_CODE).orElse(EMPTY));
         jsonObjectBuilder.add(OFFENCE_ID, getString(offencePayload, OFFENCE_ID).orElse(EMPTY));
         jsonObjectBuilder.add(MODE_OF_TRIAL, getString(offencePayload, MODEOFTRIAL_DERIVED).orElse(EMPTY));
         jsonObjectBuilder.add(REPORT_RESTRICT_RESULT_CODE, getString(offencePayload, REPORT_RESTRICT_RESULT_CODE).orElse(EMPTY));
         jsonObjectBuilder.add(DVLA_CODE, getString(offencePayload, DVLA_CODE).orElse(EMPTY));
         jsonObjectBuilder.add(ENDORSABLE_FLAG, getBoolean(offencePayload, ENDORSABLE_FLAG).orElse(Boolean.FALSE));
+        jsonObjectBuilder.add(EX_PARTE, getBoolean(offencePayload, EX_PARTE).orElse(Boolean.FALSE));
         jsonObjectBuilder.add(MAX_PENALTY, getString(offencePayload, MAX_PENALTY).orElse(EMPTY));
 
+        if (offencePayload.containsKey(DETAILS) && offencePayload.getJsonObject(DETAILS).containsKey(DOCUMENT)) {
+            final JsonObject offenceDocument = offencePayload.getJsonObject(DETAILS).getJsonObject(DOCUMENT);
+            jsonObjectBuilder.add(OFFENCE_TITLE, getValue(offenceDocument.getJsonObject(ENGLISH), OFFENCE_TITLE));
+            jsonObjectBuilder.add(LEGISLATION, getValue(offenceDocument.getJsonObject(ENGLISH), LEGISLATION));
+            jsonObjectBuilder.add(WELSH_OFFENCE_TITLE, getValue(offenceDocument.getJsonObject(WELSH), WELSH_OFFENCE_TITLE));
+            jsonObjectBuilder.add(LEGISLATION_WELSH, getValue(offenceDocument.getJsonObject(WELSH), LEGISLATION_WELSH));
+        } else {
+            jsonObjectBuilder.add(OFFENCE_TITLE, getString(offencePayload, OFFENCE_TITLE).orElse(EMPTY));
+            jsonObjectBuilder.add(LEGISLATION, getString(offencePayload, LEGISLATION).orElse(EMPTY));
+            jsonObjectBuilder.add(WELSH_OFFENCE_TITLE, getString(offencePayload, "titleWelsh").orElse(EMPTY));
+            jsonObjectBuilder.add(LEGISLATION_WELSH, getString(offencePayload, "legislationWelsh").orElse(EMPTY));
+        }
         return jsonObjectBuilder.build();
     }
 

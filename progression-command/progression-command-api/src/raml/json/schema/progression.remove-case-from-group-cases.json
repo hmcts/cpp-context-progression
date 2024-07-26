@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/remove-case-from-group-cases.json",
+  "type": "object",
+  "properties": {
+    "groupId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "groupId"
+  ],
+  "additionalProperties": false
+}

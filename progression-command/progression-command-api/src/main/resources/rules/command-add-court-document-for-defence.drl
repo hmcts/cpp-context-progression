@@ -9,7 +9,7 @@ rule "Command - add court document for defence"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.add-court-document-for-defence");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates", "Court Administrators", "NCES"));
     and eval(rbacProvider.isLoggedInUserAllowedToUploadDocument($action))
   then
     $outcome.setSuccess(true);

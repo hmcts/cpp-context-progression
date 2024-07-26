@@ -8,7 +8,7 @@ rule "Command - upload court document for defence"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.upload-court-document-for-defence");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates"));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates", "Court Administrators", "NCES"));
   then
     $outcome.setSuccess(true);
 end

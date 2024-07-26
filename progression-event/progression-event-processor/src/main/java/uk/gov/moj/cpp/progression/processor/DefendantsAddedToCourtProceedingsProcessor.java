@@ -149,7 +149,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
             if (isNotEmpty(listHearingRequestsForNewHearing)) {
                 final UUID hearingId = randomUUID();
                 final ListCourtHearing listCourtHearing = listCourtHearingTransformer.transform(jsonEnvelope,
-                        Collections.singletonList(prosecutionCase), listHearingRequestsForNewHearing, hearingId);
+                        Collections.singletonList(prosecutionCase), listHearingRequestsForNewHearing, hearingId, null);
                 listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
                 progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
 

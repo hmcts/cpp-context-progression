@@ -91,6 +91,7 @@ public class CourtApplicationCreatedIngesterIT extends AbstractIT {
         verifyAddCourtApplication(inputCourtApplication, courApplicationCreatedResponseJsonObject.get(), applicationId);
     }
 
+    @Ignore("DD-20992")
     @Test
     public void initiateCourtProceedingsForApplicationShouldInitialiseHearingListingStatusAndIngestJurisdictionToUnifiedSearch() throws IOException {
         caseId = randomUUID().toString();

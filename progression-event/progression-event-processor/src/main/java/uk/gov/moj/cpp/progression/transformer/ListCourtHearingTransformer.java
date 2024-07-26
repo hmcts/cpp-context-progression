@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.transformer;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static java.util.Arrays.asList;
@@ -57,7 +58,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -216,8 +216,9 @@ public class ListCourtHearingTransformer {
                     .filter(prosecutionCase -> prosecutionCase.getId()
                             .equals(prosecutionCaseId)).findFirst().orElseThrow(() -> new DataValidationException("Matching caseId missing in SPI initiate court proceedings"));
 
-            listOfProsecutionCase.add(ProsecutionCase.prosecutionCase().withId(prosecutionCaseId)
-                    .withCaseStatus(matchedProsecutionCase.getCaseStatus())
+            listOfProsecutionCase.add(ProsecutionCase.prosecutionCase()
+                    .withValuesFrom(matchedProsecutionCase)
+                    .withId(prosecutionCaseId)
                     .withDefendants(mapOfProsecutionCaseIdWithDefendants.get(prosecutionCaseId))
                     .withInitiationCode(matchedProsecutionCase.getInitiationCode())
                     .withOriginatingOrganisation(matchedProsecutionCase.getOriginatingOrganisation())
@@ -340,8 +341,9 @@ public class ListCourtHearingTransformer {
         return ListCourtHearing.listCourtHearing().withHearings(asList(hearings)).build();
     }
 
+    @SuppressWarnings({"pmd:NullAssignment"})
     public ListCourtHearing transform(final JsonEnvelope jsonEnvelope, final List<ProsecutionCase> prosecutionCases,
-                                      final List<ListHearingRequest> listHearingRequests, final UUID hearingId) {
+                                      final List<ListHearingRequest> listHearingRequests, final UUID hearingId, final Boolean isGroupProceedings) {
         LOGGER.info("Transforming SPI cases to ListCourtHearing");
         final List<HearingListingNeeds> hearingsList = new ArrayList<>();
 
@@ -363,6 +365,8 @@ public class ListCourtHearingTransformer {
                     .withReportingRestrictionReason(listHearingRequest.getReportingRestrictionReason())
                     .withCourtCentre(listHearingRequest.getCourtCentre())
                     .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, listDefendantRequests))
+                    .withIsGroupProceedings(isGroupProceedings)
+                    .withNumberOfGroupCases(isNotEmpty(prosecutionCases) ? prosecutionCases.size() : null)
                     .build();
             hearingsList.add(hearing);
         });
@@ -479,13 +483,13 @@ public class ListCourtHearingTransformer {
 
         final List<CourtApplicationPartyListingNeeds> courtApplicationPartyListingNeedsList = hearingRequest.getCourtApplicationPartyListingNeeds();
 
-        if (CollectionUtils.isNotEmpty(courtApplicationPartyListingNeedsList)) {
+        if (isNotEmpty(courtApplicationPartyListingNeedsList)) {
             hearingsBuilder.withCourtApplicationPartyListingNeeds(courtApplicationPartyListingNeedsList);
         }
 
         final List<CourtApplication> courtApplications = hearingRequest.getCourtApplications();
 
-        if (CollectionUtils.isNotEmpty(courtApplications)) {
+        if (isNotEmpty(courtApplications)) {
             hearingsBuilder.withCourtApplications(hearingRequest.getCourtApplications());
         }
 

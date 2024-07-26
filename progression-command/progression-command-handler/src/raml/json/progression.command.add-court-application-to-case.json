@@ -1280,9 +1280,6 @@
     "parentApplicationId": "00000000-0000-0000-0000-000000000000",
     "applicationParticulars": "a",
     "courtApplicationPayment": {
-      "isFeePaid": true,
-      "isFeeUndertakingAttached": true,
-      "isFeeExempt": true,
       "paymentReference": "a"
     },
     "applicationDecisionSoughtByDate": "0000-01-01",

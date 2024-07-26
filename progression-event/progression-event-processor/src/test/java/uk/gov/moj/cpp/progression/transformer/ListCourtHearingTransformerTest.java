@@ -563,7 +563,7 @@ public class ListCourtHearingTransformerTest {
                 .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
-                .transform(envelopeReferral, Arrays.asList(getProsecutionCase()), listHearingRequest, UUID.randomUUID());
+                .transform(envelopeReferral, Arrays.asList(getProsecutionCase()), listHearingRequest, UUID.randomUUID(), null);
 
         assertThat(listCourtHearing.getHearings().size(), is(1));
         assertThat(listCourtHearing.getHearings().get(0).getCourtCentre().getId(), is(courtCenterId));
@@ -604,7 +604,7 @@ public class ListCourtHearingTransformerTest {
                 .thenReturn(Optional.of(Json.createObjectBuilder().add("reason", "reason for referral").build()));
 
         final ListCourtHearing listCourtHearing = listCourtHearingTransformer
-                .transform(envelopeReferral, Arrays.asList(getProsecutionCase(LocalDate.now().minusYears(15))), listHearingRequest, UUID.randomUUID());
+                .transform(envelopeReferral, Arrays.asList(getProsecutionCase(LocalDate.now().minusYears(15))), listHearingRequest, UUID.randomUUID(), null);
 
         assertThat(listCourtHearing.getHearings().size(), is(1));
         assertThat(listCourtHearing.getHearings().get(0).getCourtCentre().getId(), is(courtCenterId));

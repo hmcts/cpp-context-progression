@@ -186,6 +186,12 @@ subscriptions_descriptor:
         - name: progression.event.merge-cases
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.merge-cases.json
 
+        - name: progression.event.related-reference-added
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.related-reference-added.json
+
+        - name: progression.event.related-reference-deleted
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.related-reference-deleted.json
+
         - name: progression.event.hearing-extended
           schema_uri: http://justice.gov.uk/core/courts/hearing-extended.json
 
@@ -323,6 +329,15 @@ subscriptions_descriptor:
 
         - name: progression.event.new-defendant-added-to-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.new-defendant-added-to-hearing.json
+
+        - name: progression.event.civil-fees-updated
+          schema_uri: http://justice.gov.uk/core/courts/civil-fees-updated.json
+
+        - name: progression.event.court-fee-for-civil-application-updated
+          schema_uri: http://justice.gov.uk/core/courts/court-fee-for-civil-application-updated.json
+
+        - name: progression.event.case-group-info-updated
+          schema_uri: http://justice.gov.uk/core/courts/case-group-info-updated.json
 
         - name: progression.event.court-application-subject-custodial-information-updated
           schema_uri: http://justice.gov.uk/progression/event/court-application-subject-custodial-information-updated.json

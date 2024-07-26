@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
@@ -149,6 +150,9 @@ public class ConvictionDateEventListener {
     private ProsecutionCaseEntity getProsecutionCaseEntity(final ProsecutionCase prosecutionCase) {
         final ProsecutionCaseEntity pCaseEntity = new ProsecutionCaseEntity();
         pCaseEntity.setCaseId(prosecutionCase.getId());
+        if (nonNull(prosecutionCase.getGroupId())) {
+            pCaseEntity.setGroupId(prosecutionCase.getGroupId());
+        }
         pCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
         return pCaseEntity;
     }

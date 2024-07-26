@@ -210,7 +210,7 @@
                     "isConvictedResult": true,
                     "isAvailableForCourtExtract": true,
                     "isNewAmendment": true,
-                    "amendmentDate": "0000-01-01",
+                    "amendmentDate": "1000-01-01",
                     "amendmentReason": "a",
                     "cjsCode": "a",
                     "rank": 0.1,
@@ -231,7 +231,7 @@
                       "firstName": "a",
                       "lastName": "a"
                     },
-                    "approvedDate": "0000-01-01",
+                    "approvedDate": "1000-01-01",
                     "usergroups": [
                       "a"
                     ],

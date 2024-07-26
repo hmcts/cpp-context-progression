@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.query;
 
+import static java.util.Objects.nonNull;
+
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -45,11 +47,13 @@ import org.slf4j.LoggerFactory;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class CaseLsmInfoQuery {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseLsmInfoQuery.class);
     public static final String PARAM_CASE_ID = "caseId";
 
     private static final String CASE_ID = "caseId";
     private static final String CASE_URN = "caseUrn";
+    private static final String RELATED_URN = "relatedUrn";
     private static final String LINK_GROUP_ID = "linkGroupId";
     private static final String MATCHED_MASTER_DEFENDANT_ID = "matchedMasterDefendantId";
     private static final String DEFENDANTS = "defendants";
@@ -101,12 +105,12 @@ public class CaseLsmInfoQuery {
                 final List<MatchDefendantCaseHearingEntity> nullHearingIdDefendantCaseHearing = uniqueMatchedCases.stream()
                         .filter(matchDefendantCaseHearingEntity -> Objects.isNull(matchDefendantCaseHearingEntity.getHearingId())).collect(Collectors.toList());
                 final List<UUID> defendantCaseHearingEntityToBeRemoved = nullHearingIdDefendantCaseHearing.stream().filter(e ->
-                    uniqueMatchedCases.stream().filter(matchDefendantCaseHearingEntity -> matchDefendantCaseHearingEntity.getDefendantId().equals(e.getDefendantId())
-                    && matchDefendantCaseHearingEntity.getMasterDefendantId().equals(e.getMasterDefendantId())
-                            && matchDefendantCaseHearingEntity.getProsecutionCaseId().equals(e.getProsecutionCaseId())).count() > 1
+                        uniqueMatchedCases.stream().filter(matchDefendantCaseHearingEntity -> matchDefendantCaseHearingEntity.getDefendantId().equals(e.getDefendantId())
+                                && matchDefendantCaseHearingEntity.getMasterDefendantId().equals(e.getMasterDefendantId())
+                                && matchDefendantCaseHearingEntity.getProsecutionCaseId().equals(e.getProsecutionCaseId())).count() > 1
                 ).map(e -> e.getId()).collect(Collectors.toList());
                 defendantCaseHearingEntityToBeRemoved.stream().forEach(e ->
-                    uniqueMatchedCases.removeIf(matchDefendantCaseHearingEntity -> matchDefendantCaseHearingEntity.getId().equals(e))
+                        uniqueMatchedCases.removeIf(matchDefendantCaseHearingEntity -> matchDefendantCaseHearingEntity.getId().equals(e))
                 );
                 final JsonArrayBuilder matchedCasesArrayBuilder = Json.createArrayBuilder();
                 uniqueMatchedCases.stream().forEach(e -> matchedCasesArrayBuilder.add(buildMatchedDefendantCase(e.getProsecutionCase(), e.getMasterDefendantId(), Optional.ofNullable(e.getHearing()))));
@@ -162,11 +166,17 @@ public class CaseLsmInfoQuery {
         final ProsecutionCase prosecutionCase = convertToProsecutionCase(prosecutionCaseEntity);
         final Hearing hearing = convertToHearing(hearingEntity);
 
-        return Json.createObjectBuilder()
+        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
                 .add(CASE_ID, prosecutionCase.getId().toString())
                 .add(CASE_URN, extractCaseUrn(prosecutionCase))
                 .add(MATCHED_MASTER_DEFENDANT_ID, matchedMasterDefendantId.toString())
                 .add(DEFENDANTS, caseLsmInfoConverter.convertMatchedCaseDefendants(prosecutionCase.getDefendants(), hearing, matchedMasterDefendantId));
+
+        if (nonNull(prosecutionCase.getRelatedUrn())) {
+            jsonObjectBuilder.add(RELATED_URN, prosecutionCase.getRelatedUrn());
+        }
+
+        return jsonObjectBuilder;
     }
 
     private JsonObjectBuilder buildRelatedCase(final ProsecutionCaseEntity prosecutionCaseEntity, final LinkType linkType, final Optional<String> linkReference, final UUID linkGroupId, final Optional<HearingEntity> hearingEntity) {

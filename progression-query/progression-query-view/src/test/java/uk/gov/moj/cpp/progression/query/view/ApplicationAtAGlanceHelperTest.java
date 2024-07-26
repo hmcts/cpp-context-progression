@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.query.view;
 
-import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
 import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
@@ -64,7 +63,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withType(courtApplicationType().withType(STRING_GENERATOR.next()).withAppealFlag(BOOLEAN_GENERATOR.next()).withApplicantAppellantFlag(BOOLEAN_GENERATOR.next()).build())
                 .withApplicationReceivedDate(now())
                 .withApplicationParticulars(STRING_GENERATOR.next())
-                .withCourtApplicationPayment(courtApplicationPayment().withIsFeeExempt(BOOLEAN_GENERATOR.next()).withPaymentReference(STRING_GENERATOR.next()).build())
+                .withCourtApplicationPayment(courtApplicationPayment().withPaymentReference(STRING_GENERATOR.next()).build())
                 .withJudicialResults(Collections.singletonList(JudicialResult.judicialResult()
                         .withResultText("REVU - Further review of court order")
                         .build()))
@@ -78,7 +77,6 @@ public class ApplicationAtAGlanceHelperTest {
         assertThat(applicationDetails.getApplicantAppellantFlag(), is(courtApplication.getType().getApplicantAppellantFlag()));
         assertThat(applicationDetails.getApplicationReceivedDate(), is(courtApplication.getApplicationReceivedDate()));
         assertThat(applicationDetails.getApplicationParticulars(), is(courtApplication.getApplicationParticulars()));
-        assertThat(applicationDetails.getFeePayable(), is(FALSE.equals(courtApplication.getCourtApplicationPayment().getIsFeeExempt())));
         assertThat(applicationDetails.getPaymentReference(), is(courtApplication.getCourtApplicationPayment().getPaymentReference()));
         assertThat(applicationDetails.getAagResults().get(0).getResultText(), is("REVU - Further review of court order"));
         assertThat(applicationDetails.getAagResults().get(0).getUseResultText(), is(true));

@@ -24,7 +24,7 @@
     },
     "listedStartDateTime": "2015-01-12T05:27:17.210Z",
     "earliestStartDateTime": "2015-01-12T05:27:17.210Z",
-    "endDate": "0000-01-01",
+    "endDate": "1000-01-01",
     "estimatedMinutes": 0,
     "prosecutorDatesToAvoid": "a",
     "listingDirections": "a",
@@ -61,7 +61,7 @@
           "applicationJurisdictionType": "MAGISTRATES",
           "applicationSummonsRecipientType": "APPLICANT"
         },
-        "applicationReceivedDate": "0000-01-01",
+        "applicationReceivedDate": "1000-01-01",
         "applicationReference": "a",
         "applicant": {
           "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
@@ -71,7 +71,7 @@
             "firstName": "a",
             "middleName": "a",
             "lastName": "a",
-            "dateOfBirth": "0000-01-01",
+            "dateOfBirth": "1000-01-01",
             "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
             "nationalityCode": "a",
             "nationalityDescription": "a",
@@ -139,7 +139,7 @@
                 "firstName": "a",
                 "middleName": "a",
                 "lastName": "a",
-                "dateOfBirth": "0000-01-01",
+                "dateOfBirth": "1000-01-01",
                 "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                 "nationalityCode": "a",
                 "nationalityDescription": "a",
@@ -225,23 +225,23 @@
                 "modeOfTrial": "a",
                 "wording": "a",
                 "wordingWelsh": "a",
-                "startDate": "0000-01-01",
-                "endDate": "0000-01-01",
-                "arrestDate": "0000-01-01",
-                "chargeDate": "0000-01-01",
-                "dateOfInformation": "0000-01-01",
+                "startDate": "1000-01-01",
+                "endDate": "1000-01-01",
+                "arrestDate": "1000-01-01",
+                "chargeDate": "1000-01-01",
+                "dateOfInformation": "1000-01-01",
                 "orderIndex": 0,
                 "count": 0,
-                "convictionDate": "0000-01-01",
+                "convictionDate": "1000-01-01",
                 "notifiedPlea": {
                   "offenceId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-                  "notifiedPleaDate": "0000-01-01",
+                  "notifiedPleaDate": "1000-01-01",
                   "notifiedPleaValue": "NOTIFIED_GUILTY"
                 },
                 "indicatedPlea": {
                   "offenceId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                   "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-                  "indicatedPleaDate": "0000-01-01",
+                  "indicatedPleaDate": "1000-01-01",
                   "indicatedPleaValue": "INDICATED_GUILTY",
                   "source": "ONLINE"
                 },
@@ -253,13 +253,13 @@
                     "lastName": "a"
                   },
                   "offenceId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-                  "pleaDate": "0000-01-01",
+                  "pleaDate": "1000-01-01",
                   "pleaValue": "GUILTY"
                 },
                 "verdict": {
                   "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                   "offenceId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-                  "verdictDate": "0000-01-01",
+                  "verdictDate": "1000-01-01",
                   "verdictType": {
                     "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                     "sequence": 0,
@@ -287,14 +287,14 @@
                   "alcoholReadingMethodCode": "a",
                   "vehicleCode": "LARGE_GOODS_VEHICLE"
                 },
-                "aquittalDate": "0000-01-01",
+                "aquittalDate": "1000-01-01",
                 "victims": [
                   {
                     "title": "DR",
                     "firstName": "a",
                     "middleName": "a",
                     "lastName": "a",
-                    "dateOfBirth": "0000-01-01",
+                    "dateOfBirth": "1000-01-01",
                     "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                     "nationalityCode": "a",
                     "nationalityDescription": "a",
@@ -346,10 +346,10 @@
                     "isAvailableForCourtExtract": true,
                     "amendmentReasonId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                     "amendmentReason": "a",
-                    "amendmentDate": "0000-01-01",
+                    "amendmentDate": "1000-01-01",
                     "cjsCode": "a",
                     "rank": 0.1,
-                    "orderedDate": "0000-01-01",
+                    "orderedDate": "1000-01-01",
                     "lastSharedDateTime": "a",
                     "courtClerk": {
                       "userId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
@@ -366,7 +366,7 @@
                       "firstName": "a",
                       "lastName": "a"
                     },
-                    "approvedDate": "0000-01-01",
+                    "approvedDate": "1000-01-01",
                     "usergroups": [
                       "a"
                     ],
@@ -395,7 +395,7 @@
                   "firstName": "a",
                   "middleName": "a",
                   "lastName": "a",
-                  "dateOfBirth": "0000-01-01",
+                  "dateOfBirth": "1000-01-01",
                   "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                   "nationalityCode": "a",
                   "nationalityDescription": "a",
@@ -465,7 +465,7 @@
                 "firstName": "a",
                 "middleName": "a",
                 "lastName": "a",
-                "dateOfBirth": "0000-01-01",
+                "dateOfBirth": "1000-01-01",
                 "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                 "nationalityCode": "a",
                 "nationalityDescription": "a",
@@ -507,7 +507,7 @@
               },
               "bailStatus": "CONDITIONAL",
               "bailConditions": "a",
-              "custodyTimeLimit": "0000-01-01",
+              "custodyTimeLimit": "1000-01-01",
               "perceivedBirthYear": 0,
               "driverNumber": "a",
               "driverLicenceCode": "FULL",
@@ -580,10 +580,10 @@
                 "isAvailableForCourtExtract": true,
                 "amendmentReasonId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                 "amendmentReason": "a",
-                "amendmentDate": "0000-01-01",
+                "amendmentDate": "1000-01-01",
                 "cjsCode": "a",
                 "rank": 0.1,
-                "orderedDate": "0000-01-01",
+                "orderedDate": "1000-01-01",
                 "lastSharedDateTime": "a",
                 "courtClerk": {
                   "userId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
@@ -600,7 +600,7 @@
                   "firstName": "a",
                   "lastName": "a"
                 },
-                "approvedDate": "0000-01-01",
+                "approvedDate": "1000-01-01",
                 "usergroups": [
                   "a"
                 ],
@@ -655,7 +655,7 @@
                 "firstName": "a",
                 "middleName": "a",
                 "lastName": "a",
-                "dateOfBirth": "0000-01-01",
+                "dateOfBirth": "1000-01-01",
                 "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                 "nationalityCode": "a",
                 "nationalityDescription": "a",
@@ -723,7 +723,7 @@
                     "firstName": "a",
                     "middleName": "a",
                     "lastName": "a",
-                    "dateOfBirth": "0000-01-01",
+                    "dateOfBirth": "1000-01-01",
                     "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                     "nationalityCode": "a",
                     "nationalityDescription": "a",
@@ -809,23 +809,23 @@
                     "modeOfTrial": "a",
                     "wording": "a",
                     "wordingWelsh": "a",
-                    "startDate": "0000-01-01",
-                    "endDate": "0000-01-01",
-                    "arrestDate": "0000-01-01",
-                    "chargeDate": "0000-01-01",
-                    "dateOfInformation": "0000-01-01",
+                    "startDate": "1000-01-01",
+                    "endDate": "1000-01-01",
+                    "arrestDate": "1000-01-01",
+                    "chargeDate": "1000-01-01",
+                    "dateOfInformation": "1000-01-01",
                     "orderIndex": 0,
                     "count": 0,
-                    "convictionDate": "0000-01-01",
+                    "convictionDate": "1000-01-01",
                     "notifiedPlea": {
                       "offenceId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-                      "notifiedPleaDate": "0000-01-01",
+                      "notifiedPleaDate": "1000-01-01",
                       "notifiedPleaValue": "NOTIFIED_GUILTY"
                     },
                     "indicatedPlea": {
                       "offenceId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                       "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-                      "indicatedPleaDate": "0000-01-01",
+                      "indicatedPleaDate": "1000-01-01",
                       "indicatedPleaValue": "INDICATED_GUILTY",
                       "source": "ONLINE"
                     },
@@ -837,13 +837,13 @@
                         "lastName": "a"
                       },
                       "offenceId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-                      "pleaDate": "0000-01-01",
+                      "pleaDate": "1000-01-01",
                       "pleaValue": "GUILTY"
                     },
                     "verdict": {
                       "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                       "offenceId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-                      "verdictDate": "0000-01-01",
+                      "verdictDate": "1000-01-01",
                       "verdictType": {
                         "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                         "sequence": 0,
@@ -871,14 +871,14 @@
                       "alcoholReadingMethodCode": "a",
                       "vehicleCode": "LARGE_GOODS_VEHICLE"
                     },
-                    "aquittalDate": "0000-01-01",
+                    "aquittalDate": "1000-01-01",
                     "victims": [
                       {
                         "title": "DR",
                         "firstName": "a",
                         "middleName": "a",
                         "lastName": "a",
-                        "dateOfBirth": "0000-01-01",
+                        "dateOfBirth": "1000-01-01",
                         "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                         "nationalityCode": "a",
                         "nationalityDescription": "a",
@@ -930,10 +930,10 @@
                         "isAvailableForCourtExtract": true,
                         "amendmentReasonId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                         "amendmentReason": "a",
-                        "amendmentDate": "0000-01-01",
+                        "amendmentDate": "1000-01-01",
                         "cjsCode": "a",
                         "rank": 0.1,
-                        "orderedDate": "0000-01-01",
+                        "orderedDate": "1000-01-01",
                         "lastSharedDateTime": "a",
                         "courtClerk": {
                           "userId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
@@ -950,7 +950,7 @@
                           "firstName": "a",
                           "lastName": "a"
                         },
-                        "approvedDate": "0000-01-01",
+                        "approvedDate": "1000-01-01",
                         "usergroups": [
                           "a"
                         ],
@@ -979,7 +979,7 @@
                       "firstName": "a",
                       "middleName": "a",
                       "lastName": "a",
-                      "dateOfBirth": "0000-01-01",
+                      "dateOfBirth": "1000-01-01",
                       "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                       "nationalityCode": "a",
                       "nationalityDescription": "a",
@@ -1049,7 +1049,7 @@
                     "firstName": "a",
                     "middleName": "a",
                     "lastName": "a",
-                    "dateOfBirth": "0000-01-01",
+                    "dateOfBirth": "1000-01-01",
                     "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                     "nationalityCode": "a",
                     "nationalityDescription": "a",
@@ -1091,7 +1091,7 @@
                   },
                   "bailStatus": "CONDITIONAL",
                   "bailConditions": "a",
-                  "custodyTimeLimit": "0000-01-01",
+                  "custodyTimeLimit": "1000-01-01",
                   "perceivedBirthYear": 0,
                   "driverNumber": "a",
                   "driverLicenceCode": "FULL",
@@ -1164,10 +1164,10 @@
                     "isAvailableForCourtExtract": true,
                     "amendmentReasonId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
                     "amendmentReason": "a",
-                    "amendmentDate": "0000-01-01",
+                    "amendmentDate": "1000-01-01",
                     "cjsCode": "a",
                     "rank": 0.1,
-                    "orderedDate": "0000-01-01",
+                    "orderedDate": "1000-01-01",
                     "lastSharedDateTime": "a",
                     "courtClerk": {
                       "userId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
@@ -1184,7 +1184,7 @@
                       "firstName": "a",
                       "lastName": "a"
                     },
-                    "approvedDate": "0000-01-01",
+                    "approvedDate": "1000-01-01",
                     "usergroups": [
                       "a"
                     ],
@@ -1232,7 +1232,7 @@
             "applicationResponse": {
               "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
               "applicationId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-              "applicationResponseDate": "0000-01-01",
+              "applicationResponseDate": "1000-01-01",
               "applicationResponseType": {
                 "id": "6c6dfbfa-c90a-4ef7-ac47-2e12e0026f21",
                 "sequence": 0,
@@ -1244,7 +1244,7 @@
         "applicationOutcome": {
           "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
           "applicationId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
-          "applicationOutcomeDate": "0000-01-01",
+          "applicationOutcomeDate": "1000-01-01",
           "applicationOutcomeType": {
             "id": "89abc992-c78d-4b3a-93b5-eac694c47db2",
             "sequence": 0,
@@ -1260,7 +1260,7 @@
           "isFeeExempt": true,
           "paymentReference": "a"
         },
-        "applicationDecisionSoughtByDate": "0000-01-01",
+        "applicationDecisionSoughtByDate": "1000-01-01",
         "applicationStatus": "DRAFT",
         "outOfTimeReasons": "a",
         "judicialResults": [
@@ -1274,10 +1274,10 @@
             "isAvailableForCourtExtract": true,
             "amendmentReasonId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
             "amendmentReason": "a",
-            "amendmentDate": "0000-01-01",
+            "amendmentDate": "1000-01-01",
             "cjsCode": "a",
             "rank": 0.1,
-            "orderedDate": "0000-01-01",
+            "orderedDate": "1000-01-01",
             "lastSharedDateTime": "a",
             "courtClerk": {
               "userId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
@@ -1294,7 +1294,7 @@
               "firstName": "a",
               "lastName": "a"
             },
-            "approvedDate": "0000-01-01",
+            "approvedDate": "1000-01-01",
             "usergroups": [
               "a"
             ],

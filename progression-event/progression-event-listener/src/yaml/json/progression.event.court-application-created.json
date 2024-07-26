@@ -908,9 +908,6 @@
     },
     "applicationParticulars": "a",
     "courtApplicationPayment": {
-      "isFeePaid": true,
-      "isFeeUndertakingAttached": true,
-      "isFeeExempt": true,
       "paymentReference": "a"
     },
     "applicationDecisionSoughtByDate": "0000-01-01",

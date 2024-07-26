@@ -27,7 +27,9 @@ import static uk.gov.justice.core.courts.SummonsData.summonsData;
 import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
 import static uk.gov.justice.core.courts.SummonsType.APPLICATION;
 import static uk.gov.justice.core.courts.SummonsType.BREACH;
-import static uk.gov.moj.cpp.progression.processor.helper.SummonDataPreparedEventProcessorTestHelper.generateCourtCentreJson;
+import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.generateCourtCentreJson;
+import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.getAddress;
+import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.getAssociatedPerson;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
@@ -302,28 +304,6 @@ public class ApplicationSummonsServiceTest {
                         .build());
 
         }
-    }
-
-
-    private AssociatedPerson getAssociatedPerson() {
-        return associatedPerson().withPerson(
-                person()
-                        .withFirstName("parent first name")
-                        .withMiddleName("parent middle name")
-                        .withLastName("parent last name")
-                        .withAddress(getAddress("parent line 1", "", "", "", "", ""))
-                        .build()).build();
-    }
-
-    private Address getAddress(final String line1, final String line2, final String line3, final String line4, final String line5, final String postcode) {
-        return address()
-                .withAddress1(line1)
-                .withAddress2(line2)
-                .withAddress3(line3)
-                .withAddress4(line4)
-                .withAddress5(line5)
-                .withPostcode(postcode)
-                .build();
     }
 
     private Optional<LjaDetails> getLjaDetails() {

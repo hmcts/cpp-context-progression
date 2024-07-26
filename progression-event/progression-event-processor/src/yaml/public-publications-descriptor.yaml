@@ -71,6 +71,9 @@ subscriptions_descriptor:
         - name: public.progression.prosecution-case-created
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-created.json
 
+        - name: public.progression.group-prosecution-cases-created
+          schema_uri: http://justice.gov.uk/core/courts/group-prosecution-cases-created.json
+
         - name: public.progression.sjp-prosecution-case-created
           schema_uri: http://justice.gov.uk/core/courts/public.progression.sjp-prosecution-case-created.json
 
@@ -170,6 +173,21 @@ subscriptions_descriptor:
 
         - name: public.progression.cotr-task-requested
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.event.cotr-task-requested.json
+
+        - name: public.progression.civil-fees-response
+          schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.civil-fees-response.json
+
+        - name: public.progression.court-fee-for-civil-application-updated
+          schema_uri: http://justice.gov.uk/core/courts/public.progression.court-fee-for-civil-application-updated.json
+
+        - name: public.progression.case-removed-from-group-cases
+          schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.case-removed-from-group-cases.json
+
+        - name: public.progression.events.civil-case-exists
+          schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression.events.civil-case-exists.json
+
+        - name: public.progression.remove-last-case-in-group-cases-rejected
+          schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression-remove-last-case-in-group-cases-rejected.json
 
         # ***** Deprecated API - Start ********
         # ***** Do not add any new API in this section *****
@@ -314,5 +332,11 @@ subscriptions_descriptor:
 
         - name: public.progression.result-list-opa-notice-generated
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.result-list-opa-notice-generated.json
+
+        - name: public.progression.related-reference-added
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.related-reference-added.json
+
+        - name: public.progression.related-reference-deleted
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.related-reference-deleted.json
 
       event_source_name: public.event.source
