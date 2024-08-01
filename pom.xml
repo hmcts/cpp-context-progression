@@ -73,7 +73,7 @@
         <usersgroups.version>8.0.39</usersgroups.version>
         <defence.version>8.0.55</defence.version>
         <referencedata.offence.version>8.0.23</referencedata.offence.version>
-        <coredomain.version>8.0.3</coredomain.version>
+        <coredomain.version>8.0.4</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>

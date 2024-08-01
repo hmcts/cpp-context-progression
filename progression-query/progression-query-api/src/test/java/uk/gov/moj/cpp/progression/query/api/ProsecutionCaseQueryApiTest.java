@@ -5,6 +5,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.QueryClientTestBase.readJson;
 import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
@@ -48,9 +49,11 @@ public class ProsecutionCaseQueryApiTest {
     private static final String CAAG_PROSECUTION_QUERY = "progression.query.prosecutioncase.caag";
 
     private static final String PROSECUTION_CASE_QUERY_VIEW_JSON = "json/prosecutionCaseQueryResponse.json";
+    private static final String PROSECUTION_CASE_QUERY_WITH_PROSECUTOR_VIEW_JSON = "json/prosecutionCaseQueryResponseWithProsecutor.json";
     private static final String PROSECUTION_CASE_QUERY_VIEW_MULTIPLE_DEFENDANTS_JSON = "json/prosecutionCaseQueryMultipleDefendantsResponse.json";
     private static final String DEFENDANT_WITH_COURT_ORDERS_JSON = "json/defendantWithCourtOrders.json";
     private static final String PROSECUTION_CASE_QUERY_API_EXPECTED_WITH_COURT_ORDERS_JSON = "json/caseQueryApiWithCourtOrdersExpectedResponse.json";
+    private static final String PROSECUTION_CASE_QUERY_API_EXPECTED_WITH_COURT_ORDERS_AND_PROSECUTOR_JSON = "json/caseQueryApiWithCourtOrdersAndProsecutorExpectedResponse.json";
     private static final String PROSECUTION_CASE_QUERY_API_EXPECTED_WITH_COURT_ORDERS_MULTIPLE_DEFENDANTS_JSON = "json/caseQueryApiWithCourtOrdersMultipleDefendantsExpectedResponse.json";
     private static final String PROSECUTION_CASE_QUERY_API_EXPECTED_WIT_NO_COURT_ORDERS_JSON = "json/caseQueryApiWithNoCourtOrdersExpectedResponse.json";
     private static final String CASE_QUERY_VIEW_JSON = "json/caseQueryResponse.json";
@@ -416,6 +419,29 @@ public class ProsecutionCaseQueryApiTest {
         final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getCaseProsecutionCase(queryEnvelope);
 
         final JsonObject expectedProsecutionCaseResponse = readJson(PROSECUTION_CASE_QUERY_API_EXPECTED_WITH_COURT_ORDERS_JSON, JsonObject.class);
+
+        assertThat(actualProsecutionCaseResponse.payloadAsJsonObject(), equalTo(expectedProsecutionCaseResponse));
+    }
+
+    @Test
+    public void shouldHandleProsecutionCaseQueryWithCourtOrdersForNonCPSProsecutorsWithProsecutorObjectExists() {
+        final JsonObject prosecutionCasePayload = readJson(PROSECUTION_CASE_QUERY_WITH_PROSECUTOR_VIEW_JSON, JsonObject.class);
+        final JsonObject courtOrdersPayload = readJson(DEFENDANT_WITH_COURT_ORDERS_JSON, JsonObject.class);
+
+        final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY, randomUUID());
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
+
+        final String caseId = randomUUID().toString();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add(CASE_ID, caseId).build();
+        final JsonEnvelope queryEnvelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
+
+        when(prosecutionCaseQuery.getProsecutionCase(queryEnvelope)).thenReturn(envelope);
+        when(courtOrderService.getCourtOrdersByDefendant(any(), any(), any())).thenReturn(courtOrdersPayload);
+        when(usersGroupQueryService.validateNonCPSUserOrg(any(),any(),any(),eq("CPS-EM"))).thenReturn(Optional.of("OrganisationMatch"));
+
+        final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getCaseProsecutionCase(queryEnvelope);
+
+        final JsonObject expectedProsecutionCaseResponse = readJson(PROSECUTION_CASE_QUERY_API_EXPECTED_WITH_COURT_ORDERS_AND_PROSECUTOR_JSON, JsonObject.class);
 
         assertThat(actualProsecutionCaseResponse.payloadAsJsonObject(), equalTo(expectedProsecutionCaseResponse));
     }

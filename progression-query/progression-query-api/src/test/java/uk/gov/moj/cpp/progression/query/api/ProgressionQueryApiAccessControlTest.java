@@ -302,6 +302,16 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
         assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.material-content-for-prosecution", "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates", "Non CPS Prosecutors");
     }
 
+    @Test
+    public void shouldAllowUserInAuthorisedGroupToGetMaterialForDefence() {
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.material-content-for-defence", "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates", "Non CPS Prosecutors");
+    }
+
+    @Test
+    public void shouldNotAllowUserInAuthorisedGroupToGetMaterialForDefence() {
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.material-content-for-defence", "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates", "Non CPS Prosecutors");
+    }
+
     private void assertFailureOutcomeOnActionForTheSuppliedGroups(final String actionName, final String... groupNames) {
         final Action action = createActionFor(actionName);
         when(progressionProvider.getAllowedUserGroups(action)).thenReturn(ALLOWED_USER_GROUPS);

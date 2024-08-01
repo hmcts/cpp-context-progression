@@ -93,7 +93,6 @@ public class ProsecutionCaseQueryApi {
 
         if (nonNull(prosecutionCase)) {
             isNonCPSProsecutorWithValidProsecutingAuthority(query, prosecutionCase);
-
             final JsonArray defendants = prosecutionCase.getJsonArray(DEFENDANTS);
             final JsonArrayBuilder activeCourtOrdersArrayBuilder = Json.createArrayBuilder();
 
@@ -258,11 +257,16 @@ public class ProsecutionCaseQueryApi {
 
     @SuppressWarnings("squid:S3655")
     private void isNonCPSProsecutorWithValidProsecutingAuthority(final JsonEnvelope query, final JsonObject prosecutionCase) {
-        final UUID userId = query.metadata().userId().isPresent() ? fromString(query.metadata().userId().get()) : null;
+        final UUID userId = fromString(query.metadata().userId().orElseThrow(() -> new RuntimeException("UserId missing from query.")));
         final ProsecutionCase prosecutionCaseObject = jsonObjectToObjectConverter.convert(prosecutionCase, ProsecutionCase.class);
-        final Optional<String> orgMatch  = usersGroupQueryService.validateNonCPSUserOrg(query.metadata(), userId, NON_CPS_PROSECUTORS, prosecutionCaseObject.getProsecutionCaseIdentifier().getProsecutionAuthorityCode());
+        final Optional<String> orgMatch  = usersGroupQueryService.validateNonCPSUserOrg(query.metadata(), userId, NON_CPS_PROSECUTORS, getShortName(prosecutionCaseObject));
         if(orgMatch.isPresent() && ORGANISATION_MIS_MATCH.equals(orgMatch.get())){
             throw new ForbiddenRequestException("Forbidden!! Non CPS Prosecutor user cannot view court documents if it is not belongs to the same Prosecuting Authority of the user logged in");
         }
+    }
+
+
+    private String getShortName(final ProsecutionCase prosecutionCaseObject) {
+        return nonNull(prosecutionCaseObject.getProsecutor()) && nonNull(prosecutionCaseObject.getProsecutor().getProsecutorCode()) ? prosecutionCaseObject.getProsecutor().getProsecutorCode() :  prosecutionCaseObject.getProsecutionCaseIdentifier().getProsecutionAuthorityCode();
     }
 }

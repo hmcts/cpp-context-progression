@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.command;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
@@ -97,7 +98,7 @@ public class AddCourtDocumentApi {
     private void checkForbiddenRequest(final JsonEnvelope envelope, final Optional<UUID> caseId, final UUID userId, final Optional<JsonObject> prosecutionCase) {
         if (prosecutionCase.isPresent()) {
             final ProsecutionCase prosecutionCaseObj = jsonObjectToObjectConverter.convert(prosecutionCase.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
-            final Optional<String> orgMatch = userGroupQueryService.validateNonCPSUserOrg(envelope, userId, NON_CPS_PROSECUTORS, prosecutionCaseObj.getProsecutionCaseIdentifier().getProsecutionAuthorityCode());
+            final Optional<String> orgMatch = userGroupQueryService.validateNonCPSUserOrg(envelope, userId, NON_CPS_PROSECUTORS, getShortName(prosecutionCaseObj));
             if (orgMatch.isPresent()) {
                 if (ORGANISATION_MIS_MATCH.equals(orgMatch.get())) {
                     throw new ForbiddenRequestException("Forbidden!! Non CPS Prosecutor user cannot view court documents if it is not belongs to the same Prosecuting Authority of the user logged in");
@@ -106,6 +107,12 @@ public class AddCourtDocumentApi {
                 throw new ForbiddenRequestException("Forbidden!! Cannot view court documents, user not prosecuting the case");
             }
         }
+    }
+
+    private String getShortName(final ProsecutionCase prosecutionCaseObj) {
+        return nonNull(prosecutionCaseObj.getProsecutor()) && nonNull(prosecutionCaseObj.getProsecutor().getProsecutorCode()) ?
+                prosecutionCaseObj.getProsecutor().getProsecutorCode() :
+                prosecutionCaseObj.getProsecutionCaseIdentifier().getProsecutionAuthorityCode();
     }
 
     private Optional<UUID> getCaseId(final JsonObject payloadAsJsonObject) {
