@@ -10,7 +10,8 @@
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "hearingDateTime": {
-      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+      "type": "string",
+      "format": "date-time"
     },
     "hasInterpreter": {
       "type": "boolean"

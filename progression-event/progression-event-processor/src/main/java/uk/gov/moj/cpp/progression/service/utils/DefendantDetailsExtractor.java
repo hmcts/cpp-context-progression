@@ -41,7 +41,7 @@ public class DefendantDetailsExtractor {
     }
 
     public static Optional<LocalDate> getDefendantDateOfBirth(final Defendant defendant) {
-        return nonNull(defendant.getPersonDefendant()) ? Optional.of(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth()) : empty();
+        return nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getPersonDetails()) ? Optional.ofNullable(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth()) : empty();
     }
 
     private static String buildDefendantFullName(final Person personDetails) {
