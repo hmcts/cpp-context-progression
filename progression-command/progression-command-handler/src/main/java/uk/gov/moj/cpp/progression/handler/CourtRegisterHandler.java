@@ -1,8 +1,12 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.util.Objects.isNull;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterDefendant;
 import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterDocumentRequest;
 import uk.gov.justice.progression.courts.GenerateCourtRegister;
 import uk.gov.justice.progression.courts.NotifyCourtRegister;
@@ -19,13 +23,16 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CourtCentreAggregate;
 import uk.gov.moj.cpp.progression.command.GenerateCourtRegisterByDate;
 import uk.gov.moj.cpp.progression.domain.constant.RegisterStatus;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -72,13 +79,36 @@ public class CourtRegisterHandler extends AbstractCommandHandler {
 
         final UUID courtCentreId = courtRegisterDocumentRequest.getCourtCentreId();
 
+        final String[] defendantType = {StringUtils.EMPTY};
+        Optional.ofNullable(getCourtApplicationId(courtRegisterDocumentRequest)).ifPresent(courtAppId -> {
+            final EventStream applicationEventStream = eventSource.getStreamById(courtAppId);
+            final ApplicationAggregate applicationAggregate = aggregateService.get(applicationEventStream, ApplicationAggregate.class);
+
+            final CourtApplication courtApplication = applicationAggregate.getCourtApplication();
+            defendantType[0] = getDefendantType(courtRegisterDocumentRequest, courtApplication);
+        });
+
+        final CourtRegisterDocumentRequest updatedCourtRegisterDocumentRequest = getUpdatedCourtRegisterDocumentRequest(courtRegisterDocumentRequest,
+                                                                                                                        defendantType[0]);
+
         final EventStream eventStream = eventSource.getStreamById(courtCentreId);
 
         final CourtCentreAggregate courtCentreAggregate = aggregateService.get(eventStream, CourtCentreAggregate.class);
 
-        final Stream<Object> events = courtCentreAggregate.createCourtRegister(courtCentreId, courtRegisterDocumentRequest);
+        final Stream<Object> events = courtCentreAggregate.createCourtRegister(courtCentreId, updatedCourtRegisterDocumentRequest);
 
         appendEventsToStream(courtRegisterDocumentRequestEnvelope, eventStream, events);
+    }
+
+    private UUID getCourtApplicationId(final CourtRegisterDocumentRequest courtRegisterDocumentRequest) {
+        if (isNull(courtRegisterDocumentRequest.getDefendants()) ||
+                isEmpty(courtRegisterDocumentRequest.getDefendants()) ||
+                isEmpty(courtRegisterDocumentRequest.getDefendants().get(0).getProsecutionCasesOrApplications())
+        ) {
+            return null;
+        }
+
+        return courtRegisterDocumentRequest.getDefendants().get(0).getProsecutionCasesOrApplications().get(0).getCourtApplicationId();
     }
 
     @Handles("progression.command.generate-court-register")
@@ -105,6 +135,46 @@ public class CourtRegisterHandler extends AbstractCommandHandler {
 
         appendEventsToStream(jsonEnvelope, eventStream, events);
 
+    }
+
+    private String getDefendantType(final CourtRegisterDocumentRequest courtRegisterDocumentRequest,
+                                    final CourtApplication courtApplication) {
+        final AtomicReference<String> defendantType = new AtomicReference<>("Applicant");
+
+        Optional.ofNullable(courtApplication).ifPresent(c ->
+                Optional.ofNullable(c.getApplicant()).ifPresent(a -> {
+                            if (Optional.ofNullable(a.getMasterDefendant()).isPresent()) {
+                                if (c.getType().getAppealFlag() && c.getType().getApplicantAppellantFlag()) {
+                                    defendantType.set("Appellant");
+                                }
+                            } else {
+                                final List<UUID> defandantList = courtRegisterDocumentRequest.getDefendants().stream()
+                                        .map(CourtRegisterDefendant::getMasterDefendantId).collect(Collectors.toList());
+                                if (courtApplication.getRespondents().stream()
+                                        .anyMatch(respondent -> defandantList.contains(respondent.getMasterDefendant().getMasterDefendantId()))) {
+                                    defendantType.set("Respondent");
+                                }
+                            }
+                        }
+                )
+        );
+        return defendantType.get();
+    }
+
+    private static CourtRegisterDocumentRequest getUpdatedCourtRegisterDocumentRequest(final CourtRegisterDocumentRequest courtRegisterDocumentRequest,
+                                                                                       final String defendantType) {
+        return CourtRegisterDocumentRequest.courtRegisterDocumentRequest()
+                .withCourtApplicationId(courtRegisterDocumentRequest.getCourtApplicationId())
+                .withCourtCentreId(courtRegisterDocumentRequest.getCourtCentreId())
+                .withDefendantType(defendantType)
+                .withDefendants(courtRegisterDocumentRequest.getDefendants())
+                .withFileName(courtRegisterDocumentRequest.getFileName())
+                .withHearingDate(courtRegisterDocumentRequest.getHearingDate())
+                .withHearingId(courtRegisterDocumentRequest.getHearingId())
+                .withHearingVenue(courtRegisterDocumentRequest.getHearingVenue())
+                .withRecipients(courtRegisterDocumentRequest.getRecipients())
+                .withRegisterDate(courtRegisterDocumentRequest.getRegisterDate())
+                .build();
     }
 
     private void processRequests(final String courtCentreId, final List<JsonObject> courtRegisterRequest, final Envelope jsonEnvelope, final boolean systemGenerated) {

@@ -709,4 +709,21 @@ rule "Query - Access control for progression.query.case.status-for-application"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.case.allhearings"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.case.allhearings");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "System Users","Advocates","Defence Lawyers"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for progression.query.active-applications-on-case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.active-applications-on-case");
+  then
+    $outcome.setSuccess(true);
+end
+
 

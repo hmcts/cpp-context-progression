@@ -4,6 +4,7 @@ import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 
+import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtOrder;
@@ -57,5 +58,14 @@ public class CourtApplicationHelper {
                                 .build())
                         .orElse(null))
                 .build();
+    }
+
+    public static boolean isAddressMatches(final Address address1, final Address address2){
+        return  java.util.Objects.equals(address1.getAddress1(),address2.getAddress1()) &&
+                java.util.Objects.equals(address1.getAddress2(),address2.getAddress2()) &&
+                java.util.Objects.equals(address1.getAddress3(),address2.getAddress3()) &&
+                java.util.Objects.equals(address1.getAddress4(),address2.getAddress4()) &&
+                java.util.Objects.equals(address1.getAddress5(),address2.getAddress5()) &&
+                java.util.Objects.equals(address1.getPostcode(),address2.getPostcode());
     }
 }

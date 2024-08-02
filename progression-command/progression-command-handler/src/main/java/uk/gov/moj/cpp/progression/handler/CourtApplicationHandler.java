@@ -19,6 +19,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.AddCourtApplicationToCase;
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.BoxHearingRequest;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -28,17 +29,20 @@ import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.CreateCourtApplication;
+import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.HearingResultedUpdateApplication;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
 import uk.gov.justice.core.courts.SummonsTemplateType;
+import uk.gov.justice.core.courts.UpdateApplicationDefendant;
 import uk.gov.justice.core.courts.UpdateCourtApplicationToHearing;
 import uk.gov.justice.progression.courts.ApproveApplicationSummons;
 import uk.gov.justice.progression.courts.RejectApplicationSummons;
@@ -53,8 +57,10 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
+import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import java.util.ArrayList;
@@ -113,6 +119,9 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
+    @Inject
+    private ProsecutionCaseQueryService prosecutionCaseQueryService;
+
     @Handles("progression.command.create-court-application")
     public void handle(final Envelope<CreateCourtApplication> courtApplicationEnv) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
@@ -162,13 +171,27 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
 
         if (validateInitiateCourtApplicationProceedings(initiateCourtProceedingsForApplication)) {
+            final ProsecutionCase prosecutionCase = getProsecutioncase(initiateCourtApplicationProceedingsEnv.metadata(), initiateCourtProceedingsForApplication.getCourtApplication());
             final boolean applicationCreatedForSJPCase = isApplicationCreatedForSJPCase(initiateCourtProceedingsForApplication.getCourtApplication().getCourtApplicationCases());
-            final Stream<Object> events = applicationAggregate.initiateCourtApplicationProceedings(initiateCourtProceedingsForApplication, applicationReferredToNewHearing, applicationCreatedForSJPCase);
+            final Stream<Object> events = applicationAggregate.initiateCourtApplicationProceedings(initiateCourtProceedingsForApplication, applicationReferredToNewHearing, applicationCreatedForSJPCase,prosecutionCase);
             appendEventsToStream(initiateCourtApplicationProceedingsEnv, eventStream, events);
         } else {
             final Stream<Object> events = applicationAggregate.ignoreApplicationProceedings(initiateCourtProceedingsForApplication);
             appendEventsToStream(initiateCourtApplicationProceedingsEnv, eventStream, events);
         }
+    }
+
+    private ProsecutionCase getProsecutioncase(final Metadata metadata, final CourtApplication courtApplication) {
+        ProsecutionCase prosecutionCase = null;
+        if(isNotEmpty(courtApplication.getCourtApplicationCases()) && nonNull(courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseId())){
+            final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadata, JsonValue.NULL);
+            final Optional<JsonObject> optionalProsecutionCase = prosecutionCaseQueryService.getProsecutionCase(jsonEnvelope,
+                    courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseId().toString());
+            if (optionalProsecutionCase.isPresent()) {
+                prosecutionCase = jsonObjectToObjectConverter.convert(optionalProsecutionCase.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
+            }
+        }
+        return prosecutionCase;
     }
 
     @Handles("progression.command.send-notification-for-application")
@@ -190,7 +213,8 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final EditCourtApplicationProceedings editCourtApplicationProceedings = rebuildEditCourtApplicationProceedings(editCourtApplicationProceedingsEnvelope.payload(), editCourtApplicationProceedingsEnvelope);
         final EventStream eventStream = eventSource.getStreamById(editCourtApplicationProceedings.getCourtApplication().getId());
         final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
-        final Stream<Object> events = applicationAggregate.editCourtApplicationProceedings(editCourtApplicationProceedings);
+        final ProsecutionCase prosecutionCase = getProsecutioncase(editCourtApplicationProceedingsEnvelope.metadata(), editCourtApplicationProceedings.getCourtApplication());
+        final Stream<Object> events = applicationAggregate.editCourtApplicationProceedings(editCourtApplicationProceedings,prosecutionCase);
         appendEventsToStream(editCourtApplicationProceedingsEnvelope, eventStream, events);
     }
 
@@ -255,6 +279,33 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
         final Stream<Object> events = hearingAggregate.updateApplication(courtApplication);
         appendEventsToStream(updateCourtApplicationToHearingEnvelope, eventStream, events);
+    }
+
+   @Handles("progression.command.update.hearing.application.defendant")
+    public void updateApplicationHearing(final Envelope<ApplicationDefendantUpdateRequested> applicationDefendantUpdateRequestedEnvelope) throws EventStreamException {
+       if (LOGGER.isInfoEnabled()) {
+           LOGGER.info("progression.command.update.hearing.application.defendant {} {} ", applicationDefendantUpdateRequestedEnvelope.payload().getDefendant().getMasterDefendantId(),
+                   applicationDefendantUpdateRequestedEnvelope.payload().getHearingId());
+       }
+        final DefendantUpdate defendantUpdate = applicationDefendantUpdateRequestedEnvelope.payload().getDefendant();
+        final UUID hearingId = applicationDefendantUpdateRequestedEnvelope.payload().getHearingId();
+        final EventStream eventStream = eventSource.getStreamById(hearingId);
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events = hearingAggregate.updateApplicationHearing(defendantUpdate);
+        appendEventsToStream(applicationDefendantUpdateRequestedEnvelope, eventStream, events);
+    }
+
+    @Handles("progression.command.update-application-defendant")
+    public void updateApplicationDefendant(final Envelope<UpdateApplicationDefendant> updateApplicationDefendantEnvelope) throws EventStreamException {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("progression.command.update-application-defendant command received {}", updateApplicationDefendantEnvelope.payload().getCourtApplication().getId());
+        }
+        final UUID applicationId = updateApplicationDefendantEnvelope.payload().getCourtApplication().getId();
+        final CourtApplication courtApplication = updateApplicationDefendantEnvelope.payload().getCourtApplication();
+        final EventStream eventStream = eventSource.getStreamById(applicationId);
+        final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
+        final Stream<Object> events = applicationAggregate.updateApplicationDefendant(courtApplication);
+        appendEventsToStream(updateApplicationDefendantEnvelope, eventStream, events);
     }
 
     private InitiateCourtApplicationProceedings rebuildInitiateCourtApplicationProceedings(final InitiateCourtApplicationProceedings initiateCourtProceedingsForApplication,

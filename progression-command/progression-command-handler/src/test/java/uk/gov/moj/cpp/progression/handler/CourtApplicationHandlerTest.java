@@ -50,6 +50,8 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STR
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.AddCourtApplicationToCase;
+import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.ApplicationReferredToBoxwork;
 import uk.gov.justice.core.courts.ApplicationReferredToCourtHearing;
 import uk.gov.justice.core.courts.ApplicationReferredToExistingHearing;
@@ -65,10 +67,12 @@ import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiateIgnored;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationSummonsApproved;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
@@ -77,18 +81,26 @@ import uk.gov.justice.core.courts.HearingResultedUpdateApplication;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved;
+import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LinkType;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SendNotificationForApplicationIgnored;
 import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
+import uk.gov.justice.core.courts.UpdateApplicationDefendant;
 import uk.gov.justice.core.courts.UpdateCourtApplicationToHearing;
 import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
+import uk.gov.justice.progression.event.ApplicationHearingDefendantUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -102,10 +114,13 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
+import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
+import uk.gov.moj.cpp.progression.test.FileUtil;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -150,7 +165,9 @@ public class CourtApplicationHandlerTest {
             HearingPopulatedToProbationCaseworker.class,
             VejHearingPopulatedToProbationCaseworker.class,
             SendNotificationForApplicationInitiated.class,
-            SendNotificationForApplicationIgnored.class
+            SendNotificationForApplicationIgnored.class,
+            CourtApplicationUpdated.class,
+            ApplicationHearingDefendantUpdated.class
     );
     @Mock
     private EventSource eventSource;
@@ -170,6 +187,11 @@ public class CourtApplicationHandlerTest {
 
     @Mock
     private RefDataService referenceDataService;
+    @Mock
+    private ProsecutionCaseQueryService prosecutionCaseQueryService;
+    @Spy
+    @InjectMocks
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -1568,7 +1590,7 @@ public class CourtApplicationHandlerTest {
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
 
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
-
+        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.empty());
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -1596,6 +1618,7 @@ public class CourtApplicationHandlerTest {
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
 
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.empty());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -1643,6 +1666,7 @@ public class CourtApplicationHandlerTest {
                 .build();
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.empty());
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -1679,6 +1703,7 @@ public class CourtApplicationHandlerTest {
                 .build();
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.empty());
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -1701,6 +1726,7 @@ public class CourtApplicationHandlerTest {
                 .build();
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.empty());
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -2045,6 +2071,176 @@ public class CourtApplicationHandlerTest {
 
     }
 
+    @Test
+    public void shouldProcessInitiateCourtProceedingsForApplicationCommand_updateDefendantUpdatedDateOnApplication() throws Exception {
+        final UUID caseId = randomUUID();
+        final UUID masterDefendantId1 = randomUUID();
+        final UUID masterDefendantId2 = randomUUID();
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings =
+                initiateCourtApplicationProceedings()
+                        .withCourtApplication(courtApplication()
+                                .withId(randomUUID())
+                                .withType(courtApplicationType()
+                                        .withProsecutorThirdPartyFlag(false)
+                                        .withSummonsTemplateType(NOT_APPLICABLE)
+                                        .build())
+                                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                                        .withMasterDefendant(MasterDefendant.masterDefendant()
+                                                .withMasterDefendantId(masterDefendantId1)
+                                                .withPersonDefendant(PersonDefendant.personDefendant()
+                                                        .withPersonDetails(Person.person()
+                                                                .withAddress(Address.address()
+                                                                        .withAddress1("address1")
+                                                                        .withPostcode("TW1 8KS").build()).build()).build()).build()).build())
+                                .withSubject(CourtApplicationParty.courtApplicationParty()
+                                        .withMasterDefendant(MasterDefendant.masterDefendant()
+                                                .withMasterDefendantId(masterDefendantId1)
+                                                .withPersonDefendant(PersonDefendant.personDefendant()
+                                                        .withPersonDetails(Person.person()
+                                                                .withAddress(Address.address()
+                                                                        .withAddress1("address1")
+                                                                        .withPostcode("TW1 8KS").build()).build()).build()).build()).build())
+                                .withRespondents(asList(CourtApplicationParty.courtApplicationParty()
+                                        .withMasterDefendant(MasterDefendant.masterDefendant()
+                                                .withMasterDefendantId(masterDefendantId2)
+                                                .withPersonDefendant(PersonDefendant.personDefendant()
+                                                        .withPersonDetails(Person.person()
+                                                                .withAddress(Address.address()
+                                                                        .withAddress1("address2")
+                                                                        .withPostcode("TL1 9AA").build()).build()).build()).build()).build()))
+                                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                        .withIsSJP(false)
+                                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                        .withProsecutionCaseId(caseId)
+                                        .withCaseStatus("ACTIVE")
+                                        .build()))
+                                .build())
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                        .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.initiate-court-proceedings-for-application")
+                .withId(randomUUID())
+                .build();
+        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, masterDefendantId1, masterDefendantId2);
+        final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
+        final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
+        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class)))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+        courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.court-application-proceedings-initiated"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication", notNullValue()),
+                                withJsonPath("$.courtApplication.applicant.updatedOn", notNullValue()),
+                                withJsonPath("$.courtApplication.subject.updatedOn", nullValue()),
+                                withJsonPath("$.courtApplication.respondents[0].updatedOn", notNullValue()))
+                        ).isJson(allOf(
+                                withJsonPath("$.courtHearing", notNullValue()))
+                        ).isJson(allOf(
+                                withJsonPath("$.isSJP", is(false)))
+                        ).isJson(not(
+                                withJsonPath("$.courtApplication.courtApplicationCases", nullValue()))
+                        )
+                )));
+    }
+
+    @Test
+    public void shouldUpdateApplicationHearingWithUpdatedDefendant() throws EventStreamException {
+
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(Hearing.hearing()
+                        .withId(hearingId)
+                        .withCourtApplications(singletonList(courtApplication()
+                                .withId(applicationId)
+                                .withApplicationReference("A")
+                                .withSubject(CourtApplicationParty.courtApplicationParty().withMasterDefendant(
+                                        MasterDefendant.masterDefendant().withMasterDefendantId(masterDefendantId)
+                                                .withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(Person.person().build()).build()).build()
+                                ).build())
+                                .build()))
+                        .build())
+                .build());
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
+        final JsonObject jsonObject = FileUtil.jsonFromString(FileUtil
+                .getPayload("json/progression.command.update.hearing.application.defendant-test.json")
+                .replaceAll("%HEARING_ID%", hearingId.toString())
+                .replaceAll("%MASTER_DEFENDANT_ID%",masterDefendantId.toString()));
+
+        final ApplicationDefendantUpdateRequested applicationDefendantUpdateRequested = jsonObjectToObjectConverter.convert(jsonObject, ApplicationDefendantUpdateRequested.class);
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update.hearing.application.defendant")
+                .withId(randomUUID())
+                .build();
+        courtApplicationHandler.updateApplicationHearing(envelopeFrom(metadata, applicationDefendantUpdateRequested));
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        assertThat(envelopeStream, streamContaining(
+            jsonEnvelope(
+                    metadata()
+                            .withName("progression.event.application-hearing-defendant-updated"),
+                    payload().isJson(allOf(
+                            withJsonPath("$.hearing", notNullValue()))
+                    )),
+            jsonEnvelope(
+                    metadata()
+                            .withName("progression.events.hearing-populated-to-probation-caseworker"),
+                    payload().isJson(allOf(
+                            withJsonPath("$.hearing", notNullValue()))
+                    )),
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.events.vej-hearing-populated-to-probation-caseworker"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.hearing", notNullValue()))
+                        ))));
+    }
+
+    @Test
+    public void shouldUpdateCourtApplicationWithUpdatedDefendantInfo() throws EventStreamException {
+        final UUID applicationId = randomUUID();
+        final JsonObject jsonObject = FileUtil.jsonFromString(FileUtil
+                .getPayload("json/progression.command.update-application-defendant-test.json")
+                .replaceAll("%APPLICATION_ID%",applicationId.toString()));
+
+        final UpdateApplicationDefendant courtApplication = jsonObjectToObjectConverter.convert(jsonObject, UpdateApplicationDefendant.class);
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-application-defendant")
+                .withId(randomUUID())
+                .build();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
+        courtApplicationHandler.updateApplicationDefendant(envelopeFrom(metadata, courtApplication));
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        assertThat(envelopeStream, streamContaining(
+            jsonEnvelope(
+                    metadata()
+                            .withName("progression.event.court-application-updated"),
+                    payload().isJson(allOf(
+                            withJsonPath("$.courtApplication", notNullValue()),
+                            withJsonPath("$.courtApplication.id", is(applicationId.toString())))
+                    ))
+
+                )
+        );
+    }
+
     private void offenceWordingTestForCourtOrder(final UUID judicialResultTypeId) throws EventStreamException {
         InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = buildInitiateCourtApplicationProceedings(judicialResultTypeId, true, false);
         final Metadata metadata = Envelope
@@ -2086,6 +2282,34 @@ public class CourtApplicationHandlerTest {
                                 withJsonPath("$.courtApplication.courtOrder.id", is(courtOrder.getId().toString())),
                                 withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].prosecutionCaseIdentifier.prosecutionAuthorityCode", is(prosecutor2AuthCode))
                         )))));
+    }
+
+    private ProsecutionCase getProsecutionCase(final UUID caseId, final UUID defendantId, final UUID defendantId2) {
+        return ProsecutionCase.prosecutionCase()
+                .withCaseStatus("caseStatus")
+                .withId(caseId)
+                .withOriginatingOrganisation("originatingOrganisation")
+                .withDefendants(asList(Defendant.defendant()
+                        .withMasterDefendantId(defendantId)
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person()
+                                        .withAddress(Address.address()
+                                                .withAddress1("old adress one")
+                                                .withPostcode("TK1 9MD").build()).build()).build()).build(),
+                        Defendant.defendant()
+                                .withMasterDefendantId(defendantId2)
+                                .withPersonDefendant(PersonDefendant.personDefendant()
+                                        .withPersonDetails(Person.person()
+                                                .withAddress(Address.address()
+                                                        .withAddress1("old adress two")
+                                                        .withPostcode("MK1 5PO").build()).build()).build()).build()))
+                .withInitiationCode(InitiationCode.C)
+                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityReference("reference")
+                        .withProsecutionAuthorityCode("code")
+                        .withProsecutionAuthorityId(randomUUID())
+                        .build())
+                .build();
     }
 
     private CourtApplicationParty buildCourtApplicationParty(final UUID prosecutionAuthorityId) {

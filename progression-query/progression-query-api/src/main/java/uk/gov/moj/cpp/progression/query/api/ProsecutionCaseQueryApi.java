@@ -255,6 +255,16 @@ public class ProsecutionCaseQueryApi {
         return prosecutionCaseQuery.getCotrDetailsByCaseId(query);
     }
 
+    @Handles("progression.query.case.allhearings")
+    public JsonEnvelope getAllCaseHearings(final JsonEnvelope query){
+        return prosecutionCaseQuery.getAllCaseHearings(query);
+    }
+
+    @Handles("progression.query.active-applications-on-case")
+    public JsonEnvelope getActiveApplicationsOnCase(final JsonEnvelope envelope) {
+        return prosecutionCaseQuery.getActiveApplicationsOnCase(envelope);
+    }
+
     @SuppressWarnings("squid:S3655")
     private void isNonCPSProsecutorWithValidProsecutingAuthority(final JsonEnvelope query, final JsonObject prosecutionCase) {
         final UUID userId = fromString(query.metadata().userId().orElseThrow(() -> new RuntimeException("UserId missing from query.")));

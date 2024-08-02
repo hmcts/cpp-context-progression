@@ -8,6 +8,9 @@
     },
     "prisonCourtRegister": {
       "$ref": "http://justice.gov.uk/core/courts/prisonCourtRegisterDocument/prisonCourtRegisterDocumentRequest.json"
+    },
+    "defendantType": {
+      "type": "string"
     }
   },
   "required": [

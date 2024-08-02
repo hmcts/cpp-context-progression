@@ -1,0 +1,282 @@
+{
+  "courtApplication": {
+    "applicant": {
+      "id": "14d010f7-f3be-45af-b4ad-9307dcf14c6e",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "7a94e4f9-3cc0-4d62-b203-f8c3d521c9be",
+            "caseReference": "28NR6194292",
+            "defendantId": "9e2efa81-4d5e-4ef3-b88e-962ca5335719"
+          }
+        ],
+        "isYouth": false,
+        "masterDefendantId": "9e2efa81-4d5e-4ef3-b88e-962ca5335719",
+        "personDefendant": {
+          "arrestSummonsNumber": "D28GC01126194292",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "custodialEstablishment": {
+            "custody": "Prison",
+            "id": "1506fe48-d338-3584-8d36-f88cac8ad4d0",
+            "name": "HMP Channings Wood"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "9999D9999AAAA",
+              "address2": "Woodldne",
+              "address3": "addressline 3",
+              "address4": "Brcstol",
+              "address5": "Avcn"
+            },
+            "contact": {
+              "home": "0206194292",
+              "mobile": "07776194292",
+              "primaryEmail": "REDDY.TEST016194292@gmail.com"
+            },
+            "dateOfBirth": "1990-01-13",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "1",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Fatima",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "McLaughlin",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "applicationReceivedDate": "2024-05-29",
+    "applicationReference": "28NR6194292",
+    "applicationStatus": "DRAFT",
+    "commissionerOfOath": false,
+    "courtApplicationCases": [
+      {
+        "caseStatus": "INACTIVE",
+        "isSJP": false,
+        "offences": [
+          {
+            "arrestDate": "2024-01-01",
+            "chargeDate": "2023-12-28",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "ab94108f-df45-4e9f-812b-315321d9c7be",
+            "isDisposed": true,
+            "listingNumber": 1,
+            "maxPenalty": "EW:6M &/or Ultd Fine",
+            "modeOfTrial": "Either Way",
+            "offenceCode": "TH68010",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+            "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+            "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+            "offenceTitle": "Theft from a shop",
+            "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+            "orderIndex": 1,
+            "proceedingsConcluded": true,
+            "startDate": "2023-11-30",
+            "wording": "Shoplifting at Debenhams."
+          },
+          {
+            "arrestDate": "2024-01-01",
+            "chargeDate": "2023-12-29",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "8cd21619-d010-4eea-a52e-fe2280651ea8",
+            "isDisposed": true,
+            "listingNumber": 1,
+            "maxPenalty": "S:L3",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03010",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "6d4e6673-a075-35e9-9ded-448284bf316b",
+            "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+            "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+            "offenceTitle": "Use a television set without a licence",
+            "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+            "orderIndex": 2,
+            "proceedingsConcluded": true,
+            "startDate": "2023-11-29",
+            "wording": "Use / install a television set without a licence."
+          },
+          {
+            "arrestDate": "2024-01-01",
+            "chargeDate": "2023-12-30",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "5a5379e8-285c-4e70-ab81-bd98c259f8e2",
+            "isDisposed": true,
+            "listingNumber": 1,
+            "maxPenalty": "Indictable only",
+            "modeOfTrial": "Indictable",
+            "offenceCode": "TH68023",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "6795cbe7-3e0f-3f6a-b59d-29a87a9d6f8d",
+            "offenceLegislation": "Contrary to section 8(1) of the Theft Act 1968.",
+            "offenceLegislationWelsh": "Yn groes i adran 8(1) Deddf Dwyn 1968.",
+            "offenceTitle": "Robbery",
+            "offenceTitleWelsh": "Ysbeilio/Lladrad",
+            "orderIndex": 3,
+            "proceedingsConcluded": true,
+            "startDate": "2023-11-28",
+            "wording": "Robbery."
+          }
+        ],
+        "prosecutionCaseId": "7a94e4f9-3cc0-4d62-b203-f8c3d521c9be",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Criminal Justice Department",
+            "address2": "Derbyshire Constabulary",
+            "address3": "Butterley Hall",
+            "address4": "Ripley",
+            "address5": "Derby",
+            "postcode": "DE5 3RS"
+          },
+          "contact": {
+            "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+          },
+          "majorCreditorCode": "PO30",
+          "prosecutionAuthorityCode": "DERPF",
+          "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+          "prosecutionAuthorityName": "Derbyshire Police",
+          "prosecutionAuthorityOUCode": "0300000",
+          "caseURN": "28NR6194292"
+        }
+      }
+    ],
+    "id": "f9d303e2-5678-4956-85ac-2498090d7fa5",
+    "respondents": [
+      {
+        "id": "c194af4b-8057-423f-84bb-46322a071ac1",
+        "notificationRequired": true,
+        "prosecutingAuthority": {
+          "address": {
+            "address1": "Criminal Justice Department",
+            "address2": "Derbyshire Constabulary",
+            "address3": "Butterley Hall",
+            "address4": "Ripley",
+            "address5": "Derby",
+            "postcode": "DE5 3RS"
+          },
+          "contact": {
+            "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+          },
+          "majorCreditorCode": "PO30",
+          "name": "Derbyshire Police",
+          "prosecutionAuthorityCode": "DERPF",
+          "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+          "prosecutionAuthorityOUCode": "0300000",
+          "welshName": "Heddlu Derbyshire"
+        },
+        "summonsRequired": false
+      }
+    ],
+    "subject": {
+      "id": "14d010f7-f3be-45af-b4ad-9307dcf14c6e",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "7a94e4f9-3cc0-4d62-b203-f8c3d521c9be",
+            "caseReference": "28NR6194292",
+            "defendantId": "9e2efa81-4d5e-4ef3-b88e-962ca5335719"
+          }
+        ],
+        "isYouth": false,
+        "masterDefendantId": "9e2efa81-4d5e-4ef3-b88e-962ca5335719",
+        "personDefendant": {
+          "arrestSummonsNumber": "D28GC01126194292",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "custodialEstablishment": {
+            "custody": "Prison",
+            "id": "1506fe48-d338-3584-8d36-f88cac8ad4d0",
+            "name": "HMP Channings Wood"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "9999D9999AAAA",
+              "address2": "Woodldne",
+              "address3": "addressline 3",
+              "address4": "Brcstol",
+              "address5": "Avcn"
+            },
+            "contact": {
+              "home": "0206194292",
+              "mobile": "07776194292",
+              "primaryEmail": "REDDY.TEST016194292@gmail.com"
+            },
+            "dateOfBirth": "1990-01-13",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "1",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Fatima",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "McLaughlin",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "type": {
+      "appealFlag": true,
+      "applicantAppellantFlag": true,
+      "boxworkNotifTemplate": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "categoryCode": "CC",
+      "code": "MC80802",
+      "commrOfOathFlag": false,
+      "courtExtractAvlFlag": true,
+      "courtOfAppealFlag": false,
+      "hearingCode": "APL",
+      "id": "57810183-a5c2-3195-8748-c6b97eda1ebd",
+      "jurisdiction": "CROWN",
+      "legislation": "section 108 of the Magistrates Courts Act 1980",
+      "legislationWelsh": "adran 108 Deddf Llysoedd Ynadon 1980",
+      "linkType": "SJP",
+      "listingNotifTemplate": "POSTAL_NOTIFICATION",
+      "offenceActiveOrder": "OFFENCE",
+      "pleaApplicableFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": true,
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "type": "Appeal against conviction by a Magistrates' Court to the Crown Court",
+      "typeWelsh": "Apelio i Lys y Goron yn erbyn euogfarn gan Lys Ynadon"
+    }
+  }
+}

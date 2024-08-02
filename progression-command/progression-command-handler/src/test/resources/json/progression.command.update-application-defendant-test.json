@@ -1,0 +1,290 @@
+{
+  "courtApplication": {
+    "applicant": {
+      "id": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+      "notificationRequired": false,
+      "prosecutingAuthority": {
+        "address": {
+          "address1": "Barton House",
+          "address2": "Bond Street",
+          "address3": "Bristol",
+          "postcode": "BS98 1TL"
+        },
+        "contact": {
+          "primaryEmail": "court.results@tvl.cjsm.net"
+        },
+        "majorCreditorCode": "TVL3",
+        "name": "TV Licensing",
+        "prosecutionAuthorityCode": "TVL",
+        "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+        "prosecutionAuthorityOUCode": "GAEAA01",
+        "welshName": "Thrwyddedu Teledu"
+      },
+      "summonsRequired": false
+    },
+    "applicationReceivedDate": "2019-10-10",
+    "applicationReference": "25GD1311124",
+    "applicationStatus": "FINALISED",
+    "courtApplicationCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "isSJP": false,
+        "offences": [
+          {
+            "count": 0,
+            "id": "78a5386f-0cc7-4d04-bbaa-603c5f8f08b0",
+            "isDisposed": false,
+            "laidDate": "2019-11-19",
+            "maxPenalty": "S:Ultd Fine",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03014",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "b86778e9-bf52-3b40-9549-a8710c2e77cb",
+            "offenceLegislation": "Contrary to section 366(8)(b) and (9) of the Communications Act 2003.",
+            "offenceLegislationWelsh": "Yn groes i adran 366(8)(b) a (9) Deddf Cyfathrebu 2003.",
+            "offenceTitle": "Fail / refuse give assistance to person executing Communications Act search warrant",
+            "offenceTitleWelsh": "Methu / gwrthod rhoi cymorth i unigolyn sy'n gweithredu gwarant chwilio dan y Ddeddf Cyfathrebu",
+            "orderIndex": 1,
+            "startDate": "2019-11-19",
+            "wording": "Some particulars offence 1"
+          }
+        ],
+        "prosecutionCaseId": "fe2b0493-12c4-4c59-8f75-ebfb229f5095",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Barton House",
+            "address2": "Bond Street",
+            "address3": "Bristol",
+            "postcode": "BS98 1TL"
+          },
+          "contact": {
+            "primaryEmail": "court.results@tvl.cjsm.net"
+          },
+          "majorCreditorCode": "TVL3",
+          "prosecutionAuthorityCode": "TVL",
+          "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+          "prosecutionAuthorityName": "TV Licensing",
+          "prosecutionAuthorityOUCode": "GAEAA01",
+          "caseURN": "25GD1311124"
+        }
+      }
+    ],
+    "id": "%APPLICATION_ID%",
+    "judicialResults": [
+      {
+        "alwaysPublished": false,
+        "canBeSubjectOfBreach": false,
+        "canBeSubjectOfVariation": false,
+        "category": "INTERMEDIARY",
+        "courtClerk": {
+          "firstName": "Robert",
+          "lastName": "Barnes",
+          "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+        },
+        "d20": false,
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": false,
+        "isConvictedResult": false,
+        "isDeleted": false,
+        "isFinancialResult": false,
+        "isNewAmendment": true,
+        "isUnscheduled": false,
+        "judicialResultId": "1d20a97c-d99f-49d7-bfca-13b2631097fd",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "428e2b37-88f9-4f9c-beda-450b96bac466",
+            "label": "Prosecution costs",
+            "promptReference": "prosecutionCosts",
+            "promptSequence": 100,
+            "type": "CURR",
+            "usergroups": [
+              "CPS",
+              "Defence",
+              "Judiciary",
+              "NCES",
+              "Probation",
+              "YOTs",
+              "Prosecuting Authorities"
+            ],
+            "value": "£345",
+            "welshValue": "£345"
+          },
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "04d5d843-f530-43e4-927f-57942b310d5c",
+            "label": "THIS SUMMONS IS FOR PERSONAL SERVICE",
+            "promptReference": "tHISSUMMONSISFORPERSONALSERVICE",
+            "promptSequence": 200,
+            "type": "BOOLEAN",
+            "usergroups": [
+              "CPS",
+              "Defence",
+              "Judiciary",
+              "Probation",
+              "NCES",
+              "Prosecuting Authorities",
+              "YOTs"
+            ],
+            "value": "true",
+            "welshValue": "true"
+          },
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "1d068bf5-5149-4bb2-b333-7c8b288ca119",
+            "label": "This summons will be served by a Prosecutor",
+            "promptReference": "thisSummonsWillBeServedByAProsecutor",
+            "promptSequence": 300,
+            "type": "BOOLEAN",
+            "usergroups": [
+              "CPS",
+              "Defence",
+              "Judiciary",
+              "NCES",
+              "Probation",
+              "Prosecuting Authorities",
+              "YOTs"
+            ],
+            "value": "true",
+            "welshValue": "true"
+          },
+          {
+            "courtExtract": "N",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "7d881e55-50ee-4098-9d3a-9b9c8f9eb834",
+            "label": "Prosecutor's email address (used summons notification)",
+            "promptReference": "prosecutorsEmailAddressUsedSummonsNotification",
+            "promptSequence": 400,
+            "type": "TXT",
+            "usergroups": [],
+            "value": "abc@xyz.con",
+            "welshValue": "abc@xyz.con"
+          }
+        ],
+        "judicialResultTypeId": "0f44eeb9-2c81-430d-9a60-bbdaf8c4a093",
+        "label": "Summons approved",
+        "lastSharedDateTime": "2024-03-15",
+        "level": "C",
+        "lifeDuration": false,
+        "orderedDate": "2024-03-15",
+        "orderedHearingId": "192d9520-245d-4b95-979e-b3c718ea326b",
+        "postHearingCustodyStatus": "A",
+        "publishedAsAPrompt": false,
+        "publishedForNows": false,
+        "rank": 21900,
+        "resultText": "SA - Summons approved",
+        "rollUpPrompts": false,
+        "rootJudicialResultId": "1d20a97c-d99f-49d7-bfca-13b2631097fd",
+        "rootJudicialResultTypeId": "0f44eeb9-2c81-430d-9a60-bbdaf8c4a093",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": []
+      }
+    ],
+    "respondents": [
+      {
+        "id": "fa5c8d52-b57f-4032-a387-4245092f7bfa",
+        "masterDefendant": {
+          "isYouth": false,
+          "masterDefendantId": "fa5c8d52-b57f-4032-a387-4245092f7bfa",
+          "personDefendant": {
+            "personDetails": {
+              "address": {
+                "address1": "No fixed abode"
+              },
+              "dateOfBirth": "2005-10-23",
+              "documentationLanguageNeeds": "ENGLISH",
+              "firstName": "John",
+              "gender": "NOT_SPECIFIED",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "Smith",
+              "title": "Mr"
+            }
+          },
+          "prosecutionAuthorityReference": "fa5c8d52-b57f-4032-a387-4245092f7bfa"
+        },
+        "notificationRequired": false,
+        "summonsRequired": true
+      },
+      {
+        "id": "3864a15e-a75f-4315-8013-066204419a38",
+        "masterDefendant": {
+          "isYouth": false,
+          "masterDefendantId": "3864a15e-a75f-4315-8013-066204419a38",
+          "personDefendant": {
+            "personDetails": {
+              "address": {
+                "address1": "No fixed abode"
+              },
+              "dateOfBirth": "2000-10-23",
+              "documentationLanguageNeeds": "ENGLISH",
+              "firstName": "Jane",
+              "gender": "NOT_SPECIFIED",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "Doe",
+              "title": "Miss"
+            }
+          },
+          "prosecutionAuthorityReference": "3864a15e-a75f-4315-8013-066204419a38"
+        },
+        "notificationRequired": false,
+        "summonsRequired": true
+      }
+    ],
+    "subject": {
+      "id": "fa5c8d52-b57f-4032-a387-4245092f7bfa",
+      "masterDefendant": {
+        "isYouth": false,
+        "masterDefendantId": "fa5c8d52-b57f-4032-a387-4245092f7bfa",
+        "personDefendant": {
+          "bailConditions": "",
+          "personDetails": {
+            "address": {
+              "address1": "No fixed abode"
+            },
+            "dateOfBirth": "2005-10-23",
+            "documentationLanguageNeeds": "ENGLISH",
+            "firstName": "John",
+            "gender": "NOT_SPECIFIED",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Smith",
+            "title": "Mr"
+          }
+        },
+        "prosecutionAuthorityReference": "fa5c8d52-b57f-4032-a387-4245092f7bfa"
+      },
+      "notificationRequired": false,
+      "summonsRequired": true
+    },
+    "type": {
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "boxworkNotifTemplate": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "categoryCode": "CR",
+      "code": "MC80804",
+      "commrOfOathFlag": false,
+      "courtExtractAvlFlag": false,
+      "courtOfAppealFlag": false,
+      "hearingCode": "APN",
+      "id": "bfa61811-b917-3bce-9cc1-7ea8e554bd3b",
+      "jurisdiction": "MAGISTRATES",
+      "legislation": "In accordance with section 1 of the Magistrates Courts Act 1980.",
+      "legislationWelsh": "Yn unol ag adran 1 Deddf Llysoedd Ynadon 1980.",
+      "linkType": "FIRST_HEARING",
+      "listingNotifTemplate": "NOT_APPLICABLE",
+      "offenceActiveOrder": "OFFENCE",
+      "pleaApplicableFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": false,
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "type": "Application for issue of summons to accused or warrant for their arrest in relation to a criminal case",
+      "typeWelsh": "Cais am godi gw��s i���r sawl a gyhuddwyd neu warant i���w harestio yng nghyswllt achos troseddol",
+      "validTo": "2021-12-31"
+    }
+  }
+}

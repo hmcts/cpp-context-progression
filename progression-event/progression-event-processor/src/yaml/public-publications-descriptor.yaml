@@ -333,6 +333,9 @@ subscriptions_descriptor:
         - name: public.progression.result-list-opa-notice-generated
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.result-list-opa-notice-generated.json
 
+        - name: public.progression.defendant-address-changed
+          schema_uri: http://justice.gov.uk/core/courts/public.progression.defendant-address-changed.json
+
         - name: public.progression.related-reference-added
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.related-reference-added.json
 

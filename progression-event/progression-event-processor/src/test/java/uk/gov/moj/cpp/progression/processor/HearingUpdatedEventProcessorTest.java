@@ -9,6 +9,7 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -31,6 +32,7 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MOD
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
+import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.Defendant;
@@ -43,12 +45,15 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
+import uk.gov.justice.progression.event.ApplicationHearingDefendantUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
@@ -73,6 +78,7 @@ import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -373,6 +379,24 @@ public class HearingUpdatedEventProcessorTest {
         final DefaultEnvelope captorValue = senderJsonEnvelopeCaptor.getValue();
         assertThat(captorValue.metadata().name(), is("progression.command.update-hearing-offence-verdict"));
 
+    }
+
+    @Test
+    public void shouldUpdateDefendantOnApplicationHearing() {
+        final UUID applicationId1 = randomUUID();
+        final UUID applicationId2 = randomUUID();
+        final JsonObject payload = FileUtil.jsonFromString(FileUtil.getPayload("progression.event.application-hearing-defendant-updated.json")
+                .replaceAll("%APPLICATION_ID1%", applicationId1.toString())
+                .replaceAll("%APPLICATION_ID2%", applicationId2.toString()));
+        eventProcessor.processUpdateDefendantOnApplicationHearing(envelopeFrom(metadataWithRandomUUID("progression.event.application-hearing-defendant-updated"),
+                payload));
+        verify(this.sender, times(1)).send(this.senderJsonEnvelopeCaptor.capture());
+        final List<DefaultEnvelope> defaultEnvelopes = this.senderJsonEnvelopeCaptor.getAllValues();
+        final DefaultEnvelope firstCommandEvent = defaultEnvelopes.get(0);
+
+        Assert.assertThat(firstCommandEvent.metadata().name(), is("progression.command.update-application-defendant"));
+        Assert.assertThat(firstCommandEvent.payload().toString(), isJson(allOf(
+                withJsonPath("$.courtApplication", is(notNullValue())))));
     }
 
     @Test

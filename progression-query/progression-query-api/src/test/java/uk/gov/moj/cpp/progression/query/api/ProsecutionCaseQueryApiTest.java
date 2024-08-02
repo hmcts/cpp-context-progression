@@ -63,6 +63,7 @@ public class ProsecutionCaseQueryApiTest {
 
     private static final String PROSECUTION_CASE_QUERY = "progression.query.prosecutioncase";
     private static final String COTR_CASE_QUERY = "progression.query.cotr.details.prosecutioncase";
+    private static final String PROSECUTION_CASE_QUERY_ACTIVE_APPLICATIONS_JSON  = "json/activeApplicationsOnCaseResponse.json";
     private static final String PROSECUTION_CASE_QUERY_DETAILS = "progression.query.prosecutioncase-details";
     private static final String GROUP_MEMBER_CASES_QUERY_DETAILS = "progression.query.group-member-cases";
     private static final String GROUP_MEMBER_CASES_QUERY_VIEW_JSON = "json/groupMemberCasesQueryResponse.json";
@@ -378,6 +379,22 @@ public class ProsecutionCaseQueryApiTest {
     public void shouldHandleSearchCaseExistsByCaseUrn() {
         when(prosecutionCaseQuery.caseExistsByCaseUrn(query)).thenReturn(response);
         assertThat(prosecutionCaseQueryApi.searchCaseExistsByCaseUrn(query), equalTo(response));
+    }
+
+    @Test
+    public void shouldGetActiveApplicationsOnCase() {
+        final JsonObject payload = readJson(PROSECUTION_CASE_QUERY_ACTIVE_APPLICATIONS_JSON, JsonObject.class);
+
+        final Metadata metadata = QueryClientTestBase.metadataFor("progression.query.active-applications-on-case", randomUUID());
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, payload);
+        when(prosecutionCaseQuery.getActiveApplicationsOnCase(query)).thenReturn(envelope);
+
+        final JsonEnvelope response = prosecutionCaseQueryApi.getActiveApplicationsOnCase(query);
+
+        assertThat(response.payloadAsJsonObject().getJsonArray("linkedApplications")
+                .getJsonObject(0).getString("applicationId"), equalTo("fcb1edc9-786a-462d-9400-318c95c7b700"));
+        assertThat(response.payloadAsJsonObject().getJsonArray("linkedApplications")
+                .getJsonObject(1).getString("applicationId"), equalTo("fcb1edc9-786a-562d-9400-318c95c7b701"));
     }
 
     @Test(expected = ForbiddenRequestException.class)

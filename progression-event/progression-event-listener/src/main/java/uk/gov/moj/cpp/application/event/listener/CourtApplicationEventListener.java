@@ -16,17 +16,25 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
+import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
+import uk.gov.justice.core.courts.DefendantAddressOnApplicationUpdated;
+import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
+import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Organisation;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -47,10 +55,13 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -158,6 +169,15 @@ public class CourtApplicationEventListener {
         final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(courtApplicationUpdated.getCourtApplication().getId());
         courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedCourtApplication).toString());
         courtApplicationRepository.save(courtApplicationEntity);
+        final InitiateCourtApplicationEntity initiateCourtApplicationEntity = initiateCourtApplicationRepository.findBy(courtApplicationUpdated.getCourtApplication().getId());
+        if (nonNull(initiateCourtApplicationEntity)) {
+            final JsonObject initiateCourtApplicationJson = stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload());
+            final InitiateCourtApplicationProceedings persistedInitiateCourtApplication = jsonObjectConverter.convert(initiateCourtApplicationJson, InitiateCourtApplicationProceedings.class);
+            final InitiateCourtApplicationProceedings updatedPersistedInitiateCourtApplication = initiateCourtApplicationProceedingsBuilder(persistedInitiateCourtApplication)
+                    .withCourtApplication(updatedCourtApplication).build();
+            initiateCourtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedPersistedInitiateCourtApplication).toString());
+            initiateCourtApplicationRepository.save(initiateCourtApplicationEntity);
+        }
         makeStandaloneApplicationSearchable(updatedCourtApplication);
     }
 
@@ -202,6 +222,164 @@ public class CourtApplicationEventListener {
             applicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplicationWithoutNows).toString());
             courtApplicationRepository.save(applicationEntity);
         }
+    }
+
+
+    @Handles("progression.event.defendant-address-on-application-updated")
+    public void processDefendantAddressOnApplicationUpdated(final JsonEnvelope event) {
+        final DefendantAddressOnApplicationUpdated defendantAddressOnApplicationUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), DefendantAddressOnApplicationUpdated.class);
+        final UUID applicationId = defendantAddressOnApplicationUpdated.getApplicationId();
+        final DefendantUpdate defendant = defendantAddressOnApplicationUpdated.getDefendant();
+        if(LOGGER.isInfoEnabled()){
+            LOGGER.info("Defendant address is being updated for application id : {}, defendantId : {}, masterDefendantId : {}", applicationId, defendant.getId(),defendant.getMasterDefendantId());
+        }
+        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findByApplicationId(applicationId);
+        if (nonNull(applicationEntity)) {
+            if(LOGGER.isInfoEnabled()){
+                LOGGER.info("Application found in database applicationId : {}, defendantId : {}, masterDefendantId : {}", applicationId, defendant.getId(),defendant.getMasterDefendantId());
+            }
+            final JsonObject applicationJson = stringToJsonObjectConverter.convert(applicationEntity.getPayload());
+            final CourtApplication persistedApplication = jsonObjectConverter.convert(applicationJson, CourtApplication.class);
+            final CourtApplication courtApplicationWithDefendantAddress = buildCourtApplicationWithDefendantUpdate(persistedApplication, defendant);
+            applicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplicationWithDefendantAddress).toString());
+            courtApplicationRepository.save(applicationEntity);
+            final InitiateCourtApplicationEntity initiateCourtApplicationEntity = initiateCourtApplicationRepository.findBy(applicationId);
+            if (nonNull(initiateCourtApplicationEntity)) {
+                final JsonObject initiateCourtApplicationJson = stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload());
+                final InitiateCourtApplicationProceedings persistedInitiateCourtApplication = jsonObjectConverter.convert(initiateCourtApplicationJson, InitiateCourtApplicationProceedings.class);
+                final InitiateCourtApplicationProceedings updatedPersistedInitiateCourtApplication = initiateCourtApplicationProceedingsBuilder(persistedInitiateCourtApplication)
+                        .withCourtApplication(courtApplicationWithDefendantAddress).build();
+                initiateCourtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedPersistedInitiateCourtApplication).toString());
+                initiateCourtApplicationRepository.save(initiateCourtApplicationEntity);
+            }
+        }
+    }
+
+    private CourtApplication buildCourtApplicationWithDefendantUpdate(final CourtApplication persistedApplication, final DefendantUpdate defendant) {
+        final boolean isDefendantOrganisation = nonNull(defendant.getLegalEntityDefendant());
+        final UUID updatedDefendantId = ofNullable(defendant.getMasterDefendantId()).orElse(defendant.getId());
+        final CourtApplication.Builder courtApplication = CourtApplication.courtApplication().withValuesFrom(persistedApplication);
+        updateApplicantWithUpdatedAddress(persistedApplication, defendant, isDefendantOrganisation, courtApplication, updatedDefendantId);
+        updateSubjectWithUpdatedAddress(persistedApplication, defendant, isDefendantOrganisation, courtApplication, updatedDefendantId);
+        updateRespondentsWithUpdatedAddress(persistedApplication, defendant, isDefendantOrganisation, courtApplication, updatedDefendantId);
+        return courtApplication.build();
+    }
+
+    private static void updateRespondentsWithUpdatedAddress(final CourtApplication persistedApplication, final DefendantUpdate defendant,
+                                                            final boolean isDefendantOrganisation, final CourtApplication.Builder courtApplication, final UUID updatedDefendantId) {
+        if(null!=persistedApplication.getRespondents()) {
+            final Optional<CourtApplicationParty> updatedRespondent = persistedApplication.getRespondents().stream()
+                    .filter(resp -> nonNull(resp.getMasterDefendant()) && resp.getMasterDefendant().getMasterDefendantId()
+                            .equals(updatedDefendantId)).findFirst();
+
+            if (updatedRespondent.isPresent()) {
+                if(LOGGER.isInfoEnabled()){
+                    LOGGER.info("Match found for updated Defendant in Application Respondents, defendant: {} in application: {}", updatedDefendantId, persistedApplication.getId());
+                }
+                final List<CourtApplicationParty> courtApplicationRespondentsList = new ArrayList<>();
+                persistedApplication.getRespondents().stream()
+                        .filter(resp -> isNull(resp.getMasterDefendant()) || !resp.getMasterDefendant().getMasterDefendantId().equals(updatedDefendantId))
+                        .forEach(courtApplicationRespondentsList::add);
+
+                if (!isDefendantOrganisation) {
+                    courtApplicationRespondentsList.add(CourtApplicationParty.courtApplicationParty()
+                            .withValuesFrom(updatedRespondent.get())
+                            .withMasterDefendant(buildPersonDefendant(updatedRespondent.get().getMasterDefendant(), defendant))
+                            .withUpdatedOn(LocalDate.now())
+                            .build());
+                } else {
+                    courtApplicationRespondentsList.add(CourtApplicationParty.courtApplicationParty()
+                            .withValuesFrom(updatedRespondent.get())
+                            .withMasterDefendant(buildOrganisationDefendant(updatedRespondent.get().getMasterDefendant(), defendant))
+                            .withUpdatedOn(LocalDate.now())
+                            .build());
+                }
+                courtApplication.withRespondents(courtApplicationRespondentsList);
+                if(LOGGER.isInfoEnabled()){
+                    LOGGER.info("Updated address in Application Respondents for defendant: {} in application: {}", updatedDefendantId, persistedApplication.getId());
+                }
+            }
+        }
+    }
+
+    private static void updateSubjectWithUpdatedAddress(final CourtApplication persistedApplication, final DefendantUpdate defendant,
+                                                        final boolean isDefendantOrganisation, final CourtApplication.Builder courtApplication, final UUID updatedDefendantId) {
+        if(null!=persistedApplication.getSubject() && null!= persistedApplication.getSubject().getMasterDefendant() &&
+                updatedDefendantId.equals(persistedApplication.getSubject().getMasterDefendant().getMasterDefendantId())){
+            if(LOGGER.isInfoEnabled()){
+                LOGGER.info("Match found for updated Defendant in Application Subject for defendant: {} in application: {}", updatedDefendantId, persistedApplication.getId());
+            }
+            if(!isDefendantOrganisation){
+                courtApplication.withSubject(CourtApplicationParty.courtApplicationParty()
+                        .withValuesFrom(persistedApplication.getSubject())
+                        .withMasterDefendant(buildPersonDefendant(persistedApplication.getSubject().getMasterDefendant(), defendant))
+                        .withUpdatedOn(LocalDate.now())
+                        .build());
+                if(LOGGER.isInfoEnabled()){
+                    LOGGER.info("Person defendant updated with new address for defendant: {} in application: {}", updatedDefendantId, persistedApplication.getId());
+                }
+            }else{
+                courtApplication.withSubject(CourtApplicationParty.courtApplicationParty()
+                        .withValuesFrom(persistedApplication.getSubject())
+                        .withMasterDefendant(buildOrganisationDefendant(persistedApplication.getSubject().getMasterDefendant() , defendant))
+                        .withUpdatedOn(LocalDate.now())
+                        .build());
+                if(LOGGER.isInfoEnabled()){
+                    LOGGER.info("Org defendant updated with new address for defendant: {} in application: {}", updatedDefendantId, persistedApplication.getId());
+                }
+            }
+        }
+    }
+
+    private static void updateApplicantWithUpdatedAddress(final CourtApplication persistedApplication, final DefendantUpdate defendant,
+                                                          final boolean isDefendantOrganisation, final CourtApplication.Builder courtApplication, final UUID updatedDefendantId) {
+        if(null!=persistedApplication.getApplicant() && null!= persistedApplication.getApplicant().getMasterDefendant() &&
+                updatedDefendantId.equals(persistedApplication.getApplicant().getMasterDefendant().getMasterDefendantId())){
+            if(LOGGER.isInfoEnabled()){
+                LOGGER.info("Match found for updated Defendant in Application : {}, , defendantId : {}", persistedApplication.getId(), updatedDefendantId);
+            }
+            if(!isDefendantOrganisation){
+                courtApplication.withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withValuesFrom(persistedApplication.getApplicant())
+                        .withMasterDefendant(buildPersonDefendant(persistedApplication.getApplicant().getMasterDefendant(), defendant))
+                        .withUpdatedOn(LocalDate.now())
+                        .build());
+                if(LOGGER.isInfoEnabled()){
+                    LOGGER.info("Person defendant updated with new address for defendant : {} in application: {}", updatedDefendantId, persistedApplication.getId());
+                }
+            }else{
+                courtApplication.withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withValuesFrom(persistedApplication.getApplicant())
+                        .withMasterDefendant(buildOrganisationDefendant(persistedApplication.getApplicant().getMasterDefendant(), defendant))
+                        .withUpdatedOn(LocalDate.now())
+                        .build());
+                if(LOGGER.isInfoEnabled()){
+                    LOGGER.info("Org defendant updated with new address for defendant: {} in application: {}", updatedDefendantId, persistedApplication.getId());
+                }
+            }
+        }
+    }
+
+    private static MasterDefendant buildOrganisationDefendant(final MasterDefendant masterDefendant, final DefendantUpdate defendant) {
+       return MasterDefendant.masterDefendant()
+                .withValuesFrom(masterDefendant)
+                .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
+                        .withValuesFrom(masterDefendant.getLegalEntityDefendant())
+                        .withOrganisation(Organisation.organisation()
+                                .withValuesFrom(masterDefendant.getLegalEntityDefendant().getOrganisation())
+                                .withAddress(defendant.getLegalEntityDefendant().getOrganisation().getAddress())
+                                .build()).build()).build();
+    }
+
+    private static MasterDefendant buildPersonDefendant(final MasterDefendant masterDefendant, final DefendantUpdate defendant) {
+        return MasterDefendant.masterDefendant()
+                .withValuesFrom(masterDefendant)
+                .withPersonDefendant(PersonDefendant.personDefendant()
+                        .withValuesFrom(masterDefendant.getPersonDefendant())
+                        .withPersonDetails(Person.person()
+                                .withValuesFrom(masterDefendant.getPersonDefendant().getPersonDetails())
+                                .withAddress(defendant.getPersonDefendant().getPersonDetails().getAddress())
+                                .build()).build()).build();
     }
 
     private InitiateCourtApplicationEntity updateInitiateCourtApplication(final CourtApplicationProceedingsEdited initiateCourtApplicationProceedings, final InitiateCourtApplicationEntity courtApplicationEntity) {

@@ -2,12 +2,17 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.CreateProsecutionCase.createProsecutionCase;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
@@ -16,6 +21,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+import static uk.gov.moj.cpp.progression.events.RemoveDefendantCustodialEstablishmentFromCase.removeDefendantCustodialEstablishmentFromCase;
 
 import uk.gov.justice.core.courts.CreateProsecutionCase;
 import uk.gov.justice.core.courts.Defendant;
@@ -34,6 +40,8 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.events.RemoveDefendantCustodialEstablishmentFromCase;
+import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +51,8 @@ import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -60,6 +70,9 @@ public class CreateProsecutionCaseHandlerTest {
     @Mock
     private AggregateService aggregateService;
 
+    @Mock
+    private ProsecutionCaseQueryService prosecutionCaseQueryService;
+
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             ProsecutionCaseCreated.class);
@@ -70,6 +83,9 @@ public class CreateProsecutionCaseHandlerTest {
 
     private CaseAggregate aggregate;
 
+
+    @Captor
+    ArgumentCaptor<UUID>  prosecutionCaseIdArgumentCapture;
 
     @Before
     public void setup() {
@@ -88,15 +104,15 @@ public class CreateProsecutionCaseHandlerTest {
 
     @Test
     public void shouldProcessCommand() throws Exception {
-        final Defendant defendant = Defendant.defendant().withId(UUID.randomUUID()).withPersonDefendant(PersonDefendant.personDefendant().build())
+        final Defendant defendant = Defendant.defendant().withId(randomUUID()).withPersonDefendant(PersonDefendant.personDefendant().build())
                 .withOffences(singletonList(Offence.offence().build()))
                 .build();
         final List<Defendant> defendants = new ArrayList<Defendant>() {{ add(defendant); }};
-        final CreateProsecutionCase createProsecutionCase = CreateProsecutionCase.createProsecutionCase()
+        final CreateProsecutionCase createProsecutionCase = createProsecutionCase()
                 .withProsecutionCase(ProsecutionCase.prosecutionCase()
                         .withDefendants(defendants)
                         .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
-                                .withProsecutionAuthorityId(UUID.randomUUID())
+                                .withProsecutionAuthorityId(randomUUID())
                                 .withProsecutionAuthorityCode("code")
                                 .withProsecutionAuthorityReference("reference")
                                 .build())
@@ -109,7 +125,7 @@ public class CreateProsecutionCaseHandlerTest {
         final Metadata metadata = Envelope
                 .metadataBuilder()
                 .withName("progression.command.create-prosecution-case")
-                .withId(UUID.randomUUID())
+                .withId(randomUUID())
                 .build();
 
         final Envelope<CreateProsecutionCase> envelope = envelopeFrom(metadata, createProsecutionCase);
@@ -129,6 +145,31 @@ public class CreateProsecutionCaseHandlerTest {
 
                 )
         );
+    }
+
+
+    @Test
+    public void shouldHandleRemoveDefendantCustodialEstablishment() throws Exception {
+        final UUID defendantId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.remove-defendant-custodial-establishment-from-case")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<RemoveDefendantCustodialEstablishmentFromCase> envelope = envelopeFrom(metadata, removeDefendantCustodialEstablishmentFromCase()
+                .withDefendantId(defendantId)
+                .withMasterDefendantId(masterDefendantId)
+                .withProsecutionCaseId(prosecutionCaseId)
+                .build());
+
+        createProsecutionCaseHandler.handleRemoveDefendantCustodialEstablishmentFromCase(envelope);
+
+        verify(eventSource).getStreamById(prosecutionCaseIdArgumentCapture.capture());
+        assertEquals(prosecutionCaseIdArgumentCapture.getValue(), prosecutionCaseId);
     }
 
 

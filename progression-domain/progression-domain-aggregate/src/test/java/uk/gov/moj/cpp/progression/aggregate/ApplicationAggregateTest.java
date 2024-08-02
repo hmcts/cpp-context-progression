@@ -14,6 +14,7 @@ import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationCase.courtApplicationCase;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtapplication;
+import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtapplicationWithCustodialEstablisment;
 import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtapplicationWithOffenceUnderCase;
 import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtapplicationWithOffenceUnderCourtOrder;
 
@@ -35,6 +36,7 @@ import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiateIgnored;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.Hearing;
@@ -45,13 +47,14 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
 import uk.gov.justice.core.courts.SlotsBookedForApplication;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
-import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.justice.progression.courts.SendStatdecAppointmentLetter;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
+import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtApplicationWithCustody;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -105,6 +108,24 @@ public class ApplicationAggregateTest {
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(CourtApplicationCreated.class)));
+    }
+
+    @Test
+    public void shouldReturnCourtApplicationCreatedWithoutCustodialEstablishment() {
+        final LocalDate convictionDate = LocalDate.now();
+        final UUID courtApplicationId = UUID.randomUUID();
+        final UUID masterDefendantId = UUID.randomUUID();
+        final CourtApplication courtApplication = buildCourtapplicationWithCustodialEstablisment(courtApplicationId, convictionDate, masterDefendantId);
+
+        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication)
+                .collect(toList());
+        assertThat(eventStream.size(), is(2));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(CourtApplicationCreated.class)));
+        assertThat(((CourtApplicationCreated)object).getCourtApplication().getSubject().getMasterDefendant().getPersonDefendant().getCustodialEstablishment(), is(nullValue()));
+        assertThat(((CourtApplicationCreated)object).getCourtApplication().getSubject().getMasterDefendant().getMasterDefendantId(), is(courtApplication.getSubject().getMasterDefendant().getMasterDefendantId()));
+        assertThat(((CourtApplicationCreated)object).getCourtApplication().getSubject().getMasterDefendant().getPersonDefendant().getPersonDetails().getFirstName(), is(courtApplication.getSubject().getMasterDefendant().getPersonDefendant().getPersonDetails().getFirstName()));
+
     }
 
     @Test
@@ -202,7 +223,7 @@ public class ApplicationAggregateTest {
                 .withCourtApplication(courtApplication().withId(randomUUID()).build())
                 .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
                 .withSummonsApprovalRequired(false)
-                .build())
+                .build(), null)
                 .collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
@@ -610,5 +631,36 @@ public class ApplicationAggregateTest {
         assertThat(event.getCourtApplication().getId(), is(initiateCourtApplicationProceedings.getCourtApplication().getId()));
 
     }
+
+    @Test
+    public void shouldRaiseCourtApplicationUpdated(){
+
+        final LocalDate convictionDate = LocalDate.now();
+        final UUID courtApplicationId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication().withId(courtApplicationId)
+                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .build();
+
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, true, false);
+
+        final SendNotificationForApplicationInitiated sendNotificationForApplicationInitiated = SendNotificationForApplicationInitiated.sendNotificationForApplicationInitiated()
+                .build();
+
+        CourtApplication courtApplication1 = buildCourtApplicationWithCustody(courtApplicationId, offenceId, convictionDate, "custody2");
+
+        final List<Object> eventStream = aggregate.updateApplicationDefendant(courtApplication1).collect(toList());
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0).getClass().getName(), is("uk.gov.justice.core.courts.CourtApplicationUpdated"));
+        final CourtApplicationUpdated event =  (CourtApplicationUpdated) eventStream.get(0);
+        assertThat(event.getCourtApplication().getId(), is(courtApplicationId));
+        assertThat(aggregate.getCourtApplication().getSubject().getMasterDefendant().getPersonDefendant().getCustodialEstablishment().getCustody(), is("custody2"));
+    }
+
 
 }
