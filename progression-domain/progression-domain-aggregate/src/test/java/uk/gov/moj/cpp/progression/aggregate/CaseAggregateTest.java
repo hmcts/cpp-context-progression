@@ -108,6 +108,8 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
+import uk.gov.justice.core.courts.IndicatedPlea;
+import uk.gov.justice.core.courts.IndicatedPleaValue;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
@@ -1871,6 +1873,57 @@ public class CaseAggregateTest {
         assertThat(object2.getClass(), is(equalTo(OffencesForDefendantChanged.class)));
         assertThat(((OffencesForDefendantChanged) object2).getAddedOffences(), is(nullValue()));
         assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
+
+    }
+
+   @Test
+   public void shouldLAAReferenceUpdatedForOffenceWithIndicatedPleaRetained() {
+        final UUID caseId = fromString(CASE_ID);
+       final String caseURN = "case" + string(6).next();
+       final UUID defendantId = fromString(DEFENDANT_ID);
+        final UUID offenceId1 = fromString(OFFENCE_ID);
+        final UUID offenceId2 = randomUUID();
+
+       final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withCaseStatus("caseStatus")
+                .withId(randomUUID())
+               .withOriginatingOrganisation("originatingOrganisation")
+               .withDefendants(asList(defendant().
+                        withId(defendantId)
+                        .withPersonDefendant(PersonDefendant.personDefendant().build())
+                       .withOffences(asList(offence()
+                                        .withId(offenceId1)
+                                        .withIndicatedPlea(IndicatedPlea.indicatedPlea()
+                                                .withOffenceId(offenceId1)
+                                                .withIndicatedPleaValue(IndicatedPleaValue.INDICATED_GUILTY)
+                                                .withSource(uk.gov.justice.core.courts.Source.IN_COURT)
+                                                .build())
+                                        .build()
+                                , offence().withId(offenceId2).build()))
+                       .build()))
+               .withInitiationCode(InitiationCode.C)
+                .withProsecutionCaseIdentifier(getProsecutionCaseIdentifier(caseURN))                .build();
+        caseAggregate.createProsecutionCase(prosecutionCase);
+        final LaaReference laaReference1 = generateRecordLAAReferenceForOffence("FM", REFUSED.getDescription());
+        caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId1, laaReference1);
+        final LaaReference laaReference2 = generateRecordLAAReferenceForOffence("G2", GRANTED.getDescription());
+        final List<Object> eventStream = caseAggregate.recordLAAReferenceForOffence(caseId, defendantId, offenceId2, laaReference2).collect(toList());
+        assertThat(eventStream.size(), is(3));
+        final Object object1 = eventStream.get(0);
+        assertThat(object1.getClass(), is(equalTo(ProsecutionCaseOffencesUpdated.class)));
+       assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getLegalAidStatus(),
+               is(LegalAidStatusEnum.GRANTED.getDescription()));
+        final Object object2 = eventStream.get(1);
+        assertThat(object2.getClass(), is(equalTo(OffencesForDefendantChanged.class)));
+        assertThat(((OffencesForDefendantChanged) object2).getAddedOffences(), is(nullValue()));
+        assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
+
+       assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getIndicatedPlea().getOffenceId(),
+                is(offenceId1));
+       assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getIndicatedPlea().getIndicatedPleaValue(),
+                is(IndicatedPleaValue.INDICATED_GUILTY));
+        assertThat(((ProsecutionCaseOffencesUpdated) object1).getDefendantCaseOffences().getOffences().get(0).getIndicatedPlea().getSource(),
+                is(uk.gov.justice.core.courts.Source.IN_COURT));
 
     }
 

@@ -251,6 +251,7 @@ public class HearingAggregate implements Aggregate {
                     setHearing(e.getHearing());
                     this.committingCourt = findCommittingCourt(e.getHearing());
                     this.resultSharedDateTime = e.getSharedTime();
+                    this.hearingListingStatus = HearingListingStatus.HEARING_RESULTED;
                 }),
                 when(HearingDefendantRequestCreated.class).apply(e -> {
                     if (!e.getDefendantRequests().isEmpty()) {
@@ -965,13 +966,9 @@ public class HearingAggregate implements Aggregate {
         return list -> list.isEmpty() ? null : list;
     }
 
-    public Stream<Object> updateDefendant(final UUID hearingId, final DefendantUpdate defendantUpdate, final Boolean updateOnlyNonResulted) {
+    public Stream<Object> updateDefendant(final UUID hearingId, final DefendantUpdate defendantUpdate) {
 
-        if(this.deleted || this.duplicate){
-            return Stream.empty();
-        }
-
-        if (ofNullable(updateOnlyNonResulted).orElse(false) && HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus)) {
+        if(this.deleted || this.duplicate || HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus)){
             return Stream.empty();
         }
 

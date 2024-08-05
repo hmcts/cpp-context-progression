@@ -53,7 +53,7 @@ public class PostalService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostalService.class.getName());
 
-    private static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
+    public static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
 
     public static final UUID APPLICATIONS_DOCUMENT_TYPE_ID = UUID.fromString("460fa7ce-c002-11e8-a355-529269fb1459");
 
@@ -368,7 +368,7 @@ public class PostalService {
         return prosecutingAuthorityOptional.map(prosecutingAuthority -> getPostalAddress(prosecutingAuthority.getAddress())).orElse(null);
     }
 
-    private CourtDocument courtDocument(final UUID applicationId, final UUID materialId, final JsonEnvelope envelope, final UUID linkedCaseId) {
+    public CourtDocument courtDocument(final UUID applicationId, final UUID materialId, final JsonEnvelope envelope, final UUID linkedCaseId) {
         final ApplicationDocument applicationDocument = ApplicationDocument.applicationDocument()
                 .withApplicationId(applicationId)
                 .withProsecutionCaseId(linkedCaseId)

@@ -1033,6 +1033,128 @@ public class HearingAtAGlanceServiceTest {
     }
 
     @Test
+    public void shouldSortHearingsWithNullAsSharedTimeForOneHearingAndOtherHearingWithSharedTimeAsNotNull() {
+
+        ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, singletonList(DEFENDANT_ID_1));
+        Hearing caseHearing = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
+        ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
+        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1, HEARING_RESULTED);
+        caseHearingEntity.setSharedTime(ZonedDateTime.now().plusDays(1));
+        List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity1 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity1.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_1, CASE_HEARING_ID_1));
+        caseDefendantHearingEntity1.setHearing(caseHearingEntity);
+
+        Hearing caseHearing2 = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_2);
+
+        HearingEntity hearingEntity2 = createHearingEntity(caseHearing2, CASE_HEARING_ID_2, HEARING_RESULTED);
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity2 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity2.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_2, CASE_HEARING_ID_2));
+        caseDefendantHearingEntity2.setHearing(hearingEntity2);
+
+
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity1);
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity2);
+
+        when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
+        when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
+
+        GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+
+        assertThat(response.getHearings().size(), is(2));
+        assertThat(response.getHearings().get(0).getId(), is(CASE_HEARING_ID_1));
+        assertThat(response.getHearings().get(1).getId(), is(CASE_HEARING_ID_2));
+    }
+
+    @Test
+    public void shouldSortHearingsWithSharedTimeForAllHearings() {
+
+        ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, singletonList(DEFENDANT_ID_1));
+        Hearing caseHearing = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
+        ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
+        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1, HEARING_RESULTED);
+        caseHearingEntity.setSharedTime(ZonedDateTime.now().minusHours(1));
+        List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity1 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity1.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_1, CASE_HEARING_ID_1));
+        caseDefendantHearingEntity1.setHearing(caseHearingEntity);
+
+        Hearing caseHearing2 = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_2);
+
+        HearingEntity hearingEntity2 = createHearingEntity(caseHearing2, CASE_HEARING_ID_2, HEARING_RESULTED);
+        hearingEntity2.setSharedTime(ZonedDateTime.now().plusHours(1));
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity2 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity2.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_2, CASE_HEARING_ID_2));
+        caseDefendantHearingEntity2.setHearing(hearingEntity2);
+
+
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity1);
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity2);
+
+        when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
+        when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
+
+        GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+
+        assertThat(response.getHearings().size(), is(2));
+        assertThat(response.getHearings().get(0).getId(), is(CASE_HEARING_ID_2));
+        assertThat(response.getHearings().get(1).getId(), is(CASE_HEARING_ID_1));
+    }
+
+    @Test
+    public void shouldSortHearingsWithSharedTimeForAllThreeHearings() {
+
+        ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, singletonList(DEFENDANT_ID_1));
+        Hearing caseHearing = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_1);
+        ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
+        HearingEntity caseHearingEntity = createHearingEntity(caseHearing, CASE_HEARING_ID_1, HEARING_RESULTED);
+        caseHearingEntity.setSharedTime(ZonedDateTime.now().minusHours(1));
+        List<CaseDefendantHearingEntity> caseDefendantHearingEntities = new ArrayList<>();
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity1 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity1.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_1, CASE_HEARING_ID_1));
+        caseDefendantHearingEntity1.setHearing(caseHearingEntity);
+
+        Hearing caseHearing2 = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_2);
+
+        HearingEntity hearingEntity2 = createHearingEntity(caseHearing2, CASE_HEARING_ID_2, HEARING_RESULTED);
+        hearingEntity2.setSharedTime(ZonedDateTime.now().plusHours(1));
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity2 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity2.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_2, CASE_HEARING_ID_2));
+        caseDefendantHearingEntity2.setHearing(hearingEntity2);
+
+        Hearing caseHearing3 = createCaseHearing(prosecutionCase, null, CASE_HEARING_ID_3);
+        HearingEntity hearingEntity3 = createHearingEntity(caseHearing3, CASE_HEARING_ID_2, HEARING_RESULTED);
+        hearingEntity3.setSharedTime(ZonedDateTime.now().plusHours(4));
+
+        CaseDefendantHearingEntity caseDefendantHearingEntity3 = new CaseDefendantHearingEntity();
+        caseDefendantHearingEntity3.setId(new CaseDefendantHearingKey(CASE_ID, DEFENDANT_ID_2, CASE_HEARING_ID_2));
+        caseDefendantHearingEntity3.setHearing(hearingEntity3);
+
+
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity1);
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity2);
+        caseDefendantHearingEntities.add(caseDefendantHearingEntity3);
+
+        when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
+        when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
+
+        GetHearingsAtAGlance response = this.hearingAtAGlanceService.getHearingAtAGlance(CASE_ID);
+
+        assertThat(response.getHearings().size(), is(3));
+        assertThat(response.getHearings().get(0).getId(), is(CASE_HEARING_ID_3));
+        assertThat(response.getHearings().get(1).getId(), is(CASE_HEARING_ID_2));
+        assertThat(response.getHearings().get(2).getId(), is(CASE_HEARING_ID_1));
+    }
+
+
+
+    @Test
     public void prosecutionCaseWithOneHearingShouldReturnTwoDefendants() {
 
         ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2));

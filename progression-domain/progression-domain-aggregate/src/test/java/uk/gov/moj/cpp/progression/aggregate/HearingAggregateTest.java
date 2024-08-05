@@ -291,7 +291,7 @@ public class HearingAggregateTest {
                         .build())))
                 .build();
 
-        hearingAggregate.apply(createHearingResulted(hearing));
+        hearingAggregate.enrichInitiateHearing(hearing);
 
         final List<HearingPopulatedToProbationCaseworker> events = hearingAggregate.populateHearingToProbationCaseWorker()
                 .map(HearingPopulatedToProbationCaseworker.class::cast).collect(toList());
@@ -383,7 +383,7 @@ public class HearingAggregateTest {
                         .build())))
                 .build();
 
-        hearingAggregate.apply(createHearingResulted(hearing));
+        hearingAggregate.enrichInitiateHearing(hearing);
 
         final List<HearingPopulatedToProbationCaseworker> events = hearingAggregate.populateHearingToProbationCaseWorker()
                 .map(HearingPopulatedToProbationCaseworker.class::cast).collect(toList());
@@ -587,7 +587,7 @@ public class HearingAggregateTest {
                 )))
                 .build();
 
-        hearingAggregate.apply(createHearingResulted(hearing));
+        hearingAggregate.enrichInitiateHearing(hearing);
 
         final Stream<Object> events = hearingAggregate.populateHearingToProbationCaseWorker();
         final HearingPopulatedToProbationCaseworker event = (HearingPopulatedToProbationCaseworker) events.findFirst().get();
@@ -657,6 +657,7 @@ public class HearingAggregateTest {
         final Hearing hearing = Hearing.hearing()
                 .withId(hearingId)
                 .withJurisdictionType(JurisdictionType.CROWN)
+                .withIsBoxHearing(false)
                 .withProsecutionCases(new ArrayList<>(asList(ProsecutionCase.prosecutionCase()
                         .withId(case1Id)
                         .withDefendants(new ArrayList<>(asList(Defendant.defendant()
@@ -670,7 +671,8 @@ public class HearingAggregateTest {
                 )))
                 .build();
 
-        hearingAggregate.apply(createHearingResulted(hearing));
+        hearingAggregate.enrichInitiateHearing(hearing);
+
         hearingAggregate.apply(createHearingDeleted(hearing));
 
         final Stream<Object> events = hearingAggregate.populateHearingToProbationCaseWorker();
@@ -744,7 +746,7 @@ public class HearingAggregateTest {
                 .build();
         final Marker marker = Marker.marker().withId(randomUUID()).build();
 
-        hearingAggregate.apply(createHearingResulted(hearing));
+        hearingAggregate.enrichInitiateHearing(hearing);
         hearingAggregate.updateCaseMarkers(singletonList(marker), case1Id, hearingId);
 
         final Stream<Object> events = hearingAggregate.populateHearingToProbationCaseWorker();
@@ -3386,9 +3388,25 @@ public class HearingAggregateTest {
         hearingAggregate.enrichInitiateHearing(hearing);
 
         final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().build();
-        final Stream<Object> eventStream = hearingAggregate.updateDefendant(randomUUID(),defendantUpdate,false);
+        final Stream<Object> eventStream = hearingAggregate.updateDefendant(randomUUID(),defendantUpdate);
         final List events = eventStream.collect(toList());
         assertThat(events.get(0), Matchers.instanceOf(HearingDefendantUpdated.class));
+    }
+
+    @Test
+    public void shouldNotUpdateDefendantWhenHearingIsResulted(){
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+        hearingAggregate.enrichInitiateHearing(hearing);
+
+        hearingAggregate.apply(createHearingResulted(hearing));
+
+        final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().build();
+        final List events = hearingAggregate.updateDefendant(randomUUID(),defendantUpdate).collect(toList());
+        assertThat(events.isEmpty(), is(true));
+
     }
 
     @Test

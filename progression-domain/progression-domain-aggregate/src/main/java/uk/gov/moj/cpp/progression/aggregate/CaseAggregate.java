@@ -1969,21 +1969,6 @@ public class CaseAggregate implements Aggregate {
                 final uk.gov.justice.core.courts.Offence updatedOffence = uk.gov.justice.core.courts.Offence.offence()
                         .withValuesFrom(matchingOffence)
                         .withLaaApplnReference(laaReference)
-                        .withVictims(null)
-                        .withVerdict(null)
-                        .withProceedingsConcluded(null)
-                        .withPlea(null)
-                        .withLaidDate(null)
-                        .withJudicialResults(null)
-                        .withAllocationDecision(null)
-                        .withAquittalDate(null)
-                        .withCustodyTimeLimit(null)
-                        .withDateOfInformation(null)
-                        .withEndorsableFlag(null)
-                        .withIndicatedPlea(null)
-                        .withIntroducedAfterInitialProceedings(null)
-                        .withIsDiscontinued(null)
-                        .withIsDisposed(null)
                         .build();
                 updatedOffenceList.add(updatedOffence);
                 final String legalAidStatus = getDefendantLevelLegalStatus(updatedOffenceList);

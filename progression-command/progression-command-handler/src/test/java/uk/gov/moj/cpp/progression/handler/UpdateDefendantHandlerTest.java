@@ -396,16 +396,15 @@ public class UpdateDefendantHandlerTest {
                 .withId(randomUUID())
                 .build();
 
-        hearingAggregate.apply(HearingResulted.hearingResulted()
-                .withHearing(Hearing.hearing()
+        hearingAggregate.enrichInitiateHearing(
+               Hearing.hearing()
                         .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
                                 .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
                                         .withId(defendantId)
                                         .withMasterDefendantId(masterDefendantId)
                                         .build())))
                                 .build()))
-                        .build())
-                .build());
+                        .build());
 
 
         final Envelope<UpdateDefendantForHearing> envelope = envelopeFrom(metadata, updateDefendant);

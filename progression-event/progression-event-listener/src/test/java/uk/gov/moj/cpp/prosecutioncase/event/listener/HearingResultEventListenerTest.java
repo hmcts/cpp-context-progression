@@ -54,7 +54,12 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearin
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 import java.io.StringReader;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -127,6 +132,7 @@ public class HearingResultEventListenerTest {
         final UUID defendantId2 = randomUUID();
         final UUID offenceId = randomUUID();
         final UUID offenceId2 = randomUUID();
+        final ZonedDateTime sharedTime = ZonedDateTime.now();
 
         final Defendant defendant1 = Defendant.defendant()
                 .withId(defendantId)
@@ -157,6 +163,7 @@ public class HearingResultEventListenerTest {
                         .withJurisdictionType(JurisdictionType.CROWN)
                         .withHearingLanguage(HearingLanguage.ENGLISH)
                         .withHasSharedResults(true)
+
                         .withCourtCentre(CourtCentre.courtCentre()
                                 .withId(courtCentreId)
                                 .build())
@@ -166,6 +173,7 @@ public class HearingResultEventListenerTest {
                                 .withDefendants(defendants)
                                 .build()))
                         .build())
+                .withSharedTime(sharedTime)
                 .build();
 
         final Hearing hearing = Hearing.hearing()
@@ -234,8 +242,7 @@ public class HearingResultEventListenerTest {
 
         HearingEntity savedHearingEntity1 = savedHearingEntities.stream().filter(savedHearingEntity -> savedHearingEntity.getHearingId().equals(firstHearingId))
                 .findFirst().get();
-
-
+        
         final Hearing savedHearing1 = this.jsonObjectToObjectConverter.convert(jsonFromString(savedHearingEntity1.getPayload()), Hearing.class);
 
         assertThat(savedHearing1, notNullValue());

@@ -51,24 +51,24 @@ import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
+import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
-import uk.gov.moj.cpp.progression.service.CalendarService;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
+import uk.gov.moj.cpp.progression.service.CalendarService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.PartialHearingConfirmService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
 import uk.gov.moj.cpp.progression.service.RefDataService;
+import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
 import uk.gov.moj.cpp.progression.transformer.ProsecutionCasesReferredToCourtTransformer;
 
-import java.time.ZonedDateTime;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -184,8 +184,8 @@ public class HearingConfirmedEventProcessor {
         triggerRetryOnMissingCaseAndApplication(confirmedHearing.getId(), hearingInProgression);
 
         if (nonNull(confirmedHearing.getExistingHearingId())) {
-            final Optional<JsonObject> hearingIdFromQuery = progressionService.getHearing(jsonEnvelope, confirmedHearing.getExistingHearingId().toString());
-            if (isHearingInitialised(hearingIdFromQuery)) {
+            final Optional<JsonObject> hearingFromDb = progressionService.getHearing(jsonEnvelope, confirmedHearing.getExistingHearingId().toString());
+            if (isHearingInitialised(hearingFromDb)) {
                 processExtendHearing(jsonEnvelope, confirmedHearing, hearingInProgression);
             }
 
@@ -250,7 +250,7 @@ public class HearingConfirmedEventProcessor {
         }
 
         if (sendNotificationToParties) {
-            sendHearingNotificationsToDefenceAndProsecutor(jsonEnvelope, confirmedHearing);
+            sendHearingNotificationsToDefenceAndProsecutor(jsonEnvelope, confirmedHearing, hearingInProgression);
         } else {
             LOGGER.info("Notification is not sent for HearingId {}  , Notification sent flag {}", confirmedHearing.getId(), false);
         }
@@ -672,24 +672,49 @@ public class HearingConfirmedEventProcessor {
         }
     }
 
-    private void sendHearingNotificationsToDefenceAndProsecutor(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedUpdatedHearing) {
+    private void sendHearingNotificationsToDefenceAndProsecutor(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedUpdatedHearing, Hearing hearingInProgression) {
         final HearingNotificationInputData hearingNotificationInputData = new HearingNotificationInputData();
-
-        final Set<UUID> caseIds = confirmedUpdatedHearing.getProsecutionCases()
-                .stream().map(ConfirmedProsecutionCase::getId).collect(toSet());
+        Set<UUID> caseIds = new HashSet<>();
 
         final Map<UUID, List<UUID>> defendantOffenceListMap = new HashMap<>();
         final Set<UUID> defendantIdSet = new HashSet<>();
 
-        confirmedUpdatedHearing.getProsecutionCases().stream()
-                .flatMap(confirmedProsecutionCase -> confirmedProsecutionCase.getDefendants().stream())
-                .forEach(defendant -> {
-                    defendantIdSet.add(defendant.getId());
-                    defendantOffenceListMap.put(defendant.getId(),
-                            defendant.getOffences().stream()
-                                    .map(ConfirmedOffence::getId)
-                                    .collect(toList()));
-                });
+        if(isNotEmpty(confirmedUpdatedHearing.getProsecutionCases())){
+            caseIds = confirmedUpdatedHearing.getProsecutionCases()
+                    .stream().map(ConfirmedProsecutionCase::getId).collect(toSet());
+
+            confirmedUpdatedHearing.getProsecutionCases().stream()
+                    .flatMap(confirmedProsecutionCase -> confirmedProsecutionCase.getDefendants().stream())
+                    .forEach(defendant -> {
+                        defendantIdSet.add(defendant.getId());
+                        defendantOffenceListMap.put(defendant.getId(),
+                                defendant.getOffences().stream()
+                                        .map(ConfirmedOffence::getId)
+                                        .collect(toList()));
+                    });
+        } else if (isNotEmpty(hearingInProgression.getCourtApplications())) {
+            final Set<UUID> courtApplicationCaseIdSet = new HashSet<>();
+            hearingInProgression.getCourtApplications().stream().filter(courtApplication -> isNotEmpty(courtApplication.getCourtApplicationCases()))
+                    .flatMap(courtApplication -> courtApplication.getCourtApplicationCases().stream())
+                    .forEach(courtApplicationCase -> courtApplicationCaseIdSet.add(courtApplicationCase.getProsecutionCaseId()));
+
+            caseIds.addAll(courtApplicationCaseIdSet);
+            courtApplicationCaseIdSet.stream().forEach(applicationCaseId -> {
+                final JsonObject prosecutionCaseJson = progressionService.getProsecutionCaseById(jsonEnvelope, applicationCaseId.toString());
+                if (nonNull(prosecutionCaseJson)) {
+                    final ProsecutionCase prosecutionCaseEntity = jsonObjectConverter.convert(prosecutionCaseJson.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+                    prosecutionCaseEntity.getDefendants().stream().forEach(defendant -> {
+                        defendantIdSet.add(defendant.getId());
+                        defendantOffenceListMap.put(defendant.getId(),
+                                defendant.getOffences().stream()
+                                        .map(Offence::getId)
+                                        .collect(toList()));
+                    });
+                }
+
+            });
+        }
+
 
         final ZonedDateTime hearingStartDateTime = getEarliestDate(confirmedUpdatedHearing.getHearingDays());
 

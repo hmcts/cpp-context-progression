@@ -57,6 +57,7 @@ import java.time.Period;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -134,7 +135,9 @@ public class HearingAtAGlanceService {
     }
 
     private List<HearingEntity> getHearingEntities(final List<CaseDefendantHearingEntity> caseDefendantHearingEntities) {
-        return caseDefendantHearingEntities.stream().map(CaseDefendantHearingEntity::getHearing).distinct().collect(toList());
+        return caseDefendantHearingEntities.stream().map(CaseDefendantHearingEntity::getHearing).distinct()
+                .sorted(Comparator.comparing(HearingEntity::getSharedTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                .collect(toList());
     }
 
     private JurisdictionType getLatestHearingJurisdictionType(final UUID caseId, final List<HearingEntity> hearingEntities) {
