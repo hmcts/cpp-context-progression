@@ -55,8 +55,11 @@ import uk.gov.justice.progression.courts.SendStatdecAppointmentLetter;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtApplicationWithCustody;
+import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
+import uk.gov.moj.cpp.progression.events.NotificationCreateHearingApplicationLinkFailed;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -370,6 +373,7 @@ public class ApplicationAggregateTest {
         InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings().withCourtApplication(courtApplication)
                 .withBoxHearing(BoxHearingRequest.boxHearingRequest()
                         .withSendAppointmentLetter(TRUE)
+                        .withVirtualAppointmentTime(ZonedDateTime.now())
                         .build())
                 .withSummonsApprovalRequired(FALSE)
                 .build();
@@ -383,6 +387,28 @@ public class ApplicationAggregateTest {
         final Object object2 = eventStream.get(1);
         assertThat(object2.getClass(), is(equalTo(SendStatdecAppointmentLetter.class)));
     }
+
+    @Test
+    public void shouldReturnCourtApplicationCreatedButNoSendStatDecAppointmentLetterWhenNonVirtualHearing() {
+        final UUID courtApplicationId = randomUUID();
+        final LocalDate convictionDate = LocalDate.now();
+        final CourtApplication courtApplication = buildCourtapplication(courtApplicationId, convictionDate);
+
+        InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings().withCourtApplication(courtApplication)
+                .withBoxHearing(BoxHearingRequest.boxHearingRequest()
+                        .withSendAppointmentLetter(TRUE)
+                        .build())
+                .withSummonsApprovalRequired(FALSE)
+                .build();
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
+
+        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication)
+                .collect(toList());
+        assertThat(eventStream.size(), is(1));
+        final Object object1 = eventStream.get(0);
+        assertThat(object1.getClass(), is(equalTo(CourtApplicationCreated.class)));
+    }
+
 
     @Test
     public void shouldRaiseHearingDeletedForCourtApplication() {
