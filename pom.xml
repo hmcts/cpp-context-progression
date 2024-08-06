@@ -77,7 +77,7 @@
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
-        <results.version>8.0.54</results.version>
+        <results.version>8.0.57</results.version>
         <notification.notify.version>8.0.16</notification.notify.version>
         <unifiedsearch.version>8.0.10</unifiedsearch.version>
         <systemdocgenerator.version>8.0.91</systemdocgenerator.version>
