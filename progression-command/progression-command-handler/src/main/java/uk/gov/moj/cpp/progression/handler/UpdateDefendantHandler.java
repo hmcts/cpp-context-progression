@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.handler;
 
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.UpdateCaseDefendantWithDriverNumber;
-import uk.gov.justice.core.courts.UpdateDefendantAddressOnCase;
 import uk.gov.justice.core.courts.UpdateDefendantForHearing;
 import uk.gov.justice.core.courts.UpdateDefendantForMatchedDefendant;
 import uk.gov.justice.core.courts.UpdateDefendantForProsecutionCase;
@@ -21,9 +20,7 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
 import uk.gov.moj.cpp.progression.command.UpdateMatchedDefendantCustodialInformation;
-import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -43,41 +40,21 @@ public class UpdateDefendantHandler {
 
     @Inject
     private AggregateService aggregateService;
-    @Inject
-    ProsecutionCaseQueryService prosecutionCaseQueryService;
 
     @Inject
     private Enveloper enveloper;
 
     @Handles("progression.command.update-defendant-for-prosecution-case")
     public void handle(final Envelope<UpdateDefendantForProsecutionCase> updateDefendantEnvelope) throws EventStreamException {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("progression.command.update-defendant-for-prosecution-case, caseId :: {}", updateDefendantEnvelope.payload().getProsecutionCaseId());
-        }
-        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(updateDefendantEnvelope.metadata(), JsonValue.NULL);
+        LOGGER.debug("progression.command.update-defendant-for-prosecution-case {}", updateDefendantEnvelope.payload());
+
         final UpdateDefendantForProsecutionCase defendantDetailsToUpdate = updateDefendantEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(defendantDetailsToUpdate.getDefendant().getProsecutionCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-        final List<UUID> allHearingIdsForCase = prosecutionCaseQueryService.getAllHearingIdsForCase(jsonEnvelope, defendantDetailsToUpdate.getDefendant().getProsecutionCaseId());
-        final Stream<Object> events = caseAggregate.updateDefendantDetails(defendantDetailsToUpdate.getDefendant(),allHearingIdsForCase);
+        final Stream<Object> events = caseAggregate.updateDefendantDetails(defendantDetailsToUpdate.getDefendant());
 
         appendEventsToStream(updateDefendantEnvelope, eventStream, events);
 
-    }
-
-    @Handles("progression.command.update-defendant-address-on-case")
-    public void handleUpdateDefendantAddressOnCase(final Envelope<UpdateDefendantAddressOnCase> updateDefendantEnvelope) throws EventStreamException {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("progression.command.update-defendant-address-on-case {}", updateDefendantEnvelope.payload().getProsecutionCaseId());
-        }
-
-        final UpdateDefendantAddressOnCase  defendantDetailsToUpdate = updateDefendantEnvelope.payload();
-
-        final EventStream eventStream = eventSource.getStreamById(defendantDetailsToUpdate.getProsecutionCaseId());
-        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-        final Stream<Object> events = caseAggregate.updateDefendantAddress(defendantDetailsToUpdate.getDefendant());
-
-        appendEventsToStream(updateDefendantEnvelope, eventStream, events);
     }
 
     @Handles("progression.command.update-matched-defendant-custodial-information")
@@ -118,6 +95,7 @@ public class UpdateDefendantHandler {
         appendEventsToStream(updateDefendantEnvelope, eventStream, events);
 
     }
+
 
     @Handles("progression.command.update-defendant-for-hearing")
     public void handleUpdateDefendantForHearing(final Envelope<UpdateDefendantForHearing> updateDefendantEnvelope) throws EventStreamException {

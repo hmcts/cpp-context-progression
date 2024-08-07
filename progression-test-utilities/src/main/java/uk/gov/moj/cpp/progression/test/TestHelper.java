@@ -2,11 +2,6 @@ package uk.gov.moj.cpp.progression.test;
 
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static org.codehaus.groovy.runtime.InvokerHelper.asList;
-import static uk.gov.justice.core.courts.ApplicationStatus.DRAFT;
-import static uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment;
-import static uk.gov.justice.core.courts.MasterDefendant.masterDefendant;
-import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 
 import uk.gov.justice.core.courts.CourtApplication;
@@ -17,7 +12,6 @@ import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 
@@ -26,10 +20,7 @@ import java.util.UUID;
 
 public class TestHelper {
 
-    private static final String MC_80527 = "MC80527";
-    public static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION = "Appearance to make statutory declaration";
-
-    private TestHelper(){
+   private TestHelper(){
         throw new IllegalStateException("Utility class");
     }
 
@@ -37,8 +28,8 @@ public class TestHelper {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
                 .withType(CourtApplicationType.courtApplicationType()
-                        .withType(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION)
-                        .withCode(MC_80527)
+                        .withType("Appearance to make statutory declaration")
+                        .withCode("MC80527")
                         .build())
                 .withConvictionDate(convictionDate)
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
@@ -46,40 +37,6 @@ public class TestHelper {
                                 .withProsecutionAuthorityId(randomUUID())
                                 .build())
                         .build())
-                .build();
-    }
-
-    public static CourtApplication buildCourtapplicationWithCustodialEstablisment(final UUID courtApplicationId, final LocalDate convictionDate, final UUID masterDefendantId){
-        final CourtApplicationParty applicationParty = CourtApplicationParty.courtApplicationParty()
-                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
-                        .withProsecutionAuthorityId(randomUUID())
-                        .build())
-                .withMasterDefendant(masterDefendant()
-                        .withMasterDefendantId(masterDefendantId)
-                        .withPersonDefendant(personDefendant()
-                                .withPersonDetails(Person.person()
-                                        .withFirstName("John")
-                                        .withLastName("Smith")
-                                        .withDateOfBirth(LocalDate.of(1988,6,11))
-                                        .build())
-                                .withCustodialEstablishment(custodialEstablishment()
-                                        .withName("John Smith")
-                                        .withCustody("10 years prison")
-                                        .build())
-                                .build())
-                        .build())
-                .build();
-        return CourtApplication.courtApplication()
-                .withId(courtApplicationId)
-                .withType(CourtApplicationType.courtApplicationType()
-                        .withType(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION)
-                        .withCode(MC_80527)
-                        .build())
-                .withConvictionDate(convictionDate)
-                .withApplicant(applicationParty)
-                .withSubject(applicationParty)
-                .withCourtApplicationCases(asList(CourtApplicationCase.courtApplicationCase().withCaseStatus("INACTIVE").build()))
-                .withApplicationStatus(DRAFT)
                 .build();
     }
 
@@ -95,40 +52,6 @@ public class TestHelper {
                                 .build())
                         .build())
                 .withCourtApplicationCases(singletonList(buildCourtApplicationCase(offenceId, convictionDate)))
-                .build();
-    }
-
-    public static CourtApplication buildCourtApplicationWithCustody(final UUID courtApplicationId, final UUID masterDefendantId, final LocalDate convictionDate, final String custody){
-        final CourtApplicationParty applicationParty = CourtApplicationParty.courtApplicationParty()
-                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
-                        .withProsecutionAuthorityId(randomUUID())
-                        .build())
-                .withMasterDefendant(masterDefendant()
-                        .withMasterDefendantId(masterDefendantId)
-                        .withPersonDefendant(personDefendant()
-                                .withPersonDetails(Person.person()
-                                        .withFirstName("John")
-                                        .withLastName("Smith")
-                                        .withDateOfBirth(LocalDate.of(1988,6,11))
-                                        .build())
-                                .withCustodialEstablishment(custodialEstablishment()
-                                        .withName("John Smith")
-                                        .withCustody(custody)
-                                        .build())
-                                .build())
-                        .build())
-                .build();
-        return CourtApplication.courtApplication()
-                .withId(courtApplicationId)
-                .withType(CourtApplicationType.courtApplicationType()
-                        .withType(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION)
-                        .withCode(MC_80527)
-                        .build())
-                .withConvictionDate(convictionDate)
-                .withApplicant(applicationParty)
-                .withSubject(applicationParty)
-                .withCourtApplicationCases(asList(CourtApplicationCase.courtApplicationCase().withCaseStatus("INACTIVE").build()))
-                .withApplicationStatus(DRAFT)
                 .build();
     }
 

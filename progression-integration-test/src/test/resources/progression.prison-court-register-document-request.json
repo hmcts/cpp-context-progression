@@ -27,7 +27,7 @@
     },
     "gender": "MALE",
     "postHearingCustodyStatus": "Not Applicable",
-    "masterDefendantId": "%DEFENDANT_ID%",
+    "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
     "nationality": "British",
     "hearing": {
       "defendantPresent": true,

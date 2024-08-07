@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.query.api;
 
-import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.isPermitted;
 
@@ -101,11 +100,11 @@ public class CourtDocumentApi {
             throw new BadRequestException(String.format("%s no caseId or applicationId search parameter specified ", MATERIAL_CONTENT_FOR_PROSECUTION));
         }
 
-        final UUID userId = fromString(envelope.metadata().userId().orElseThrow(() -> new RuntimeException("UserId missing from query.")));
+        final UUID userId = envelope.metadata().userId().isPresent() ? fromString(envelope.metadata().userId().get()) : null;
         final JsonEnvelope appQueryResponse = prosecutionCaseQuery.getProsecutionCase(envelope);
         final JsonObject prosecutionCase = appQueryResponse.payloadAsJsonObject().getJsonObject("prosecutionCase");
         final ProsecutionCase prosecutionCaseObj = jsonObjectToObjectConverter.convert(prosecutionCase, ProsecutionCase.class);
-        final Optional<String> orgMatch  = usersGroupQueryService.validateNonCPSUserOrg(envelope.metadata(), userId, NON_CPS_PROSECUTORS, getShortName(prosecutionCaseObj));
+        final Optional<String> orgMatch  = usersGroupQueryService.validateNonCPSUserOrg(envelope.metadata(), userId, NON_CPS_PROSECUTORS, prosecutionCaseObj.getProsecutionCaseIdentifier().getProsecutionAuthorityCode());
         if(orgMatch.isPresent()) {
             if (ORGANISATION_MIS_MATCH.equals(orgMatch.get())) {
                 throw new ForbiddenRequestException("Forbidden!! Non CPS Prosecutor user cannot view court documents if it is not belongs to the same Prosecuting Authority of the user logged in");
@@ -119,12 +118,6 @@ public class CourtDocumentApi {
         }
 
         return envelope;
-    }
-
-    private String getShortName(final ProsecutionCase prosecutionCaseObj) {
-        return nonNull(prosecutionCaseObj.getProsecutor()) && nonNull(prosecutionCaseObj.getProsecutor().getProsecutorCode()) ?
-                prosecutionCaseObj.getProsecutor().getProsecutorCode() :
-                prosecutionCaseObj.getProsecutionCaseIdentifier().getProsecutionAuthorityCode();
     }
 
 

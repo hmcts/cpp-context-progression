@@ -22,7 +22,7 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.directionmanagement.query.CaseDirections;
 import uk.gov.justice.directionmanagement.query.DirectionManagementCasesDirectionList;
-import uk.gov.justice.progression.query.CotrDefendant;
+import uk.gov.justice.progression.query.CotrDefendants;
 import uk.gov.justice.progression.query.CotrDetail;
 import uk.gov.justice.progression.query.CotrDetails;
 import uk.gov.justice.progression.query.CourtApplications;
@@ -363,7 +363,7 @@ public class CotrQueryApi {
         Boolean isDefenceServed = false;
         if (nonNull(cotrDetails)) {
             for (final CotrDetail cotrDetail : cotrDetails.getCotrDetails()) {
-                for (final CotrDefendant cotrDefendants : cotrDetail.getCotrDefendants()) {
+                for (final CotrDefendants cotrDefendants : cotrDetail.getCotrDefendants()) {
                     if (cotrDefendants.getId().equals(defendant.getId())) {
                         isProsecutionServed = cotrDetail.getIsProsecutionServed();
                         isDefenceServed = cotrDefendants.getIsDefenceServed();

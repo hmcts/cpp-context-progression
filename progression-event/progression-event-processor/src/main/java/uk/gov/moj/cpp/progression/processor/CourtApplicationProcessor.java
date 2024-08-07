@@ -11,7 +11,6 @@ import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static org.jboss.resteasy.client.ProxyBuilder.build;
 import static uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds;
 import static uk.gov.justice.core.courts.CreateHearingApplicationRequest.createHearingApplicationRequest;
 import static uk.gov.justice.core.courts.Defendant.defendant;
@@ -46,28 +45,22 @@ import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CreateHearingApplicationRequest;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCase;
-import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
-import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved;
-import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.Organisation;
-import uk.gov.justice.core.courts.Person;
-import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsApproved;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected;
-import uk.gov.justice.core.courts.RemoveDefendantCustodialEstablishmentRequested;
 import uk.gov.justice.core.courts.SendNotificationForApplication;
 import uk.gov.justice.core.courts.SummonsTemplateType;
 import uk.gov.justice.core.courts.SummonsType;
@@ -97,7 +90,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -118,7 +110,6 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S2789", "squid:CallToDeprecatedMethod", "squid:CommentedOutCodeLine", "squid:UnusedPrivateMethod", "squid:S1192"})
 public class CourtApplicationProcessor {
 
-    public static final String PUBLIC_PROGRESSION_APPLICATION_DEFENDANT_CHANGED = "public.progression.application-defendant-changed";
     private static final String COURT_APPLICATION = "courtApplication";
     private static final String PROSECUTION_CASE = "prosecutionCase";
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_CREATED = "public.progression.court-application-created";
@@ -130,10 +121,8 @@ public class CourtApplicationProcessor {
     private static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION = "progression.command.create-court-application";
     private static final String PROGRESSION_COMMAND_UPDATE_COURT_APPLICATION_TO_HEARING = "progression.command.update-court-application-to-hearing";
-    private static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_ADDRESS_ON_CASE = "progression.command.update-defendant-address-on-case" ;
     private static final String PUBLIC_PROGRESSION_EVENTS_SJP_PROSECUTION_CASE_CREATED = "public.progression.sjp-prosecution-case-created";
     private static final String LIST_OR_REFER_COURT_APPLICATION = "progression.command.list-or-refer-court-application";
-    private static final String REMOVE_DEFENDANT_CUSTODIAL_ESTABLISHMENT_FROM_CASE = "progression.command.remove-defendant-custodial-establishment-from-case";
     private static final String HEARING_INITIATE_COMMAND = "hearing.initiate";
     private static final UUID APPLICATION_HEARING_TYPE_ID = UUID.fromString("3449743b-95d6-4836-8941-57f588b52068");
     private static final String APPLICATION = "Application";
@@ -146,9 +135,6 @@ public class CourtApplicationProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtApplicationProcessor.class.getCanonicalName());
     public static final String HEARING_ID = "hearingId";
     public static final String PUBLIC_PROGRESSION_EVENTS_BREACH_APPLICATIONS_TO_BE_ADDED_TO_HEARING = "public.progression.breach-applications-to-be-added-to-hearing";
-    public static final String INACTIVE = "INACTIVE";
-    private static final String PROGRESSION_COMMAND_UPDATE_HEARING_APPLICATION_DEFENDANT = "progression.command.update.hearing.application.defendant";
-    public static final String PUBLIC_PROGRESSION_DEFENDANT_ADDRESS_CHANGED = "public.progression.defendant-address-changed";
 
 
     @Inject
@@ -208,39 +194,10 @@ public class CourtApplicationProcessor {
 
         sendUpdateCpsDefendantIdCommand(event, courtApplicationCreated);
 
-        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_DEFENDANT_ADDRESS_CHANGED).build(), publicEvent));
-
         final JsonObject command = createObjectBuilder()
                 .add("id", courtApplication.getId().toString())
                 .build();
         sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(LIST_OR_REFER_COURT_APPLICATION).build(), command));
-
-    }
-
-
-    @Handles("progression.event.remove-defendant-custodial-establishment-requested")
-    public void processRemoveDefendantCustodialEstablishmentRequested(final JsonEnvelope event) {
-
-        if(LOGGER.isInfoEnabled()){
-            LOGGER.info("Converting remove-defendant-custodial-establishment-requested payload");
-        }
-        final RemoveDefendantCustodialEstablishmentRequested removeDefendantCustodialEstablishmentRequested = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), RemoveDefendantCustodialEstablishmentRequested.class);
-        final CourtApplication courtApplication = removeDefendantCustodialEstablishmentRequested.getCourtApplication();
-        if(LOGGER.isInfoEnabled()){
-            LOGGER.info("CourtApplication  {}", courtApplication.getId());
-        }
-
-        courtApplication.getCourtApplicationCases()
-                .stream()
-                .filter(courtApplicationCase -> INACTIVE.equals(courtApplicationCase.getCaseStatus()))
-                .forEach(prosecutionCase-> {
-                    final JsonObject caseCommand = createObjectBuilder()
-                            .add("prosecutionCaseId", prosecutionCase.getProsecutionCaseId().toString())
-                            .add("defendantId", courtApplication.getSubject().getMasterDefendant().getDefendantCase().get(0).getDefendantId().toString())
-                            .add("masterDefendantId", courtApplication.getSubject().getMasterDefendant().getMasterDefendantId().toString())
-                            .build();
-                    sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(REMOVE_DEFENDANT_CUSTODIAL_ESTABLISHMENT_FROM_CASE).build(), caseCommand));
-                });
     }
 
     private void sendUpdateCpsDefendantIdCommand(final JsonEnvelope event, final CourtApplicationCreated courtApplicationCreated) {
@@ -306,13 +263,10 @@ public class CourtApplicationProcessor {
 
         final List<ProsecutionCase> prosecutionCases = new ArrayList<>();
         if (nonNull(courtApplicationProceedingsInitiated.getCourtApplication()) && nonNull(courtApplicationProceedingsInitiated.getCourtApplication().getCourtApplicationCases())) {
-            courtApplicationProceedingsInitiated.getCourtApplication().getCourtApplicationCases().forEach(courtApplicationCase ->
-                    progressionService.getProsecutionCase(event, courtApplicationCase.getProsecutionCaseId().toString()).ifPresent(pc -> {
-                        final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(pc.getJsonObject("prosecutionCase"), ProsecutionCase.class);
-                        updateDefendantAddressOnCase(event, courtApplicationProceedingsInitiated.getCourtApplication(), courtApplicationCase);
-                        final ProsecutionCase enrichedCase = enrichProsecutionCaseWithAddressFromApplication(prosecutionCase, courtApplicationProceedingsInitiated.getCourtApplication());
-                        prosecutionCases.add(enrichedCase);
-                    }));
+            courtApplicationProceedingsInitiated.getCourtApplication().getCourtApplicationCases().forEach(courtApplicationCase -> progressionService.getProsecutionCase(event, courtApplicationCase.getProsecutionCaseId().toString()).ifPresent(pc -> {
+                final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(pc.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+                prosecutionCases.add(prosecutionCase);
+            }));
         }
         final JsonArrayBuilder prosecutionsWithCaseArray = createArrayBuilder();
         prosecutionCases.forEach(prosecutionCase -> prosecutionsWithCaseArray.add(objectToJsonObjectConverter.convert(prosecutionCase)));
@@ -321,105 +275,6 @@ public class CourtApplicationProcessor {
         LOGGER.info("Raising event {} with jsonObject {} ", PUBLIC_PROGRESSION_COURT_APPLICATION_PROCEEDINGS_INITIATED, courtApplicationWithCaseJsonObject);
         sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_PROCEEDINGS_INITIATED), courtApplicationWithCaseJsonObject));
     }
-
-    @SuppressWarnings({"squid:S3776"})
-    private ProsecutionCase enrichProsecutionCaseWithAddressFromApplication(final ProsecutionCase prosecutionCase, final CourtApplication courtApplication) {
-        final List<Defendant> enrichedDefendants = new ArrayList<>();
-        ofNullable(prosecutionCase.getDefendants()).ifPresent(defendants-> defendants.forEach(defendant -> {
-            boolean isCaseDefendantEnriched = false;
-            final Defendant.Builder defendantBuilder = Defendant.defendant();
-            final boolean isOrgDefendant = nonNull(defendant.getLegalEntityDefendant());
-            final UUID defendantId = ofNullable(defendant.getMasterDefendantId()).orElse(defendant.getId());
-            final Optional<MasterDefendant> defendantIsApplicant = ofNullable(courtApplication.getApplicant()).map(CourtApplicationParty::getMasterDefendant).filter(def -> nonNull(def.getMasterDefendantId()) && def.getMasterDefendantId().equals(defendantId));
-            if (defendantIsApplicant.isPresent()) {
-                isCaseDefendantEnriched = enrichCaseDefendantWithApplicationAddress(defendant, defendantBuilder, isOrgDefendant, defendantIsApplicant.get(),enrichedDefendants);
-            } else {
-                if(nonNull(courtApplication.getRespondents())) {
-                    final Optional<MasterDefendant> defendantIsRespondent = courtApplication.getRespondents().stream().map(CourtApplicationParty::getMasterDefendant).filter(Objects::nonNull).filter(def -> nonNull(def.getMasterDefendantId()) && def.getMasterDefendantId().equals(defendantId)).findFirst();
-                    if (defendantIsRespondent.isPresent()) {
-                        isCaseDefendantEnriched = enrichCaseDefendantWithApplicationAddress(defendant, defendantBuilder, isOrgDefendant, defendantIsRespondent.get(), enrichedDefendants);
-                    }
-                }
-            }
-            if(!isCaseDefendantEnriched){
-                enrichedDefendants.add(defendant);
-            }
-        }));
-        return ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase).withDefendants(enrichedDefendants).build();
-    }
-
-    private static boolean enrichCaseDefendantWithApplicationAddress(final Defendant defendant, final Defendant.Builder defendantBuilder,
-                                                                  final boolean isOrgDefendant, final MasterDefendant defendantOnApplication, final List<Defendant> enrichedDefendants) {
-        if (isOrgDefendant) {
-            defendantBuilder.withValuesFrom(defendant)
-                    .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
-                            .withValuesFrom(defendant.getLegalEntityDefendant())
-                            .withOrganisation(Organisation.organisation()
-                                    .withValuesFrom(defendant.getLegalEntityDefendant().getOrganisation())
-                                    .withAddress(defendantOnApplication.getLegalEntityDefendant().getOrganisation().getAddress())
-                                    .build())
-                            .build())
-                    .build();
-        } else {
-            defendantBuilder.withValuesFrom(defendant)
-                    .withPersonDefendant(PersonDefendant.personDefendant()
-                            .withValuesFrom(defendant.getPersonDefendant())
-                            .withPersonDetails(Person.person()
-                                    .withValuesFrom(defendant.getPersonDefendant().getPersonDetails())
-                                    .withAddress(defendantOnApplication.getPersonDefendant().getPersonDetails().getAddress())
-                                    .build())
-                            .build())
-                    .build();
-        }
-        enrichedDefendants.add(defendantBuilder.build());
-        return true;
-    }
-
-    private void updateDefendantAddressOnCase(JsonEnvelope event, CourtApplication courtApplication, CourtApplicationCase courtApplicationCase) {
-        if (nonNull(courtApplication.getApplicant()) && nonNull(courtApplication.getApplicant().getMasterDefendant())) {
-            final DefendantUpdate defendantUpdate = getDefendantUpdate(courtApplicationCase, courtApplication.getApplicant());
-            buildAndSendCommandForDefendantAddressUpdate(event, defendantUpdate, courtApplicationCase.getProsecutionCaseId().toString());
-        }
-
-        if (nonNull(courtApplication.getRespondents())  ) {
-            courtApplication.getRespondents().stream().filter(r -> nonNull(r.getMasterDefendant())).forEach(respondent -> {
-                final DefendantUpdate defendantUpdate = getDefendantUpdate(courtApplicationCase, respondent);
-                buildAndSendCommandForDefendantAddressUpdate(event, defendantUpdate, courtApplicationCase.getProsecutionCaseId().toString());
-            });
-        }
-    }
-
-    private DefendantUpdate getDefendantUpdate(CourtApplicationCase courtApplicationCase, CourtApplicationParty courtApplicationParty) {
-        return DefendantUpdate.defendantUpdate()
-                .withId(courtApplicationParty.getMasterDefendant().getMasterDefendantId())
-                .withProsecutionCaseId(courtApplicationCase.getProsecutionCaseId())
-                .withLegalEntityDefendant(courtApplicationParty.getMasterDefendant().getLegalEntityDefendant())
-                .withPersonDefendant(getPersonDefendant(courtApplicationParty))
-                .build();
-    }
-    private PersonDefendant getPersonDefendant(CourtApplicationParty courtApplicationParty){
-        final PersonDefendant personDefendant = courtApplicationParty.getMasterDefendant().getPersonDefendant();
-        if (Optional.ofNullable(personDefendant).isPresent()){
-            return PersonDefendant.personDefendant()
-                    .withPersonDetails(personDefendant.getPersonDetails())
-                    .build();
-        }
-        return null ;
-    }
-
-    private void buildAndSendCommandForDefendantAddressUpdate(JsonEnvelope event,
-                                                              DefendantUpdate defendantUpdate,
-                                                              String prosecutionCaseId) {
-        final JsonObjectBuilder updateDefendantForProsecutionCase = createObjectBuilder();
-        updateDefendantForProsecutionCase.add("defendant", objectToJsonObjectConverter.convert(defendantUpdate));
-        updateDefendantForProsecutionCase.add("prosecutionCaseId", prosecutionCaseId );
-        final JsonObject updateDefendantForProsecutionCaseJsonObject = updateDefendantForProsecutionCase.build();
-        if(LOGGER.isInfoEnabled()){
-            LOGGER.info("Raising event {} with prosecutionCaseId {}", PROGRESSION_COMMAND_UPDATE_DEFENDANT_ADDRESS_ON_CASE, prosecutionCaseId);
-        }
-        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PROGRESSION_COMMAND_UPDATE_DEFENDANT_ADDRESS_ON_CASE), updateDefendantForProsecutionCaseJsonObject));
-    }
-
 
     @Handles("progression.event.court-application-proceedings-edited")
     public void processCourtApplicationEdited(final JsonEnvelope event) {
@@ -450,14 +305,6 @@ public class CourtApplicationProcessor {
             publicPayload.add(HEARING_ID, courtApplicationProceedingsEdited.getCourtHearing().getId().toString());
             publicPayload.add("courtApplication", objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited.getCourtApplication()));
         }
-
-        if (nonNull(courtApplicationProceedingsEdited.getCourtApplication()) && nonNull(courtApplicationProceedingsEdited.getCourtApplication().getCourtApplicationCases())) {
-            courtApplicationProceedingsEdited.getCourtApplication().getCourtApplicationCases().forEach(courtApplicationCase ->
-                    progressionService.getProsecutionCase(event, courtApplicationCase.getProsecutionCaseId().toString()).ifPresent(pc ->
-                        updateDefendantAddressOnCase(event, courtApplicationProceedingsEdited.getCourtApplication(), courtApplicationCase)
-                    ));
-        }
-
         sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED), publicPayload.build()));
     }
 
@@ -866,14 +713,6 @@ public class CourtApplicationProcessor {
         sender.send(envelop(event.payloadAsJsonObject()).withName(PUBLIC_PROGRESSION_EVENTS_BREACH_APPLICATIONS_TO_BE_ADDED_TO_HEARING).withMetadataFrom(event));
     }
 
-    @Handles("progression.event.application-defendant-update-requested")
-    public void processApplicationDefendantUpdateRequested(final JsonEnvelope event) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("progression.event.application-defendant-update-requested received");
-        }
-        sender.send(envelop(event.payloadAsJsonObject()).withName(PROGRESSION_COMMAND_UPDATE_HEARING_APPLICATION_DEFENDANT).withMetadataFrom(event));
-    }
-
     private <T> Predicate<T> distinctByKey(final Function<? super T, Object> keyExtractor) {
         final Map<Object, Boolean> map = new ConcurrentHashMap<>();
         return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
@@ -907,13 +746,13 @@ public class CourtApplicationProcessor {
         for (final CourtApplicationCase courtApplicationCase : courtApplicationProceedingsInitiated.getCourtApplication().getCourtApplicationCases()) {
 
             final ProsecutionCase prosecutionCase = sjpService.getProsecutionCase(event, courtApplicationCase.getProsecutionCaseId());
-            final ProsecutionCase enrichedCase = enrichProsecutionCaseWithAddressFromApplication(prosecutionCase, courtApplication);
-            if (nonNull(enrichedCase)) {
-                if (isCaseNotFoundInCC(event, enrichedCase.getProsecutionCaseIdentifier())) {
-                    progressionService.createProsecutionCases(event, singletonList(enrichedCase));
+
+            if (nonNull(prosecutionCase)) {
+                if (isCaseNotFoundInCC(event, prosecutionCase.getProsecutionCaseIdentifier())) {
+                    progressionService.createProsecutionCases(event, singletonList(prosecutionCase));
 
                     final JsonObject publicSjpProsecutionCaseCreated = createObjectBuilder()
-                            .add(PROSECUTION_CASE, objectToJsonObjectConverter.convert(enrichedCase))
+                            .add(PROSECUTION_CASE, objectToJsonObjectConverter.convert(prosecutionCase))
                             .build();
 
                     sender.send(envelop(publicSjpProsecutionCaseCreated).withName(PUBLIC_PROGRESSION_EVENTS_SJP_PROSECUTION_CASE_CREATED).withMetadataFrom(event));

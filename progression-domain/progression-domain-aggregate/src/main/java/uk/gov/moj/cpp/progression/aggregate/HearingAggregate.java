@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.isNull;
@@ -53,7 +52,6 @@ import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
-import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtHearingRequest;
@@ -88,7 +86,6 @@ import uk.gov.justice.core.courts.HearingUpdatedProcessed;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
 import uk.gov.justice.core.courts.HearingVerdictUpdated;
 import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ListHearingRequested;
@@ -99,9 +96,6 @@ import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.OnlinePleasAllocation;
-import uk.gov.justice.core.courts.Organisation;
-import uk.gov.justice.core.courts.Person;
-import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.PleaModel;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -145,7 +139,6 @@ import uk.gov.justice.progression.courts.RelatedHearingUpdated;
 import uk.gov.justice.progression.courts.UnscheduledHearingAllocationNotified;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
-import uk.gov.justice.progression.event.ApplicationHearingDefendantUpdated;
 import uk.gov.justice.progression.event.OpaPressListNoticeDeactivated;
 import uk.gov.justice.progression.event.OpaPressListNoticeGenerated;
 import uk.gov.justice.progression.event.OpaPressListNoticeSent;
@@ -210,7 +203,7 @@ public class HearingAggregate implements Aggregate {
     private final Map<UUID, Set<LocalDate>> opaResultListNoticesSent = new HashMap<>();
 
     @VisibleForTesting
-    public Hearing getHearing() {
+    Hearing getHearing() {
         return this.hearing;
     }
 
@@ -984,17 +977,6 @@ public class HearingAggregate implements Aggregate {
 
     public Stream<Object> recordUpdateMatchedDefendantDetailRequest(final DefendantUpdate defendantUpdate) {
         final UUID defendantId = defendantUpdate.getId();
-
-        if (isNull(hearing.getProsecutionCases())){
-            if (isNull(hearing.getCourtApplications())){
-                return empty();
-            }
-            return apply(Stream.of(ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2.prosecutionCaseUpdateDefendantsWithMatchedRequestedV2()
-                    .withDefendantUpdate(defendantUpdate)
-                    .withMatchedDefendants(asList())
-                    .build()));
-        }
-
         final Optional<Defendant> originalDefendantPreviousVersion = hearing.getProsecutionCases().stream()
                 .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
                 .filter(defendant -> defendant.getId().equals(defendantId))
@@ -1115,133 +1097,6 @@ public class HearingAggregate implements Aggregate {
                 .build()));
 
         return Stream.concat(Stream.concat(event1, populateHearingToProbationCaseWorker()), populateHearingToVEP());
-    }
-
-    public Stream<Object> updateApplicationHearing(final DefendantUpdate defendantUpdate) {
-        if(nonNull(hearing) && nonNull(hearing.getCourtApplications())) {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("updateApplicationWithUpdatedDefendant called for hearing id {}", hearing.getId());
-            }
-            final List<CourtApplication> updatedCourtApplications = ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
-                    .map(application -> updateApplicationWithUpdatedDefendantInfo(application,defendantUpdate))
-                    .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
-            final Hearing updatedHearing = Hearing.hearing().withValuesFrom(hearing)
-                    .withCourtApplications(updatedCourtApplications).build();
-            final Stream<Object> event1 = apply(Stream.of(ApplicationHearingDefendantUpdated.applicationHearingDefendantUpdated()
-                            .withDefendant(defendantUpdate)
-                            .withHearing(updatedHearing).build()));
-            return Stream.concat(Stream.concat(event1, populateHearingToProbationCaseWorker()), populateHearingToVEP());
-        }
-       return Stream.empty();
-    }
-
-    private CourtApplication updateApplicationWithUpdatedDefendantInfo(final CourtApplication persistedApplication, final DefendantUpdate defendant) {
-        final boolean isDefendantOrganisation = nonNull(defendant.getLegalEntityDefendant());
-        final UUID updatedDefendantId = ofNullable(defendant.getMasterDefendantId()).orElse(defendant.getId());
-        final CourtApplication.Builder courtApplication = CourtApplication.courtApplication().withValuesFrom(persistedApplication);
-        updateApplicantWithUpdatedAddress(persistedApplication, defendant, isDefendantOrganisation, courtApplication, updatedDefendantId);
-        updateSubjectWithUpdatedAddress(persistedApplication, defendant, isDefendantOrganisation, courtApplication, updatedDefendantId);
-        updateRespondentsWithUpdatedAddress(persistedApplication, defendant, isDefendantOrganisation, courtApplication, updatedDefendantId);
-        return courtApplication.build();
-    }
-
-    private static void updateSubjectWithUpdatedAddress(final CourtApplication persistedApplication, final DefendantUpdate defendant,
-                                                        final boolean isDefendantOrganisation, final CourtApplication.Builder courtApplication, final UUID updatedDefendantId) {
-        if(nonNull(persistedApplication.getSubject()) && nonNull(persistedApplication.getSubject().getMasterDefendant()) &&
-                updatedDefendantId.equals(persistedApplication.getSubject().getMasterDefendant().getMasterDefendantId())){
-            if(isDefendantOrganisation){
-                courtApplication.withSubject(CourtApplicationParty.courtApplicationParty()
-                        .withValuesFrom(persistedApplication.getSubject())
-                        .withMasterDefendant(buildOrganisationDefendant(persistedApplication.getSubject().getMasterDefendant() , defendant))
-                        .withUpdatedOn(LocalDate.now())
-                        .build());
-            }else{
-                courtApplication.withSubject(CourtApplicationParty.courtApplicationParty()
-                        .withValuesFrom(persistedApplication.getSubject())
-                        .withMasterDefendant(buildPersonDefendant(persistedApplication.getSubject().getMasterDefendant(), defendant))
-                        .withUpdatedOn(LocalDate.now())
-                        .build());
-            }
-        }
-    }
-
-    private static void updateApplicantWithUpdatedAddress(final CourtApplication persistedApplication, final DefendantUpdate defendant,
-                                                          final boolean isDefendantOrganisation, final CourtApplication.Builder courtApplication, final UUID updatedDefendantId) {
-        if(nonNull(persistedApplication.getApplicant()) && nonNull(persistedApplication.getApplicant().getMasterDefendant()) &&
-                updatedDefendantId.equals(persistedApplication.getApplicant().getMasterDefendant().getMasterDefendantId())){
-            if(isDefendantOrganisation){
-                courtApplication.withApplicant(CourtApplicationParty.courtApplicationParty()
-                        .withValuesFrom(persistedApplication.getApplicant())
-                        .withMasterDefendant(buildOrganisationDefendant(persistedApplication.getApplicant().getMasterDefendant(), defendant))
-                        .withUpdatedOn(LocalDate.now())
-                        .build());
-            }else{
-                courtApplication.withApplicant(CourtApplicationParty.courtApplicationParty()
-                        .withValuesFrom(persistedApplication.getApplicant())
-                        .withMasterDefendant(buildPersonDefendant(persistedApplication.getApplicant().getMasterDefendant(), defendant))
-                        .withUpdatedOn(LocalDate.now())
-                        .build());
-            }
-        }
-    }
-
-    private static void updateRespondentsWithUpdatedAddress(final CourtApplication persistedApplication, final DefendantUpdate defendant,
-                                                            final boolean isDefendantOrganisation, final CourtApplication.Builder courtApplication, final UUID updatedDefendantId) {
-        if(nonNull(persistedApplication.getRespondents())) {
-            final Optional<CourtApplicationParty> updatedRespondent = persistedApplication.getRespondents().stream()
-                    .filter(resp -> nonNull(resp.getMasterDefendant()) && resp.getMasterDefendant().getMasterDefendantId()
-                            .equals(updatedDefendantId)).findFirst();
-
-            if (updatedRespondent.isPresent()) {
-                LOGGER.info("Match found for updated Defendant in Application Respondents");
-                final List<CourtApplicationParty> courtApplicationRespondentsList = new ArrayList<>();
-                persistedApplication.getRespondents().stream()
-                        .filter(resp -> isNull(resp.getMasterDefendant()) || !resp.getMasterDefendant().getMasterDefendantId().equals(updatedDefendantId))
-                        .forEach(courtApplicationRespondentsList::add);
-
-                if (!isDefendantOrganisation) {
-                    courtApplicationRespondentsList.add(CourtApplicationParty.courtApplicationParty()
-                            .withValuesFrom(updatedRespondent.get())
-                            .withMasterDefendant(buildPersonDefendant(updatedRespondent.get().getMasterDefendant(), defendant))
-                            .withUpdatedOn(LocalDate.now())
-                            .build());
-                } else {
-                    courtApplicationRespondentsList.add(CourtApplicationParty.courtApplicationParty()
-                            .withValuesFrom(updatedRespondent.get())
-                            .withMasterDefendant(buildOrganisationDefendant(updatedRespondent.get().getMasterDefendant(), defendant))
-                            .withUpdatedOn(LocalDate.now())
-                            .build());
-                }
-                courtApplication.withRespondents(courtApplicationRespondentsList);
-            }
-        }
-    }
-
-    private static MasterDefendant buildOrganisationDefendant(final MasterDefendant masterDefendant, final DefendantUpdate defendant) {
-        return MasterDefendant.masterDefendant()
-                .withValuesFrom(masterDefendant)
-                .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
-                        .withValuesFrom(masterDefendant.getLegalEntityDefendant())
-                        .withOrganisation(Organisation.organisation()
-                                .withValuesFrom(masterDefendant.getLegalEntityDefendant().getOrganisation())
-                                .withAddress(defendant.getLegalEntityDefendant().getOrganisation().getAddress())
-                                .build()).build()).build();
-    }
-
-    private static MasterDefendant buildPersonDefendant(final MasterDefendant masterDefendant, final DefendantUpdate defendant) {
-        return MasterDefendant.masterDefendant()
-                .withValuesFrom(masterDefendant)
-                .withPersonDefendant(PersonDefendant.personDefendant()
-                        .withValuesFrom(masterDefendant.getPersonDefendant())
-                        .withPersonDetails(Person.person()
-                                .withValuesFrom(masterDefendant.getPersonDefendant().getPersonDetails())
-                                .withAddress(defendant.getPersonDefendant().getPersonDetails().getAddress())
-                                .withDateOfBirth(defendant.getPersonDefendant().getPersonDetails().getDateOfBirth())
-                                .withNationalityId(defendant.getPersonDefendant().getPersonDetails().getNationalityId())
-                                .withNationalityDescription(defendant.getPersonDefendant().getPersonDetails().getNationalityDescription())
-                                .withNationalityCode(defendant.getPersonDefendant().getPersonDetails().getNationalityCode())
-                                .build())
-                        .withCustodialEstablishment(defendant.getPersonDefendant().getCustodialEstablishment()).build()).build();
     }
 
     private List<UUID> getProsecutionCasesToBeRemoved(final List<UUID> defendantsToBeRemoved) {

@@ -63,14 +63,6 @@ public class ApplicationHelper {
                 getCourtApplicationJson3(applicationId, caseId, defendantId, masterDefendantId, hearingId, fileName));
     }
 
-    public static Response intiateCourtProceedingForApplicationWithRespondents(final String id2, final String id3,
-                                                                               final String applicationId, final String caseId, final String defendantId,
-                                                                               final String masterDefendantId, final String address,
-                                                                               final String hearingId, final String fileName) throws IOException {
-        return postCommand(getWriteUrl("/initiate-application"),
-                "application/vnd.progression.initiate-court-proceedings-for-application+json",
-                getCourtApplicationJson3WithAddressUpdate(id2, id3, applicationId, caseId, defendantId, masterDefendantId, address , hearingId, fileName));
-    }
     public static Response initiateCourtProceedingsForCourtApplication(final String applicationId, final String caseId, final String hearingId, final String fileName) throws IOException {
         return postCommand(getWriteUrl("/initiate-application"),
                 "application/vnd.progression.initiate-court-proceedings-for-application+json",
@@ -136,21 +128,5 @@ public class ApplicationHelper {
                 .replace("MASTERDEFENDANTID", masterDefendantId)
                 .replace("HEARING_ID", hearingId);
         return payloadJson;
-    }
-
-    private static String getCourtApplicationJson3WithAddressUpdate(final String id2, final String id3, final String applicationId, final String caseId, final String defendantId,
-                                                                    final String masterDefendantId, final String address,
-                                                                    final String hearingId, final String fileName) throws IOException {
-        return Resources.toString(getResource(fileName), Charset.defaultCharset())
-                .replace("APPLICATION_ID", applicationId)
-                .replace("CASE_ID", caseId)
-                .replace("DEFENDANT_ID1", id2)
-                .replace("MASTERDEFENDANTID1", id2)
-                .replace("DEFENDANT_ID2", defendantId)
-                .replace("MASTERDEFENDANTID2", masterDefendantId)
-                .replace("DEFENDANT_ID3", id3)
-                .replace("MASTERDEFENDANTID3", id3)
-                .replace("ADDRESS", address)
-                .replace("HEARING_ID", hearingId);
     }
 }

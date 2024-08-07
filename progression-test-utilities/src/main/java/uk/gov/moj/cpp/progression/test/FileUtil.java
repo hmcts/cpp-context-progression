@@ -6,10 +6,8 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.util.Objects;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -44,13 +42,5 @@ public class FileUtil {
                 jsonReader.close();
             }
         }
-    }
-
-    public static JsonObject jsonFromString(final String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
-        final JsonObject object = jsonReader.readObject();
-        jsonReader.close();
-
-        return object;
     }
 }

@@ -17,7 +17,6 @@ import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllocationDecision;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.ContactNumber;
-import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAlias;
@@ -479,31 +478,6 @@ public class CoreTestTemplates {
                                 .map(entry -> prosecutionCase(args, Pair.p(entry.getKey(), entry.getValue())).build())
                                 .collect(toList())
                 );
-
-        if (args.hearingLanguage == HearingLanguage.WELSH) {
-            hearingBuilder.withHearingLanguage((HearingLanguage.WELSH));
-        } else {
-            hearingBuilder.withHearingLanguage((HearingLanguage.ENGLISH));
-        }
-        return hearingBuilder;
-    }
-
-    public static Hearing.Builder hearingForApplication(CoreTemplateArguments args) {
-
-        final Hearing.Builder hearingBuilder = Hearing.hearing()
-                .withId(randomUUID())
-                .withType(hearingType().build())
-                .withHearingLanguage((HearingLanguage.WELSH))
-                .withJurisdictionType(args.jurisdictionType)
-                .withReportingRestrictionReason((STRING.next()))
-                .withHearingDays(Stream.of(hearingDay().build()).collect(toList()))
-                .withCourtCentre(courtCentre().build())
-                .withJudiciary(singletonList(judiciaryRole(args).build()))
-                .withDefendantReferralReasons(singletonList(referralReason().build()))
-                .withHasSharedResults((false))
-                .withCourtApplications(asList(CourtApplication.courtApplication()
-                        .withId(UUID.randomUUID())
-                        .build()));
 
         if (args.hearingLanguage == HearingLanguage.WELSH) {
             hearingBuilder.withHearingLanguage((HearingLanguage.WELSH));

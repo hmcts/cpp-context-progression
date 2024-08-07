@@ -36,7 +36,6 @@
     "prosecutionCasesOrApplications": [
       {
         "caseOrApplicationReference": "TFL4359536",
-        "courtApplicationId": "e23d6bb2-4ba1-4c85-b3b8-9d64535ee3b3",
         "offences": [
           {
             "offenceCode": "PS90010",

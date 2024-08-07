@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -207,8 +206,8 @@ public class CourtDocumentQueryApi {
         final JsonObject prosecutionCase = appQueryResponse.payloadAsJsonObject().getJsonObject("prosecutionCase");
 
         final ProsecutionCase prosecutionCaseObj = jsonObjectToObjectConverter.convert(prosecutionCase, ProsecutionCase.class);
-        final String shortName = nonNull(prosecutionCaseObj.getProsecutor()) && nonNull(prosecutionCaseObj.getProsecutor().getProsecutorCode()) ? prosecutionCaseObj.getProsecutor().getProsecutorCode() : prosecutionCaseObj.getProsecutionCaseIdentifier().getProsecutionAuthorityCode();
-        final Optional<String> orgMatch  = usersGroupQueryService.validateNonCPSUserOrg(query.metadata(), userId, NON_CPS_PROSECUTORS, shortName);
+
+        final Optional<String> orgMatch  = usersGroupQueryService.validateNonCPSUserOrg(query.metadata(), userId, NON_CPS_PROSECUTORS, prosecutionCaseObj.getProsecutionCaseIdentifier().getProsecutionAuthorityCode());
 
         if(orgMatch.isPresent()) {
             if (ORGANISATION_MIS_MATCH.equals(orgMatch.get())) {

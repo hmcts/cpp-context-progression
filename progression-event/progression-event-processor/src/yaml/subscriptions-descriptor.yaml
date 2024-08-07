@@ -143,12 +143,6 @@ subscriptions_descriptor:
         - name: progression.event.hearing-moved-to-unallocated
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-moved-to-unallocated.json
 
-        - name: progression.event.application-defendant-update-requested
-          schema_uri: http://justice.gov.uk/progression/courts/progression.event.application-defendant-update-requested.json
-
-        - name: progression.event.application-hearing-defendant-updated
-          schema_uri: http://justice.gov.uk/progression/event/progression.event.application-hearing-defendant-updated.json
-
         # Generate Court Register
         - name: progression.event.court-register-generated
           schema_uri: http://justice.gov.uk/progression/courts/court-register-generated.json
@@ -477,9 +471,6 @@ subscriptions_descriptor:
 
         - name: progression.event.opa-press-list-notice-generated
           schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-result-list-notice-generated.json
-
-        - name: progression.event.remove-defendant-custodial-establishment-requested
-          schema_uri: http://justice.gov.uk/core/courts/remove-defendant-custodial-establishment-requested.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****

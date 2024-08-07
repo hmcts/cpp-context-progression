@@ -82,7 +82,7 @@ public class CourtCentreAggregateTest {
                 .withCustodyLocation(PrisonCourtRegisterCustodyLocation.prisonCourtRegisterCustodyLocation().withName("john smith").build())
                 .build();
 
-        final List<Object> eventStream = aggregate.createPrisonCourtRegister(courtCentreId, prisonCourtRegisterDocumentRequest, "Applicant").collect(toList());
+        final List<Object> eventStream = aggregate.createPrisonCourtRegister(courtCentreId, prisonCourtRegisterDocumentRequest).collect(toList());
         assertThat(eventStream.size(), is(1));
         final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = (PrisonCourtRegisterRecorded)eventStream.get(0);
         assertThat(prisonCourtRegisterRecorded.getClass(), is(equalTo(PrisonCourtRegisterRecorded.class)));
@@ -100,7 +100,7 @@ public class CourtCentreAggregateTest {
                 .withCustodyLocation(PrisonCourtRegisterCustodyLocation.prisonCourtRegisterCustodyLocation().withName("john smith").build())
                 .build();
 
-        final List<Object> eventStream = aggregate.createPrisonCourtRegister(courtCentreId, prisonCourtRegisterDocumentRequest, "Applicant").collect(toList());
+        final List<Object> eventStream = aggregate.createPrisonCourtRegister(courtCentreId, prisonCourtRegisterDocumentRequest).collect(toList());
         assertThat(eventStream.size(), is(1));
         final PrisonCourtRegisterWithoutRecipientsRecorded prisonCourtRegisterWithoutRecipientsRecorded = (PrisonCourtRegisterWithoutRecipientsRecorded)eventStream.get(0);
         assertThat(prisonCourtRegisterWithoutRecipientsRecorded.getClass(), is(equalTo(PrisonCourtRegisterWithoutRecipientsRecorded.class)));

@@ -34,14 +34,6 @@ public class CourtRegisterPdfPayloadGeneratorTest {
     }
 
     @Test
-    public void shouldMapPayloadForMultiCourtRegisterDocumentRequests() {
-        final JsonObject jsonObject = getPayload("progression.event.court-register-generated.json");
-        final CourtRegisterPdfPayloadGenerator courtRegisterPdfPayloadGenerator = new CourtRegisterPdfPayloadGenerator();
-        final JsonObject responseBody = courtRegisterPdfPayloadGenerator.mapPayload(jsonObject);
-        assertThat(responseBody.toString(), is(getPayload("courtRegisterPdfPayload-multiCourtRegisterDocumentRequests.json").toString()));
-    }
-
-    @Test
     public void shouldMapMinimumPayload() {
         final JsonObject body = getPayload("progression.add-court-register-document-min-payload.json");
         final CourtRegisterPdfPayloadGenerator courtRegisterPdfPayloadGenerator = new CourtRegisterPdfPayloadGenerator();

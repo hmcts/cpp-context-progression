@@ -4,7 +4,6 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static java.time.ZonedDateTime.now;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableSet;
@@ -49,7 +48,6 @@ import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.creat
 import static uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory.createSendingCommittalHearingInformationAdded;
 import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyPriorityHelper.getRetentionPolicyByPriority;
 import static uk.gov.moj.cpp.progression.aggregate.transformers.ProsecutionCaseTransformer.toUpdatedProsecutionCase;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.isAddressMatches;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getAllDefendantsOffences;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendant;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantEmail;
@@ -73,7 +71,6 @@ import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.NO_V
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.PENDING;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
-import static uk.gov.moj.cpp.progression.events.DefendantCustodialEstablishmentRemoved.defendantCustodialEstablishmentRemoved;
 import static uk.gov.moj.cpp.progression.events.CivilCaseExists.civilCaseExists;
 import static uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated.defendantDefenceOrganisationDisassociated;
 import static uk.gov.moj.cpp.progression.events.Reason.PLEA_ALREADY_SUBMITTED;
@@ -84,7 +81,6 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupRe
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllHearingOffencesUpdated;
-import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
@@ -138,13 +134,11 @@ import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
 import uk.gov.justice.core.courts.LaaReference;
-import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.LockStatus;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
-import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.OnlinePleasAllocation;
 import uk.gov.justice.core.courts.PartialMatchedDefendantSearchResultStored;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -1269,7 +1263,7 @@ public class CaseAggregate implements Aggregate {
 
     }
 
-    public Stream<Object> updateDefendantDetails(final DefendantUpdate updatedDefendant, final List<UUID> allHearingIdsForCase) {
+    public Stream<Object> updateDefendantDetails(final DefendantUpdate updatedDefendant) {
         LOGGER.debug("Defendant information is being updated.");
         final Stream.Builder<Object> builder = builder();
         // keep title if new title is blank.
@@ -1297,23 +1291,9 @@ public class CaseAggregate implements Aggregate {
                     .build();
         }
 
-        final List<UUID> filteredApplicationHearingIds = allHearingIdsForCase.stream()
-                                        .filter(id->!hearingIds.contains(id))
-                                        .collect(Collectors.toList());
-        if (isNotEmpty(filteredApplicationHearingIds)) {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("filteredApplicationHearingIds for which event raised : {}",filteredApplicationHearingIds);
-            }
-            filteredApplicationHearingIds.forEach(hearingId ->
-                    builder.add(ApplicationDefendantUpdateRequested.applicationDefendantUpdateRequested()
-                            .withDefendant(newDefendant)
-                            .withHearingId(hearingId)
-                            .build())
-            );
-        }
         builder.add(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
                 .withDefendant(newDefendant)
-                .withHearingIds(CollectionUtils.isNotEmpty(hearingIds) ? new ArrayList<>(hearingIds) : emptyList())
+                .withHearingIds(CollectionUtils.isNotEmpty(hearingIds) ? new ArrayList<>(this.hearingIds) : emptyList())
                 .build());
 
         if (shouldUpdateCustodialEstablishment(newDefendant.getId(), newDefendant.getPersonDefendant(), defendantsMap)) {
@@ -1334,65 +1314,6 @@ public class CaseAggregate implements Aggregate {
         }
 
         return apply(builder.build());
-    }
-
-    public Stream<Object> updateDefendantAddress(final DefendantUpdate updatedDefendant) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Defendant Address to be changed, defendantId : {}",updatedDefendant.getMasterDefendantId());
-        }
-        final uk.gov.justice.core.courts.Defendant orgDefendant = defendantsMap.get(updatedDefendant.getId());
-
-        final uk.gov.justice.core.courts.Defendant enrichedDefendant  ;
-        if (isOrganisationAddressToBeUpdated(orgDefendant, updatedDefendant)){
-            LOGGER.debug("Updating Organisation Defendant Address , defendantId : {}",updatedDefendant.getMasterDefendantId());
-            enrichedDefendant = uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(orgDefendant)
-                    .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
-                            .withValuesFrom(orgDefendant.getLegalEntityDefendant())
-                            .withOrganisation(organisation()
-                                    .withValuesFrom(orgDefendant.getLegalEntityDefendant().getOrganisation())
-                                    .withAddress(updatedDefendant.getLegalEntityDefendant().getOrganisation().getAddress())
-                                    .build())
-                            .build())
-                    .build();
-            return updateDefendantDetails(buildDefendantUpdateFromDefendant(enrichedDefendant), asList());
-        } else if (isPersonAddressToBeUpdated(orgDefendant, updatedDefendant)){
-            LOGGER.debug("Updating Person Defendant Address , defendantId : {}",updatedDefendant.getMasterDefendantId());
-            enrichedDefendant = uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(orgDefendant)
-                    .withPersonDefendant(PersonDefendant.personDefendant()
-                            .withValuesFrom(orgDefendant.getPersonDefendant())
-                            .withPersonDetails(uk.gov.justice.core.courts.Person.person()
-                                    .withValuesFrom(orgDefendant.getPersonDefendant().getPersonDetails())
-                                    .withAddress(updatedDefendant.getPersonDefendant().getPersonDetails().getAddress()).build()
-                            ).build()).build();
-            return updateDefendantDetails(buildDefendantUpdateFromDefendant(enrichedDefendant), asList());
-        }
-        return apply(empty());
-    }
-
-    private boolean isOrganisationAddressToBeUpdated(uk.gov.justice.core.courts.Defendant orgDefendant, DefendantUpdate updatedDefendant) {
-        final Optional<Address> orgLeAddress = ofNullable(orgDefendant)
-                .map(uk.gov.justice.core.courts.Defendant::getLegalEntityDefendant)
-                .map(LegalEntityDefendant::getOrganisation)
-                .map(Organisation::getAddress);
-        final Optional<Address> newLeAddress = ofNullable(updatedDefendant)
-                .map(DefendantUpdate::getLegalEntityDefendant)
-                .map(LegalEntityDefendant::getOrganisation)
-                .map(Organisation::getAddress);
-
-        return orgLeAddress.isPresent() && newLeAddress.isPresent() &&  !isAddressMatches(orgLeAddress.get(),newLeAddress.get());
-    }
-
-    private boolean  isPersonAddressToBeUpdated(uk.gov.justice.core.courts.Defendant orgDefendant, DefendantUpdate updatedDefendant) {
-        final Optional<Address> orgAddress = ofNullable(orgDefendant)
-                .map(uk.gov.justice.core.courts.Defendant::getPersonDefendant)
-                .map(PersonDefendant::getPersonDetails)
-                .map(uk.gov.justice.core.courts.Person::getAddress);
-        final Optional<Address> newAddress = ofNullable(updatedDefendant)
-                .map(DefendantUpdate::getPersonDefendant)
-                .map(PersonDefendant::getPersonDetails)
-                .map(uk.gov.justice.core.courts.Person::getAddress);
-
-        return orgAddress.isPresent() && newAddress.isPresent() && !isAddressMatches(orgAddress.get(),newAddress.get());
     }
 
     public Stream<Object> updateDefendantCustodialInformationDetails(final UpdateMatchedDefendantCustodialInformation updateMatchedDefendantCustodialInformation) {
@@ -1442,59 +1363,6 @@ public class CaseAggregate implements Aggregate {
                         .build());
             }
         }
-        return apply(builder.build());
-    }
-
-
-    public Stream<Object> removeDefendantCustodialEstablishment(final UUID masterDefendantId, final UUID defendantId, final UUID caseId, final List<UUID> allHearingIdsForCase) {
-        final Stream.Builder<Object> builder = builder();
-
-        final Optional<uk.gov.justice.core.courts.Defendant> defendantOptional = defendantsMap
-                .values()
-                .stream()
-                .filter(defendant -> masterDefendantId.equals(defendant.getMasterDefendantId()))
-                .findAny();
-
-        if (defendantOptional.isPresent()) {
-            final uk.gov.justice.core.courts.Defendant defendant = defendantOptional.get();
-            final PersonDefendant personDefendant = PersonDefendant.personDefendant()
-                    .withValuesFrom(defendant.getPersonDefendant())
-                    .withCustodialEstablishment(null)
-                    .build();
-
-            final uk.gov.justice.core.courts.Defendant newDefendant = uk.gov.justice.core.courts.Defendant.defendant()
-                    .withValuesFrom(defendant)
-                    .withPersonDefendant(personDefendant)
-                    .build();
-
-            builder.add(defendantCustodialEstablishmentRemoved()
-                    .withMasterDefendantId(masterDefendantId)
-                    .withDefendantId(defendantId)
-                    .withProsecutionCaseId(caseId)
-                    .build());
-
-            final List<UUID> filteredApplicationHearingIds = allHearingIdsForCase.stream()
-                    .filter(id->!hearingIds.contains(id))
-                    .collect(Collectors.toList());
-            if (isNotEmpty(filteredApplicationHearingIds)) {
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("filteredApplicationHearingIds for which event raised : {}",filteredApplicationHearingIds);
-                }
-                filteredApplicationHearingIds.forEach(hearingId ->
-                        builder.add(ApplicationDefendantUpdateRequested.applicationDefendantUpdateRequested()
-                                .withDefendant(buildDefendantUpdateFromDefendant(newDefendant))
-                                .withHearingId(hearingId)
-                                .build())
-                );
-            }
-
-            builder.add(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
-                    .withDefendant(buildDefendantUpdateFromDefendant(newDefendant))
-                    .withHearingIds(CollectionUtils.isNotEmpty(hearingIds) ? new ArrayList<>(this.hearingIds) : emptyList())
-                    .build());
-
-        }
-
         return apply(builder.build());
     }
 

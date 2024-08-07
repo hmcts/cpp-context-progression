@@ -64,7 +64,6 @@ public class CourtRegisterPdfPayloadGenerator {
                         .forEach(defendant -> defendant.getJsonArray("prosecutionCasesOrApplications").stream().map(JsonObject.class::cast).collect(Collectors.toList())
                                 .forEach(pcoa -> {
                                     final JsonObjectBuilder caseJson = Json.createObjectBuilder();
-                                    caseJson.add("defendantType", courtRegisterDocumentRequest.getString("defendantType", ""));
                                     buildNameAndAddress(defendant, caseJson);
                                     buildHearingDetails(defendant, caseJson);
                                     buildDefenceCounsel(defendant, caseJson);

@@ -1,16 +1,8 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.fromString;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
-import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
-
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
@@ -41,6 +33,12 @@ import uk.gov.moj.cpp.progression.value.object.DefendantVO;
 import uk.gov.moj.cpp.progression.value.object.EmailTemplateType;
 import uk.gov.moj.cpp.progression.value.object.HearingVO;
 
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -51,16 +49,14 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.fromString;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
 
 @SuppressWarnings({"squid:S3457", "squid:S3655"})
 @ServiceComponent(EVENT_PROCESSOR)
@@ -78,11 +74,6 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     public static final String MATCHED_MASTER_DEFENDANT_ID = "matchedMasterDefendantId";
     public static final String DEFENDANTS = "defendants";
     public static final String CUSTODIAL_ESTABLISHMENT = "custodialEstablishment";
-    public static final String LINKED_APPLICATIONS = "linkedApplications";
-    public static final String APPLICATION_ID = "applicationId";
-    public static final String DEFENDANT = "defendant";
-    public static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_ADDRESS_ON_APPLICATION = "progression.command.update-defendant-address-on-application";
-    public static final String HEARING_IDS = "hearingIds";
 
     @Inject
     private Sender sender;
@@ -120,11 +111,9 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
         LOGGER.debug("Received prosecution case defendant updated for caseId: " + defendant.getProsecutionCaseId());
 
         final JsonObject publicEventPayload = createObjectBuilder()
-                .add(DEFENDANT, objectToJsonObjectConverter.convert(updateDefendant(defendant))).build();
-        sender.send(
-                envelop(publicEventPayload)
-                        .withName(PUBLIC_CASE_DEFENDANT_CHANGED)
-                        .withMetadataFrom(jsonEnvelope));
+                .add("defendant", objectToJsonObjectConverter.convert(updateDefendant(defendant))).build();
+        sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_CASE_DEFENDANT_CHANGED).apply(publicEventPayload));
+
         if (nonNull(hearingIds)) {
             hearingIds.forEach(hearingId ->
                     sendDefendantUpdate(jsonEnvelope, defendant, hearingId));
@@ -145,28 +134,6 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
             }
         }
         handleUpdateDefendantCustodialInformationForApplication(jsonEnvelope, defendant, prosecutionCaseOptional);
-        handleUpdateActiveApplicationsOnCase(jsonEnvelope, defendant.getProsecutionCaseId().toString(), defendant);
-    }
-
-    public void handleUpdateActiveApplicationsOnCase(final JsonEnvelope jsonEnvelope, final String caseId, DefendantUpdate defendant) {
-        final Optional<JsonObject> activeApplicationsOnCaseOptional = progressionService.getActiveApplicationsOnCase(jsonEnvelope, caseId);
-        if (activeApplicationsOnCaseOptional.isPresent() && activeApplicationsOnCaseOptional.get().containsKey(LINKED_APPLICATIONS)){
-        activeApplicationsOnCaseOptional.get().getJsonArray(LINKED_APPLICATIONS).forEach(linkedApplicationJson->{
-                    final JsonObject linkedApplicationJsonObject = (JsonObject) linkedApplicationJson;
-                    final String applicationId = linkedApplicationJsonObject.getString(APPLICATION_ID);
-                    final JsonObjectBuilder updateDefendantAddressOnApplicationBuilder = Json.createObjectBuilder();
-                    if(nonNull(applicationId) && nonNull(linkedApplicationJsonObject.getJsonArray(HEARING_IDS))){
-                        updateDefendantAddressOnApplicationBuilder
-                                .add(APPLICATION_ID, applicationId)
-                                .add(DEFENDANT, objectToJsonObjectConverter.convert(updateDefendant(defendant)))
-                                .add(HEARING_IDS,linkedApplicationJsonObject.getJsonArray(HEARING_IDS));
-                        sender.send(
-                                envelop(updateDefendantAddressOnApplicationBuilder.build())
-                                        .withName(PROGRESSION_COMMAND_UPDATE_DEFENDANT_ADDRESS_ON_APPLICATION)
-                                        .withMetadataFrom(jsonEnvelope));
-                    }
-                });
-        }
     }
 
     private void handleUpdateDefendantCustodialInformationForApplication(JsonEnvelope jsonEnvelope, DefendantUpdate defendant, Optional<JsonObject> prosecutionCaseOptional) {
@@ -177,13 +144,10 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
                     final JsonObject linkedApplicationJsonObject = (JsonObject) linkedApplicationSummaryJson;
                     final JsonObjectBuilder updateCustodialInformationForApplicationBuilder = Json.createObjectBuilder();
                     final String subjectId = linkedApplicationJsonObject.getString("subjectId", null);
-                    if (nonNull(subjectId) && nonNull(defendant.getMasterDefendantId()) && subjectId.equalsIgnoreCase(defendant.getMasterDefendantId().toString())) {
-                        updateCustodialInformationForApplicationBuilder.add(APPLICATION_ID, linkedApplicationJsonObject.getString(APPLICATION_ID));
-                        updateCustodialInformationForApplicationBuilder.add(DEFENDANT, objectToJsonObjectConverter.convert(updateDefendant(defendant)));
-                        sender.send(
-                                Enveloper.envelop(updateCustodialInformationForApplicationBuilder.build())
-                                        .withName(PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION_FOR_APPLICATION)
-                                        .withMetadataFrom(jsonEnvelope));
+                    if (nonNull(subjectId) && subjectId.equalsIgnoreCase(defendant.getMasterDefendantId().toString())) {
+                        updateCustodialInformationForApplicationBuilder.add("applicationId", linkedApplicationJsonObject.getString("applicationId"));
+                        updateCustodialInformationForApplicationBuilder.add("defendant", objectToJsonObjectConverter.convert(updateDefendant(defendant)));
+                        sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION_FOR_APPLICATION).apply(updateCustodialInformationForApplicationBuilder.build()));
                     }
 
                 });
@@ -375,13 +339,10 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
 
     private void sendDefendantUpdate(final JsonEnvelope envelope, final DefendantUpdate defendantUpdate, final UUID hearingId) {
         final JsonObject updateDefendantPayload = createObjectBuilder()
-                .add(DEFENDANT, objectToJsonObjectConverter.convert(defendantUpdate))
+                .add("defendant", objectToJsonObjectConverter.convert(defendantUpdate))
                 .add(HEARING_ID, hearingId.toString())
                 .build();
-        sender.send(
-                Enveloper.envelop(updateDefendantPayload)
-                        .withName(COMMAND_UPDATE_DEFENDANT_FOR_HEARING)
-                        .withMetadataFrom(envelope));
+        sender.send(enveloper.withMetadataFrom(envelope, COMMAND_UPDATE_DEFENDANT_FOR_HEARING).apply(updateDefendantPayload));
     }
 
     private DefendantUpdate updateDefendant(final DefendantUpdate defendant) {

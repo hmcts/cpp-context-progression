@@ -83,7 +83,6 @@ public class ApplicationAtAGlanceHelper {
         return applicationBuilder.build();
     }
 
-    @SuppressWarnings({"squid:MethodCyclomaticComplexity"})
     public ApplicantDetails getApplicantDetails(final CourtApplication courtApplication) {
         final ApplicantDetails.Builder applicantDetailsBuilder = applicantDetails();
         final CourtApplicationParty applicant = courtApplication.getApplicant();
@@ -124,9 +123,6 @@ public class ApplicationAtAGlanceHelper {
             }
         }
         applicantDetailsBuilder.withIsSubject(courtApplication.getSubject() != null && applicant.getId().equals(courtApplication.getSubject().getId()));
-        if(nonNull(applicant.getUpdatedOn())){
-            applicantDetailsBuilder.withUpdatedOn(applicant.getUpdatedOn());
-        }
         return applicantDetailsBuilder.build();
     }
 
@@ -171,7 +167,6 @@ public class ApplicationAtAGlanceHelper {
                 .collect(toList());
     }
 
-    @SuppressWarnings({"squid:MethodCyclomaticComplexity"})
     private RespondentDetails getRespondentDetails(final CourtApplicationParty respondent, final CourtApplicationParty subject) {
         final RespondentDetails.Builder respondentDetailsBuilder = respondentDetails();
         ofNullable(respondent.getProsecutingAuthority()).map(ProsecutingAuthority::getProsecutionAuthorityCode).ifPresent(respondentDetailsBuilder::withName);
@@ -206,9 +201,6 @@ public class ApplicationAtAGlanceHelper {
             updateRespondentDetailsWithProsecutingAuthority(respondent, respondentDetailsBuilder);
         }
         respondentDetailsBuilder.withIsSubject(subject != null && respondent.getId().equals(subject.getId()));
-        if(nonNull(respondent.getUpdatedOn())){
-            respondentDetailsBuilder.withUpdatedOn(respondent.getUpdatedOn());
-        }
         return respondentDetailsBuilder.build();
     }
 

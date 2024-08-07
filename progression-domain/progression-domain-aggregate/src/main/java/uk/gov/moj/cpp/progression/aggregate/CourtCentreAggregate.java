@@ -26,7 +26,6 @@ import uk.gov.justice.progression.courts.NotifyCourtRegister;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -64,22 +63,16 @@ public class CourtCentreAggregate implements Aggregate {
         return apply(Stream.of(new CourtRegisterRecorded(courtCentreId, courtRegisterDocumentRequest)));
     }
 
-    public Stream<Object> createPrisonCourtRegister(final UUID courtCentreId, final PrisonCourtRegisterDocumentRequest prisonCourtRegisterDocumentRequest, final String defendantType) {
+    public Stream<Object> createPrisonCourtRegister(final UUID courtCentreId, final PrisonCourtRegisterDocumentRequest prisonCourtRegisterDocumentRequest) {
 
         if (prisonCourtRegisterDocumentRequest.getRecipients() == null || prisonCourtRegisterDocumentRequest.getRecipients().isEmpty()) {
             return apply(Stream.of(PrisonCourtRegisterWithoutRecipientsRecorded.prisonCourtRegisterWithoutRecipientsRecorded()
                     .withCourtCentreId(courtCentreId)
                     .withPrisonCourtRegister(prisonCourtRegisterDocumentRequest).build()));
         } else {
-            final PrisonCourtRegisterRecorded.Builder prisonCourtRegisterBuilder = PrisonCourtRegisterRecorded.prisonCourtRegisterRecorded()
+            return apply(Stream.of(PrisonCourtRegisterRecorded.prisonCourtRegisterRecorded()
                     .withCourtCentreId(courtCentreId)
-                    .withPrisonCourtRegister(prisonCourtRegisterDocumentRequest);
-
-            if (Objects.nonNull(defendantType)) {
-                prisonCourtRegisterBuilder.withDefendantType(defendantType);
-            }
-            
-            return apply(Stream.of(prisonCourtRegisterBuilder.build()));
+                    .withPrisonCourtRegister(prisonCourtRegisterDocumentRequest).build()));
         }
     }
 

@@ -102,7 +102,6 @@ public class CourtRegisterEventProcessorTest {
         final UUID courtCentreId = UUID.randomUUID();
         final CourtRegisterDocumentRequest courtRegisterDocumentRequest = CourtRegisterDocumentRequest.courtRegisterDocumentRequest()
                 .withCourtCentreId(courtCentreId)
-                .withDefendantType("applicant")
                 .withFileName("some file name").build();
         final CourtRegisterGenerated courtRegisterGenerated = CourtRegisterGenerated.courtRegisterGenerated()
                 .withCourtRegisterDocumentRequests(Lists.newArrayList(courtRegisterDocumentRequest)).build();

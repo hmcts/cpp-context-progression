@@ -12,14 +12,14 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationType;
 import static uk.gov.justice.core.courts.CourtOrderOffence.courtOrderOffence;
 import static uk.gov.justice.core.courts.HearingResultedApplicationUpdated.hearingResultedApplicationUpdated;
 import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import uk.gov.justice.core.courts.Address;
+import org.mockito.verification.VerificationMode;
 import uk.gov.justice.core.courts.ApplicationEjected;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -33,19 +33,11 @@ import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrder;
-import uk.gov.justice.core.courts.DefendantAddressOnApplicationUpdated;
-import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.LegalEntityDefendant;
-import uk.gov.justice.core.courts.LinkType;
-import uk.gov.justice.core.courts.MasterDefendant;
-import uk.gov.justice.core.courts.Organisation;
-import uk.gov.justice.core.courts.Person;
-import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
@@ -68,7 +60,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplic
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -575,170 +566,4 @@ public class CourtApplicationEventListenerTest {
         assertThat(courtApplication.getCourtOrder().getCourtOrderOffences().get(0).getOffence().getJudicialResults(), nullValue());
 
     }
-
-    @Test
-    public void shouldNotUpdateDefendantAddressOnApplication_ApplicationNotExists(){
-        final UUID applicationId = randomUUID();
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(payload, DefendantAddressOnApplicationUpdated.class)).thenReturn(
-                DefendantAddressOnApplicationUpdated.defendantAddressOnApplicationUpdated()
-                        .withApplicationId(applicationId)
-                                .withDefendant(DefendantUpdate.defendantUpdate().build()).build());
-        when(repository.findByApplicationId(applicationId)).thenReturn(null);
-        eventListener.processDefendantAddressOnApplicationUpdated(envelope);
-        verify(repository, times(0)).save(any());
-    }
-
-    @Test
-    public void shouldUpdateApplicantAddressOnApplication_PersonDefendant(){
-        final UUID applicationId = randomUUID();
-        final UUID masterDefendantId = randomUUID();
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(payload, DefendantAddressOnApplicationUpdated.class)).thenReturn(
-                DefendantAddressOnApplicationUpdated.defendantAddressOnApplicationUpdated()
-                        .withApplicationId(applicationId)
-                        .withDefendant(buildUpdatedDefendant(true, masterDefendantId)).build());
-        final CourtApplicationEntity persistedEntity = new CourtApplicationEntity();
-        persistedEntity.setApplicationId(applicationId);
-        persistedEntity.setPayload(payload.toString());
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
-        when(stringToJsonObjectConverter.convert(payload.toString())).thenReturn(payload);
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(payload, CourtApplication.class)).thenReturn(CourtApplication.courtApplication()
-                .withId(applicationId)
-                .withType(courtApplicationType().withLinkType(LinkType.LINKED).build())
-                .withApplicant(buildOriginalDefendant(true, masterDefendantId))
-                .build());
-
-        final InitiateCourtApplicationEntity initiateCourtApplicationEntity = Mockito.mock(InitiateCourtApplicationEntity.class);
-        when(initiateCourtApplicationRepository.findBy(applicationId)).thenReturn(initiateCourtApplicationEntity);
-        final JsonObject entityPayload = createObjectBuilder().build();
-        when(stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload())).thenReturn(entityPayload);
-        when(jsonObjectToObjectConverter.convert(eq(entityPayload), eq(InitiateCourtApplicationProceedings.class))).thenReturn(Mockito.mock(InitiateCourtApplicationProceedings.class));
-        when(objectToJsonObjectConverter.convert(any(InitiateCourtApplicationProceedings.class))).thenReturn(createObjectBuilder().build());
-
-        eventListener.processDefendantAddressOnApplicationUpdated(envelope);
-        verify(repository).save(argumentCaptor.capture());
-        final ArgumentCaptor<InitiateCourtApplicationEntity> initiateCourtApplicationEntityArgumentCaptor = ArgumentCaptor.forClass(InitiateCourtApplicationEntity.class);
-        verify(initiateCourtApplicationRepository).save(initiateCourtApplicationEntityArgumentCaptor.capture());
-    }
-
-    @Test
-    public void shouldUpdateSubjectAddressOnApplication_PersonDefendant(){
-        final UUID applicationId = randomUUID();
-        final UUID masterDefendantId = randomUUID();
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(payload, DefendantAddressOnApplicationUpdated.class)).thenReturn(
-                DefendantAddressOnApplicationUpdated.defendantAddressOnApplicationUpdated()
-                        .withApplicationId(applicationId)
-                        .withDefendant(buildUpdatedDefendant(true, masterDefendantId)).build());
-        final CourtApplicationEntity persistedEntity = new CourtApplicationEntity();
-        persistedEntity.setApplicationId(applicationId);
-        persistedEntity.setPayload(payload.toString());
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
-        when(stringToJsonObjectConverter.convert(payload.toString())).thenReturn(payload);
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(payload, CourtApplication.class)).thenReturn(CourtApplication.courtApplication()
-                .withId(applicationId)
-                .withType(courtApplicationType().withLinkType(LinkType.LINKED).build())
-                .withSubject(buildOriginalDefendant(true, masterDefendantId))
-                .build());
-        final InitiateCourtApplicationEntity initiateCourtApplicationEntity = Mockito.mock(InitiateCourtApplicationEntity.class);
-        when(initiateCourtApplicationRepository.findBy(applicationId)).thenReturn(initiateCourtApplicationEntity);
-        final JsonObject entityPayload = createObjectBuilder().build();
-        when(stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload())).thenReturn(entityPayload);
-        when(jsonObjectToObjectConverter.convert(eq(entityPayload), eq(InitiateCourtApplicationProceedings.class))).thenReturn(Mockito.mock(InitiateCourtApplicationProceedings.class));
-        when(objectToJsonObjectConverter.convert(any(InitiateCourtApplicationProceedings.class))).thenReturn(createObjectBuilder().build());
-
-        eventListener.processDefendantAddressOnApplicationUpdated(envelope);
-        verify(repository).save(argumentCaptor.capture());
-        final ArgumentCaptor<InitiateCourtApplicationEntity> initiateCourtApplicationEntityArgumentCaptor = ArgumentCaptor.forClass(InitiateCourtApplicationEntity.class);
-        verify(initiateCourtApplicationRepository).save(initiateCourtApplicationEntityArgumentCaptor.capture());
-    }
-
-    @Test
-    public void shouldUpdateRespondentsAddressOnApplication_LegalEntityDefendant(){
-        final UUID applicationId = randomUUID();
-        final UUID masterDefendantId = randomUUID();
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(payload, DefendantAddressOnApplicationUpdated.class)).thenReturn(
-                DefendantAddressOnApplicationUpdated.defendantAddressOnApplicationUpdated()
-                        .withApplicationId(applicationId)
-                        .withDefendant(buildUpdatedDefendant(false, masterDefendantId)).build());
-        final CourtApplicationEntity persistedEntity = new CourtApplicationEntity();
-        persistedEntity.setApplicationId(applicationId);
-        persistedEntity.setPayload(payload.toString());
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
-        when(stringToJsonObjectConverter.convert(payload.toString())).thenReturn(payload);
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(payload, CourtApplication.class)).thenReturn(CourtApplication.courtApplication()
-                .withId(applicationId)
-                .withType(courtApplicationType().withLinkType(LinkType.LINKED).build())
-                .withSubject(buildOriginalDefendant(true, randomUUID()))
-                .withRespondents(Arrays.asList(buildOriginalDefendant(false, masterDefendantId)))
-                .build());
-        final InitiateCourtApplicationEntity initiateCourtApplicationEntity = Mockito.mock(InitiateCourtApplicationEntity.class);
-        when(initiateCourtApplicationRepository.findBy(applicationId)).thenReturn(initiateCourtApplicationEntity);
-        final JsonObject entityPayload = createObjectBuilder().build();
-        when(stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload())).thenReturn(entityPayload);
-        when(jsonObjectToObjectConverter.convert(eq(entityPayload), eq(InitiateCourtApplicationProceedings.class))).thenReturn(Mockito.mock(InitiateCourtApplicationProceedings.class));
-        when(objectToJsonObjectConverter.convert(any(InitiateCourtApplicationProceedings.class))).thenReturn(createObjectBuilder().build());
-
-        eventListener.processDefendantAddressOnApplicationUpdated(envelope);
-        verify(repository).save(argumentCaptor.capture());
-        final ArgumentCaptor<InitiateCourtApplicationEntity> initiateCourtApplicationEntityArgumentCaptor = ArgumentCaptor.forClass(InitiateCourtApplicationEntity.class);
-        verify(initiateCourtApplicationRepository).save(initiateCourtApplicationEntityArgumentCaptor.capture());
-    }
-
-    private static CourtApplicationParty buildOriginalDefendant(boolean isPersonDefendant, final UUID masterDefendantId) {
-        final Address originalAddress = Address.address().withAddress1("Old Address 1").withAddress2("Old Address 2").withPostcode("RG2 1WE").build();
-        if(isPersonDefendant) {
-            return CourtApplicationParty.courtApplicationParty()
-                    .withMasterDefendant(MasterDefendant.masterDefendant()
-                            .withMasterDefendantId(masterDefendantId)
-                            .withPersonDefendant(PersonDefendant.personDefendant()
-                                    .withPersonDetails(Person.person()
-                                            .withAddress(originalAddress)
-                                            .build())
-                                    .build())
-                            .build())
-                    .build();
-        }else{
-            return CourtApplicationParty.courtApplicationParty()
-                    .withMasterDefendant(MasterDefendant.masterDefendant()
-                            .withMasterDefendantId(masterDefendantId)
-                            .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
-                                    .withOrganisation(Organisation.organisation()
-                                            .withAddress(originalAddress)
-                                            .build())
-                                    .build())
-                            .build())
-                    .build();
-        }
-    }
-
-    private static DefendantUpdate buildUpdatedDefendant(boolean isPersonDefendant, final UUID masterDefendantId) {
-        final Address updatedAddress = Address.address().withAddress1("New Address 1").withAddress2("New Address 2").withPostcode("RG1 2PQ").build();
-        if(isPersonDefendant){
-            return DefendantUpdate.defendantUpdate()
-                    .withId(randomUUID())
-                    .withMasterDefendantId(masterDefendantId)
-                    .withPersonDefendant(PersonDefendant.personDefendant()
-                            .withPersonDetails(Person.person()
-                                    .withAddress(updatedAddress)
-                                    .build())
-                            .build())
-                    .build();
-        }else{
-            return DefendantUpdate.defendantUpdate()
-                    .withId(randomUUID())
-                    .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
-                            .withOrganisation(Organisation.organisation()
-                                    .withAddress(updatedAddress)
-                                    .build())
-                            .build())
-                    .build();
-        }
-    }
-
 }

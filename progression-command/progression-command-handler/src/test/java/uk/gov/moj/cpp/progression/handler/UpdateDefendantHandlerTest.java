@@ -52,7 +52,6 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.command.CustodialEstablishment;
 import uk.gov.moj.cpp.progression.command.UpdateMatchedDefendantCustodialInformation;
-import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,9 +94,6 @@ public class UpdateDefendantHandlerTest {
 
     private CaseAggregate aggregate;
     private HearingAggregate hearingAggregate;
-
-    @Mock
-    private ProsecutionCaseQueryService prosecutionCaseQueryService;
 
     @Before
     public void setup() {
