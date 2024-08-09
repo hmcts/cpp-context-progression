@@ -69,12 +69,15 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.RelatedReferenceRep
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import net.sf.cglib.core.Local;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -231,7 +234,10 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetDefendantPersonalDetails() {
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
-        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+        final Map<UUID, LocalDate> defendantUpdatedOn = new HashMap<>();
+        defendantUpdatedOn.put(getProsecutionCaseWithCaseDetails().getDefendants().get(0).getId(), LocalDate.now());
+        defendantUpdatedOn.put(getProsecutionCaseWithCaseDetails().getDefendants().get(1).getId(), LocalDate.now().minusDays(10));
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(defendantUpdatedOn);
         assertThat(defendants, notNullValue());
         assertThat(defendants.size(), is(3));
 
@@ -247,6 +253,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantSmith.getRemandStatus(), is(REMAND_STATUS));
         assertThat(defendantSmith.getDriverNumber(), is(DRIVER_NUMBER));
         assertThat(defendantSmith.getGender(), is(DRIVER_GENDER));
+        assertThat(defendantSmith.getUpdatedOn(), is(LocalDate.now()));
 
         final CaagDefendants defendantRambo = defendants.get(1);
         assertThat(defendantRambo.getMasterDefendantId(), is(JOHN_RAMBO_ID));
@@ -260,13 +267,16 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantRambo.getRemandStatus(), nullValue());
         assertThat(defendantRambo.getDriverNumber(), nullValue());
         assertThat(defendantRambo.getGender(), nullValue());
+        assertThat(defendantRambo.getUpdatedOn(), is(LocalDate.now().minusDays(10)));
     }
 
     @Test
     public void shouldGetDefendantPersonalDetailsWithMultipleNationalities() {
 
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
-        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+        final Map<UUID, LocalDate> defendantUpdatedOn = new HashMap<>();
+        defendantUpdatedOn.put(getProsecutionCaseWithCaseDetails().getDefendants().get(2).getId(), LocalDate.now().minusDays(10));
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(defendantUpdatedOn);
 
         assertThat(defendants, notNullValue());
         assertThat(defendants.size(), is(3));
@@ -275,6 +285,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(defendantSmith.getFirstName(), is("Alan"));
         assertThat(defendantSmith.getLastName(), is("Smith"));
         assertThat(defendantSmith.getNationality(), is(String.format("%s, %s", NATIONALITY_DESCRIPTION, ADD_NATIONALITY_DESCRIPTION)));
+        assertThat(defendantSmith.getUpdatedOn(), is(LocalDate.now().minusDays(10)));
     }
 
 
@@ -282,7 +293,7 @@ public class CaseAtAGlanceHelperTest {
     public void shouldGetDefendantMarkerWhenDefendantYouth() {
 
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
-        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(new HashMap<>());
 
         assertThat(defendants, notNullValue());
         assertThat(defendants.size(), is(3));
@@ -296,7 +307,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetDefendantOffenceDetails() {
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
-        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(new HashMap<>());
 
         final CaagDefendants defendantSmith = defendants.get(0);
         assertThat(defendantSmith.getCaagDefendantOffences().isEmpty(), is(false));
@@ -341,7 +352,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetDefendantOffenceResultDetails() {
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
-        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(new HashMap<>());
         final CaagDefendants defendantSmith = defendants.get(0);
 
         assertThat(defendantSmith.getCaagDefendantOffences().get(0).getCaagResults().isEmpty(), is(false));
@@ -359,7 +370,7 @@ public class CaseAtAGlanceHelperTest {
     public void shouldGetDefendantOffenceResultDetailsInDescendingOrder() {
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
 
-        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(new HashMap<>());
 
         final CaagDefendants defendantSmith = defendants.get(0);
         final List<CaagResults> caagResults = defendantSmith.getCaagDefendantOffences().get(0).getCaagResults();
@@ -375,7 +386,7 @@ public class CaseAtAGlanceHelperTest {
     public void shouldGetDefendantPncAndAsn() {
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
 
-        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(new HashMap<>());
 
         final CaagDefendants defendant1 = defendants.get(1);
         assertThat(defendant1.getPncId(), is(PNC_ID));
@@ -385,7 +396,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetDefendantWithLegalAidStatus() {
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
-        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(new HashMap<>());
         final CaagDefendants defendantSmith = defendants.get(0);
         assertThat(defendantSmith.getLegalAidStatus(), is(LEGAL_AID_STATUS));
     }
@@ -393,7 +404,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetDefendantLegalEntityOrganisationDetails() {
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithDefendantLegalEntity(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
-        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(new HashMap<>());
 
         assertThat(defendants, notNullValue());
         assertThat(defendants.size(), is(1));
@@ -407,7 +418,7 @@ public class CaseAtAGlanceHelperTest {
     @Test
     public void shouldGetCaagDefendantsListReturnThreeSetOfResults() {
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
-        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(new HashMap<>());
 
         final CaagDefendants firstDefendant = defendants.get(0);
         final CaagDefendants secondDefendant = defendants.get(1);
@@ -464,7 +475,7 @@ public class CaseAtAGlanceHelperTest {
                 .build();
 
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
-        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(new HashMap<>());
 
         assertThat(defendants.get(0).getCtlExpiryDate(), nullValue());
         assertThat(defendants.get(0).getCtlExpiryCountDown(), nullValue());
@@ -498,7 +509,7 @@ public class CaseAtAGlanceHelperTest {
                 .build();
 
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
-        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(new HashMap<>());
 
         assertThat(defendants.get(0).getCtlExpiryDate(), is(timeLimit1));
         assertThat(defendants.get(0).getCtlExpiryCountDown(), is((10)));
@@ -532,7 +543,7 @@ public class CaseAtAGlanceHelperTest {
                 .build();
 
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, getCaseHearings(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
-        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList();
+        final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(new HashMap<>());
 
         assertThat(defendants.get(0).getCtlExpiryDate(), is(timeLimit1));
         assertThat(defendants.get(0).getCtlExpiryCountDown(), is((-10)));

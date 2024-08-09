@@ -34,6 +34,9 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.update-defendant-for-prosecution-case+json:
             example: !include json/progression.command.update-defendant-for-prosecution-case.json
             schema: !include json/schema/progression.command.update-defendant-for-prosecution-case.json
+        application/vnd.progression.command.update-defendant-address-on-case+json:
+            example: !include json/progression.command.update-defendant-address-on-case.json
+            schema: !include json/schema/progression.command.update-defendant-address-on-case.json
         application/vnd.progression.command.update-defendant-for-matched-defendant+json:
             example: !include json/progression.command.update-defendant-for-matched-defendant.json
             schema: !include json/schema/progression.command.update-defendant-for-matched-defendant.json
@@ -539,6 +542,15 @@ baseUri:  message://command/handler/message/progression
             example: !include json/progression.command.update-defendant-custodial-information-for-application.json
             schema: !include json/schema/progression.command.update-defendant-custodial-information-for-application.json
 
+        application/vnd.progression.command.update-defendant-address-on-application+json:
+          example: !include json/progression.command.update-defendant-address-on-application.json
+          schema: !include json/schema/progression.command.update-defendant-address-on-application.json
+
+        application/vnd.progression.command.remove-defendant-custodial-establishment-from-case+json:
+            example: !include json/progression.command.remove-defendant-custodial-establishment-from-case.json
+            schema: !include json/schema/progression.command.remove-defendant-custodial-establishment-from-case.json
+
+
         application/vnd.progression.command.add-online-plea-allocation+json:
             example: !include json/progression.command.add-online-plea-allocation.json
             schema: !include json/schema/progression.command.add-online-plea-allocation.json
@@ -663,8 +675,14 @@ baseUri:  message://command/handler/message/progression
             example: !include json/progression.command.extend-custody-time-limit.json
             schema:  !include json/schema/progression.command.extend-custody-time-limit.json
         application/vnd.progression.command.add-or-store-defendants-and-listing-hearing-requests+json:
-            example: !include json/progression.command.add-or-store-defendants-and-listing-hearing-requests.json
-            schema:  !include json/schema/progression.command.add-or-store-defendants-and-listing-hearing-requests.json
+          example: !include json/progression.command.add-or-store-defendants-and-listing-hearing-requests.json
+          schema: !include json/schema/progression.command.add-or-store-defendants-and-listing-hearing-requests.json
+        application/vnd.progression.command.update.hearing.application.defendant+json:
+            example: !include json/progression.command.update.hearing.application.defendant.json
+            schema:  !include json/schema/progression.command.update.hearing.application.defendant.json
+        application/vnd.progression.command.update-application-defendant+json:
+          example: !include json/progression.command.update-application-defendant.json
+          schema: !include json/schema/progression.command.update-application-defendant.json
         application/vnd.progression.command.create-prosecution-case-in-hearing+json:
             schema: !include json/schema/progression.command.create-prosecution-case-in-hearing.json
             example: !include json/progression.command.create-prosecution-case-in-hearing.json

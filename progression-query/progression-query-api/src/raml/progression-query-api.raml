@@ -112,6 +112,9 @@ protocols: [ HTTP, HTTPS ]
             responseType: application/vnd.progression.query.case.allhearingtypes+json
             name: progression.query.case.allhearingtypes
         (mapping):
+            responseType: application/vnd.progression.query.case.allhearings+json
+            name: progression.query.case.allhearings
+        (mapping):
             responseType: application/vnd.progression.query.prosecutioncase-details+json
             name: progression.query.prosecutioncase-details
         (mapping):
@@ -144,6 +147,9 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.case.allhearingtypes+json:
                     example:  !include json/progression.query.case.allhearingtypes.json
                     schema:  !include json/schema/progression.query.case.allhearingtypes.json
+                  application/vnd.progression.query.case.allhearings+json:
+                    example: !include json/progression.query.case.allhearings.json
+                    schema: !include json/schema/progression.query.case.allhearings.json
                   application/vnd.progression.query.prosecutioncase-details+json:
                     example:  !include json/progression.query.prosecutioncase-details.json
                     schema:  !include json/schema/progression.query.prosecutioncase-details.json
@@ -511,6 +517,27 @@ protocols: [ HTTP, HTTPS ]
                   application/vnd.progression.query.case.status-for-application+json:
                     example:  !include json/progression.query.case.status-for-application.json
                     schema:  !include json/schema/progression.query.case.status-for-application.json
+
+/applications/{prosecutionCaseId}:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+  get:
+    description: |
+      Return the application ids of the applications linked with prosecutioncaseid.
+      ...
+      (mapping):
+            responseType: application/vnd.progression.query.active-applications-on-case+json
+            name: progression.query.active-applications-on-case
+      ...
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.active-applications-on-case+json:
+            example: !include json/progression.query.active-applications-on-case.json
+            schema: !include json/schema/progression.query.active-applications-on-case.json
 
 
 /applications/{applicationId}/extract:

@@ -187,6 +187,9 @@ public class ProgressionService {
     private static final String REMIT_RESULT_IDS = "remitResultIds";
     private static final String IS_BOX_HEARING = "isBoxHearing";
 
+    private static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
+    private static final String PROGRESSION_QUERY_ACTIVE_APPLICATIONS_ON_CASE = "progression.query.active-applications-on-case";
+
     private DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd MMMM yyyy");
     private Map<String, List<CpResultActionMapping>> remitResultIds = new ConcurrentHashMap<>(1);
 
@@ -760,6 +763,16 @@ public class ProgressionService {
         final JsonEnvelope response = requester.requestAsAdmin(request);
         return Country.getCountryByName(response.payloadAsJsonObject().getString("country"));
 
+    }
+
+    public Optional<JsonObject> getActiveApplicationsOnCase(final JsonEnvelope envelope, final String caseId){
+        Optional<JsonObject> result = Optional.empty();
+        final JsonObject payload = Json.createObjectBuilder().add(PROSECUTION_CASE_ID, caseId).build();
+        final JsonEnvelope activeLinkedApplications = requester.request(enveloper.withMetadataFrom(envelope, PROGRESSION_QUERY_ACTIVE_APPLICATIONS_ON_CASE).apply(payload));
+        if (!activeLinkedApplications.payloadAsJsonObject().isEmpty()) {
+            result = Optional.of(activeLinkedApplications.payloadAsJsonObject());
+        }
+        return result;
     }
 
     public Optional<JsonObject> getProsecutionCaseDetailById(final JsonEnvelope envelope, final String caseId) {

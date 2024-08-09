@@ -71,6 +71,21 @@ public class ProsecutionCaseUpdateDefendantWithMatchedHelper extends AbstractTes
 
     }
 
+    public static Response initiateCourtProceedingsWithCustodialEstablishment(final String caseId,
+                                                                        final String defendantId,
+                                                                        final String masterDefendantId) throws IOException {
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings+json",
+                Resources.toString(Resources.getResource("progression.command.initiate-court-proceedings-with-custodial-establishment.json"),
+                        Charset.defaultCharset())
+                        .replaceAll("RANDOM_CASE_ID", caseId)
+                        .replaceAll("RANDOM_REFERENCE", generateUrn())
+                        .replaceAll("RANDOM_DEFENDANT_ID", defendantId)
+                        .replaceAll("RANDOM_MASTER_DEFENDANT_ID", masterDefendantId)
+        );
+
+    }
+
     public static Matcher[] getUpdatedDefendantMatchers(final String rootPath, final String caseId, final String defendantId, List<Matcher> additionalMatchers) {
         List<Matcher> matchers = newArrayList(
                 withJsonPath(rootPath+".id", is(caseId)),

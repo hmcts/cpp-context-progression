@@ -297,7 +297,7 @@ public class StatDecLetterServiceTest {
                 courtCentre, courtCentreJson, localJusticeArea, courtApplication.getApplicant(), JurisdictionType.MAGISTRATES, STAT_DEC_VIRTUAL_HEARING);
 
         assertThat(statDacAppointmentLetterPayload.getCaseApplicationReferences().get(0), is (courtApplication.getApplicationReference()));
-        assertThat(statDacAppointmentLetterPayload.getCourtAddress(), nullValue());
+        assertThat(statDacAppointmentLetterPayload.getCourtAddress(), notNullValue());
         assertThat(statDacAppointmentLetterPayload.getOrderingCourt().getCourtCentreName(), is(courtCentre.getName()));
         assertThat(statDacAppointmentLetterPayload.getOrderingCourt().getLjaCode(), is("008"));
         assertThat(statDacAppointmentLetterPayload.getOrderingCourt().getLjaName(), is("Manchester Courts"));

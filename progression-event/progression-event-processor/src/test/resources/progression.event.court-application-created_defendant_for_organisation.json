@@ -1,0 +1,219 @@
+{
+  "courtApplication": {
+    "applicant": {
+      "id": "827c04d7-e4a2-4c1d-bfa4-cc216eb6f25f",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "1735c709-0e37-4529-aaef-38b549c6d510",
+            "caseReference": "28NR1760147",
+            "defendantId": "0b39e9c3-afad-428d-a246-02785dd20b15"
+          }
+        ],
+        "legalEntityDefendant": {
+          "organisation": {
+            "address": {
+              "address1": "9999D9999AAAA",
+              "address2": "Woodldne",
+              "address3": "addressline 3",
+              "address4": "Brcstol",
+              "address5": "Avcn"
+            },
+            "contact": {
+              "primaryEmail": "ORG.TEST011760147@gmail.com",
+              "secondaryEmail": "ORG.TEST021760147@gmail.com",
+              "work": "0201760147"
+            },
+            "name": "Organisation-1760147 Ltd."
+          }
+        },
+        "masterDefendantId": "0b39e9c3-afad-428d-a246-02785dd20b15"
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "applicationReceivedDate": "2024-06-13",
+    "applicationReference": "28NR1760147",
+    "applicationStatus": "DRAFT",
+    "commissionerOfOath": false,
+    "courtApplicationCases": [
+      {
+        "caseStatus": "INACTIVE",
+        "isSJP": false,
+        "offences": [
+          {
+            "arrestDate": "2024-01-01",
+            "chargeDate": "2023-12-28",
+            "convictingCourt": {
+              "code": "B01LY00",
+              "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+              "lja": {
+                "ljaCode": "2577",
+                "ljaName": "South West London Magistrates' Court"
+              },
+              "name": "Lavender Hill Magistrates' Court",
+              "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+            },
+            "convictionDate": "2024-06-13",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "bded1498-aef1-452d-865f-4a86747006f1",
+            "indicatedPlea": {
+              "indicatedPleaDate": "2024-06-13",
+              "indicatedPleaValue": "INDICATED_NOT_GUILTY",
+              "offenceId": "bded1498-aef1-452d-865f-4a86747006f1",
+              "originatingHearingId": "b4c8c032-eea5-46b8-bc70-e43b845351b6",
+              "source": "IN_COURT"
+            },
+            "isDisposed": true,
+            "listingNumber": 1,
+            "maxPenalty": "EW:6M &/or Ultd Fine",
+            "modeOfTrial": "Either Way",
+            "offenceCode": "TH68010",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+            "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+            "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+            "offenceTitle": "Theft from a shop",
+            "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+            "orderIndex": 1,
+            "plea": {
+              "offenceId": "bded1498-aef1-452d-865f-4a86747006f1",
+              "originatingHearingId": "b4c8c032-eea5-46b8-bc70-e43b845351b6",
+              "pleaDate": "2024-06-13",
+              "pleaValue": "NOT_GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2023-11-30",
+            "verdict": {
+              "jurors": {
+                "numberOfJurors": 12,
+                "numberOfSplitJurors": 0,
+                "unanimous": true
+              },
+              "lesserOrAlternativeOffence": {
+                "offenceCode": "TH68010",
+                "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+                "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+                "offenceTitle": "Theft from a shop"
+              },
+              "offenceId": "bded1498-aef1-452d-865f-4a86747006f1",
+              "originatingHearingId": "b4c8c032-eea5-46b8-bc70-e43b845351b6",
+              "verdictDate": "2024-06-13",
+              "verdictType": {
+                "category": "Guilty",
+                "categoryType": "GUILTY",
+                "cjsVerdictCode": "G",
+                "description": "Found guilty",
+                "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                "sequence": 10,
+                "verdictCode": "G"
+              }
+            },
+            "wording": "Shoplifting at Debenhams."
+          }
+        ],
+        "prosecutionCaseId": "1735c709-0e37-4529-aaef-38b549c6d510",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Bishopsgate police station",
+            "address2": "182, Bishopsgate",
+            "address5": "London",
+            "postcode": "EC2M 4NP"
+          },
+          "contact": {
+            "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+          },
+          "majorCreditorCode": "COLP",
+          "prosecutionAuthorityCode": "CITYPF",
+          "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+          "prosecutionAuthorityName": "City of London Police",
+          "prosecutionAuthorityOUCode": "0480000",
+          "caseURN": "28NR1760147"
+        }
+      }
+    ],
+    "id": "48dc0209-1350-42cb-a319-03ea2bb09153",
+    "respondents": [
+      {
+        "id": "98e641d0-b935-4269-a162-8dedecf78b7e",
+        "notificationRequired": true,
+        "prosecutingAuthority": {
+          "address": {
+            "address1": "Bishopsgate police station",
+            "address2": "182, Bishopsgate",
+            "address5": "London",
+            "postcode": "EC2M 4NP"
+          },
+          "contact": {
+            "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+          },
+          "majorCreditorCode": "COLP",
+          "name": "City of London Police",
+          "prosecutionAuthorityCode": "CITYPF",
+          "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+          "prosecutionAuthorityOUCode": "0480000",
+          "welshName": "Heddlu Dinas Llundain"
+        },
+        "summonsRequired": false
+      }
+    ],
+    "subject": {
+      "id": "827c04d7-e4a2-4c1d-bfa4-cc216eb6f25f",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "1735c709-0e37-4529-aaef-38b549c6d510",
+            "caseReference": "28NR1760147",
+            "defendantId": "0b39e9c3-afad-428d-a246-02785dd20b15"
+          }
+        ],
+        "legalEntityDefendant": {
+          "organisation": {
+            "address": {
+              "address1": "9999D9999AAAA",
+              "address2": "Woodldne",
+              "address3": "addressline 3",
+              "address4": "Brcstol",
+              "address5": "Avcn"
+            },
+            "contact": {
+              "primaryEmail": "ORG.TEST011760147@gmail.com",
+              "secondaryEmail": "ORG.TEST021760147@gmail.com",
+              "work": "0201760147"
+            },
+            "name": "Organisation-1760147 Ltd."
+          }
+        },
+        "masterDefendantId": "0b39e9c3-afad-428d-a246-02785dd20b15"
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "type": {
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "boxworkNotifTemplate": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "categoryCode": "CO",
+      "code": "MC80524",
+      "commrOfOathFlag": false,
+      "courtExtractAvlFlag": true,
+      "courtOfAppealFlag": false,
+      "hearingCode": "APN",
+      "id": "44c238d9-3bc2-3cf3-a2eb-a7d1437b8383",
+      "jurisdiction": "MAGISTRATES",
+      "legislation": "In accordance with section 142 of the Magistrates' Courts Act 1980.",
+      "legislationWelsh": "Yn unol ag adran 142 Deddf Llysoedd Ynadon 1980.",
+      "linkType": "SJP",
+      "listingNotifTemplate": "POSTAL_NOTIFICATION",
+      "offenceActiveOrder": "OFFENCE",
+      "pleaApplicableFlag": false,
+      "prosecutorThirdPartyFlag": true,
+      "spiOutApplicableFlag": true,
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "type": "Application to reopen case",
+      "typeWelsh": "Cais i ailagor achos"
+    }
+  }
+}

@@ -53,13 +53,16 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.EMA
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.processor.CourtApplicationProcessor.PUBLIC_PROGRESSION_EVENTS_BREACH_APPLICATIONS_TO_BE_ADDED_TO_HEARING;
 
+import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationReferredToExistingHearing;
+import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.BoxHearingRequest;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
 import uk.gov.justice.core.courts.BreachApplicationsToBeAddedToHearing;
 import uk.gov.justice.core.courts.BreachType;
 import uk.gov.justice.core.courts.BreachedApplications;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
@@ -69,6 +72,7 @@ import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CreateHearingApplicationRequest;
+import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.Hearing;
@@ -77,10 +81,15 @@ import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Organisation;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.PublicProgressionCourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.SendNotificationForApplication;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
@@ -105,7 +114,9 @@ import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.SjpService;
+import uk.gov.moj.cpp.progression.utils.FileUtil;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -125,7 +136,9 @@ import com.google.common.io.Resources;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -233,9 +246,11 @@ public class CourtApplicationProcessorTest {
 
         //Then
         final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender, times(2)).send(captor.capture());
+        verify(sender, times(3)).send(captor.capture());
         assertThat(captor.getAllValues().get(0).payload(), notNullValue());
         assertThat(captor.getAllValues().get(1).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(1).metadata().name(), is("public.progression.defendant-address-changed"));
+        assertThat(captor.getAllValues().get(2).payload(), notNullValue());
     }
 
     @Test
@@ -261,7 +276,7 @@ public class CourtApplicationProcessorTest {
 
         //Then
         final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender, times(4)).send(captor.capture());
+        verify(sender, times(5)).send(captor.capture());
         assertThat(captor.getAllValues().get(0).payload(), notNullValue());
         assertThat(captor.getAllValues().get(0).metadata().name(), is("public.progression.court-application-created"));
         assertThat(captor.getAllValues().get(1).payload(), notNullValue());
@@ -269,9 +284,195 @@ public class CourtApplicationProcessorTest {
         assertThat(captor.getAllValues().get(2).payload(), notNullValue());
         assertThat(captor.getAllValues().get(2).metadata().name(), is("progression.command.update-cps-defendant-id"));
         assertThat(captor.getAllValues().get(3).payload(), notNullValue());
-        assertThat(captor.getAllValues().get(3).metadata().name(), is("progression.command.list-or-refer-court-application"));
+        assertThat(captor.getAllValues().get(3).metadata().name(), is("public.progression.defendant-address-changed"));
+        assertThat(captor.getAllValues().get(4).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(4).metadata().name(), is("progression.command.list-or-refer-court-application"));
     }
 
+
+    @Test
+    public void processCourtApplicationCreatedWithRemoveCustodialEstablishment() {
+        //Given
+        final UUID masterDefendantId = randomUUID();
+        final UUID caseId = randomUUID();
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-created");
+        final CourtApplicationCreated courtApplicationCreated = courtApplicationCreated()
+                .withCourtApplication(courtApplication()
+                        .withApplicant(buildMasterDefendant(masterDefendantId))
+                        .withApplicationReference(STRING.next())
+                        .withId(randomUUID())
+                        .withRespondents(Arrays.asList(buildMasterDefendant(), buildMasterDefendant()))
+                        .withApplicationStatus(ApplicationStatus.DRAFT)
+                        .withSubject(buildMasterDefendant(masterDefendantId))
+                        .withCourtApplicationCases(asList(CourtApplicationCase.courtApplicationCase()
+                                .withCaseStatus("INACTIVE")
+                                .withProsecutionCaseId(caseId)
+                                .build()))
+                        .build())
+                .build();
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationCreated);
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationCreated.class)).thenReturn(courtApplicationCreated);
+
+        //When
+        courtApplicationProcessor.processCourtApplicationCreated(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(5)).send(captor.capture());
+        assertThat(captor.getAllValues().get(0).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(0).metadata().name(), is("public.progression.court-application-created"));
+        assertThat(captor.getAllValues().get(1).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(1).metadata().name(), is("progression.command.update-cps-defendant-id"));
+        assertThat(captor.getAllValues().get(2).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(2).metadata().name(), is("progression.command.update-cps-defendant-id"));
+        assertThat(captor.getAllValues().get(3).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(3).metadata().name(), is("public.progression.defendant-address-changed"));
+        assertThat(captor.getAllValues().get(4).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(4).metadata().name(), is("progression.command.list-or-refer-court-application"));
+
+    }
+
+    @Test
+    public void processCourtApplicationCreatedWithRemoveCustodialEstablishmentForRespondent() {
+        //Given
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-created");
+
+        final JsonObject payload = FileUtil.givenPayload("/progression.event.court-application-created_defendant_for_respondent.json");
+
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        //When
+        courtApplicationProcessor.processCourtApplicationCreated(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(3)).send(captor.capture());
+        assertThat(captor.getAllValues().get(0).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(0).metadata().name(), is("public.progression.court-application-created"));
+        assertThat(captor.getAllValues().get(1).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(1).metadata().name(), is("public.progression.defendant-address-changed"));
+        assertThat(captor.getAllValues().get(2).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(2).metadata().name(), is("progression.command.list-or-refer-court-application"));
+
+    }
+
+    @Test
+    public void processRemoveDefendantCustodialEstablishmentRequested() {
+        //Given
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-created");
+        final JsonObject payload = FileUtil.givenPayload("/progression.event.court-application-created_defendant_for_respondent.json");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        //When
+        courtApplicationProcessor.processRemoveDefendantCustodialEstablishmentRequested(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(1)).send(captor.capture());
+        assertThat(captor.getAllValues().get(0).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(0).metadata().name(), is("progression.command.remove-defendant-custodial-establishment-from-case"));
+    }
+
+    @Test
+    public void processRemoveDefendantCustodialEstablishmentRequestedWithMultiCase() {
+        //Given
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-created");
+        final JsonObject payload = FileUtil.givenPayload("/progression.event.court-application-created_defendant_for_multi-case.json");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        //When
+        courtApplicationProcessor.processRemoveDefendantCustodialEstablishmentRequested(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(2)).send(captor.capture());
+        assertThat(captor.getAllValues().get(0).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(0).metadata().name(), is("progression.command.remove-defendant-custodial-establishment-from-case"));
+        assertThat(((JsonObject)captor.getAllValues().get(0).payload()).getString("prosecutionCaseId"), is("2a90f833-052e-4242-92ad-e4cbb75dff83"));
+        assertThat(captor.getAllValues().get(1).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(1).metadata().name(), is("progression.command.remove-defendant-custodial-establishment-from-case"));
+        assertThat(((JsonObject)captor.getAllValues().get(1).payload()).getString("prosecutionCaseId"), is("9a011446-2096-4c34-8a84-0fe484da9f0a"));
+
+    }
+
+    @Test
+    public void processCourtApplicationCreatedWithoutRemoveCustodialEstablishmentForOrganisation() {
+        //Given
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-created");
+
+        final JsonObject payload = FileUtil.givenPayload("/progression.event.court-application-created_defendant_for_organisation.json");
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        //When
+        courtApplicationProcessor.processCourtApplicationCreated(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(3)).send(captor.capture());
+        assertThat(captor.getAllValues().get(0).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(0).metadata().name(), is("public.progression.court-application-created"));
+        assertThat(captor.getAllValues().get(1).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(1).metadata().name(), is("public.progression.defendant-address-changed"));
+        assertThat(captor.getAllValues().get(2).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(2).metadata().name(), is("progression.command.list-or-refer-court-application"));
+
+    }
+
+    @Test
+    public void processCourtApplicationCreatedWithRemoveCustodialEstablishmentForAppealent() {
+        //Given
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-created");
+
+        final JsonObject payload = FileUtil.givenPayload("/progression.event.court-application-created_defendant_is_appealent.json");
+
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        //When
+        courtApplicationProcessor.processCourtApplicationCreated(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(3)).send(captor.capture());
+        assertThat(captor.getAllValues().get(0).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(0).metadata().name(), is("public.progression.court-application-created"));
+        assertThat(captor.getAllValues().get(1).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(1).metadata().name(), is("public.progression.defendant-address-changed"));
+        assertThat(captor.getAllValues().get(2).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(2).metadata().name(), is("progression.command.list-or-refer-court-application"));
+
+    }
+
+    @Test
+    public void processCourtApplicationCreatedWithRemoveCustodialEstablishmentForApplicant() {
+        //Given
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-created");
+
+        final JsonObject payload = FileUtil.givenPayload("/progression.event.court-application-created_defendant_is_applicant.json");
+
+
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        //When
+        courtApplicationProcessor.processCourtApplicationCreated(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(3)).send(captor.capture());
+        assertThat(captor.getAllValues().get(0).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(0).metadata().name(), is("public.progression.court-application-created"));
+        assertThat(captor.getAllValues().get(1).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(1).metadata().name(), is("public.progression.defendant-address-changed"));
+        assertThat(captor.getAllValues().get(2).payload(), notNullValue());
+        assertThat(captor.getAllValues().get(2).metadata().name(), is("progression.command.list-or-refer-court-application"));
+
+    }
 
     @Test
     public void processSendNotificationForApplicationShouldNotThrowException() {
@@ -477,13 +678,24 @@ public class CourtApplicationProcessorTest {
     }
 
     private CourtApplicationParty buildMasterDefendant() {
+        return buildMasterDefendant(randomUUID());
+    }
+
+    private CourtApplicationParty buildMasterDefendant(UUID defendantId) {
         return courtApplicationParty()
                 .withMasterDefendant(masterDefendant()
                         .withCpsDefendantId(randomUUID())
-                        .withMasterDefendantId(randomUUID())
+                        .withMasterDefendantId(defendantId)
                         .withDefendantCase(singletonList(DefendantCase.defendantCase()
                                 .withCaseId(randomUUID())
+                                .withDefendantId(defendantId)
                                 .build()))
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                        .withCustody("2 years prison")
+                                        .withName("John Smith")
+                                        .build())
+                                .build())
                         .build())
                 .build();
     }
@@ -561,8 +773,13 @@ public class CourtApplicationProcessorTest {
 
         //Then
         final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender).send(captor.capture());
-        assertThat(captor.getValue().payload(), notNullValue());
+        verify(this.sender, times(1)).send(captor.capture());
+        final List<Envelope> envelopes = captor.getAllValues();
+
+        final Envelope firstCommandEvent = envelopes.get(0);
+
+        Assert.assertThat(firstCommandEvent.metadata().name(), CoreMatchers.is("public.progression.court-application-updated"));
+        assertThat(firstCommandEvent.payload(), notNullValue());
     }
 
     @Test
@@ -931,7 +1148,22 @@ public class CourtApplicationProcessorTest {
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-proceedings-initiated");
 
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = courtApplicationProceedingsInitiated()
-                .withCourtApplication(courtApplication().withCourtApplicationCases(Arrays.asList(courtApplicationCase().withProsecutionCaseId(randomUUID()).build())).build())
+                .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withApplicant(courtApplicationParty().withMasterDefendant(masterDefendant()
+                                        .withMasterDefendantId(randomUUID())
+                                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                                .withPersonDetails(Person.person()
+                                                        .withAddress(Address.address()
+                                                                .withAddress1("Address1")
+                                                                .build())
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .withCourtApplicationCases(Arrays.asList(courtApplicationCase()
+                                .withProsecutionCaseId(randomUUID()).build()))
+                        .build())
                 .withIsSJP(false)
                 .build();
 
@@ -949,20 +1181,200 @@ public class CourtApplicationProcessorTest {
 
         //Then
         final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender, times(2)).send(captor.capture());
+        verify(sender, times(3)).send(captor.capture());
         final List<Envelope> currentEvents = captor.getAllValues();
         assertThat(currentEvents.get(0).metadata().name(), is("progression.command.create-court-application"));
+        assertThat(currentEvents.get(1).metadata().name(), is("progression.command.update-defendant-address-on-case"));
+        assertThat(currentEvents.get(2).metadata().name(), is("public.progression.court-application-proceedings-initiated"));
+    }
+
+    @Test
+    public void shouldProcessCourtApplicationProceedingsInitiatedWhenLegalEntityIsApplicant() {
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-proceedings-initiated");
+
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = courtApplicationProceedingsInitiated()
+                .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withApplicant(courtApplicationParty().withMasterDefendant(masterDefendant()
+                                        .withMasterDefendantId(randomUUID())
+                                        .withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
+                                                .withOrganisation(Organisation.organisation().withAddress(Address.address()
+                                                        .withAddress1("Address1")
+                                                        .build()).build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .withCourtApplicationCases(Arrays.asList(courtApplicationCase()
+                                .withProsecutionCaseId(randomUUID()).build()))
+                        .build())
+                .withIsSJP(false)
+                .build();
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationProceedingsInitiated);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
+                (createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().build
+                        ()).build()));
+
+        //When
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class)).thenReturn(courtApplicationProceedingsInitiated);
+
+        courtApplicationProcessor.processCourtApplicationInitiated(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(3)).send(captor.capture());
+        final List<Envelope> currentEvents = captor.getAllValues();
+        assertThat(currentEvents.get(0).metadata().name(), is("progression.command.create-court-application"));
+        assertThat(currentEvents.get(1).metadata().name(), is("progression.command.update-defendant-address-on-case"));
+        assertThat(currentEvents.get(2).metadata().name(), is("public.progression.court-application-proceedings-initiated"));
+    }
+
+    @Test
+    public void shouldProcessCourtApplicationProceedingsInitiatedWhenDefendantIsRespondent() {
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-proceedings-initiated");
+
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = courtApplicationProceedingsInitiated()
+                .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withRespondents(Arrays.asList(courtApplicationParty().withMasterDefendant(masterDefendant()
+                                        .withMasterDefendantId(randomUUID())
+                                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                                .withPersonDetails(Person.person()
+                                                        .withAddress(Address.address()
+                                                                .withAddress1("Address1")
+                                                                .build())
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build()))
+                        .withCourtApplicationCases(Arrays.asList(courtApplicationCase()
+                                .withProsecutionCaseId(randomUUID()).build()))
+                        .build())
+                .withIsSJP(false)
+                .build();
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationProceedingsInitiated);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
+                (createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().build
+                        ()).build()));
+
+        //When
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class)).thenReturn(courtApplicationProceedingsInitiated);
+
+        courtApplicationProcessor.processCourtApplicationInitiated(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(3)).send(captor.capture());
+        final List<Envelope> currentEvents = captor.getAllValues();
+        assertThat(currentEvents.get(0).metadata().name(), is("progression.command.create-court-application"));
+        assertThat(currentEvents.get(1).metadata().name(), is("progression.command.update-defendant-address-on-case"));
+        assertThat(currentEvents.get(2).metadata().name(), is("public.progression.court-application-proceedings-initiated"));
+    }
+
+    @Test
+    public void shouldProcessCourtApplicationProceedingsInitiatedWhenApplicantAndRespondentArePresent() {
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-proceedings-initiated");
+        final UUID caseId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = courtApplicationProceedingsInitiated()
+                .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withApplicant(courtApplicationParty().withMasterDefendant(masterDefendant()
+                                        .withMasterDefendantId(masterDefendantId)
+                                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                                .withPersonDetails(Person.person()
+                                                        .withAddress(Address.address()
+                                                                .withAddress1("Address1")
+                                                                .build())
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .withRespondents(Arrays.asList(courtApplicationParty().withMasterDefendant(masterDefendant()
+                                        .withMasterDefendantId(randomUUID())
+                                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                                .withPersonDetails(Person.person()
+                                                        .withAddress(Address.address()
+                                                                .withAddress1("Address2")
+                                                                .build())
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build(),
+                                courtApplicationParty().withMasterDefendant(masterDefendant()
+                                                .withMasterDefendantId(randomUUID())
+                                                .withPersonDefendant(PersonDefendant.personDefendant()
+                                                        .withPersonDetails(Person.person()
+                                                                .withAddress(Address.address()
+                                                                        .withAddress1("Address3")
+                                                                        .build())
+                                                                .build())
+                                                        .build())
+                                                .build())
+                                        .build()))
+                        .withCourtApplicationCases(Arrays.asList(courtApplicationCase()
+                                .withProsecutionCaseId(caseId).build()))
+                        .build())
+                .withIsSJP(false)
+                .build();
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationProceedingsInitiated);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(progressionService.getProsecutionCase(any(JsonEnvelope.class), eq(caseId.toString())))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId.toString())
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
+                                .add("masterDefendantId", masterDefendantId.toString())
+                                .add("personDefendant",createObjectBuilder().add("personDetails",
+                                                createObjectBuilder().add("address",createObjectBuilder().add("address1","old address")
+                                                        .add("postcode","RG1 7DS").build()).build()))
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                )))).build()));
+
+        //When
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class)).thenReturn(courtApplicationProceedingsInitiated);
+
+        courtApplicationProcessor.processCourtApplicationInitiated(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(5)).send(captor.capture());
+        final List<Envelope> currentEvents = captor.getAllValues();
+        assertThat(currentEvents.get(0).metadata().name(), is("progression.command.create-court-application"));
+        assertThat(currentEvents.get(1).metadata().name(), is("progression.command.update-defendant-address-on-case"));
+        assertThat(currentEvents.get(2).metadata().name(), is("progression.command.update-defendant-address-on-case"));
+        assertThat(currentEvents.get(3).metadata().name(), is("progression.command.update-defendant-address-on-case"));
+        assertThat(currentEvents.get(4).metadata().name(), is("public.progression.court-application-proceedings-initiated"));
     }
 
     @Test
     public void shouldProcessCourtApplicationProceedingsInitiatedWithSjpCase() {
         //Given
         final UUID caseId = randomUUID();
-
+        final UUID masterDefendantId = randomUUID();
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-proceedings-initiated");
 
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = courtApplicationProceedingsInitiated()
                 .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withApplicant(courtApplicationParty().withMasterDefendant(masterDefendant()
+                                        .withMasterDefendantId(masterDefendantId)
+                                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                                .withPersonDetails(Person.person()
+                                                        .withAddress(Address.address()
+                                                                .withAddress1("Application Address1")
+                                                                .withPostcode("RG1 8XD")
+                                                                .build())
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
                         .withCourtApplicationCases(Arrays.asList(courtApplicationCase()
                                 .withProsecutionCaseId(caseId)
                                 .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
@@ -979,11 +1391,21 @@ public class CourtApplicationProcessorTest {
         //When
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
                 (createObjectBuilder().build()));
-        when(sjpService.getProsecutionCase(event, caseId)).thenReturn(prosecutionCase()
+        final ProsecutionCase sjpCase = prosecutionCase()
+                .withDefendants(asList(Defendant.defendant().withMasterDefendantId(masterDefendantId)
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person()
+                                        .withAddress(Address.address()
+                                                .withAddress1("address1")
+                                                .withPostcode("RG1 7XD")
+                                                .build())
+                                        .build())
+                                .build()).build()))
                 .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
                         .withProsecutionAuthorityReference("prosecutionCaseIdentifier")
                         .build())
-                .build());
+                .build();
+        when(sjpService.getProsecutionCase(event, caseId)).thenReturn(sjpCase);
 
         when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of
                 (createObjectBuilder().add("prosecutionCase", Json.createObjectBuilder().build
@@ -993,7 +1415,12 @@ public class CourtApplicationProcessorTest {
 
         //Then
         final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender, times(3)).send(captor.capture());
+        verify(sender, times(4)).send(captor.capture());
+        final JsonObject command = objectToJsonObjectConverter.convert(captor.getAllValues().get(0).payload());
+        assertThat(command.getJsonObject("prosecutionCase")
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonObject("personDefendant").getJsonObject("personDetails")
+                .getJsonObject("address").getString("address1"),is("Application Address1"));
     }
 
     @Test
@@ -1005,6 +1432,18 @@ public class CourtApplicationProcessorTest {
 
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = courtApplicationProceedingsInitiated()
                 .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withApplicant(courtApplicationParty().withMasterDefendant(masterDefendant()
+                                        .withMasterDefendantId(randomUUID())
+                                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                                .withPersonDetails(Person.person()
+                                                        .withAddress(Address.address()
+                                                                .withAddress1("Address1")
+                                                                .build())
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
                         .withCourtApplicationCases(Arrays.asList(courtApplicationCase()
                                 .withProsecutionCaseId(caseId)
                                 .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
@@ -1035,7 +1474,7 @@ public class CourtApplicationProcessorTest {
 
         //Then
         final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(sender, times(2)).send(captor.capture());
+        verify(sender, times(3)).send(captor.capture());
     }
 
     @Test
@@ -1054,6 +1493,7 @@ public class CourtApplicationProcessorTest {
         final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited);
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class)).thenReturn(courtApplicationProceedingsEdited);
+        when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.empty());
         courtApplicationProcessor.processCourtApplicationEdited(event);
         final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender).send(captor.capture());
@@ -1079,6 +1519,7 @@ public class CourtApplicationProcessorTest {
         final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited);
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class)).thenReturn(courtApplicationProceedingsEdited);
+        when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.empty());
         courtApplicationProcessor.processCourtApplicationEdited(event);
         final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender, times(2)).send(captor.capture());
@@ -1108,6 +1549,7 @@ public class CourtApplicationProcessorTest {
         final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited);
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class)).thenReturn(courtApplicationProceedingsEdited);
+        when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.empty());
         courtApplicationProcessor.processCourtApplicationEdited(event);
         final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender, times(2)).send(captor.capture());
@@ -1301,6 +1743,106 @@ public class CourtApplicationProcessorTest {
         assertThat(applicationSubjectNeeds.getSummonsApprovedOutcome().getSummonsSuppressed(), is(eventPayload.getSummonsApprovedOutcome().getSummonsSuppressed()));
         assertThat(applicationSubjectNeeds.getSummonsApprovedOutcome().getProsecutorCost(), is(eventPayload.getSummonsApprovedOutcome().getProsecutorCost()));
         assertThat(applicationSubjectNeeds.getSummonsApprovedOutcome().getProsecutorEmailAddress(), is(eventPayload.getSummonsApprovedOutcome().getProsecutorEmailAddress()));
+    }
+
+    @Test
+    public void shouldProcessCourtApplicationEdited_addressUpdatedOnApplication() {
+        final UUID caseId1 = randomUUID();
+        final UUID caseId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID masterDefendantId2 = randomUUID();
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-proceedings-edited");
+        final UUID hearingId = randomUUID();
+        final CourtApplicationProceedingsEdited courtApplicationProceedingsEdited = courtApplicationProceedingsEdited()
+                .withCourtApplication(courtApplication()
+                        .withCourtApplicationCases(Arrays.asList(courtApplicationCase().withProsecutionCaseId(caseId1).build(),courtApplicationCase().withProsecutionCaseId(caseId2).build()))
+                        .withApplicant(courtApplicationParty()
+                                .withMasterDefendant(masterDefendant()
+                                        .withMasterDefendantId(masterDefendantId)
+                                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                                .withPersonDetails(Person.person()
+                                                        .withAddress(Address.address()
+                                                                .withAddress1("address1")
+                                                                .withAddress2("address2")
+                                                                .withPostcode("RG1 7SA").build()).build()).build()).build()).build())
+                        .withRespondents(asList(courtApplicationParty()
+                                .withMasterDefendant(masterDefendant().withMasterDefendantId(masterDefendantId2)
+                                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                                .withPersonDetails(Person.person()
+                                                        .withAddress(Address.address().withAddress1("Resp Adr 1")
+                                                                .withAddress2("Resp Addr 2")
+                                                                .withPostcode("RG23 8GH").build()).build()).build()).build()).build()))
+                        .withId(randomUUID())
+                        .build())
+                .withCourtHearing(courtHearingRequest().withId(hearingId).build())
+                .build();
+        final JsonObject payload = objectToJsonObjectConverter.convert(courtApplicationProceedingsEdited);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class)).thenReturn(courtApplicationProceedingsEdited);
+        when(progressionService.getProsecutionCase(any(JsonEnvelope.class), eq(caseId1.toString())))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId1.toString())
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId.toString())
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                )))).build()));
+        when(progressionService.getProsecutionCase(any(JsonEnvelope.class), eq(caseId2.toString())))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId2.toString())
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId2.toString())
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                )))).build()));
+        courtApplicationProcessor.processCourtApplicationEdited(event);
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(6)).send(captor.capture());
+
+        assertThat(captor.getAllValues().get(0).metadata().name(), is("progression.command.update-court-application-to-hearing"));
+        final JsonObject command = objectToJsonObjectConverter.convert(captor.getAllValues().get(0).payload());
+        assertThat(command.getString("hearingId"), is(hearingId.toString()));
+        assertThat(command.getJsonObject("courtApplication"), is(notNullValue()));
+
+        assertThat(captor.getAllValues().get(1).metadata().name(), is("progression.command.update-defendant-address-on-case"));
+        final JsonObject command1 = objectToJsonObjectConverter.convert(captor.getAllValues().get(1).payload());
+        assertThat(command1.getString("prosecutionCaseId"), is(caseId1.toString()));
+        assertThat(command1.getJsonObject("defendant").getString("id").toString(), is(masterDefendantId.toString()));
+
+        assertThat(captor.getAllValues().get(2).metadata().name(), is("progression.command.update-defendant-address-on-case"));
+        final JsonObject command2 = objectToJsonObjectConverter.convert(captor.getAllValues().get(2).payload());
+        assertThat(command2.getString("prosecutionCaseId"), is(caseId1.toString()));
+        assertThat(command2.getJsonObject("defendant").getString("id").toString(), is(masterDefendantId2.toString()));
+
+        assertThat(captor.getAllValues().get(3).metadata().name(), is("progression.command.update-defendant-address-on-case"));
+        final JsonObject command3 = objectToJsonObjectConverter.convert(captor.getAllValues().get(3).payload());
+        assertThat(command3.getString("prosecutionCaseId"), is(caseId2.toString()));
+        assertThat(command3.getJsonObject("defendant").getString("id").toString(), is(masterDefendantId.toString()));
+
+        assertThat(captor.getAllValues().get(4).metadata().name(), is("progression.command.update-defendant-address-on-case"));
+        final JsonObject command4 = objectToJsonObjectConverter.convert(captor.getAllValues().get(4).payload());
+        assertThat(command4.getString("prosecutionCaseId"), is(caseId2.toString()));
+        assertThat(command4.getJsonObject("defendant").getString("id").toString(), is(masterDefendantId2.toString()));
+
+        assertThat(captor.getAllValues().get(5).metadata().name(), is("public.progression.events.hearing-extended"));
+        final JsonObject publicEvent = objectToJsonObjectConverter.convert(captor.getAllValues().get(5).payload());
+        assertThat(publicEvent.getString("hearingId"), is(hearingId.toString()));
+    }
+
+    @Test
+    public void shouldProcessApplicationDefendantUpdateRequested() throws IOException {
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-defendant-update-requested");
+        final JsonObject payload = getJsonPayload("progression.event.application-defendant-update-requested.json");
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+        courtApplicationProcessor.processApplicationDefendantUpdateRequested(event);
+
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender).send(captor.capture());
+        final List<Envelope> currentEvents = captor.getAllValues();
+        assertThat(currentEvents.get(0).metadata().name(), is("progression.command.update.hearing.application.defendant"));
+    }
+
+    private JsonObject getJsonPayload(final String fileName) throws IOException {
+        final String jsonString = Resources.toString(Resources.getResource(fileName), defaultCharset());
+        return Json.createReader(
+                        new ByteArrayInputStream(jsonString.getBytes()))
+                .readObject();
     }
 
     private CustomComparator getCustomComparator() {

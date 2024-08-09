@@ -4,6 +4,7 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -14,17 +15,22 @@ import static uk.gov.justice.core.courts.ApplicationStatus.IN_PROGRESS;
 import static uk.gov.justice.core.courts.ApplicationStatus.LISTED;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationCreated.courtApplicationCreated;
+import static uk.gov.justice.core.courts.CourtApplicationParty.courtApplicationParty;
 import static uk.gov.justice.core.courts.CourtApplicationSummonsApproved.courtApplicationSummonsApproved;
 import static uk.gov.justice.core.courts.CourtApplicationSummonsRejected.courtApplicationSummonsRejected;
 import static uk.gov.justice.core.courts.HearingResultedApplicationUpdated.hearingResultedApplicationUpdated;
 import static uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved.initiateCourtHearingAfterSummonsApproved;
+import static uk.gov.justice.core.courts.RemoveDefendantCustodialEstablishmentRequested.removeDefendantCustodialEstablishmentRequested;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.justice.progression.courts.SendStatdecAppointmentLetter.sendStatdecAppointmentLetter;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.getCourtApplicationWithConvictionDate;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.isAddressMatches;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 
+import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.ApplicationEjected;
 import uk.gov.justice.core.courts.ApplicationReferredIgnored;
 import uk.gov.justice.core.courts.ApplicationReferredToBoxwork;
@@ -39,15 +45,20 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
+import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPayment;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiateIgnored;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
+import uk.gov.justice.core.courts.CourtApplicationSubjectCustodialInformationUpdated;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtFeeForCivilApplicationUpdated;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrderOffence;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantAddressOnApplicationUpdated;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.FutureSummonsHearing;
@@ -59,6 +70,9 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.LinkType;
+import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.PersonDefendant;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SendNotificationForApplicationIgnored;
 import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
 import uk.gov.justice.core.courts.SlotsBookedForApplication;
@@ -72,12 +86,13 @@ import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestSucceeded;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
-import uk.gov.justice.core.courts.CourtApplicationSubjectCustodialInformationUpdated;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -106,7 +121,10 @@ public class ApplicationAggregate implements Aggregate {
         return match(event).with(
                 when(CourtApplicationProceedingsInitiated.class).apply(this::handleCourtApplicationProceedings),
                 when(ApplicationReferredToCourt.class).apply(e -> this.applicationStatus = LISTED),
-                when(CourtApplicationCreated.class).apply(e -> this.applicationStatus = DRAFT),
+                when(CourtApplicationCreated.class).apply(e -> {
+                    this.applicationStatus = DRAFT;
+                    setCourtApplication(e.getCourtApplication());
+                }),
                 when(HearingApplicationLinkCreated.class).apply(
                         e -> {
                             if (isBoxWorkHearing(e)) {
@@ -129,6 +147,7 @@ public class ApplicationAggregate implements Aggregate {
                                 this.applicationStatus = EJECTED
 
                 ),
+                when(CourtApplicationUpdated.class).apply(e-> setCourtApplication(e.getCourtApplication())),
                 otherwiseDoNothing());
     }
 
@@ -171,23 +190,93 @@ public class ApplicationAggregate implements Aggregate {
     public Stream<Object> createCourtApplication(final CourtApplication courtApplication) {
         LOGGER.debug("Court application has been created");
         final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        CourtApplication updatedCourtApplication = CourtApplication
+                .courtApplication()
+                .withValuesFrom(courtApplication)
+                .build();
+
+
+
+        updatedCourtApplication = buildCourtApplicationWithoutCustodialEstablishment(updatedCourtApplication);
+
         streamBuilder.add(
                 courtApplicationCreated()
-                        .withCourtApplication(courtApplication)
+                        .withCourtApplication(updatedCourtApplication)
                         .build());
+
+        if (checkCourtApplicationPartyHasCustodialEstablishment(courtApplication.getSubject())){
+            streamBuilder.add(
+                    removeDefendantCustodialEstablishmentRequested()
+                            .withCourtApplication(updatedCourtApplication)
+                            .build());
+        }
+
+
         final BoxHearingRequest boxHearingRequest = nonNull(initiateCourtApplicationProceedings) ? initiateCourtApplicationProceedings.getBoxHearing() : null;
 
         if (nonNull(courtApplication.getType()) && isNotBlank(courtApplication.getType().getCode())
                 && (APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE.equalsIgnoreCase(courtApplication.getType().getCode())
                 || APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP.equalsIgnoreCase(courtApplication.getType().getCode()))
-                && nonNull(boxHearingRequest) && TRUE.equals(boxHearingRequest.getSendAppointmentLetter())) {
+                && nonNull(boxHearingRequest) && TRUE.equals(boxHearingRequest.getSendAppointmentLetter())
+                && nonNull(boxHearingRequest.getVirtualAppointmentTime())) {
             streamBuilder.add(sendStatdecAppointmentLetter()
-                    .withCourtApplication(courtApplication)
+                    .withCourtApplication(updatedCourtApplication)
                     .withBoxHearing(boxHearingRequest)
                     .build());
 
         }
         return apply(streamBuilder.build());
+    }
+
+    private boolean checkCourtApplicationPartyHasCustodialEstablishment(CourtApplicationParty courtApplicationParty) {
+        return nonNull(courtApplicationParty) &&
+                nonNull(courtApplicationParty.getMasterDefendant()) &&
+                nonNull(courtApplicationParty.getMasterDefendant().getMasterDefendantId()) &&
+                nonNull(courtApplicationParty.getMasterDefendant().getPersonDefendant()) &&
+                nonNull(courtApplicationParty.getMasterDefendant().getPersonDefendant().getCustodialEstablishment());
+    }
+
+    private CourtApplication buildCourtApplicationWithoutCustodialEstablishment(CourtApplication updatedCourtApplication) {
+        final boolean hasSubjectCustodialEstablishment = checkCourtApplicationPartyHasCustodialEstablishment(updatedCourtApplication.getSubject());
+        final boolean hasApplicantCustodialEstablishment =checkCourtApplicationPartyHasCustodialEstablishment(updatedCourtApplication.getApplicant());
+
+        final boolean caseInActive = nonNull(updatedCourtApplication.getCourtApplicationCases()) &&
+                updatedCourtApplication.getCourtApplicationCases()
+                .stream()
+                .anyMatch(courtApplicationCase -> "INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus()));
+
+
+        if (DRAFT.equals(updatedCourtApplication.getApplicationStatus())
+                && hasSubjectCustodialEstablishment
+                && caseInActive) {
+
+            final PersonDefendant personDefendant = PersonDefendant
+                    .personDefendant()
+                    .withValuesFrom(updatedCourtApplication.getSubject().getMasterDefendant().getPersonDefendant())
+                    .withCustodialEstablishment(null)
+                    .build();
+
+
+            final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
+                    .withValuesFrom(updatedCourtApplication.getSubject().getMasterDefendant())
+                    .withPersonDefendant(personDefendant)
+                    .build();
+
+            final CourtApplicationParty applicationParty = CourtApplicationParty
+                    .courtApplicationParty()
+                    .withValuesFrom(updatedCourtApplication.getSubject())
+                    .withMasterDefendant(masterDefendant)
+                    .build();
+
+            updatedCourtApplication = CourtApplication
+                    .courtApplication()
+                    .withValuesFrom(updatedCourtApplication)
+                    .withSubject(applicationParty)
+                    .withApplicant(hasApplicantCustodialEstablishment ? applicationParty : updatedCourtApplication.getApplicant())
+                    .build();
+        }
+        return updatedCourtApplication;
     }
 
     public Stream<Object> addApplicationToCase(final CourtApplication application) {
@@ -238,12 +327,24 @@ public class ApplicationAggregate implements Aggregate {
         return apply(Stream.of(new PrintRequested(notificationId, applicationId, null, materialId, postage)));
     }
 
-    public Stream<Object> initiateCourtApplicationProceedings(final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings, final boolean applicationReferredToNewHearing, final boolean applicationCreatedForSJPCase) {
+    public Stream<Object> initiateCourtApplicationProceedings(final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings,
+                                                              final boolean applicationReferredToNewHearing,
+                                                              final boolean applicationCreatedForSJPCase) {
+        return initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, applicationReferredToNewHearing, applicationCreatedForSJPCase, null);
+    }
+
+    public Stream<Object> initiateCourtApplicationProceedings(final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings,
+                                                              final boolean applicationReferredToNewHearing,
+                                                              final boolean applicationCreatedForSJPCase,
+                                                              final ProsecutionCase courtApplicationCase) {
         LOGGER.debug("Initiated Court Application Proceedings");
         if (isNull(this.courtApplication)) {
             CourtApplication updatedCourtApplication = updateCourtApplicationReference(initiateCourtApplicationProceedings.getCourtApplication());
             if (initiateCourtApplicationProceedings.getSummonsApprovalRequired() && nonNull(initiateCourtApplicationProceedings.getCourtHearing())) {
                 updatedCourtApplication = updateCourtApplicationWithFutureSummonsHearing(updatedCourtApplication, initiateCourtApplicationProceedings.getCourtHearing());
+            }
+            if(nonNull(courtApplicationCase)) {
+                updatedCourtApplication = enrichApplicationIfAddressUpdatedFromApplication(updatedCourtApplication, courtApplicationCase);
             }
             return apply(
                     Stream.of(CourtApplicationProceedingsInitiated.courtApplicationProceedingsInitiated()
@@ -260,6 +361,72 @@ public class ApplicationAggregate implements Aggregate {
         }
     }
 
+    private CourtApplication enrichApplicationIfAddressUpdatedFromApplication(final CourtApplication updatedCourtApplication, final ProsecutionCase courtApplicationCase) {
+        final CourtApplication.Builder applicationBuilder = courtApplication().withValuesFrom(updatedCourtApplication);
+            final List<Defendant> caseDefendants = courtApplicationCase.getDefendants();
+            if (nonNull(caseDefendants)) {
+                caseDefendants.forEach(defendant -> {
+                    final boolean isDefendantOrganisation = nonNull(defendant.getLegalEntityDefendant());
+                    final Address defendantAddressOnCase = getDefendantAddressFromCase(defendant,isDefendantOrganisation);
+                    validateApplicantAddress(updatedCourtApplication, applicationBuilder, defendant, isDefendantOrganisation, defendantAddressOnCase);
+                    validateSubjectAddress(updatedCourtApplication, applicationBuilder, defendant, isDefendantOrganisation, defendantAddressOnCase);
+                    validateRespondentsAddress(updatedCourtApplication, applicationBuilder, defendant, isDefendantOrganisation, defendantAddressOnCase);
+                });
+            }
+            return applicationBuilder.build();
+    }
+
+    private void validateRespondentsAddress(final CourtApplication updatedCourtApplication, final CourtApplication.Builder applicationBuilder, final Defendant defendant, final boolean isDefendantOrganisation, final Address defendantAddressOnCase) {
+        if (nonNull(updatedCourtApplication.getRespondents())) {
+            final Optional<CourtApplicationParty> updatedRespondent = updatedCourtApplication.getRespondents().stream()
+                    .filter(resp -> nonNull(resp.getMasterDefendant()) && resp.getMasterDefendant().getMasterDefendantId()
+                            .equals(defendant.getMasterDefendantId())).findFirst();
+            if (updatedRespondent.isPresent()) {
+                final Address addressOnApplication = getDefendantAddressFromApplication(updatedRespondent.get().getMasterDefendant(), isDefendantOrganisation);
+                if(!isAddressMatches(defendantAddressOnCase,addressOnApplication)) {
+                    final List<CourtApplicationParty> courtApplicationRespondentsList = new ArrayList<>();
+                    updatedCourtApplication.getRespondents().stream()
+                            .filter(resp -> isNull(resp.getMasterDefendant()) || !resp.getMasterDefendant().getMasterDefendantId().equals(defendant.getMasterDefendantId()))
+                            .forEach(courtApplicationRespondentsList::add);
+
+                    courtApplicationRespondentsList.add(courtApplicationParty()
+                            .withValuesFrom(updatedRespondent.get())
+                            .withUpdatedOn(LocalDate.now())
+                            .build());
+                    applicationBuilder.withRespondents(courtApplicationRespondentsList);
+                }
+            }
+        }
+    }
+
+    private void validateSubjectAddress(final CourtApplication updatedCourtApplication, final CourtApplication.Builder applicationBuilder, final Defendant defendant, final boolean isDefendantOrganisation, final Address defendantAddressOnCase) {
+        if (nonNull(updatedCourtApplication.getSubject().getMasterDefendant()) && defendant.getMasterDefendantId()
+                .equals(updatedCourtApplication.getSubject().getMasterDefendant().getMasterDefendantId())) {
+            final Address addressOnApplication = getDefendantAddressFromApplication(updatedCourtApplication.getSubject().getMasterDefendant(), isDefendantOrganisation);
+            if(!isAddressMatches(defendantAddressOnCase,addressOnApplication)) {
+                applicationBuilder
+                        .withSubject(courtApplicationParty()
+                                .withValuesFrom(updatedCourtApplication.getSubject())
+                                .withUpdatedOn(LocalDate.now()).build())
+                        .build();
+            }
+        }
+    }
+
+    private void validateApplicantAddress(final CourtApplication updatedCourtApplication, final CourtApplication.Builder applicationBuilder, final Defendant defendant, final boolean isDefendantOrganisation, final Address defendantAddressOnCase) {
+        if (nonNull(updatedCourtApplication.getApplicant().getMasterDefendant()) && defendant.getMasterDefendantId()
+                .equals(updatedCourtApplication.getApplicant().getMasterDefendant().getMasterDefendantId())) {
+            final Address addressOnApplication = getDefendantAddressFromApplication(updatedCourtApplication.getApplicant().getMasterDefendant(), isDefendantOrganisation);
+            if(!isAddressMatches(defendantAddressOnCase,addressOnApplication)) {
+                applicationBuilder
+                        .withApplicant(courtApplicationParty()
+                                .withValuesFrom(updatedCourtApplication.getApplicant())
+                                .withUpdatedOn(LocalDate.now()).build())
+                        .build();
+            }
+        }
+    }
+
     public Stream<Object> ignoreApplicationProceedings(InitiateCourtApplicationProceedings initiateCourtProceedingsForApplication) {
         return apply(
                 Stream.of(CourtApplicationProceedingsInitiateIgnored.courtApplicationProceedingsInitiateIgnored()
@@ -270,12 +437,15 @@ public class ApplicationAggregate implements Aggregate {
     }
 
 
-    public Stream<Object> editCourtApplicationProceedings(final EditCourtApplicationProceedings editCourtApplicationProceedings) {
-        final CourtApplication updatedCourtApplication;
+    public Stream<Object> editCourtApplicationProceedings(final EditCourtApplicationProceedings editCourtApplicationProceedings, final ProsecutionCase courtApplicationCase) {
+        CourtApplication updatedCourtApplication;
         if (editCourtApplicationProceedings.getSummonsApprovalRequired() && nonNull(editCourtApplicationProceedings.getCourtHearing())) {
             updatedCourtApplication = updateCourtApplicationWithFutureSummonsHearing(editCourtApplicationProceedings.getCourtApplication(), editCourtApplicationProceedings.getCourtHearing());
         } else {
             updatedCourtApplication = editCourtApplicationProceedings.getCourtApplication();
+        }
+        if(nonNull(courtApplicationCase)) {
+            updatedCourtApplication = enrichApplicationIfAddressUpdatedFromApplication(updatedCourtApplication, courtApplicationCase);
         }
         return apply(
                 Stream.of(
@@ -406,7 +576,7 @@ public class ApplicationAggregate implements Aggregate {
     }
 
     public Stream<Object> sendNotificationForApplication(final SendNotificationForApplicationInitiated sendNotificationForApplicationInitiated) {
-        if(isNull(this.initiateCourtApplicationProceedings) || Optional.ofNullable(sendNotificationForApplicationInitiated.getIsBoxWorkRequest()).orElse(false)){
+        if (isNull(this.initiateCourtApplicationProceedings) || Optional.ofNullable(sendNotificationForApplicationInitiated.getIsBoxWorkRequest()).orElse(false)) {
             return apply(
                     Stream.of(SendNotificationForApplicationIgnored.sendNotificationForApplicationIgnored()
                             .withCourtApplication(sendNotificationForApplicationInitiated.getCourtApplication())
@@ -466,13 +636,13 @@ public class ApplicationAggregate implements Aggregate {
 
         if (isNotEmpty(courtApplication.getCourtApplicationCases())) {
             return courtApplication.getCourtApplicationCases().stream().map(courtApplicationCase ->
-                            nonNull(courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN()) ? courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN() : courtApplicationCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
+                    nonNull(courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN()) ? courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN() : courtApplicationCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
                     .distinct().collect(Collectors.joining(","));
         }
 
         if (nonNull(courtApplication.getCourtOrder())) {
             return courtApplication.getCourtOrder().getCourtOrderOffences().stream().map(courtOrderOffence ->
-                            nonNull(courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN()) ? courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN() : courtOrderOffence.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
+                    nonNull(courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN()) ? courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN() : courtOrderOffence.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
                     .distinct().collect(Collectors.joining(","));
         }
 
@@ -533,6 +703,88 @@ public class ApplicationAggregate implements Aggregate {
                 .build();
     }
 
+    public Stream<Object> updateDefendantAddressOnApplication(final UUID applicationId, final DefendantUpdate defendantUpdate, final List<UUID> hearingIds) {
+        final Stream.Builder<Object> builder = builder();
+        if(isAddressUpdatedForDefendant(defendantUpdate)){
+            builder.add(DefendantAddressOnApplicationUpdated.defendantAddressOnApplicationUpdated()
+                    .withApplicationId(applicationId)
+                    .withDefendant(defendantUpdate)
+                    .build());
+            if (nonNull(hearingIds)) {
+                hearingIds.forEach(hearingId ->
+                        builder.add(ApplicationDefendantUpdateRequested.applicationDefendantUpdateRequested()
+                                .withDefendant(defendantUpdate)
+                                .withHearingId(hearingId)
+                                .build()));
+            }
+            return apply(builder.build());
+        }
+        return apply(empty());
+    }
+
+    private boolean isAddressUpdatedForDefendant(final DefendantUpdate defendantUpdate) {
+        final boolean isApplicantOrganisation = nonNull(defendantUpdate.getLegalEntityDefendant());
+        final UUID updatedDefendantId = ofNullable(defendantUpdate.getMasterDefendantId()).orElse(defendantUpdate.getId());
+
+        final Address defendantAddressOnReceivedApplication = getUpdatedDefendantAddress(defendantUpdate, isApplicantOrganisation);
+
+        Optional<MasterDefendant> defendantOnApplicationInAggregate = ofNullable(this.courtApplication.getSubject())
+                .map(CourtApplicationParty::getMasterDefendant)
+                .filter(def -> nonNull(def.getMasterDefendantId()) && def.getMasterDefendantId().equals(updatedDefendantId));
+
+        if (!defendantOnApplicationInAggregate.isPresent()) {
+                defendantOnApplicationInAggregate = ofNullable(this.courtApplication.getApplicant())
+                        .map(CourtApplicationParty::getMasterDefendant)
+                        .filter(def -> nonNull(def.getMasterDefendantId()) && def.getMasterDefendantId().equals(updatedDefendantId));
+            if (!defendantOnApplicationInAggregate.isPresent()) {
+                if(isNull(this.courtApplication.getRespondents())){
+                    return false;
+                }
+                defendantOnApplicationInAggregate = this.courtApplication.getRespondents().stream()
+                        .map(CourtApplicationParty::getMasterDefendant)
+                        .filter(Objects::nonNull)
+                        .filter(def -> nonNull(def.getMasterDefendantId()) && def.getMasterDefendantId().equals(updatedDefendantId)).findFirst();
+            }
+        }
+        if(defendantOnApplicationInAggregate.isPresent()){
+            return !isAddressMatches(defendantAddressOnReceivedApplication,getDefendantAddressFromApplication(defendantOnApplicationInAggregate.get(), isApplicantOrganisation));
+        }
+        return false;
+    }
+
+    private static Address getUpdatedDefendantAddress(final DefendantUpdate defendantUpdate, final boolean isApplicantOrganisation) {
+        if (!isApplicantOrganisation) {
+            return defendantUpdate.getPersonDefendant().getPersonDetails().getAddress();
+        } else {
+            return defendantUpdate.getLegalEntityDefendant().getOrganisation().getAddress();
+        }
+    }
+
+    private Address getDefendantAddressFromApplication(final MasterDefendant defendantOnApplicationInAggregate, final boolean isApplicantOrganisation) {
+        if (!isApplicantOrganisation) {
+            if(nonNull(defendantOnApplicationInAggregate.getPersonDefendant()) && nonNull(defendantOnApplicationInAggregate.getPersonDefendant().getPersonDetails())){
+                return defendantOnApplicationInAggregate.getPersonDefendant().getPersonDetails().getAddress();
+            }
+        } else {
+            if(nonNull(defendantOnApplicationInAggregate.getLegalEntityDefendant()) && nonNull(defendantOnApplicationInAggregate.getLegalEntityDefendant().getOrganisation())){
+                return defendantOnApplicationInAggregate.getLegalEntityDefendant().getOrganisation().getAddress();
+            }
+        }
+        return null;
+    }
+
+    private static Address getDefendantAddressFromCase(final Defendant defendant, final boolean isApplicantOrganisation) {
+        if (!isApplicantOrganisation) {
+            return defendant.getPersonDefendant().getPersonDetails().getAddress();
+        } else {
+            return defendant.getLegalEntityDefendant().getOrganisation().getAddress();
+        }
+    }
+    public Stream<Object> updateApplicationDefendant(final CourtApplication courtApplication) {
+        return apply(Stream.of(CourtApplicationUpdated.courtApplicationUpdated()
+                .withCourtApplication(courtApplication)
+                .build()));
+    }
     public Stream<Object> handleEditCourtFeeForCivilApplication(final UUID applicationId, final CourtApplicationPayment courtApplicationPayment) {
         return apply(Stream.of(
                         CourtFeeForCivilApplicationUpdated.courtFeeForCivilApplicationUpdated()

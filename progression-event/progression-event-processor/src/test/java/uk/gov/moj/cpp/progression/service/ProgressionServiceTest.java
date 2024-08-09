@@ -1620,4 +1620,43 @@ public class ProgressionServiceTest {
                 Json.createObjectBuilder().build());
     }
 
+    @Test
+    public void shouldGetActiveApplicationsOnCase(){
+        final UUID caseId = randomUUID();
+        final JsonEnvelope inputEnvelop = envelopeFrom(metadataBuilder()
+                .withName("progression.event.prosecution-case-defendant-updated")
+                .withId(randomUUID())
+                .build(),Json.createObjectBuilder().build());
+        final JsonEnvelope outputEnvelop = envelopeFrom(metadataBuilder()
+                .withName("progression.query.active-applications-on-case")
+                .withId(randomUUID())
+                .build(),Json.createObjectBuilder().add("linkedApplications",
+                Json.createArrayBuilder().add(Json.createObjectBuilder().add("applicationId", randomUUID().toString()).build())
+                        .add(Json.createObjectBuilder().add("applicationId", randomUUID().toString()).build()).build()).build());
+        when(requester.request(any())).thenReturn(outputEnvelop);
+
+        final Optional<JsonObject> activeApplicationsOnCase = progressionService.getActiveApplicationsOnCase(inputEnvelop, caseId.toString());
+
+        assertThat(activeApplicationsOnCase, is(notNullValue()));
+        assertThat(activeApplicationsOnCase.get().getJsonArray("linkedApplications"), is(notNullValue()));
+        assertThat(activeApplicationsOnCase.get().getJsonArray("linkedApplications").size(), is(2));
+    }
+
+    @Test
+    public void shouldReturnEmptyWhenNoActiveApplicationsOnCase(){
+        final UUID caseId = randomUUID();
+        final JsonEnvelope inputEnvelop = envelopeFrom(metadataBuilder()
+                .withName("progression.event.prosecution-case-defendant-updated")
+                .withId(randomUUID())
+                .build(),Json.createObjectBuilder().build());
+        final JsonEnvelope outputEnvelop = envelopeFrom(metadataBuilder()
+                .withName("progression.query.active-applications-on-case")
+                .withId(randomUUID())
+                .build(),Json.createObjectBuilder().build());
+        when(requester.request(any())).thenReturn(outputEnvelop);
+
+        final Optional<JsonObject> activeApplicationsOnCase = progressionService.getActiveApplicationsOnCase(inputEnvelop, caseId.toString());
+
+        assertThat(activeApplicationsOnCase, is(Optional.empty()));
+    }
 }

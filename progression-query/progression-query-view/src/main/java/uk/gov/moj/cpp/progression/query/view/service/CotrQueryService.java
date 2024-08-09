@@ -10,7 +10,7 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.progression.query.CotrDefendants;
+import uk.gov.justice.progression.query.CotrDefendant;
 import uk.gov.justice.progression.query.CotrDetail;
 import uk.gov.justice.progression.query.DefenceAdditionalInfo;
 import uk.gov.justice.progression.query.ProsecutionAdditionalInfo;
@@ -101,7 +101,7 @@ public class CotrQueryService {
                     .withId(cotrDetailsEntity.getId())
                     .withHearingId(cotrDetailsEntity.getHearingId())
                     .withHearingDay(hearingDate)
-                    .withCotrDefendants(createCotrDefendants(prosecutionCaseId, hearing.getProsecutionCases(), defendantsInCotr))
+                    .withCotrDefendants(createCotrDefendant(prosecutionCaseId, hearing.getProsecutionCases(), defendantsInCotr))
                     .withIsArchived(nonNull(cotrDetailsEntity.getArchived()))
                     .build();
             cotrDetails.add(cotrDetail);
@@ -129,7 +129,7 @@ public class CotrQueryService {
                     .withId(cotrDetailsEntity.getId())
                     .withHearingId(cotrDetailsEntity.getHearingId())
                     .withHearingDay(hearingDate)
-                    .withCotrDefendants(createCotrDefendants(prosecutionCaseId, hearing.getProsecutionCases(), defendantsInCotr))
+                    .withCotrDefendants(createCotrDefendant(prosecutionCaseId, hearing.getProsecutionCases(), defendantsInCotr))
                     .withIsArchived(nonNull(cotrDetailsEntity.getArchived()) ? cotrDetailsEntity.getArchived() : false)
                     .build();
             cotrDetails.add(cotrDetail);
@@ -161,7 +161,7 @@ public class CotrQueryService {
             addAttribute(jsonObjectBuilder, "caseUrn", getCaseUrn(prosecutionCase));
             addAttribute(jsonObjectBuilder, "hearingDay", hearingDate.toLocalDate().toString());
             addAttribute(jsonObjectBuilder, "listedDurationMinutes", getListedDurationMinutes(hearing.getHearingDays()));
-            addAttribute(jsonObjectBuilder, "cotrDefendants", listToJsonArrayConverter.convert(createCotrDefendantsWithAdditionalInfo(prosecutionCaseId, hearing.getProsecutionCases(), defendantsInCotr, cotrId)));
+            addAttribute(jsonObjectBuilder, "cotrDefendants", listToJsonArrayConverter.convert(createCotrDefendantWithAdditionalInfo(prosecutionCaseId, hearing.getProsecutionCases(), defendantsInCotr, cotrId)));
             addAttribute(jsonObjectBuilder, "prosecutionFormData", prosecutionFormData);
             addAttribute(jsonObjectBuilder, "prosecutionAdditionalInfo", listToJsonArrayConverter.convert(addProsecutionAdditionalInfo(cotrId)));
             addAttribute(jsonObjectBuilder, "caseProgressionReviewNotes", stringToJsonArray.convert(cotrDetailsEntity.getCaseProgressionReviewNote()));
@@ -219,10 +219,10 @@ public class CotrQueryService {
                 .collect(Collectors.toList());
     }
 
-    private List<CotrDefendants> createCotrDefendantsWithAdditionalInfo(final UUID prosecutionCaseId, final List<ProsecutionCase> prosecutionCases
+    private List<CotrDefendant> createCotrDefendantWithAdditionalInfo(final UUID prosecutionCaseId, final List<ProsecutionCase> prosecutionCases
             , final List<UUID> defendantsInCotr, final UUID cotrId) {
         LOGGER.info("Create defendants for prosecution case {}", prosecutionCaseId);
-        final List<CotrDefendants> cotrDefendants = new ArrayList<>();
+        final List<CotrDefendant> cotrDefendants = new ArrayList<>();
         if (isNotEmpty(prosecutionCases)) {
             final ProsecutionCase prosecutionCase = prosecutionCases.stream()
                     .filter(pc -> nonNull(pc) && prosecutionCaseId.equals(pc.getId()))
@@ -235,7 +235,7 @@ public class CotrQueryService {
         return cotrDefendants;
     }
 
-    private void addDefendantsToCotrForm(final List<Defendant> defendants, final List<CotrDefendants> defendantsList, final List<UUID> defendantsInCotr, final UUID cotrId) {
+    private void addDefendantsToCotrForm(final List<Defendant> defendants, final List<CotrDefendant> defendantsList, final List<UUID> defendantsInCotr, final UUID cotrId) {
         defendants.forEach(defendant -> {
             if (defendantsInCotr.contains(defendant.getId())) {
                 final List<COTRDefendantEntity> cotrDefendantEntities = cotrDefendantRepository.findByCotrIdAndDefendantId(cotrId, defendant.getId());
@@ -243,13 +243,13 @@ public class CotrQueryService {
                         .filter(p -> p.getDefendantId().equals(defendant.getId()))
                         .findFirst()
                         .orElse(null);
-                defendantsList.add(getCotrDefendants(defendant, cotrDefendantEntity));
+                defendantsList.add(getCotrDefendant(defendant, cotrDefendantEntity));
             }
         });
     }
 
-    private CotrDefendants getCotrDefendants(final Defendant defendant, final COTRDefendantEntity cotrDefendantEntity) {
-        return CotrDefendants.cotrDefendants()
+    private CotrDefendant getCotrDefendant(final Defendant defendant, final COTRDefendantEntity cotrDefendantEntity) {
+        return CotrDefendant.cotrDefendant()
                 .withId(defendant.getId())
                 .withFirstName(getDefendantFirstName(defendant.getPersonDefendant()))
                 .withLastName(getDefendantLastName(defendant.getPersonDefendant()))
@@ -276,9 +276,9 @@ public class CotrQueryService {
                 .collect(Collectors.toList());
     }
 
-    private List<CotrDefendants> createCotrDefendants(final UUID prosecutionCaseId, final List<ProsecutionCase> prosecutionCases, final List<UUID> defendantsInCotr) {
+    private List<CotrDefendant> createCotrDefendant(final UUID prosecutionCaseId, final List<ProsecutionCase> prosecutionCases, final List<UUID> defendantsInCotr) {
         LOGGER.info("Create defendants for prosecution case {}", prosecutionCaseId);
-        final List<CotrDefendants> cotrDefendants = new ArrayList<>();
+        final List<CotrDefendant> cotrDefendants = new ArrayList<>();
         if (isNotEmpty(prosecutionCases)) {
             final ProsecutionCase prosecutionCase = prosecutionCases.stream()
                     .filter(pc -> nonNull(pc) && prosecutionCaseId.equals(pc.getId()))
@@ -291,10 +291,10 @@ public class CotrQueryService {
         return cotrDefendants;
     }
 
-    private static void addDefendantsToCotrDetail(final List<Defendant> defendants, final List<CotrDefendants> defendantsList, final List<UUID> defendantsInCotr) {
+    private static void addDefendantsToCotrDetail(final List<Defendant> defendants, final List<CotrDefendant> defendantsList, final List<UUID> defendantsInCotr) {
         defendants.forEach(defendant -> {
             if (defendantsInCotr.contains(defendant.getId())) {
-                final CotrDefendants cotrDefendants = CotrDefendants.cotrDefendants()
+                final CotrDefendant cotrDefendants = CotrDefendant.cotrDefendant()
                         .withId(defendant.getId())
                         .withFirstName(getDefendantFirstName(defendant.getPersonDefendant()))
                         .withLastName(getDefendantLastName(defendant.getPersonDefendant()))

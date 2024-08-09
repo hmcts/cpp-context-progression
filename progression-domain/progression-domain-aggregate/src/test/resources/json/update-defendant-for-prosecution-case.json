@@ -114,5 +114,6 @@
       },
       "employerPayrollReference": "payyou1234"
     }
-  }
+  },
+  "allHearingIdsForCase": ["d3b36ad3-1bae-44f5-b09c-b5a71fcac389"]
 }
