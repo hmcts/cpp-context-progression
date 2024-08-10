@@ -68,8 +68,8 @@
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>17.0.13</referencedata.version>
-        <listing.version>8.0.91</listing.version>
-        <hearing.version>8.0.136</hearing.version>
+        <listing.version>8.0.99</listing.version>
+        <hearing.version>8.0.140</hearing.version>
         <usersgroups.version>8.0.39</usersgroups.version>
         <defence.version>8.0.55</defence.version>
         <referencedata.offence.version>8.0.23</referencedata.offence.version>
