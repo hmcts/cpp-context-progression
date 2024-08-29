@@ -1,0 +1,30 @@
+{
+  "courtApplicationTypes": [
+    {
+      "id": "44c238d9-3bc2-3cf3-a2eb-a7d1437b8383",
+      "type": "Application to reopen case",
+      "categoryCode": "CO",
+      "jurisdiction": "MAGISTRATES",
+      "linkType": "SJP",
+      "code": "SE20508",
+      "legislation": "In accordance with section 142 of the Magistrates' Courts Act 1980.",
+      "appealFlag": false,
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "hearingCode": "APN",
+      "applicantAppellantFlag": false,
+      "pleaApplicableFlag": false,
+      "offenceActiveOrder": "OFFENCE",
+      "commrOfOathFlag": false,
+      "breachType": "NOT_APPLICABLE",
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": true,
+      "listingNotifTemplate": "POSTAL_NOTIFICATION",
+      "boxworkNotifTemplate": "NOT_APPLICABLE",
+      "prosecutorThirdPartyFlag": true,
+      "spiOutApplicableFlag": true
+    }
+
+
+
+  ]
+}

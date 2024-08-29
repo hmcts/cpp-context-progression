@@ -54,7 +54,9 @@ import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.CourtApplicationHearingDeleted;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
+import uk.gov.justice.core.courts.CourtApplicationRemovedFromSeedingHearing;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrder;
@@ -66,6 +68,8 @@ import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
 import uk.gov.justice.core.courts.DefendantRequestToExtendHearingCreated;
 import uk.gov.justice.core.courts.DefendantUpdate;
+import uk.gov.justice.core.courts.DeleteApplicationForCaseRequested;
+import uk.gov.justice.core.courts.DeleteCourtApplicationHearingIgnored;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationRequestCreated;
@@ -87,6 +91,7 @@ import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
 import uk.gov.justice.core.courts.HearingUpdatedProcessed;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
 import uk.gov.justice.core.courts.HearingVerdictUpdated;
+import uk.gov.justice.core.courts.InitiateApplicationForCaseRequested;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.ListDefendantRequest;
@@ -95,6 +100,7 @@ import uk.gov.justice.core.courts.ListHearingRequested;
 import uk.gov.justice.core.courts.ListingNumberUpdated;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
@@ -188,7 +194,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 9128521802762667491L;
+    private static final long serialVersionUID = 9128521802762667493L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -201,6 +207,8 @@ public class HearingAggregate implements Aggregate {
     private Map<UUID, RelatedHearingUpdated> relatedHearingUpdatedMap = new HashMap<>();
     private Map<LocalDate, List<BookingReferenceCourtScheduleIds>> bookingReferencesAndCourtScheduleIdsForHearingDay = new HashMap<>();
     private Boolean notifyNCES = false;
+    private Map<UUID,UUID> initiatedApplicationIdsForResultIds = new HashMap<>();
+    private Map<UUID,LocalDate> initiatedApplicationsIssueDateForResultIds = new HashMap<>();
 
     private ZonedDateTime resultSharedDateTime;
 
@@ -327,12 +335,25 @@ public class HearingAggregate implements Aggregate {
                 when(OpaPublicListNoticeSent.class).apply(this::addPublicListNoticeSent),
                 when(OpaPressListNoticeSent.class).apply(this::addPressListNoticeSent),
                 when(OpaResultListNoticeSent.class).apply(this::addResultListNoticeSent),
+                when(InitiateApplicationForCaseRequested.class).apply(this::handleInitiateApplicationForCaseRequested),
+                when(CourtApplicationRemovedFromSeedingHearing.class).apply(this::handleCourtApplicationRemovedFromSeedingHearing),
                 otherwiseDoNothing());
     }
 
     private void handleHearingMovedToUnallocated(final HearingMovedToUnallocated hearingMovedToUnallocated) {
         this.hearing = hearingMovedToUnallocated.getHearing();
         this.hearingListingStatus = HearingListingStatus.SENT_FOR_LISTING;
+    }
+
+    private void handleInitiateApplicationForCaseRequested(final InitiateApplicationForCaseRequested initiateApplicationForCaseRequested) {
+        this.initiatedApplicationIdsForResultIds.put(initiateApplicationForCaseRequested.getApplicationId(), initiateApplicationForCaseRequested.getResultId());
+        if (!initiatedApplicationsIssueDateForResultIds.containsKey(initiateApplicationForCaseRequested.getResultId())) {
+            this.initiatedApplicationsIssueDateForResultIds.put(initiateApplicationForCaseRequested.getResultId(), initiateApplicationForCaseRequested.getIssueDate());
+        }
+    }
+
+    private void handleCourtApplicationRemovedFromSeedingHearing(CourtApplicationRemovedFromSeedingHearing courtApplicationRemovedFromSeedingHearing) {
+        this.initiatedApplicationIdsForResultIds.remove(courtApplicationRemovedFromSeedingHearing.getApplicationId());
     }
 
     @SuppressWarnings("pmd:NullAssignment")
@@ -1030,6 +1051,13 @@ public class HearingAggregate implements Aggregate {
                 .build()));
     }
 
+    public Stream<Object> removeApplicationFromSeedingHearing(final UUID hearingId, final UUID applicationId) {
+        return apply(Stream.of(CourtApplicationRemovedFromSeedingHearing.courtApplicationRemovedFromSeedingHearing()
+                .withApplicationId(applicationId)
+                .withSeedingHearingId(hearingId)
+                .build()));
+    }
+
     private Stream<Object> populateHearingObjectStream(final UUID hearingId) {
         final List<UUID> prosecutionCaseIds = isNotEmpty(hearing.getProsecutionCases()) ? getProsecutionCaseIds(hearing) : null;
         final List<UUID> offenceIds = isNotEmpty(hearing.getProsecutionCases()) ? getProsecutionCaseOffenceIds(hearing) : null;
@@ -1457,6 +1485,12 @@ public class HearingAggregate implements Aggregate {
 
         if (isNotEmpty(hearing.getProsecutionCases())) {
             streamBuilder.add(createProsecutionCasesResultedV2Event(updatedHearing, shadowListedOffences, hearingDay));
+
+            final List<InitiateApplicationForCaseRequested> requestInitiateApplicationForCaseEvents = createRequestInitiateApplicationForCaseEvents(updatedHearing);
+            requestInitiateApplicationForCaseEvents.forEach(streamBuilder::add);
+
+            final List<DeleteApplicationForCaseRequested> deleteApplicationForCaseRequestedEvents = createDeleteApplicationForCaseRequestedEvents(updatedHearing);
+            deleteApplicationForCaseRequestedEvents.forEach(streamBuilder::add);
         }
 
         if (isEligibleForNextHearings(hearing)) {
@@ -1817,6 +1851,24 @@ public class HearingAggregate implements Aggregate {
         return apply(streamBuilder.build());
     }
 
+    public Stream<Object> deleteCourtApplicationHearing(final UUID hearingId, final UUID applicationId, final UUID seedingHearingId) {
+        final boolean isHearingAlreadyResulted = ofNullable(this.hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                .anyMatch(c -> CollectionUtils.isNotEmpty(c.getJudicialResults()));
+        if (isHearingAlreadyResulted) {
+            return apply(Stream.of(DeleteCourtApplicationHearingIgnored.deleteCourtApplicationHearingIgnored()
+                    .withApplicationId(applicationId)
+                    .withHearingId(hearingId)
+                    .withSeedingHearingId(seedingHearingId)
+                    .build()));
+        } else {
+            return apply(Stream.of(CourtApplicationHearingDeleted.courtApplicationHearingDeleted()
+                    .withApplicationId(applicationId)
+                    .withHearingId(hearingId)
+                    .withSeedingHearingId(seedingHearingId)
+                    .build()));
+        }
+    }
+
     private Hearing getHearingWithNewVerdictForApplication(final UUID applicationId, final Verdict verdict) {
         return Hearing.hearing().withValuesFrom(hearing)
                 .withCourtApplications(ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
@@ -2123,6 +2175,112 @@ public class HearingAggregate implements Aggregate {
                 .withHearing(hearing)
                 .withHearingDay(hearingDay)
                 .build();
+    }
+
+    private List<InitiateApplicationForCaseRequested> createRequestInitiateApplicationForCaseEvents(final Hearing hearing) {
+        final List<InitiateApplicationForCaseRequested> events = new ArrayList<>();
+        hearing.getProsecutionCases().forEach(prosecutionCase ->
+                prosecutionCase.getDefendants().forEach(defendant -> {
+                    final List<JudicialResult> judicialResults = ofNullable(defendant.getOffences()).map(Collection::stream).orElseGet(Stream::empty).filter(offence -> offence.getJudicialResults() != null)
+                            .flatMap(offence -> ofNullable(offence.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty)).collect(toList());
+
+                    createInitiateApplicationForCaseRequestedEvents(hearing, events, prosecutionCase, defendant, judicialResults);
+                }));
+        return events;
+    }
+
+    private void createInitiateApplicationForCaseRequestedEvents(final Hearing hearing, final List<InitiateApplicationForCaseRequested> events, final ProsecutionCase prosecutionCase, final Defendant defendant, final List<JudicialResult> judicialResults) {
+        judicialResults.forEach(judicialResult -> {
+            LOGGER.info("Priority application Types: {}", judicialResult.getJudicialResultTypeId());
+            if (nonNull(judicialResult.getIsNewAmendment()) && Boolean.TRUE.equals(judicialResult.getIsNewAmendment())) {
+                final NextHearing nextHearing = judicialResult.getNextHearing();
+                if (nextHearing != null && nonNull(nextHearing.getIsFirstReviewHearing()) && Boolean.TRUE.equals(nextHearing.getIsFirstReviewHearing()) && nonNull(nextHearing.getApplicationTypeCode())) {
+                    LOGGER.info("Next hearing populated with application Type{}", nextHearing.getApplicationTypeCode());
+                    final UUID judicialResultId = judicialResult.getJudicialResultId();
+                    events.add(InitiateApplicationForCaseRequested.initiateApplicationForCaseRequested()
+                            .withProsecutionCase(prosecutionCase)
+                            .withDefendant(defendant)
+                            .withNextHearing(nextHearing)
+                            .withApplicationId(randomUUID())
+                            .withHearing(hearing)
+                            .withResultId(judicialResultId)
+                            .withOldApplicationId(this.initiatedApplicationIdsForResultIds.entrySet().stream()
+                                    .filter(e -> e.getValue().equals(judicialResultId))
+                                    .map(Map.Entry::getKey)
+                                    .findFirst()
+                                    .orElse(null))
+                            .withIsAmended(this.initiatedApplicationIdsForResultIds.containsValue(judicialResultId))
+                            .withIssueDate(this.initiatedApplicationsIssueDateForResultIds.containsKey(judicialResultId) ? this.initiatedApplicationsIssueDateForResultIds.get(judicialResultId) : LocalDate.now())
+                            .build());
+                }
+            }
+        });
+    }
+
+    /**
+     * This method aims to delete applications which have been created in the previous result
+     * and have been amended in the current result.
+     *
+     * @param hearing
+     * @return
+     */
+    private List<DeleteApplicationForCaseRequested> createDeleteApplicationForCaseRequestedEvents(final Hearing hearing) {
+        final List<DeleteApplicationForCaseRequested> events = new ArrayList<>();
+        final List<JudicialResult> judicialResults = hearing.getProsecutionCases().stream().map(ProsecutionCase::getDefendants)
+                .flatMap(Collection::stream)
+                .map(Defendant::getOffences)
+                .flatMap(Collection::stream)
+                .map(Offence::getJudicialResults)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .collect(toList());
+
+        raiseDeleteApplicationEventIfSameJudicialResultIdHasAmendment(hearing, events, judicialResults);
+        raiseDeleteApplicationEventIfPreviousJudicialResultIdIsNotInTheAmendmentResult(hearing, events, judicialResults);
+        return events;
+
+    }
+
+    /**
+     * This method aims to raise events for delete applications which have been created in the previous result
+     * and have been amended with the same result id in the current result.
+     *
+     * @param hearing
+     * @param events
+     * @param judicialResults
+     */
+    private void raiseDeleteApplicationEventIfSameJudicialResultIdHasAmendment(final Hearing hearing, final List<DeleteApplicationForCaseRequested> events, final List<JudicialResult> judicialResults) {
+        judicialResults.forEach(judicialResult -> {
+            if (nonNull(judicialResult.getIsNewAmendment()) && Boolean.TRUE.equals(judicialResult.getIsNewAmendment())) {
+                initiatedApplicationIdsForResultIds.entrySet().stream()
+                        .filter(e -> judicialResult.getJudicialResultId().equals(e.getValue()))
+                        .forEach(e ->
+                                events.add(DeleteApplicationForCaseRequested.deleteApplicationForCaseRequested()
+                                        .withSeedingHearingId(hearing.getId())
+                                        .withApplicationId(e.getKey())
+                                        .build()));
+            }
+        });
+    }
+
+    /**
+     * This method aims to raise events for delete applications which have been created in the previous result
+     * and have been amended with the different result id in the current result.
+     *
+     *
+     * @param hearing
+     * @param events
+     * @param judicialResults
+     */
+    private void raiseDeleteApplicationEventIfPreviousJudicialResultIdIsNotInTheAmendmentResult(final Hearing hearing, final List<DeleteApplicationForCaseRequested> events, final List<JudicialResult> judicialResults) {
+        initiatedApplicationIdsForResultIds.entrySet().stream()
+                .filter(e -> judicialResults.stream()
+                        .noneMatch(j -> j.getJudicialResultId().equals(e.getValue())))
+                .forEach(e ->
+                        events.add(DeleteApplicationForCaseRequested.deleteApplicationForCaseRequested()
+                                .withSeedingHearingId(hearing.getId())
+                                .withApplicationId(e.getKey())
+                                .build()));
     }
 
     private ProsecutionCaseDefendantListingStatusChangedV2 createListingStatusResultedEvent(final Hearing hearing) {

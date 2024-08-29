@@ -121,6 +121,7 @@ public class CourtApplicationProcessor {
     public static final String PUBLIC_PROGRESSION_APPLICATION_DEFENDANT_CHANGED = "public.progression.application-defendant-changed";
     private static final String COURT_APPLICATION = "courtApplication";
     private static final String PROSECUTION_CASE = "prosecutionCase";
+    private static final String OLD_APPLICATION_ID = "oldApplicationId";
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_CREATED = "public.progression.court-application-created";
 
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_PROCEEDINGS_INITIATED = "public.progression.court-application-proceedings-initiated";
@@ -286,7 +287,7 @@ public class CourtApplicationProcessor {
         if (Boolean.TRUE.equals(courtApplicationProceedingsInitiated.getIsSJP())) {
             initiateSJPCase(event, courtApplicationProceedingsInitiated);
         } else {
-            initiateCourtApplication(event, courtApplicationProceedingsInitiated.getCourtApplication());
+            initiateCourtApplication(event, courtApplicationProceedingsInitiated.getCourtApplication(), courtApplicationProceedingsInitiated.getOldApplicationId());
         }
         final JsonObjectBuilder courtApplicationWithCase = createObjectBuilder();
         courtApplicationWithCase.add("courtApplication", objectToJsonObjectConverter.convert(courtApplicationProceedingsInitiated.getCourtApplication()));
@@ -701,7 +702,7 @@ public class CourtApplicationProcessor {
         if (listHearingBoxworkService.isLHBWResultedAndNeedToSendNotifications(courtApplication.getJudicialResults())){
             final NextHearing nextHearing = listHearingBoxworkService.getNextHearingFromLHBWResult(courtApplication.getJudicialResults());
             final ZonedDateTime hearingStartDateTime = ofNullable(nextHearing.getListedStartDateTime()).orElseGet(() -> nextHearing.getWeekCommencingDate().atStartOfDay(ZoneOffset.UTC));
-            notificationService.sendNotification(event, courtApplication, false, nextHearing.getCourtCentre(), hearingStartDateTime, nextHearing.getJurisdictionType());
+            notificationService.sendNotification(event, courtApplication, false, nextHearing.getCourtCentre(), hearingStartDateTime, nextHearing.getJurisdictionType(), false);
         }
 
         sender.send(envelop(event.payloadAsJsonObject()).withName(PUBLIC_PROGRESSION_HEARING_RESULTED_APPLICATION_UPDATED).withMetadataFrom(event));
@@ -726,7 +727,7 @@ public class CourtApplicationProcessor {
         }
         final CourtHearingRequest courtHearingRequest = sendNotificationForApplication.getCourtHearing();
         if(nonNull(courtHearingRequest) && (isNull(courtHearingRequest.getCourtCentre().getRoomId()) || nonNull(courtHearingRequest.getWeekCommencingDate()))) {
-            notificationService.sendNotification(jsonEnvelope, courtApplication, sendNotificationForApplication.getIsWelshTranslationRequired(), courtHearingRequest.getCourtCentre(), courtHearingRequest.getEarliestStartDateTime(), courtHearingRequest.getJurisdictionType());
+            notificationService.sendNotification(jsonEnvelope, courtApplication, sendNotificationForApplication.getIsWelshTranslationRequired(), courtHearingRequest.getCourtCentre(), courtHearingRequest.getEarliestStartDateTime(), courtHearingRequest.getJurisdictionType(), false);
         }
     }
 
@@ -926,15 +927,18 @@ public class CourtApplicationProcessor {
             }
         }
 
-        initiateCourtApplication(event, courtApplication);
+        initiateCourtApplication(event, courtApplication, courtApplicationProceedingsInitiated.getOldApplicationId());
     }
 
-    private void initiateCourtApplication(final JsonEnvelope event, final CourtApplication courtApplication) {
-        final JsonObject command = createObjectBuilder()
-                .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
-                .build();
+    private void initiateCourtApplication(final JsonEnvelope event, final CourtApplication courtApplication, final UUID oldApplicationId) {
+        final JsonObjectBuilder commandBuilder = createObjectBuilder()
+                .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication));
 
-        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION).build(), command));
+        if (nonNull(oldApplicationId)) {
+            commandBuilder.add(OLD_APPLICATION_ID, oldApplicationId.toString());
+        }
+
+        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION).build(), commandBuilder.build()));
     }
 
     private Hearing updateHearingWithApplication(final JsonEnvelope event, final Hearing hearing, final CourtApplication courtApplication) {

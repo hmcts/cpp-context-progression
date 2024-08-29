@@ -189,6 +189,9 @@ subscriptions_descriptor:
         - name: public.progression.remove-last-case-in-group-cases-rejected
           schema_uri: http://moj.gov.uk/cpp/progression/events/public.progression-remove-last-case-in-group-cases-rejected.json
 
+        - name: public.progression.events.court-application-deleted
+          schema_uri: http://justice.gov.uk/progression/courts/public.progression.events.court-application-deleted.json
+
         # ***** Deprecated API - Start ********
         # ***** Do not add any new API in this section *****
 

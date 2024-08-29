@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
@@ -62,7 +63,9 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
     private MessageProducer messageProducerClientPublic;
     private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.event.hearing-application-link-created";
+    private static final String PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION_INITIATED = "progression.event.send-notification-for-auto-application-initiated";
     private  MessageConsumer messageConsumerLink;
+    private  MessageConsumer messageConsumerAutoNotification;
     private static final String MAGISTRATES_JURISDICTION_TYPE = "MAGISTRATES";
     private  MessageConsumer messageConsumerListingNumberUpdated;
 
@@ -79,6 +82,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
     public void tearDown() throws JMSException {
         messageProducerClientPublic.close();
         messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
+        messageConsumerAutoNotification.close();
     }
 
     @Before
@@ -93,6 +97,8 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
 
         messageConsumerLink = privateEvents.createPrivateConsumer(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK);
+        messageConsumerAutoNotification = privateEvents.createPrivateConsumer(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION_INITIATED);
+
         messageConsumerListingNumberUpdated = privateEvents.createPrivateConsumer("progression.event.listing-number-updated");
 
     }
@@ -116,11 +122,12 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
                         .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
                         .withUserId(userId)
                         .build());
-
         pollForApplicationStatus(applicationId, "LISTED");
         pollForApplicationAtAGlance("LISTED");
         verifyPostInitiateCourtHearing(hearingId);
         verifyInMessagingQueue();
+        verifyInMessagingQueueForAutoNotification();
+
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
@@ -153,6 +160,11 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
 
     private void verifyInMessagingQueue() {
         Awaitility.await().atMost(Duration.TEN_SECONDS).until(() -> assertThat(QueueUtil.retrieveMessage(messageConsumerLink), notNullValue()));
+    }
+
+    private void verifyInMessagingQueueForAutoNotification() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerAutoNotification);
+        assertTrue(message.isPresent());
     }
 
 }

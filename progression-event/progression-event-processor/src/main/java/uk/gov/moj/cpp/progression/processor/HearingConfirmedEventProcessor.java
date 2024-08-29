@@ -7,6 +7,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
@@ -36,6 +37,7 @@ import uk.gov.justice.core.courts.OnlinePleaNotification;
 import uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SeedingHearing;
+import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.listing.courts.ListNextHearings;
@@ -92,7 +94,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-@SuppressWarnings({"squid:S3655", "squid:S2629", "squid:CallToDeprecatedMethod"})
+@SuppressWarnings({"squid:S3655", "squid:S2629", "squid:CallToDeprecatedMethod", "pmd:BeanMembersShouldSerialize"})
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class HearingConfirmedEventProcessor {
 
@@ -112,14 +114,20 @@ public class HearingConfirmedEventProcessor {
     private static final String WELSH_EITHER_WAY_YOUTH_TEMPLATE_NAME = "welsh_plea_eitherway_offences_youth";
     private static final String WELSH_INDICTABLE_ONLY_TEMPLATE_NAME = "welsh_plea_indictable_only_offences";
 
+    private static final String PRIVATE_PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION = "progression.command.send-notification-for-auto-application";
     private static final String NEW_HEARING_NOTIFICATION_TEMPLATE_NAME = "NewHearingNotification";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HearingConfirmedEventProcessor.class.getName());
     private static final String EITHER_WAY = "Either Way";
     private static final String INDICTABLE = "Indictable";
 
     private static final String FEATURE_OPA = "OPA";
 
+    public static final String HEARING_START_DATE_TIME = "hearingStartDateTime";
+    public static final String JURISDICTION_TYPE = "jurisdictionType";
+    public static final String COURT_APPLICATION = "courtApplication";
+    public static final String COURT_CENTRE = "courtCentre";
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(HearingConfirmedEventProcessor.class.getName());
     @Inject
     ProgressionService progressionService;
 
@@ -212,7 +220,14 @@ public class HearingConfirmedEventProcessor {
             final List<CourtApplication> courtApplications = ofNullable(hearing.getCourtApplications()).orElse(new ArrayList<>());
 
             courtApplications.forEach(courtApplication -> LOGGER.info("sending notification for Application : {}", objectToJsonObjectConverter.convert(courtApplication)));
-            courtApplications.forEach(courtApplication -> notificationService.sendNotification(jsonEnvelope, courtApplication, false, hearing.getCourtCentre(), hearingStartDateTime, hearing.getJurisdictionType()));
+            courtApplications.forEach(
+            courtApplication -> sender.send(enveloper.withMetadataFrom(jsonEnvelope, PRIVATE_PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION)
+                    .apply(objectToJsonObjectConverter.convert( createObjectBuilder()
+                            .add(HEARING_START_DATE_TIME, hearingStartDateTime.toString())
+                            .add(JURISDICTION_TYPE, hearing.getJurisdictionType().toString())
+                            .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
+                            .add(COURT_CENTRE, objectToJsonObjectConverter.convert(hearing.getCourtCentre())).build()))));
+
 
             if (isNotEmpty(applicationIds)) {
                 LOGGER.info("Update application status to LISTED, associate Hearing with id: {} to Applications with ids {} and generate summons", hearing.getId(), applicationIds);
@@ -405,6 +420,11 @@ public class HearingConfirmedEventProcessor {
                 .limit(daysBetween)
                 .filter((isWeekend).negate())
                 .count();
+    }
+    @Handles("progression.event.send-notification-for-auto-application-initiated")
+    public void sendNotificationForAutoApplication(final JsonEnvelope jsonEnvelope) {
+        final SendNotificationForAutoApplicationInitiated sendNotificationForAutoApplication = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), SendNotificationForAutoApplicationInitiated.class);
+        notificationService.sendNotificationForAutoApplication(jsonEnvelope, sendNotificationForAutoApplication);
     }
     private boolean isBulkCase(final ConfirmedHearing confirmedHearing) {
         return nonNull(confirmedHearing.getIsGroupProceedings()) && confirmedHearing.getIsGroupProceedings();

@@ -357,7 +357,7 @@ public class UpdateApplicationHandlerTest {
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
-        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
+        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
     }
 
     private void createApplicationInAggregateForPersonDefendantAsSubject(final CourtApplicationParty courtApplicationParty) {
@@ -374,7 +374,7 @@ public class UpdateApplicationHandlerTest {
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
-        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
+        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
     }
 
     private void createApplicationInAggregateForPersonDefendantAsRespondent(final CourtApplicationParty courtApplicationParty) {
@@ -406,6 +406,6 @@ public class UpdateApplicationHandlerTest {
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
-        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
+        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
     }
 }

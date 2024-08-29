@@ -457,6 +457,36 @@ public class HearingResultsCommandHandlerTest {
     }
 
     @Test
+    public void shouldProcessHearingResultsWithoutNextHearingForCaseForAutoApplicationCreation() throws EventStreamException {
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final NextHearing nextHearing = NextHearing.nextHearing().withApplicationTypeCode("SE20508").withListedStartDateTime(ZonedDateTime.now()).withAdjournmentReason("AdjournmentReason").build();
+        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build());
+
+        final HearingResult hearingResult = createCommandPayload(hearingId, caseId, utcClock.now().plusDays(1), nextHearing, hearingDays);
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.hearing-result")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+
+        handler.processHearingResults(envelope);
+
+        final List<JsonEnvelope> events = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        assertThat(events.size(), is(4));
+
+        checkEventsContentOfHearingResultedAndListingStatusChangedAndProsecutionCasesResulted(hearingId, caseId, events);
+
+        final JsonEnvelope unscheduledNextHearingsEvent = events.get(3);
+        assertThat(unscheduledNextHearingsEvent.metadata().name(), is("progression.event.unscheduled-next-hearings-requested"));
+        assertThat(unscheduledNextHearingsEvent.payloadAsJsonObject().getJsonObject("hearing").getString("id"), is(hearingId.toString()));
+        assertThat(unscheduledNextHearingsEvent.payloadAsJsonObject().getJsonObject("seedingHearing").getString("seedingHearingId"), is(hearingId.toString()));
+    }
+
+    @Test
     public void shouldProcessStoreBookingReferencesAndCourtScheduleIdsCommand() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final LocalDate hearingDay = LocalDate.now();

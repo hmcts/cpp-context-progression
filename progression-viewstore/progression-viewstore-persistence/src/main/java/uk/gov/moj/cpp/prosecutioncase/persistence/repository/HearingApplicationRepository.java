@@ -28,4 +28,8 @@ public interface HearingApplicationRepository extends EntityRepository<HearingAp
     @Modifying
     @Query("delete from HearingApplicationEntity entity where entity.id.hearingId in (:hearingId)")
     void removeByHearingId(@QueryParam("hearingId") UUID hearingId);
+
+    @Modifying
+    @Query("delete from HearingApplicationEntity entity where entity.id.applicationId = :applicationId")
+    void removeByApplicationId(@QueryParam("applicationId") UUID applicationId);
 }

@@ -656,6 +656,15 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.delete-hearing-for-prosecution-case+json:
             example: !include json/progression.command.delete-hearing-for-prosecution-case.json
             schema:  !include json/schema/progression.command.delete-hearing-for-prosecution-case.json
+        application/vnd.progression.command.delete-application-for-case+json:
+            example: !include json/progression.command.delete-application-for-case.json
+            schema:  !include json/schema/progression.command.delete-application-for-case.json
+        application/vnd.progression.command.delete-court-application-hearing+json:
+            example: !include json/progression.command.delete-court-application-hearing.json
+            schema:  !include json/schema/progression.command.delete-court-application-hearing.json
+        application/vnd.progression.command.remove-application-from-seedingHearing+json:
+            example: !include json/progression.command.remove-application-from-seedingHearing.json
+            schema: !include json/schema/progression.command.remove-application-from-seedingHearing.json
         application/vnd.progression.command.decrease-listing-number-for-prosecution-case+json:
             example: !include json/progression.command.decrease-listing-number-for-prosecution-case.json
             schema:  !include json/schema/progression.command.decrease-listing-number-for-prosecution-case.json
@@ -696,6 +705,9 @@ baseUri:  message://command/handler/message/progression
 
         application/vnd.progression.command.create-hearing-event-log-document+json:
         application/vnd.progression.command.create-aaag-hearing-event-log-document+json:
+        application/vnd.progression.command.send-notification-for-auto-application+json:
+            schema: !include json/schema/progression.command.send-notification-for-auto-application.json
+            example: !include json/progression.command.send-notification-for-auto-application.json
 
 # Conviction Date
 

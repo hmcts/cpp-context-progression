@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -9,6 +11,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentIndexR
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -56,6 +59,32 @@ public class CourtDocumentIndexRepositoryTest {
 
         byCaseIdDefendantIdAndCaseDocumentId = courtDocumentIndexRepository.findByCaseIdDefendantIdAndCaseDocumentId(caseId, defendantId, courtDocumentId);
         assertNull(byCaseIdDefendantIdAndCaseDocumentId);
+
+    }
+
+    @Test
+    public void shouldUpdateApplicationIdByApplicationId() {
+        final UUID courtDocumentId = UUID.randomUUID();
+        final UUID applicationId = UUID.randomUUID();
+        final UUID newApplicationId = UUID.randomUUID();
+        CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
+        courtDocumentEntity.setCourtDocumentId(courtDocumentId);
+        courtDocumentEntity.setIsRemoved(false);
+        final CourtDocumentIndexEntity courtDocumentIndexEntity = new CourtDocumentIndexEntity();
+        courtDocumentIndexEntity.setCourtDocument(courtDocumentEntity);
+        courtDocumentIndexEntity.setId(UUID.randomUUID());
+        courtDocumentIndexEntity.setApplicationId(applicationId);
+        final Set<CourtDocumentIndexEntity> indices = new HashSet<>();
+        indices.add(courtDocumentIndexEntity);
+        courtDocumentEntity.setIndices(indices);
+        courtDocumentRepository.save(courtDocumentEntity);
+
+        courtDocumentIndexRepository.updateApplicationIdByApplicationId(newApplicationId, applicationId);
+
+        final List<CourtDocumentEntity> result = courtDocumentRepository.findByApplicationId(newApplicationId);
+
+        assertThat(result.size(), is(1));
+        assertThat(result.get(0).getCourtDocumentId(), is(courtDocumentId));
 
     }
 

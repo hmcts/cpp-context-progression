@@ -240,6 +240,23 @@ public class ReferenceDataStub {
         waitForStubToBeReady(REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_QUERY_URL, REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_MEDIA_TYPE);
     }
 
+    public static void stubCourtApplicationTypes(final String resourceName) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final JsonObject applicationTypesResponse = Json.createReader(ReferenceDataStub.class
+                        .getResourceAsStream(resourceName))
+                .readObject();
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/application-types";
+
+        stubFor(get(urlPathMatching(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", UUID.randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(applicationTypesResponse.toString())));
+
+        waitForStubToBeReady(urlPath, "application/vnd.referencedata.application-types+json");
+
+    }
+
     public static void stubQueryAllDocumentsTypeData(final String resourceName) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject documentType = Json.createReader(ReferenceDataStub.class

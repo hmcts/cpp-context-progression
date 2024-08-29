@@ -3,15 +3,13 @@ package uk.gov.moj.cpp.progression.event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.CommittingCourt;
-import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
-import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.InitiateApplicationForCaseRequested;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ListUnscheduledNextHearings;
 import uk.gov.justice.core.courts.MasterDefendant;
-import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCasesResultedV2;
@@ -143,9 +141,6 @@ public class HearingResultedEventProcessor {
             LOGGER.debug("Sending commands to update cases following hearing results shared for hearing id: {}", hearing.getId());
         }
 
-        for (final ProsecutionCase prosecutionCase : hearing.getProsecutionCases()) {
-            initiateApplicationForCase(event, hearing, prosecutionCase);
-        }
         hearing.getProsecutionCases().forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase,
                 hearing.getCourtApplications(),
                 hearing.getDefendantJudicialResults(),
@@ -153,27 +148,14 @@ public class HearingResultedEventProcessor {
                 hearing.getJurisdictionType(), hearing.getIsBoxHearing()));
     }
 
-    private void initiateApplicationForCase(final JsonEnvelope event, final Hearing hearing, final ProsecutionCase prosecutionCase) {
-        prosecutionCase.getDefendants().forEach(defendant -> {
-            final List<JudicialResult> judicialResults = ofNullable(defendant.getOffences()).map(Collection::stream).orElseGet(Stream::empty).filter(offence -> offence.getJudicialResults() != null)
-                    .flatMap(offence -> ofNullable(offence.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty)).collect(toList());
+    @Handles("progression.event.initiate-application-for-case-requested")
+    public void processInitiateApplicationForCaseRequested(final JsonEnvelope event) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Received 'progression.event.initiate-application-for-case-requested' event with payload: {}", event.toObfuscatedDebugString());
+        }
+        final InitiateApplicationForCaseRequested initiateApplicationForCaseRequested = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), InitiateApplicationForCaseRequested.class);
 
-            if (nonNull(judicialResults)) {
-                judicialResults.forEach(judicialResult -> {
-                    LOGGER.info("Priority application Types: {}", judicialResult.getJudicialResultTypeId());
-                    LOGGER.info("Drug rehab type: {}", DRNRR_JUDICIAL_RESULT_TYPE_ID);
-                    final NextHearing nextHearing = judicialResult.getNextHearing();
-                    if (nextHearing != null && nonNull(nextHearing.getIsFirstReviewHearing()) && Boolean.TRUE.equals(nextHearing.getIsFirstReviewHearing()) && nonNull(nextHearing.getApplicationTypeCode())) {
-                        LOGGER.info("Next hearing populated with application Type{}", nextHearing.getApplicationTypeCode());
-                        inititateApplicationCreation(event, hearing, prosecutionCase, defendant, nextHearing);
-                    }
-                });
-            }
-        });
-    }
-
-    private void inititateApplicationCreation(final JsonEnvelope event, final Hearing hearing, final ProsecutionCase prosecutionCase, final Defendant defendant, final NextHearing nextHearing) {
-        progressionService.initiateNewCourtApplication(event, defendant, prosecutionCase, hearing, nextHearing);
+        progressionService.initiateNewCourtApplication(event, initiateApplicationForCaseRequested);
     }
 
     @Handles("progression.event.next-hearings-requested")

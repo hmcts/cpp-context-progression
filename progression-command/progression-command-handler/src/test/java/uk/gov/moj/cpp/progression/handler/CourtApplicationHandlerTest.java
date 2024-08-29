@@ -36,6 +36,7 @@ import static uk.gov.justice.core.courts.SummonsTemplateType.GENERIC_APPLICATION
 import static uk.gov.justice.core.courts.SummonsTemplateType.NOT_APPLICABLE;
 import static uk.gov.justice.progression.courts.ApproveApplicationSummons.approveApplicationSummons;
 import static uk.gov.justice.progression.courts.RejectApplicationSummons.rejectApplicationSummons;
+import static uk.gov.justice.progression.courts.SendNotificationForAutoApplication.sendNotificationForAutoApplication;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
@@ -94,9 +95,11 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SendNotificationForApplicationIgnored;
 import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
 import uk.gov.justice.core.courts.UpdateApplicationDefendant;
+import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
 import uk.gov.justice.core.courts.UpdateCourtApplicationToHearing;
 import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
+import uk.gov.justice.progression.courts.SendNotificationForAutoApplication;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.event.ApplicationHearingDefendantUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -165,6 +168,8 @@ public class CourtApplicationHandlerTest {
             HearingPopulatedToProbationCaseworker.class,
             VejHearingPopulatedToProbationCaseworker.class,
             SendNotificationForApplicationInitiated.class,
+            SendNotificationForApplicationIgnored.class,
+            SendNotificationForAutoApplicationInitiated.class,
             SendNotificationForApplicationIgnored.class,
             CourtApplicationUpdated.class,
             ApplicationHearingDefendantUpdated.class
@@ -236,6 +241,14 @@ public class CourtApplicationHandlerTest {
         assertThat(new CourtApplicationHandler(), isHandler(COMMAND_HANDLER)
                 .with(method("courtApplicationAddedToCase")
                         .thatHandles("progression.command.add-court-application-to-case")
+                ));
+    }
+
+    @Test
+    public void shouldHandleCommandSendNotificationForAutopplication() {
+        assertThat(new CourtApplicationHandler(), isHandler(COMMAND_HANDLER)
+                .with(method("sendNotificationForAutopplication")
+                        .thatHandles("progression.command.send-notification-for-auto-application")
                 ));
     }
 
@@ -347,6 +360,74 @@ public class CourtApplicationHandlerTest {
                                 withJsonPath("$.courtApplication", notNullValue()),
                                 withJsonPath("$.courtApplication.applicationReference", notNullValue()),
                                 withJsonPath("$.courtHearing", notNullValue()))
+                        )
+                )));
+    }
+
+    @Test
+    public void shouldSendAutoNotificationForApplicationCommand() throws Exception {
+        final SendNotificationForAutoApplication sendNotificationForAutoApplication =
+                sendNotificationForAutoApplication()
+                        .withCourtApplication(courtApplication()
+                                .withId(randomUUID())
+                                .withType(courtApplicationType()
+                                        .withProsecutorThirdPartyFlag(false)
+                                        .withSummonsTemplateType(NOT_APPLICABLE)
+                                        .build())
+                                .withApplicant(buildCourtApplicationParty(randomUUID()))
+                                .withSubject(buildCourtApplicationParty(randomUUID()))
+                                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                        .withIsSJP(false)
+                                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                        .withCaseStatus("ACTIVE")
+                                        .build()))
+                                .build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("COURTCENTER").build())
+                        .withJurisdictionType(JurisdictionType.CROWN)
+                        .withHearingStartDateTime("2020-06-26T07:51Z")
+                        .build();
+
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withApplicationReference("APP00001")
+                        .withType(courtApplicationType()
+                                .withProsecutorThirdPartyFlag(false)
+                                .withSummonsTemplateType(NOT_APPLICABLE)
+                                .build())
+                        .withApplicant(buildCourtApplicationParty(randomUUID()))
+                        .withSubject(buildCourtApplicationParty(randomUUID()))
+                        .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                .withIsSJP(false)
+                                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                .withCaseStatus("ACTIVE")
+                                .build()))
+                        .build())
+                .build());
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.send-notification-for-auto-application")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<SendNotificationForAutoApplication> envelope = envelopeFrom(metadata, sendNotificationForAutoApplication);
+
+        courtApplicationHandler.sendNotificationForAutopplication(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.send-notification-for-auto-application-initiated"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication", notNullValue()),
+                                withJsonPath("$.jurisdictionType", notNullValue()),
+                                withJsonPath("$.hearingStartDateTime", notNullValue()),
+                                withJsonPath("$.courtCentre", notNullValue()))
                         )
                 )));
     }
@@ -700,7 +781,7 @@ public class CourtApplicationHandlerTest {
                         .build();
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
-        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
+        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -741,7 +822,7 @@ public class CourtApplicationHandlerTest {
                         .build();
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
-        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
+        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -1850,7 +1931,7 @@ public class CourtApplicationHandlerTest {
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
-        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
+        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
 
         final uk.gov.justice.progression.courts.ApproveApplicationSummons approveApplicationSummons = approveApplicationSummons()
                 .withApplicationId(randomUUID())
@@ -1896,7 +1977,7 @@ public class CourtApplicationHandlerTest {
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
-        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
+        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
 
         final uk.gov.justice.progression.courts.ApproveApplicationSummons approveApplicationSummons = approveApplicationSummons()
                 .withApplicationId(randomUUID())
@@ -1951,7 +2032,7 @@ public class CourtApplicationHandlerTest {
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
-        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
+        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
 
         final uk.gov.justice.progression.courts.RejectApplicationSummons rejectApplicationSummons = rejectApplicationSummons()
                 .withApplicationId(applicationId)

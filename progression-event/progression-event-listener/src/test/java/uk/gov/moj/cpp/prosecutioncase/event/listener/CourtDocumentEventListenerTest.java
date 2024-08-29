@@ -30,6 +30,7 @@ import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.DocumentTypeRBAC;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.NowDocument;
+import uk.gov.justice.progression.courts.HearingDeletedForProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -37,9 +38,11 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.events.CourtApplicationDocumentUpdated;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentTypeRBAC;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentIndexRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 
@@ -79,7 +82,13 @@ public class CourtDocumentEventListenerTest {
     private CourtDocumentRepository repository;
 
     @Mock
+    private CourtDocumentIndexRepository courtDocumentIndexRepository;
+
+    @Mock
     private JsonEnvelope envelope;
+
+    @Mock
+    private Envelope<CourtApplicationDocumentUpdated> courtApplicationDocumentUpdatedEnvelope;
 
     @Mock
     private JsonObject jsonObject;
@@ -212,13 +221,29 @@ public class CourtDocumentEventListenerTest {
 
     }
 
+    @Test
+    public void shouldProcessCourApplicationDocumentUpdated() {
+        final UUID oldApplicationId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final CourtApplicationDocumentUpdated payload = CourtApplicationDocumentUpdated.courtApplicationDocumentUpdated()
+                .withOldApplicationId(oldApplicationId)
+                .withApplicationId(applicationId)
+                .build();
+
+        when(courtApplicationDocumentUpdatedEnvelope.payload()).thenReturn(payload);
+
+        eventListener.processCourApplicationDocumentUpdated(courtApplicationDocumentUpdatedEnvelope);
+
+        verify(courtDocumentIndexRepository).updateApplicationIdByApplicationId(applicationId, oldApplicationId);
+    }
+
     private void executeHandleCourtDocumentCreatedWithFinancialMeans(final boolean financialMeansFlag,
                                                                      final boolean courtDocumentFinancialMeansValueNull) {
 
         final JsonObject courtDocumentPayload = buildDocumentCategoryJsonObject();
 
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
-                metadataWithRandomUUID("progression.event.court-document-added"),
+                metadataWithRandomUUID("progression.event.court-application-document-updated"),
                 courtDocumentPayload);
         setUpMockData(courtDocumentPayload, requestMessage);
         if (courtDocumentFinancialMeansValueNull) {

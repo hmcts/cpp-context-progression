@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.progression.utils;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;
@@ -136,9 +138,23 @@ public class TestUtils {
         assertEquals("Mismatch LJA NAME", LJA_NAME, ljaName);
     }
 
+    public static void verifyMagistratesCourtAmended(final String ljaCode, final String ljaName, final String amendmentDate) {
+        assertEquals("Mismatch LJA Code", LJA_CODE, ljaCode);
+        assertEquals("Mismatch LJA NAME", LJA_NAME, ljaName);
+        assertNotNull(amendmentDate);
+
+
+    }
+
     public static void verifyCrownCourt(final String ljaCode, final String ljaName) {
         assertEquals("Mismatch LJA Code", null, ljaCode);
         assertEquals("Mismatch LJA NAME", null, ljaName);
+    }
+
+    public static void verifyCrownCourtAmended(final String ljaCode, final String ljaName, final String amendmentDate) {
+        assertEquals("Mismatch LJA Code", null, ljaCode);
+        assertEquals("Mismatch LJA NAME", null, ljaName);
+        assertNotNull(amendmentDate);
     }
 
     public static void verifyPersonAddress(PostalAddress resultAddress){

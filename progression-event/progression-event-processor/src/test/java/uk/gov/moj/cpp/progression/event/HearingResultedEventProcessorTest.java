@@ -6,11 +6,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -29,12 +29,14 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
+import uk.gov.justice.core.courts.InitiateApplicationForCaseRequested;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.ListUnscheduledNextHearings;
 import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
@@ -290,7 +292,7 @@ public class HearingResultedEventProcessorTest {
         this.eventProcessor.handleProsecutionCasesResultedV2(event);
 
         verifyNoMoreInteractions(sender);
-        verify(progressionService, times(2)).updateCase(Mockito.eq(event), prosecutionCaseArgumentCaptor.capture(),
+        verify(progressionService, times(2)).updateCase(eq(event), prosecutionCaseArgumentCaptor.capture(),
                 courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(),
                 courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
 
@@ -344,16 +346,16 @@ public class HearingResultedEventProcessorTest {
 
         this.eventProcessor.handleNextHearingsRequested(event);
 
-        verify(progressionService).updateHearingListingStatusToSentForListing(Mockito.eq(event), listNextHearingsArgumentCaptor.capture());
+        verify(progressionService).updateHearingListingStatusToSentForListing(eq(event), listNextHearingsArgumentCaptor.capture());
         assertThat(listNextHearingsArgumentCaptor.getValue().getHearingId(), is(seedingHearing.getSeedingHearingId()));
         assertThat(listNextHearingsArgumentCaptor.getValue().getHearings().size(), CoreMatchers.is(1));
         assertThat(listNextHearingsArgumentCaptor.getValue().getHearings().get(0).getId(), is(hearingId));
 
-        verify(progressionService).storeBookingReferencesWithCourtScheduleIds(Mockito.eq(event), storeBookingReferenceCourtScheduleIdsArgumentCaptor.capture());
+        verify(progressionService).storeBookingReferencesWithCourtScheduleIds(eq(event), storeBookingReferenceCourtScheduleIdsArgumentCaptor.capture());
         assertThat(storeBookingReferenceCourtScheduleIdsArgumentCaptor.getValue().getHearingId(), is(hearingId));
         assertThat(storeBookingReferenceCourtScheduleIdsArgumentCaptor.getValue().getHearingDay(), is(hearingDay));
         assertThat(storeBookingReferenceCourtScheduleIdsArgumentCaptor.getValue().getBookingReferenceCourtScheduleIds().size(), is(1));
-        verify(progressionService).populateHearingToProbationCaseworker(Mockito.eq(event), Mockito.eq(hearingId));
+        verify(progressionService).populateHearingToProbationCaseworker(eq(event), eq(hearingId));
     }
 
     @Test
@@ -393,13 +395,13 @@ public class HearingResultedEventProcessorTest {
         this.eventProcessor.handleNextHearingsRequested(event);
 
         // Zero times execution of sending hearing to listing and updating status
-        verify(progressionService, times(0)).updateHearingListingStatusToSentForListing(Mockito.eq(event), listNextHearingsArgumentCaptor.capture());
+        verify(progressionService, times(0)).updateHearingListingStatusToSentForListing(eq(event), listNextHearingsArgumentCaptor.capture());
 
-        verify(progressionService).storeBookingReferencesWithCourtScheduleIds(Mockito.eq(event), storeBookingReferenceCourtScheduleIdsArgumentCaptor.capture());
+        verify(progressionService).storeBookingReferencesWithCourtScheduleIds(eq(event), storeBookingReferenceCourtScheduleIdsArgumentCaptor.capture());
         assertThat(storeBookingReferenceCourtScheduleIdsArgumentCaptor.getValue().getHearingId(), is(hearingId));
         assertThat(storeBookingReferenceCourtScheduleIdsArgumentCaptor.getValue().getHearingDay(), is(hearingDay));
         assertThat(storeBookingReferenceCourtScheduleIdsArgumentCaptor.getValue().getBookingReferenceCourtScheduleIds().size(), is(1));
-        verify(progressionService).populateHearingToProbationCaseworker(Mockito.eq(event), Mockito.eq(hearingId));
+        verify(progressionService).populateHearingToProbationCaseworker(eq(event), eq(hearingId));
     }
 
     @Test
@@ -419,17 +421,17 @@ public class HearingResultedEventProcessorTest {
 
         this.eventProcessor.handUnscheduledNextHearingsRequested(event);
 
-        verify(listingService).listUnscheduledNextHearings(Mockito.eq(event), listUnscheduledNextHearingsArgumentCaptor.capture());
+        verify(listingService).listUnscheduledNextHearings(eq(event), listUnscheduledNextHearingsArgumentCaptor.capture());
         assertThat(listUnscheduledNextHearingsArgumentCaptor.getValue().getHearingId(), is(seedingHearingId));
         assertThat(listUnscheduledNextHearingsArgumentCaptor.getValue().getHearings().get(0).getId(), is(hearingId));
 
-        verify(progressionService).sendUpdateDefendantListingStatusForUnscheduledListing(Mockito.eq(event), hearingArgumentCaptor.capture(), hearingUnscheduledListingNeedsCaptor.capture());
+        verify(progressionService).sendUpdateDefendantListingStatusForUnscheduledListing(eq(event), hearingArgumentCaptor.capture(), hearingUnscheduledListingNeedsCaptor.capture());
         assertThat(hearingArgumentCaptor.getValue().get(0).getId(), is(hearingId));
         final Set<UUID> unscheduledHearingIds = new HashSet<>();
         unscheduledHearingIds.add(hearingId);
         assertThat(hearingUnscheduledListingNeedsCaptor.getValue(), is(unscheduledHearingIds));
 
-        verify(progressionService).recordUnlistedHearing(Mockito.eq(event), Mockito.eq(hearingId), hearingArgumentCaptor.capture());
+        verify(progressionService).recordUnlistedHearing(eq(event), eq(hearingId), hearingArgumentCaptor.capture());
         assertThat(hearingArgumentCaptor.getValue().get(0).getId(), is(hearingId));
     }
 
@@ -451,11 +453,11 @@ public class HearingResultedEventProcessorTest {
 
         this.eventProcessor.handUnscheduledNextHearingsRequested(event);
 
-        verify(listingService).listUnscheduledNextHearings(Mockito.eq(event), listUnscheduledNextHearingsArgumentCaptor.capture());
+        verify(listingService).listUnscheduledNextHearings(eq(event), listUnscheduledNextHearingsArgumentCaptor.capture());
         assertThat(listUnscheduledNextHearingsArgumentCaptor.getValue().getHearingId(), is(seedingHearingId));
         assertThat(listUnscheduledNextHearingsArgumentCaptor.getValue().getHearings().get(0).getId(), is(hearingId));
 
-        verify(progressionService).sendUpdateDefendantListingStatusForUnscheduledListing(Mockito.eq(event), hearingArgumentCaptor.capture(), hearingUnscheduledListingNeedsCaptor.capture());
+        verify(progressionService).sendUpdateDefendantListingStatusForUnscheduledListing(eq(event), hearingArgumentCaptor.capture(), hearingUnscheduledListingNeedsCaptor.capture());
         assertThat(hearingArgumentCaptor.getValue().get(0).getId(), is(hearingId));
         assertThat(hearingArgumentCaptor.getValue().get(0).getCourtApplications().get(0).getId(), is(applicationId));
         assertThat(hearingArgumentCaptor.getValue().get(0).getProsecutionCases().get(0).getId(), is(caseId));
@@ -463,7 +465,7 @@ public class HearingResultedEventProcessorTest {
         unscheduledHearingIds.add(hearingId);
         assertThat(hearingUnscheduledListingNeedsCaptor.getValue(), is(unscheduledHearingIds));
 
-        verify(progressionService).recordUnlistedHearing(Mockito.eq(event), Mockito.eq(hearingId), hearingArgumentCaptor.capture());
+        verify(progressionService).recordUnlistedHearing(eq(event), eq(hearingId), hearingArgumentCaptor.capture());
         assertThat(hearingArgumentCaptor.getValue().get(0).getId(), is(hearingId));
     }
 
@@ -489,7 +491,7 @@ public class HearingResultedEventProcessorTest {
 
         this.eventProcessor.processCreateHearingForApplication(event);
 
-        verify(progressionService).linkApplicationToHearing(Mockito.eq(event), hearingCaptor.capture(), Mockito.eq(HearingListingStatus.SENT_FOR_LISTING));
+        verify(progressionService).linkApplicationToHearing(eq(event), hearingCaptor.capture(), eq(HearingListingStatus.SENT_FOR_LISTING));
         assertThat(hearingCaptor.getValue().getId(), is(hearingId));
         assertThat(hearingCaptor.getValue().getCourtApplications().get(0).getId(), is(courtApplicationId));
 
@@ -526,11 +528,11 @@ public class HearingResultedEventProcessorTest {
 
         this.eventProcessor.processCreateHearingForApplicationV2(event);
 
-        verify(progressionService).linkApplicationToHearing(Mockito.eq(event), hearingCaptor.capture(), Mockito.eq(HearingListingStatus.SENT_FOR_LISTING));
+        verify(progressionService).linkApplicationToHearing(eq(event), hearingCaptor.capture(), eq(HearingListingStatus.SENT_FOR_LISTING));
         assertThat(hearingCaptor.getValue().getId(), is(hearingId));
         assertThat(hearingCaptor.getValue().getCourtApplications().get(0).getId(), is(courtApplicationId));
 
-        verify(listingService).listCourtHearing(Mockito.eq(event), listCourtHearingCaptor.capture());
+        verify(listingService).listCourtHearing(eq(event), listCourtHearingCaptor.capture());
         assertThat(listCourtHearingCaptor.getValue().getHearings().get(0).getId(), is(hearingId));
         assertThat(listCourtHearingCaptor.getValue().getHearings().get(0).getProsecutionCases().get(0).getId(), is(caseId));
     }
@@ -556,10 +558,53 @@ public class HearingResultedEventProcessorTest {
 
         this.eventProcessor.processCreateHearingForApplicationV2(event);
 
-        verify(progressionService).linkApplicationToHearing(Mockito.eq(event), hearingCaptor.capture(), Mockito.eq(HearingListingStatus.SENT_FOR_LISTING));
+        verify(progressionService).linkApplicationToHearing(eq(event), hearingCaptor.capture(), eq(HearingListingStatus.SENT_FOR_LISTING));
         assertThat(hearingCaptor.getValue().getId(), is(hearingId));
         assertThat(hearingCaptor.getValue().getCourtApplications().get(0).getId(), is(courtApplicationId));
         verify(listingService, never()).listCourtHearing(any(JsonEnvelope.class), any(ListCourtHearing.class));
+    }
+
+    @Test
+    public void shouldProcessInitiateApplicationForCaseRequested() {
+        final UUID hearingId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID oldApplicationId = randomUUID();
+        final LocalDate issueDate = LocalDate.now();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+
+        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, defendantId, offenceId, offenceCode, false);
+        final Defendant defendant = prosecutionCase.getDefendants().get(0);
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(singletonList(prosecutionCase))
+                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
+                        .withId(courtApplicationId)
+                        .build()))
+                .build();
+        final NextHearing nextHearing = NextHearing.nextHearing().withIsFirstReviewHearing(true).build();
+
+        final InitiateApplicationForCaseRequested initiateApplicationForCaseRequested = InitiateApplicationForCaseRequested.initiateApplicationForCaseRequested()
+                .withHearing(hearing)
+                .withProsecutionCase(prosecutionCase)
+                .withApplicationId(courtApplicationId)
+                .withNextHearing(nextHearing)
+                .withDefendant(defendant)
+                .withIsAmended(true)
+                .withOldApplicationId(oldApplicationId)
+                .withIssueDate(issueDate)
+                .build();
+
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("progression.event.initiate-application-for-case-requested"),
+                objectToJsonObjectConverter.convert(initiateApplicationForCaseRequested));
+
+        this.eventProcessor.processInitiateApplicationForCaseRequested(event);
+
+        verify(progressionService).initiateNewCourtApplication(eq(event), eq(initiateApplicationForCaseRequested));
+
     }
 
     private UnscheduledNextHearingsRequested mockConverterAndTransformerResponses(final UUID hearingId, final UUID caseId, final SeedingHearing seedingHearing) {
@@ -580,7 +625,7 @@ public class HearingResultedEventProcessorTest {
                 .withProsecutionCases(Arrays.asList(prosecutionCase))
                 .build());
 
-        when(unscheduledCourtHearingListTransformer.transformWithSeedHearing(Mockito.any(), Mockito.eq(seedingHearing))).thenReturn(hearingUnscheduledListingNeeds);
+        when(unscheduledCourtHearingListTransformer.transformWithSeedHearing(Mockito.any(), eq(seedingHearing))).thenReturn(hearingUnscheduledListingNeeds);
         final Hearing hearing = Hearing.hearing().withId(hearingId).build();
         when(hearingResultUnscheduledListingHelper.convertToHearing(hearingUnscheduledListingNeeds.get(0), hearingDays)).thenReturn(hearing);
 
@@ -616,7 +661,7 @@ public class HearingResultedEventProcessorTest {
                 .withCourtApplications(Arrays.asList(courtApplication))
                 .build());
 
-        when(unscheduledCourtHearingListTransformer.transformWithSeedHearing(Mockito.any(), Mockito.eq(seedingHearing))).thenReturn(hearingUnscheduledListingNeeds);
+        when(unscheduledCourtHearingListTransformer.transformWithSeedHearing(Mockito.any(), eq(seedingHearing))).thenReturn(hearingUnscheduledListingNeeds);
         final Hearing hearing = Hearing.hearing().withId(hearingId)
                 .withProsecutionCases(Arrays.asList(prosecutionCase()
                         .withId(caseId)

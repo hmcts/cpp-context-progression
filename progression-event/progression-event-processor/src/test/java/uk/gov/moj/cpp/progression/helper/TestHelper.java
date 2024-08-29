@@ -297,6 +297,27 @@ public class TestHelper {
                 .build();
     }
 
+    public static NextHearing buildNextHearingForApplication(UUID type, UUID bookingReference, String courtLocation, LocalDate weekCommencingDate, ZonedDateTime listedStartDateTime) {
+        return NextHearing.nextHearing()
+                .withType(HearingType.hearingType()
+                        .withId(type)
+                        .withDescription("HearingType")
+                        .build())
+                .withBookingReference(bookingReference)
+                .withEstimatedMinutes(60)
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withCourtHearingLocation(courtLocation)
+                        .withCode(COMMITTING_COURT_CODE)
+                        .withName(COMMITTING_COURT_NAME)
+                        .build())
+                .withWeekCommencingDate(weekCommencingDate)
+                .withListedStartDateTime(listedStartDateTime)
+                .withHearingLanguage(HearingLanguage.ENGLISH)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withApplicationTypeCode("SE20510")
+                .build();
+    }
+
     public static NextHearing buildNextHearing(final UUID existingHearingId) {
         return NextHearing.nextHearing()
                 .withExistingHearingId(existingHearingId)

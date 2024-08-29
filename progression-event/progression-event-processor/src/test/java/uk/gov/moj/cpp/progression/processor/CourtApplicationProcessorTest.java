@@ -500,7 +500,7 @@ public class CourtApplicationProcessorTest {
 
         courtApplicationProcessor.sendNotificationForApplication(event);
         ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
-        verify(notificationService, times(1)).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+        verify(notificationService, times(1)).sendNotification(any(), any(), anyBoolean(), any(),any(), any(), any());
 
         SendNotificationForApplication sendNotificationForApplicationWelshRequired = sendNotificationForApplication()
                 .withCourtApplication(courtApplication()
@@ -515,7 +515,7 @@ public class CourtApplicationProcessorTest {
                         .build())
                 .build();
         courtApplicationProcessor.sendNotificationForApplication(event);
-        verify(notificationService, times(2)).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+        verify(notificationService, times(2)).sendNotification(any(), any(), anyBoolean(), any(),any(), any(), any());
 
     }
 
@@ -544,10 +544,10 @@ public class CourtApplicationProcessorTest {
 
 
         courtApplicationProcessor.sendNotificationForApplication(event);
-        verify(notificationService, never()).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+        verify(notificationService, never()).sendNotification(any(), any(), anyBoolean(), any(),any(), any(), any());
 
         courtApplicationProcessor.sendNotificationForApplication(event);
-        verify(notificationService, never()).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+        verify(notificationService, never()).sendNotification(any(), any(), anyBoolean(), any(),any(), any(), any());
 
     }
 
@@ -577,10 +577,10 @@ public class CourtApplicationProcessorTest {
 
 
         courtApplicationProcessor.sendNotificationForApplication(event);
-        verify(notificationService, times(1)).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+        verify(notificationService, times(1)).sendNotification(any(), any(), anyBoolean(), any(),any(), any(), any());
 
         courtApplicationProcessor.sendNotificationForApplication(event);
-        verify(notificationService, times(2)).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+        verify(notificationService, times(2)).sendNotification(any(), any(), anyBoolean(), any(),any(), any(), any());
 
     }
 
@@ -610,10 +610,10 @@ public class CourtApplicationProcessorTest {
 
 
         courtApplicationProcessor.sendNotificationForApplication(event);
-        verify(notificationService, times(1)).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+        verify(notificationService, times(1)).sendNotification(any(), any(), anyBoolean(), any(),any(), any(), any());
 
         courtApplicationProcessor.sendNotificationForApplication(event);
-        verify(notificationService, times(2)).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+        verify(notificationService, times(2)).sendNotification(any(), any(), anyBoolean(), any(),any(), any(), any());
 
     }
 
@@ -637,7 +637,7 @@ public class CourtApplicationProcessorTest {
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), SendNotificationForApplication.class)).thenReturn(sendNotificationForApplication);
 
         courtApplicationProcessor.sendNotificationForApplication(event);
-        verify(notificationService, never()).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+        verify(notificationService, never()).sendNotification(any(), any(), anyBoolean(), any(),any(), any(), any());
 
     }
 
@@ -664,7 +664,7 @@ public class CourtApplicationProcessorTest {
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), SendNotificationForApplication.class)).thenReturn(sendNotificationForApplication);
 
         courtApplicationProcessor.sendNotificationForApplication(event);
-        verify(notificationService, never()).sendNotification(any(), any(), anyBoolean(), any(),any(), any());
+        verify(notificationService, never()).sendNotification(any(), any(), anyBoolean(), any(),any(), any(), any());
 
         verify(sender).send(envelopeCaptor.capture());
 
@@ -1147,6 +1147,7 @@ public class CourtApplicationProcessorTest {
     public void shouldProcessCourtApplicationProceedingsInitiated() {
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-proceedings-initiated");
 
+        final UUID oldApplicationId = randomUUID();
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = courtApplicationProceedingsInitiated()
                 .withCourtApplication(courtApplication()
                         .withId(randomUUID())
@@ -1164,6 +1165,7 @@ public class CourtApplicationProcessorTest {
                         .withCourtApplicationCases(Arrays.asList(courtApplicationCase()
                                 .withProsecutionCaseId(randomUUID()).build()))
                         .build())
+                .withOldApplicationId(oldApplicationId)
                 .withIsSJP(false)
                 .build();
 
@@ -1602,7 +1604,7 @@ public class CourtApplicationProcessorTest {
 
         courtApplicationProcessor.processHearingResultedApplicationUpdated(event);
 
-        notificationService.sendNotification(event, hearingResultedApplicationUpdated.getCourtApplication(), false, nextHearing.getCourtCentre(), nextHearing.getListedStartDateTime(), nextHearing.getJurisdictionType());
+        notificationService.sendNotification(event, hearingResultedApplicationUpdated.getCourtApplication(), false, nextHearing.getCourtCentre(), nextHearing.getListedStartDateTime(), nextHearing.getJurisdictionType(), false);
         verify(sender).send(any());
     }
 
@@ -1627,7 +1629,7 @@ public class CourtApplicationProcessorTest {
 
         courtApplicationProcessor.processHearingResultedApplicationUpdated(event);
 
-        notificationService.sendNotification(event, hearingResultedApplicationUpdated.getCourtApplication(), false, nextHearing.getCourtCentre(), nextHearing.getWeekCommencingDate().atStartOfDay(ZoneOffset.UTC), nextHearing.getJurisdictionType());
+        notificationService.sendNotification(event, hearingResultedApplicationUpdated.getCourtApplication(), false, nextHearing.getCourtCentre(), nextHearing.getWeekCommencingDate().atStartOfDay(ZoneOffset.UTC), nextHearing.getJurisdictionType(), false);
         verify(sender).send(any());
     }
 

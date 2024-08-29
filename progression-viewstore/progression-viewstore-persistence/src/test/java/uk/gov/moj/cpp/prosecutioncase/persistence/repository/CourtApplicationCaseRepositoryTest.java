@@ -10,6 +10,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseKey
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -71,6 +72,14 @@ public class CourtApplicationCaseRepositoryTest {
     public void shouldFindCourtApplicationCaseEntityByApplicationId() {
         final String actual = courtApplicationCaseRepository.findCaseStatusByApplicationId(APPLICATION_ID, CASE_ID);
         assertThat(actual, is(notNullValue()));
+    }
+
+    @Test
+    public void shouldDeleteByApplicationId() {
+        courtApplicationCaseRepository.removeByApplicationId(APPLICATION_ID);
+
+        final List<CourtApplicationCaseEntity> actual = courtApplicationCaseRepository.findByApplicationId(APPLICATION_ID);
+        assertThat(actual.size(), is(0));
     }
 
 }

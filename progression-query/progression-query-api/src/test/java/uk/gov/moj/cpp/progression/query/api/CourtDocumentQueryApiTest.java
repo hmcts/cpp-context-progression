@@ -325,7 +325,7 @@ public class CourtDocumentQueryApiTest {
     }
 
     @Test
-    public void shouldCallQueryViewWhenGetMaterialByIdAndUserInProsecutorRoleForTheCaseId() { //srivani
+    public void shouldCallQueryViewWhenGetMaterialByIdAndUserInProsecutorRoleForTheCaseId() {
 
         String caseId = randomUUID().toString();
         final JsonObject jsonObjectPayload = createObjectBuilder().add(CASE_ID, caseId).build();

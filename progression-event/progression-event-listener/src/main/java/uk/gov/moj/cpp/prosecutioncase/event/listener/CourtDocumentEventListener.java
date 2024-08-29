@@ -22,11 +22,13 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.events.CourtApplicationDocumentUpdated;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentTypeRBAC;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CpsSendNotificationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentIndexRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CpsSendNotificationRepository;
@@ -66,6 +68,9 @@ public class CourtDocumentEventListener {
 
     @Inject
     private CpsSendNotificationRepository cpsSendNotificationRepository;
+
+    @Inject
+    private CourtDocumentIndexRepository courtDocumentIndexRepository;
 
     @Handles("progression.event.court-document-created")
     public void processCourtDocumentCreated(final JsonEnvelope event) {
@@ -120,6 +125,12 @@ public class CourtDocumentEventListener {
             courtDocumentEntity.setPayload(objectToJsonObjectConverter.convert(updatedCourtDocument).toString());
             repository.save(courtDocumentEntity);
         }
+    }
+
+    @Handles("progression.event.court-application-document-updated")
+    public void processCourApplicationDocumentUpdated(final Envelope<CourtApplicationDocumentUpdated> event){
+       final CourtApplicationDocumentUpdated courtApplicationDocumentUpdated = event.payload();
+       courtDocumentIndexRepository.updateApplicationIdByApplicationId(courtApplicationDocumentUpdated.getApplicationId(), courtApplicationDocumentUpdated.getOldApplicationId());
     }
 
     private CourtDocumentEntity getCourtDocumentEntity(final CourtDocument courtDocument) {
