@@ -1,0 +1,251 @@
+{
+  "courtApplication": {
+    "id": "RANDOM_APPLICATION_ID",
+    "type": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+      "code": "a",
+      "type": "RANDOM_APPLICATION_TYPE",
+      "typeWelsh": "a",
+      "legislation": "a",
+      "legislationWelsh": "a",
+      "categoryCode": "a",
+      "linkType": "STANDALONE",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "breachType": "GENERIC_BREACH",
+      "appealFlag": "RANDOM_APPLICATION_APPEAL",
+      "applicantAppellantFlag": "RANDOM_APPLICATION_APPEALLANT_FLAG",
+      "pleaApplicableFlag": false,
+      "commrOfOathFlag": false,
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": false,
+      "offenceActiveOrder": "OFFENCE"
+    },
+    "parentApplicationId": "RANDOM_PARENT_APPLICATION_ID",
+    "applicationParticulars": "RANDOM_PARTICULARS",
+    "applicationReceivedDate": "2019-01-01",
+    "applicationReference": "RANDOM_REFERENCE",
+    "applicant": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+      "personDetails": {
+        "firstName": "RANDOM_FIRST_NAME",
+        "lastName": "RANDOM_LAST_NAME",
+        "gender": "MALE",
+        "interpreterLanguageNeeds": "RANDOM_INTERPRETER_LANGUAGE_NEEDS",
+        "address": {
+          "address1": "RANDOM_ADDRESS1",
+          "address2": "RANDOM_ADDRESS2",
+          "address3": "RANDOM_ADDRESS3",
+          "address4": "RANDOM_ADDRESS4",
+          "address5": "RANDOM_ADDRESS5",
+          "postcode": "RANDOM_POSTCODE"
+        }
+      },
+      "summonsRequired": false,
+      "notificationRequired": true
+    },
+    "subject": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+      "organisation": {
+        "name": "TEST1",
+        "address": {
+          "address1": "RANDOM_ADDRESS1",
+          "address2": "RANDOM_ADDRESS2",
+          "address3": "RANDOM_ADDRESS3",
+          "address4": "RANDOM_ADDRESS4",
+          "address5": "RANDOM_ADDRESS5",
+          "postcode": "RANDOM_POSTCODE"
+        }
+      },
+      "summonsRequired": false,
+      "notificationRequired": true
+    },
+    "courtApplicationPayment": {
+      "isFeePaid": true,
+      "isFeeUndertakingAttached": true,
+      "isFeeExempt": true,
+      "paymentReference": "RANDOM_PAYMENT_REFERENCE"
+    },
+    "applicationStatus": "DRAFT",
+    "outOfTimeReasons": "a",
+    "judicialResults": [
+      {
+        "judicialResultId": "f8e926eb-704a-457a-a794-8c3ad40d3113",
+        "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+        "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
+        "label": "wording for results",
+        "welshLabel": "a",
+        "isAdjournmentResult": true,
+        "isFinancialResult": true,
+        "isConvictedResult": true,
+        "isAvailableForCourtExtract": true,
+        "amendmentDate": "2019-03-01",
+        "amendmentReason": "wording for amendment",
+        "cjsCode": "a",
+        "rank": 0.1,
+        "orderedDate": "2019-01-01",
+        "lastSharedDateTime": "2019-02-01",
+        "terminatesOffenceProceedings": false,
+        "lifeDuration": false,
+        "publishedAsAPrompt": false,
+        "excludedFromResults": false,
+        "alwaysPublished": false,
+        "urgent": false,
+        "d20": false,
+        "resultText": "code - resultText",
+        "courtClerk": {
+          "userId": "00000000-0000-0000-0000-000000000000",
+          "firstName": "courtClerk a",
+          "lastName": "courtClerk a"
+        },
+        "delegatedPowers": {
+          "userId": "00000000-0000-0000-0000-000000000000",
+          "firstName": "delegatedPowers a",
+          "lastName": "delegatedPowers b"
+        },
+        "fourEyesApproval": {
+          "userId": "00000000-0000-0000-0000-000000000000",
+          "firstName": "fourEyesApproval a",
+          "lastName": "fourEyesApproval a"
+        },
+        "approvedDate": "2019-01-01",
+        "usergroups": [
+          "a"
+        ],
+        "category": "FINAL",
+        "rollUpPrompts": false,
+        "publishedForNows": false,
+        "judicialResultPrompts": [
+          {
+            "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
+            "label": "a",
+            "welshLabel": "a",
+            "value": "a",
+            "promptSequence": 0.1,
+            "promptReference": "a",
+            "courtExtract": "Y"
+          }
+        ]
+      }
+    ],
+    "courtApplicationCases": [
+      {
+        "prosecutionCaseId": "RANDOM_PROSECUTION_CASE_ID",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityId": "RANDOM_PROSECUTION_AUTHORITY_ID",
+          "prosecutionAuthorityCode": "RANDOM_PROSECUTION_AUTHORITY_CODE",
+          "prosecutionAuthorityReference": "RANDOM_PROSECUTION_AUTHORITY_REFERENCE"
+        },
+        "isSJP": false,
+        "caseStatus": "ACTIVE",
+        "offences": [
+          {
+            "arrestDate": "2016-01-01",
+            "chargeDate": "2016-01-01",
+            "count": 0,
+            "id": "a3e2c582-9220-4de2-89e5-80a2d90cd944",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03014",
+            "offenceDefinitionId": "d6bd72ad-37bf-330d-bcc6-215728949d3e",
+            "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
+            "offenceTitle": "Fail / refuse give assistance to person executing Communications Act search warrant",
+            "orderIndex": 1,
+            "startDate": "2015-07-02",
+            "wording": "Some offence wording",
+            "judicialResults": [
+              {
+                "judicialResultId": "f8e926eb-704a-457a-a794-8c3ad40d3113",
+                "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+                "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
+                "label": "wording for linked case results",
+                "welshLabel": "a",
+                "isAdjournmentResult": true,
+                "isFinancialResult": true,
+                "isConvictedResult": true,
+                "isAvailableForCourtExtract": true,
+                "amendmentDate": "2019-03-01",
+                "amendmentReason": "wording for linked case amendment",
+                "cjsCode": "a",
+                "rank": 0.1,
+                "orderedDate": "2019-01-01",
+                "lastSharedDateTime": "2019-02-01",
+                "terminatesOffenceProceedings": false,
+                "lifeDuration": false,
+                "publishedAsAPrompt": false,
+                "excludedFromResults": false,
+                "alwaysPublished": false,
+                "urgent": false,
+                "d20": false,
+                "resultText": "code - resultText",
+                "courtClerk": {
+                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "firstName": "courtClerk a",
+                  "lastName": "courtClerk a"
+                },
+                "delegatedPowers": {
+                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "firstName": "scott",
+                  "lastName": "dale"
+                },
+                "fourEyesApproval": {
+                  "userId": "00000000-0000-0000-0000-000000000000",
+                  "firstName": "fourEyesApproval a",
+                  "lastName": "fourEyesApproval a"
+                },
+                "approvedDate": "2019-01-01",
+                "usergroups": [
+                  "a"
+                ],
+                "category": "FINAL",
+                "rollUpPrompts": false,
+                "publishedForNows": false,
+                "judicialResultPrompts": [
+                  {
+                    "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
+                    "label": "a",
+                    "welshLabel": "a",
+                    "value": "a",
+                    "promptSequence": 0.1,
+                    "promptReference": "a",
+                    "courtExtract": "Y"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "courtHearing": {
+    "hearingType": {
+      "id": "8cdfd3da-8900-42ca-9835-9f29d1e03cd6",
+      "description": "Sentence"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "listedStartDateTime": "2015-01-12T05:27:17.210Z",
+    "earliestStartDateTime": "2015-01-12T05:27:17.210Z",
+    "estimatedMinutes": 20,
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": null,
+      "roomName": "Courtroom 01"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
@@ -12,6 +13,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
@@ -43,6 +45,7 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 
+import com.jayway.restassured.path.json.JsonPath;
 import java.time.LocalDate;
 import java.util.Optional;
 import javax.jms.MessageConsumer;
@@ -71,10 +74,14 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     private static final String EMAIL_REQUESTED_PRIVATE_EVENT = "progression.event.email-requested";
     public static final String PROGRESSION_EVENT_SEND_NOTIFICATION_FOR_APPLICATION_IGNORED = "progression.event.send-notification-for-application-ignored";
     private static final String PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED = "public.progression.welsh-translation-required";
+    public static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_WITH_ORGANISATION_APPLICANT_SEND_NOTIFICATION = "progression.command.create-court-application-with-organisation-applicant-send-notification.json";
+    public static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_WITH_INDIVIDUAL_APPLICANT_SEND_NOTIFICATION = "progression.command.create-court-application-with-individual-applicant-send-notification.json";
+    public static final String PUBLIC_PROGRESSION_EVENTS_COURT_DOCUMENT_CREATED = "public.progression.events.court-document-created";
 
     private MessageConsumer consumerForEmailRequested;
     private MessageConsumer consumerForIgnoreEvent;
     private MessageConsumer consumerForPublicEvent;
+    private MessageConsumer consumerForPostalNotificationPublicEvent;
 
     private String userId;
     private String caseId;
@@ -129,6 +136,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         consumerForIgnoreEvent = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_SEND_NOTIFICATION_FOR_APPLICATION_IGNORED);
         consumerForPublicEvent =
                 publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED);
+        consumerForPostalNotificationPublicEvent = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_EVENTS_COURT_DOCUMENT_CREATED);
 
     }
 
@@ -137,6 +145,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         consumerForEmailRequested.close();
         consumerForPublicEvent.close();
         consumerForIgnoreEvent.close();
+        consumerForPostalNotificationPublicEvent.close();
     }
 
     @Test
@@ -163,6 +172,10 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
         doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, parentApplicationId, false, false);
         verifyEmailRequestedPrivateEvent();
+
+        sendApplicationNotification(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_WITH_ORGANISATION_APPLICANT_SEND_NOTIFICATION);
+
+        sendApplicationNotification(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_WITH_INDIVIDUAL_APPLICANT_SEND_NOTIFICATION);
     }
 
     @Test
@@ -367,6 +380,18 @@ public class SendNotificationForApplicationIT extends AbstractIT {
                         )));
     }
 
+    private void verifyApplicationAtAGlance(final String applicationId) {
+
+        poll(requestParams(getReadUrl("/applications/" + applicationId), PROGRESSION_QUERY_APPLICATION_AAAG_JSON)
+                .withHeader(USER_ID, randomUUID()))
+                .timeout(TIMEOUT, SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.applicationId", equalTo(applicationId))
+                        )));
+    }
+
     private void setupData() {
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
@@ -430,5 +455,21 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         assertTrue(message.isPresent());
         final String applicantId = message.get().getJsonObject("welshTranslationRequired").getString("masterDefendantId");
         assertThat("88cdf36e-93e4-41b0-8277-17d9dba7f06f", CoreMatchers.is(applicantId));
+    }
+
+    private void verifyPostalNotificationPublicEvent(final String expectedApplicationId) {
+        final JsonPath message = QueueUtil.retrieveMessage(consumerForPostalNotificationPublicEvent, isJson(allOf(
+                withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(expectedApplicationId)),
+                withJsonPath("$.courtDocument.name", equalTo("PostalNotification"))
+        )));
+        assertNotNull(message);
+    }
+
+    private void sendApplicationNotification(final String progressionCommandCreateCourtApplicationWithIndividualApplicantSendNotification) throws Exception {
+        final String parentApplicationId = randomUUID().toString();
+        doAddCourtApplicationAndVerify(progressionCommandCreateCourtApplicationWithIndividualApplicantSendNotification, parentApplicationId);
+        verifyApplicationAtAGlance(courtApplicationId);
+        doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, parentApplicationId, false, false);
+        verifyPostalNotificationPublicEvent(courtApplicationId);
     }
 }
