@@ -1,0 +1,239 @@
+{
+  "courtApplication": {
+    "applicant": {
+      "id": "12ce746b-069f-372e-912e-d109ad30775e",
+      "notificationRequired": false,
+      "organisation": {
+        "address": {
+          "address1": "The Court House",
+          "address2": "The Brook",
+          "address3": "Medway",
+          "address4": "Kent",
+          "postcode": "ME4 4JZ"
+        },
+        "name": "Medway Magistrates' Court"
+      },
+      "summonsRequired": false
+    },
+    "applicationParticulars": "Community order England / Wales, End date: 31 August 2025",
+    "applicationReceivedDate": "TODAY",
+    "applicationStatus": "DRAFT",
+    "courtApplicationCases": [
+      {
+        "caseStatus": "INACTIVE",
+        "isSJP": false,
+        "prosecutionCaseId": "a3661a48-8b4c-4668-ae92-41455b5fc750",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Criminal Justice Department",
+            "address2": "Derbyshire Constabulary",
+            "address3": "Butterley Hall",
+            "address4": "Ripley",
+            "address5": "Derby",
+            "postcode": "DE5 3RS"
+          },
+          "contact": {
+            "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+          },
+          "majorCreditorCode": "PO30",
+          "prosecutionAuthorityCode": "DERPF",
+          "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+          "prosecutionAuthorityName": "Derbyshire Police",
+          "prosecutionAuthorityOUCode": "0300000",
+          "caseURN": "11129399860"
+        }
+      }
+    ],
+    "id": "f80e1b69-06d0-4442-8509-1b9e7a4a088c",
+    "respondents": [
+      {
+        "id": "41413318-bcc1-42f8-b2e2-0c4f972da508",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "a3661a48-8b4c-4668-ae92-41455b5fc750",
+              "caseReference": "11129399860",
+              "defendantId": "41413318-bcc1-42f8-b2e2-0c4f972da508"
+            }
+          ],
+          "masterDefendantId": "41413318-bcc1-42f8-b2e2-0c4f972da508",
+          "personDefendant": {
+            "arrestSummonsNumber": "E28GC01123537140",
+            "bailConditions": "",
+            "bailStatus": {
+              "code": "A",
+              "description": "Not applicable",
+              "id": "86009c70-759d-3308-8de4-194886ff9a77"
+            },
+            "driverNumber": "CRIME709136TC8GZ",
+            "personDetails": {
+              "address": {
+                "address1": "t",
+                "address2": "Bashirian Lakes",
+                "address3": "Swansea",
+                "address4": "Avon",
+                "postcode": "SW1 3AE"
+              },
+              "contact": {
+                "home": "895-373-0578"
+              },
+              "dateOfBirth": "1976-09-09",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "1",
+                "observedEthnicityDescription": "White",
+                "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "Nadia",
+              "gender": "FEMALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "Padberg",
+              "title": "Mr"
+            },
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            }
+          }
+        },
+        "notificationRequired": false,
+        "personDetails": {
+          "address": {
+            "address1": "t",
+            "address2": "Bashirian Lakes",
+            "address3": "Swansea",
+            "address4": "Avon",
+            "postcode": "SW1 3AE"
+          },
+          "contact": {
+            "home": "895-373-0578"
+          },
+          "dateOfBirth": "1976-09-09",
+          "documentationLanguageNeeds": "ENGLISH",
+          "ethnicity": {
+            "observedEthnicityCode": "1",
+            "observedEthnicityDescription": "White",
+            "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+            "selfDefinedEthnicityCode": "W1",
+            "selfDefinedEthnicityDescription": "British",
+            "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+          },
+          "firstName": "Nadia",
+          "gender": "FEMALE",
+          "hearingLanguageNeeds": "ENGLISH",
+          "lastName": "Padberg",
+          "title": "Mr"
+        },
+        "summonsRequired": false
+      }
+    ],
+    "subject": {
+      "id": "41413318-bcc1-42f8-b2e2-0c4f972da508",
+      "notificationRequired": false,
+      "summonsRequired": false,
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "a3661a48-8b4c-4668-ae92-41455b5fc750",
+            "caseReference": "11129399860",
+            "defendantId": "41413318-bcc1-42f8-b2e2-0c4f972da508"
+          }
+        ],
+        "masterDefendantId": "41413318-bcc1-42f8-b2e2-0c4f972da508",
+        "personDefendant": {
+          "arrestSummonsNumber": "E28GC01123537140",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "driverNumber": "CRIME709136TC8GZ",
+          "personDetails": {
+            "address": {
+              "address1": "t",
+              "address2": "Bashirian Lakes",
+              "address3": "Swansea",
+              "address4": "Avon",
+              "postcode": "SW1 3AE"
+            },
+            "contact": {
+              "home": "895-373-0578"
+            },
+            "dateOfBirth": "1976-09-09",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Nadia",
+            "gender": "FEMALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Padberg",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        }
+      }
+    },
+    "thirdParties": [
+      {
+        "id": "41413318-bcc1-42f8-b2e2-0c4f972da508",
+        "notificationRequired": false,
+        "organisation": {
+          "address": {
+            "address1": ""
+          },
+          "name": "South East and Eastern Division NPS"
+        },
+        "summonsRequired": false
+      }
+    ],
+    "type": {
+      "type": "type"
+    }
+  },
+  "courtHearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "The Court House",
+        "address2": "The Brook",
+        "address3": "Medway",
+        "address4": "Kent",
+        "postcode": "ME4 4JZ"
+      },
+      "code": "B46DH00",
+      "courtHearingLocation": "B46DH01",
+      "id": "12ce746b-069f-372e-912e-d109ad30775e",
+      "name": "Medway Magistrates' Court",
+      "psaCode": 1966,
+      "roomId": "3a37e51c-6908-3fd1-b054-11b1e32a3cac",
+      "roomName": "Courtroom 01",
+      "welshName": "Llys Ynadon Medway"
+    },
+    "endDate": "2025-08-31",
+    "estimatedMinutes": 10,
+    "hearingType": {
+      "description": "Review",
+      "id": "bd4dab38-ea91-434b-8e73-e0d50ef0cbdf"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "listedStartDateTime": "2024-10-05T09:30:00.000Z"
+  },
+  "isAmended": false,
+  "issueDate": "2024-09-04",
+  "isWelshTranslationRequired": false
+}
+

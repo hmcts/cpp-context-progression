@@ -320,6 +320,52 @@ public class FormEventProcessorTest {
         assertPublicEventCreationFromCapturedEnvelope(courtFormId, caseId, userId, FormType.BCM, 3, false, envelope4, USER_DETAILS);
     }
 
+    @Test
+    public void shouldRaiseFormFinalisedPublicEventForUnallocatedHearing() throws IOException {
+        final String courtFormId = randomUUID().toString();
+        final String caseId = randomUUID().toString();
+        final String userId = randomUUID().toString();
+        final String fileName = "Jane JOHNSON, 22 May 1976, created on 22 December 10:45 2022.pdf";
+        final String inputEvent = Resources.toString(getResource("finalised-form-data.json"), defaultCharset())
+                .replaceAll("%caseId%", caseId)
+                .replaceAll("%courtFormId%", courtFormId)
+                .replaceAll("%formType%", FormType.BCM.name())
+                .replaceAll("%userId%", userId);
+        final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder();
+        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
+        readData.getJsonArray("finalisedFormData").forEach(x -> arrayBuilder.add(x.toString()));
+        payloadBuilder.add("finalisedFormData", arrayBuilder.build())
+                .add("caseId", caseId)
+                .add("courtFormId", courtFormId)
+                .add("formType", FormType.BCM.name())
+                .add("userId", userId)
+                .add(MATERIAL_ID, UUID.randomUUID().toString());
+
+        final JsonEnvelope requestEnvelope = envelopeFrom(
+                metadataWithRandomUUID(PROGRESSION_EVENT_FORM_FINALISED)
+                        .withUserId(FormEventProcessorTest.userId)
+                , payloadBuilder.build());
+
+        when(documentGeneratorService.generateFormDocument(any(), any(), any(), any())).thenReturn(fileName);
+        when(usersGroupService.getUserById(any(), any())).thenReturn(USER_DETAILS);
+        formEventProcessor.formFinalised(requestEnvelope);
+        verify(sender, times(4)).send(envelopeArgumentCaptor.capture());
+
+        final List<JsonEnvelope> envelopes = envelopeArgumentCaptor.getAllValues();
+
+        final JsonEnvelope envelope1 = envelopes.get(0);
+        assertAddCourtOrderCommandFromEnvelope(caseId, envelope1);
+
+        final JsonEnvelope envelope2 = envelopes.get(1);
+        assertAddCourtOrderCommandFromEnvelope(caseId, envelope2);
+
+        final JsonEnvelope envelope3 = envelopes.get(2);
+        assertAddCourtOrderCommandFromEnvelope(caseId, envelope3);
+
+        final JsonEnvelope envelope4 = envelopes.get(3);
+        assertPublicEventCreationFromCapturedEnvelope(courtFormId, caseId, userId, FormType.BCM, 3, false, envelope4, USER_DETAILS);
+    }
 
     @Test
     public void shouldRaiseFormFinalisedPublicEvent_PTPH() throws IOException {

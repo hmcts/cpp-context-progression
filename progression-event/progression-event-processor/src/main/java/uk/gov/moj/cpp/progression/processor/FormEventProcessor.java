@@ -545,8 +545,11 @@ public class FormEventProcessor {
                 .add(CASE_ID, caseId.toString())
                 .add(UPDATED_BY, getUpdatedBy(event, formFinalised.getString(USER_ID, null), formFinalised.getString(USER_NAME, null)))
                 .add(CASE_URN, nonNull(caseURN) ? caseURN : "")
-                .add(DOCUMENT_META_DATA, documentMetadataArrayBuilder.build())
-                .add(HEARING_DATE_TIME, hearingDateTime);
+                .add(DOCUMENT_META_DATA, documentMetadataArrayBuilder.build());
+
+        if (isNotEmpty(hearingDateTime)) {
+            payload.add(HEARING_DATE_TIME, hearingDateTime);
+        }
         if (isNotEmpty(submissionId)) {
             payload.add(SUBMISSION_ID, submissionId);
         }

@@ -118,7 +118,6 @@ public class PostalService {
         localJusticeArea = getLja(envelope, courtCentre, orderingCourtOptional, localJusticeArea);
 
         String courtCentreNameWelsh = null;
-        String applicant;
         if(nonNull(courtCentre)){
             final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getCourtCentreWithCourtRoomsById(courtCentre.getId(), envelope, requester);
             if (nonNull(courtCentreJsonOptional)) {
@@ -132,11 +131,7 @@ public class PostalService {
 
         final String applicantPersonal = nonNull(courtApplication.getApplicant().getPersonDetails()) ? courtApplication.getApplicant().getPersonDetails().getFirstName() + " " + courtApplication.getApplicant().getPersonDetails().getLastName() : "";
         final String applicantOther = nonNull(courtApplication.getApplicant().getProsecutingAuthority()) ? courtApplication.getApplicant().getProsecutingAuthority().getProsecutionAuthorityCode() : applicantPersonal;
-        applicant = nonNull(masterDefendant) && nonNull(masterDefendant.getPersonDefendant()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails()) ? masterDefendant.getPersonDefendant().getPersonDetails().getFirstName() + " " + masterDefendant.getPersonDefendant().getPersonDetails().getLastName() : applicantOther;
-
-        if(isEmpty(applicant)) {
-            applicant = courtApplication.getApplicant().getOrganisation().getName();
-        }
+        final String applicant = getApplicant(courtApplication, masterDefendant, applicantOther);
 
         final PostalAddressee postalAddressee = getPostalAddressee(envelope, courtApplicationParty);
 
@@ -171,6 +166,24 @@ public class PostalService {
             localJusticeArea = ljaDetails.getJsonObject(LOCAL_JUSTICE_AREA);
         }
         return localJusticeArea;
+    }
+
+    private String getApplicant(final CourtApplication courtApplication, final MasterDefendant masterDefendant, final String applicantOther) {
+        String applicant;
+        if(nonNull(masterDefendant) && nonNull(masterDefendant.getPersonDefendant()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails())){
+            applicant =  masterDefendant.getPersonDefendant().getPersonDetails().getFirstName() + " " + masterDefendant.getPersonDefendant().getPersonDetails().getLastName();
+        }
+        else if (nonNull(masterDefendant) && nonNull(masterDefendant.getLegalEntityDefendant()) && nonNull(masterDefendant.getLegalEntityDefendant().getOrganisation())){
+            applicant = masterDefendant.getLegalEntityDefendant().getOrganisation().getName();
+        }
+        else {
+            applicant = applicantOther;
+        }
+
+        if(isEmpty(applicant) && nonNull(courtApplication.getApplicant()) && nonNull(courtApplication.getApplicant().getOrganisation())) {
+            applicant = courtApplication.getApplicant().getOrganisation().getName();
+        }
+        return applicant;
     }
 
     public void sendPostalNotification(final JsonEnvelope envelope, final UUID applicationId, final PostalNotification postalNotification, final UUID linkedCaseId) {

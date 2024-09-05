@@ -45,6 +45,7 @@ import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.DefendantsWithWelshTranslation;
@@ -1732,12 +1733,24 @@ public class ProgressionService {
             final Organisation organisation = Organisation.organisation().withName(courtCentre.getName()).withAddress(courtCentre.getAddress()).build();
             LOGGER.info("Organization {}", organisation.getName());
             final List<CourtApplicationParty> respondents = new ArrayList<>();
+            final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
+                    .withPersonDefendant(defendant.getPersonDefendant())
+                    .withMasterDefendantId(defendant.getMasterDefendantId())
+                    .withAssociatedPersons(defendant.getAssociatedPersons())
+                    .withDefendantCase(singletonList(DefendantCase.defendantCase()
+                            .withCaseId(defendant.getProsecutionCaseId())
+                            .withDefendantId(defendant.getId())
+                            .withCaseReference(nonNull(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference()) ?
+                                    prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference() : prosecutionCase.getProsecutionCaseIdentifier().getCaseURN())
+                            .build()))
+                    .build();
             respondents.add(
                     CourtApplicationParty.courtApplicationParty()
                             .withPersonDetails(defendant.getPersonDefendant().getPersonDetails())
                             .withNotificationRequired(false)
                             .withSummonsRequired(false)
                             .withId(defendant.getId())
+                            .withMasterDefendant(masterDefendant)
                             .build());
             LOGGER.info("Respondents {}", respondents);
 
@@ -1745,12 +1758,7 @@ public class ProgressionService {
                     .withId(defendant.getId())
                     .withSummonsRequired(false)
                     .withNotificationRequired(false)
-                    .withOrganisation(organisation)
-                    .withMasterDefendant(MasterDefendant.masterDefendant()
-                            .withPersonDefendant(defendant.getPersonDefendant())
-                            .withMasterDefendantId(defendant.getMasterDefendantId())
-                            .withAssociatedPersons(defendant.getAssociatedPersons())
-                            .build())
+                    .withMasterDefendant(masterDefendant)
                     .build();
 
             final CourtApplicationParty.Builder thirdPartyBuilder = CourtApplicationParty.courtApplicationParty();
@@ -1765,7 +1773,7 @@ public class ProgressionService {
             thirdPartyBuilder.withId(defendant.getId());
 
             final CourtApplicationParty applicant = CourtApplicationParty.courtApplicationParty()
-                    .withId(defendant.getId())
+                    .withId(nextHearing.getCourtCentre().getId())
                     .withOrganisation(Organisation.organisation()
                             .withName(nextHearing.getCourtCentre().getName())
                             .withAddress(nextHearing.getCourtCentre().getAddress()).build())
