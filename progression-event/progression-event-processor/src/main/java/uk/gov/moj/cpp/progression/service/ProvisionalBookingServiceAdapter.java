@@ -4,7 +4,7 @@ import static java.util.stream.Collectors.joining;
 
 import org.apache.http.HttpStatus;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.moj.cpp.listing.common.azure.ProvisionalBookingService;
+import uk.gov.moj.cpp.listing.common.service.ProvisionalBookingService;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;

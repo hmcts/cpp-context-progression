@@ -36,8 +36,9 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupHmctsUsersGroupQueryStub;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStub;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
-import static uk.gov.moj.cpp.progression.stub.AzureScheduleServiceStub.stubGetProvisionalBookedSlotsForExistingBookingId;
+import static uk.gov.moj.cpp.progression.stub.CourtSchedulerServiceStub.stubGetProvisionalBookedSlotsForExistingBookingId;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.getHearingEventTemplate;
+import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
@@ -47,11 +48,11 @@ import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAaagHearingE
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubGetUserOrganisation;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubHearingEventLogs;
 
-import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
@@ -92,6 +93,7 @@ public class HearingEventLogIT extends AbstractIT {
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private final UUID documentTypeId = UUID.fromString("460fae22-c002-11e8-a355-529269fb1459");
     private final String TEMPLATE_NAME = "HearingEventLog";
+    private static final String DOCUMENT_TEXT = new StringGenerator().next();
 
     private Path testResourceBasePath;
 
@@ -139,6 +141,7 @@ public class HearingEventLogIT extends AbstractIT {
         ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", documentTypeId.toString());
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
         givenCaseIsReferredToMags(null, TEMPLATE_NAME);
+        stubDocumentCreate(DOCUMENT_TEXT);
     }
 
     @After
@@ -173,7 +176,7 @@ public class HearingEventLogIT extends AbstractIT {
     }
 
     @Test
-    public void shouldGenereateCAAGHearingEventLogDocumentForInActiveCaseIfNoApplicationExists() throws Exception {
+    public void shouldGenerateCAAGHearingEventLogDocumentForInActiveCaseIfNoApplicationExists() throws Exception {
         final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
@@ -188,7 +191,6 @@ public class HearingEventLogIT extends AbstractIT {
         Optional<String> applicationId = Optional.empty();
 
         stubGetProvisionalBookedSlotsForExistingBookingId();
-        removeAnyExistingCaseRetentionMessagesFromQueue();
         givenCaseIsReferredToMags(null, TEMPLATE_NAME);
         setupMaterialStub(materialId);
 
@@ -320,7 +322,7 @@ public class HearingEventLogIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotGenereateCAAGHearingEventLogDocumentForActiveCaseIfNoHearingEventLogs() throws Exception {
+    public void shouldNotGenerateCAAGHearingEventLogDocumentForActiveCaseIfNoHearingEventLogs() throws Exception {
 
         final String caseId = randomUUID().toString();
         final String userId = randomUUID().toString();

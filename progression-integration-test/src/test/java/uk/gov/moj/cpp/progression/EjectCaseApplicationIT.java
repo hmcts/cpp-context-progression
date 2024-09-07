@@ -22,6 +22,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.stub.AzureSteCaseFilterServiceStub.stubPostSetCaseEjected;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -180,7 +181,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
 
     @Test
     public void shouldCreateCourtApplicationLinkedWithCaseAndGetConfirmation() throws Exception {
-
+        stubPostSetCaseEjected();
         // when
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
