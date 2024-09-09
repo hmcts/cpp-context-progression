@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Arrays.asList;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -148,5 +149,53 @@ public class UpdateDefendantsWithMatchedRequestedProcessorTest {
                         withJsonPath("$.id", is(matchedDefendantId.toString())),
                         withJsonPath("$.prosecutionCaseId", is(matchedDefendantProsecutionCaseId.toString()))
                 ))));
+    }
+
+    @Test
+    public void handleUpdateDefendantWithMatchedRequestedEventForOnlyOneDefendant() {
+
+
+        final UUID originalDefendantId = UUID.randomUUID();
+        final UUID originalProsecutionCaseId = UUID.randomUUID();
+        final UUID matchedDefendantProsecutionCaseId = UUID.randomUUID();
+        final UUID matchedDefendantId = UUID.randomUUID();
+        final DefendantUpdate originalDefendantNextVersion = DefendantUpdate.defendantUpdate()
+                .withId(originalDefendantId)
+                .withProsecutionCaseId(originalProsecutionCaseId)
+                .build();
+        final ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2 eventContent = ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2.prosecutionCaseUpdateDefendantsWithMatchedRequestedV2()
+                .withMatchedDefendants(asList())
+                .withDefendantUpdate(originalDefendantNextVersion)
+                .build();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                metadataWithRandomUUID("progression.event.prosecution-case-update-defendants-with-matched-requested-v2"),
+                objectToJsonObjectConverter.convert(eventContent));
+        final DefendantUpdate matchedDefendantNextVersion = DefendantUpdate.defendantUpdate()
+                .withId(matchedDefendantId)
+                .withProsecutionCaseId(matchedDefendantProsecutionCaseId)
+                .build();
+
+        when(defendantUpdateDifferenceService.calculateDefendantUpdate(
+                any(),//eq(originalDefendantPreviousVersion),
+                any(),//eq(originalDefendantNextVersion),
+                any()//eq(matchedDefendantPreviousVersion)
+        )).thenReturn(matchedDefendantNextVersion);
+        // run
+        eventProcessor.handleUpdateDefendantWithMatchedRequestedEvent(jsonEnvelope);
+
+        // verify
+
+        verify(sender, times(1)).send(envelopeArgumentCaptor.capture());
+        final List<JsonEnvelope> allValues = envelopeArgumentCaptor.getAllValues();
+
+        assertThat(allValues.get(0), jsonEnvelope(
+                metadata().withName("progression.command.update-defendant-for-prosecution-case"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.defendant.id", is(originalDefendantId.toString())),
+                        withJsonPath("$.id", is(originalDefendantId.toString())),
+                        withJsonPath("$.prosecutionCaseId", is(originalProsecutionCaseId.toString()))
+                ))));
+
     }
 }

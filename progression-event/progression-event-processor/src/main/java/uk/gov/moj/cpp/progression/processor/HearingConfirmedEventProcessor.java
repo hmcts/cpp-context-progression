@@ -7,6 +7,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
@@ -36,6 +37,7 @@ import uk.gov.justice.core.courts.OnlinePleaNotification;
 import uk.gov.justice.core.courts.PrepareSummonsDataForExtendedHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SeedingHearing;
+import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.listing.courts.ListNextHearings;
@@ -51,24 +53,24 @@ import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
+import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
-import uk.gov.moj.cpp.progression.service.CalendarService;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
+import uk.gov.moj.cpp.progression.service.CalendarService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.PartialHearingConfirmService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
 import uk.gov.moj.cpp.progression.service.RefDataService;
+import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
 import uk.gov.moj.cpp.progression.transformer.ProsecutionCasesReferredToCourtTransformer;
 
-import java.time.ZonedDateTime;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -92,7 +94,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-@SuppressWarnings({"squid:S3655", "squid:S2629", "squid:CallToDeprecatedMethod"})
+@SuppressWarnings({"squid:S3655", "squid:S2629", "squid:CallToDeprecatedMethod", "pmd:BeanMembersShouldSerialize"})
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class HearingConfirmedEventProcessor {
 
@@ -112,14 +114,20 @@ public class HearingConfirmedEventProcessor {
     private static final String WELSH_EITHER_WAY_YOUTH_TEMPLATE_NAME = "welsh_plea_eitherway_offences_youth";
     private static final String WELSH_INDICTABLE_ONLY_TEMPLATE_NAME = "welsh_plea_indictable_only_offences";
 
+    private static final String PRIVATE_PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION = "progression.command.send-notification-for-auto-application";
     private static final String NEW_HEARING_NOTIFICATION_TEMPLATE_NAME = "NewHearingNotification";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HearingConfirmedEventProcessor.class.getName());
     private static final String EITHER_WAY = "Either Way";
     private static final String INDICTABLE = "Indictable";
 
     private static final String FEATURE_OPA = "OPA";
 
+    public static final String HEARING_START_DATE_TIME = "hearingStartDateTime";
+    public static final String JURISDICTION_TYPE = "jurisdictionType";
+    public static final String COURT_APPLICATION = "courtApplication";
+    public static final String COURT_CENTRE = "courtCentre";
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(HearingConfirmedEventProcessor.class.getName());
     @Inject
     ProgressionService progressionService;
 
@@ -184,8 +192,8 @@ public class HearingConfirmedEventProcessor {
         triggerRetryOnMissingCaseAndApplication(confirmedHearing.getId(), hearingInProgression);
 
         if (nonNull(confirmedHearing.getExistingHearingId())) {
-            final Optional<JsonObject> hearingIdFromQuery = progressionService.getHearing(jsonEnvelope, confirmedHearing.getExistingHearingId().toString());
-            if (isHearingInitialised(hearingIdFromQuery)) {
+            final Optional<JsonObject> hearingFromDb = progressionService.getHearing(jsonEnvelope, confirmedHearing.getExistingHearingId().toString());
+            if (isHearingInitialised(hearingFromDb)) {
                 processExtendHearing(jsonEnvelope, confirmedHearing, hearingInProgression);
             }
 
@@ -212,7 +220,14 @@ public class HearingConfirmedEventProcessor {
             final List<CourtApplication> courtApplications = ofNullable(hearing.getCourtApplications()).orElse(new ArrayList<>());
 
             courtApplications.forEach(courtApplication -> LOGGER.info("sending notification for Application : {}", objectToJsonObjectConverter.convert(courtApplication)));
-            courtApplications.forEach(courtApplication -> notificationService.sendNotification(jsonEnvelope, courtApplication, false, hearing.getCourtCentre(), hearingStartDateTime, hearing.getJurisdictionType()));
+            courtApplications.forEach(
+            courtApplication -> sender.send(enveloper.withMetadataFrom(jsonEnvelope, PRIVATE_PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION)
+                    .apply(objectToJsonObjectConverter.convert( createObjectBuilder()
+                            .add(HEARING_START_DATE_TIME, hearingStartDateTime.toString())
+                            .add(JURISDICTION_TYPE, hearing.getJurisdictionType().toString())
+                            .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
+                            .add(COURT_CENTRE, objectToJsonObjectConverter.convert(hearing.getCourtCentre())).build()))));
+
 
             if (isNotEmpty(applicationIds)) {
                 LOGGER.info("Update application status to LISTED, associate Hearing with id: {} to Applications with ids {} and generate summons", hearing.getId(), applicationIds);
@@ -250,7 +265,7 @@ public class HearingConfirmedEventProcessor {
         }
 
         if (sendNotificationToParties) {
-            sendHearingNotificationsToDefenceAndProsecutor(jsonEnvelope, confirmedHearing);
+            sendHearingNotificationsToDefenceAndProsecutor(jsonEnvelope, confirmedHearing, hearingInProgression);
         } else {
             LOGGER.info("Notification is not sent for HearingId {}  , Notification sent flag {}", confirmedHearing.getId(), false);
         }
@@ -405,6 +420,11 @@ public class HearingConfirmedEventProcessor {
                 .limit(daysBetween)
                 .filter((isWeekend).negate())
                 .count();
+    }
+    @Handles("progression.event.send-notification-for-auto-application-initiated")
+    public void sendNotificationForAutoApplication(final JsonEnvelope jsonEnvelope) {
+        final SendNotificationForAutoApplicationInitiated sendNotificationForAutoApplication = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), SendNotificationForAutoApplicationInitiated.class);
+        notificationService.sendNotificationForAutoApplication(jsonEnvelope, sendNotificationForAutoApplication);
     }
     private boolean isBulkCase(final ConfirmedHearing confirmedHearing) {
         return nonNull(confirmedHearing.getIsGroupProceedings()) && confirmedHearing.getIsGroupProceedings();
@@ -672,24 +692,49 @@ public class HearingConfirmedEventProcessor {
         }
     }
 
-    private void sendHearingNotificationsToDefenceAndProsecutor(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedUpdatedHearing) {
+    private void sendHearingNotificationsToDefenceAndProsecutor(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedUpdatedHearing, Hearing hearingInProgression) {
         final HearingNotificationInputData hearingNotificationInputData = new HearingNotificationInputData();
-
-        final Set<UUID> caseIds = confirmedUpdatedHearing.getProsecutionCases()
-                .stream().map(ConfirmedProsecutionCase::getId).collect(toSet());
+        Set<UUID> caseIds = new HashSet<>();
 
         final Map<UUID, List<UUID>> defendantOffenceListMap = new HashMap<>();
         final Set<UUID> defendantIdSet = new HashSet<>();
 
-        confirmedUpdatedHearing.getProsecutionCases().stream()
-                .flatMap(confirmedProsecutionCase -> confirmedProsecutionCase.getDefendants().stream())
-                .forEach(defendant -> {
-                    defendantIdSet.add(defendant.getId());
-                    defendantOffenceListMap.put(defendant.getId(),
-                            defendant.getOffences().stream()
-                                    .map(ConfirmedOffence::getId)
-                                    .collect(toList()));
-                });
+        if(isNotEmpty(confirmedUpdatedHearing.getProsecutionCases())){
+            caseIds = confirmedUpdatedHearing.getProsecutionCases()
+                    .stream().map(ConfirmedProsecutionCase::getId).collect(toSet());
+
+            confirmedUpdatedHearing.getProsecutionCases().stream()
+                    .flatMap(confirmedProsecutionCase -> confirmedProsecutionCase.getDefendants().stream())
+                    .forEach(defendant -> {
+                        defendantIdSet.add(defendant.getId());
+                        defendantOffenceListMap.put(defendant.getId(),
+                                defendant.getOffences().stream()
+                                        .map(ConfirmedOffence::getId)
+                                        .collect(toList()));
+                    });
+        } else if (isNotEmpty(hearingInProgression.getCourtApplications())) {
+            final Set<UUID> courtApplicationCaseIdSet = new HashSet<>();
+            hearingInProgression.getCourtApplications().stream().filter(courtApplication -> isNotEmpty(courtApplication.getCourtApplicationCases()))
+                    .flatMap(courtApplication -> courtApplication.getCourtApplicationCases().stream())
+                    .forEach(courtApplicationCase -> courtApplicationCaseIdSet.add(courtApplicationCase.getProsecutionCaseId()));
+
+            caseIds.addAll(courtApplicationCaseIdSet);
+            courtApplicationCaseIdSet.stream().forEach(applicationCaseId -> {
+                final JsonObject prosecutionCaseJson = progressionService.getProsecutionCaseById(jsonEnvelope, applicationCaseId.toString());
+                if (nonNull(prosecutionCaseJson)) {
+                    final ProsecutionCase prosecutionCaseEntity = jsonObjectConverter.convert(prosecutionCaseJson.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+                    prosecutionCaseEntity.getDefendants().stream().forEach(defendant -> {
+                        defendantIdSet.add(defendant.getId());
+                        defendantOffenceListMap.put(defendant.getId(),
+                                defendant.getOffences().stream()
+                                        .map(Offence::getId)
+                                        .collect(toList()));
+                    });
+                }
+
+            });
+        }
+
 
         final ZonedDateTime hearingStartDateTime = getEarliestDate(confirmedUpdatedHearing.getHearingDays());
 

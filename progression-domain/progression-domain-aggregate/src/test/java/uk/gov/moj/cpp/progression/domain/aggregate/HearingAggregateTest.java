@@ -7,10 +7,12 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.core.courts.SeedingHearing.seedingHearing;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments;
+import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArguments.toMap;
+
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CaseHearingDetailsUpdatedInUnifiedSearch;
@@ -28,6 +30,7 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LjaDetails;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -36,7 +39,6 @@ import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV3;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
-import uk.gov.justice.listing.courts.ListNextHearings;
 import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingDeleted;
@@ -49,6 +51,7 @@ import uk.gov.justice.progression.courts.UnscheduledHearingAllocationNotified;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
+import uk.gov.moj.cpp.progression.test.CoreTestTemplates;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -930,14 +933,20 @@ public class HearingAggregateTest {
 
     @Test
     public void shouldRaiseDefendantUpdatedEventWhenTheHearingNotDeleted(){
-        final UUID hearingId = randomUUID();
         final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().build();
 
-        final List<Object> events = hearingAggregate.updateDefendant(hearingId, defendantUpdate, true).
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+        hearingAggregate.enrichInitiateHearing(hearing);
+
+
+        final List<Object> events = hearingAggregate.updateDefendant(hearing.getId(), defendantUpdate).
                 collect(toList());
 
         final HearingDefendantUpdated hearingDefendantUpdated = (HearingDefendantUpdated) events.get(0);
-        assertThat(hearingDefendantUpdated.getHearingId(), is(hearingId));
+        assertThat(hearingDefendantUpdated.getHearingId(), is(hearing.getId()));
         assertThat(hearingDefendantUpdated.getDefendant(), is(defendantUpdate));
     }
 
@@ -947,7 +956,7 @@ public class HearingAggregateTest {
         hearingAggregate.deleteHearing(hearingId);
 
         final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().build();
-        final List<Object> events = hearingAggregate.updateDefendant(hearingId, defendantUpdate, true).
+        final List<Object> events = hearingAggregate.updateDefendant(hearingId, defendantUpdate).
                 collect(toList());
 
         assertThat(events.isEmpty(), is(true));
@@ -960,7 +969,7 @@ public class HearingAggregateTest {
         hearingAggregate.markAsDuplicate(hearingId, new ArrayList<>(), new ArrayList<>());
 
         final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().build();
-        final List<Object> events = hearingAggregate.updateDefendant(hearingId, defendantUpdate, true).
+        final List<Object> events = hearingAggregate.updateDefendant(hearingId, defendantUpdate).
                 collect(toList());
 
         assertThat(events.isEmpty(), is(true));

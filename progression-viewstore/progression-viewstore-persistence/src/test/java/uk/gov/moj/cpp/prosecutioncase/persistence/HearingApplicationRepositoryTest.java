@@ -111,4 +111,12 @@ public class HearingApplicationRepositoryTest {
         actual = hearingApplicationRepository.findByHearingId(hearingId);
         assertThat(actual.size(), is(0));
     }
+
+    @Test
+    public void shouldDeleteByApplicationId() {
+        hearingApplicationRepository.removeByApplicationId(APPLICATION_ID);
+
+        final List<HearingApplicationEntity> actual = hearingApplicationRepository.findByApplicationId(APPLICATION_ID);
+        assertThat(actual.size(), is(0));
+    }
 }

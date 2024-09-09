@@ -1,0 +1,224 @@
+{
+  "courtRegisterDocumentRequests": [
+    {
+      "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "defendantType": "",
+      "defendants": [
+        {
+          "address": {
+            "address1": "9999D9999AAAA",
+            "address2": "Woodldne",
+            "address3": "addressline 3",
+            "address4": "Brcstol",
+            "address5": "Avcn"
+          },
+          "dateOfBirth": "2007-08-22",
+          "gender": "MALE",
+          "hearing": {
+            "defendantPresent": false,
+            "hearingType": "First hearing",
+            "jurisdiction": "MAGISTRATES"
+          },
+          "masterDefendantId": "b3285273-ab71-4fe0-9e46-caa0ac84d993",
+          "name": "Waldo Quitzon",
+          "nationality": "Unknown",
+          "parentGuardian": {
+            "address": {
+              "address1": "9999D9999AAAA",
+              "address2": "Woodldne",
+              "address3": "addressline 3",
+              "address4": "Brcstol",
+              "address5": "Avcn",
+              "postCode": "MK9 2FB"
+            },
+            "name": "Guardian frist name Guardian last name"
+          },
+          "postHearingCustodyStatus": "Not Applicable",
+          "prosecutionCasesOrApplications": [
+            {
+              "arrestSummonsNumber": "D28GC01129279600",
+              "caseOrApplicationReference": "28NR9279600",
+              "offences": [
+                {
+                  "offenceCode": "TH68010",
+                  "offenceTitle": "Theft from a shop",
+                  "orderIndex": 1,
+                  "results": [
+                    {
+                      "cjsResultCode": "1017",
+                      "resultText": "AD - Absolute discharge"
+                    }
+                  ],
+                  "wording": "Shoplifting at Debenhams.####Contrary to section 1(1) and 7 of the Theft    Act 1968."
+                },
+                {
+                  "offenceCode": "CA03010",
+                  "offenceTitle": "Use a television set without a licence",
+                  "orderIndex": 2,
+                  "results": [
+                    {
+                      "cjsResultCode": "1017",
+                      "resultText": "AD - Absolute discharge"
+                    }
+                  ],
+                  "wording": "Use / install a television set without a licence.####Contrary to section 363(2) and (4) of the Communications Act 2003."
+                },
+                {
+                  "offenceCode": "TH68023",
+                  "offenceTitle": "Robbery",
+                  "orderIndex": 3,
+                  "results": [
+                    {
+                      "cjsResultCode": "1142",
+                      "resultText": "YROISS - Youth rehabilitation order with intensive supervision and surveillance England / Wales\nYouth rehabilitation order with intensive supervision and surveillance made. The defendant must comply with the requirements (shown below) by 30/11/2024."
+                    },
+                    {
+                      "cjsResultCode": "3107",
+                      "resultText": "YRR1 - Youth rehabilitation requirement: Residence at a specified place\nYouth rehabilitation requirement: Residence. Live at Home for 8 Months."
+                    }
+                  ],
+                  "wording": "Robbery.####Contrary to section 8(1) of the Theft Act 1968."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "fileName": "court-register_2024-06-06T15:38:34Z_B01LY00.pdf",
+      "hearingDate": "2024-06-06T23:30:00.000Z",
+      "hearingId": "8761a13b-43c4-43ea-8e90-665a82a5ea4c",
+      "hearingVenue": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postCode": "SW11 1JU"
+        },
+        "courtHouse": "Lavender Hill Magistrates' Court",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "recipients": [
+        {
+          "emailAddress1": "YTeam@richmondandwandsworth.gov.uk",
+          "emailTemplateName": "cr_standard",
+          "recipientName": "Wandsworth YOT"
+        }
+      ],
+      "registerDate": "2024-06-06T15:38:34.000Z"
+    },
+    {
+      "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "defendantType": "Respondent",
+      "defendants": [
+        {
+          "address": {
+            "address1": "9999D9999AAAA",
+            "address2": "Woodldne",
+            "address3": "addressline 3",
+            "address4": "Brcstol",
+            "address5": "Avcn"
+          },
+          "dateOfBirth": "2007-08-22",
+          "gender": "MALE",
+          "hearing": {
+            "defendantPresent": false,
+            "hearingType": "Application",
+            "jurisdiction": "MAGISTRATES"
+          },
+          "masterDefendantId": "b3285273-ab71-4fe0-9e46-caa0ac84d993",
+          "name": "Waldo Quitzon",
+          "nationality": "Unknown",
+          "parentGuardian": {
+            "address": {
+              "address1": "9999D9999AAAA",
+              "address2": "Woodldne",
+              "address3": "addressline 3",
+              "address4": "Brcstol",
+              "address5": "Avcn",
+              "postCode": "MK9 2FB"
+            },
+            "name": "Guardian frist name Guardian last name"
+          },
+          "postHearingCustodyStatus": "Not Applicable",
+          "prosecutionCasesOrApplications": [
+            {
+              "applicationType": "Application to reopen case",
+              "arrestSummonsNumber": "D28GC01129279600",
+              "caseOrApplicationReference": "28NR9279600",
+              "courtApplicationId": "fbdf796a-7767-4699-ba12-a28c01254769",
+              "offences": [
+                {
+                  "offenceCode": "TH68010",
+                  "offenceTitle": "Theft from a shop",
+                  "orderIndex": 1,
+                  "results": [
+                    {
+                      "cjsResultCode": "1017",
+                      "resultText": "AD - Absolute discharge"
+                    }
+                  ],
+                  "wording": "Shoplifting at Debenhams.####Contrary to section 1(1) and 7 of the Theft    Act 1968."
+                },
+                {
+                  "offenceCode": "CA03010",
+                  "offenceTitle": "Use a television set without a licence",
+                  "orderIndex": 2,
+                  "results": [
+                    {
+                      "cjsResultCode": "1017",
+                      "resultText": "AD - Absolute discharge"
+                    }
+                  ],
+                  "wording": "Use / install a television set without a licence.####Contrary to section 363(2) and (4) of the Communications Act 2003."
+                },
+                {
+                  "offenceCode": "TH68023",
+                  "offenceTitle": "Robbery",
+                  "orderIndex": 3,
+                  "results": [
+                    {
+                      "cjsResultCode": "1017",
+                      "resultText": "AD - Absolute discharge"
+                    }
+                  ],
+                  "wording": "Robbery.####Contrary to section 8(1) of the Theft Act 1968."
+                }
+              ],
+              "results": [
+                {
+                  "resultText": "G - Granted"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "fileName": "court-register_2024-06-06T15:40:49Z_B01LY00.pdf",
+      "hearingDate": "2024-06-06T10:00:00.000Z",
+      "hearingId": "7484d6ce-3084-4cf9-83c7-c417c2202c65",
+      "hearingVenue": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postCode": "SW11 1JU"
+        },
+        "courtHouse": "Lavender Hill Magistrates' Court",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "recipients": [
+        {
+          "emailAddress1": "YTeam@richmondandwandsworth.gov.uk",
+          "emailTemplateName": "cr_standard",
+          "recipientName": "Wandsworth YOT"
+        }
+      ],
+      "registerDate": "2024-06-06T15:40:49.000Z"
+    }
+  ],
+  "systemGenerated": true
+}

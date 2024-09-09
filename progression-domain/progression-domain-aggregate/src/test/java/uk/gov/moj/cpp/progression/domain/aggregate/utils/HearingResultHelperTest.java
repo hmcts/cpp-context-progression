@@ -585,7 +585,7 @@ public class HearingResultHelperTest {
     }
 
     @Test
-    public void shouldReturnTrueWhenNextHearingDeletedInResultForCase(){
+    public void shouldReturnTrueWhenNextHearingDeletedInResultForCaseWhenOldNextHearingIsNotCreatedWithPreviousResult(){
         final Hearing oldHearingResult = buildHearingWithCourtApplications(
                 asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
                         of(buildDefendant(DEFENDANT_ID_1,
@@ -600,7 +600,32 @@ public class HearingResultHelperTest {
                 asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
                         of(buildDefendant(DEFENDANT_ID_1,
                                 of(buildOffence(OFFENCE_ID_1,
-                                        asList(buildJudicialResultWithAmendmentAs(null, false)),
+                                        asList(buildJudicialResultWithAmendmentAs(null, true)),
+                                        singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
+                                        .collect(Collectors.toList())
+                        )).collect(Collectors.toList()))),
+                emptyList());
+
+        assertThat(HearingResultHelper.isNextHearingDeleted(newHearingResult, oldHearingResult), is(true));
+    }
+
+    @Test
+    public void shouldReturnTrueWhenNextHearingDeletedInResultForCase(){
+        final Hearing oldHearingResult = buildHearingWithCourtApplications(
+                asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
+                        of(buildDefendant(DEFENDANT_ID_1,
+                                of(buildOffence(OFFENCE_ID_1,
+                                        asList(buildJudicialResultWithAmendmentAs(buildNextHearing(), true)),
+                                        singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
+                                        .collect(Collectors.toList())
+                        )).collect(Collectors.toList()))),
+                emptyList());
+
+        final Hearing newHearingResult = buildHearingWithCourtApplications(
+                asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
+                        of(buildDefendant(DEFENDANT_ID_1,
+                                of(buildOffence(OFFENCE_ID_1,
+                                        asList(buildJudicialResultWithAmendmentAs(null, true)),
                                         singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
                                         .collect(Collectors.toList())
                         )).collect(Collectors.toList()))),

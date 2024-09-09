@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.initiate-application-for-case-requested.json",
+  "type": "object",
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json"
+    },
+    "prosecutionCase": {
+      "$ref": "http://justice.gov.uk/core/courts/prosecutionCase.json#"
+    },
+    "defendant": {
+      "$ref": "http://justice.gov.uk/core/courts/defendant.json#"
+    },
+    "nextHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/nextHearing.json#"
+    },
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "resultId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "oldApplicationId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "isAmended": {
+      "type" : "boolean"
+    },
+    "issueDate": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    }
+  },
+  "required": [
+    "hearing",
+    "prosecutionCase",
+    "defendant",
+    "nextHearing",
+    "applicationId",
+    "resultId",
+    "isAmended",
+    "issueDate"
+  ],
+  "additionalProperties": false
+}

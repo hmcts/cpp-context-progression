@@ -74,6 +74,10 @@ public class PrisonCourtRegisterPdfPayloadGenerator {
                         buildNameAndAddress(defendant, caseJson);
                         buildHearingDetails(defendant, caseJson);
                         buildDefenceCounsel(defendant, caseJson);
+                        if (jsonObject.containsKey("defendantType")){
+                            caseJson.add("defendantType", jsonObject.getString("defendantType"));
+                        }
+
                         caseJson.add("postHearingCustodyStatus", defendant.getString("postHearingCustodyStatus", DASH));
                         caseJson.add("officerInCase", DASH);
                         caseJson.add("parentGuardianName", DASH);

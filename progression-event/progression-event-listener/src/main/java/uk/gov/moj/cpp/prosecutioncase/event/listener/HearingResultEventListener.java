@@ -117,6 +117,7 @@ public class HearingResultEventListener {
         final String resultedHearingPayload = objectToJsonObjectConverter.convert(updatedHearing).toString();
         currentHearingEntity.setPayload(resultedHearingPayload);
         currentHearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
+        currentHearingEntity.setSharedTime(hearingResulted.getSharedTime());
         hearingRepository.save(currentHearingEntity);
         LOGGER.info("Hearing: {} has been updated with listing status {}", currentHearingEntity.getHearingId(), HearingListingStatus.HEARING_RESULTED);
 

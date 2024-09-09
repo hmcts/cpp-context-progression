@@ -67,22 +67,22 @@
         <material.version>8.0.12</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>8.0.67</referencedata.version>
-        <listing.version>8.0.91</listing.version>
-        <hearing.version>8.0.136</hearing.version>
+        <referencedata.version>17.0.16</referencedata.version>
+        <listing.version>8.0.102</listing.version>
+        <hearing.version>8.0.150</hearing.version>
         <usersgroups.version>8.0.39</usersgroups.version>
         <defence.version>8.0.55</defence.version>
         <referencedata.offence.version>8.0.23</referencedata.offence.version>
-        <coredomain.version>8.0.3</coredomain.version>
+        <coredomain.version>8.0.4</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
         <results.version>8.0.57</results.version>
         <notification.notify.version>8.0.16</notification.notify.version>
         <unifiedsearch.version>8.0.10</unifiedsearch.version>
-        <systemdocgenerator.version>8.0.91</systemdocgenerator.version>
+        <systemdocgenerator.version>8.0.92</systemdocgenerator.version>
         <applicationscourtorders.version>8.0.31</applicationscourtorders.version>
-        <sjp.version>8.0.86</sjp.version>
+        <sjp.version>8.0.87</sjp.version>
         <jackson-data-format.version>2.8.8</jackson-data-format.version>
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>8.0.1</stagingpubhub.version>

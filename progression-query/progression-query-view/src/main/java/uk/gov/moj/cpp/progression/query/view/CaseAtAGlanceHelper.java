@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -203,7 +204,8 @@ public class CaseAtAGlanceHelper {
         return isBlank(prosecutionCaseIdentifier.getProsecutionAuthorityName());
     }
 
-    public List<CaagDefendants> getCaagDefendantsList() {
+    public List<CaagDefendants> getCaagDefendantsList(final Map<UUID, LocalDate> defendantUpdatedOn) {
+
         final List<CaagDefendants> caagDefendantsList = new ArrayList<>();
         final List<Defendant> defendantList = prosecutionCase.getDefendants();
 
@@ -224,6 +226,9 @@ public class CaseAtAGlanceHelper {
                 caagDefendantBuilder.withDefendantJudicialResults(defendantJudicialResultList);
             }
             caagDefendantBuilder.withLegalAidStatus(defendant.getLegalAidStatus());
+            if(nonNull(defendantUpdatedOn) && nonNull(defendantUpdatedOn.get(defendant.getId()))) {
+                caagDefendantBuilder.withUpdatedOn(defendantUpdatedOn.get(defendant.getId()));
+            }
             setCtlExpiryDate(defendant, caagDefendantBuilder);
 
             caagDefendantsList.add(caagDefendantBuilder.build());

@@ -5,6 +5,7 @@
       "hearingDate": "2020-07-10T09:00:00.000Z",
       "courtCentreId": "COURT_CENTRE_ID",
       "fileName": "court-register_2019-02-01_oucode.csv",
+      "defendantType" : "applicant",
       "defendants": [
         {
           "name": "Fred Smith",

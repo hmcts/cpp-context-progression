@@ -76,7 +76,7 @@ public class PrisonCourtRegisterEventListenerTest {
                 .withHearingVenue(PrisonCourtRegisterHearingVenue.prisonCourtRegisterHearingVenue().withCourtHouse("Court House").withLjaName("LJA Name").build())
                 .build();
 
-        final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = new PrisonCourtRegisterRecorded(courtCenterId, prisonCourtRegisterDocumentRequest);
+        final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = new PrisonCourtRegisterRecorded(courtCenterId, "Applicant",prisonCourtRegisterDocumentRequest );
 
         final JsonObject jsonObject = objectToJsonObjectConverter.convert(prisonCourtRegisterRecorded);
         final JsonEnvelope requestMessage = envelopeFrom(

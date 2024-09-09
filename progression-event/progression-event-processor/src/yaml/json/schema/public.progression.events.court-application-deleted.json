@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/public.progression.events.court-application-deleted.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "applicationId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "hearingId",
+    "applicationId"
+  ],
+  "additionalProperties": false
+}

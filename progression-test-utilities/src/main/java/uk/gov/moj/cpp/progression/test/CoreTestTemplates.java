@@ -17,6 +17,7 @@ import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllocationDecision;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.ContactNumber;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAlias;
@@ -82,6 +83,7 @@ public class CoreTestTemplates {
         private boolean minimumOrganisation;
         private boolean minimumOffence;
         private boolean reportingRestrictions;
+        private List<CourtApplication> courtApplications;
 
         private Map<UUID, Map<UUID, List<UUID>>> structure = toMap(randomUUID(), toMap(randomUUID(), asList(randomUUID())));
 
@@ -127,6 +129,12 @@ public class CoreTestTemplates {
 
         public CoreTemplateArguments setConvicted(boolean convicted) {
             this.convicted = convicted;
+            return this;
+        }
+
+        @SuppressWarnings("squid:S2384")
+        public CoreTemplateArguments setCourtApplication(List<CourtApplication> courtApplications) {
+            this.courtApplications = courtApplications;
             return this;
         }
 
@@ -477,7 +485,33 @@ public class CoreTestTemplates {
                         args.structure.entrySet().stream()
                                 .map(entry -> prosecutionCase(args, Pair.p(entry.getKey(), entry.getValue())).build())
                                 .collect(toList())
-                );
+                )
+                .withCourtApplications(args.courtApplications);
+
+        if (args.hearingLanguage == HearingLanguage.WELSH) {
+            hearingBuilder.withHearingLanguage((HearingLanguage.WELSH));
+        } else {
+            hearingBuilder.withHearingLanguage((HearingLanguage.ENGLISH));
+        }
+        return hearingBuilder;
+    }
+
+    public static Hearing.Builder hearingForApplication(CoreTemplateArguments args) {
+
+        final Hearing.Builder hearingBuilder = Hearing.hearing()
+                .withId(randomUUID())
+                .withType(hearingType().build())
+                .withHearingLanguage((HearingLanguage.WELSH))
+                .withJurisdictionType(args.jurisdictionType)
+                .withReportingRestrictionReason((STRING.next()))
+                .withHearingDays(Stream.of(hearingDay().build()).collect(toList()))
+                .withCourtCentre(courtCentre().build())
+                .withJudiciary(singletonList(judiciaryRole(args).build()))
+                .withDefendantReferralReasons(singletonList(referralReason().build()))
+                .withHasSharedResults((false))
+                .withCourtApplications(asList(CourtApplication.courtApplication()
+                        .withId(UUID.randomUUID())
+                        .build()));
 
         if (args.hearingLanguage == HearingLanguage.WELSH) {
             hearingBuilder.withHearingLanguage((HearingLanguage.WELSH));

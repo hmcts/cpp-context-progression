@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.send-notification-for-auto-application-initiated.json",
+  "type": "object",
+  "properties": {
+    "courtApplication": {
+      "description": "The details of the court application for which proceedings are required",
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
+    },
+    "courtCentre": {
+      "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
+    },
+    "hearingStartDateTime": {
+      "type": "string"
+    },
+    "jurisdictionType": {
+      "type": "string",
+      "$ref": "http://justice.gov.uk/core/courts/jurisdictionType.json"
+    },
+    "isAmended": {
+      "type": "boolean"
+    },
+    "isWelshTranslationRequired": {
+      "type": "boolean"
+    },
+    "issueDate": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    }
+  },
+  "required": [
+    "courtApplication",
+    "courtCentre",
+    "hearingStartDateTime",
+    "jurisdictionType"
+  ],
+  "additionalProperties": false
+}

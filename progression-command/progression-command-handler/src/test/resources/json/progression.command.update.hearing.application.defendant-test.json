@@ -1,0 +1,116 @@
+{
+  "defendant": {
+    "associatedPersons": [
+      {
+        "person": {
+          "additionalNationalityCode": "USA",
+          "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+          "address": {
+            "address1": "22",
+            "address2": "Acacia Avenue",
+            "address3": "Acacia Town",
+            "address4": "Acacia City",
+            "address5": "Acacia Country",
+            "postcode": "GIR 0AA"
+          },
+          "contact": {
+            "fax": "3425678",
+            "home": "123456",
+            "mobile": "45678910",
+            "primaryEmail": "harry.kane@spurs.co.uk",
+            "secondaryEmail": "harry.kane@hotmail.com",
+            "work": "7891011"
+          },
+          "dateOfBirth": "1995-01-01",
+          "disabilityStatus": "a",
+          "documentationLanguageNeeds": "WELSH",
+          "firstName": "Harry",
+          "gender": "MALE",
+          "interpreterLanguageNeeds": "Welsh",
+          "lastName": "Kane",
+          "middleName": "Jack",
+          "nationalInsuranceNumber": "NH222222B",
+          "nationalityCode": "GBR",
+          "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+          "occupation": "Footballer",
+          "occupationCode": "F",
+          "title": "MR"
+        },
+        "role": "parent"
+      }
+    ],
+    "id": "e1d32d9d-29ec-4934-a932-22a50f223966",
+    "numberOfPreviousConvictionsCited": 5,
+    "personDefendant": {
+      "arrestSummonsNumber": "arrest123",
+      "bailStatus": {
+        "code": "C",
+        "description": "Remanded into Custody",
+        "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5"
+      },
+      "custodyTimeLimit": "2018-01-01",
+      "driverNumber": "AACC12345",
+      "employerOrganisation": {
+        "address": {
+          "address1": "Disney Road",
+          "address2": "Disney Town",
+          "address3": "Disney District",
+          "address4": "Paris",
+          "address5": "France",
+          "postcode": "DI5 9EY"
+        },
+        "contact": {
+          "fax": "a",
+          "home": "0208 688 8888",
+          "mobile": "07803 654567",
+          "primaryEmail": "person@hotmail.com",
+          "secondaryEmail": "associate@hotmail.com",
+          "work": "0207 654 3246 extn 1234"
+        },
+        "incorporationNumber": "Mickeymouse1",
+        "name": "Disneyland Paris"
+      },
+      "employerPayrollReference": "payyou1234",
+      "perceivedBirthYear": 2015,
+      "personDetails": {
+        "additionalNationalityCode": "USA",
+        "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+        "address": {
+          "address1": "22",
+          "address2": "Acacia Avenue",
+          "address3": "Acacia Town",
+          "address4": "Acacia City",
+          "address5": "Acacia Country",
+          "postcode": "GIR 0AA"
+        },
+        "contact": {
+          "fax": "3425678",
+          "home": "123456",
+          "mobile": "45678910",
+          "primaryEmail": "harry.kanejunior@spurs.co.uk",
+          "secondaryEmail": "harry.kanejunior@hotmail.com",
+          "work": "7891011"
+        },
+        "dateOfBirth": "2010-01-01",
+        "disabilityStatus": "a",
+        "documentationLanguageNeeds": "WELSH",
+        "firstName": "Harry",
+        "gender": "MALE",
+        "interpreterLanguageNeeds": "Welsh",
+        "lastName": "Kane Junior",
+        "middleName": "Jayen",
+        "nationalInsuranceNumber": "NH323232B",
+        "nationalityCode": "GBR",
+        "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+        "occupation": "Kid",
+        "occupationCode": "F",
+        "specificRequirements": "Screen",
+        "title": "MR"
+      }
+    },
+    "prosecutionAuthorityReference": "TFL12345-ABC",
+    "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+    "masterDefendantId": "%MASTER_DEFENDANT_ID%"
+  },
+  "hearingId": "%HEARING_ID%"
+}

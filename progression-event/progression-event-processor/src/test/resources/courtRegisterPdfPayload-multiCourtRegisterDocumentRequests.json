@@ -1,0 +1,200 @@
+{
+  "registerDate": "06/06/2024",
+  "ljaName": "South West London Magistrates' Court",
+  "courtHouse": "Lavender Hill Magistrates' Court",
+  "courtHouseAddress": "176A Lavender Hill, London, SW11 1JU",
+  "cases": [
+    {
+      "defendantType": "",
+      "name": "Waldo Quitzon",
+      "address1": "9999D9999AAAA",
+      "address2": "Woodldne",
+      "address3": "addressline 3",
+      "address4": "Brcstol",
+      "address5": "Avcn",
+      "postCode": "",
+      "jurisdiction": "MAGISTRATES",
+      "hearingType": "First hearing",
+      "defendantAppearanceDetails": "-",
+      "attendingSolicitorName": "-",
+      "defenceCounselName": "-",
+      "defenceCounselStatus": "-",
+      "postHearingCustodyStatus": "Not Applicable",
+      "officerInCase": "-",
+      "parentGuardianName": "Guardian frist name Guardian last name",
+      "parentGuardianAddress1": "9999D9999AAAA",
+      "parentGuardianAddress2": "Woodldne",
+      "parentGuardianAddress3": "addressline 3",
+      "parentGuardianAddress4": "Brcstol",
+      "parentGuardianAddress5": "Avcn",
+      "parentGuardianPostCode": "MK9 2FB",
+      "dateOfBirth": "22/08/2007",
+      "age": "AGE",
+      "gender": "MALE",
+      "nationality": "Unknown",
+      "aliases": "-",
+      "caseReference": "28NR9279600",
+      "dateOfHearing": "06/06/2024",
+      "prosecutorName": "-",
+      "arrestSummonsNumber": "D28GC01129279600",
+      "prosecutionCounselName": "-",
+      "prosecutionCounselStatus": "-",
+      "offences": [
+        {
+          "offenceCode": "TH68010",
+          "offenceTitle": "Theft from a shop",
+          "wording": "Shoplifting at Debenhams.\nContrary to section 1(1) and 7 of the Theft Act 1968.",
+          "allocationDecision": "-",
+          "convictionDate": "-",
+          "verdictCode": "-",
+          "results": [
+            {
+              "resultCode": "1017",
+              "resultText": "AD - Absolute discharge"
+            }
+          ],
+          "pleaValue": "-",
+          "indicatedPleaValue": "-"
+        },
+        {
+          "offenceCode": "CA03010",
+          "offenceTitle": "Use a television set without a licence",
+          "wording": "Use / install a television set without a licence.\nContrary to section 363(2) and (4) of the Communications Act 2003.",
+          "allocationDecision": "-",
+          "convictionDate": "-",
+          "verdictCode": "-",
+          "results": [
+            {
+              "resultCode": "1017",
+              "resultText": "AD - Absolute discharge"
+            }
+          ],
+          "pleaValue": "-",
+          "indicatedPleaValue": "-"
+        },
+        {
+          "offenceCode": "TH68023",
+          "offenceTitle": "Robbery",
+          "wording": "Robbery.\nContrary to section 8(1) of the Theft Act 1968.",
+          "allocationDecision": "-",
+          "convictionDate": "-",
+          "verdictCode": "-",
+          "results": [
+            {
+              "resultCode": "1142",
+              "resultText": "YROISS - Youth rehabilitation order with intensive supervision and surveillance England / Wales\nYouth rehabilitation order with intensive supervision and surveillance made. The defendant must comply with the requirements (shown below) by 30/11/2024."
+            },
+            {
+              "resultCode": "3107",
+              "resultText": "YRR1 - Youth rehabilitation requirement: Residence at a specified place\nYouth rehabilitation requirement: Residence. Live at Home for 8 Months."
+            }
+          ],
+          "pleaValue": "-",
+          "indicatedPleaValue": "-"
+        }
+      ]
+    },
+    {
+      "defendantType": "Respondent",
+      "name": "Waldo Quitzon",
+      "address1": "9999D9999AAAA",
+      "address2": "Woodldne",
+      "address3": "addressline 3",
+      "address4": "Brcstol",
+      "address5": "Avcn",
+      "postCode": "",
+      "jurisdiction": "MAGISTRATES",
+      "hearingType": "Application",
+      "defendantAppearanceDetails": "-",
+      "attendingSolicitorName": "-",
+      "defenceCounselName": "-",
+      "defenceCounselStatus": "-",
+      "postHearingCustodyStatus": "Not Applicable",
+      "officerInCase": "-",
+      "parentGuardianName": "Guardian frist name Guardian last name",
+      "parentGuardianAddress1": "9999D9999AAAA",
+      "parentGuardianAddress2": "Woodldne",
+      "parentGuardianAddress3": "addressline 3",
+      "parentGuardianAddress4": "Brcstol",
+      "parentGuardianAddress5": "Avcn",
+      "parentGuardianPostCode": "MK9 2FB",
+      "dateOfBirth": "22/08/2007",
+      "age": "AGE",
+      "gender": "MALE",
+      "nationality": "Unknown",
+      "aliases": "-",
+      "caseReference": "28NR9279600",
+      "dateOfHearing": "06/06/2024",
+      "prosecutorName": "-",
+      "arrestSummonsNumber": "D28GC01129279600",
+      "prosecutionCounselName": "-",
+      "prosecutionCounselStatus": "-",
+      "caseResults": [
+        {
+          "resultCode": "-",
+          "resultText": "G - Granted"
+        }
+      ],
+      "offences": [
+        {
+          "offenceCode": "TH68010",
+          "offenceTitle": "Theft from a shop",
+          "wording": "Shoplifting at Debenhams.\nContrary to section 1(1) and 7 of the Theft Act 1968.",
+          "allocationDecision": "-",
+          "convictionDate": "-",
+          "verdictCode": "-",
+          "results": [
+            {
+              "resultCode": "1017",
+              "resultText": "AD - Absolute discharge"
+            }
+          ],
+          "pleaValue": "-",
+          "indicatedPleaValue": "-"
+        },
+        {
+          "offenceCode": "CA03010",
+          "offenceTitle": "Use a television set without a licence",
+          "wording": "Use / install a television set without a licence.\nContrary to section 363(2) and (4) of the Communications Act 2003.",
+          "allocationDecision": "-",
+          "convictionDate": "-",
+          "verdictCode": "-",
+          "results": [
+            {
+              "resultCode": "1017",
+              "resultText": "AD - Absolute discharge"
+            }
+          ],
+          "pleaValue": "-",
+          "indicatedPleaValue": "-"
+        },
+        {
+          "offenceCode": "TH68023",
+          "offenceTitle": "Robbery",
+          "wording": "Robbery.\nContrary to section 8(1) of the Theft Act 1968.",
+          "allocationDecision": "-",
+          "convictionDate": "-",
+          "verdictCode": "-",
+          "results": [
+            {
+              "resultCode": "1017",
+              "resultText": "AD - Absolute discharge"
+            }
+          ],
+          "pleaValue": "-",
+          "indicatedPleaValue": "-"
+        }
+      ],
+      "applications": [
+        {
+          "type": "Application to reopen case",
+          "decision": "-",
+          "decisionDate": "-",
+          "response": "-",
+          "responseDate": "-",
+          "result": "-"
+        }
+      ]
+    }
+  ]
+}

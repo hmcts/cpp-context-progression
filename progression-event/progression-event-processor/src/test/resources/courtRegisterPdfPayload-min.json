@@ -3,6 +3,7 @@
   "courtHouse": "liverpool crown court",
   "cases": [
     {
+      "defendantType" : "applicant",
       "name": "Fred Smith",
       "address1": "Flat 1",
       "address2": "",

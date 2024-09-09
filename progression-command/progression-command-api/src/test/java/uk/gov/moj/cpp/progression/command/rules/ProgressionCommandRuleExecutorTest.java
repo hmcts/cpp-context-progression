@@ -111,7 +111,7 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         UploadCourtDocumentDefence("progression.upload-court-document-for-defence", "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates", "Court Administrators", "NCES"),
         UpdateCourtDocument("progression.update-court-document", "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Associate", "Court Administrators", "System Users", "Second Line Support", "Deputies", "DJMC"),
         AddCourtDocument("progression.add-court-document", "Legal Advisers", "Listing Officers", "Court Clerks", "Crown Court Admin", "Court Administrators", "System Users", "Defence Users", "District Judge", "Court Associate", "Probation Admin", "Second Line Support", "Deputies", "DJMC", "Youth Offending Service Admin", "Judge", "Recorders", "Defence Lawyers", "Advocates","Police Admin",
-                "Non Police Prosecutors", "NCES"),
+                "Non Police Prosecutors", "Non CPS Prosecutors", "NCES"),
         AddCourtDocumentDefence("progression.add-court-document-for-defence", "Chambers Clerk","Chambers Admin","Defence Lawyers", "Advocates", "Court Administrators", "NCES"),
         InitiateCourtProceedings("progression.initiate-court-proceedings", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin", "Court Associate"),
         InitiateCourtProceedingsForApplication("progression.initiate-court-proceedings-for-application", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin", "Court Associate", "NCES"),

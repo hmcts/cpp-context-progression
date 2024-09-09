@@ -57,6 +57,7 @@ import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationPartyAttendance;
 import uk.gov.justice.core.courts.CourtApplicationPartyCounsel;
+import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
@@ -76,8 +77,8 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedProcessed;
+import uk.gov.justice.core.courts.InitiateApplicationForCaseRequested;
 import uk.gov.justice.core.courts.InterpreterIntermediary;
-import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
@@ -118,7 +119,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
-import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
 
 import java.io.IOException;
@@ -139,6 +139,7 @@ import java.util.function.Function;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonString;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
@@ -224,6 +225,8 @@ public class ProgressionServiceTest {
     @Spy
     @InjectMocks
     private JsonObjectToObjectConverter jsonObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    @Spy
+    private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     @Spy
     @InjectMocks
     private final ObjectToJsonValueConverter objectToJsonValueConverter = new ObjectToJsonValueConverter(objectMapper);
@@ -1209,6 +1212,25 @@ public class ProgressionServiceTest {
     }
 
     @Test
+    public void shouldInitiateNewCourtApplication(){
+        final JsonEnvelope event = getJsonEnvelop("progression.event.initiate-application-for-case-requested");
+        final JsonObject jsonObject = getJsonObjectResponseFromJsonResource("progression.event.initiate-application-for-case-requested.json");
+        final InitiateApplicationForCaseRequested initiateApplicationForCaseRequested= jsonObjectConverter.convert(jsonObject, InitiateApplicationForCaseRequested.class);
+        final CourtApplicationType courtApplicationType = courtApplicationType().withType("type").build();
+        when(referenceDataService.retrieveApplicationType(any(), any())).thenReturn(courtApplicationType);
+        progressionService.initiateNewCourtApplication(event, initiateApplicationForCaseRequested);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        assertThat(envelopeCaptor.getValue().metadata().name(), is("progression.command.initiate-court-proceedings-for-application"));
+        final JsonObject resultCommand = (JsonObject) envelopeCaptor.getValue().payload();
+
+        JsonObject expectedCommand = getJsonObjectResponseFromJsonResource("progression.command.initiate-court-proceedings-for-application.json");
+        assertThat(resultCommand, is(stringToJsonObjectConverter.convert(expectedCommand.toString().replaceAll("TODAY",LocalDate.now().toString()))));
+
+    }
+
+    @Test
     public void shouldTransformCourtCentre() {
         final UUID courtCentreId = randomUUID();
         final String address1 = "ADDRESS1";
@@ -1620,4 +1642,43 @@ public class ProgressionServiceTest {
                 Json.createObjectBuilder().build());
     }
 
+    @Test
+    public void shouldGetActiveApplicationsOnCase(){
+        final UUID caseId = randomUUID();
+        final JsonEnvelope inputEnvelop = envelopeFrom(metadataBuilder()
+                .withName("progression.event.prosecution-case-defendant-updated")
+                .withId(randomUUID())
+                .build(),Json.createObjectBuilder().build());
+        final JsonEnvelope outputEnvelop = envelopeFrom(metadataBuilder()
+                .withName("progression.query.active-applications-on-case")
+                .withId(randomUUID())
+                .build(),Json.createObjectBuilder().add("linkedApplications",
+                Json.createArrayBuilder().add(Json.createObjectBuilder().add("applicationId", randomUUID().toString()).build())
+                        .add(Json.createObjectBuilder().add("applicationId", randomUUID().toString()).build()).build()).build());
+        when(requester.request(any())).thenReturn(outputEnvelop);
+
+        final Optional<JsonObject> activeApplicationsOnCase = progressionService.getActiveApplicationsOnCase(inputEnvelop, caseId.toString());
+
+        assertThat(activeApplicationsOnCase, is(notNullValue()));
+        assertThat(activeApplicationsOnCase.get().getJsonArray("linkedApplications"), is(notNullValue()));
+        assertThat(activeApplicationsOnCase.get().getJsonArray("linkedApplications").size(), is(2));
+    }
+
+    @Test
+    public void shouldReturnEmptyWhenNoActiveApplicationsOnCase(){
+        final UUID caseId = randomUUID();
+        final JsonEnvelope inputEnvelop = envelopeFrom(metadataBuilder()
+                .withName("progression.event.prosecution-case-defendant-updated")
+                .withId(randomUUID())
+                .build(),Json.createObjectBuilder().build());
+        final JsonEnvelope outputEnvelop = envelopeFrom(metadataBuilder()
+                .withName("progression.query.active-applications-on-case")
+                .withId(randomUUID())
+                .build(),Json.createObjectBuilder().build());
+        when(requester.request(any())).thenReturn(outputEnvelop);
+
+        final Optional<JsonObject> activeApplicationsOnCase = progressionService.getActiveApplicationsOnCase(inputEnvelop, caseId.toString());
+
+        assertThat(activeApplicationsOnCase, is(Optional.empty()));
+    }
 }

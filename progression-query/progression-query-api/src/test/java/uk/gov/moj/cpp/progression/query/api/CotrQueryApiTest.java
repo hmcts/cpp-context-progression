@@ -20,7 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.progression.query.CotrDefendants;
+import uk.gov.justice.progression.query.CotrDefendant;
 import uk.gov.justice.progression.query.CotrDetail;
 import uk.gov.justice.progression.query.CotrDetails;
 import uk.gov.justice.progression.query.TrialReadinessHearing;
@@ -263,7 +263,7 @@ public class CotrQueryApiTest {
                 .withCotrDetails(Arrays.asList(CotrDetail.cotrDetail()
                         .withId(randomUUID())
                         .withIsProsecutionServed(true)
-                        .withCotrDefendants(Arrays.asList(CotrDefendants.cotrDefendants()
+                        .withCotrDefendants(Arrays.asList(CotrDefendant.cotrDefendant()
                                 .withId(defendantId)
                                 .withFirstName("firstname")
                                 .withLastName("lastname")

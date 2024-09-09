@@ -12,12 +12,17 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
+import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 import javax.json.JsonObject;
 
@@ -40,11 +45,15 @@ public class ProsecutionCaseQueryServiceTest {
 
     @InjectMocks
     private ProsecutionCaseQueryService prosecutionCaseQueryService;
+    @Mock
+    private Function<Object, JsonEnvelope> function;
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+    private final FileResourceObjectMapper handlerTestHelper = new FileResourceObjectMapper();
 
     private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
+    private static final String PROGRESSION_QUERY_ALL_CASE_HEARINGS = "progression.query.case.allhearings";
 
     @Test
     public void shouldRequestForProsecutionCase() {
@@ -74,5 +83,18 @@ public class ProsecutionCaseQueryServiceTest {
         assertThat(result.get().getJsonObject("prosecutionCase").getString("id"), is(caseId));
 
         verifyNoMoreInteractions(requester);
+    }
+
+    @Test
+    public void shouldGetAllHearingIdsFromCase() throws IOException {
+        final UUID caseId = UUID.randomUUID();
+        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID(PROGRESSION_QUERY_PROSECUTION_CASES))
+                .build();
+        final JsonObject sampleJsonObject = handlerTestHelper.convertFromFile("json/progression.query.case.allhearings.json", JsonObject.class);
+        when(requester.request(any(Envelope.class))).thenReturn(JsonEnvelopeBuilder.envelope()
+                .withPayloadFrom(sampleJsonObject).with(metadataWithRandomUUID(PROGRESSION_QUERY_ALL_CASE_HEARINGS)).build());
+        List<UUID> hearingIds =  prosecutionCaseQueryService.getAllHearingIdsForCase(envelope, caseId);
+        assertThat(hearingIds.size(), is(2));
+
     }
 }

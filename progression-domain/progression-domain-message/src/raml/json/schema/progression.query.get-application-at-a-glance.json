@@ -58,6 +58,9 @@
             },
             "isSubject": {
               "type": "boolean"
+            },
+            "updatedOn": {
+              "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
             }
           },
           "additionalProperties": false
@@ -93,6 +96,9 @@
         },
         "isSubject": {
           "type": "boolean"
+        },
+        "updatedOn": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
         }
       },
       "additionalProperties": false

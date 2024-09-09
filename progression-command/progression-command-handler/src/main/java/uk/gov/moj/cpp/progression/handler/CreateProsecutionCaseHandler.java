@@ -16,9 +16,14 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.events.RemoveDefendantCustodialEstablishmentFromCase;
+import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
 import javax.inject.Inject;
 import javax.json.JsonValue;
+
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 
@@ -35,6 +40,8 @@ public class CreateProsecutionCaseHandler {
     private AggregateService aggregateService;
     @Inject
     private Enveloper enveloper;
+    @Inject
+    ProsecutionCaseQueryService prosecutionCaseQueryService;
 
     @Handles("progression.command.create-prosecution-case")
     public void handle(final Envelope<CreateProsecutionCase> createProsecutionCaseEnvelope) throws EventStreamException {
@@ -44,6 +51,23 @@ public class CreateProsecutionCaseHandler {
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
         final Stream<Object> events = caseAggregate.createProsecutionCase(prosecutionCase);
         appendEventsToStream(createProsecutionCaseEnvelope, eventStream, events);
+    }
+
+    @Handles("progression.command.remove-defendant-custodial-establishment-from-case")
+    public void handleRemoveDefendantCustodialEstablishmentFromCase(final Envelope<RemoveDefendantCustodialEstablishmentFromCase> removeDefendantCustodialEstablishmentFromCaseEnvelope) throws EventStreamException {
+        if(LOGGER.isDebugEnabled()){
+            LOGGER.debug("progression.command.remove-defendant-custodial-establishment-from-case caseId :: {}, masterDefendantId :: {}",
+                    removeDefendantCustodialEstablishmentFromCaseEnvelope.payload().getProsecutionCaseId(),
+                    removeDefendantCustodialEstablishmentFromCaseEnvelope.payload().getMasterDefendantId());
+        }
+        final UUID prosecutionCaseId = removeDefendantCustodialEstablishmentFromCaseEnvelope.payload().getProsecutionCaseId();
+        final UUID masterDefendantId = removeDefendantCustodialEstablishmentFromCaseEnvelope.payload().getMasterDefendantId();
+        final UUID defendantId = removeDefendantCustodialEstablishmentFromCaseEnvelope.payload().getDefendantId();
+        final EventStream eventStream = eventSource.getStreamById(prosecutionCaseId);
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+        final List<UUID> allHearingIdsForCase = prosecutionCaseQueryService.getAllHearingIdsForCase(JsonEnvelope.envelopeFrom(removeDefendantCustodialEstablishmentFromCaseEnvelope.metadata(), JsonValue.NULL), prosecutionCaseId);
+        final Stream<Object> events = caseAggregate.removeDefendantCustodialEstablishment(masterDefendantId, defendantId, prosecutionCaseId, allHearingIdsForCase);
+        appendEventsToStream(removeDefendantCustodialEstablishmentFromCaseEnvelope, eventStream, events);
     }
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {

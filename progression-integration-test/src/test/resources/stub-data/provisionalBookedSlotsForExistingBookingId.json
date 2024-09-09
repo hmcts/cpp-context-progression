@@ -1,0 +1,25 @@
+{
+  "provisionalSlots": [
+    {
+      "courtScheduleId": "fbed768b-ee95-4434-87c8-e81cbc8d24c7",
+      "listingProfileId": "CS2393820",
+      "ouCode": "WERDFG",
+      "courtRoomId": "fce80cd4-0c00-3c30-9471-2c2ee7a52453",
+      "courtRoomNumber": 178498,
+      "courtHouseName": "Croydon Magistrates' Court",
+      "courtRoomName": "Courtroom 06",
+      "operationalUnit": "1",
+      "businessType": "REM",
+      "panel": "ADULT",
+      "courtSession": "AM",
+      "sessionDate": "2020-05-21",
+      "maxSlots": 0,
+      "maxDuration": 180,
+      "availableSlots": 0,
+      "availableDuration": 180,
+      "judiciaries": [],
+      "slotStartTimes": [],
+      "bookingId": "fbed768b-ee95-4434-87c8-e81cbc8d24c7"
+    }
+  ]
+}

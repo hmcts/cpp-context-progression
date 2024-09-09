@@ -423,7 +423,7 @@ public class CourtExtractTransformer {
             );
             defendantBuilder.withHearings(transformHearing(hearingsList, defendant.getId()));
             defendantBuilder.withAttendanceDays(transformAttendanceDayAndTypes(transformDefendantAttendanceDay(hearingsList, defendant)));
-            defendantBuilder.withResults(transformJudicialResults(hearingsList, masterDefendantId));
+            defendantBuilder.withResults(transformJudicialResults(hearingsList, masterDefendantId, defendantId));
             final List<uk.gov.justice.progression.courts.exract.Offences> offences = transformOffence(hearingsList, defendantId.toString());
             if (!offences.isEmpty()) {
                 defendantBuilder.withOffences(offences);
@@ -448,7 +448,7 @@ public class CourtExtractTransformer {
         return defendantBuilder.build();
     }
 
-    private List<JudicialResult> transformJudicialResults(final List<Hearings> hearingsList, final UUID masterDefendantId) {
+    private List<JudicialResult> transformJudicialResults(final List<Hearings> hearingsList, final UUID masterDefendantId, final UUID defendantId) {
         final List<JudicialResult> judicialResultsList = new ArrayList<>();
         final List<JudicialResult> defendantLevelJudicialResults = hearingsList.stream()
                 .map(Hearings::getDefendantJudicialResults)
@@ -464,6 +464,7 @@ public class CourtExtractTransformer {
         final List<JudicialResult> caseLevelJudicialResults = hearingsList.stream().map(Hearings::getDefendants)
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
+                .filter(defendants -> defendantId.equals(defendants.getId()))
                 .map(Defendants::getJudicialResults)
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)

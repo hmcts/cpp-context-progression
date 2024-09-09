@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -9,19 +10,24 @@ import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.service.ProgressionService.getEarliestDate;
 
 import uk.gov.justice.core.courts.AllHearingOffencesUpdated;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingUpdated;
 import uk.gov.justice.core.courts.HearingUpdatedProcessed;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.progression.event.ApplicationHearingDefendantUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -59,6 +65,7 @@ public class HearingUpdatedEventProcessor {
     private static final String PROGRESSION_COMMAND_PROCESS_HEARING_UPDATED = "progression.command.process-hearing-updated";
     public static final String HEARING_ID = "hearingId";
     private static final String AMENDED_HEARING_NOTIFICATION_TEMPLATE_NAME = "AmendedHearingNotification";
+    public static final String PROGRESSION_COMMAND_UPDATE_APPLICATION_DEFENDANT = "progression.command.update-application-defendant";
 
     @Inject
     private ProgressionService progressionService;
@@ -230,6 +237,29 @@ public class HearingUpdatedEventProcessor {
         }
         final JsonObject privateEventPayload = event.payloadAsJsonObject();
         sender.send(envelop(privateEventPayload).withName("progression.command.update-hearing-offence-verdict").withMetadataFrom(event));
+    }
+
+    @Handles("progression.event.application-hearing-defendant-updated")
+    public void processUpdateDefendantOnApplicationHearing(final JsonEnvelope event) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("received event in processor progression.event.application-hearing-defendant-updated {} ", event.toObfuscatedDebugString());
+        }
+        final ApplicationHearingDefendantUpdated hearingDefendantUpdated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ApplicationHearingDefendantUpdated.class);
+        final List<CourtApplication> courtApplications = hearingDefendantUpdated.getHearing().getCourtApplications();
+        final DefendantUpdate updatedDefendant = hearingDefendantUpdated.getDefendant();
+        final UUID updatedDefendantId = ofNullable(updatedDefendant.getMasterDefendantId()).orElse(updatedDefendant.getId());
+
+        final List<CourtApplication> updatedCourtApplications = courtApplications.stream().filter(application ->
+                (nonNull(application.getApplicant()) && nonNull(application.getApplicant().getMasterDefendant())
+                        && updatedDefendantId.equals(application.getApplicant().getMasterDefendant().getMasterDefendantId())) ||
+                        (nonNull(application.getSubject()) && nonNull(application.getSubject().getMasterDefendant())
+                                && updatedDefendantId.equals(application.getSubject().getMasterDefendant().getMasterDefendantId())))
+                .collect(toList());
+
+        ofNullable(updatedCourtApplications).ifPresent(applications -> applications.forEach(application ->
+            sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PROGRESSION_COMMAND_UPDATE_APPLICATION_DEFENDANT).build()
+                    , createObjectBuilder().add("courtApplication", objectToJsonObjectConverter.convert(application)).build()))
+        ));
     }
 
     private List<ProsecutionCase> removeJudicialResults(List<ProsecutionCase> prosecutionCases) {

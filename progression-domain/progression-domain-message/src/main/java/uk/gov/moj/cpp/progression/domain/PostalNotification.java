@@ -15,6 +15,8 @@ public class PostalNotification {
 
     private final LocalDate issueDate;
 
+    private final String amendmentDate;
+
     private final PostalDefendant defendant;
 
     private final PostalAddressee addressee;
@@ -39,8 +41,12 @@ public class PostalNotification {
 
     private final String thirdParty;
 
+    private final Boolean isWelsh;
+
+    private final Boolean isAmended;
+
     @SuppressWarnings({"squid:S00107"})
-    public PostalNotification(final String reference, final String ljaCode, final String ljaName, final String ljaNameWelsh, final LocalDate issueDate, final PostalDefendant defendant, final PostalAddressee addressee, final String applicationType, final String applicationTypeWelsh, final String legislationText, final String legislationTextWelsh, final String courtCentreName, final String courtCentreNameWelsh, final PostalHearingCourtDetails hearingCourtDetails, final String applicationParticulars, final String applicantName, final String thirdParty) {
+    public PostalNotification(final String reference, final String ljaCode, final String ljaName, final String ljaNameWelsh, final LocalDate issueDate, final PostalDefendant defendant, final PostalAddressee addressee, final String applicationType, final String applicationTypeWelsh, final String legislationText, final String legislationTextWelsh, final String courtCentreName, final String courtCentreNameWelsh, final PostalHearingCourtDetails hearingCourtDetails, final String applicationParticulars, final String applicantName, final String thirdParty, final Boolean isWelsh, final Boolean isAmended, final String amendmentDate) {
         this.reference = reference;
         this.ljaCode = ljaCode;
         this.ljaName = ljaName;
@@ -58,6 +64,9 @@ public class PostalNotification {
         this.applicationParticulars = applicationParticulars;
         this.applicantName = applicantName;
         this.thirdParty = thirdParty;
+        this.isWelsh = isWelsh;
+        this.isAmended = isAmended;
+        this.amendmentDate = amendmentDate;
     }
     public String getReference() {
         return reference;
@@ -127,7 +136,17 @@ public class PostalNotification {
         return applicantName;
     }
 
+    public Boolean getIsWelsh() {
+        return isWelsh;
+    }
 
+    public Boolean getIsAmended() {
+        return isAmended;
+    }
+
+    public String getAmendmentDate() {
+        return amendmentDate;
+    }
 
     public static Builder builder() {
         return new Builder();
@@ -153,9 +172,13 @@ public class PostalNotification {
                 ", applicationParticulars=" + applicationParticulars + '\'' +
                 ", applicantName" + applicantName + '\'' +
                 ", thirdParty=" + thirdParty +
+                ", isWelsh=" + isWelsh +
+                ", isAmended=" + isAmended +
+                ", amendmentDate=" + amendmentDate +
                 '}';
     }
 
+    @SuppressWarnings("pmd:BeanMembersShouldSerialize")
     public static class Builder {
 
         private String reference;
@@ -167,6 +190,8 @@ public class PostalNotification {
         private String ljaNameWelsh;
 
         private LocalDate issueDate;
+
+        private String amendmentDate;
 
         private PostalDefendant defendant;
 
@@ -192,6 +217,11 @@ public class PostalNotification {
 
         private String thirdParty;
 
+        private Boolean isWelsh;
+
+        private Boolean isAmended;
+
+
         public Builder withReference(final String reference) {
             this.reference = reference;
             return this;
@@ -213,6 +243,11 @@ public class PostalNotification {
         }
         public Builder withIssueDate(final LocalDate issueDate) {
             this.issueDate = issueDate;
+            return this;
+        }
+
+        public Builder withAmendmentDate(final String amendmentDate) {
+            this.amendmentDate = amendmentDate;
             return this;
         }
 
@@ -276,8 +311,18 @@ public class PostalNotification {
             return this;
         }
 
+        public Builder withIsWelsh(final Boolean isWelsh) {
+            this.isWelsh = isWelsh;
+            return this;
+        }
+
+        public Builder withIsAmended(final Boolean isAmended) {
+            this.isAmended = isAmended;
+            return this;
+        }
+
         public PostalNotification build() {
-            return new PostalNotification(reference, ljaCode, ljaName,ljaNameWelsh, issueDate, defendant, addressee, applicationType, applicationTypeWelsh, legislationText, legislationTextWelsh, courtCentreName, courtCentreNameWelsh, hearingCourtDetails, applicationParticulars, applicantName, thirdParty);
+            return new PostalNotification(reference, ljaCode, ljaName,ljaNameWelsh, issueDate, defendant, addressee, applicationType, applicationTypeWelsh, legislationText, legislationTextWelsh, courtCentreName, courtCentreNameWelsh, hearingCourtDetails, applicationParticulars, applicantName, thirdParty, isWelsh, isAmended, amendmentDate);
         }
     }
 }

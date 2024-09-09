@@ -13,6 +13,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingResultLineEntityRepository;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -94,7 +95,13 @@ public class HearingRepositoryTest {
         assertThat(hearingEntityWithoutResults.getResultLines().size(), is(0));
     }
 
+    @Test
+    public void shouldRemoveByHearingId() {
+        caseDefendantHearingRepository.removeByHearingId(HEARING_ID);
+        hearingRepository.removeByHearingId(HEARING_ID);
 
+        final List<HearingEntity> entities = hearingRepository.findByHearingIds(Arrays.asList(HEARING_ID));
 
-
+        assertThat(entities.size(), is(0));
+    }
 }

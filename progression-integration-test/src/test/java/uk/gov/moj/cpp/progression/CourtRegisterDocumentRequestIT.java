@@ -5,10 +5,14 @@ import static java.util.UUID.randomUUID;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplication;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
@@ -24,6 +28,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
@@ -39,12 +44,14 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     private MessageProducer producer;
+    private MessageConsumer consumerForCourtApplicationCreated;
 
     @Before
     public void setup() {
         stringToJsonObjectConverter = new StringToJsonObjectConverter();
         SysDocGeneratorStub.stubDocGeneratorEndPoint();
         producer = QueueUtil.publicEvents.createPublicProducer();
+        consumerForCourtApplicationCreated = QueueUtil.publicEvents.createPublicConsumer("public.progression.court-application-proceedings-initiated");
     }
 
     @After
@@ -60,7 +67,15 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
         final ZonedDateTime registerDate = ZonedDateTime.now(UTC);
         final ZonedDateTime hearingDate = ZonedDateTime.now(UTC).minusHours(1);
 
-        final Response writeResponse = recordCourtRegister(courtCentreId, courtHouse, registerDate, hearingId, hearingDate);
+        final UUID courtApplicationId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+
+        intiateCourtProceedingForApplication(courtApplicationId.toString(), caseId.toString(), defendantId.toString(), defendantId.toString(), hearingId.toString(), "applications/progression.initiate-court-proceedings-for-application_for_prison_court_register.json");
+        verifyCourtApplicationCreatedPublicEvent();
+
+        final Response writeResponse = recordCourtRegister(courtCentreId, courtHouse, registerDate, hearingId, hearingDate, courtApplicationId);
 
         assertThat(writeResponse.getStatusCode(), equalTo(SC_ACCEPTED));
 
@@ -88,15 +103,26 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
         final UUID courtCentreId_2 = randomUUID();
         final UUID hearingId_1 = randomUUID();
         final UUID hearingId_2 = randomUUID();
+        final UUID courtApplicationId1 = randomUUID();
+        final UUID courtApplicationId2 = randomUUID();
+
         final ZonedDateTime registerDate_1 = ZonedDateTime.now(UTC);
         final ZonedDateTime registerDate_2 = ZonedDateTime.now(UTC).minusMinutes(2);
         final ZonedDateTime hearingDate_1 = ZonedDateTime.now(UTC).minusHours(1);
         final ZonedDateTime hearingDate_2 = ZonedDateTime.now(UTC).minusHours(2);
         final String courtHouse_1 = STRING.next();
         final String courtHouse_2 = STRING.next();
+        final UUID caseId1 = randomUUID();
+        final UUID caseId2 = randomUUID();
+        final UUID defendantId = randomUUID();
 
-        recordCourtRegister(courtCentreId_1, courtHouse_1, registerDate_1, hearingId_1, hearingDate_1);
-        recordCourtRegister(courtCentreId_2, courtHouse_2, registerDate_2, hearingId_2, hearingDate_2);
+        intiateCourtProceedingForApplication(courtApplicationId1.toString(), caseId1.toString(), defendantId.toString(), defendantId.toString(), hearingId_1.toString(), "applications/progression.initiate-court-proceedings-for-application_for_prison_court_register.json");
+        verifyCourtApplicationCreatedPublicEvent();
+        recordCourtRegister(courtCentreId_1, courtHouse_1, registerDate_1, hearingId_1, hearingDate_1, courtApplicationId1);
+
+        intiateCourtProceedingForApplication(courtApplicationId2.toString(), caseId2.toString(), defendantId.toString(), defendantId.toString(), hearingId_2.toString(), "applications/progression.initiate-court-proceedings-for-application_for_prison_court_register.json");
+        verifyCourtApplicationCreatedPublicEvent();
+        recordCourtRegister(courtCentreId_2, courtHouse_2, registerDate_2, hearingId_2, hearingDate_2, courtApplicationId2);
 
         CourtRegisterDocumentRequestHelper courtRegisterDocumentRequestHelper = new CourtRegisterDocumentRequestHelper();
         courtRegisterDocumentRequestHelper.verifyCourtRegisterRequestsExists(courtCentreId_1);
@@ -137,10 +163,15 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
         final UUID courtCentreId = randomUUID();
         final String courtHouse = STRING.next();
         final UUID hearingId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
         final ZonedDateTime registerDate = ZonedDateTime.now(UTC);
         final ZonedDateTime hearingDate = ZonedDateTime.now(UTC).minusHours(1);
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
 
-        recordCourtRegister(courtCentreId, courtHouse, registerDate, hearingId, hearingDate);
+        intiateCourtProceedingForApplication(courtApplicationId.toString(), caseId.toString(), defendantId.toString(), defendantId.toString(), hearingId.toString(), "applications/progression.initiate-court-proceedings-for-application_for_prison_court_register.json");
+        verifyCourtApplicationCreatedPublicEvent();
+        recordCourtRegister(courtCentreId, courtHouse, registerDate, hearingId, hearingDate, courtApplicationId);
 
         courtRegisterDocumentRequestHelper.verifyCourtRegisterRequestsExists(courtCentreId);
 
@@ -170,27 +201,32 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
         CourtRegisterDocumentRequestHelper courtRegisterDocumentRequestHelper = new CourtRegisterDocumentRequestHelper();
         final UUID courtCentreId = randomUUID();
         final String courtHouse = STRING.next();
+        final UUID courtApplicationId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
 
         final UUID hearingId = randomUUID();
         final ZonedDateTime hearingDate = ZonedDateTime.now(UTC).minusHours(1);
 
         final ZonedDateTime registerDate1 = ZonedDateTime.now(UTC).minusMinutes(3);
 
-        final Response writeResponse1 = recordCourtRegister(courtCentreId, courtHouse, registerDate1, hearingId, hearingDate);
+        intiateCourtProceedingForApplication(courtApplicationId.toString(), caseId.toString(), defendantId.toString(), defendantId.toString(), hearingId.toString(), "applications/progression.initiate-court-proceedings-for-application_for_prison_court_register.json");
+        verifyCourtApplicationCreatedPublicEvent();
+        final Response writeResponse1 = recordCourtRegister(courtCentreId, courtHouse, registerDate1, hearingId, hearingDate, courtApplicationId );
 
         assertThat(writeResponse1.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
         final ZonedDateTime registerDate2 = ZonedDateTime.now(UTC).minusMinutes(2);
-        final Response writeResponse2 = recordCourtRegister(courtCentreId, courtHouse, registerDate2, hearingId, hearingDate);
+        final Response writeResponse2 = recordCourtRegister(courtCentreId, courtHouse, registerDate2, hearingId, hearingDate, courtApplicationId);
 
         assertThat(writeResponse2.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
         final ZonedDateTime registerDate3 = ZonedDateTime.now(UTC).minusMinutes(1);
-        final Response writeResponse3 = recordCourtRegister(courtCentreId, courtHouse, registerDate3, hearingId, hearingDate);
+        final Response writeResponse3 = recordCourtRegister(courtCentreId, courtHouse, registerDate3, hearingId, hearingDate, courtApplicationId);
 
         assertThat(writeResponse3.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        final Response writeResponse4 = recordCourtRegister(courtCentreId, courtHouse, registerDate1, hearingId, hearingDate);
+        final Response writeResponse4 = recordCourtRegister(courtCentreId, courtHouse, registerDate1, hearingId, hearingDate, courtApplicationId);
 
         assertThat(writeResponse4.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
@@ -202,7 +238,7 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
 
         final ZonedDateTime registerDate4 = ZonedDateTime.now(UTC).minusMinutes(3);
 
-        final Response writeResponse5 = recordCourtRegister(courtCentreId, courtHouse, registerDate4, hearingId, hearingDate);
+        final Response writeResponse5 = recordCourtRegister(courtCentreId, courtHouse, registerDate4, hearingId, hearingDate, courtApplicationId);
 
         assertThat(writeResponse5.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
@@ -221,8 +257,9 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
 
     }
 
-    private Response recordCourtRegister(final UUID courtCentreId, final String courtHouse, final ZonedDateTime registerDate, final UUID hearingId, final ZonedDateTime hearingDate) throws IOException {
-        final String body = getAggregateCourtRegisterDocumentRequestPayload(courtCentreId, courtHouse, registerDate, hearingId, hearingDate);
+    private Response recordCourtRegister(final UUID courtCentreId, final String courtHouse, final ZonedDateTime registerDate, final UUID hearingId, final ZonedDateTime hearingDate,
+                                         final UUID courtApplicationId) throws IOException {
+        final String body = getAggregateCourtRegisterDocumentRequestPayload(courtCentreId, courtHouse, registerDate, hearingId, hearingDate, courtApplicationId);
 
         return postCommand(
                 getWriteUrl("/court-register"),
@@ -238,13 +275,22 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
         assertThat(generateRegisterResponse.getStatusCode(), equalTo(SC_ACCEPTED));
     }
 
-    private String getAggregateCourtRegisterDocumentRequestPayload(final UUID courtCentreId, final String courtHouse, final ZonedDateTime registerDate, final UUID hearingId, final ZonedDateTime hearingDate) {
+    private String getAggregateCourtRegisterDocumentRequestPayload(final UUID courtCentreId, final String courtHouse, final ZonedDateTime registerDate, final UUID hearingId, final ZonedDateTime hearingDate,
+                                                                   final UUID courtApplicationId) {
         String body = getPayload("progression.add-court-register.json");
         body = body.replaceAll("%COURT_CENTRE_ID%", courtCentreId.toString())
                 .replaceAll("%COURT_HOUSE%", courtHouse)
                 .replaceAll("%HEARING_DATE%", hearingDate.toString())
                 .replaceAll("%HEARING_ID%", hearingId.toString())
+                .replaceAll("%COURT_APPLICATION_ID%", courtApplicationId.toString())
                 .replaceAll("%REGISTER_DATE%", registerDate.toString());
         return body;
+    }
+
+    private void verifyCourtApplicationCreatedPublicEvent() {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
+        assertTrue(message.isPresent());
+        final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
+        assertThat(applicationReference, is(notNullValue()));
     }
 }

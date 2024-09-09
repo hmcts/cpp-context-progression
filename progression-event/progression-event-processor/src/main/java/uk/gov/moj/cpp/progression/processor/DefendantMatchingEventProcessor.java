@@ -191,7 +191,6 @@ public class DefendantMatchingEventProcessor {
         final JsonObject publicEventPayload = createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .add("defendant", objectToJsonObjectConverter.convert(updateDefendant(defendant, masterDefendantId)))
-                .add("updateOnlyNonResulted", true)
                 .build();
 
         sender.send(Enveloper.envelop(publicEventPayload)

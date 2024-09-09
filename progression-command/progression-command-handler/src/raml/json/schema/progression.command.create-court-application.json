@@ -5,6 +5,9 @@
     "courtApplication": {
       "description": "The details of the court application for which proceedings are required",
       "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
+    },
+    "oldApplicationId" : {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
     }
   },
   "required": [

@@ -4,6 +4,7 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +40,9 @@ public class HearingEntity implements Serializable {
 
     @Column(name="confirmed_date")
     private LocalDate confirmedDate;
+
+    @Column(name = "shared_time")
+    private ZonedDateTime sharedTime;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "hearing", orphanRemoval = true)
     private Set<HearingResultLineEntity> resultLines = new HashSet<>();
@@ -94,5 +98,13 @@ public class HearingEntity implements Serializable {
 
     public void setConfirmedDate(final LocalDate confirmedDate) {
         this.confirmedDate = confirmedDate;
+    }
+
+    public ZonedDateTime getSharedTime() {
+        return sharedTime;
+    }
+
+    public void setSharedTime(final ZonedDateTime sharedTime) {
+        this.sharedTime = sharedTime;
     }
 }

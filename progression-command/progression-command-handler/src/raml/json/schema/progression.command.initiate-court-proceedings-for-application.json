@@ -19,6 +19,18 @@
     "summonsApprovalRequired": {
       "description": "Indicates that the summons approval process is required to be initiated",
       "type": "boolean"
+    },
+    "isAmended": {
+      "type": "boolean"
+    },
+    "oldApplicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "isWelshTranslationRequired": {
+      "type": "boolean"
+    },
+    "issueDate": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
     }
   },
   "required": [

@@ -6,12 +6,15 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -23,11 +26,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.ApplicationStatus.LISTED;
 import static uk.gov.justice.core.courts.CivilOffence.civilOffence;
+import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
+import static uk.gov.justice.core.courts.CourtApplicationCase.courtApplicationCase;
+import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationType;
+import static uk.gov.justice.core.courts.ProsecutionCaseIdentifier.prosecutionCaseIdentifier;
+import static uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated.sendNotificationForAutoApplicationInitiated;
+import static uk.gov.justice.core.courts.SummonsTemplateType.NOT_APPLICABLE;
 import static uk.gov.justice.hearing.courts.Initiate.initiate;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.Address;
@@ -36,6 +46,7 @@ import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
@@ -48,6 +59,7 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.Offence;
@@ -56,6 +68,7 @@ import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.SeedingHearing;
+import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
 import uk.gov.justice.core.courts.UpdateHearingForPartialAllocation;
 import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.listing.courts.ListNextHearings;
@@ -67,6 +80,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
@@ -74,6 +88,7 @@ import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.CalendarService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.ListingService;
+import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.PartialHearingConfirmService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
@@ -81,6 +96,7 @@ import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
 import uk.gov.moj.cpp.progression.utils.FileUtil;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -141,10 +157,13 @@ public class HearingConfirmedEventProcessorTest {
     @Mock
     private HearingListingNeeds hearingListingNeeds;
     @Mock
+    private CourtApplication courtApplication;
+    @Mock
     private JsonObject jsonObject;
     @Captor
     private ArgumentCaptor<JsonEnvelope> senderJsonEnvelopeCaptor;
-
+    @Captor
+    private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
     @Mock
     private HearingNotificationHelper hearingNotificationHelper;
 
@@ -153,6 +172,9 @@ public class HearingConfirmedEventProcessorTest {
 
     @Mock
     private FeatureControlGuard featureControlGuard;
+
+    @Mock
+    private NotificationService notificationService = new NotificationService();
 
     @Captor
     private ArgumentCaptor<HearingNotificationInputData> hearingInputDataEnvelopeCaptor;
@@ -1146,6 +1168,239 @@ public class HearingConfirmedEventProcessorTest {
         HearingNotificationInputData inputData = hearingInputDataEnvelopeCaptor.getValue();
         assertThat(inputData.getHearingId(), is(hearingId));
         assertThat(inputData.getHearingType(), is("Plea"));
+    }
+
+
+    @Test
+    public void shouldHandleHearingConfirmedforAutApplication_NotificationSendTrue() {
+
+        setField(this.eventProcessor, "jsonObjectConverter", new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper()));
+        setField(this.eventProcessor, "objectToJsonObjectConverter", new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper()));
+
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        final JsonObject payload = FileUtil.jsonFromString(FileUtil.getPayload("public.listing.hearing-confirmed.json")
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("%HEARING_ID%", hearingId.toString())
+                .replaceAll("%HEARING_TYPE%", "Plea")
+                .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
+
+        JsonEnvelope jsonEnvelope = envelopeFrom(metadataBuilder()
+                        .withName("public.listing.hearing-confirmed")
+                        .withId(randomUUID())
+                        .build(),
+                payload);
+
+        JsonObject prosecutionCaseJson = createProsecutionCaseJson(offenceId, defendantId, caseId);
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(randomUUID())
+                .withSeedingHearing(SeedingHearing.seedingHearing().build())
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(UUID.randomUUID())
+                        .build()))
+                .withCourtApplications(singletonList(courtApplication()
+                        .withId(applicationId)
+                        .withType(courtApplicationType()
+                                .withProsecutorThirdPartyFlag(false)
+                                .withSummonsTemplateType(NOT_APPLICABLE)
+                                .build())
+                        .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                .withIsSJP(false)
+                                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                .withCaseStatus("ACTIVE")
+                                .build()))
+                        .build()))
+                .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withCourtCentre(CourtCentre.courtCentre().withCode("COURTCENTER").build())
+                .build();
+
+        final JsonObject hearingInProgressionJson = createHearingJson(objectToJsonObjectConverter.convert(hearingInProgression));
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
+        doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(applicationParameters.getNotifyHearingTemplateId()).thenReturn(("e4648583-eb0f-438e-aab5-5eff29f3f7b4"));
+        when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(
+                Hearing.hearing()
+                        .withId(randomUUID())
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                                .withDefendants(singletonList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(singletonList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .build()))
+                                        .build()))
+                                .build()))
+                        .withCourtApplications(singletonList(courtApplication()
+                                .withId(applicationId)
+                                .withType(courtApplicationType()
+                                        .withProsecutorThirdPartyFlag(false)
+                                        .withSummonsTemplateType(NOT_APPLICABLE)
+                                        .build())
+                                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                        .withIsSJP(false)
+                                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                        .withCaseStatus("ACTIVE")
+                                        .build()))
+                                .build()))
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withJurisdictionType(JurisdictionType.CROWN)
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("COURTCENTER").build())
+                        .build());
+        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command.send-notification-for-auto-application")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+        when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
+        when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
+        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
+
+        eventProcessor.processEvent(jsonEnvelope);
+
+        verify(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+
+        verify(hearingNotificationHelper, times(1)).sendHearingNotificationsToRelevantParties(any(), hearingInputDataEnvelopeCaptor.capture());
+        HearingNotificationInputData inputData = hearingInputDataEnvelopeCaptor.getValue();
+        assertThat(inputData.getHearingId(), is(hearingId));
+        assertThat(inputData.getHearingType(), is("Plea"));
+
+        verify(this.sender, times(3)).send(this.senderJsonEnvelopeCaptor.capture());
+
+        final List<JsonEnvelope> commandEvents = this.senderJsonEnvelopeCaptor.getAllValues();
+
+        assertThat(commandEvents.get(0).metadata().name(), is("progression.command.send-notification-for-auto-application"));
+        assertThat(commandEvents.get(0).payload().toString(), isJson(allOf(
+                withJsonPath("$.hearingStartDateTime", notNullValue()),
+                withJsonPath("$.jurisdictionType", equalTo("CROWN")),
+                withJsonPath("$.courtApplication", notNullValue()),
+                withJsonPath("$.courtCentre", notNullValue())
+        )));
+    }
+
+    @Test
+    public void shouldSendNotificationForAutoApplication() throws Exception {
+        final SendNotificationForAutoApplicationInitiated sendNotificationForAutoApplicationInitiated =
+                sendNotificationForAutoApplicationInitiated()
+                        .withCourtApplication(courtApplication()
+                                .withId(randomUUID())
+                                .withType(courtApplicationType()
+                                        .withProsecutorThirdPartyFlag(false)
+                                        .withSummonsTemplateType(NOT_APPLICABLE)
+                                        .build())
+                                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                        .withIsSJP(false)
+                                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                        .withCaseStatus("ACTIVE")
+                                        .build()))
+                                .build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("COURTCENTER").build())
+                        .withJurisdictionType(JurisdictionType.CROWN)
+                        .withHearingStartDateTime("2020-06-26T07:51Z")
+                        .withIssueDate(LocalDate.now())
+                        .build();
+        //Given
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        //When
+        when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), SendNotificationForAutoApplicationInitiated.class))
+                .thenReturn(sendNotificationForAutoApplicationInitiated);
+
+        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        eventProcessor.sendNotificationForAutoApplication(envelope);
+
+        //Then
+        verify(notificationService, times(1)).sendNotificationForAutoApplication(eq(envelope), eq(sendNotificationForAutoApplicationInitiated));
+    }
+
+
+    @Test
+    public void shouldHandleHearingConfirmedForApplication_NotificationSendTrue() {
+
+        setField(this.eventProcessor, "jsonObjectConverter", new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper()));
+        setField(this.eventProcessor, "objectToJsonObjectConverter", new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper()));
+
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final UUID caseId = randomUUID();
+
+        final JsonObject payload = FileUtil.jsonFromString(FileUtil.getPayload("public.listing.hearing-confirmed-inactive-case-application.json")
+                .replaceAll("%APPLICATION_ID%", applicationId.toString())
+                .replaceAll("%HEARING_ID%", hearingId.toString())
+                .replaceAll("%HEARING_TYPE%", "Plea"));
+
+        JsonEnvelope jsonEnvelope = envelopeFrom(metadataBuilder()
+                        .withName("public.listing.hearing-confirmed")
+                        .withId(randomUUID())
+                        .build(),
+                payload);
+
+        JsonObject prosecutionCaseJson = createProsecutionCaseJson(offenceId, defendantId, caseId);
+        JsonObject prosecutionCaseJson2 = createObjectBuilder()
+                .add("prosecutionCase", prosecutionCaseJson).build();
+
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(hearingId)
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                                .withProsecutionCaseId(caseId)
+                                .withCaseStatus("INACTIVE")
+                                .withOffences(singletonList(Offence.offence()
+                                        .withId(offenceId)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(caseId)
+                        .build()))
+                .build();
+
+        final JsonObject hearingInProgressionJson = createHearingJson(objectToJsonObjectConverter.convert(hearingInProgression));
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
+        when(progressionService.getProsecutionCaseById(any(), any())).thenReturn(prosecutionCaseJson2);
+        doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(applicationParameters.getNotifyHearingTemplateId()).thenReturn(("e4648583-eb0f-438e-aab5-5eff29f3f7b4"));
+        when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(
+                Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withType(HearingType.hearingType().withId(randomUUID()).withDescription("First hearing").build())
+                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase().withId(caseId)
+                                .withDefendants(singletonList(Defendant.defendant().withId(defendantId)
+                                        .withOffences(singletonList(Offence.offence().withId(offenceId)
+                                                .build())).build())).build()))
+                        .build());
+
+        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+        when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
+        when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
+        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
+
+        eventProcessor.processEvent(jsonEnvelope);
+
+        verify(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        verify(hearingNotificationHelper, times(1)).sendHearingNotificationsToRelevantParties(any(), hearingInputDataEnvelopeCaptor.capture());
+        HearingNotificationInputData inputData = hearingInputDataEnvelopeCaptor.getValue();
+        assertThat(inputData.getHearingId(), is(hearingId));
+        assertThat(inputData.getHearingType(), is("Plea"));
+        assertTrue(inputData.getCaseIds().contains(caseId));
+        assertTrue(inputData.getDefendantIds().contains(defendantId));
+        assertTrue(inputData.getDefendantOffenceListMap().get(defendantId).contains(offenceId));
     }
 
     @Test
