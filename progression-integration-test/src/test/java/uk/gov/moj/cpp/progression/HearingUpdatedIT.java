@@ -15,6 +15,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -107,6 +108,8 @@ public class HearingUpdatedIT extends AbstractIT {
     private String courtCentreId;
     private String hearingId;
 
+    private MessageConsumer messageConsumerCourtDocumentAddedPrivateEvent ;
+
 
     @Before
     public void setUp() {
@@ -118,6 +121,7 @@ public class HearingUpdatedIT extends AbstractIT {
         messageConsumerHearingOffenceUpdated = privateEvents.createPrivateConsumer("progression.event.hearing-offences-updated");
         messageConsumerListingNumberUpdated = privateEvents.createPrivateConsumer("progression.event.prosecution-case-listing-number-updated");
         messageConsumerListingNumberIncreased = privateEvents.createPrivateConsumer("progression.event.prosecution-case-listing-number-increased");
+        messageConsumerCourtDocumentAddedPrivateEvent = privateEvents.createPrivateConsumer("progression.event.court-document-added");
         messageConsumerClientPublicOffenceRemovedFromHearing = publicEvents.createPrivateConsumer(PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_ALLOCATED_HEARING);
         messageConsumerClientProgressionPublicOffenceRemovedFromHearing = publicEvents.createPrivateConsumer(PUBLIC_PROGRESSION_OFFENCES_REMOVED_FROM_EXISTING_ALLOCATED_HEARING);
         stubInitiateHearing();
@@ -141,6 +145,7 @@ public class HearingUpdatedIT extends AbstractIT {
         messageConsumerClientPublicOffenceRemovedFromHearing.close();
         messageConsumerHearingPopulatedToProbationCaseWorker.close();
         messageConsumerListingNumberIncreased.close();
+        messageConsumerCourtDocumentAddedPrivateEvent.close();
     }
 
     @Test
@@ -570,6 +575,7 @@ public class HearingUpdatedIT extends AbstractIT {
         verifyInMessagingQueue(messageConsumerClientPublicForHearingDetailChanged);
         doVerifyListHearingRequestedPrivateEvent(messageConsumerEmailRequestPrivateEvent, caseId);
         doVerifyListHearingRequestedPrivateEvent(messageConsumerPrintRequestPrivateEvent, caseId);
+        verifyAddCourtDocument(messageConsumerCourtDocumentAddedPrivateEvent);
     }
 
     private void doVerifyListHearingRequestedPrivateEvent(final MessageConsumer messageConsumerProgressionCommandEmail, final String caseId) {
@@ -579,6 +585,16 @@ public class HearingUpdatedIT extends AbstractIT {
         assertThat(progressionCommandNotificationEvent.getString("caseId", EMPTY), Matchers.is(caseId));
     }
 
+    private void verifyAddCourtDocument(MessageConsumer messageConsumerCourtDocumentAddedPrivateEvent) {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerCourtDocumentAddedPrivateEvent);
+        assertThat(message.get(), Matchers.notNullValue());
+        final JsonObject progressionCourtDocumentAddedEvent = message.get();
+        JsonObject courtDocument = progressionCourtDocumentAddedEvent.getJsonObject("courtDocument");
+        assertThat(courtDocument.getString("documentTypeDescription"), containsString("Electronic Notifications"));
+        assertThat(courtDocument.getString("name"), containsString("AmendedHearingNotification"));
+        assertThat(courtDocument.getBoolean("containsFinancialMeans"), Matchers.is(false));
+        assertThat(courtDocument.getBoolean("sendToCps"), Matchers.is(false));
+    }
 
     List<Matcher<? super ReadContext>> matchers = newArrayList(
             withJsonPath("$.prosecutionCase.id", is(caseId)),

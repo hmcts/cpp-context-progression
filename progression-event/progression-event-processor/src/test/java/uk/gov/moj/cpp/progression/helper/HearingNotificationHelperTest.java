@@ -224,6 +224,7 @@ public class HearingNotificationHelperTest {
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
         verify(notificationService, times(2)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
+        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), any(), any(), any(), any());
 
     }
 

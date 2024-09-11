@@ -7,7 +7,10 @@ import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -25,6 +28,8 @@ import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
+import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.SystemIdMapperService;
 import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
@@ -42,6 +47,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
 @RunWith(MockitoJUnitRunner.class)
 public class NotificationNotifyEventProcessorTest {
 
@@ -50,6 +58,12 @@ public class NotificationNotifyEventProcessorTest {
 
     @Mock
     private SystemIdMapperService systemIdMapperService;
+
+    @Mock
+    private DocumentGeneratorService documentGeneratorService;
+
+    @Mock
+    private HearingNotificationHelper hearingNotificationHelper;
 
     @Mock
     private SystemIdMapping systemIdMapping;
@@ -107,7 +121,7 @@ public class NotificationNotifyEventProcessorTest {
         final UUID notificationId = randomUUID();
         final Optional<SystemIdMapping> systemIdMapping = of(mock(SystemIdMapping.class));
 
-        final JsonEnvelope letterNotification = envelope()
+        final JsonEnvelope letterNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("LETTER"))
                 .withPayloadOf(notificationId.toString(), "notificationId").build();
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
 
@@ -152,14 +166,25 @@ public class NotificationNotifyEventProcessorTest {
         final UUID notificationId = randomUUID();
         final Optional<SystemIdMapping> systemIdMapping = of(mock(SystemIdMapping.class));
 
-        final JsonEnvelope letterNotification = envelope()
-                .withPayloadOf(notificationId.toString(), "notificationId").build();
+        final JsonEnvelope letterNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("EMAIL"))
+                .withPayloadOf(notificationId.toString(), "notificationId")
+                .withPayloadOf("defendant", "recipientType")
+                .withPayloadOf(notificationId.toString(), "caseId")
+                .withPayloadOf("emailBody", "emailBody")
+                .withPayloadOf("emailSubject", "emailSubject")
+                .withPayloadOf("sendToAddress@gmail.com", "sendToAddress")
+                .withPayloadOf("replyToAddress@gmail.com", "replyToAddress")
+                .build();
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());
         when(systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
+        doNothing().when(documentGeneratorService).generateNonNowDocument(eq(letterNotification), any(JsonObject.class), anyString(), any(), anyString());
+        doNothing().when(hearingNotificationHelper).addCourtDocument(eq(letterNotification),any(), any(), anyString() );
 
         notificationNotifyEventProcessor.markNotificationAsSucceeded(letterNotification);
 
         verify(notificationService).recordNotificationRequestSuccess(letterNotification, systemIdMapping.get().getTargetId(), APPLICATION);
+        verify(documentGeneratorService).generateNonNowDocument(eq(letterNotification), any(JsonObject.class), anyString(), any(), anyString());
+        verify(hearingNotificationHelper).addCourtDocument(eq(letterNotification),any(), any(), anyString());
     }
 
     @Test
@@ -167,7 +192,7 @@ public class NotificationNotifyEventProcessorTest {
         final UUID notificationId = randomUUID();
         final Optional<SystemIdMapping> systemIdMapping = of(mock(SystemIdMapping.class));
 
-        final JsonEnvelope letterNotification = envelope()
+        final JsonEnvelope letterNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("LETTER"))
                 .withPayloadOf(notificationId.toString(), "notificationId").build();
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());
         when(systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString())).thenReturn(empty());
@@ -182,7 +207,7 @@ public class NotificationNotifyEventProcessorTest {
     public void shouldHandlePrintOrderRequestFailSilentlyAndLogMessage() throws FileServiceException {
         final UUID notificationId = randomUUID();
 
-        final JsonEnvelope letterNotification = envelope()
+        final JsonEnvelope letterNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("LETTER"))
                 .withPayloadOf(notificationId.toString(), "notificationId").build();
 
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());
