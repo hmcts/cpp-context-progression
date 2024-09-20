@@ -1,5 +1,19 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
+import org.hamcrest.CoreMatchers;
+
+import org.junit.jupiter.api.Test;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
@@ -14,7 +28,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.ApplicationDocument;
@@ -36,20 +50,6 @@ import uk.gov.justice.core.courts.DocumentTypeRBAC;
 import uk.gov.justice.core.courts.DuplicateShareCourtDocumentRequestReceived;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.progression.event.SendToCpsFlagUpdated;
-
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-
-import org.hamcrest.CoreMatchers;
-import org.junit.Test;
 
 public class CourtDocumentAggregateTest {
 

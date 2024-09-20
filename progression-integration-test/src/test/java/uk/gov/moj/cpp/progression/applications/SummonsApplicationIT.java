@@ -7,47 +7,37 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplicationCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplication;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.SjpStub.setupSjpProsecutionCaseQueryStub;
 
-import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 
 import java.util.Optional;
 
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-public class SummonsApplicationIT extends AbstractIT {
+@ExtendWith(JmsResourceManagementExtension.class)
+public class SummonsApplicationIT {
 
     private static final String COURT_APPLICATION_CREATED_PRIVATE_EVENT = "progression.event.court-application-created";
     private static final String COURT_APPLICATION_UPDATED = "progression.event.court-application-proceedings-edited";
 
-    private MessageConsumer consumerForCourtApplicationCreated;
-    private MessageConsumer consumerForCourtApplicationUpdated ;
+    private static final JmsMessageConsumerClient consumerForCourtApplicationUpdated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(COURT_APPLICATION_UPDATED).getMessageConsumerClient();
 
-    @Before
-    public void setUp() {
-        consumerForCourtApplicationCreated = privateEvents.createPrivateConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
-        consumerForCourtApplicationUpdated = privateEvents.createPrivateConsumer(COURT_APPLICATION_UPDATED);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        consumerForCourtApplicationCreated.close();
-        consumerForCourtApplicationUpdated.close();
-    }
+    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(COURT_APPLICATION_CREATED_PRIVATE_EVENT).getMessageConsumerClient();
 
     @Test
     public void shouldCreateLinkedApplicationWithSummons() throws Exception {
@@ -193,14 +183,14 @@ public class SummonsApplicationIT extends AbstractIT {
     }
 
     private void verifyCourtApplicationCreatedPrivateEvent() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
         final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
         assertThat(10, is(applicationReference.length()));
     }
 
     private void verifyInMessagingQueueForCourtApplicationUpdated() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationUpdated);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationUpdated);
         assertTrue(message.isPresent());
         String outOfTimeReasons = message.get().getJsonObject("courtApplication").getString("outOfTimeReasons");
         assertThat(outOfTimeReasons, equalTo("Out of times reasons for Summons application"));

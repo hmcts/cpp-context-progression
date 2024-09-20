@@ -7,21 +7,18 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static uk.gov.justice.listing.courts.PublishCourtListType.DRAFT;
-import static uk.gov.justice.listing.courts.PublishCourtListType.FINAL;
-import static uk.gov.justice.listing.courts.PublishCourtListType.FIRM;
-import static uk.gov.justice.listing.courts.PublishCourtListType.WARN;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.service.payloads.PublishCourtListAddress.publishCourtListAddressBuilder;
@@ -48,48 +45,20 @@ import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings("JUnitMalformedDeclaration")
-@RunWith(DataProviderRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PublishCourtListNotificationServiceTest {
-
-    @DataProvider
-    public static Object[][] weekCommencingCourtListType() {
-        return new Object[][]{
-                {WARN},
-                {FIRM}
-        };
-    }
-
-    @DataProvider
-    public static Object[][] fixedDateCourtListType() {
-        return new Object[][]{
-                {DRAFT},
-                {FINAL}
-        };
-    }
-
-    @DataProvider
-    public static Object[][] allCourtListType() {
-        return new Object[][]{
-                {DRAFT},
-                {FINAL},
-                {WARN},
-                {FIRM}
-        };
-    }
-
     @Mock
     private DocumentGeneratorService documentGeneratorService;
     @Mock
@@ -111,13 +80,13 @@ public class PublishCourtListNotificationServiceTest {
     private final Faker faker = new Faker(UK);
     private final Clock clock = new StoppedClock(ZonedDateTime.now());
 
-    @Before
+    @BeforeEach
     public void setup() {
         initMocks(this);
     }
 
-    @Test
-    @UseDataProvider("allCourtListType")
+    @ParameterizedTest
+    @ValueSource(strings = {"DRAFT", "FINAL","WARN", "FIRM"})
     public void shouldSendEmailNotificationIfEmailAddressIsAvailableForAllPublishListNotificationTypes(final PublishCourtListType publishCourtListType) {
         final JsonEnvelope envelope = prepareEnvelope();
         final String documentTemplateName = faker.funnyName().name();
@@ -142,8 +111,8 @@ public class PublishCourtListNotificationServiceTest {
         assertThat(actualEmailChannel.getPersonalisation().getAdditionalProperties(), hasEntry("hearing_notification_date", LocalDates.to(clock.now().toLocalDate())));
     }
 
-    @Test
-    @UseDataProvider("fixedDateCourtListType")
+    @ParameterizedTest
+    @ValueSource(strings = {"DRAFT", "FINAL"})
     public void shouldNotSendPostalNotificationIfEmailAddressIsNotAvailableForFixedDatePublishListNotification(final PublishCourtListType publishCourtListType) {
         final JsonEnvelope envelope = prepareEnvelope();
         final String documentTemplateName = faker.funnyName().name();
@@ -153,17 +122,16 @@ public class PublishCourtListNotificationServiceTest {
 
         final PublishCourtListPayload publishCourtListPayload = preparePublishCourtListPayloadWithNoEmailButWithPostalAddress(publishCourtListType);
         doNothing().when(documentGeneratorService).generateNonNowDocument(eq(envelope), any(JsonObject.class), eq(documentTemplateName), any(), anyString());
-        given(materialUrlGenerator.pdfFileStreamUrlFor(materialId)).willReturn(materialUrl);
-        given(applicationParameters.getNotifyHearingTemplateId()).willReturn(emailTemplateId);
+        lenient().when(materialUrlGenerator.pdfFileStreamUrlFor(materialId)).thenReturn(materialUrl);
 
         underTest.sendNotification(envelope, publishCourtListPayload, documentTemplateName);
 
         verify(notificationService, never()).sendLetter(any(JsonEnvelope.class), any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class), anyBoolean());
-        verify(notificationService, never()).sendEmail(any(JsonEnvelope.class), any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class), anyListOf(EmailChannel.class));
+        verify(notificationService, never()).sendEmail(any(JsonEnvelope.class), any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class), anyList());
     }
 
-    @Test
-    @UseDataProvider("weekCommencingCourtListType")
+    @ParameterizedTest
+    @ValueSource(strings = {"WARN", "FIRM"})
     public void shouldSendPostalNotificationIfEmailAddressIsNotAvailableForWeekCommencingPublishListNotification(final PublishCourtListType publishCourtListType) {
         final JsonEnvelope envelope = prepareEnvelope();
         final String documentTemplateName = faker.funnyName().name();
@@ -174,11 +142,10 @@ public class PublishCourtListNotificationServiceTest {
         final PublishCourtListPayload publishCourtListPayload = preparePublishCourtListPayloadWithNoEmailButWithPostalAddress(publishCourtListType);
         doNothing().when(documentGeneratorService).generateNonNowDocument(eq(envelope), any(JsonObject.class), eq(documentTemplateName), any(), anyString());
         given(materialUrlGenerator.pdfFileStreamUrlFor(any())).willReturn(materialUrl);
-        given(applicationParameters.getNotifyHearingTemplateId()).willReturn(emailTemplateId);
 
         underTest.sendNotification(envelope, publishCourtListPayload, documentTemplateName);
 
-        verify(notificationService, never()).sendEmail(any(JsonEnvelope.class), any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class), anyListOf(EmailChannel.class));
+        verify(notificationService, never()).sendEmail(any(JsonEnvelope.class), any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class), anyList());
         verify(notificationService).sendLetter(eq(envelope), any(UUID.class), isNull(UUID.class), isNull(UUID.class), any(), eq(true));
     }
 

@@ -1,12 +1,8 @@
 package uk.gov.moj.cpp.indexer.jolt.verificationHelpers;
 
 import static com.jayway.jsonassert.JsonAssert.with;
-import static java.lang.Boolean.*;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.Matchers.not;
+import static java.lang.Boolean.parseBoolean;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.isNull;
-import static org.mockito.Matchers.matches;
 
 import javax.json.JsonNumber;
 import javax.json.JsonObject;

@@ -4,7 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
@@ -31,19 +31,17 @@ import uk.gov.moj.cpp.progression.command.CourtApplicationPayment;
 import uk.gov.moj.cpp.progression.command.EditCourtFeeForCivilApplication;
 
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EditCourtFeeForCivilApplicationHandlerTest {
 
     private static final UUID APPLICATION_ID = UUID.randomUUID();
@@ -55,12 +53,6 @@ public class EditCourtFeeForCivilApplicationHandlerTest {
 
     @Mock
     protected Stream<Object> events;
-
-    @Mock
-    protected Stream<JsonEnvelope> jsonEvents;
-
-    @Mock
-    protected Function function;
 
     @Mock
     private EventStream eventStream;
@@ -78,11 +70,9 @@ public class EditCourtFeeForCivilApplicationHandlerTest {
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             CourtFeeForCivilApplicationUpdated.class);
 
-    @Before
+    @BeforeEach
     public void setup() {
         applicationAggregate = new ApplicationAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(events.map(function)).thenReturn(jsonEvents);
     }
 
     @Test
@@ -94,7 +84,7 @@ public class EditCourtFeeForCivilApplicationHandlerTest {
 
     @Test
     public void shouldProcessEditCivilApplicationFees() throws Exception {
-
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
         EditCourtFeeForCivilApplication editCourtFeeForCivilApplication = EditCourtFeeForCivilApplication.editCourtFeeForCivilApplication()
@@ -114,7 +104,7 @@ public class EditCourtFeeForCivilApplicationHandlerTest {
     private void verifyResults() throws EventStreamException {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
-        Assert.assertThat(envelopeStream, streamContaining(
+        assertThat(envelopeStream, streamContaining(
                 jsonEnvelope(
                         metadata()
                                 .withName(PROGRESSION_COMMAND_EVENT_CIVIL_APPLICATION_FEE),

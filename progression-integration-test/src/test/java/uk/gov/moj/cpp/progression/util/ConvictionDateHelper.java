@@ -1,26 +1,27 @@
 package uk.gov.moj.cpp.progression.util;
 
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
-import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static org.junit.jupiter.api.Assertions.fail;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 import java.nio.charset.Charset;
-import java.util.UUID;
 
-import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +31,9 @@ public class ConvictionDateHelper extends AbstractTestHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConvictionDateHelper.class);
     private static final String PUBLIC_HEARING_CONVICTION_DATE_CHANGED = "public.hearing.offence-conviction-date-changed";
     private static final String PUBLIC_HEARING_CONVICTION_DATE_REMOVED = "public.hearing.offence-conviction-date-removed";
-    private static final MessageProducer PUBLIC_MESSAGE_PRODUCER = publicEvents.createPublicProducer();
+    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private static final JmsMessageConsumerClient privateEventsAddedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.conviction-date-added").getMessageConsumerClient();
+    private static final JmsMessageConsumerClient privateEventsRemovedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.conviction-date-removed").getMessageConsumerClient();
 
     private String addConvictionDateRequest;
 
@@ -47,39 +50,31 @@ public class ConvictionDateHelper extends AbstractTestHelper {
         this.offenceId = offenceId;
         this.courtApplicationId = courtApplicationId;
 
-        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumerForMultipleSelectors("progression.event.conviction-date-added", "progression.event.conviction-date-removed");
     }
 
     public void addConvictionDate() {
-        final Metadata metadata = generateMetadata(PUBLIC_HEARING_CONVICTION_DATE_CHANGED);
         JsonObject convictionDateChangedPayload = generateConvictionDatePayload(caseId, offenceId, PUBLIC_HEARING_CONVICTION_DATE_CHANGED, courtApplicationId);
         addConvictionDateRequest = convictionDateChangedPayload.toString();
-        sendMessage(PUBLIC_MESSAGE_PRODUCER, PUBLIC_HEARING_CONVICTION_DATE_CHANGED, convictionDateChangedPayload, metadata);
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_CONVICTION_DATE_CHANGED, randomUUID()), convictionDateChangedPayload);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_CONVICTION_DATE_CHANGED, publicEventEnvelope);
     }
 
     public void removeConvictionDate() {
-        final Metadata metadata = generateMetadata(PUBLIC_HEARING_CONVICTION_DATE_REMOVED);
         JsonObject convictionDateRemovedPayload = generateConvictionDatePayload(caseId, offenceId, PUBLIC_HEARING_CONVICTION_DATE_REMOVED, courtApplicationId);
         removeConvictionDateRequest = convictionDateRemovedPayload.toString();
-        sendMessage(PUBLIC_MESSAGE_PRODUCER, PUBLIC_HEARING_CONVICTION_DATE_REMOVED, convictionDateRemovedPayload, metadata);
-    }
-
-    private Metadata generateMetadata(String eventName) {
-        return metadataBuilder()
-                .withId(UUID.randomUUID())
-                .withName(eventName)
-                .build();
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_CONVICTION_DATE_REMOVED, randomUUID()), convictionDateRemovedPayload);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_CONVICTION_DATE_REMOVED, publicEventEnvelope);
     }
 
     private JsonObject generateConvictionDatePayload(String caseId, String offenceId, String eventName, final String courtApplicationId) {
         String payloadStr = getStringFromResource(eventName + ".json");
-        if(caseId == null){
+        if (caseId == null) {
             payloadStr = payloadStr.replace("\"caseId\":\"CASE_ID\",", "");
         }
-        if(courtApplicationId == null){
+        if (courtApplicationId == null) {
             payloadStr = payloadStr.replace("\"courtApplicationId\" : \"APPLICATION_ID\",", "");
         }
-        if(offenceId == null){
+        if (offenceId == null) {
             payloadStr = payloadStr.replace("\"offenceId\":\"OFFENCE_ID\",", "");
             payloadStr = payloadStr.replace(",\"offenceId\":\"OFFENCE_ID\"", "");
         }
@@ -106,7 +101,7 @@ public class ConvictionDateHelper extends AbstractTestHelper {
         final JsonPath jsRequest = new JsonPath(addConvictionDateRequest);
         LOGGER.info("Request payload: {}", jsRequest.prettify());
 
-        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsAddedConsumer);
         LOGGER.info("message in queue payload: {}", jsonResponse.prettify());
 
         assertThat(jsonResponse.getString("id"), is(jsRequest.getString("id")));
@@ -116,7 +111,7 @@ public class ConvictionDateHelper extends AbstractTestHelper {
         final JsonPath jsRequest = new JsonPath(removeConvictionDateRequest);
         LOGGER.info("Request payload: {}", jsRequest.prettify());
 
-        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsRemovedConsumer);
         LOGGER.info("message in queue payload: {}", jsonResponse.prettify());
 
         assertThat(jsonResponse.getString("id"), is(jsRequest.getString("id")));

@@ -22,7 +22,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DartsRetentionPolicyHelperTest {
 

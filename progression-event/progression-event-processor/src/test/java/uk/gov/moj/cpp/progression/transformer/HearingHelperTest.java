@@ -1,19 +1,26 @@
 package uk.gov.moj.cpp.progression.transformer;
 
-import com.google.common.io.Resources;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-
-import javax.json.JsonObject;
-import java.nio.charset.Charset;
-
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static uk.gov.moj.cpp.progression.transformer.HearingHelper.transformedHearing;
-import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.*;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.COURT_APPLICATIONS;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.DEFENDANTS;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.DEFENDANT_JUDICIAL_RESULTS;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.JUDICIAL_RESULTS;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.OFFENCES;
+import static uk.gov.moj.cpp.progression.transformer.SchemaVariableConstants.PROSECUTION_CASES;
+
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+
+import java.nio.charset.Charset;
+
+import javax.json.JsonObject;
+
+import com.google.common.io.Resources;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HearingHelperTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingHelperTest.class.getName());

@@ -4,7 +4,7 @@ import static java.util.UUID.fromString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.DomainToIndexMapper.ISO_8601_FORMATTER;
 
 import uk.gov.justice.core.courts.CourtCentre;
@@ -21,14 +21,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class HearingDaysMapperTest {
 
     private HearingDaysMapper hearingDaysMapper;
 
-    @Before
+    @BeforeEach
     public void before() {
         hearingDaysMapper = new HearingDaysMapper(new HearingDaySharedResultsMapper());
     }

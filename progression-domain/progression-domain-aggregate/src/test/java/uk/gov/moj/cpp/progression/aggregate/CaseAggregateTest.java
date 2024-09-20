@@ -11,7 +11,6 @@ import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -21,15 +20,13 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.LENIENT;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.DefendantJudicialResult.defendantJudicialResult;
@@ -242,21 +239,24 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import com.google.common.collect.Lists;
-import org.hamcrest.Matchers;
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.internal.util.reflection.Whitebox;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.slf4j.Logger;
 
-
-@RunWith(MockitoJUnitRunner.class)
+// FIXME!!! Temporarily using lenient strictness to get this
+// context running with junit 5. This test really needs re-writing.
+@MockitoSettings(strictness = LENIENT)
+@ExtendWith(MockitoExtension.class)
 public class CaseAggregateTest {
 
     private static final String CASE_ID = randomUUID().toString();
@@ -384,7 +384,7 @@ public class CaseAggregateTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.caseAggregate = new CaseAggregate();
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -1124,7 +1124,7 @@ public class CaseAggregateTest {
     @Test
     public void shouldInvalidateSendingSheetWrongCourtCentre() {
         final List<Object> objects = applySendingSheet(a -> {
-            Whitebox.setInternalState(this.caseAggregate, "courtCentreId", null);
+            ReflectionUtil.setField(this.caseAggregate, "courtCentreId", null);
         });
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
@@ -1136,7 +1136,7 @@ public class CaseAggregateTest {
     @Test
     public void shouldInvalidateSendingSheetNoDefendants() {
         final List<Object> objects = applySendingSheet(a -> {
-            Whitebox.setInternalState(this.caseAggregate, "defendants", new HashSet<>());
+            ReflectionUtil.setField(this.caseAggregate, "defendants", new HashSet<>());
         });
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
@@ -1150,7 +1150,7 @@ public class CaseAggregateTest {
         final List<Object> objects = applySendingSheet(a -> {
             final uk.gov.moj.cpp.progression.domain.event.Defendant defendant = new uk.gov.moj.cpp.progression.domain.event.Defendant();
             defendant.setId(UUID.randomUUID());
-            Whitebox.setInternalState(this.caseAggregate, "defendants", new HashSet<>(asList(defendant)));
+            ReflectionUtil.setField(this.caseAggregate, "defendants", new HashSet<>(asList(defendant)));
         });
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
@@ -1163,7 +1163,7 @@ public class CaseAggregateTest {
     public void shouldInvalidateSendingSheetWrongOffences() {
         final List<Object> objects = applySendingSheet(a -> {
             final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
-            Whitebox.setInternalState(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
+            ReflectionUtil.setField(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
         });
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
@@ -1219,9 +1219,9 @@ public class CaseAggregateTest {
         final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
         offenceIdsByDefendantId.put(UUID.fromString(DEFENDANT_ID), new HashSet(asList(UUID.fromString(OFFENCE_ID))));
         //green path internals
-        Whitebox.setInternalState(this.caseAggregate, "courtCentreId", CC_COURT_CENTRE_ID);
-        Whitebox.setInternalState(this.caseAggregate, "defendants", defendants);
-        Whitebox.setInternalState(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
+        ReflectionUtil.setField(this.caseAggregate, "courtCentreId", CC_COURT_CENTRE_ID);
+        ReflectionUtil.setField(this.caseAggregate, "defendants", defendants);
+        ReflectionUtil.setField(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
         adjustInternals.accept(this.caseAggregate);
 
         final Stream<Object> stream = this.caseAggregate.completeSendingSheet(this.envelope);
@@ -1233,7 +1233,7 @@ public class CaseAggregateTest {
     public void shouldApplyCompleteSendingSheetPreviouslyCompleted() {
         final List<Object> objects = applySendingSheet(a -> {
             final Set<UUID> caseIdsWithCompletedSendingSheet = new HashSet<>(asList(UUID.fromString(CASE_ID)));
-            Whitebox.setInternalState(this.caseAggregate, "caseIdsWithCompletedSendingSheet", caseIdsWithCompletedSendingSheet);
+            ReflectionUtil.setField(this.caseAggregate, "caseIdsWithCompletedSendingSheet", caseIdsWithCompletedSendingSheet);
         });
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
@@ -1264,21 +1264,6 @@ public class CaseAggregateTest {
 
     private void createCompleteSendingSheetEnvelope() {
         when(this.envelope.payloadAsJsonObject()).thenReturn(this.jsonObj);
-        when(this.jsonObj.getString(Mockito.eq("caseId"))).thenReturn(CASE_ID);
-        when(this.jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
-        when(this.jsonObj.getString(Mockito.eq("planDate"))).thenReturn(LocalDate.now().toString());
-        when(this.jsonObj.getString(Mockito.eq("sendingCommittalDate")))
-                .thenReturn(LocalDate.now().toString());
-        when(this.jsonObj.getString(Mockito.eq("sentenceHearingDate")))
-                .thenReturn(LocalDate.now().toString());
-        when(this.jsonObj.getString(Mockito.eq("courtCentreId")))
-                .thenReturn(COURT_CENTRE_ID);
-
-        final UUID defendantId = randomUUID();
-        when(this.jsonObj.getJsonArray(Mockito.eq("defendants"))).thenReturn(Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("id", defendantId.toString()).build())
-                .build());
-
 
         when(this.jsonObj.getJsonObject("hearing")).thenReturn(Json.createObjectBuilder()
                 .add("courtCentreName", COURT_CENTRE_NAME)
@@ -1533,7 +1518,7 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldNotReturnCaseEjected() {
-        Whitebox.setInternalState(this.caseAggregate, "caseStatus", "EJECTED");
+        ReflectionUtil.setField(this.caseAggregate, "caseStatus", "EJECTED");
         final List<Object> eventStream = caseAggregate.ejectCase(randomUUID(), "Legal").collect(toList());
 
         assertThat(eventStream.size(), is(0));

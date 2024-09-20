@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -27,26 +28,30 @@ public class DocumentGenerationHelper {
     public static void validateEnglishReferalDisqualifyWarning(final JSONObject documentGenerationRequest, final Path testResourceBasePath, final String caseUrn, final Boolean hasWelshPostCode,  final Boolean hasPostCode) {
         String postcode;
         JSONObject expectedPayload;
-        if(hasPostCode) {
-            postcode = hasWelshPostCode ? "CF10 1BY" : defendantPostCode;
-            expectedPayload = new JSONObject(FileHelper.read(testResourceBasePath.toString(),
-                    caseUrn, postcode));
-        } else {
-            expectedPayload = new JSONObject(FileHelper.read(testResourceBasePath.toString(),
-                    caseUrn));
+        try {
+            if (hasPostCode) {
+                postcode = hasWelshPostCode ? "CF10 1BY" : defendantPostCode;
+                expectedPayload = new JSONObject(FileHelper.read(testResourceBasePath.toString(),
+                        caseUrn, postcode));
+            } else {
+                expectedPayload = new JSONObject(FileHelper.read(testResourceBasePath.toString(),
+                        caseUrn));
+            }
+            validateDocumentGenerationRequest(documentGenerationRequest, ENGLISH_TEMPLATE_NAME, expectedPayload);
+        }catch (JSONException e) {
+            throw new RuntimeException(e);
         }
-        validateDocumentGenerationRequest(documentGenerationRequest, ENGLISH_TEMPLATE_NAME, expectedPayload);
 
     }
 
-    public static void validateWelshReferalDisqualifyWarning(final JSONObject documentGenerationRequest, final Path testResourceBasePath, final String caseUrn) {
+    public static void validateWelshReferalDisqualifyWarning(final JSONObject documentGenerationRequest, final Path testResourceBasePath, final String caseUrn) throws JSONException{
 
         final JSONObject expectedPayload = new JSONObject(FileHelper.read(testResourceBasePath.toString(),
                 caseUrn));
         validateDocumentGenerationRequest(documentGenerationRequest, WELSE_TEMPLATE_NAME, expectedPayload);
     }
 
-    private static void validateDocumentGenerationRequest(final JSONObject documentGenerationRequest, final String templateName, final JSONObject expectedPayload) {
+    private static void validateDocumentGenerationRequest(final JSONObject documentGenerationRequest, final String templateName, final JSONObject expectedPayload) throws JSONException{
         assertThat(documentGenerationRequest.getString("conversionFormat"), is("pdf"));
         assertThat(documentGenerationRequest.getString("templateName"), is(templateName));
         assertEquals(expectedPayload, documentGenerationRequest.getJSONObject("templatePayload"), true);

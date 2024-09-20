@@ -49,7 +49,7 @@ public class HearingRepositoryTest {
     private HearingResultLineEntityRepository hearingResultLineEntityRepository;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(HEARING_ID);
         hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
@@ -63,15 +63,14 @@ public class HearingRepositoryTest {
     }
 
 
-
     @Test
     public void shouldRemoveResultLineEntityByHearingId() throws Exception {
         //given
-        final HearingResultLineEntity hearingResultLineEntityOne= new HearingResultLineEntity();
+        final HearingResultLineEntity hearingResultLineEntityOne = new HearingResultLineEntity();
         hearingResultLineEntityOne.setPayload(Json.createObjectBuilder().build().toString());
         hearingResultLineEntityOne.setId(RESULT_ID_ONE);
 
-        final HearingResultLineEntity hearingResultLineEntityTwo= new HearingResultLineEntity();
+        final HearingResultLineEntity hearingResultLineEntityTwo = new HearingResultLineEntity();
         hearingResultLineEntityTwo.setPayload(Json.createObjectBuilder().build().toString());
         hearingResultLineEntityTwo.setId(RESULT_ID_TWO);
 
@@ -79,7 +78,7 @@ public class HearingRepositoryTest {
         assertThat(actual.getHearingId(), is(HEARING_ID));
         assertThat(actual.getResultLines().size(), is(0));
 
-        actual.addResultLines(Arrays.asList(hearingResultLineEntityOne,hearingResultLineEntityTwo));
+        actual.addResultLines(Arrays.asList(hearingResultLineEntityOne, hearingResultLineEntityTwo));
         hearingRepository.save(actual);
 
         final HearingEntity hearingEntityAfterAdding = hearingRepository.findBy(HEARING_ID);

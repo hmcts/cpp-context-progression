@@ -4,23 +4,23 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matchers;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +35,7 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
     private static final String TEMPLATE_UPDATE_DEFENDANT_PAYLOAD = "progression.update-defendant-for-prosecution-case.json";
     private static final String TEMPLATE_UPDATE_DEFENDANT_WITH_CUSTODY_ESTABLISHMENT_PAYLOAD = "progression.update-defendant-with-custody-establishment-for-prosecution-case.json";
     private static final String TEMPLATE_UPDATE_DEFENDANT_WITH_EMPTY_CUSTODY_ESTABLISHMENT_PAYLOAD = "progression.update-defendant-with-empty-custody-establishment-for-prosecution-case.json";
-    private static final String TEMPLATE_UNCHANGED_DEFENDANT_PAYLOAD = "progression.update-unchanged-defendant-for-prosecution-case.json";
     private static final String TEMPLATE_UPDATE_YOUTH_FLAG_PAYLOAD = "progression.update-youth-flag-for-defendant.json";
-
-    private final MessageConsumer publicEventsCaseDefendantChanged =
-            QueueUtil.publicEvents
-                    .createPublicConsumer("public.progression.case-defendant-changed");
 
     private String request;
 
@@ -51,21 +46,19 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
     public ProsecutionCaseUpdateDefendantHelper(final String caseId, final String defendantId) {
         this.defendantId = defendantId;
         this.caseId = caseId;
-
-        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer("progression.event.prosecution-case-defendant-updated");
     }
 
-    public void updateDefendant() {
+    public void updateDefendant() throws JSONException {
         final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
         updateDefendant(jsonString);
     }
 
-    public void updateDefendantWithCustody() {
+    public void updateDefendantWithCustody() throws JSONException {
         final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
         updateDefendantWithCustody(jsonString);
     }
 
-    public void updateDefendantWithCustodyEstablishmentInfo(final String caseId, final String defendantId, final String masterDefendantId) {
+    public void updateDefendantWithCustodyEstablishmentInfo(final String caseId, final String defendantId, final String masterDefendantId) throws JSONException {
         final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_WITH_CUSTODY_ESTABLISHMENT_PAYLOAD)
                 .replaceAll("%DEFENDANT_ID%", defendantId)
                 .replaceAll("%MASTER_DEFENDANT_ID%", masterDefendantId)
@@ -73,7 +66,7 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         updateDefendantWithCustodyEstablishment(caseId, defendantId, jsonString);
     }
 
-    public void updateDefendantWithEmptyCustodyEstablishmentInfo(final String caseId, final String defendantId, final String masterDefendantId) {
+    public void updateDefendantWithEmptyCustodyEstablishmentInfo(final String caseId, final String defendantId, final String masterDefendantId) throws JSONException {
         final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_WITH_EMPTY_CUSTODY_ESTABLISHMENT_PAYLOAD)
                 .replaceAll("%DEFENDANT_ID%", defendantId)
                 .replaceAll("%MASTER_DEFENDANT_ID%", masterDefendantId)
@@ -81,7 +74,7 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         updateDefendantWithEmptyCustodyEstablishment(caseId, defendantId, jsonString);
     }
 
-    public void updateDefendantWithHearingLanguageNeeds(final String hearingLanguage) {
+    public void updateDefendantWithHearingLanguageNeeds(final String hearingLanguage) throws JSONException {
         final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
@@ -92,7 +85,7 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
-    public void updateDefendantWithPoliceBailInfo(final String policeBailStatusId, final String policeBailStatusDesc, final String policeBailConditions) {
+    public void updateDefendantWithPoliceBailInfo(final String policeBailStatusId, final String policeBailStatusDesc, final String policeBailConditions) throws JSONException {
         final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
@@ -108,7 +101,7 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
-    public void updateDefendant(final String jsonString) {
+    public void updateDefendant(final String jsonString) throws JSONException {
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
         jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
@@ -117,29 +110,29 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
-    public void updateDefendantWithCustody(final String jsonString) {
+    public void updateDefendantWithCustody(final String jsonString) throws JSONException {
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
         jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
-        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("custodialEstablishment").put("name","HMP Croydon Category A");
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("custodialEstablishment").put("name", "HMP Croydon Category A");
         jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("custodialEstablishment").put("id", UUID.randomUUID());
 
         request = jsonObjectPayload.toString();
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
-    public void updateDefendantWithCustodyEstablishment(final String caseId, final String defendantId, final String jsonString) {
+    public void updateDefendantWithCustodyEstablishment(final String caseId, final String defendantId, final String jsonString) throws JSONException {
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
         jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
-        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("custodialEstablishment").put("name","HMP Croydon Category A");
+        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("custodialEstablishment").put("name", "HMP Croydon Category A");
         jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("custodialEstablishment").put("id", UUID.randomUUID());
 
         request = jsonObjectPayload.toString();
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
-    public void updateDefendantWithEmptyCustodyEstablishment(final String caseId, final String defendantId, final String jsonString) {
+    public void updateDefendantWithEmptyCustodyEstablishment(final String caseId, final String defendantId, final String jsonString) throws JSONException {
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
         jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
@@ -148,42 +141,38 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
-    public void updateYouthFlagForDefendant() {
+    public void updateYouthFlagForDefendant() throws JSONException {
         final String jsonString = getPayload(TEMPLATE_UPDATE_YOUTH_FLAG_PAYLOAD);
         updateDefendant(jsonString);
     }
 
-    public void updateDateOfBirthForDefendant(final String prosecutionCaseId , final String defendantId,final LocalDate newDateOfBirth){
-            final JSONObject jsonObjectPayload = new JSONObject(getPayload("progression.update-date-of-birth-for-defendant.json"));
+    public void updateDateOfBirthForDefendant(final String prosecutionCaseId, final String defendantId, final LocalDate newDateOfBirth) throws JSONException {
+        final JSONObject jsonObjectPayload = new JSONObject(getPayload("progression.update-date-of-birth-for-defendant.json"));
         jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("personDetails").put("dateOfBirth", newDateOfBirth.toString());
-        jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId",prosecutionCaseId);
-        jsonObjectPayload.getJSONObject("defendant").put("id",defendantId);
-            request = jsonObjectPayload.toString();
-            makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+        jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", prosecutionCaseId);
+        jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
+        request = jsonObjectPayload.toString();
+        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
     /**
      * Retrieve message from queue and do additional verifications
      */
-    public void verifyInActiveMQ() {
+    public void verifyInActiveMQ(final JmsMessageConsumerClient privateEventsConsumer) {
         final JsonPath jsRequest = new JsonPath(request);
         LOGGER.info("Request payload: {}", jsRequest.prettify());
 
-        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
         LOGGER.info("message in queue payload: {}", jsonResponse.prettify());
 
         assertThat(jsonResponse.getString("id"), is(jsRequest.getString("id")));
     }
 
-    public void verifyInMessagingQueueForDefendentChanged() {
-        final Optional<JsonObject> message =
-                QueueUtil.retrieveMessageAsJsonObject(publicEventsCaseDefendantChanged);
+    public void verifyInMessagingQueueForDefendentChanged(final JmsMessageConsumerClient publicEventsCaseDefendantChanged) {
+        final Optional<JsonObject> message = retrieveMessageBody(publicEventsCaseDefendantChanged);
         assertTrue(message.isPresent());
         assertThat(message.get(), isJson(withJsonPath("$.defendant.prosecutionCaseId",
                 Matchers.hasToString(Matchers.containsString(caseId)))));
     }
 
-    public void closePrivateEventConsumer() throws JMSException {
-        privateEventsConsumer.close();
-    }
 }

@@ -12,9 +12,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -32,7 +32,6 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MOD
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
-import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.Defendant;
@@ -45,15 +44,12 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
-import uk.gov.justice.progression.event.ApplicationHearingDefendantUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
@@ -78,18 +74,17 @@ import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingUpdatedEventProcessorTest {
 
     @Captor
@@ -153,7 +148,7 @@ public class HearingUpdatedEventProcessorTest {
 
     private static final UUID materialId = randomUUID();
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -394,8 +389,8 @@ public class HearingUpdatedEventProcessorTest {
         final List<DefaultEnvelope> defaultEnvelopes = this.senderJsonEnvelopeCaptor.getAllValues();
         final DefaultEnvelope firstCommandEvent = defaultEnvelopes.get(0);
 
-        Assert.assertThat(firstCommandEvent.metadata().name(), is("progression.command.update-application-defendant"));
-        Assert.assertThat(firstCommandEvent.payload().toString(), isJson(allOf(
+        assertThat(firstCommandEvent.metadata().name(), is("progression.command.update-application-defendant"));
+        assertThat(firstCommandEvent.payload().toString(), isJson(allOf(
                 withJsonPath("$.courtApplication", is(notNullValue())))));
     }
 
@@ -472,7 +467,6 @@ public class HearingUpdatedEventProcessorTest {
 
         when(progressionService.getHearing(any(), any())).thenReturn(hearingJson);
         when(progressionService.updateHearingForHearingUpdated(any(), any(), any())).thenReturn(hearing);
-        when(applicationParameters.getNotifyHearingTemplateId()).thenReturn(("e4648583-eb0f-438e-aab5-5eff29f3f7b4"));
 
 
         final JsonEnvelope requestMessage = envelopeFrom(

@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -30,15 +30,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UpdateFinancialMeansDataHandlerTest {
 
     @Mock
@@ -59,20 +58,11 @@ public class UpdateFinancialMeansDataHandlerTest {
     private UpdateFinancialMeansDataHandler updateFinancialMeansDataHandler;
 
 
-    private CaseAggregate aggregate;
-
     private static final UUID CASE_ID = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a77");
 
     private static final UUID DEFENDANT_ID = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a88");
 
     private static final UUID MATERIAL_ID = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a99");
-
-    @Before
-    public void setup() {
-        aggregate = new CaseAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
-    }
 
     @Test
     public void shouldHandleCommand() {
@@ -110,7 +100,9 @@ public class UpdateFinancialMeansDataHandlerTest {
                 .build();
 
         final Envelope<CreateCourtDocument> envelope = envelopeFrom(metadata, createCourtDocument);
-
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         updateFinancialMeansDataHandler.handle(envelope);
 
         verifyAppendAndGetArgumentFrom(eventStream);
@@ -146,10 +138,12 @@ public class UpdateFinancialMeansDataHandlerTest {
 
         final Envelope<CreateCourtDocument> envelope = envelopeFrom(metadata, createCourtDocument);
 
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
         updateFinancialMeansDataHandler.handle(envelope);
 
         verifyAppendAndGetArgumentFrom(eventStream);
-
     }
-
 }

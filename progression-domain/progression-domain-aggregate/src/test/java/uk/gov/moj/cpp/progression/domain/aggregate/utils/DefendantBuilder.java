@@ -1,15 +1,7 @@
 package uk.gov.moj.cpp.progression.domain.aggregate.utils;
 
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.UUID;
-
-import org.apache.commons.lang3.RandomStringUtils;
-
 import uk.gov.moj.cpp.progression.command.defendant.AddDefendant;
-import uk.gov.moj.cpp.progression.command.defendant.DefendantCommand;
 import uk.gov.moj.cpp.progression.command.defendant.UpdateDefendantCommand;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Address;
 import uk.gov.moj.cpp.progression.domain.event.defendant.CPR;
@@ -17,6 +9,13 @@ import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantOffenderDomain
 import uk.gov.moj.cpp.progression.domain.event.defendant.Interpreter;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Offence;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Person;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.UUID;
+
+import org.apache.commons.lang3.RandomStringUtils;
 
 
 @Deprecated

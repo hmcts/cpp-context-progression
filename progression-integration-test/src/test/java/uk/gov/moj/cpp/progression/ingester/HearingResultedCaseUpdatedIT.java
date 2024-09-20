@@ -6,25 +6,29 @@ import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPrivateJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createReferProsecutionCaseToCrownCourtJsonBody;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.HearingResultedCaseUpdatedVerificationHelper.verifyInitialElasticSearchCase;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.HearingResultedCaseUpdatedVerificationHelper.verifyUpdatedElasticSearchCase;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
@@ -34,25 +38,24 @@ import java.util.Optional;
 import java.util.Random;
 
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
     private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";
     private static final String HEARING_RESULTED_EVENT = "progression.event.hearing-resulted-case-updated";
     private static final String EVENT_LOCATION = "ingestion/progression.event.hearing-resulted-case-updated.json";
 
-    private static final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer(HEARING_RESULTED_EVENT);
-    private static final MessageProducer messageProducer = privateEvents.createPrivateProducer();
+    private static final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(HEARING_RESULTED_EVENT).getMessageConsumerClient();
+    private static final JmsMessageProducerClient messageProducer = newPrivateJmsMessageProducerClientProvider(CONTEXT_NAME).getMessageProducerClient();
 
     private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil;
 
@@ -60,7 +63,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private String defendantId;
     private String caseUrn;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -74,13 +77,10 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         deleteAndCreateIndex();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws JMSException {
         cleanEventStoreTables();
         cleanViewStoreTables();
-
-        messageConsumer.close();
-        messageProducer.close();
     }
 
 
@@ -117,7 +117,8 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
         final JsonObject hearingResultedCaseUpdatedResult = hearingResultedCaseUpdatedResultEvent(EVENT_LOCATION);
 
-        sendMessage(messageProducer, HEARING_RESULTED_EVENT, hearingResultedCaseUpdatedResult, metadata);
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, hearingResultedCaseUpdatedResult);
+        messageProducer.sendMessage(HEARING_RESULTED_EVENT, publicEventEnvelope);
 
         verifyInMessagingQueue();
         verifyMessageReceivedInViewStore(INACTIVE.getDescription());
@@ -166,7 +167,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     }
 
     private static void verifyInMessagingQueue() {
-        final JsonPath message = retrieveMessage(messageConsumer);
+        final JsonPath message = retrieveMessageAsJsonPath(messageConsumer);
         assertTrue(message != null);
     }
 

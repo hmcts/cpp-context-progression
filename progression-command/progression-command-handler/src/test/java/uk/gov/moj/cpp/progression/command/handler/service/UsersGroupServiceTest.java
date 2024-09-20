@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.progression.command.handler.service;
 
-import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
@@ -34,17 +34,18 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UsersGroupServiceTest {
 
     @Mock
@@ -54,7 +55,7 @@ public class UsersGroupServiceTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private Metadata metadata;
     @Captor
-    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+    private ArgumentCaptor<DefaultEnvelope> envelopeArgumentCaptor;
     @Captor
     private ArgumentCaptor<DefaultEnvelope> envelopeCaptor;
     @InjectMocks
@@ -62,11 +63,9 @@ public class UsersGroupServiceTest {
 
     @Test
     public void shouldReturnOrganisationDetails() {
-
         //Given
         final UUID userId = randomUUID();
         final UUID organisationId = randomUUID();
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
         JsonObject responseJsonObject = Json.createObjectBuilder().add("organisationId",organisationId.toString()).build();
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(getMetadataBuilder(userId)).withPayloadOf(userId.toString(), "userId").build();
 
@@ -81,7 +80,7 @@ public class UsersGroupServiceTest {
         final Envelope<JsonObject> result = usersGroupService.getOrganisationDetailsForUser(query);
 
         //Then
-        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture(), any());
+        verify(requester).requestAsAdmin(any(JsonEnvelope.class), eq(JsonObject.class));
         assertThat(result.payload().getString("organisationId"), is(organisationId.toString()));
 
     }
@@ -91,7 +90,6 @@ public class UsersGroupServiceTest {
 
         //Given
         final UUID userId = randomUUID();
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         JsonObject userGroupsResponse = getHMCTSGroups();
@@ -111,12 +109,10 @@ public class UsersGroupServiceTest {
                 userGroupDetails.get(1).getGroupName().toString());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void shouldHandleNoUserGroups() {
-
         //Given
         final UUID userId = randomUUID();
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         JsonObject userGroupsResponse = getNoGroups();
@@ -124,58 +120,53 @@ public class UsersGroupServiceTest {
         when(requester.request(any())).thenReturn(response);
 
         //When
-        List<UserGroupDetails> userGroupDetails = usersGroupService.getUserGroupsForUser(query);
+        assertThrows(IllegalArgumentException.class, () -> usersGroupService.getUserGroupsForUser(query));
 
         //Then
 
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void shouldThrowIllegalArgumentExceptionForMissingGroups() {
-
         final UUID userId = randomUUID();
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         final JsonEnvelope response = envelopeFrom(
                 metadataBuilder, JsonValue.NULL);
         when(requester.request(any())).thenReturn(response);
-        usersGroupService.getUserGroupsForUser(query);
+        assertThrows(IllegalArgumentException.class, () -> usersGroupService.getUserGroupsForUser(query));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldNullPointerExceptionForMissingUserId() {
 
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(null);
-        final MetadataBuilder metadataBuilder = getMetadataBuilder(null);
-        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, "userId").build();
+        assertThrows(NullPointerException.class, () -> {
+            final MetadataBuilder metadataBuilder = getMetadataBuilder(null);
+            final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, "userId").build();
 
-        final JsonEnvelope response = envelopeFrom(metadataBuilder, JsonValue.NULL);
-        when(requester.requestAsAdmin(any())).thenReturn(response);
-
-        usersGroupService.getOrganisationDetailsForUser(query);
-
+            final JsonEnvelope response = envelopeFrom(metadataBuilder, JsonValue.NULL);
+            when(requester.requestAsAdmin(any())).thenReturn(response);
+            usersGroupService.getOrganisationDetailsForUser(query);
+        });
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldNullPointerExceptionForMissingUserIdIngetUsersAndGroups() {
 
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(null);
-        final MetadataBuilder metadataBuilder = getMetadataBuilder(null);
-        final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, "userId").build();
+        assertThrows(NullPointerException.class, () -> {
+            final MetadataBuilder metadataBuilder = getMetadataBuilder(null);
+            final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(null, "userId").build();
 
-        final JsonEnvelope response = envelopeFrom(metadataBuilder, JsonValue.NULL);
-        when(requester.request(any())).thenReturn(response);
-
-        usersGroupService.getUserGroupsForUser(query);
-
+            final JsonEnvelope response = envelopeFrom(metadataBuilder, JsonValue.NULL);
+            when(requester.request(any())).thenReturn(response);
+            usersGroupService.getUserGroupsForUser(query);
+        });
     }
 
     @Test
     public void shouldReturnUserDetailsGivenAKnownUserId() {
         //Given
         final UUID userId = randomUUID();
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
 
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID("usersgroups.get-user-details").withUserId(userId.toString()),
@@ -201,19 +192,15 @@ public class UsersGroupServiceTest {
     public void shouldReturnEmptyOrganisationWhenGotEmptyPayloadFromGetOrgarnisationByLAAContractNumberAPI() {
         //Given
         final UUID userId = randomUUID();
-        final UUID organisationId = randomUUID();
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(of(userId));
         final MetadataBuilder metadataBuilder = getMetadataBuilder(userId);
         final JsonEnvelope query = JsonEnvelopeBuilder.envelope().with(metadataBuilder).withPayloadOf(userId.toString(), "userId").build();
         final String laaContractNumber = "LAA1234";
-        final JsonEnvelope response = envelopeFrom(metadataBuilder, Json.createObjectBuilder().build());
-        when(requester.requestAsAdmin(any())).thenReturn(response);
 
         //When
         final OrganisationDetails result = usersGroupService.getOrganisationDetailsForLAAContractNumber(query, laaContractNumber);
 
         //Then
-        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture(), any());
+        verify(requester).requestAsAdmin(any(JsonEnvelope.class), eq(JsonObject.class));
         assertEquals(null, result.getId());
         assertEquals(null, result.getName());
         assertEquals(null, result.getType());
@@ -221,13 +208,18 @@ public class UsersGroupServiceTest {
 
 
     private MetadataBuilder getMetadataBuilder(final UUID userId) {
-        return JsonEnvelope.metadataBuilder()
+        final MetadataBuilder metadataBuilder = JsonEnvelope.metadataBuilder()
                 .withId(randomUUID())
                 .withName("usersgroups.get-organisation-details-for-user")
                 .withCausation(randomUUID())
                 .withClientCorrelationId(randomUUID().toString())
-                .withStreamId(randomUUID())
-                .withUserId(userId.toString());
+                .withStreamId(randomUUID());
+
+        if (userId != null) {
+                metadataBuilder.withUserId(userId.toString());
+        }
+
+        return metadataBuilder;
     }
 
     private MetadataBuilder getUserGroupDetailsMetadataBuilder(final UUID userId) {

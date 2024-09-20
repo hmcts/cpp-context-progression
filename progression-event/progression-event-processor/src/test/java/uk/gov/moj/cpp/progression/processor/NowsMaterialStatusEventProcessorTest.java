@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -16,23 +17,21 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.MaterialService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 
-import java.util.List;
 import java.util.UUID;
 
 import javax.json.Json;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class NowsMaterialStatusEventProcessorTest {
 
     @Mock
@@ -50,7 +49,7 @@ public class NowsMaterialStatusEventProcessorTest {
     @InjectMocks
     private NowsMaterialStatusEventProcessor eventProcessor;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
     }
@@ -87,7 +86,7 @@ public class NowsMaterialStatusEventProcessorTest {
 
         eventProcessor.processStatusUpdated(event);
 
-        verify(notificationService).sendEmail(Mockito.eq(event), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.any());
+        verify(notificationService).sendEmail(Mockito.eq(event), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), any());
     }
 
     @Test
@@ -117,8 +116,8 @@ public class NowsMaterialStatusEventProcessorTest {
 
         eventProcessor.processStatusUpdated(event);
 
-        verify(notificationService).sendLetter(Mockito.eq(event), Mockito.any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(true));
-        verify(notificationService, never()).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+        verify(notificationService).sendLetter(Mockito.eq(event), any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(true));
+        verify(notificationService, never()).sendEmail(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -148,8 +147,8 @@ public class NowsMaterialStatusEventProcessorTest {
 
         eventProcessor.processStatusUpdated(event);
 
-        verify(notificationService).sendLetter(Mockito.eq(event), Mockito.any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(false));
-        verify(notificationService, never()).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+        verify(notificationService).sendLetter(Mockito.eq(event), any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(false));
+        verify(notificationService, never()).sendEmail(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -179,8 +178,8 @@ public class NowsMaterialStatusEventProcessorTest {
 
         eventProcessor.processStatusUpdated(event);
 
-        verify(notificationService).sendApiNotification(Mockito.eq(event), Mockito.any(UUID.class), materialDetailsArgumentCaptor.capture(), Mockito.any(List.class), Mockito.any(List.class), Mockito.any(List.class));
-        verify(notificationService, never()).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+        verify(notificationService).sendApiNotification(Mockito.eq(event), any(), materialDetailsArgumentCaptor.capture(), any(), any(), any());
+        verify(notificationService, never()).sendEmail(any(), any(), any(), any(), any(), any());
 
         final MaterialDetails materialDetails = materialDetailsArgumentCaptor.getValue();
         assertThat(materialDetails.getIsNotificationApi(), is(true));

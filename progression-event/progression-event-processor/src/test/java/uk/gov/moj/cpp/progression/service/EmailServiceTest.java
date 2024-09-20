@@ -8,9 +8,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyListOf;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -39,16 +37,15 @@ import javax.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"squid:S1607"})
 public class EmailServiceTest {
     private static final UUID TEMPLATE_ID = UUID.randomUUID();
@@ -109,7 +106,7 @@ public class EmailServiceTest {
     @Captor
     private ArgumentCaptor<List<EmailChannel>> emailNotificationsCaptor;
 
-    @Before
+    @BeforeEach
     public void setUp() {
     }
 
@@ -183,7 +180,6 @@ public class EmailServiceTest {
         defendantAndRelatedOrganisationEmail.put(defendants.get(1), emails.get(0));
         when(applicationParameters.getEndClientHost()).thenReturn("EndClientHost");
         when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(TEMPLATE_ID.toString());
-        when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(any(), eq(CASE_ID.toString()))).thenReturn(caseDefendantsOrganisations);
 
         emailService.sendEmailNotifications(requestMessage, MATERIAL_ID, URN_VALUE, CASE_ID, defendantAndRelatedOrganisationEmail, documentSection, documentName);
         verify(notificationService, times(1)).sendEmail(
@@ -239,7 +235,6 @@ public class EmailServiceTest {
         defendantAndRelatedOrganisationEmail.put(defendants.get(2), emails.get(1));
         when(applicationParameters.getEndClientHost()).thenReturn("EndClientHost");
         when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(TEMPLATE_ID.toString());
-        when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(any(), eq(CASE_ID.toString()))).thenReturn(caseDefendantsOrganisations);
 
         emailService.sendEmailNotifications(requestMessage, MATERIAL_ID, URN_VALUE, CASE_ID, defendantAndRelatedOrganisationEmail, documentSection, documentName);
         verify(notificationService, times(1)).sendEmail(
@@ -278,7 +273,7 @@ public class EmailServiceTest {
 
 
         emailService.sendEmailNotifications(requestMessage, MATERIAL_ID, URN_VALUE, CASE_ID, defendantAndRelatedOrganisationEmail, documentSection, documentName);
-        verify(notificationService, never()).sendEmail(any(), any(), any(), any(), anyListOf(EmailChannel.class));
+        verify(notificationService, never()).sendEmail(any(), any(), any(), any(), any());
     }
 
     private EmailChannel emailChannel(final String emailAddress1,

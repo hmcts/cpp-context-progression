@@ -4,8 +4,8 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -49,17 +49,17 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MaterialStatusHandlerTest {
 
     private static final String ADD_NOW_DOCUMENT_REQUEST_COMMAND_NAME = "progression.command.add-now-document-request";
@@ -100,7 +100,7 @@ public class MaterialStatusHandlerTest {
 
     private MaterialAggregate aggregate;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -143,11 +143,8 @@ public class MaterialStatusHandlerTest {
         this.materialStatusHandler.recordNowsMaterial(command);
 
         final ProsecutionCase prosecutionCase = mock(ProsecutionCase.class);
-        when(prosecutionCase.getReference()).thenReturn("someurn");
 
         final Nowdefendant nowdefendant = mock(Nowdefendant.class);
-        when(nowdefendant.getName()).thenReturn("somename");
-
         final UUID hearingId = UUID.randomUUID();
         final NowDocumentRequest nowDocumentRequest = NowDocumentRequest.nowDocumentRequest()
                 .withMaterialId(materialId)

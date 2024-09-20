@@ -13,8 +13,9 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.AllOf.allOf;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,7 +32,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import org.hamcrest.Matchers;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
@@ -76,17 +76,17 @@ import javax.json.JsonObject;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantsAddedToCourtProceedingsProcessorTest {
 
     public static final UUID PROSECUTION_CASE_ID = randomUUID();
@@ -104,7 +104,6 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
     @Mock
     private DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings;
 
-    @InjectMocks
     private Optional<JsonObject> prosecutionCaseJsonObject;
 
     @Mock
@@ -147,7 +146,7 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
     private static final UUID HEARING_ID_2 = randomUUID();
     private static final UUID HEARING_ID_3 = randomUUID();
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -199,19 +198,18 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         verify(progressionService, times(0)).updateHearingListingStatusToSentForListing(jsonEnvelope, listCourtHearing);
     }
 
-    @Test(expected = CaseNotFoundException.class)
+    @Test
     public void shouldHandleCasesReferredToCourtEventMessageWhenProgressionCaseIsNotInViewStoreEmpty() throws Exception {
         final UUID userId = randomUUID();
         //Given
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(userId, "progression.event.defendants-added-to-court-proceedings").build());
 
         defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings();
         prosecutionCaseJsonObject = Optional.of(getProsecutionCaseResponse());
         final GetHearingsAtAGlance hearingsAtAGlance = getCaseAtAGlanceWithFutureHearings();
 
         final List<Hearing> futureHearings = createFutureHearings();
-
+        //When
         when(jsonObjectToObjectConverter.convert(payload, DefendantsAddedToCourtProceedings.class))
                 .thenReturn(defendantsAddedToCourtProceedings);
 
@@ -223,16 +221,8 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
 
         when(progressionService.getProsecutionCaseDetailById(jsonEnvelope,
                 defendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString())).thenReturn(Optional.empty());
-
-        when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("prosecutionCase"),
-                ProsecutionCase.class)).thenReturn(prosecutionCase);
-        when(jsonObjectToObjectConverter.convert(prosecutionCaseJsonObject.get().getJsonObject("hearingsAtAGlance"),
-                GetHearingsAtAGlance.class)).thenReturn(hearingsAtAGlance);
-
-        when(listingService.getFutureHearings(jsonEnvelope, "caseUrn")).thenReturn(futureHearings);
-
-        //When
-        eventProcessor.process(jsonEnvelope);
+        //Then
+        assertThrows(CaseNotFoundException.class, () -> eventProcessor.process(jsonEnvelope));
     }
 
     public List<Hearing> createFutureHearings() {

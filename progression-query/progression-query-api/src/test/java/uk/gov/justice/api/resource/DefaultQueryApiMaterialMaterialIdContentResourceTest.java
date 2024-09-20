@@ -11,11 +11,11 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.argThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.gov.justice.api.resource.DefaultQueryApiMaterialMaterialIdContentResource.PROGRESSION_QUERY_MATERIAL_CONTENT;
 import static uk.gov.justice.api.resource.DefaultQueryApiMaterialMaterialIdContentResource.PROGRESSION_QUERY_MATERIAL_CONTENT_PROSECUTION;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -44,16 +44,16 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
 
     private static final String JSON_CONTENT_TYPE = "application/json";
@@ -84,10 +84,6 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
 
     private final InputStream documentStream = new ByteArrayInputStream("test".getBytes());
 
-    @Before
-    public void init() {
-        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-    }
 
     @Test
     public void shouldRunAllInterceptorsAndFetchAndStreamDocument() {
@@ -99,10 +95,10 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
                 .add("url", documentUrl)
                 .build();
 
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
         when(materialClient.getMaterial(materialId, systemUserId)).thenReturn(documentContentResponse);
         when(documentContentResponse.readEntity(String.class)).thenReturn(documentUrl);
-        when(documentContentResponse.getHeaders()).thenReturn(headers);
         when(documentContentResponse.getStatus()).thenReturn(SC_OK);
 
         final Response documentContentResponse = endpointHandler.getMaterialByMaterialIdContent(materialId.toString(), userId);
@@ -133,6 +129,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
     public void shouldRunNotFoundStatusWhenMaterialNotFound() {
         final JsonEnvelope documentDetails = documentDetails(materialId);
 
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
         when(materialClient.getMaterial(materialId, systemUserId)).thenReturn(documentContentResponse);
         when(documentContentResponse.getHeaders()).thenReturn(new MultivaluedHashMap());
@@ -187,10 +184,10 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
                 .add("url", documentUrl)
                 .build();
 
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
         when(materialClient.getMaterial(materialId, systemUserId)).thenReturn(documentContentResponse);
         when(documentContentResponse.readEntity(String.class)).thenReturn(documentUrl);
-        when(documentContentResponse.getHeaders()).thenReturn(headers);
         when(documentContentResponse.getStatus()).thenReturn(SC_OK);
 
         final Response documentContentResponse = endpointHandler.getMaterialForProsecutionByMaterialIdContent(materialId.toString(), caseId.toString(), null, userId);

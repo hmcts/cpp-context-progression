@@ -9,8 +9,9 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCourtRoomById;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.referSJPCaseToMagsCourt;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ReferSJPCaseToMagsCourtIT extends AbstractIT {
 
@@ -18,7 +19,7 @@ public class ReferSJPCaseToMagsCourtIT extends AbstractIT {
     private String defendantId;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();

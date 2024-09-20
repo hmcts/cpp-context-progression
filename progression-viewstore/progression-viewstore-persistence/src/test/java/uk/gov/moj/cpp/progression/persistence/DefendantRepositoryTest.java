@@ -3,6 +3,12 @@ package uk.gov.moj.cpp.progression.persistence;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
+import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
+import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
+
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -18,14 +24,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
-import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
 /**
  * @deprecated This is deprecated for Release 2.4
- *
  */
 @Deprecated
 @RunWith(CdiTestRunner.class)
@@ -48,10 +48,10 @@ public class DefendantRepositoryTest {
         now = LocalDate.now();
         currentDateTime = ZonedDateTime.now();
         final CaseProgressionDetail caseProgressionDetailOne =
-                        createCaseProgressionDetail(ID_ONE, CASE_ID_ONE, CaseStatusEnum.INCOMPLETE);
+                createCaseProgressionDetail(ID_ONE, CASE_ID_ONE, CaseStatusEnum.INCOMPLETE);
         caseProgressionDetails.add(caseProgressionDetailOne);
         final Defendant defendant =
-                        new Defendant(DEF_ID, caseProgressionDetailOne, false, null);
+                new Defendant(DEF_ID, caseProgressionDetailOne, false, null);
         defendant.setSentenceHearingReviewDecisionDateTime(currentDateTime);
         caseProgressionDetailOne.getDefendants().add(defendant);
         repository.save(caseProgressionDetailOne);
@@ -88,7 +88,7 @@ public class DefendantRepositoryTest {
     @After
     public void teardown() {
         caseProgressionDetails.forEach(caseProgressionDetail -> repository
-                        .attachAndRemove(repository.findBy(caseProgressionDetail.getCaseId())));
+                .attachAndRemove(repository.findBy(caseProgressionDetail.getCaseId())));
     }
 
 }

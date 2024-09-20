@@ -1,28 +1,30 @@
 package uk.gov.justice.services;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJson;
+
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.unifiedsearch.client.validation.JsonDocumentValidator;
+import uk.gov.moj.cpp.indexer.jolt.verificationHelpers.HearingVerificationHelper;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Map;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
 
 import com.bazaarvoice.jolt.JsonUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.unifiedsearch.client.validation.JsonDocumentValidator;
-import uk.gov.moj.cpp.indexer.jolt.verificationHelpers.HearingVerificationHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJson;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantsListingStatusChangedV2TransformerTest {
 
     @Spy
@@ -39,7 +41,7 @@ public class DefendantsListingStatusChangedV2TransformerTest {
     @Inject
     private JsonDocumentValidator jsonValidator = new JsonDocumentValidator();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         hearingVerificationHelper.resetCounts();
     }

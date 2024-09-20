@@ -55,27 +55,24 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObjectBuilder;
 
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 
-@RunWith(DataProviderRunner.class)
 public class NotificationHandlerTest {
 
-    @DataProvider
-    public static Object[][] completedAtTime() {
-        return new Object[][]{
-                {null},
-                {now(UTC)},
-        };
+    public static Stream<Arguments> completedAtTime() {
+        return Stream.of(
+                Arguments.of(new Object[]{null}),
+                Arguments.of(now(UTC)));
     }
 
     private UUID caseId;
@@ -132,7 +129,7 @@ public class NotificationHandlerTest {
     @Captor
     private ArgumentCaptor<Stream<JsonEnvelope>> eventStreamCaptor;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initMocks(this);
         caseId = randomUUID();
@@ -338,8 +335,8 @@ public class NotificationHandlerTest {
                 )));
     }
 
-    @UseDataProvider("completedAtTime")
-    @Test
+    @ParameterizedTest
+    @MethodSource("completedAtTime")
     public void shouldRecordResultOrderPrintRequestSuccessForCase(final ZonedDateTime completedAt) throws EventStreamException {
 
         final UUID notificationId = randomUUID();
@@ -384,10 +381,10 @@ public class NotificationHandlerTest {
                 )));
     }
 
-    @UseDataProvider("completedAtTime")
-    @Test
-    public void shouldRecordResultOrderPrintRequestSuccessForMaterial(final ZonedDateTime completedAt) throws
-            EventStreamException {
+    @ParameterizedTest
+    @NullSource
+    @MethodSource("completedAtTime")
+    public void shouldRecordResultOrderPrintRequestSuccessForMaterial(final ZonedDateTime completedAt) throws Exception {
 
         final UUID notificationId = randomUUID();
         final ZonedDateTime sentTime = now;

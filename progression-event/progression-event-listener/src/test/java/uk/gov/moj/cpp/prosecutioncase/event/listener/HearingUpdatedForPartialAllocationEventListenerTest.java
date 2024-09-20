@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.UUID.randomUUID;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,14 +42,14 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class HearingUpdatedForPartialAllocationEventListenerTest {
 
     @Mock
@@ -79,7 +79,7 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
     private String hearingUpdatedForPartialAllocationEventPayload;
     private final StringToJsonObjectConverter converter = new StringToJsonObjectConverter();
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         hearingId = randomUUID();
         caseId = randomUUID();

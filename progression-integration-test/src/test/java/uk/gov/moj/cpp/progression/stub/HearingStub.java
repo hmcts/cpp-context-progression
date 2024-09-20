@@ -9,19 +9,19 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.awaitility.Awaitility.waitAtMost;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
+import java.time.Duration;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.jayway.awaitility.Duration;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,7 +45,7 @@ public class HearingStub {
     }
 
     public static void verifyPostInitiateCourtHearing(final String hearingId) {
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).until(() -> {
                     final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStream();
                     return listCourtHearingRequestsAsStream.anyMatch(
                             payload -> {
@@ -66,6 +66,12 @@ public class HearingStub {
                 .withHeader(CONTENT_TYPE, equalTo(HEARING_RESPONSE_TYPE)))
                 .stream()
                 .map(LoggedRequest::getBodyAsString)
-                .map(JSONObject::new);
+                .map(t -> {
+                    try {
+                        return new JSONObject(t);
+                    } catch (JSONException e) {
+                        return null;
+                    }
+                });
     }
 }

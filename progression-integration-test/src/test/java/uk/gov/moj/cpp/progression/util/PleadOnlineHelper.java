@@ -1,12 +1,13 @@
 package uk.gov.moj.cpp.progression.util;
 
-import com.jayway.restassured.response.Response;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 
 import java.io.IOException;
 
-import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import io.restassured.response.Response;
 
 public class PleadOnlineHelper extends AbstractTestHelper {
 

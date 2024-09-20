@@ -7,7 +7,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
@@ -44,15 +44,15 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PrepareSummonsDataHandlerTest {
 
     private static final UUID APPLICATION_ID = randomUUID();
@@ -76,19 +76,15 @@ public class PrepareSummonsDataHandlerTest {
     @InjectMocks
     private PrepareSummonsDataHandler handler;
 
-    private HearingAggregate hearingAggregate;
 
     private UtcClock clock = new UtcClock();
 
-    @Before
-    public void setup() {
-        hearingAggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-    }
-
     @Test
     public void shouldPrepareSummonsDataIfCaseConfirmed() throws EventStreamException {
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
         ReflectionUtil.setField(hearingAggregate, "listDefendantRequests", singletonList(ListDefendantRequest.listDefendantRequest()
                 .withDefendantId(DEFENDANT_ID)
                 .build()));
@@ -120,19 +116,19 @@ public class PrepareSummonsDataHandlerTest {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
         assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.event.summons-data-prepared"),
-                        payload().isJson(allOf(
-                                withJsonPath("$.summonsData.confirmedProsecutionCaseIds[0].id", is(CASE_ID.toString())),
-                                withJsonPath("$.summonsData.confirmedProsecutionCaseIds[0].confirmedDefendantIds[0]", is(DEFENDANT_ID.toString())),
-                                withoutJsonPath("$.summonsData.confirmedApplicationIds"),
-                                withJsonPath("$.summonsData.listDefendantRequests[0].defendantId", is(DEFENDANT_ID.toString())),
-                                withJsonPath("$.summonsData.courtCentre.code", is("courtCentreCode")),
-                                withJsonPath("$.summonsData.courtCentre.id", is(COURT_CENTRE_ID.toString())),
-                                withJsonPath("$.summonsData.hearingDateTime", is(ZonedDateTimes.toString(hearingDate)))
-                                )
-                        ))
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.summons-data-prepared"),
+                                payload().isJson(allOf(
+                                                withJsonPath("$.summonsData.confirmedProsecutionCaseIds[0].id", is(CASE_ID.toString())),
+                                                withJsonPath("$.summonsData.confirmedProsecutionCaseIds[0].confirmedDefendantIds[0]", is(DEFENDANT_ID.toString())),
+                                                withoutJsonPath("$.summonsData.confirmedApplicationIds"),
+                                                withJsonPath("$.summonsData.listDefendantRequests[0].defendantId", is(DEFENDANT_ID.toString())),
+                                                withJsonPath("$.summonsData.courtCentre.code", is("courtCentreCode")),
+                                                withJsonPath("$.summonsData.courtCentre.id", is(COURT_CENTRE_ID.toString())),
+                                                withJsonPath("$.summonsData.hearingDateTime", is(ZonedDateTimes.toString(hearingDate)))
+                                        )
+                                ))
 
                 )
         );
@@ -140,6 +136,10 @@ public class PrepareSummonsDataHandlerTest {
 
     @Test
     public void shouldPrepareSummonsDataIfApplicationConfirmed() throws EventStreamException {
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
         ReflectionUtil.setField(hearingAggregate, "applicationListingNeeds", singletonList(courtApplicationPartyListingNeeds()
                 .withCourtApplicationId(APPLICATION_ID)
                 .build()));
@@ -168,18 +168,18 @@ public class PrepareSummonsDataHandlerTest {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
         assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.event.summons-data-prepared"),
-                        payload().isJson(allOf(
-                                withoutJsonPath("$.summonsData.confirmedProsecutionCaseIds"),
-                                withJsonPath("$.summonsData.confirmedApplicationIds[0]", is(APPLICATION_ID.toString())),
-                                withJsonPath("$.summonsData.courtApplicationPartyListingNeeds[0].courtApplicationId", is(APPLICATION_ID.toString())),
-                                withJsonPath("$.summonsData.courtCentre.code", is("courtCentreCode")),
-                                withJsonPath("$.summonsData.courtCentre.id", is(COURT_CENTRE_ID.toString())),
-                                withJsonPath("$.summonsData.hearingDateTime", is(ZonedDateTimes.toString(hearingDate)))
-                                )
-                        ))
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.summons-data-prepared"),
+                                payload().isJson(allOf(
+                                                withoutJsonPath("$.summonsData.confirmedProsecutionCaseIds"),
+                                                withJsonPath("$.summonsData.confirmedApplicationIds[0]", is(APPLICATION_ID.toString())),
+                                                withJsonPath("$.summonsData.courtApplicationPartyListingNeeds[0].courtApplicationId", is(APPLICATION_ID.toString())),
+                                                withJsonPath("$.summonsData.courtCentre.code", is("courtCentreCode")),
+                                                withJsonPath("$.summonsData.courtCentre.id", is(COURT_CENTRE_ID.toString())),
+                                                withJsonPath("$.summonsData.hearingDateTime", is(ZonedDateTimes.toString(hearingDate)))
+                                        )
+                                ))
 
                 )
         );

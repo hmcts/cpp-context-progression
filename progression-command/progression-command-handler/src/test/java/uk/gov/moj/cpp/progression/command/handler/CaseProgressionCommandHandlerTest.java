@@ -21,15 +21,15 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 @Deprecated
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseProgressionCommandHandlerTest {
 
     protected static final UUID CASE_ID = UUID.randomUUID();
@@ -78,12 +78,10 @@ public class CaseProgressionCommandHandlerTest {
     private final Function<CaseAggregate, Stream<Object>> aggregateFunction =
                     caseAggregate -> events;
 
-    @Before
+    @BeforeEach
     @SuppressWarnings("unchecked")
     public void setupMocks() {
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(jsonEnvelope.metadata()).thenReturn(metadata);
-        when(metadata.name()).thenReturn(ACTION_NAME);
         when(jsonObject.getString(CaseProgressionCommandHandler.FIELD_STREAM_ID))
                         .thenReturn(CASE_ID.toString());
         when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
@@ -93,7 +91,7 @@ public class CaseProgressionCommandHandlerTest {
         when(events.map(function)).thenReturn(jsonEvents);
     }
 
-    @After
+    @AfterEach
     @SuppressWarnings("unchecked")
     public void verifyMocks() throws EventStreamException {
         verify(jsonEnvelope, atLeast(1)).payloadAsJsonObject();

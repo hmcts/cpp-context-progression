@@ -1,13 +1,8 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import uk.gov.justice.core.courts.EnforcementAcknowledgmentError;
 import uk.gov.justice.core.courts.NowsRequestWithAccountNumberUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -21,15 +16,21 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
 
-import javax.json.Json;
-import javax.json.JsonObject;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import javax.json.Json;
+import javax.json.JsonObject;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class StagingEnforcementResponseHandlerTest {
 
     @Mock
@@ -45,11 +46,7 @@ public class StagingEnforcementResponseHandlerTest {
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(NowsRequestWithAccountNumberUpdated.class);
 
     @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-
-    @Spy
-    @InjectMocks
-    protected JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    protected JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @InjectMocks
     private StagingEnforcementResponseHandler commandHandler;
@@ -60,7 +57,7 @@ public class StagingEnforcementResponseHandlerTest {
     @Mock
     private MaterialAggregate materialAggregate;
 
-    @Before
+    @BeforeEach
     public void setup() {
         when(aggregateService.get(eventStream, MaterialAggregate.class)).thenReturn(materialAggregate);
     }

@@ -3,15 +3,11 @@
     <parent>
         <artifactId>progression-domain-transformations</artifactId>
         <groupId>uk.gov.moj.cpp.progression</groupId>
-        <version>8.0.210-SNAPSHOT</version>
+        <version>17.0.7-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>progression-domain-transformations-deactivate-stream</artifactId>
-
-    <properties>
-        <stream-transformation-tool.version>6.4.5</stream-transformation-tool.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -27,12 +23,21 @@
         <dependency>
             <groupId>uk.gov.justice</groupId>
             <artifactId>stream-transformation-tool-api</artifactId>
-            <version>${stream-transformation-tool.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.everit-org.json-schema</groupId>
             <artifactId>org.everit.json.schema</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.services</groupId>

@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.progression.formatters;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AccountingDivisionCodeFormatterTest {
 

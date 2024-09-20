@@ -14,7 +14,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
-import static org.junit.rules.ExpectedException.none;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.integer;
@@ -44,24 +44,21 @@ import uk.gov.moj.cpp.progression.domain.transformation.judicialresult.exception
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(DataProviderRunner.class)
 public class EventPayloadTransformerTest {
 
     private static final String JUDICIAL_RESULTS = "judicialResults";
@@ -70,39 +67,36 @@ public class EventPayloadTransformerTest {
     private static final String ALWAYS_PUBLISHED = "alwaysPublished";
     private static final String OFFENCES = "offences";
 
-    @Rule
-    public ExpectedException expectedException = none();
 
-    @DataProvider
-    public static Object[][] validEventToTransform() {
-        return new Object[][]{
-                {BOXWORK_APPLICATION_REFERRED.getEventName()},
-                {HEARING_EXTENDED.getEventName()},
-                {HEARING_RESULTED.getEventName()},
-                {COURT_APPLICATION_UPDATED.getEventName()},
-                {PROSECUTION_CASE_OFFENCES_UPDATED.getEventName()},
-                {PROSECUTION_CASE_DEFENDANT_UPDATED.getEventName()},
-                {HEARING_RESULTED_CASE_UPDATED.getEventName()},
-                {HEARING_INITIATE_ENRICHED.getEventName()},
-                {COURT_APPLICATION_CREATED.getEventName()},
-                {COURT_APPLICATION_ADDED_TO_CASE.getEventName()},
-                {LISTED_COURT_APPLICATION_CHANGED.getEventName()},
-                {APPLICATION_REFERRED_TO_COURT.getEventName()},
-                {HEARING_APPLICATION_LINK_CREATED.getEventName()},
-                {PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED.getEventName()},
-                {HEARING_CONFIRMED_CASE_STATUS_UPDATED.getEventName()},
-                {UNSCHEDULED_HEARING_LISTING_REQUESTED.getEventName()},
-                {SLOTS_BOOKED_FOR_APPLICATION.getEventName()}
-        };
+    public static Stream<Arguments> validEventToTransform() {
+        return Stream.of(
+                Arguments.of(BOXWORK_APPLICATION_REFERRED.getEventName()),
+                Arguments.of(HEARING_EXTENDED.getEventName()),
+                Arguments.of(HEARING_RESULTED.getEventName()),
+                Arguments.of(COURT_APPLICATION_UPDATED.getEventName()),
+                Arguments.of(PROSECUTION_CASE_OFFENCES_UPDATED.getEventName()),
+                Arguments.of(PROSECUTION_CASE_DEFENDANT_UPDATED.getEventName()),
+                Arguments.of(HEARING_RESULTED_CASE_UPDATED.getEventName()),
+                Arguments.of(HEARING_INITIATE_ENRICHED.getEventName()),
+                Arguments.of(COURT_APPLICATION_CREATED.getEventName()),
+                Arguments.of(COURT_APPLICATION_ADDED_TO_CASE.getEventName()),
+                Arguments.of(LISTED_COURT_APPLICATION_CHANGED.getEventName()),
+                Arguments.of(APPLICATION_REFERRED_TO_COURT.getEventName()),
+                Arguments.of(HEARING_APPLICATION_LINK_CREATED.getEventName()),
+                Arguments.of(PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED.getEventName()),
+                Arguments.of(HEARING_CONFIRMED_CASE_STATUS_UPDATED.getEventName()),
+                Arguments.of(UNSCHEDULED_HEARING_LISTING_REQUESTED.getEventName()),
+                Arguments.of(SLOTS_BOOKED_FOR_APPLICATION.getEventName())
+        );
     }
 
-    private final EventPayloadTransformer underTest = new EventPayloadTransformer();
+    private final EventPayloadTransformer eventPayloadTransformer = new EventPayloadTransformer();
 
     @Test
     public void shouldEvaluateRollUpPromptsToTrueWhenAllMandatoryAttributesAreFalse() {
         final JsonEnvelope event = prepareValidEventToTransformWithAllMandatoryAttributesSetToFalse();
 
-        final JsonObject transformedPayload = underTest.transform(event);
+        final JsonObject transformedPayload = eventPayloadTransformer.transform(event);
 
         assertThat(transformedPayload, isJson(allOf(
                 withJsonPath("$.offences[0].judicialResults[0].publishedAsAPrompt", equalTo(FALSE)),
@@ -117,7 +111,7 @@ public class EventPayloadTransformerTest {
     public void shouldEvaluateRollUpPromptsToFalseWhenOneOfTheMandatoryAttributesIsTrue() {
         final JsonEnvelope event = prepareValidEventToTransformWithOneOfTheMandatoryAttributesSetToTrue();
 
-        final JsonObject transformedPayload = underTest.transform(event);
+        final JsonObject transformedPayload = eventPayloadTransformer.transform(event);
 
         final JsonObject expectedJudicialResult = event.payloadAsJsonObject().getJsonArray(OFFENCES).getValuesAs(JsonObject.class).get(0)
                 .getJsonArray(JUDICIAL_RESULTS).getValuesAs(JsonObject.class).get(0);
@@ -136,22 +130,25 @@ public class EventPayloadTransformerTest {
 
     @Test
     public void shouldThrowExceptionWhenOneOrMoreOfTheMandatoryAttributeIsMissing() {
-        final JsonEnvelope invalidEvent = prepareInvalidEventWithOneOfTheMandatoryAttributeMissing();
-        expectedException.expect(TransformationException.class);
-        expectedException.expectMessage(matchesPattern("Mandatory attribute/s [\\w,]+ missing from judicialResult payload \\{.*\\}"));
 
-        underTest.transform(invalidEvent);
+        final JsonEnvelope invalidEvent = prepareInvalidEventWithOneOfTheMandatoryAttributeMissing();
+
+        final TransformationException transformationException = assertThrows(
+                TransformationException.class,
+                () -> eventPayloadTransformer.transform(invalidEvent));
+
+        assertThat(transformationException.getMessage(), matchesPattern("Mandatory attribute/s [\\w,]+ missing from judicialResult payload \\{.*\\}"));
     }
 
-    @Test
-    @UseDataProvider("validEventToTransform")
+    @ParameterizedTest
+    @MethodSource("validEventToTransform")
     public void shouldTransformRealEventsFromFile(final String eventToTransform) {
         final JsonObject eventPayload = loadTestFile(format("%s.json", eventToTransform));
         final String expectedPayloadInString = eventPayload.toString();
         assertThat(expectedPayloadInString, not(containsString("publishedForNows")));
         assertThat(expectedPayloadInString, not(containsString("rollUpPrompts")));
 
-        final JsonObject transformedPayload = underTest.transform(envelope()
+        final JsonObject transformedPayload = eventPayloadTransformer.transform(envelope()
                 .with(metadataWithRandomUUID(eventToTransform))
                 .withPayloadFrom(eventPayload).build());
 

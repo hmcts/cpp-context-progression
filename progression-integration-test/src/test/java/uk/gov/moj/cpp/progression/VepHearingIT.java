@@ -1,23 +1,25 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertTrue;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
@@ -28,8 +30,9 @@ import static uk.gov.moj.cpp.progression.stub.VejHearingStub.verifyHearingDelete
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.VejHearingStub;
 
@@ -41,27 +44,29 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.jayway.jsonpath.ReadContext;
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 import org.hamcrest.Matcher;
+import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class VepHearingIT extends AbstractIT {
     private static final String DOCUMENT_TEXT = STRING.next();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private MessageProducer messageProducerClientPublic = publicEvents.createPrivateProducer();
-    private MessageConsumer messageConsumerVejHearingPopulatedToProbationCaseWorker;
-    private MessageConsumer messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker;
+
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageConsumerClient messageConsumerVejHearingPopulatedToProbationCaseWorker = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.events.vej-hearing-populated-to-probation-caseworker").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.events.vej-deleted-hearing-populated-to-probation-caseworker").getMessageConsumerClient();
 
     private static final String PUBLIC_EVENTS_LISTING_HEARING_DELETED = "public.events.listing.hearing-deleted";
+    public static final String PROGRESSION_EVENT_PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED_V_2 = "progression.event.prosecutionCase-defendant-listing-status-changed-v2";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
@@ -74,19 +79,8 @@ public class VepHearingIT extends AbstractIT {
     private String ouCode;
     private String prosecutionAuthorityId;
 
-    @After
-    public void tearDown() throws JMSException {
-        messageProducerClientPublic.close();
-        messageConsumerVejHearingPopulatedToProbationCaseWorker.close();
-        messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker.close();
-    }
-
-    @Before
+    @BeforeEach
     public void setUp() {
-        messageProducerClientPublic = publicEvents.createPrivateProducer();
-        messageConsumerVejHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.vej-hearing-populated-to-probation-caseworker");
-        messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.vej-deleted-hearing-populated-to-probation-caseworker");
-
         cleanViewStoreTables();
         stubDocumentCreate(DOCUMENT_TEXT);
         HearingStub.stubInitiateHearing();
@@ -99,7 +93,7 @@ public class VepHearingIT extends AbstractIT {
         courtCentreName = "Lavender Hill Magistrate's Court";
         ouCode = randomAlphanumeric(7);
         prosecutionAuthorityId = randomUUID().toString();
-
+        WireMock.removeStub(get(urlMatching("/referencedata-service/query/api/rest/referencedata/prosecutors.*")));
         // test specific stub to ensure prosecutor data is unique and consistent
         stubQueryProsecutorDataForGivenProsecutionAuthorityId("restResource/referencedata.query.police.prosecutor.json", prosecutionAuthorityId, ouCode);
         stubQueryProsecutorsByOucode("restResource/referencedata.query.police.prosecutor.json", prosecutionAuthorityId, ouCode);
@@ -108,85 +102,64 @@ public class VepHearingIT extends AbstractIT {
     @Test
     public void shouldRaiseHearingPopulatedToProbationCaseWorkerWhenPublicListingHearingConfirmed() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
-            addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(caseId, defendantId);
-            pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-            hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        }
 
-        final Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                .withUserId(userId)
-                .build();
+        final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED_V_2).getMessageConsumerClient();
+
+        addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.police.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
 
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+        final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged2 = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED_V_2).getMessageConsumerClient();
 
-            sendMessage(messageProducerClientPublic,
-                    PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
 
-            doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        }
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+
+        doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged2);
+
         verifyInMessagingQueueForVejHearingPopulatedToProbationCaseWorker(messageConsumerVejHearingPopulatedToProbationCaseWorker);
         verifyHearingCommandInvoked(asList(caseId, hearingId));
+
     }
 
     @Test
     public void shouldRaiseHearingDeletedToProbationCaseWorkerWhenPublicListingHearingDeleted() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
-            addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(caseId, defendantId);
-            pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-            hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        }
-        Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                .withUserId(userId)
-                .build();
 
+        final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED_V_2).getMessageConsumerClient();
+
+        addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.police.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
 
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+        final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged2 = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED_V_2).getMessageConsumerClient();
+        JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-            sendMessage(messageProducerClientPublic,
-                    PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
-            doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        }
+        doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged2);
 
-        sendMessage(messageProducerClientPublic,
-                "public.events.hearing.hearing-resulted", getHearingWithSingleCaseJsonObject("public.hearing.resulted-case-updated2.json", caseId,
-                        hearingId, defendantId, courtCentreId, "C", "Remedy", "2593cf09-ace0-4b7d-a746-0703a29f33b5"), JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName("public.events.hearing.hearing-resulted")
-                        .withUserId(userId)
-                        .build());
-        metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_EVENTS_LISTING_HEARING_DELETED)
-                .withUserId(userId)
-                .build();
+        publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata("public.events.hearing.hearing-resulted", userId), getHearingWithSingleCaseJsonObject("public.hearing.resulted-case-updated2.json", caseId,
+                hearingId, defendantId, courtCentreId, "C", "Remedy", "2593cf09-ace0-4b7d-a746-0703a29f33b5"));
+        messageProducerClientPublic.sendMessage("public.events.hearing.hearing-resulted", publicEventEnvelope);
+
         final JsonObject hearingDeletedJson = getHearingMarkedAsDeletedObject(hearingId);
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_EVENTS_LISTING_HEARING_DELETED, hearingDeletedJson, metadata);
+        final JsonEnvelope publicEventDeletedEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_EVENTS_LISTING_HEARING_DELETED, userId), hearingDeletedJson);
+        messageProducerClientPublic.sendMessage(PUBLIC_EVENTS_LISTING_HEARING_DELETED, publicEventDeletedEnvelope);
 
         verifyInMessagingQueueForDeletedHearingPopulatedToProbationCaseWorker(messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker);
         verifyHearingDeletedCommandInvoked(asList(caseId, hearingId));
     }
 
-    public static void verifyInMessagingQueueForVejHearingPopulatedToProbationCaseWorker(final MessageConsumer messageConsumerVejHearingPopulatedToProbationCaseWorker) {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerVejHearingPopulatedToProbationCaseWorker);
+    public static void verifyInMessagingQueueForVejHearingPopulatedToProbationCaseWorker(final JmsMessageConsumerClient messageConsumerVejHearingPopulatedToProbationCaseWorker) {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerVejHearingPopulatedToProbationCaseWorker);
         assertTrue(message.isPresent());
     }
 
-    public static void verifyInMessagingQueueForDeletedHearingPopulatedToProbationCaseWorker(final MessageConsumer messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker) {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker);
+    public static void verifyInMessagingQueueForDeletedHearingPopulatedToProbationCaseWorker(final JmsMessageConsumerClient messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker) {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerVejDeletedHearingPopulatedToProbationCaseWorker);
         assertTrue(message.isPresent());
     }
 
@@ -348,8 +321,8 @@ public class VepHearingIT extends AbstractIT {
         );
     }
 
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged) {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged) {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
         return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
     }
@@ -366,7 +339,7 @@ public class VepHearingIT extends AbstractIT {
         );
     }
 
-    public void addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(final String caseId, final String defendantId) throws IOException {
+    public void addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(final String caseId, final String defendantId) throws IOException, JSONException {
         final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(),
                 randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), prosecutionAuthorityId, ouCode, "progression.command.police.prosecution-case-refer-to-court-one-grown-defendant-two-offences.json"));
         jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");

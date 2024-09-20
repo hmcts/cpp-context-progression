@@ -1,5 +1,5 @@
-<kmodule xmlns="http://jboss.org/kie/6.0.0/kmodule">
-    <kbase name="QUERY_API" packages="rules" default="true">
-        <ksession name="QUERY_API_SESSION" default="true" type="stateless"/>
+<kmodule xmlns="http://www.drools.org/xsd/kmodule">
+    <kbase name="QUERY_API" packages="uk.gov.moj.cpp.progression.query.api.accesscontrol" default="false">
+        <ksession name="QUERY_API_SESSION" default="false" type="stateless"/>
     </kbase>
 </kmodule>

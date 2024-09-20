@@ -2,26 +2,12 @@ package uk.gov.moj.cpp.progression.query.view.service;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyObject;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.persistence.NoResultException;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
@@ -33,13 +19,27 @@ import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
 import uk.gov.moj.cpp.progression.query.view.response.DefendantView;
 import uk.gov.moj.cpp.progression.query.view.response.DefendantsView;
 
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.persistence.NoResultException;
+
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 /**
  * Unit tests for the CaseProgressionDetailTest class.
  * @deprecated
  *
  */
 @Deprecated
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseProgressionDetailServiceTest extends AbstractProgressionQueryBaseTest {
 
     private static final UUID CASEID = UUID.randomUUID();
@@ -126,13 +126,13 @@ public class CaseProgressionDetailServiceTest extends AbstractProgressionQueryBa
         final List<CaseStatusEnum> statusList =
                 Arrays.asList(CaseStatusEnum.READY_FOR_REVIEW, CaseStatusEnum.READY_FOR_REVIEW);
 
-        when(caseProgressionDetailRepository.findByStatus(anyObject())).thenReturn(Arrays.asList(
+        when(caseProgressionDetailRepository.findByStatus(any())).thenReturn(Arrays.asList(
                 caseProgressionDetail1, caseProgressionDetail2, caseProgressionDetail3));
 
         final List<CaseProgressionDetailView> cases =
                 caseProgressionDetailService.getCases(Optional.ofNullable(status));
 
-        verify(caseProgressionDetailRepository, times(1)).findByStatus(anyObject());
+        verify(caseProgressionDetailRepository, times(1)).findByStatus(any());
         assertThat(cases, hasSize(3));
     }
 

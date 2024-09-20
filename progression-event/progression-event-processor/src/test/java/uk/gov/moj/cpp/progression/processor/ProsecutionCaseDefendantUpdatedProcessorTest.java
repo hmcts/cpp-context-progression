@@ -6,9 +6,11 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,22 +19,19 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated;
 import static uk.gov.justice.core.courts.UpdatedOrganisation.updatedOrganisation;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested.defendantCustodialInformationUpdateRequested;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_URN;
-import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.COMMAND_UPDATE_DEFENDANT_FOR_HEARING;
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.DEFENDANTS;
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.MASTER_DEFENDANT_ID;
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.MATCHED_MASTER_DEFENDANT_ID;
 import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION;
-import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.PUBLIC_CASE_DEFENDANT_CHANGED;
 
 import uk.gov.justice.core.courts.CustodialEstablishment;
-import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
+import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -45,6 +44,7 @@ import uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequ
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
+import uk.gov.moj.cpp.progression.value.object.CPSNotificationVO;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,9 +57,9 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -67,10 +67,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProsecutionCaseDefendantUpdatedProcessorTest {
 
     @InjectMocks
@@ -104,7 +104,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
     private Function<Object, JsonEnvelope> enveloperFunction;
 
     @Mock
-    private JsonObjectToObjectConverter jsonObjectToObjectConverterMock;
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Mock
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
@@ -113,18 +113,27 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
     private NotificationService notificationService;
 
     @Captor
+    private ArgumentCaptor<JsonEnvelope> notificationServiceEnvelopeArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<CPSNotificationVO> notificationServiceCPSNotificationVOArgumentCaptor;
+
+    @Captor
     ArgumentCaptor<Envelope<JsonObject>> envelopeArgumentCaptor;
 
+    @Mock
+    private JsonObjectToObjectConverter jsonObjectConverter;
+
     @Spy
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+    private JsonObjectToObjectConverter jsonObjectConverterSpy;
 
     public static final String MATCHED_DEFENDANT_CASES = "matchedDefendantCases";
 
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
-        setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
+        jsonObjectConverterSpy = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
     }
 
     @Test
@@ -144,24 +153,23 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
                 .withMasterDefendantId(UUID.fromString(masterDefendantIdProsecutionCaseService))
                 .withProsecutionCaseId(UUID.fromString(caseIdProsecutionCaseService))
                 .build();
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, DefendantCustodialInformationUpdateRequested.class))
+        when(jsonObjectConverter.convert(any(), eq(DefendantCustodialInformationUpdateRequested.class)))
                 .thenReturn(defendantCustodialInformationUpdateRequested);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(objectToJsonObjectConverter.convert(Mockito.any(uk.gov.moj.cpp.progression.events.CustodialEstablishment.class))).thenReturn(payload);
         when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
                 Json.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, Json.createArrayBuilder()
-                        .add(createObjectBuilder()
-                                .add(CASE_ID, randomUUID().toString())
-                                .add(CASE_URN, "caseIdProsecutionCaseService")
-                                .add(MATCHED_MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
-                                .add(DEFENDANTS, createArrayBuilder().add(createObjectBuilder()
-                                        .add("id", randomUUID().toString())
-                                        .add("firstName", "firstName")
-                                        .add(MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
-                                        .build())
+                                .add(createObjectBuilder()
+                                        .add(CASE_ID, randomUUID().toString())
+                                        .add(CASE_URN, "caseIdProsecutionCaseService")
+                                        .add(MATCHED_MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                        .add(DEFENDANTS, createArrayBuilder().add(createObjectBuilder()
+                                                        .add("id", randomUUID().toString())
+                                                        .add("firstName", "firstName")
+                                                        .add(MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                                        .build())
+                                                .build())
                                         .build())
                                 .build())
-                        .build())
                         .build()
         ));
 
@@ -196,24 +204,24 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
                 .withMasterDefendantId(UUID.fromString(masterDefendantIdProsecutionCaseService))
                 .withProsecutionCaseId(UUID.fromString(caseIdProsecutionCaseService))
                 .build();
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, DefendantCustodialInformationUpdateRequested.class))
+        when(jsonObjectConverter.convert(any(), eq(DefendantCustodialInformationUpdateRequested.class)))
                 .thenReturn(defendantCustodialInformationUpdateRequested);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(objectToJsonObjectConverter.convert(Mockito.any(DefendantCustodialInformationUpdateRequested.class))).thenReturn(payload);
+        when(objectToJsonObjectConverter.convert(Mockito.any(uk.gov.moj.cpp.progression.events.CustodialEstablishment.class))).thenReturn(payload);
         when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
                 Json.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, Json.createArrayBuilder()
-                        .add(createObjectBuilder()
-                                .add(CASE_ID, caseIdProsecutionCaseService)
-                                .add(CASE_URN, "caseIdProsecutionCaseService")
-                                .add(MATCHED_MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
-                                .add(DEFENDANTS, createArrayBuilder().add(createObjectBuilder()
-                                        .add("id", randomUUID().toString())
-                                        .add("firstName", "firstName")
-                                        .add(MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
-                                        .build())
+                                .add(createObjectBuilder()
+                                        .add(CASE_ID, caseIdProsecutionCaseService)
+                                        .add(CASE_URN, "caseIdProsecutionCaseService")
+                                        .add(MATCHED_MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                        .add(DEFENDANTS, createArrayBuilder().add(createObjectBuilder()
+                                                        .add("id", randomUUID().toString())
+                                                        .add("firstName", "firstName")
+                                                        .add(MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                                        .build())
+                                                .build())
                                         .build())
                                 .build())
-                        .build())
                         .build()
         ));
 
@@ -248,24 +256,23 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
                 .withMasterDefendantId(UUID.fromString(masterDefendantIdProsecutionCaseService))
                 .withProsecutionCaseId(UUID.fromString(caseIdProsecutionCaseService))
                 .build();
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, DefendantCustodialInformationUpdateRequested.class))
+        when(jsonObjectConverter.convert(any(), eq(DefendantCustodialInformationUpdateRequested.class)))
                 .thenReturn(defendantCustodialInformationUpdateRequested);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(objectToJsonObjectConverter.convert(Mockito.any(uk.gov.moj.cpp.progression.events.CustodialEstablishment.class))).thenReturn(payload);
         when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
                 Json.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, Json.createArrayBuilder()
-                        .add(createObjectBuilder()
-                                .add(CASE_ID, caseIdProsecutionCaseService)
-                                .add(CASE_URN, "caseIdProsecutionCaseService")
-                                .add(MATCHED_MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
-                                .add(DEFENDANTS, createArrayBuilder().add(createObjectBuilder()
-                                        .add("id", defendantIdProsecutionCaseService)
-                                        .add("firstName", "firstName")
-                                        .add(MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
-                                        .build())
+                                .add(createObjectBuilder()
+                                        .add(CASE_ID, caseIdProsecutionCaseService)
+                                        .add(CASE_URN, "caseIdProsecutionCaseService")
+                                        .add(MATCHED_MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                        .add(DEFENDANTS, createArrayBuilder().add(createObjectBuilder()
+                                                        .add("id", defendantIdProsecutionCaseService)
+                                                        .add("firstName", "firstName")
+                                                        .add(MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                                        .build())
+                                                .build())
                                         .build())
                                 .build())
-                        .build())
                         .build()
         ));
 
@@ -299,23 +306,21 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
                 .withMasterDefendantId(randomUUID())
                 .withProsecutionCaseId(UUID.fromString(caseIdProsecutionCaseService))
                 .build();
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, DefendantCustodialInformationUpdateRequested.class))
+        when(jsonObjectConverter.convert(any(), eq(DefendantCustodialInformationUpdateRequested.class)))
                 .thenReturn(defendantCustodialInformationUpdateRequested);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
         when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
                 Json.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, Json.createArrayBuilder()
-                        .add(createObjectBuilder()
-                                .add(CASE_ID, caseIdProsecutionCaseService)
-                                .add(CASE_URN, "caseIdProsecutionCaseService")
-                                .add(MATCHED_MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
-                                .add(DEFENDANTS, createArrayBuilder().add(createObjectBuilder()
-                                        .add("id", defendantIdProsecutionCaseService)
-                                        .add("firstName", "firstName")
-                                        .build())
+                                .add(createObjectBuilder()
+                                        .add(CASE_ID, caseIdProsecutionCaseService)
+                                        .add(CASE_URN, "caseIdProsecutionCaseService")
+                                        .add(MATCHED_MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
+                                        .add(DEFENDANTS, createArrayBuilder().add(createObjectBuilder()
+                                                        .add("id", defendantIdProsecutionCaseService)
+                                                        .add("firstName", "firstName")
+                                                        .build())
+                                                .build())
                                         .build())
                                 .build())
-                        .build())
                         .build()
         ));
 
@@ -335,10 +340,9 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
     @Test
     public void shouldHandleCasesReferredToCourtEventMessage() throws Exception {
         //Given
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, ProsecutionCaseDefendantUpdated.class))
+        when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class))
                 .thenReturn(prosecutionCaseDefendantUpdated);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
         final DefendantUpdate pc = DefendantUpdate.defendantUpdate().withId(randomUUID())
                 .withProsecutionCaseId(randomUUID())
                 .withOffences(Collections.emptyList())
@@ -372,10 +376,9 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
 
     @Test
     public void shouldCallUpdateDefendantHearingWhenHearingIdExists() {
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, ProsecutionCaseDefendantUpdated.class))
+        when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class))
                 .thenReturn(prosecutionCaseDefendantUpdated);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
         final UUID hearingId = randomUUID();
         final DefendantUpdate pc = DefendantUpdate.defendantUpdate().withId(randomUUID())
                 .withProsecutionCaseId(randomUUID())
@@ -418,10 +421,11 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         final UUID hearingId = randomUUID();
         final ProsecutionCaseDefendantUpdated inputEvent = buildProsecutionCaseDefendantUpdatedObject(CASE_URN, PROSECUTOR_CODE, PROSECUTOR_ID, Arrays.asList(hearingId));
 
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, ProsecutionCaseDefendantUpdated.class))
-                .thenReturn(inputEvent);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
+
+        final GetHearingsAtAGlance buildGetHearingsAtAGlanceObject = buildGetHearingsAtAGlanceObject();
+        when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(inputEvent);
+        when(jsonObjectToObjectConverter.convert(any(), eq(GetHearingsAtAGlance.class))).thenReturn(buildGetHearingsAtAGlanceObject);
         when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
@@ -454,15 +458,15 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         final UUID hearingId = randomUUID();
         final ProsecutionCaseDefendantUpdated inputEvent = buildProsecutionCaseDefendantUpdatedObject(CASE_URN, PROSECUTOR_CODE, PROSECUTOR_ID, Arrays.asList(hearingId));
 
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, ProsecutionCaseDefendantUpdated.class))
-                .thenReturn(inputEvent);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(jsonObjectConverter.convert(any(), eq(ProsecutionCaseDefendantUpdated.class))).thenReturn(inputEvent);
+        when(objectToJsonObjectConverter.convert(Mockito.any(DefendantUpdate.class))).thenReturn(payload);
+        final GetHearingsAtAGlance buildGetHearingsAtAGlanceObject = buildGetHearingsAtAGlanceObject();
+        when(jsonObjectToObjectConverter.convert(any(), eq(GetHearingsAtAGlance.class))).thenReturn(buildGetHearingsAtAGlanceObject);
         when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse_WithApplicationSummaries()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
 
-            final JsonObject sampleJsonObject = createObjectBuilder().build();
+        final JsonObject sampleJsonObject = createObjectBuilder().build();
 
         when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(sampleJsonObject));
 
@@ -486,11 +490,11 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         final String CASE_URN = "90GD8989122";
         final UUID hearingId = randomUUID();
         final ProsecutionCaseDefendantUpdated inputEvent = buildProsecutionCaseDefendantUpdatedObject(CASE_URN, PROSECUTOR_CODE, PROSECUTOR_ID, Arrays.asList(hearingId));
+        final GetHearingsAtAGlance buildGetHearingsAtAGlanceObject = buildGetHearingsAtAGlanceObject();
 
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, ProsecutionCaseDefendantUpdated.class))
-                .thenReturn(inputEvent);
+        when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
+        when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(inputEvent);
+        when(jsonObjectToObjectConverter.convert(any(), eq(GetHearingsAtAGlance.class))).thenReturn(buildGetHearingsAtAGlanceObject);
         when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
@@ -520,10 +524,10 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         final UUID hearingId = randomUUID();
         final ProsecutionCaseDefendantUpdated inputEvent = buildProsecutionCaseDefendantUpdatedObject(CASE_URN, PROSECUTOR_CODE, PROSECUTOR_ID, Arrays.asList(hearingId));
 
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, ProsecutionCaseDefendantUpdated.class))
-                .thenReturn(inputEvent);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
+        final GetHearingsAtAGlance buildGetHearingsAtAGlanceObject = buildGetHearingsAtAGlanceObject();
+        when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(inputEvent);
+        when(jsonObjectToObjectConverter.convert(any(), eq(GetHearingsAtAGlance.class))).thenReturn(buildGetHearingsAtAGlanceObject);
         when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse_WithoutHearings()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
@@ -550,11 +554,9 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         final UUID hearingId = randomUUID();
         final ProsecutionCaseDefendantUpdated inputEvent = buildProsecutionCaseDefendantUpdatedObject_WithOutProsecutionId(CASE_URN, PROSECUTOR_CODE, PROSECUTOR_ID, Arrays.asList(hearingId));
 
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, ProsecutionCaseDefendantUpdated.class))
+        when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
+        when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class))
                 .thenReturn(inputEvent);
-        when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
 
@@ -580,16 +582,11 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         final UUID hearingId = randomUUID();
         final ProsecutionCaseDefendantUpdated inputEvent = buildProsecutionCaseDefendantUpdatedObject_WithOutUpdatedOrganisation(CASE_URN, PROSECUTOR_CODE, PROSECUTOR_ID, Arrays.asList(hearingId));
 
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, ProsecutionCaseDefendantUpdated.class))
+        when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
+        when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class))
                 .thenReturn(inputEvent);
-        when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
-        when(enveloper.withMetadataFrom(envelope, PUBLIC_CASE_DEFENDANT_CHANGED)).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, COMMAND_UPDATE_DEFENDANT_FOR_HEARING)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
 
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
                         .withUserId(randomUUID().toString())
@@ -613,9 +610,8 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         final UUID hearingId = randomUUID();
         final ProsecutionCaseDefendantUpdated inputEvent = buildProsecutionCaseDefendantUpdatedObject(CASE_URN, PROSECUTOR_CODE, PROSECUTOR_ID, Arrays.asList(hearingId));
 
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, ProsecutionCaseDefendantUpdated.class))
+        when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
+        when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class))
                 .thenReturn(inputEvent);
         when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataNonCPSProsecutorResponse()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
@@ -643,10 +639,10 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         final UUID hearingId = randomUUID();
         final ProsecutionCaseDefendantUpdated inputEvent = buildProsecutionCaseDefendantUpdatedObject(CASE_URN, PROSECUTOR_CODE, PROSECUTOR_ID, Arrays.asList(hearingId));
 
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, ProsecutionCaseDefendantUpdated.class))
-                .thenReturn(inputEvent);
+        when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
+        final GetHearingsAtAGlance buildGetHearingsAtAGlanceObject = buildGetHearingsAtAGlanceObject();
+        when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(inputEvent);
+        when(jsonObjectToObjectConverter.convert(any(), eq(GetHearingsAtAGlance.class))).thenReturn(buildGetHearingsAtAGlanceObject);
         when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse_WithoutFutureHearings()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
@@ -680,10 +676,9 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
                 .withDefendant(defendantUpdate).build();
         //Given
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverterMock.convert(payload, ProsecutionCaseDefendantUpdated.class))
+        lenient().when(jsonObjectConverter.convert(any(), eq(ProsecutionCaseDefendantUpdated.class)))
                 .thenReturn(prosecutionCaseDefendantUpdated);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(objectToJsonObjectConverter.convert(Mockito.any(DefendantUpdate.class))).thenReturn(payload);
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(
                 Optional.ofNullable(createObjectBuilder().add("linkedApplications",
                         createArrayBuilder()
@@ -703,7 +698,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
                         .withName("progression.event.prosecution-case-defendant-updated")
                         .build(),
                 objectToJsonObjectConverter.convert(prosecutionCaseDefendantUpdated));
-        //When
+
         this.eventProcessor.handleProsecutionCaseDefendantUpdatedEvent(jsonEnvelope);
 
         verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
@@ -777,7 +772,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         }
 
         final JsonObject defendantJsonObject = new StringToJsonObjectConverter().convert(defendantString);
-        final DefendantUpdate defendantUpdate = jsonObjectToObjectConverter.convert(defendantJsonObject, DefendantUpdate.class);
+        final DefendantUpdate defendantUpdate = jsonObjectConverterSpy.convert(defendantJsonObject, DefendantUpdate.class);
         return prosecutionCaseDefendantUpdated()
                 .withCaseUrn(caseUrn)
                 .withProsecutionAuthorityId(prosecutorId.toString())
@@ -798,6 +793,18 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
                 .build();
     }
 
+    private GetHearingsAtAGlance buildGetHearingsAtAGlanceObject() {
+        String defendantString = null;
+        try {
+            defendantString = Resources.toString(getResource("progression.event.prosecutioncase.defendantAssociation.hearingsataglance-data.json"), defaultCharset());
+        } catch (final Exception ignored) {
+        }
+
+        final JsonObject defendantJsonObject = new StringToJsonObjectConverter().convert(defendantString);
+        final GetHearingsAtAGlance hearingsAtAGlance = jsonObjectConverterSpy.convert(defendantJsonObject, GetHearingsAtAGlance.class);
+        return hearingsAtAGlance;
+    }
+
 
     private ProsecutionCaseDefendantUpdated buildProsecutionCaseDefendantUpdatedObject_WithOutProsecutionId(final String caseUrn, final String prosecutorCode, final UUID prosecutorId, List<UUID> hearingIdList) {
         String defendantString = null;
@@ -807,7 +814,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         }
 
         final JsonObject defendantJsonObject = new StringToJsonObjectConverter().convert(defendantString);
-        final DefendantUpdate defendantUpdate = jsonObjectToObjectConverter.convert(defendantJsonObject, DefendantUpdate.class);
+        final DefendantUpdate defendantUpdate = jsonObjectConverterSpy.convert(defendantJsonObject, DefendantUpdate.class);
         return prosecutionCaseDefendantUpdated()
                 .withCaseUrn(caseUrn)
                 .withHearingIds(hearingIdList)
@@ -836,7 +843,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         }
 
         final JsonObject defendantJsonObject = new StringToJsonObjectConverter().convert(defendantString);
-        final DefendantUpdate defendantUpdate = jsonObjectToObjectConverter.convert(defendantJsonObject, DefendantUpdate.class);
+        final DefendantUpdate defendantUpdate = jsonObjectConverterSpy.convert(defendantJsonObject, DefendantUpdate.class);
         return prosecutionCaseDefendantUpdated()
                 .withCaseUrn(caseUrn)
                 .withHearingIds(hearingIdList)

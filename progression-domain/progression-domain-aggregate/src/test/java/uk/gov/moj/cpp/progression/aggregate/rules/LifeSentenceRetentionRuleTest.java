@@ -18,7 +18,7 @@ import uk.gov.justice.core.courts.Offence;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LifeSentenceRetentionRuleTest {
 

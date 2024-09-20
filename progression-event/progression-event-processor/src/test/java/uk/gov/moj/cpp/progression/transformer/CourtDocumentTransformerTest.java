@@ -3,12 +3,11 @@ package uk.gov.moj.cpp.progression.transformer;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
-import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,33 +42,27 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CourtDocumentTransformerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtDocumentTransformerTest.class);
 
     @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
-
-    @Spy
-    @InjectMocks
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @InjectMocks
     private CourtDocumentTransformer transformCourtDocument;
@@ -86,16 +79,12 @@ public class CourtDocumentTransformerTest {
     private UUID materialId = randomUUID();
     private UUID prosecutionCaseDocumentId = randomUUID();
 
-    @Before
-    public void setUp() {
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
-        when(materialService.getMaterialMetadataV2(any(JsonEnvelope.class), any(UUID.class))).thenReturn("fileName");
-    }
 
     @Test
     public void shouldTransformCourtDocumentMaterialToJsonStringAndEvaluateEventNotification() {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
+        when(materialService.getMaterialMetadataV2(any(JsonEnvelope.class), any(UUID.class))).thenReturn("fileName");
         final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, Optional.empty(), jsonEnvelope, null);
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
         assertThat(transformedPayload.get(), isJson(Matchers.allOf(
@@ -112,6 +101,9 @@ public class CourtDocumentTransformerTest {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = Optional.empty();
+
+        when(materialService.getMaterialMetadataV2(any(JsonEnvelope.class), any(UUID.class))).thenReturn("fileName");
+
         final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
@@ -138,6 +130,9 @@ public class CourtDocumentTransformerTest {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObject(randomUUID());
+
+        when(materialService.getMaterialMetadataV2(any(JsonEnvelope.class), any(UUID.class))).thenReturn("fileName");
+
         final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
@@ -152,6 +147,9 @@ public class CourtDocumentTransformerTest {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObject(prosecutionCaseDocumentId);
+
+        when(materialService.getMaterialMetadataV2(any(JsonEnvelope.class), any(UUID.class))).thenReturn("fileName");
+
         final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
@@ -167,11 +165,12 @@ public class CourtDocumentTransformerTest {
 
         final JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         objectBuilder.add("oucode", "OUCODE123");
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class)))
-                .thenReturn(ofNullable(objectBuilder.build()));
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObjectWithoutCaseUrn(prosecutionCaseDocumentId);
+
+        when(materialService.getMaterialMetadataV2(any(JsonEnvelope.class), any(UUID.class))).thenReturn("fileName");
+
         final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
@@ -185,11 +184,12 @@ public class CourtDocumentTransformerTest {
     public void shouldTransformCourtDocumentMaterialWhenProsecutionCaseHasOuCodeOnly() {
         final JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         objectBuilder.add("oucode", "OUCODE123");
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class)))
-                .thenReturn(ofNullable(objectBuilder.build()));
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObjectWithoutCaseUrn(prosecutionCaseDocumentId);
+
+        when(materialService.getMaterialMetadataV2(any(JsonEnvelope.class), any(UUID.class))).thenReturn("fileName");
+
         final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
@@ -205,6 +205,9 @@ public class CourtDocumentTransformerTest {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObjectWithoutCaseUrn(prosecutionCaseDocumentId);
+
+        when(materialService.getMaterialMetadataV2(any(JsonEnvelope.class), any(UUID.class))).thenReturn("fileName");
+
         final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
@@ -223,6 +226,9 @@ public class CourtDocumentTransformerTest {
 
         final CourtDocument courtDocument = buildCourtDocument(materialId, prosecutionCaseDocumentId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObjectWithoutProsecutorAuthorityRef(prosecutionCaseDocumentId);
+
+        when(materialService.getMaterialMetadataV2(any(JsonEnvelope.class), any(UUID.class))).thenReturn("fileName");
+
         final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());
@@ -237,6 +243,9 @@ public class CourtDocumentTransformerTest {
         final UUID applicationId = randomUUID();
         final CourtDocument courtDocument = buildCourtDocumentWithApplication(materialId, applicationId);
         final Optional<JsonObject> prosecutionCaseJsonOptional = getProsecutionJsonObjectWithoutProsecutorAuthorityRef(prosecutionCaseDocumentId);
+
+        when(materialService.getMaterialMetadataV2(any(JsonEnvelope.class), any(UUID.class))).thenReturn("fileName");
+
         final Optional<String> transformedPayload = transformCourtDocument.transform(courtDocument, prosecutionCaseJsonOptional, jsonEnvelope, null);
 
         LOGGER.info("transformedPayload: {}", transformedPayload.get());

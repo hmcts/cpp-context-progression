@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.util;
 
 import static java.nio.charset.Charset.defaultCharset;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.io.Resources;
 import org.slf4j.Logger;

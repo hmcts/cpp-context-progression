@@ -3,10 +3,12 @@ package uk.gov.moj.cpp.progression.util;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.text.MessageFormat.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -156,7 +158,8 @@ public class WireMockStubUtils {
     public static void stubHearingEventLogs(final String caseId, final String responsePayLoad) {
         stubPingFor("hearing-service");
 
-        stubFor(get(urlPathEqualTo(format("/hearing-service/query/api/rest/hearing/hearings/event-log?caseId={0}", caseId)))
+        stubFor(get(urlPathMatching("/hearing-service/query/api/rest/hearing/hearings/event-log"))
+                .withQueryParam("caseId", matching(caseId))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -170,7 +173,8 @@ public class WireMockStubUtils {
     public static void stubAaagHearingEventLogs(final String applicationId, final String responsePayLoad) {
         stubPingFor("hearing-service");
 
-        stubFor(get(urlPathEqualTo(format("/hearing-service/query/api/rest/hearing/hearings/event-log?applicationId={0}", applicationId)))
+        stubFor(get(urlPathMatching("/hearing-service/query/api/rest/hearing/hearings/event-log"))
+                .withQueryParam("applicationId", matching(applicationId))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)

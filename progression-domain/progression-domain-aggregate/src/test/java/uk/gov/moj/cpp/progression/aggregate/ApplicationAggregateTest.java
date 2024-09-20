@@ -60,11 +60,10 @@ import uk.gov.justice.core.courts.SlotsBookedForApplication;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.justice.progression.courts.SendStatdecAppointmentLetter;
+import uk.gov.moj.cpp.platform.test.utils.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtApplicationWithCustody;
-import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
-import uk.gov.moj.cpp.progression.events.NotificationCreateHearingApplicationLinkFailed;
 import uk.gov.moj.cpp.progression.events.CourtApplicationDocumentUpdated;
 
 import java.time.LocalDate;
@@ -75,21 +74,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.internal.util.reflection.Whitebox;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class ApplicationAggregateTest {
 
     private static final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds().build();
     @InjectMocks
     private ApplicationAggregate aggregate;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         aggregate = new ApplicationAggregate();
     }
@@ -170,7 +168,7 @@ public class ApplicationAggregateTest {
 
     @Test
     public void shouldNotReturnApplicationEjected() {
-        Whitebox.setInternalState(this.aggregate, "applicationStatus", ApplicationStatus.EJECTED);
+        ReflectionUtil.setField(this.aggregate, "applicationStatus", ApplicationStatus.EJECTED);
         final List<Object> eventStream = aggregate.ejectApplication(randomUUID(), "Legal").collect(toList());
         assertThat(eventStream.size(), is(0));
     }

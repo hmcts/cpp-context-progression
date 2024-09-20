@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
@@ -45,17 +45,16 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PrisonCourtRegisterEventProcessorTest {
 
     @InjectMocks
@@ -101,7 +100,7 @@ public class PrisonCourtRegisterEventProcessorTest {
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> envelopeArgumentCaptor;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
@@ -137,11 +136,8 @@ public class PrisonCourtRegisterEventProcessorTest {
         final UUID systemUserId = UUID.randomUUID();
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
 
-        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(UUID.randomUUID().toString());
-        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn("url-to-material");
-
         final byte[] byteArray = new byte[]{};
-        when(documentGeneratorClient.generatePdfDocument(any(JsonObject.class), eq("OEE_Layout5"), eq(systemUserId))).thenReturn(byteArray);
+        when(documentGeneratorClient.generatePdfDocument(any(), eq("OEE_Layout5"), eq(systemUserId))).thenReturn(byteArray);
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
 
         final UUID fileId = UUID.randomUUID();

@@ -2,10 +2,10 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -32,15 +32,15 @@ import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
 
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RemoveCourtDocumenttHandlerTest {
 
     @Mock
@@ -59,18 +59,6 @@ public class RemoveCourtDocumenttHandlerTest {
     @InjectMocks
     private RemoveCourtDocumentHandler removeCourtDocumentHandler;
 
-
-    private CourtDocumentAggregate aggregate;
-
-
-    @Before
-    public void setup() {
-        aggregate = new CourtDocumentAggregate();
-        aggregate.apply(aggregate.addCourtDocument(CourtDocument.courtDocument().build()));
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(aggregate);
-    }
-
     @Test
     public void shouldHandleCommand() {
         assertThat(new RemoveCourtDocumentHandler(), isHandler(COMMAND_HANDLER)
@@ -83,7 +71,12 @@ public class RemoveCourtDocumenttHandlerTest {
     public void shouldProcessCommand() throws Exception {
         final RemoveCourtDocument removeCourtDocument = RemoveCourtDocument.removeCourtDocument().withCourtDocumentId(randomUUID()).withMaterialId(randomUUID()).withIsRemoved(true).build();
 
-        aggregate.removeCourtDocument(randomUUID(),randomUUID(),true);
+        final CourtDocumentAggregate courtDocumentAggregate = new CourtDocumentAggregate();
+        courtDocumentAggregate.apply(courtDocumentAggregate.addCourtDocument(CourtDocument.courtDocument().build()));
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(courtDocumentAggregate);
+
+        courtDocumentAggregate.removeCourtDocument(randomUUID(),randomUUID(),true);
 
 
         final Metadata metadata = Envelope
@@ -104,12 +97,6 @@ public class RemoveCourtDocumenttHandlerTest {
                                 .withName("progression.event.court-document-removed"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.courtDocumentId", notNullValue ()))
-                        ))
-
-                )
-        );
+                        ))));
     }
-
-
-
 }

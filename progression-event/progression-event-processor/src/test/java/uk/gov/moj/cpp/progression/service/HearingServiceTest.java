@@ -6,7 +6,7 @@ import static javax.json.Json.createReader;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -20,20 +20,17 @@ import java.util.UUID;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingServiceTest {
 
     @Mock
     private Requester requester;
-
-    @Mock
-    private JsonEnvelope jsonEnvelope;
 
     @InjectMocks
     private HearingService hearingService;
@@ -49,7 +46,7 @@ public class HearingServiceTest {
     public void shouldNotRetrieveHearingEventLogsByCaseIdWhenNoHearingLogs() {
         JsonEnvelope jsonEnvelope = buildJsonEnvelope();
 
-        when(requester.request(any(JsonEnvelope.class), any(Class.class))).thenReturn(jsonEnvelope);
+        when(requester.request(any(), any(Class.class))).thenReturn(jsonEnvelope);
         JsonObject hearingEventLogs = hearingService.getHearingEventLogs(jsonEnvelope, CASE_ID, Optional.empty());
         assertThat(hearingEventLogs.get("hearings"), is(JsonValue.NULL));
     }
@@ -57,7 +54,7 @@ public class HearingServiceTest {
     @Test
     public void shouldRetrieveHearingEventLogsByCaseId() {
         JsonEnvelope jsonEnvelope = getUserEnvelope(HEARING_EVENT_LOG);
-        when(requester.request(any(JsonEnvelope.class), any(Class.class))).thenReturn(jsonEnvelope);
+        when(requester.request(any(), any(Class.class))).thenReturn(jsonEnvelope);
 
        JsonObject hearingEventLogs = hearingService.getHearingEventLogs(jsonEnvelope, CASE_ID, Optional.empty());
 
@@ -71,7 +68,7 @@ public class HearingServiceTest {
     @Test
     public void shouldRetrieveHearingEventLogsByApplicationId() {
         JsonEnvelope jsonEnvelope = getUserEnvelope(AAAG_HEARING_EVENT_LOG);
-        when(requester.request(any(JsonEnvelope.class), any(Class.class))).thenReturn(jsonEnvelope);
+        when(requester.request(any(), any(Class.class))).thenReturn(jsonEnvelope);
 
         JsonObject hearingEventLogs = hearingService.getHearingEventLogs(jsonEnvelope, CASE_ID, Optional.of(APPLICATION_ID.toString()));
 

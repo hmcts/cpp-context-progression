@@ -9,15 +9,15 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.notNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.quality.Strictness.LENIENT;
 import static uk.gov.justice.core.courts.Address.address;
 import static uk.gov.justice.core.courts.AssociatedPerson.associatedPerson;
 import static uk.gov.justice.core.courts.ConfirmedProsecutionCaseId.confirmedProsecutionCaseId;
@@ -87,22 +87,28 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(DataProviderRunner.class)
+// FIXME!!! Temporarily using lenient strictness to get this
+// context running with junit 5. This test really needs re-writing.
+@MockitoSettings(strictness = LENIENT)
+@ExtendWith(MockitoExtension.class)
 public class SummonsDataPreparedEventProcessorTest {
 
     private static final UUID CASE_ID = randomUUID();
@@ -167,70 +173,66 @@ public class SummonsDataPreparedEventProcessorTest {
     // if suppressed, document not sent for remote printing
     private boolean summonsSuppressed;
 
-    @DataProvider
-    public static Object[][] firstHearingSummonsSpecifications() {
-        return new Object[][]{
-                {MCA, false, 1},
-                {WITNESS, false, 1},
-                {EITHER_WAY, false, 1},
-                {MCA, true, 2},
-                {WITNESS, true, 2},
-                {EITHER_WAY, true, 2},
-        };
+    public static Stream<Arguments> firstHearingSummonsSpecifications() {
+        return Stream.of(
+                Arguments.of(MCA, false, 1),
+                Arguments.of(WITNESS, false, 1),
+                Arguments.of(EITHER_WAY, false, 1),
+                Arguments.of(MCA, true, 2),
+                Arguments.of(WITNESS, true, 2),
+                Arguments.of(EITHER_WAY, true, 2)
+        );
     }
 
-    @DataProvider
-    public static Object[][] sjpReferralSummonsSpecifications() {
-        return new Object[][]{
-                {false, 1},
-                {true, 1},
-        };
+    public static Stream<Arguments> sjpReferralSummonsSpecifications() {
+        return Stream.of(
+                Arguments.of(false, 1),
+                Arguments.of(true, 1)
+        );
     }
 
-    @DataProvider
-    public static Object[][] applicationSummonsSpecifications() {
-        return new Object[][]{
+    public static Stream<Arguments> applicationSummonsSpecifications() {
+        return Stream.of(
                 // summons required, is youth, number of documents
-                {APPLICATION, false, 1},
-                {APPLICATION, true, 1},
-                {BREACH, false, 1},
-                {BREACH, true, 2},
-        };
+                Arguments.of(APPLICATION, false, 1),
+                Arguments.of(APPLICATION, true, 1),
+                Arguments.of(BREACH, false, 1),
+                Arguments.of(BREACH, true, 2)
+                );
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
-        initMocks(this);
         summonsSuppressed = BOOLEAN.next();
     }
 
-    @UseDataProvider("firstHearingSummonsSpecifications")
-    @Test
+    @MethodSource("firstHearingSummonsSpecifications")
+    @ParameterizedTest
     public void shouldGenerateEnglishSummonsPayloadForFirstHearing(final SummonsCode summonsCode, final boolean isYouth, final int numberOfDocuments) {
         verifySummonsPayloadGeneratedForCaseSummons(InitiationCode.S, FIRST_HEARING, summonsCode, false, isYouth, numberOfDocuments, !summonsSuppressed);
     }
 
 
-    @UseDataProvider("firstHearingSummonsSpecifications")
-    @Test
+    @MethodSource("firstHearingSummonsSpecifications")
+    @ParameterizedTest
     public void shouldGenerateBilingualSummonsPayloadForFirstHearing(final SummonsCode summonsCode, final boolean isYouth, final int numberOfDocuments) {
         verifySummonsPayloadGeneratedForCaseSummons(InitiationCode.S, FIRST_HEARING, summonsCode, true, isYouth, numberOfDocuments, !summonsSuppressed);
     }
 
-    @UseDataProvider("sjpReferralSummonsSpecifications")
-    @Test
+    @MethodSource("sjpReferralSummonsSpecifications")
+    @ParameterizedTest
     public void shouldGenerateEnglishSummonsForSjpReferral(final boolean isYouth, final int numberOfDocuments) {
         verifySummonsPayloadGeneratedForCaseSummons(InitiationCode.J, SJP_REFERRAL, null, false, isYouth, numberOfDocuments, true);
     }
 
-    @UseDataProvider("sjpReferralSummonsSpecifications")
-    @Test
+    @MethodSource("sjpReferralSummonsSpecifications")
+    @ParameterizedTest
     public void shouldGenerateBilingualSummonsForSjpReferral(final boolean isYouth, final int numberOfDocuments) {
         verifySummonsPayloadGeneratedForCaseSummons(InitiationCode.J, SJP_REFERRAL, null, true, isYouth, numberOfDocuments, true);
     }
 
-    @UseDataProvider("applicationSummonsSpecifications")
-    @Test
+    @MethodSource("applicationSummonsSpecifications")
+    @ParameterizedTest
     public void shouldGenerateEnglishSummonsForApplications(final SummonsType summonsRequired, final boolean isYouth, final int numberOfDocuments) {
         verifySummonsPayloadGeneratedForApplications(summonsRequired, true, isYouth, numberOfDocuments, !summonsSuppressed);
     }
@@ -259,8 +261,8 @@ public class SummonsDataPreparedEventProcessorTest {
         when(summonsTemplateNameService.getCaseSummonsTemplateName(summonsRequired, summonsCode, isWelsh)).thenReturn(defendantTemplateName);
         when(summonsTemplateNameService.getCaseSummonsParentTemplateName(isWelsh)).thenReturn(parentGuardianTemplateName);
         when(caseDefendantSummonsService.generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor))).thenReturn(defendantTemplatePayload);
-        when(summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), anyListOf(UUID.class), any(Defendant.class), anyListOf(String.class), eq(sendForRemotePrinting), anyBoolean(), any(UUID.class), eq(summonsRequired))).thenReturn(of(EMAIL_CHANNEL));
-        when(summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendantParent(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), anyListOf(UUID.class), any(Defendant.class), anyListOf(String.class), eq(sendForRemotePrinting), any(UUID.class), eq(summonsRequired))).thenReturn(of(EMAIL_CHANNEL));
+        when(summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), any(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), anyBoolean(), any(UUID.class), eq(summonsRequired))).thenReturn(of(EMAIL_CHANNEL));
+        when(summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendantParent(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), any(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), any(UUID.class), eq(summonsRequired))).thenReturn(of(EMAIL_CHANNEL));
 
         summonsDataPreparedEventProcessor.requestSummons(envelope);
 
@@ -272,14 +274,14 @@ public class SummonsDataPreparedEventProcessorTest {
         verify(summonsTemplateNameService).getCaseSummonsTemplateName(summonsRequired, summonsCode, isWelsh);
         verify(caseDefendantSummonsService).generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor));
         verify(publishSummonsDocumentService).generateCaseSummonsCourtDocument(eq(envelope), eq(DEFENDANT_ID), eq(CASE_ID), eq(defendantTemplatePayload), eq(defendantTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), notNull(UUID.class));
-        verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), eq(defendantTemplatePayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), anyListOf(UUID.class), any(Defendant.class), anyListOf(String.class), eq(sendForRemotePrinting), eq(isYouth), any(UUID.class), eq(summonsRequired));
+        verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), eq(defendantTemplatePayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), any(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), eq(isYouth), any(UUID.class), eq(summonsRequired));
 
         // verification for parent document (if applicable)
         if (numberOfDocuments > 1) {
             verify(summonsTemplateNameService).getCaseSummonsParentTemplateName(isWelsh);
             verify(publishSummonsDocumentService).generateCaseSummonsCourtDocument(eq(envelope), eq(DEFENDANT_ID), eq(CASE_ID), parentSummonsDocumentContentArgumentCaptor.capture(), eq(parentGuardianTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), any(UUID.class));
             final SummonsDocumentContent parentDocumentPayload = parentSummonsDocumentContentArgumentCaptor.getValue();
-            verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendantParent(any(SummonsDataPrepared.class), eq(parentDocumentPayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), anyListOf(UUID.class), any(Defendant.class), anyListOf(String.class), eq(sendForRemotePrinting), any(UUID.class), eq(summonsRequired));
+            verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendantParent(any(SummonsDataPrepared.class), eq(parentDocumentPayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), anyList(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), any(UUID.class), eq(summonsRequired));
             assertThat(parentDocumentPayload.getAddressee(), notNullValue());
             assertThat(parentDocumentPayload.getAddressee().getName(), is("parent first name parent middle name parent last name"));
             assertThat(parentDocumentPayload.getAddressee().getAddress().getLine1(), is("parent address 1"));

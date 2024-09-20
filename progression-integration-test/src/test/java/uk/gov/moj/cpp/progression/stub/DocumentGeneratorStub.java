@@ -9,10 +9,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static com.jayway.awaitility.Awaitility.await;
 import static java.util.Optional.empty;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static uk.gov.moj.cpp.progression.helper.PdfTestHelper.asPdf;
@@ -27,9 +27,10 @@ import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.jayway.awaitility.core.ConditionTimeoutException;
+import org.awaitility.core.ConditionTimeoutException;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class DocumentGeneratorStub {
@@ -55,10 +56,34 @@ public class DocumentGeneratorStub {
 
     public static Optional<JSONObject> getCrownCourtExtractDocumentRequestByDefendant(final String defendantId) {
         return getDocumentRequestsAsStream().stream()
-                .map(JSONObject::new)
-                .filter(json -> json.getString("templateName").equals("CrownCourtExtract"))
-                .map(json -> json.getJSONObject("templatePayload"))
-                .filter(request -> request.getJSONObject("defendant").getString("id").equals(defendantId))
+                .map(t -> {
+                    try {
+                        return new JSONObject(t);
+                    } catch (JSONException e) {
+                        return null;
+                    }
+                })
+                .filter(json -> {
+                    try {
+                        return json.getString("templateName").equals("CrownCourtExtract");
+                    } catch (JSONException e) {
+                        return false;
+                    }
+                })
+                .map(json -> {
+                    try {
+                        return json.getJSONObject("templatePayload");
+                    } catch (JSONException e) {
+                        return json;
+                    }
+                })
+                .filter(request -> {
+                    try {
+                        return request.getJSONObject("defendant").getString("id").equals(defendantId);
+                    } catch (JSONException e) {
+                        return false;
+                    }
+                })
                 .findFirst();
     }
 
@@ -91,12 +116,19 @@ public class DocumentGeneratorStub {
 
     public static Optional<JSONObject> pollDocumentGenerationRequest(final Predicate<JSONObject> requestPayloadPredicate) {
         try {
-            Optional<JSONObject> jsonObject = await().until(() ->
-                            findAll(postRequestedFor(urlPathMatching(PATH)))
+            Optional<JSONObject> jsonObject = await().until(() -> {
+                            return findAll(postRequestedFor(urlPathMatching(PATH)))
                                     .stream()
                                     .map(LoggedRequest::getBodyAsString)
-                                    .map(JSONObject::new)
-                                    .filter(requestPayloadPredicate).findFirst(),
+                                    .map(t -> {
+                                        try {
+                                            return new JSONObject(t);
+                                        } catch (JSONException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    })
+                                    .filter(requestPayloadPredicate).findFirst();
+                    },
                     is(not(empty())));
             return jsonObject;
         } catch (final ConditionTimeoutException timeoutException) {
@@ -104,8 +136,15 @@ public class DocumentGeneratorStub {
         }
     }
 
-    public static Optional<JSONObject> pollDocumentGenerationRequest(final String templateName) {
-        return pollDocumentGenerationRequest(request -> request.getString("templateName").equals(templateName));
+
+    public static Optional<JSONObject> pollDocumentGenerationRequest(final String templateName) throws JSONException {
+        return pollDocumentGenerationRequest(request -> {
+            try {
+                return request.getString("templateName").equals(templateName);
+            }catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public static void stubDocumentGeneration(final String templateName) {

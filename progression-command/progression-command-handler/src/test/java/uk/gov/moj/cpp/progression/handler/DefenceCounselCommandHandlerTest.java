@@ -5,7 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -45,15 +45,16 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefenceCounselCommandHandlerTest {
     private static final String ADD_HEARING_DEFENCE_COUNSEL_COMMAND = "progression.command.handler.add-hearing-defence-counsel";
     private static final String HEARING_DEFENCE_COUNSEL_ADDED_EVENT = "progression.event.hearing-defence-counsel-added";
@@ -79,11 +80,9 @@ public class DefenceCounselCommandHandlerTest {
 
     private HearingAggregate aggregate;
 
-    @Before
+    @BeforeEach
     public void setup() {
         aggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
     }
 
     @Test
@@ -144,6 +143,8 @@ public class DefenceCounselCommandHandlerTest {
 
         final Envelope<AddHearingDefenceCounsel> envelope = envelopeFrom(metadata, addHearingDefenceCounsel);
 
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
         handler.handleAddHearingDefenceCounsel(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -179,6 +180,8 @@ public class DefenceCounselCommandHandlerTest {
 
         final Envelope<UpdateHearingDefenceCounsel> envelope = envelopeFrom(metadata, updateHearingDefenceCounsel);
 
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
         handler.handleUpdateHearingDefenceCounsel(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -249,6 +252,8 @@ public class DefenceCounselCommandHandlerTest {
                 .withId(randomUUID())
                 .build();
 
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
         final Envelope<RemoveHearingDefenceCounsel> envelope = envelopeFrom(metadata, removeHearingDefenceCounsel);
 
         handler.handleRemoveHearingDefenceCounsel(envelope);

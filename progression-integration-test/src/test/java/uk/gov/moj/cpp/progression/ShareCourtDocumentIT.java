@@ -1,15 +1,18 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AddCourtDocumentHelper.addCourtDocumentCaseLevel;
@@ -23,8 +26,10 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCou
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.shareCourtDocument;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.test.matchers.BeanMatcher.isBean;
 import static uk.gov.moj.cpp.progression.test.matchers.ElementAtListMatcher.first;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -34,9 +39,8 @@ import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
 import uk.gov.justice.courts.progression.query.Courtdocuments;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.test.utils.core.http.RequestParams;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import uk.gov.moj.cpp.progression.test.matchers.BeanMatcher;
 import uk.gov.moj.cpp.progression.util.FileUtil;
 import uk.gov.moj.cpp.progression.util.QueryUtil;
@@ -46,13 +50,17 @@ import java.text.MessageFormat;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
+import io.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.hamcrest.core.Is;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
@@ -62,16 +70,19 @@ public class ShareCourtDocumentIT extends AbstractIT {
     private static final String MAGISTRATES_USER_GROUP_ID = "dd8dcdcf-58d1-4e45-8450-40b0f569a7e7";
     private static final String USER_ID = "07e9cd55-0eff-4eb3-961f-0d83e259e415";
     private static final String UPLOAD_USER_ID = "5e1cc18c-76dc-47dd-99c1-d6f87385edf1";
-    private static final String PRIVATE_COURT_DOCUMENT_SHARED_EVENT_V2= "progression.event.court-document-shared-v2";
+    private static final String PRIVATE_COURT_DOCUMENT_SHARED_EVENT_V2 = "progression.event.court-document-shared-v2";
     private static final String PRIVATE_DUPLICATE_SHARE_COURT_DOCUMENT_REQUEST_RECEIVED_EVENT = "progression.event.duplicate-share-court-document-request-received";
     private static final String PRIVATE_COURT_DOCUMENT_SHARE_FAILED_EVENT = "progression.event.court-document-share-failed";
 
-    private static final MessageConsumer messageConsumerClientPrivateForCourtDocumentShared = privateEvents.createPrivateConsumer(PRIVATE_COURT_DOCUMENT_SHARED_EVENT_V2);
-    private static final MessageConsumer messageConsumerClientPrivateForDuplicateShareCourtDocumentRequestReceivedEvent = privateEvents.createPrivateConsumer(PRIVATE_DUPLICATE_SHARE_COURT_DOCUMENT_REQUEST_RECEIVED_EVENT);
-    private static final MessageConsumer messageConsumerClientPrivateForCourtDocumentShareFailedEvent = privateEvents.createPrivateConsumer(PRIVATE_COURT_DOCUMENT_SHARE_FAILED_EVENT);
-    private static final MessageConsumer messageConsumerCourtDocumentShareFailedPublicEvent = publicEvents.createPublicConsumer(PUBLIC_COURT_DOCUMENT_SHARE_FAILED);
-    private static final MessageConsumer messageConsumerCourtDocumentSharedPublicEvent = publicEvents.createPublicConsumer(PUBLIC_COURT_DOCUMENT_SHARED);
+    private static final JmsMessageConsumerClient messageConsumerClientPrivateForCourtDocumentShared = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_COURT_DOCUMENT_SHARED_EVENT_V2).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerClientPrivateForDuplicateShareCourtDocumentRequestReceivedEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_DUPLICATE_SHARE_COURT_DOCUMENT_REQUEST_RECEIVED_EVENT).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerClientPrivateForCourtDocumentShareFailedEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_COURT_DOCUMENT_SHARE_FAILED_EVENT).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerCourtDocumentShareFailedPublicEvent = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_COURT_DOCUMENT_SHARE_FAILED).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerCourtDocumentSharedPublicEvent = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_COURT_DOCUMENT_SHARED).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerClientPrivateForCaseCreatedEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecution-case-created").getMessageConsumerClient();
 
+    private static final int EXTENDED_TIME_OUT_IN_SECONDS = 150; // This extended timeout is introduced due to flaky IT failures of polling query.prosecutioncase API
+    public static final int RETRIEVAL_TIME_OUT = 200000;
     private static String caseId;
     private static String defendantLevelDocumentId1;
     private static String defendantLevelDocumentId2;
@@ -79,13 +90,13 @@ public class ShareCourtDocumentIT extends AbstractIT {
     private static String defendantId1;
     private static String defendantId2;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         setupAsAuthorisedUser(fromString(UPLOAD_USER_ID));
         setupAsAuthorisedUser(fromString(USER_ID), "stub-data/usersgroups.get-specific-magistrate-groups-by-user.json");
     }
 
-    @Before
+    @BeforeEach
     public void createVariables() {
         caseId = randomUUID().toString();
         defendantLevelDocumentId1 = randomUUID().toString();
@@ -95,12 +106,15 @@ public class ShareCourtDocumentIT extends AbstractIT {
         defendantId2 = randomUUID().toString();
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
+
     }
 
     @Test
-    public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithNoCaseLevelDocs() throws IOException {
+    public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithNoCaseLevelDocs() throws IOException, JSONException {
         addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+        verifyInMessagingQueue(messageConsumerClientPrivateForCaseCreatedEvent, isJson(Matchers.allOf(
+                withJsonPath("$.prosecutionCase.id", CoreMatchers.is(caseId)))), RETRIEVAL_TIME_OUT);
+        pollProsecutionCasesProgressionFor(caseId, EXTENDED_TIME_OUT_IN_SECONDS, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
                 withJsonPath("$.hearingsAtAGlance.id", is(caseId))
         )));
         addCourtDocumentDefendantLevel("progression.add-court-document-defendant-level.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
@@ -129,9 +143,11 @@ public class ShareCourtDocumentIT extends AbstractIT {
     }
 
     @Test
-    public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithCaseLevelDocs() throws IOException {
+    public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithCaseLevelDocs() throws IOException, JSONException {
         addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+        verifyInMessagingQueue(messageConsumerClientPrivateForCaseCreatedEvent, isJson(Matchers.allOf(
+                withJsonPath("$.prosecutionCase.id", CoreMatchers.is(caseId)))), RETRIEVAL_TIME_OUT);
+        pollProsecutionCasesProgressionFor(caseId, EXTENDED_TIME_OUT_IN_SECONDS, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
                 withJsonPath("$.hearingsAtAGlance.id", is(caseId))
         )));
         addCourtDocumentDefendantLevel("progression.add-court-document.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
@@ -152,11 +168,12 @@ public class ShareCourtDocumentIT extends AbstractIT {
         assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
-
     @Test
-    public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithMultiDefendantWithHearingTypeTrial() throws IOException {
+    public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithMultiDefendantWithHearingTypeTrial() throws IOException, JSONException {
         addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+        verifyInMessagingQueue(messageConsumerClientPrivateForCaseCreatedEvent, isJson(Matchers.allOf(
+                withJsonPath("$.prosecutionCase.id", CoreMatchers.is(caseId)))), RETRIEVAL_TIME_OUT);
+        pollProsecutionCasesProgressionFor(caseId, EXTENDED_TIME_OUT_IN_SECONDS, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
                 withJsonPath("$.hearingsAtAGlance.id", is(caseId))
         )));
         addCourtDocumentDefendantLevel("progression.add-court-document.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
@@ -186,9 +203,11 @@ public class ShareCourtDocumentIT extends AbstractIT {
     }
 
     @Test
-    public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithMultiDefendantWithHearingTypeTrialOfIssue() throws IOException {
+    public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithMultiDefendantWithHearingTypeTrialOfIssue() throws IOException, JSONException {
         addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+        verifyInMessagingQueue(messageConsumerClientPrivateForCaseCreatedEvent, isJson(Matchers.allOf(
+                withJsonPath("$.prosecutionCase.id", CoreMatchers.is(caseId)))), RETRIEVAL_TIME_OUT);
+        pollProsecutionCasesProgressionFor(caseId, EXTENDED_TIME_OUT_IN_SECONDS, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
                 withJsonPath("$.hearingsAtAGlance.id", is(caseId))
         )));
         addCourtDocumentDefendantLevel("progression.add-court-document.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
@@ -211,9 +230,11 @@ public class ShareCourtDocumentIT extends AbstractIT {
 
 
     @Test
-    public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithNonTrialHearingType() throws IOException {
+    public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithNonTrialHearingType() throws IOException, JSONException {
         addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+        verifyInMessagingQueue(messageConsumerClientPrivateForCaseCreatedEvent, isJson(Matchers.allOf(
+                withJsonPath("$.prosecutionCase.id", CoreMatchers.is(caseId)))), RETRIEVAL_TIME_OUT);
+        pollProsecutionCasesProgressionFor(caseId, EXTENDED_TIME_OUT_IN_SECONDS, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
                 withJsonPath("$.hearingsAtAGlance.id", is(caseId))
         )));
         addCourtDocumentDefendantLevel("progression.add-court-document.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
@@ -232,9 +253,11 @@ public class ShareCourtDocumentIT extends AbstractIT {
 
 
     @Test
-    public void shouldRaiseDuplicateShareCourtDocumentRequestReceivedWhenDocumentAlreadySharedWithMagistratesAndPublicSuccessMessage() throws IOException {
+    public void shouldRaiseDuplicateShareCourtDocumentRequestReceivedWhenDocumentAlreadySharedWithMagistratesAndPublicSuccessMessage() throws IOException, JSONException {
         addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+        verifyInMessagingQueue(messageConsumerClientPrivateForCaseCreatedEvent, isJson(Matchers.allOf(
+                withJsonPath("$.prosecutionCase.id", CoreMatchers.is(caseId)))), RETRIEVAL_TIME_OUT);
+        pollProsecutionCasesProgressionFor(caseId, EXTENDED_TIME_OUT_IN_SECONDS, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
                 withJsonPath("$.hearingsAtAGlance.id", is(caseId))
         )));
         addCourtDocumentDefendantLevel("progression.add-court-document-defendant-level.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
@@ -260,13 +283,13 @@ public class ShareCourtDocumentIT extends AbstractIT {
 
         addProsecutionCaseToCrownCourt(caseId, defendantId1, materialIdActive, materialIdDeleted, defendantLevelDocumentId1, referraReasonId);
 
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, emptyList()));
+        pollProsecutionCasesProgressionFor(caseId, EXTENDED_TIME_OUT_IN_SECONDS, getProsecutionCaseMatchers(caseId, defendantId1, emptyList()));
 
         setupAsAuthorisedUser(UUID.fromString(userId), "stub-data/usersgroups.get-support-groups-by-user.json");
 
         addRemoveCourtDocument(defendantLevelDocumentId1, materialIdActive, true, UUID.fromString(userId));
 
-        assertTrue(getCourtDocumentsByCase(randomUUID().toString(), caseId).contains("{\"documentIndices\":[]}"));
+        assertThat(getCourtDocumentsByCase(randomUUID().toString(), caseId).contains("{\"documentIndices\":[]}"), is(true));
 
         shareCourtDocument(defendantLevelDocumentId1, hearingId, userId, "progression.share-court-document.json");
 
@@ -284,9 +307,14 @@ public class ShareCourtDocumentIT extends AbstractIT {
     }
 
 
-    private static void verifyInMessagingQueue(final MessageConsumer messageConsumer) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumer);
-        assertTrue(message.isPresent());
+    private static void verifyInMessagingQueue(final JmsMessageConsumerClient messageConsumer) {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumer);
+        assertThat(message.isPresent(), is(true));
+    }
+
+    private static void verifyInMessagingQueue(final JmsMessageConsumerClient messageConsumer, final Matcher matchers, final long retrievalTimeOut) {
+        final JsonPath messageDaysMatchers = retrieveMessageAsJsonPath(messageConsumer, matchers, retrievalTimeOut);
+        assertThat(messageDaysMatchers, notNullValue());
     }
 
 }

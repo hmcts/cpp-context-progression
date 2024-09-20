@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.DocumentGenerationHelper.validateEnglishReferalDisqualifyWarning;
 import static uk.gov.moj.cpp.progression.helper.DocumentGenerationHelper.validateWelshReferalDisqualifyWarning;
@@ -16,7 +17,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsPerCase;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStub;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.pollDocumentGenerationRequest;
@@ -29,6 +29,7 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryReferra
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.helper.DocumentGenerationHelper;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
@@ -42,23 +43,24 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 public class ReferDisqualificationWarningIT extends AbstractIT {
 
     public static final String EMPTY_PAGE_TEMPLATE_NAME = "EmptyPage";
-    private static final MessageConsumer consumerForCourDocumentNotified = privateEvents.createPrivateConsumer("progression.event.court-document-send-to-cps");
-    private static final MessageConsumer consumerForProgressionCommandPrint = privateEvents.createPrivateConsumer("progression.event.print-requested");
+    private static final JmsMessageConsumerClient consumerForCourDocumentNotified = newPublicJmsMessageConsumerClientProvider().withEventNames("progression.event.court-document-send-to-cps").getMessageConsumerClient();
+    private static final JmsMessageConsumerClient consumerForProgressionCommandPrint = newPublicJmsMessageConsumerClientProvider().withEventNames("progression.event.print-requested").getMessageConsumerClient();
     private static final String ENGLISH_TEMPLATE_NAME = "NPE_RefferalDisqualificationWarning";
     private static final String WELSH_TEMPLATE_NAME = "NPB_RefferalDisqualificationWarning";
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -73,7 +75,7 @@ public class ReferDisqualificationWarningIT extends AbstractIT {
     private String courtDocumentId;
     private String postCode;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         testResourceBasePath = Paths.get("referral-disqualify-warning");
@@ -86,8 +88,6 @@ public class ReferDisqualificationWarningIT extends AbstractIT {
 
     @After
     public void tearDown() throws JMSException {
-        consumerForCourDocumentNotified.close();
-        consumerForProgressionCommandPrint.close();
         stubQueryEthinicityData("/restResource/ref-data-ethnicities.json", randomUUID());
         stubQueryReferralReasons("/restResource/referencedata.query.referral-disqualification-reasons.json", randomUUID());
         stubQueryDocumentTypeData("/restResource/ref-data-orders-document-type.json");
@@ -140,12 +140,12 @@ public class ReferDisqualificationWarningIT extends AbstractIT {
     }
 
     private void verifyForCourtDocumentNotified() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourDocumentNotified);
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageBody(consumerForCourDocumentNotified);
         assertThat(message, notNullValue());
     }
 
     private void verifyForProgressionCommandPrint() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForProgressionCommandPrint);
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageBody(consumerForProgressionCommandPrint);
         assertThat(message, notNullValue());
     }
 
@@ -153,7 +153,7 @@ public class ReferDisqualificationWarningIT extends AbstractIT {
         return hasPostcode ? hasWelshPostcode ? "CF10 1BY" : "W1T 1JY" : null;
     }
 
-    private void verifyAddCourtDocument(final String documentTypeId, final String courtDocumentId) throws IOException {
+    private void verifyAddCourtDocument(final String documentTypeId, final String courtDocumentId) throws IOException, JSONException {
         //Given
         final String body = prepareAddCourtDocumentPayload();
 

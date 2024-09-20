@@ -6,11 +6,11 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,17 +59,16 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CotrEventsListenerTest {
 
     public static final String FURTHER_PROSECUTION_INFORMATION_PROVIDED_AFTER_CERTIFICATION = "furtherProsecutionInformationProvidedAfterCertification";
@@ -143,7 +142,7 @@ public class CotrEventsListenerTest {
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
@@ -449,8 +448,6 @@ public class CotrEventsListenerTest {
                 .build();
 
         when(furtherInfoForProsecutionCotrAddedEnvelope.payload()).thenReturn(furtherInfoForProsecutionCotrAdded);
-        when(furtherInfoForProsecutionCotrAddedEnvelope.metadata()).thenReturn(metadata);
-        when(furtherInfoForProsecutionCotrAddedEnvelope.metadata().userId()).thenReturn(Optional.of(userId.toString()));
 
         cotrEventsListener.handleFurtherInfoForProsecutionCotrAdded(furtherInfoForProsecutionCotrAddedEnvelope);
         verify(cotrProsecutionFurtherInfoRepository).save(cotrProsecutionFurtherInfoEntityArgumentCaptor.capture());
@@ -482,8 +479,6 @@ public class CotrEventsListenerTest {
                 .build();
 
         when(furtherInfoForDefenceCotrAddedEnvelope.payload()).thenReturn(furtherInfoForDefenceCotrAdded);
-        when(furtherInfoForDefenceCotrAddedEnvelope.metadata()).thenReturn(metadata);
-        when(furtherInfoForDefenceCotrAddedEnvelope.metadata().userId()).thenReturn(Optional.of(userId.toString()));
 
         cotrEventsListener.handleFurtherInfoForDefenceCotrAdded(furtherInfoForDefenceCotrAddedEnvelope);
         verify(cotrDefenceFurtherInfoRepository).save(cotrDefenceFurtherInfoEntityArgumentCaptor.capture());
@@ -540,7 +535,6 @@ public class CotrEventsListenerTest {
                 .build());
         final String reviewNotes = reviewNotesArrayBuilder.build().toString();
         when(reviewNotesUpdatedEnvelope.payload()).thenReturn(reviewNotesUpdated);
-        when(reviewNotesUpdatedEnvelope.metadata()).thenReturn(metadata);
         when(cotrDetailsRepository.findBy(cotrId)).thenReturn(cotrDetailsEntity);
 
         cotrEventsListener.handleReviewNotesUpdated(reviewNotesUpdatedEnvelope);
@@ -609,7 +603,6 @@ public class CotrEventsListenerTest {
                 .build());
         final String reviewNotes = reviewNotesArrayBuilder.build().toString();
         when(reviewNotesUpdatedEnvelope.payload()).thenReturn(reviewNotesUpdated);
-        when(reviewNotesUpdatedEnvelope.metadata()).thenReturn(metadata);
         when(cotrDetailsRepository.findBy(cotrId)).thenReturn(cotrDetailsEntity);
 
         cotrEventsListener.handleReviewNotesUpdated(reviewNotesUpdatedEnvelope);
@@ -678,7 +671,6 @@ public class CotrEventsListenerTest {
                 .build());
         final String reviewNotes = reviewNotesArrayBuilder.build().toString();
         when(reviewNotesUpdatedEnvelope.payload()).thenReturn(reviewNotesUpdated);
-        when(reviewNotesUpdatedEnvelope.metadata()).thenReturn(metadata);
         when(cotrDetailsRepository.findBy(cotrId)).thenReturn(cotrDetailsEntity);
 
         cotrEventsListener.handleReviewNotesUpdated(reviewNotesUpdatedEnvelope);

@@ -4,12 +4,13 @@ FROM {base_image}
 
 ARG version
 ARG repo_loc=https://libraries-internal.mdv.cpp.nonlive/artifactory/repocentral
-ARG framework_libraries_version=8.0.7
-ARG framework_version=8.0.8
-ARG eventstore_version=8.3.8
-ARG activiti_version=5.22.0
-ARG wildfly_home=/opt/wildfly
-ARG wildfly_user=wildfly
+ARG framework_libraries_version=17.3.1
+ARG framework_version=17.5.0
+ARG eventstore_version=17.5.0
+ARG activiti_version=17.10.4
+
+ARG wildfly_home=/opt/jboss/wildfly
+ARG wildfly_user=jboss
 
 # service war file
 ADD ${repo_loc}/uk/gov/moj/cpp/progression/progression-service/${version}/progression-service-${version}.war ${wildfly_home}/standalone/deployments/

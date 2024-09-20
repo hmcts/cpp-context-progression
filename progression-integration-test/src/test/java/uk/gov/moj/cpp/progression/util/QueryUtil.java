@@ -1,12 +1,9 @@
 package uk.gov.moj.cpp.progression.util;
 
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
+
 import uk.gov.justice.services.test.utils.core.http.RequestParams;
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
@@ -19,8 +16,11 @@ import java.time.LocalDateTime;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
-import java.io.StringReader;
-import java.time.LocalDateTime;
+
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 
 @SuppressWarnings({"squid:S2925"})
 public class QueryUtil {

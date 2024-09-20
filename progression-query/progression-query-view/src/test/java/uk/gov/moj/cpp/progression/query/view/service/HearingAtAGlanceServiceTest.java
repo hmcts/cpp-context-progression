@@ -4,12 +4,12 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_INITIALISED;
 import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
 import static uk.gov.justice.core.courts.HearingListingStatus.SENT_FOR_LISTING;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -75,15 +75,15 @@ import java.util.stream.Collectors;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class HearingAtAGlanceServiceTest {
 
     private static final UUID CASE_ID = randomUUID();
@@ -140,7 +140,7 @@ public class HearingAtAGlanceServiceTest {
     @Mock
     private HearingEntity hearingEntity;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -937,7 +937,6 @@ public class HearingAtAGlanceServiceTest {
         when(caseDefendantHearingEntity.getHearing()).thenReturn(hearingEntity);
         when(hearingEntity.getListingStatus()).thenReturn(HearingListingStatus.HEARING_INITIALISED);
         when(hearingEntity.getPayload()).thenReturn(HEARING_PAYLOAD);
-        when(caseDefendantHearingEntity.getId()).thenReturn(new CaseDefendantHearingKey(CASE_ID, randomUUID(), randomUUID()));
 
         List<Hearings> caseHearings = this.hearingAtAGlanceService.getCaseHearings(CASE_ID);
 
@@ -951,7 +950,6 @@ public class HearingAtAGlanceServiceTest {
         when(caseDefendantHearingEntity.getHearing()).thenReturn(hearingEntity);
         when(hearingEntity.getListingStatus()).thenReturn(HearingListingStatus.HEARING_INITIALISED);
         when(hearingEntity.getPayload()).thenReturn(HEARING_PAYLOAD_WITH_NO_HEARING_DAYS);
-        when(caseDefendantHearingEntity.getId()).thenReturn(new CaseDefendantHearingKey(CASE_ID, randomUUID(), randomUUID()));
 
         List<Hearings> caseHearings = this.hearingAtAGlanceService.getCaseHearings(CASE_ID);
         assertThat(caseHearings.isEmpty(), is(false));
@@ -1015,10 +1013,6 @@ public class HearingAtAGlanceServiceTest {
         caseDefendantHearingEntities.add(caseDefendantHearingEntity1);
 
         when(caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(singletonList(caseDefendantHearingEntity));
-        when(caseDefendantHearingEntity.getHearing()).thenReturn(hearingEntity);
-        when(hearingEntity.getListingStatus()).thenReturn(HearingListingStatus.HEARING_INITIALISED);
-        when(hearingEntity.getPayload()).thenReturn(HEARING_PAYLOAD);
-        when(caseDefendantHearingEntity.getId()).thenReturn(new CaseDefendantHearingKey(CASE_ID, randomUUID(), randomUUID()));
         when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
 
@@ -1176,7 +1170,6 @@ public class HearingAtAGlanceServiceTest {
         caseDefendantHearingEntities.add(caseDefendantHearingEntity1);
         caseDefendantHearingEntities.add(caseDefendantHearingEntity2);
 
-        when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
 
         List<TrialHearing> trialHearings = this.hearingAtAGlanceService.getTrialHearings(CASE_ID);
@@ -1222,7 +1215,6 @@ public class HearingAtAGlanceServiceTest {
         caseDefendantHearingEntities.add(caseDefendantHearingEntity3);
         caseDefendantHearingEntities.add(caseDefendantHearingEntity4);
 
-        when(this.prosecutionCaseRepository.findByCaseId(CASE_ID)).thenReturn(prosecutionCaseEntity);
         when(this.caseDefendantHearingRepository.findByCaseId(CASE_ID)).thenReturn(caseDefendantHearingEntities);
 
         List<TrialHearing> trialHearings = this.hearingAtAGlanceService.getTrialHearings(CASE_ID);

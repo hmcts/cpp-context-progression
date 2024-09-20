@@ -24,13 +24,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 /**
  * 
  * @deprecated This is deprecated for Release 2.4
@@ -38,18 +36,19 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 @SuppressWarnings("squid:S1133")
 @Deprecated
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseServiceTest {
 
     final static Long VERSION = 1l;
     private static final UUID CASE_ID = UUID.randomUUID();
     private static final UUID DEFENDANT_ID = UUID.randomUUID();
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
+
     @Mock
     private CaseProgressionDetailRepository repository;
+
     @Mock
     private DefendantRepository defendantRepository;
+
     @Mock
     private OffenceRepository offenceRepository;    
 
@@ -82,11 +81,6 @@ public class CaseServiceTest {
 
     }
 
-
-
-
-
-
     @Test
     public void preSentenceReportForDefendantsRequestedTest() {
         final PreSentenceReportForDefendantsRequested event =
@@ -96,7 +90,6 @@ public class CaseServiceTest {
         final List<DefendantPSR> defendantPsrs = new ArrayList<>();
         defendantPsrs.add(defendantPSR);
 
-        when(event.getCaseId()).thenReturn(CASE_ID);
         when(event.getDefendants()).thenReturn(defendantPsrs);
         when(defendantRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(entity);
         service.preSentenceReportForDefendantsRequested(event);

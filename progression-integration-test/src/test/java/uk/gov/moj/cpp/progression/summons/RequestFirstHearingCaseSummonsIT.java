@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.summons;
 
 import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -11,16 +10,10 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.core.courts.AddDefendantsToCourtProceedings.addDefendantsToCourtProceedings;
 import static uk.gov.justice.core.courts.AssociatedPerson.associatedPerson;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
@@ -34,7 +27,8 @@ import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.core.courts.Person.person;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 import static uk.gov.justice.core.courts.SummonsApprovedOutcome.summonsApprovedOutcome;
-import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.integer;
@@ -46,10 +40,10 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCou
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
@@ -67,7 +61,6 @@ import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyTemplatePay
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.Utilities.JsonUtil.toJsonString;
 
-
 import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
@@ -78,9 +71,11 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
@@ -92,24 +87,21 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableMap;
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(DataProviderRunner.class)
-public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
+@ExtendWith(JmsResourceManagementExtension.class)
+public class RequestFirstHearingCaseSummonsIT {
 
     private static final String PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED = "progression.event.nows-material-request-recorded";
     private static final String PUBLIC_LISTING_DEFENDANTS_ADDED = "public.listing.new-defendant-added-for-court-proceedings";
@@ -133,50 +125,43 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
 
     private final String prosecutorCost = "£300.00";
 
-    private MessageProducer publicMessageProducer;
-    private MessageConsumer nowsMaterialRequestRecordedConsumer;
-    private MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker;
+    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+
+    private static final JmsMessageConsumerClient nowsMaterialRequestRecordedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerHearingPopulatedToProbationCaseWorker = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.events.hearing-populated-to-probation-caseworker").getMessageConsumerClient();
 
     private static final String DOCUMENT_TEXT = STRING.next();
 
 
-    @DataProvider
-    public static Object[][] firstHearingSummonsSpecifications() {
-        return new Object[][]{
+    public static Stream<Arguments> firstHearingSummonsSpecifications() {
+        return Stream.of(
                 // summons code, type, template name, youth defendant, number of documents, isWelsh
-                {"M", "MCA", "MCA", false, 1, false},
-                {"W", "WS", "MCA", true, 2, true}
-        };
+                Arguments.of("M", "MCA", "MCA", false, 1, false),
+                Arguments.of("W", "WS", "MCA", true, 2, true)
+        );
     }
 
-    @DataProvider
-    public static Object[][] firstHearingAddDefendantSummonsSpecifications() {
-        return new Object[][]{
+    public static Stream<Arguments> firstHearingAddDefendantSummonsSpecifications() {
+        return Stream.of(
                 // summons code, type, template name, youth defendant, number of documents
-                {"E", "EW", "EitherWay", false, 1},
-                {"W", "WS", "MCA", true, 2},
-        };
+                Arguments.of("E", "EW", "EitherWay", false, 1),
+                Arguments.of("W", "WS", "MCA", true, 2)
+        );
     }
 
-    @After
-    public void tearDown() throws JMSException {
-        publicMessageProducer.close();
-        messageConsumerHearingPopulatedToProbationCaseWorker.close();
-        nowsMaterialRequestRecordedConsumer.close();
-    }
 
-    @Before
-    public void setUp() {
-        publicMessageProducer = publicEvents.createPublicProducer();
-        nowsMaterialRequestRecordedConsumer = privateEvents.createPrivateConsumer(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED);
-        messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
-
+    @BeforeAll
+    public static void setUpClass() {
         stubInitiateHearing();
         stubDocumentCreate(DOCUMENT_TEXT);
         IdMapperStub.setUp();
         NotificationServiceStub.setUp();
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
+    }
 
+
+    @BeforeEach
+    public void setUp() {
         caseId = randomUUID().toString();
         caseUrn = generateUrn();
 
@@ -186,13 +171,8 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
         initialiseDefendantDetails();
     }
 
-    @After
-    public void cleanup() throws JMSException {
-        nowsMaterialRequestRecordedConsumer.close();
-    }
-
-    @UseDataProvider("firstHearingSummonsSpecifications")
-    @Test
+    @MethodSource("firstHearingSummonsSpecifications")
+    @ParameterizedTest
     public void shouldGenerateSummonsPayloadForFirstHearingWhenSuppressed(final String summonsCode, final String summonsType, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws IOException {
         final boolean summonsSuppressed = true;
         initiateCourtProceedings(getPayloadForInitiatingCourtProceedings(isYouth, summonsCode, summonsSuppressed, FIRST_HEARING_START_TIME, isWelsh));
@@ -219,8 +199,8 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
         }
     }
 
-    @UseDataProvider("firstHearingSummonsSpecifications")
-    @Test
+    @MethodSource("firstHearingSummonsSpecifications")
+    @ParameterizedTest
     public void shouldGenerateSummonsPayloadForFirstHearingWhenNotSuppressed(final String summonsCode, final String summonsType, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws IOException {
         final boolean summonsSuppressed = false;
         initiateCourtProceedings(getPayloadForInitiatingCourtProceedings(isYouth, summonsCode, summonsSuppressed, FIRST_HEARING_START_TIME, isWelsh));
@@ -247,8 +227,8 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
         }
     }
 
-    @UseDataProvider("firstHearingAddDefendantSummonsSpecifications")
-    @Test
+    @MethodSource("firstHearingAddDefendantSummonsSpecifications")
+    @ParameterizedTest
     public void shouldGenerateSummonsForAddedDefendant(final String summonsCode, final String summonsType, final String templateName, final boolean isYouth, final int numberOfDocuments) throws IOException {
         final boolean summonsSuppressed = false;
         final boolean isWelsh = false;
@@ -318,12 +298,6 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
 
 
     private void sendPublicEventForConfirmingDefendantAdditionInListing(final String hearingId, final String defendantId, final boolean isWelsh) {
-        final Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withUserId(randomUUID().toString())
-                .withName(PUBLIC_LISTING_DEFENDANTS_ADDED)
-                .build();
-
         JsonObject payload = createObjectBuilder()
                 .add("caseId", caseId)
                 .add("hearingId", hearingId)
@@ -335,7 +309,8 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
                 .add("hearingDateTime", FIRST_HEARING_START_TIME.toString())
                 .build();
 
-        sendMessage(publicMessageProducer, PUBLIC_LISTING_DEFENDANTS_ADDED, payload, metadata);
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_DEFENDANTS_ADDED, randomUUID()), payload);
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_DEFENDANTS_ADDED, publicEventEnvelope);
     }
 
     private String getPayloadForInitiatingCourtProceedings(final boolean isYouth, final String summonsCode, final boolean summonsSuppressed, final ZonedDateTime startDateTime, final boolean isWelsh) {

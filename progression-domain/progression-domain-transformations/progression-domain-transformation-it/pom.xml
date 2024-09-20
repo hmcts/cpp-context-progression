@@ -5,15 +5,9 @@
     <parent>
         <artifactId>progression-domain-transformations</artifactId>
         <groupId>uk.gov.moj.cpp.progression</groupId>
-        <version>8.0.191-SNAPSHOT</version>
+        <version>17.0.2-FRAMEWORK-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <properties>
-        <framework.version>8.0.4</framework.version>
-        <event-store.version>8.0.2</event-store.version>
-        <stream-transformation.version>8.0.1-SNAPSHOT</stream-transformation.version>
-        <json-schema-catalog.version>1.7.6</json-schema-catalog.version>
-    </properties>
 
     <artifactId>progression-domain-transformation-it</artifactId>
 
@@ -21,24 +15,20 @@
         <dependency>
             <groupId>uk.gov.justice.event-store</groupId>
             <artifactId>event-repository-jdbc</artifactId>
-            <version>${event-store.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.event-store</groupId>
             <artifactId>event-repository-liquibase</artifactId>
-            <version>${event-store.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.event-store</groupId>
             <artifactId>published-event-processor</artifactId>
-            <version>${event-store.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>test-utils-core</artifactId>
             <!-- Required to overwrite the managed dependencies in parent pom -->
             <scope>compile</scope>
-            <version>${framework.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.h2database</groupId>
@@ -49,19 +39,18 @@
         <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>test-utils-common</artifactId>
-            <version>${framework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-library</artifactId>
+            <artifactId>hamcrest</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -84,7 +73,6 @@
         <dependency>
             <groupId>uk.gov.justice.event-store</groupId>
             <artifactId>test-utils-event</artifactId>
-            <version>${event-store.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.utils</groupId>

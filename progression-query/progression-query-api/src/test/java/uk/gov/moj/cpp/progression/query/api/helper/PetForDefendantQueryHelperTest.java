@@ -6,7 +6,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.moj.cpp.progression.query.api.PetQueryApi.CASE_ID;
@@ -33,14 +33,14 @@ import java.io.IOException;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class PetForDefendantQueryHelperTest {
     @Mock
     private Requester requester;
@@ -170,7 +170,6 @@ public class PetForDefendantQueryHelperTest {
         final JsonObject materialPetPayload = fetchMaterialPetPayload(petId, formId, defendantId1, defendantId2, defendantId3, caseId, offenceId1, offenceId2);
 
         when(progressionService.getPetsForCase(petQueryView, query, caseId)).thenReturn(petsForCasePayload);
-        when(materialService.getPet(requester, query, petId)).thenReturn(materialPetPayload);
 
         final JsonObject payload = petForDefendantQueryHelper.buildPetForDefendant(requester, query);
 

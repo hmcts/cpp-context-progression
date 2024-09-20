@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.service;
 import static com.fasterxml.jackson.annotation.JsonCreator.Mode.PROPERTIES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -27,6 +27,7 @@ import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.additionalproperties.AdditionalPropertiesModule;
 import uk.gov.justice.services.common.converter.jackson.jsr353.InclusionAwareJSR353Module;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.accesscontrol.AccessControlViolationException;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -57,17 +58,17 @@ import javax.json.JsonObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MatchedDefendantLoadServiceTest {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final String SAMPLE_PNC_ID_WITH_SLASH = "2099/1234567L";
@@ -85,7 +86,7 @@ public class MatchedDefendantLoadServiceTest {
     private static final String SAMPLE_CASE_URN = "99AB21233";
     private static final String SAMPLE_PROSECUTION_AUTHORITY_REFERENCE = "PAR1234567";
     private static final LocalDate SAMPLE_DATE_OF_BIRTH = LocalDate.of(1987, 12, 5);
-    private static final ZonedDateTime SAMPLE_COURT_PROCEEDINGS_INITIATED = ZonedDateTime.now();
+    private static final ZonedDateTime SAMPLE_COURT_PROCEEDINGS_INITIATED = new UtcClock().now();
 
     private static final int DEFAULT_PAGE_SIZE = 25;
     private static final boolean DEFAULT_PROCEEDINGS_CONCLUDED = false;
@@ -150,9 +151,7 @@ public class MatchedDefendantLoadServiceTest {
     @Captor
     private ArgumentCaptor<Stream<JsonEnvelope>> persistEventCapture;
 
-    private CaseAggregate caseAggregate;
-
-    @Before
+    @BeforeEach
     public void setup() {
         ObjectMapper objectMapper = new ObjectMapper()
                 .registerModule(new ParameterNamesModule(PROPERTIES))
@@ -163,21 +162,6 @@ public class MatchedDefendantLoadServiceTest {
         setField(this.listToJsonArrayConverter, "mapper", objectMapper);
         setField(this.listToJsonArrayConverter, "stringToJsonObjectConverter", stringToJsonObjectConverter);
         setField(this.matchedDefendantHelper, "listToJsonArrayConverter", this.listToJsonArrayConverter);
-
-        caseAggregate = new CaseAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-
-        final MetadataBuilder metadataBuilder = metadataBuilder()
-                .withId(UUID.randomUUID())
-                .withName("unifiedsearch.query.defendant.cases");
-        when(envelope.metadata()).thenReturn(metadataBuilder.build());
-
-        when(emptyCpSearchResponse.payload())
-                .thenReturn(MatchedDefendantsResult.matchedDefendantsResult()
-                        .withTotalResults(0)
-                        .withCases(new ArrayList<>())
-                        .build());
     }
 
     @Test
@@ -185,6 +169,10 @@ public class MatchedDefendantLoadServiceTest {
         //given
         final Defendant defendant = Defendant.defendant().build();
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
         matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
 
@@ -200,6 +188,11 @@ public class MatchedDefendantLoadServiceTest {
 
         when(requester.requestAsAdmin(any(), any())).thenThrow(new AccessControlViolationException(""));
 
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName("unifiedsearch.query.defendant.cases");
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+
         try {
             matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(envelope, prosecutionCase);
             assertThat("AccessControlViolationException was expected", false);
@@ -213,6 +206,21 @@ public class MatchedDefendantLoadServiceTest {
         final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_LESS_THAN_12_CHARS, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName("unifiedsearch.query.defendant.cases");
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+
+        when(emptyCpSearchResponse.payload())
+                .thenReturn(MatchedDefendantsResult.matchedDefendantsResult()
+                        .withTotalResults(0)
+                        .withCases(new ArrayList<>())
+                        .build());
 
         when(cpSearchResponse.payload()).thenReturn(result);
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
@@ -264,6 +272,14 @@ public class MatchedDefendantLoadServiceTest {
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
 
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName("unifiedsearch.query.defendant.cases");
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
         when(cpSearchResponse.payload()).thenReturn(result); // exact - pncId
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class))).thenReturn(cpSearchResponse);
 
@@ -279,6 +295,14 @@ public class MatchedDefendantLoadServiceTest {
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
 
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName("unifiedsearch.query.defendant.cases");
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
         when(cpSearchResponse.payload()).thenReturn(result);
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
                 .thenReturn(cpSearchResponse) // exact - pncId (with slash)
@@ -295,6 +319,21 @@ public class MatchedDefendantLoadServiceTest {
         final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_WITHOUT_SLASH, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName("unifiedsearch.query.defendant.cases");
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+
+        when(emptyCpSearchResponse.payload())
+                .thenReturn(MatchedDefendantsResult.matchedDefendantsResult()
+                        .withTotalResults(0)
+                        .withCases(new ArrayList<>())
+                        .build());
 
         when(cpSearchResponse.payload()).thenReturn(result);
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
@@ -314,6 +353,14 @@ public class MatchedDefendantLoadServiceTest {
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
 
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName("unifiedsearch.query.defendant.cases");
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
         when(cpSearchResponse.payload()).thenReturn(result); // exact - croNumber
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class))).thenReturn(cpSearchResponse);
 
@@ -329,6 +376,14 @@ public class MatchedDefendantLoadServiceTest {
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE * 3 - 1), MatchedDefendantsResult.class);
 
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName("unifiedsearch.query.defendant.cases");
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
         when(cpSearchResponse.payload()).thenReturn(result); // exact - pncId (with and without slash)
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class))).thenReturn(cpSearchResponse);
 
@@ -395,6 +450,16 @@ public class MatchedDefendantLoadServiceTest {
     @Test
     public void shouldCallPartialSearch_whenExactSearchReturnEmpty() throws Throwable {
         final DefendantPartialMatchCreated defendantPartialMatchCreated = DefendantPartialMatchCreated.defendantPartialMatchCreated().build();
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(emptyCpSearchResponse.payload())
+                .thenReturn(MatchedDefendantsResult.matchedDefendantsResult()
+                        .withTotalResults(0)
+                        .withCases(new ArrayList<>())
+                        .build());
+
         caseAggregate.apply(DefendantPartialMatchCreated.defendantPartialMatchCreated().build());
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -498,6 +563,21 @@ public class MatchedDefendantLoadServiceTest {
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
 
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName("unifiedsearch.query.defendant.cases");
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+
+        when(emptyCpSearchResponse.payload())
+                .thenReturn(MatchedDefendantsResult.matchedDefendantsResult()
+                        .withTotalResults(0)
+                        .withCases(new ArrayList<>())
+                        .build());
+
         when(cpSearchResponse.payload()).thenReturn(result);
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
                 .thenReturn(emptyCpSearchResponse) // exact - pncId (with slash)
@@ -519,6 +599,21 @@ public class MatchedDefendantLoadServiceTest {
         final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_WITHOUT_SLASH, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName("unifiedsearch.query.defendant.cases");
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+
+        when(emptyCpSearchResponse.payload())
+                .thenReturn(MatchedDefendantsResult.matchedDefendantsResult()
+                        .withTotalResults(0)
+                        .withCases(new ArrayList<>())
+                        .build());
 
         when(cpSearchResponse.payload()).thenReturn(result);
 
@@ -543,6 +638,21 @@ public class MatchedDefendantLoadServiceTest {
         final Defendant defendant = getSampleDefendant(SAMPLE_PNC_ID_WITH_SLASH, SAMPLE_CRO_NUMBER, "");
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName("unifiedsearch.query.defendant.cases");
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+
+        when(emptyCpSearchResponse.payload())
+                .thenReturn(MatchedDefendantsResult.matchedDefendantsResult()
+                        .withTotalResults(0)
+                        .withCases(new ArrayList<>())
+                        .build());
 
         when(cpSearchResponse.payload()).thenReturn(result);
 
@@ -569,6 +679,21 @@ public class MatchedDefendantLoadServiceTest {
         final ProsecutionCase prosecutionCase = getSampleProsecutionCase(SAMPLE_CASE_URN, SAMPLE_PROSECUTION_AUTHORITY_REFERENCE, defendant);
         final MatchedDefendantsResult result = jsonObjectConverter.convert(getUnifiedSearchResult(DEFAULT_PAGE_SIZE), MatchedDefendantsResult.class);
 
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName("unifiedsearch.query.defendant.cases");
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+
+        when(emptyCpSearchResponse.payload())
+                .thenReturn(MatchedDefendantsResult.matchedDefendantsResult()
+                        .withTotalResults(0)
+                        .withCases(new ArrayList<>())
+                        .build());
+
         when(cpSearchResponse.payload()).thenReturn(result);
 
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(), eq(MatchedDefendantsResult.class)))
@@ -593,6 +718,16 @@ public class MatchedDefendantLoadServiceTest {
     public void shouldCallMultipleTimesPartialSearch_whenExactSearchReturnEmptyAndTotalCountGreaterThanPageSize() throws EventStreamException {
         //given
         final DefendantPartialMatchCreated defendantPartialMatchCreated = DefendantPartialMatchCreated.defendantPartialMatchCreated().build();
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(emptyCpSearchResponse.payload())
+                .thenReturn(MatchedDefendantsResult.matchedDefendantsResult()
+                        .withTotalResults(0)
+                        .withCases(new ArrayList<>())
+                        .build());
+
         caseAggregate.apply(DefendantPartialMatchCreated.defendantPartialMatchCreated().build());
         final Metadata metadata = Envelope
                 .metadataBuilder()

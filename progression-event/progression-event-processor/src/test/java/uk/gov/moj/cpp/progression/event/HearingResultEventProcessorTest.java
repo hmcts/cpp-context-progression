@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.rules.ExpectedException.none;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -97,36 +97,30 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingResultEventProcessorTest {
 
     @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
-
-    @Spy
-    @InjectMocks
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Rule
     public ExpectedException expectedException = none();
@@ -144,7 +138,10 @@ public class HearingResultEventProcessorTest {
     private ArgumentCaptor<Envelope<?>> envelopeArgumentCaptor2;
 
     @Captor
-    private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+    private ArgumentCaptor<DefaultEnvelope> envelopeArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> jsonEnvelopeArgumentCaptor;
 
     @Captor
     private ArgumentCaptor<List<UUID>> applicationIdsArgumentCaptor;
@@ -212,7 +209,7 @@ public class HearingResultEventProcessorTest {
     @Captor
     private ArgumentCaptor<Boolean> isBoxHearingCaptor;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -244,13 +241,10 @@ public class HearingResultEventProcessorTest {
                 metadataWithRandomUUID("public.hearing.resulted"),
                 objectToJsonObjectConverter.convert(hearingResulted));
 
-        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
-        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
-
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
-        verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
-        assertThat(envelopeArgumentCaptor.getValue(), notNullValue());
+        verify(this.sender, times(1)).send(this.envelopeArgumentCaptor2.capture());
+        assertThat(envelopeArgumentCaptor2.getValue(), notNullValue());
     }
 
     @Test
@@ -293,10 +287,6 @@ public class HearingResultEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("public.hearing.resulted"),
                 objectToJsonObjectConverter.convert(hearingResulted));
-
-        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
-        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
-        when(hearingResultHelper.doHearingContainNextHearingResults(any())).thenReturn(true);
 
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
@@ -371,8 +361,6 @@ public class HearingResultEventProcessorTest {
                 metadataWithRandomUUID("progression.event.prosecution-cases-resulted"),
                 objectToJsonObjectConverter.convert(prosecutionCasesResulted));
 
-        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
-        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
         this.eventProcessor.handleProsecutionCasesResulted(event);
 
         verify(this.sender, never()).send(this.envelopeArgumentCaptor.capture());
@@ -409,9 +397,6 @@ public class HearingResultEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("public.hearing.resulted"),
                 objectToJsonObjectConverter.convert(hearingResulted));
-
-        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
-        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
 
         this.eventProcessor.handleHearingResultedPublicEvent(event);
 
@@ -483,19 +468,14 @@ public class HearingResultEventProcessorTest {
                 .build());
         final NextHearingDetails nextHearingDetails = new NextHearingDetails(hearingListingNeedsList, null);
         final List<HearingListingNeeds> hearingListingNeedsForNextHearings = singletonList(HearingListingNeeds.hearingListingNeeds().build());
-        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
-        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
         when(nextHearingService.getNextHearingDetails(any(), any(), any())).thenReturn(nextHearingDetails);
-        when(referenceDataService.getAllResultDefinitions(any(), any(), any())).thenReturn(generateResultDefinitionsJson());
         when(hearingToHearingListingNeedsTransformer.transform(any(), any(), any())).thenReturn(hearingListingNeedsForNextHearings);
         when(hearingResultHelper.doHearingContainNextHearingResults(any())).thenReturn(true);
         this.eventProcessor.handleProsecutionCasesResulted(event);
 
         verify(this.sender).send(this.envelopeArgumentCaptor.capture());
-        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(),
-                courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(),
-                hearingIdCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
-        verify(listingService, atLeastOnce()).listCourtHearing(envelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(jsonEnvelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
+        verify(listingService, atLeastOnce()).listCourtHearing(jsonEnvelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(1));
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(defendantUuid1));
         assertThat(listCourtHearingArgumentCaptor.getValue().getShadowListedOffences().size(), is(2));
@@ -680,13 +660,6 @@ public class HearingResultEventProcessorTest {
                 metadataWithRandomUUID("progression.event.prosecution-cases-resulted"),
                 objectToJsonObjectConverter.convert(prosecutionCasesResulted));
 
-        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
-        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
-        when(hearingResultHelper.doHearingContainNextHearingResults(any())).thenReturn(true);
-        final List<HearingListingNeeds> hearingListingNeedsForNextHearings = newHearing ? singletonList(HearingListingNeeds.hearingListingNeeds().build()) : new ArrayList<>();
-        when(hearingListingNeedsTransformer.transform(any()))
-                .thenReturn(hearingListingNeedsForNextHearings);
-
         eventProcessor.handleHearingResultedPublicEvent(event);
         verify(this.sender, times(1)).send(this.envelopeArgumentCaptor.capture());
     }
@@ -713,11 +686,8 @@ public class HearingResultEventProcessorTest {
                 .build());
         final NextHearingDetails nextHearingDetails = new NextHearingDetails(hearingListingNeedsList, null);
         final List<HearingListingNeeds> hearingListingNeedsForNextHearings = singletonList(HearingListingNeeds.hearingListingNeeds().build());
-        final Optional<JsonObject> hearingJsonOptional = getHearingJson();
 
-        when(progressionService.getHearing(any(), any())).thenReturn(hearingJsonOptional);
         when(nextHearingService.getNextHearingDetails(any(), any(), any())).thenReturn(nextHearingDetails);
-        when(referenceDataService.getAllResultDefinitions(any(), any(), any())).thenReturn(generateResultDefinitionsJson());
         when(hearingToHearingListingNeedsTransformer.transform(any(), any(), any())).thenReturn(hearingListingNeedsForNextHearings);
         when(hearingResultHelper.doHearingContainNextHearingResults(any())).thenReturn(true);
 
@@ -725,10 +695,8 @@ public class HearingResultEventProcessorTest {
 
         verify(this.sender).send(this.envelopeArgumentCaptor.capture());
         verify(nextHearingService, atLeastOnce()).getNextHearingDetails(any(), Mockito.eq(true), any());
-        verify(progressionService, atLeastOnce()).updateCase(envelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(),
-                defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(),
-                hearingIdCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
-        verify(listingService, atLeastOnce()).listCourtHearing(envelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
+        verify(progressionService, atLeastOnce()).updateCase(jsonEnvelopeArgumentCaptor.capture(), prosecutionCaseArgumentCaptor.capture(), courtApplicationsArgumentCaptor.capture(), defendantJudicialResultArgumentCaptor.capture(), courtCentreArgumentCaptor.capture(), hearingIdCaptor.capture(), hearingTypeCaptor.capture(), jurisdictionTypeCaptor.capture(), isBoxHearingCaptor.capture());
+        verify(listingService, atLeastOnce()).listCourtHearing(jsonEnvelopeArgumentCaptor.capture(), listCourtHearingArgumentCaptor.capture());
 
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().size(), is(1));
         assertThat(prosecutionCaseArgumentCaptor.getValue().getDefendants().get(0).getId(), is(defendantUUUID));

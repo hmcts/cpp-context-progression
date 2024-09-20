@@ -9,8 +9,10 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
@@ -22,17 +24,16 @@ import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_GENERATED;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_RECORDED;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.initiateCourtProceedingsForMatchedDefendants;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.http.HeaderConstants;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
@@ -43,37 +44,33 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 
 public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
     private static final String DOCUMENT_TEXT = STRING.next();
-    protected MessageConsumer privateEventsConsumer;
-    protected MessageConsumer privateEventsConsumer2;
+
+    private static final JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_RECORDED).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient privateEventsConsumer2 = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_GENERATED).getMessageConsumerClient();
     private String courtCentreId;
     private StringToJsonObjectConverter stringToJsonObjectConverter;
-    private MessageConsumer consumerForCourtApplicationCreated;
+    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-application-proceedings-initiated").getMessageConsumerClient();
     private ProsecutionCaseUpdateDefendantHelper helper;
 
 
-
-    @Before
+    @BeforeEach
     public void setup() {
         stringToJsonObjectConverter = new StringToJsonObjectConverter();
         courtCentreId = randomUUID().toString();
-        privateEventsConsumer = privateEvents.createPrivateConsumer(EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_RECORDED);
-        privateEventsConsumer2 = privateEvents.createPrivateConsumer(EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_GENERATED);
-        consumerForCourtApplicationCreated = publicEvents.createPublicConsumer("public.progression.court-application-proceedings-initiated");
         DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
         NotificationServiceStub.setUp();
 
@@ -95,17 +92,17 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
         assertThat(jsonResponse.get("courtCentreId"), is(courtCentreId));
 
-        final JsonPath jsonResponse2 = retrieveMessage(privateEventsConsumer2);
+        final JsonPath jsonResponse2 = retrieveMessageAsJsonPath(privateEventsConsumer2);
         assertThat(jsonResponse2.get("courtCentreId"), is(courtCentreId));
         assertThat(jsonResponse2.get("fileId"), is(notNullValue()));
         verifyPrisonCourtRegisterRequestsExists(UUID.fromString(courtCentreId), hearingId);
     }
 
     @Test
-    public void shouldAddPrisonCourtDocumentRequestWithApplication() throws IOException, JMSException {
+    public void shouldAddPrisonCourtDocumentRequestWithApplication() throws IOException, JSONException {
 
         final UUID caseId = randomUUID();
         final UUID hearingId = randomUUID();
@@ -113,13 +110,12 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
         final UUID defendantId = randomUUID();
         helper = new ProsecutionCaseUpdateDefendantHelper(caseId.toString(), defendantId.toString());
 
-        try (final MessageConsumer publicEventConsumerForProsecutionCaseCreated = publicEvents
-                .createPublicConsumer("public.progression.prosecution-case-created")) {
-            initiateCourtProceedingsForMatchedDefendants(caseId.toString(), defendantId.toString(), defendantId.toString());
-            verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
-        }
+        final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
 
-        helper.updateDefendantWithCustodyEstablishmentInfo(caseId.toString() , defendantId.toString(), defendantId.toString());
+        initiateCourtProceedingsForMatchedDefendants(caseId.toString(), defendantId.toString(), defendantId.toString());
+        verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
+
+        helper.updateDefendantWithCustodyEstablishmentInfo(caseId.toString(), defendantId.toString(), defendantId.toString());
 
         intiateCourtProceedingForApplication(courtApplicationId.toString(), caseId.toString(), defendantId.toString(), defendantId.toString(), hearingId.toString(), "applications/progression.initiate-court-proceedings-for-application_for_prison_court_register.json");
         verifyCourtApplicationCreatedPublicEvent();
@@ -135,11 +131,11 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
         assertThat(jsonResponse.get("courtCentreId"), is(courtCentreId));
         assertThat(jsonResponse.get("prisonCourtRegister.defendant.prosecutionCasesOrApplications[0].courtApplicationId"), is(courtApplicationId.toString()));
 
-        final JsonPath jsonResponse2 = retrieveMessage(privateEventsConsumer2);
+        final JsonPath jsonResponse2 = retrieveMessageAsJsonPath(privateEventsConsumer2);
         assertThat(jsonResponse2.get("courtCentreId"), is(courtCentreId));
         assertThat(jsonResponse2.get("fileId"), is(notNullValue()));
         verifyPrisonCourtRegisterRequestsExists(UUID.fromString(courtCentreId), hearingId);
@@ -172,14 +168,14 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
     }
 
     private void verifyCourtApplicationCreatedPublicEvent() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
         final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
         assertThat(applicationReference, is(notNullValue()));
     }
 
-    private void verifyInMessagingQueueForProsecutionCaseCreated(final MessageConsumer publicEventConsumerForProsecutionCaseCreated) {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(publicEventConsumerForProsecutionCaseCreated);
+    private void verifyInMessagingQueueForProsecutionCaseCreated(final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated) {
+        final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumerForProsecutionCaseCreated);
         assertTrue(message.isPresent());
         final JsonObject reportingRestrictionObject = message.get().getJsonObject("prosecutionCase")
                 .getJsonArray("defendants").getJsonObject(0)

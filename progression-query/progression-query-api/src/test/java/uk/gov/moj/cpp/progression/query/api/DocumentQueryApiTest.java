@@ -2,20 +2,19 @@ package uk.gov.moj.cpp.progression.query.api;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 
-import uk.gov.QueryClientTestBase;
 import uk.gov.justice.api.resource.service.DefenceQueryService;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -32,8 +31,6 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
 import uk.gov.moj.cpp.progression.query.SharedCourtDocumentsQueryView;
-import uk.gov.moj.cpp.progression.query.api.vo.Permission;
-import uk.gov.moj.cpp.progression.query.api.vo.UserOrganisationDetails;
 
 import java.util.HashMap;
 import java.util.List;
@@ -44,16 +41,16 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DocumentQueryApiTest {
     public static final String CASE_LEVEL = "case level";
     public static final String DEFENDANT_LEVEL = "defendant level";
@@ -170,7 +167,6 @@ public class DocumentQueryApiTest {
     @Test
     public void shouldHandleSearchCourtDocumentsQueryWithPagination() {
         when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.with.pagination").build());
-        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().build());
         when(courtDocumentQueryView.searchCourtDocumentsWithPagination(query)).thenReturn(response);
 
         assertThat(target.searchCourtDocumentsWithPagination(query), equalTo(response));
@@ -361,29 +357,24 @@ public class DocumentQueryApiTest {
     }
 
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void shouldThrowBadRequestWhenCaseIdAndApplicationIdAndDefendantIdNotSend() {
-        when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").build());
         when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().build());
-        when(requester.request(query)).thenReturn(response);
 
-        target.searchCourtDocumentsForDefence(query);
+        assertThrows(BadRequestException.class, () -> target.searchCourtDocumentsForDefence(query));
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void shouldThrowBadRequestWhenCaseIdNotSendWithDefendantId() {
-        when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").build());
         when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("defendantId", randomUUID().toString()).build());
-        when(requester.request(query)).thenReturn(response);
 
-        target.searchCourtDocumentsForDefence(query);
+        assertThrows(BadRequestException.class, () -> target.searchCourtDocumentsForDefence(query));
     }
 
     @Test
     public void shouldReturnEmptyDocumentListWhenNoAssociatedDefendantFound() {
         when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").withUserId(randomUUID().toString()).build());
         when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("caseId", randomUUID().toString()).add("defendantId", randomUUID().toString()).build());
-        when(requester.request(query)).thenReturn(response);
 
         final JsonEnvelope jsonEnvelope = target.searchCourtDocumentsForDefence(query);
         assertThat(jsonEnvelope.payloadAsJsonObject().getJsonArray("documentIndices").size(), is(0));
@@ -433,20 +424,12 @@ public class DocumentQueryApiTest {
                         .withCaseIds(singletonList(randomUUID()))
                         .build()))
                 .build();
-        final Metadata metadata = QueryClientTestBase.metadataFor("progression.query.courtdocuments.for.defence", randomUUID());
-        final Envelope<Object> envelope = Envelope.envelopeFrom(metadata, courtdocuments);
 
         when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(response);
 
         //Given
         when(defenceQueryService.getDefendantList(any(), any())).thenReturn(asList(defendantId1, defendantId2));
-        when(userDetailsLoader.getOrganisationDetailsForUser(any(), any(), any())).thenReturn(new UserOrganisationDetails(fromString("4a18bec5-ab1a-410a-9889-885694356401"), "Test Lab"));
         when (jsonObjectToObjectConverter.convert(response.payloadAsJsonObject(), Courtdocuments.class)).thenReturn(courtdocuments);
-        Permission firstPermission = Permission.permission().withSource(fromString("4a18bec5-ab1a-410a-9889-885694356401"))
-                .withTarget(defendantId1).build();
-        Permission secondPermission = Permission.permission().withSource(fromString("4a18bec5-ab1a-410a-9889-885694356402"))
-                .withTarget(defendantId1).build();
-        when(userDetailsLoader.getPermissions(any(), any(), any())).thenReturn(asList(firstPermission, secondPermission));
 
         final JsonEnvelope responseEnvelope = target.searchCourtDocumentsForDefence(query);
 
@@ -472,20 +455,11 @@ public class DocumentQueryApiTest {
                         .withCaseIds(singletonList(randomUUID()))
                         .build()))
                 .build();
-        final Metadata metadata = QueryClientTestBase.metadataFor("progression.query.courtdocuments.for.defence", randomUUID());
-        final Envelope<Object> envelope = Envelope.envelopeFrom(metadata, courtdocuments);
-
         when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(response);
 
         //Given
         when(defenceQueryService.getDefendantList(any(), any())).thenReturn(asList(defendantId1, defendantId2));
-        when(userDetailsLoader.getOrganisationDetailsForUser(any(), any(), any())).thenReturn(new UserOrganisationDetails(fromString("4a18bec5-ab1a-410a-9889-885694356411"), "Test Lab"));
         when (jsonObjectToObjectConverter.convert(response.payloadAsJsonObject(), Courtdocuments.class)).thenReturn(courtdocuments);
-        Permission firstPermission = Permission.permission().withSource(fromString("4a18bec5-ab1a-410a-9889-885694356401"))
-                .withTarget(defendantId1).build();
-        Permission secondPermission = Permission.permission().withSource(fromString(userId))
-                .withTarget(defendantId1).build();
-        when(userDetailsLoader.getPermissions(any(), any(), any())).thenReturn(asList(firstPermission, secondPermission));
 
         final JsonEnvelope responseEnvelope = target.searchCourtDocumentsForDefence(query);
 

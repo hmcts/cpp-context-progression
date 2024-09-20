@@ -9,9 +9,10 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
@@ -41,6 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -48,43 +50,45 @@ import javax.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings("JUnitMalformedDeclaration")
-@RunWith(DataProviderRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PublishCourtListPayloadBuilderServiceTest {
 
-    @DataProvider
-    public static Object[][] fixedDateEventAndPayloadLocation() {
-        return new Object[][]{
-                {"publish-court-list/fixed-date/event/draft-court-list-published-single-hearing.json",
+    static Stream<Arguments>  fixedDateEventAndPayloadLocation() {
+        return Stream.of(
+                Arguments.of("publish-court-list/fixed-date/event/draft-court-list-published-single-hearing.json",
                         "publish-court-list/fixed-date/payload/expected-draft-publish-court-list-single-hearing-defence.json",
                         "publish-court-list/fixed-date/payload/expected-draft-publish-court-list-single-hearing-defence-advocate.json"
-                },
-                {"publish-court-list/fixed-date/event/draft-court-list-published-single-hearing-no-courtroom.json",
+                ),
+                Arguments.of("publish-court-list/fixed-date/event/draft-court-list-published-single-hearing-no-courtroom.json",
                         "publish-court-list/fixed-date/payload/expected-draft-publish-court-list-single-hearing-no-courtroom-defence.json",
                         "publish-court-list/fixed-date/payload/expected-draft-publish-court-list-single-hearing-no-courtroom-defence-advocate.json"
-                },
-                {"publish-court-list/fixed-date/event/final-court-list-published-single-hearing.json",
+                ),
+                Arguments.of("publish-court-list/fixed-date/event/final-court-list-published-single-hearing.json",
                         "publish-court-list/fixed-date/payload/expected-final-publish-court-list-single-hearing-defence.json",
                         "publish-court-list/fixed-date/payload/expected-final-publish-court-list-single-hearing-defence-advocate.json"
-                },
-                {"publish-court-list/fixed-date/event/final-court-list-published-single-hearing-no-courtroom.json",
+                ),
+                Arguments.of("publish-court-list/fixed-date/event/final-court-list-published-single-hearing-no-courtroom.json",
                         "publish-court-list/fixed-date/payload/expected-final-publish-court-list-single-hearing-no-courtroom-defence.json",
                         "publish-court-list/fixed-date/payload/expected-final-publish-court-list-single-hearing-no-courtroom-defence-advocate.json"
-                },
-        };
+                )
+                );
     }
 
-    @DataProvider
+    @ParameterizedTest
+    @MethodSource("amendmentType")
     public static Object[][] selfRepresentedDefendantEventLocation() {
         return new Object[][]{
                 {"publish-court-list/fixed-date/event/draft-court-list-published-defendant-self-represented.json"},
@@ -94,45 +98,45 @@ public class PublishCourtListPayloadBuilderServiceTest {
         };
     }
 
-    @DataProvider
-    public static Object[][] weekCommencingEventAndPayloadLocation() {
-        return new Object[][]{
-                {"publish-court-list/week-commencing/event/warn-court-list-published-single-hearing-fixed-date.json",
+    static Stream<Arguments> weekCommencingEventAndPayloadLocation() {
+        return Stream.of(
+                Arguments.of("publish-court-list/week-commencing/event/warn-court-list-published-single-hearing-fixed-date.json",
                         "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-fixed-date-defence.json",
                         "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-fixed-date-defence-advocate.json",
-                        "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-fixed-date-prosecutor.json"},
-                {"publish-court-list/week-commencing/event/warn-court-list-published-single-hearing-fixed-date-no-courtroom.json",
+                        "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-fixed-date-prosecutor.json"),
+                Arguments.of("publish-court-list/week-commencing/event/warn-court-list-published-single-hearing-fixed-date-no-courtroom.json",
                         "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-fixed-date-no-courtroom-defence.json",
                         "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-fixed-date-no-courtroom-defence-advocate.json",
-                        "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-fixed-date-no-courtroom-prosecutor.json"},
-                {"publish-court-list/week-commencing/event/warn-court-list-published-single-hearing-week-commencing.json",
+                        "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-fixed-date-no-courtroom-prosecutor.json"),
+                Arguments.of("publish-court-list/week-commencing/event/warn-court-list-published-single-hearing-week-commencing.json",
                         "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-week-commencing-defence.json",
                         "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-week-commencing-defence-advocate.json",
-                        "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-week-commencing-prosecutor.json"},
-                {"publish-court-list/week-commencing/event/warn-court-list-published-single-hearing-week-commencing-no-courtroom.json",
+                        "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-week-commencing-prosecutor.json"),
+                Arguments.of("publish-court-list/week-commencing/event/warn-court-list-published-single-hearing-week-commencing-no-courtroom.json",
                         "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-week-commencing-no-courtroom-defence.json",
                         "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-week-commencing-no-courtroom-defence-advocate.json",
-                        "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-week-commencing-no-courtroom-prosecutor.json"},
-                {"publish-court-list/week-commencing/event/firm-court-list-published-single-hearing-fixed-date.json",
+                        "publish-court-list/week-commencing/payload/expected-warn-publish-court-list-single-hearing-week-commencing-no-courtroom-prosecutor.json"),
+                Arguments.of("publish-court-list/week-commencing/event/firm-court-list-published-single-hearing-fixed-date.json",
                         "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-fixed-date-defence.json",
                         "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-fixed-date-defence-advocate.json",
-                        "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-fixed-date-prosecutor.json"},
-                {"publish-court-list/week-commencing/event/firm-court-list-published-single-hearing-fixed-date-no-courtroom.json",
+                        "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-fixed-date-prosecutor.json"),
+                Arguments.of("publish-court-list/week-commencing/event/firm-court-list-published-single-hearing-fixed-date-no-courtroom.json",
                         "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-fixed-date-no-courtroom-defence.json",
                         "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-fixed-date-no-courtroom-defence-advocate.json",
-                        "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-fixed-date-no-courtroom-prosecutor.json"},
-                {"publish-court-list/week-commencing/event/firm-court-list-published-single-hearing-week-commencing.json",
+                        "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-fixed-date-no-courtroom-prosecutor.json"),
+            Arguments.of("publish-court-list/week-commencing/event/firm-court-list-published-single-hearing-week-commencing.json",
                         "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-week-commencing-defence.json",
                         "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-week-commencing-defence-advocate.json",
-                        "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-week-commencing-prosecutor.json"},
-                {"publish-court-list/week-commencing/event/firm-court-list-published-single-hearing-week-commencing-no-courtroom.json",
+                        "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-week-commencing-prosecutor.json"),
+        Arguments.of("publish-court-list/week-commencing/event/firm-court-list-published-single-hearing-week-commencing-no-courtroom.json",
                         "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-week-commencing-no-courtroom-defence.json",
                         "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-week-commencing-no-courtroom-defence-advocate.json",
-                        "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-week-commencing-no-courtroom-prosecutor.json"},
-        };
+                        "publish-court-list/week-commencing/payload/expected-firm-publish-court-list-single-hearing-week-commencing-no-courtroom-prosecutor.json")
+                );
     }
 
-    @DataProvider
+    @ParameterizedTest
+    @MethodSource("amendmentType")
     public static Object[][] weekCommencingEventLocationForCPSProsecutor() {
         return new Object[][]{
                 {"publish-court-list/week-commencing/event/warn-court-list-published-single-hearing-week-commencing.json"},
@@ -184,13 +188,13 @@ public class PublishCourtListPayloadBuilderServiceTest {
     @InjectMocks
     private PublishCourtListPayloadBuilderService underTest;
 
-    @Before
+    @BeforeEach
     public void setup() {
         initMocks(this);
     }
 
-    @Test
-    @UseDataProvider("fixedDateEventAndPayloadLocation")
+    @ParameterizedTest
+    @MethodSource("fixedDateEventAndPayloadLocation")
     public void shouldPrepareDocumentPayloadForDefenceOrganisationOnlyWhenFixedDateCourtListIsPublishedForSingleHearing(final String courtListPublishedEventLocation,
                                                                                                                         final String expectedPayloadLocationForDefence,
                                                                                                                         final String expectedPayloadLocationForDefenceAdvocate) throws Exception {
@@ -203,9 +207,9 @@ public class PublishCourtListPayloadBuilderServiceTest {
         final Map<String, PublishCourtListPayload.PublishCourtListPayloadBuilder> defenceAdvocatePayloadBuilderByName = new HashMap<>();
         given(referenceDataService.getCourtCentreWithCourtRoomsById(eq(COURT_CENTRE_ID), any(JsonEnvelope.class), any(Requester.class))).willReturn(Optional.of(courtCentreWithCourtRooms));
         given(referenceDataService.getEnforcementAreaByLjaCode(any(JsonEnvelope.class), eq(LJA_CODE), any(Requester.class))).willReturn(prepareEnforcementAreaJson());
-        given(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_1))).willReturn(defenceOrganisation);
-        given(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_2))).willReturn(defenceOrganisation);
-        given(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_3))).willReturn(defenceOrganisation);
+        lenient().when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_1))).thenReturn(defenceOrganisation);
+        lenient().when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_2))).thenReturn(defenceOrganisation);
+        lenient().when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_3))).thenReturn(defenceOrganisation);
         given(correspondenceService.getCaseContacts(any(JsonEnvelope.class), eq(CASE_ID_1))).willReturn(correspondenceContacts);
 
         final CourtListPublished courtListPublishedEvent = jsonObjectToObjectConverter.convert(getPayloadAsJsonObject(courtListPublishedEventLocation), CourtListPublished.class);
@@ -225,8 +229,12 @@ public class PublishCourtListPayloadBuilderServiceTest {
         assertEquals(getPayload(expectedPayloadLocationForDefenceAdvocate), objectToJsonObjectConverter.convert(actualDefenceAdvocatePublishCourtListPayload).toString(), STRICT_ORDER);
     }
 
-    @Test
-    @UseDataProvider("selfRepresentedDefendantEventLocation")
+    @ParameterizedTest
+    @ValueSource(strings = {"publish-court-list/fixed-date/event/draft-court-list-published-defendant-self-represented.json",
+            "publish-court-list/fixed-date/event/final-court-list-published-defendant-self-represented.json",
+            "publish-court-list/week-commencing/event/warn-court-list-published-defendant-self-represented.json",
+            "publish-court-list/week-commencing/event/firm-court-list-published-defendant-self-represented.json"
+    })
     public void shouldNotPrepareDocumentPayloadForDefenceOrganisationWhenDefendantIsSelfRepresented(final String courtListPublishedEventLocation) throws Exception {
         final JsonEnvelope envelope = prepareEnvelope();
         final Map<String, PublishCourtListPayload.PublishCourtListPayloadBuilder> defenceOrganisationPayloadBuilderByName = new HashMap<>();
@@ -234,10 +242,10 @@ public class PublishCourtListPayloadBuilderServiceTest {
         final Map<String, PublishCourtListPayload.PublishCourtListPayloadBuilder> defenceAdvocatePayloadBuilderByName = new HashMap<>();
         given(referenceDataService.getCourtCentreWithCourtRoomsById(eq(COURT_CENTRE_ID), any(JsonEnvelope.class), any(Requester.class))).willReturn(Optional.of(prepareCourtCentreWithCourtRooms()));
         given(referenceDataService.getEnforcementAreaByLjaCode(any(JsonEnvelope.class), eq(LJA_CODE), any(Requester.class))).willReturn(prepareEnforcementAreaJson());
-        given(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(SELF_REPRESENTING_DEFENDANT_ID_1))).willReturn(null);
-        given(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(SELF_REPRESENTING_DEFENDANT_ID_2))).willReturn(null);
-        given(referenceDataService.getProsecutor(envelope, PROSECUTOR_ID_1, requester)).willReturn(Optional.of(prepareProsecutorDetails1()));
-        when(progressionService.getProsecutionCase(envelope, CASE_ID_1.toString())).thenReturn(Optional.of(prepareProsecutionCaseJson(PROSECUTOR_ID_1)));
+        lenient().when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(SELF_REPRESENTING_DEFENDANT_ID_1))).thenReturn(null);
+        lenient().when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(SELF_REPRESENTING_DEFENDANT_ID_2))).thenReturn(null);
+        lenient().when(referenceDataService.getProsecutor(envelope, PROSECUTOR_ID_1, requester)).thenReturn(Optional.of(prepareProsecutorDetails1()));
+        lenient().when(progressionService.getProsecutionCase(envelope, CASE_ID_1.toString())).thenReturn(Optional.of(prepareProsecutionCaseJson(PROSECUTOR_ID_1)));
 
         final CourtListPublished courtListPublishedEvent = jsonObjectToObjectConverter.convert(getPayloadAsJsonObject(courtListPublishedEventLocation), CourtListPublished.class);
         underTest.buildPayloadForInterestedParties(envelope, courtListPublishedEvent, defenceOrganisationPayloadBuilderByName, prosecutionPayloadBuilderByName, defenceAdvocatePayloadBuilderByName);
@@ -246,8 +254,10 @@ public class PublishCourtListPayloadBuilderServiceTest {
         assertThat(defenceAdvocatePayloadBuilderByName.isEmpty(), is(true));
     }
 
-    @Test
-    @UseDataProvider("weekCommencingEventLocationForCPSProsecutor")
+    @ParameterizedTest
+    @ValueSource(strings = {"publish-court-list/week-commencing/event/warn-court-list-published-single-hearing-week-commencing.json",
+            "publish-court-list/week-commencing/event/firm-court-list-published-single-hearing-week-commencing.json"
+    })
     public void shouldNotPrepareDocumentPayloadForProsecutorWhenProsecutorIsCPS(final String courtListPublishedEventLocation) throws Exception {
         final JsonEnvelope envelope = prepareEnvelope();
         final Map<String, PublishCourtListPayload.PublishCourtListPayloadBuilder> defenceOrganisationPayloadBuilderByName = new HashMap<>();
@@ -265,8 +275,8 @@ public class PublishCourtListPayloadBuilderServiceTest {
         assertThat(prosecutionPayloadBuilderByName.isEmpty(), is(true));
     }
 
-    @Test
-    @UseDataProvider("weekCommencingEventAndPayloadLocation")
+    @ParameterizedTest
+    @MethodSource("weekCommencingEventAndPayloadLocation")
     public void shouldPrepareDocumentPayloadForDefenceOrganisationAndProsecutorWhenWeekCommencingCourtListIsPublishedForSingleHearing(final String courtListPublishedEventLocation,
                                                                                                                                       final String expectedPayloadLocationForDefence,
                                                                                                                                       final String expectedPayloadLocationForDefenceAdvocate,
@@ -284,7 +294,7 @@ public class PublishCourtListPayloadBuilderServiceTest {
         given(referenceDataService.getEnforcementAreaByLjaCode(any(JsonEnvelope.class), eq(LJA_CODE), any(Requester.class))).willReturn(prepareEnforcementAreaJson());
         given(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_1))).willReturn(defenceOrganisation);
         given(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_2))).willReturn(defenceOrganisation);
-        given(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_3))).willReturn(defenceOrganisation);
+        lenient().when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_3))).thenReturn(defenceOrganisation);
         given(referenceDataService.getProsecutor(envelope, PROSECUTOR_ID_1, requester)).willReturn(Optional.of(prosecutor));
         when(progressionService.getProsecutionCase(envelope, CASE_ID_1.toString())).thenReturn(Optional.of(prepareProsecutionCaseJson(PROSECUTOR_ID_1)));
         given(correspondenceService.getCaseContacts(any(JsonEnvelope.class), eq(CASE_ID_1))).willReturn(correspondenceContacts);

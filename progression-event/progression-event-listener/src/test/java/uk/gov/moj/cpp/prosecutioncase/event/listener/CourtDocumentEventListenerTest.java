@@ -7,11 +7,10 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -56,15 +55,14 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CourtDocumentEventListenerTest {
 
     public static final String CASE_DOCUMENT_ID = "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27";
@@ -344,7 +342,6 @@ public class CourtDocumentEventListenerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, CourtsDocumentCreated.class))
                 .thenReturn(courtsDocumentCreated);
-        when(envelope.metadata()).thenReturn(metadata);
         when(courtDocument.getCourtDocumentId()).thenReturn(randomUUID());
         when(courtDocument.getDocumentCategory()).thenReturn(documentCategory);
         when(documentCategory.getApplicationDocument()).thenReturn(applicationDocument);
@@ -372,7 +369,6 @@ public class CourtDocumentEventListenerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, CourtsDocumentCreated.class))
                 .thenReturn(courtsDocumentCreated);
-        when(envelope.metadata()).thenReturn(metadata);
         when(courtDocument.getCourtDocumentId()).thenReturn(randomUUID());
         when(courtDocument.getDocumentCategory()).thenReturn(documentCategory);
         when(documentCategory.getApplicationDocument()).thenReturn(applicationDocument);
@@ -401,11 +397,9 @@ public class CourtDocumentEventListenerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, CourtsDocumentCreated.class))
                 .thenReturn(courtsDocumentCreated);
-        when(envelope.metadata()).thenReturn(metadata);
         when(courtDocument.getCourtDocumentId()).thenReturn(randomUUID());
         when(courtDocument.getDocumentCategory()).thenReturn(documentCategory);
         when(documentCategory.getApplicationDocument()).thenReturn(null);
-        when(documentCategory.getCaseDocument()).thenReturn(null);
         when(documentCategory.getDefendantDocument()).thenReturn(null);
         when(documentCategory.getNowDocument()).thenReturn(nowDocument);
         when(courtsDocumentCreated.getCourtDocument()).thenReturn(courtDocument);
@@ -449,8 +443,8 @@ public class CourtDocumentEventListenerTest {
         courtDocumentEntity.setPayload(jsonObjectConverter.convert(courtDocument).toString());
 
         when(repository.findBy(courtDocumentId)).thenReturn(courtDocumentEntity);
-        when(jsonObjectToObjectConverter.convert(anyObject(), eq(CourtDocument.class))).thenReturn(courtDocument);
-        when(objectToJsonObjectConverter.convert(anyObject())).thenReturn(jsonObject);
+        when(jsonObjectToObjectConverter.convert(any(), eq(CourtDocument.class))).thenReturn(courtDocument);
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         eventListener.processCourtDocumentPrinted(envelope);
         verify(repository).save(courtDocumentEntity);
         verify(objectToJsonObjectConverter).convert(objectArgumentCaptor.capture());

@@ -5,10 +5,9 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.justice.core.courts.SummonsDataPrepared.summonsDataPrepared;
 import static uk.gov.justice.core.courts.SummonsType.FIRST_HEARING;
 import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
@@ -47,27 +46,27 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(DataProviderRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseDefendantSummonsServiceTest {
 
     public static final String DEFENDANT_NAME = "Harry Jack Kane";
@@ -105,24 +104,17 @@ public class CaseDefendantSummonsServiceTest {
     @InjectMocks
     private CaseDefendantSummonsService caseDefendantSummonsService;
 
-    @DataProvider
-    public static Object[][] caseSummonsSpecification() {
-        return new Object[][]{
-                {FIRST_HEARING, MCA, MCA.getSubType()},
-                {FIRST_HEARING, WITNESS, WITNESS.getSubType()},
-                {FIRST_HEARING, EITHER_WAY, EITHER_WAY.getSubType()},
-                {SJP_REFERRAL, null, "SJP_REFERRAL"}
-        };
+    public static Stream<Arguments> caseSummonsSpecification() {
+        return Stream.of(
+                Arguments.of(FIRST_HEARING, MCA, MCA.getSubType()),
+                Arguments.of(FIRST_HEARING, WITNESS, WITNESS.getSubType()),
+                Arguments.of(FIRST_HEARING, EITHER_WAY, EITHER_WAY.getSubType()),
+                Arguments.of(SJP_REFERRAL, null, "SJP_REFERRAL")
+        );
     }
 
-
-    @Before
-    public void setup() {
-        initMocks(this);
-    }
-
-    @UseDataProvider("caseSummonsSpecification")
-    @Test
+    @MethodSource("caseSummonsSpecification")
+    @ParameterizedTest
     public void shouldGenerateEnglishSummonsPayloadForFirstHearing(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {
         verifySummonsPayloadGeneratedFor(summonsRequired, summonsCode, summonsType);
     }

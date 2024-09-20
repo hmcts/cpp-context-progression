@@ -51,7 +51,7 @@ public class StubUtil {
 
     public static void setupLoggedInUsersPermissionQueryStub() {
         InternalEndpointMockUtils.stubPingFor("usersgroups-service");
-        stubFor(get(urlPathEqualTo("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permission"))
+        stubFor(get(urlPathEqualTo("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permissions"))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                         .withHeader("CPPID", randomUUID().toString())
                         .withHeader("Content-Type", "application/json")

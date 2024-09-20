@@ -5,14 +5,14 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForPartialOrExactMatchDefendants;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPartialMatchDefendantFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithResults;
@@ -21,6 +21,7 @@ import static uk.gov.moj.cpp.progression.util.PartialMatchDefendantHelper.getPar
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -28,16 +29,17 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ACourtProceedingsInitiatedIT extends AbstractIT {
 
-    private static final MessageConsumer publicEventConsumer = publicEvents.createPublicConsumer("public.progression.prosecution-case-created");
+    private static final JmsMessageConsumerClient publicEventConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
+
     private String caseId;
     private String materialIdActive;
     private String materialIdDeleted;
@@ -47,7 +49,7 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
     private String earliestStartDateTime;
     private String defendantDOB;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         caseId = randomUUID().toString();
         materialIdActive = randomUUID().toString();
@@ -87,7 +89,7 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
     }
 
     @Test
-    public void shouldInitiateCourtProceedingWithPartialMatchDefendant() throws IOException {
+    public void shouldInitiateCourtProceedingWithPartialMatchDefendant() throws IOException, JSONException {
         final String matchedCaseId_1 = randomUUID().toString();
         final String matchedDefendant_1 = randomUUID().toString();
         final String matchedCaseId_2 = randomUUID().toString();
@@ -112,7 +114,7 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
     }
 
     @Test
-    public void shouldInitiateCourtProceedingWithExactMatchDefendant() throws IOException {
+    public void shouldInitiateCourtProceedingWithExactMatchDefendant() throws IOException, JSONException {
 
         final String matchedCaseId_1 = randomUUID().toString();
         final String matchedDefendant_1 = randomUUID().toString();
@@ -137,7 +139,7 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
     }
 
     private void verifyInMessagingQueueForProsecutionCaseCreated() {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(publicEventConsumer);
+        final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumer);
         assertTrue(message.isPresent());
     }
 }

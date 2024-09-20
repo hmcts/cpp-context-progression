@@ -5,7 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -18,6 +18,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.command.UpdateMatchedDefendantCustodialInformation.updateMatchedDefendantCustodialInformation;
 
+import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
@@ -64,15 +65,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.collect.Lists;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UpdateDefendantHandlerTest {
 
     @Spy
@@ -83,7 +83,8 @@ public class UpdateDefendantHandlerTest {
             HearingDefendantUpdated.class,
             NewDefendantAddedToHearing.class,
             UpdateMatchedDefendantCustodialInformation.class,
-            CaseDefendantUpdatedWithDriverNumber.class);
+            CaseDefendantUpdatedWithDriverNumber.class,
+            ApplicationDefendantUpdateRequested.class);
     @Mock
     private EventSource eventSource;
     @Mock
@@ -92,21 +93,8 @@ public class UpdateDefendantHandlerTest {
     private AggregateService aggregateService;
     @InjectMocks
     private UpdateDefendantHandler updateDefendantHandler;
-
-    private CaseAggregate aggregate;
-    private HearingAggregate hearingAggregate;
-
     @Mock
     private ProsecutionCaseQueryService prosecutionCaseQueryService;
-
-    @Before
-    public void setup() {
-        aggregate = new CaseAggregate();
-        hearingAggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-    }
 
     @Test
     public void shouldHandleCommand() {
@@ -125,6 +113,11 @@ public class UpdateDefendantHandlerTest {
         final UUID defendantId2 = randomUUID();
         final UUID masterDefendantId = randomUUID();
         final UUID custodialId = randomUUID();
+
+        final CaseAggregate aggregate = new CaseAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         final Defendant defendant1 = Defendant.defendant()
                 .withId(defendantId1)
@@ -210,6 +203,11 @@ public class UpdateDefendantHandlerTest {
 
         final Envelope<UpdateDefendantForProsecutionCase> envelope = envelopeFrom(metadata, updateDefendant);
 
+        final CaseAggregate aggregate = new CaseAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
+
         updateDefendantHandler.handle(envelope);
 
         Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -233,6 +231,10 @@ public class UpdateDefendantHandlerTest {
 
         UUID defendantId = randomUUID();
 
+        final CaseAggregate aggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
+
         UpdateDefendantForProsecutionCase updateDefendant = UpdateDefendantForProsecutionCase.updateDefendantForProsecutionCase()
                 .withDefendant(getDefendantUpdate(defendantId, null))
                 .build();
@@ -248,12 +250,13 @@ public class UpdateDefendantHandlerTest {
                 .build();
 
         final Envelope<UpdateDefendantForProsecutionCase> envelope = envelopeFrom(metadata, updateDefendant);
+        when(prosecutionCaseQueryService.getAllHearingIdsForCase(any(), any())).thenReturn(Arrays.asList(randomUUID()));
 
         updateDefendantHandler.handle(envelope);
 
-        Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
 
-        assertThat(envelopeStream, streamContaining(
+        assertThat(Stream.of(envelopeStream.get(1)), streamContaining(
                 jsonEnvelope(
                         metadata()
                                 .withName("progression.event.prosecution-case-defendant-updated"),
@@ -277,6 +280,11 @@ public class UpdateDefendantHandlerTest {
         UpdateDefendantForProsecutionCase updateDefendant = UpdateDefendantForProsecutionCase.updateDefendantForProsecutionCase()
                 .withDefendant(getDefendantUpdate(defendantId, "Baron"))
                 .build();
+
+        final CaseAggregate aggregate = new CaseAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         aggregate.apply(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
                 .withDefendant(getDefendantUpdate(defendantId, "Mr"))
@@ -336,6 +344,9 @@ public class UpdateDefendantHandlerTest {
 
         final Envelope<UpdateDefendantForMatchedDefendant> envelope = envelopeFrom(metadata, updateDefendant);
 
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
 
         hearingAggregate.apply(HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
@@ -396,8 +407,12 @@ public class UpdateDefendantHandlerTest {
                 .withId(randomUUID())
                 .build();
 
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
         hearingAggregate.enrichInitiateHearing(
-               Hearing.hearing()
+                Hearing.hearing()
                         .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
                                 .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
                                         .withId(defendantId)
@@ -405,7 +420,6 @@ public class UpdateDefendantHandlerTest {
                                         .build())))
                                 .build()))
                         .build());
-
 
         final Envelope<UpdateDefendantForHearing> envelope = envelopeFrom(metadata, updateDefendant);
         updateDefendantHandler.handleUpdateDefendantForHearing(envelope);
@@ -459,6 +473,11 @@ public class UpdateDefendantHandlerTest {
                                 .build())))
                         .build()))
                 .build();
+
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
         hearingAggregate.apply(HearingResulted.hearingResulted()
                 .withHearing(hearing)
                 .build());
@@ -501,6 +520,10 @@ public class UpdateDefendantHandlerTest {
                 .withId(randomUUID())
                 .build();
 
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
         hearingAggregate.apply(HearingResulted.hearingResulted()
                 .withHearing(Hearing.hearing()
                         .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
@@ -538,6 +561,11 @@ public class UpdateDefendantHandlerTest {
     public void shouldUpdatedriverNumber() throws Exception {
 
         UUID defendantId = randomUUID();
+
+        final CaseAggregate aggregate = new CaseAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         UpdateCaseDefendantWithDriverNumber updateDefendant = UpdateCaseDefendantWithDriverNumber.updateCaseDefendantWithDriverNumber()
                 .withDefendantId(defendantId)

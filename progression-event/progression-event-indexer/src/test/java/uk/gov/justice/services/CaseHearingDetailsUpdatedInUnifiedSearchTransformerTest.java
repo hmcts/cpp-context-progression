@@ -16,14 +16,15 @@ import com.bazaarvoice.jolt.JsonUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseHearingDetailsUpdatedInUnifiedSearchTransformerTest {
 
     @Spy
@@ -39,7 +40,7 @@ public class CaseHearingDetailsUpdatedInUnifiedSearchTransformerTest {
 
     private JsonDocumentValidator jsonValidator = new JsonDocumentValidator();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         hearingVerificationHelper.resetCounts();
     }

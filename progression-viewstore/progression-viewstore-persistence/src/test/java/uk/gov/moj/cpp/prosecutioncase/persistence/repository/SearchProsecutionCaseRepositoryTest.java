@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SearchProsecutionCaseEntity;
 
@@ -48,7 +48,7 @@ public class SearchProsecutionCaseRepositoryTest {
         final List<SearchProsecutionCaseEntity> actual = repository.findBySearchCriteria(searchCriteria); //"%John%"
 
         //then
-        assertNotNull("Should not be null", actual);
+        assertNotNull(actual, "Should not be null");
         assertEquals(1, actual.size());
         assertEquals(defedantId, actual.get(0).getDefendantId());
         assertEquals(searchTarget, actual.get(0).getSearchTarget());
@@ -72,7 +72,7 @@ public class SearchProsecutionCaseRepositoryTest {
         final List<SearchProsecutionCaseEntity> actual = repository.findByCaseUrn("PAR-100"); //"%John%"
 
         //then
-        assertNotNull("Should not be null", actual);
+        assertNotNull(actual, "Should not be null");
         assertEquals(1, actual.size());
         assertEquals(defedantId, actual.get(0).getDefendantId());
         assertEquals(searchTarget, actual.get(0).getSearchTarget());
@@ -95,7 +95,7 @@ public class SearchProsecutionCaseRepositoryTest {
         final SearchProsecutionCaseEntity actual = repository.findBy(defedantId);
 
         //then
-        assertNotNull("Should not be null", actual);
+        assertNotNull(actual, "Should not be null");
         assertEquals(defedantId, actual.getDefendantId());
     }
 
@@ -109,7 +109,7 @@ public class SearchProsecutionCaseRepositoryTest {
         final SearchProsecutionCaseEntity actual = repository.findByCaseId(entity.getCaseId()).stream().findFirst().get();
 
         //then
-        assertNotNull("Should not be null", actual);
+        assertNotNull(actual, "Should not be null");
         assertEquals(caseId, actual.getCaseId());
     }
 

@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.UUID.randomUUID;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -40,14 +40,15 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingExtendedEventListenerTest {
 
     @Mock
@@ -73,7 +74,7 @@ public class HearingExtendedEventListenerTest {
     private String hearingPayloadWithSameCaseWithDifferentDefendant;
 
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         hearingId = randomUUID();
         prosecutionCaseId = randomUUID();
@@ -93,8 +94,6 @@ public class HearingExtendedEventListenerTest {
 
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingExtended).thenReturn(hearing);
-        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
-        when(caseDefendantHearingRepository.findByCaseIdAndDefendantId(any(UUID.class), any(UUID.class))).thenReturn(caseDefendantHearingEntityList);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
@@ -102,8 +101,8 @@ public class HearingExtendedEventListenerTest {
         verify(hearingRepository, times(1)).findBy(hearingId);
         verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
         verify(caseDefendantHearingRepository, times(1)).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId, prosecutionCaseId, defendantId);
-        verify(caseDefendantHearingRepository, times(1)).remove(any(CaseDefendantHearingEntity.class));
-        verify(caseDefendantHearingRepository, times(1)).save(any(CaseDefendantHearingEntity.class));
+        verify(caseDefendantHearingRepository, times(1)).remove(any());
+        verify(caseDefendantHearingRepository, times(1)).save(any());
     }
 
     @Test
@@ -117,7 +116,6 @@ public class HearingExtendedEventListenerTest {
 
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingExtended).thenReturn(hearing);
-        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
@@ -140,7 +138,6 @@ public class HearingExtendedEventListenerTest {
 
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingExtended).thenReturn(hearing);
-        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
@@ -163,7 +160,6 @@ public class HearingExtendedEventListenerTest {
 
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingExtended).thenReturn(hearing);
-        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
@@ -186,7 +182,6 @@ public class HearingExtendedEventListenerTest {
 
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingExtended).thenReturn(hearing);
-        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
@@ -209,7 +204,6 @@ public class HearingExtendedEventListenerTest {
 
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingExtended).thenReturn(hearing);
-        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         hearingExtendedEventListener.hearingExtendedForCase(jsonEnvelope);
@@ -245,8 +239,6 @@ public class HearingExtendedEventListenerTest {
 
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonObjectToObjectConverter.convert(jsonObject, HearingExtended.class)).thenReturn(hearingExtended);
-        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
-        when(caseDefendantHearingRepository.findByCaseIdAndDefendantId(any(UUID.class), any(UUID.class))).thenReturn(caseDefendantHearingEntityList);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         when(jsonObjectToObjectConverter.convert(jsonFromString(hearingEntity.getPayload()), Hearing.class)).thenReturn(dbHearing);
         when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
@@ -255,8 +247,8 @@ public class HearingExtendedEventListenerTest {
         verify(hearingRepository, times(1)).findBy(hearingId);
         verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
         verify(caseDefendantHearingRepository, times(1)).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId,  caseId, defendantId);
-        verify(caseDefendantHearingRepository, times(1)).remove(any(CaseDefendantHearingEntity.class));
-        verify(caseDefendantHearingRepository, times(1)).save(any(CaseDefendantHearingEntity.class));
+        verify(caseDefendantHearingRepository, times(1)).remove(any());
+        verify(caseDefendantHearingRepository, times(1)).save(any());
     }
 
     @Test
@@ -284,8 +276,6 @@ public class HearingExtendedEventListenerTest {
 
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonObjectToObjectConverter.convert(jsonObject, HearingExtended.class)).thenReturn(hearingExtended);
-        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
-        when(caseDefendantHearingRepository.findByCaseIdAndDefendantId(any(UUID.class), any(UUID.class))).thenReturn(caseDefendantHearingEntityList);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         when(jsonObjectToObjectConverter.convert(jsonFromString(hearingEntity.getPayload()), Hearing.class)).thenReturn(dbHearing);
         when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
@@ -294,8 +284,8 @@ public class HearingExtendedEventListenerTest {
         verify(hearingRepository, times(1)).findBy(hearingId);
         verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
         verify(caseDefendantHearingRepository, times(1)).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId,  caseId, defendantId2);
-        verify(caseDefendantHearingRepository, times(1)).remove(any(CaseDefendantHearingEntity.class));
-        verify(caseDefendantHearingRepository, times(1)).save(any(CaseDefendantHearingEntity.class));
+        verify(caseDefendantHearingRepository, times(1)).remove(any());
+        verify(caseDefendantHearingRepository, times(1)).save(any());
     }
 
     @Test
@@ -322,8 +312,6 @@ public class HearingExtendedEventListenerTest {
 
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonObjectToObjectConverter.convert(jsonObject, HearingExtended.class)).thenReturn(hearingExtended);
-        when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
-        when(caseDefendantHearingRepository.findByCaseIdAndDefendantId(any(UUID.class), any(UUID.class))).thenReturn(caseDefendantHearingEntityList);
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         when(jsonObjectToObjectConverter.convert(jsonFromString(hearingEntity.getPayload()), Hearing.class)).thenReturn(dbHearing);
         when( objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
@@ -332,8 +320,8 @@ public class HearingExtendedEventListenerTest {
         verify(hearingRepository, times(1)).findBy(hearingId);
         verify(jsonObjectToObjectConverter, times(1)).convert(jsonObject, HearingExtended.class);
         verify(caseDefendantHearingRepository, times(1)).findByHearingIdAndCaseIdAndDefendantId(extendedFromHearingId,  prosecutionCaseId, defendantId);
-        verify(caseDefendantHearingRepository, times(1)).remove(any(CaseDefendantHearingEntity.class));
-        verify(caseDefendantHearingRepository, times(1)).save(any(CaseDefendantHearingEntity.class));
+        verify(caseDefendantHearingRepository, times(1)).remove(any());
+        verify(caseDefendantHearingRepository, times(1)).save(any());
     }
 
 

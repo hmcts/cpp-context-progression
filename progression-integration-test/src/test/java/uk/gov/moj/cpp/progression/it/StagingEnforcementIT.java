@@ -1,25 +1,20 @@
 package uk.gov.moj.cpp.progression.it;
 
-import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
-import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.NowsRequestHelper;
 
 import java.util.UUID;
 
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class StagingEnforcementIT extends AbstractIT {
 
@@ -27,12 +22,7 @@ public class StagingEnforcementIT extends AbstractIT {
 
     private NowsRequestHelper nowsRequestHelper;
 
-    private MessageProducer producer;
-
-    @Before
-    public void onceBeforeEachTest(){
-        producer = publicEvents.createPublicProducer();
-    }
+    private static final JmsMessageProducerClient producer = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     @Test
     public void shouldReceiveAcknowledgement() {
@@ -60,12 +50,6 @@ public class StagingEnforcementIT extends AbstractIT {
         sendErrorAcknowledgementAndVerify(requestId);
     }
 
-    @After
-    public void tearDown() throws JMSException {
-        producer.close();
-        closeSilently(nowsRequestHelper);
-    }
-
     private void makeNowsRequest(final String requestId) {
         final String payload = this.prepareAddNowDocumentRequestPayload(requestId);
         nowsRequestHelper = new NowsRequestHelper();
@@ -81,7 +65,7 @@ public class StagingEnforcementIT extends AbstractIT {
         return body;
     }
 
-    private void sendSuccessAcknowledgement(final String requestId, final String accountNumber ){
+    private void sendSuccessAcknowledgement(final String requestId, final String accountNumber) {
         final JsonObject stagingEnforcementAckPayload = createObjectBuilder().add("originator", "courts")
                 .add("requestId", requestId)
                 .add("exportStatus", "ENFORCEMENT_ACKNOWLEDGED")
@@ -89,9 +73,9 @@ public class StagingEnforcementIT extends AbstractIT {
                 .add("acknowledgement", createObjectBuilder().add("accountNumber", accountNumber).build())
                 .build();
 
-        sendMessage(producer, PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT, stagingEnforcementAckPayload,
-                metadataOf(randomUUID(), PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT)
-                        .withUserId(USER_ID_VALUE_AS_ADMIN.toString()).build());
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT, USER_ID_VALUE_AS_ADMIN), stagingEnforcementAckPayload);
+        producer.sendMessage(PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT, publicEventEnvelope);
+
     }
 
     private void sendErrorAcknowledgementAndVerify(final String requestId) {
@@ -104,9 +88,8 @@ public class StagingEnforcementIT extends AbstractIT {
                 .add("acknowledgement", createObjectBuilder().add("errorCode", errorCode).add("errorMessage", errorMessage).build())
                 .build();
 
-        sendMessage(producer, PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT, stagingEnforcementAckPayload,
-                metadataOf(randomUUID(), PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT)
-                        .withUserId(USER_ID_VALUE_AS_ADMIN.toString()).build());
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT, USER_ID_VALUE_AS_ADMIN), stagingEnforcementAckPayload);
+        producer.sendMessage(PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT, publicEventEnvelope);
 
         nowsRequestHelper.verifyErrorEventRaised(errorCode, errorMessage);
     }

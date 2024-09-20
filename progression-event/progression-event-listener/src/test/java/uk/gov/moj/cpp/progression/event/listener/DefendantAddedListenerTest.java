@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.event.listener;
 
 import static java.util.UUID.randomUUID;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -20,11 +19,11 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * 
@@ -33,7 +32,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 @Deprecated
 @SuppressWarnings({"WeakerAccess", "squid:S1133"})
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantAddedListenerTest {
 
     private static final UUID VICTIM_ID = randomUUID();
@@ -89,8 +88,6 @@ public class DefendantAddedListenerTest {
 
         SearchProsecutionCaseEntity searchEntity = new SearchProsecutionCaseEntity();
         searchEntity.setSearchTarget("URN-101 | John Smith | 22-06-1977");
-
-        when(jpaMapper.makeSearchable(any(CaseProgressionDetail.class), any(Defendant.class))).thenReturn(searchEntity);
 
         listener.addDefendant(envelope);
 

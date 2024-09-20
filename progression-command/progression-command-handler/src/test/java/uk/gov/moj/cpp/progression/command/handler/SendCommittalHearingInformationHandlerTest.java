@@ -5,13 +5,13 @@ import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @Deprecated
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SendCommittalHearingInformationHandlerTest
                 extends CaseProgressionCommandHandlerTest {
 

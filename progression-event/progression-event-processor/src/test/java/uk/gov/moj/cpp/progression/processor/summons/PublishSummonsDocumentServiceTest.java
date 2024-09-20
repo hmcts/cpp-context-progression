@@ -22,14 +22,14 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class PublishSummonsDocumentServiceTest {
 
     @Mock
@@ -65,7 +65,7 @@ public class PublishSummonsDocumentServiceTest {
     @InjectMocks
     private PublishSummonsDocumentService publishSummonsDocumentService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         when(objectToJsonObjectConverter.convert(summonsDocumentContent)).thenReturn(summonsDocumentContentAsJsonObject);
     }

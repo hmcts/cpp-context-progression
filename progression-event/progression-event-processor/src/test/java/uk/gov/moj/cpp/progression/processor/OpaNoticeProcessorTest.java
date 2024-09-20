@@ -34,15 +34,15 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OpaNoticeProcessorTest {
 
     private static final String PUBLIC_PROGRESSION_OPA_NOTICE = "public.progression.opa-notice.json";
@@ -59,6 +59,11 @@ public class OpaNoticeProcessorTest {
     private ArgumentCaptor<Envelope<JsonObject>> envelopeArgumentCaptor;
     @Captor
     private ArgumentCaptor<Envelope<OpaPressListNoticeGenerated>> pressListEnvelopeCaptor;
+    @Captor
+    private ArgumentCaptor<Envelope<OpaPublicListNoticeGenerated>> publicListEnvelopeCaptor;
+    @Captor
+    private ArgumentCaptor<Envelope<OpaResultListNoticeGenerated>> resultListEnvelopeCaptor;
+
     @Mock
     private OpaNoticeService opaNoticeService;
     @InjectMocks
@@ -134,9 +139,9 @@ public class OpaNoticeProcessorTest {
 
         processor.processPublicListOpaNoticeGenerated(requestMessage);
 
-        verify(sender).send(pressListEnvelopeCaptor.capture());
+        verify(sender).send(publicListEnvelopeCaptor.capture());
 
-        final Envelope<OpaPressListNoticeGenerated> publicEvent = pressListEnvelopeCaptor.getValue();
+        final Envelope<OpaPublicListNoticeGenerated> publicEvent = publicListEnvelopeCaptor.getValue();
         assertThat(publicEvent.metadata(), is(withMetadataEnvelopedFrom(requestMessage).withName("public.progression.public-list-opa-notice-generated")));
         assertThat(publicEvent.payload(), is(publicListOpaNoticeGenerated));
     }
@@ -159,9 +164,9 @@ public class OpaNoticeProcessorTest {
 
         processor.processResultListOpaNoticeGenerated(requestMessage);
 
-        verify(sender).send(pressListEnvelopeCaptor.capture());
+        verify(sender).send(resultListEnvelopeCaptor.capture());
 
-        final Envelope<OpaPressListNoticeGenerated> publicEvent = pressListEnvelopeCaptor.getValue();
+        final Envelope<OpaResultListNoticeGenerated> publicEvent = resultListEnvelopeCaptor.getValue();
         assertThat(publicEvent.metadata(), is(withMetadataEnvelopedFrom(requestMessage).withName("public.progression.result-list-opa-notice-generated")));
         assertThat(publicEvent.payload(), is(resultListOpaNoticeGenerated));
     }

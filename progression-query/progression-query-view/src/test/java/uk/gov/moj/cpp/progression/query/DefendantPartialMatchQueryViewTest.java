@@ -1,50 +1,52 @@
 package uk.gov.moj.cpp.progression.query;
 
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
+import static org.mockito.quality.Strictness.LENIENT;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.common.json.DefaultJsonParser;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantPartialMatchEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantPartialMatchRepository;
 
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.deltaspike.data.api.QueryResult;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 
-@RunWith(Parameterized.class)
+// FIXME!!! Temporarily using lenient strictness to get this
+// context running with junit 5. This test really needs re-writing.
+@MockitoSettings(strictness = LENIENT)
+@WireMockTest
+@ExtendWith(MockitoExtension.class)
 public class DefendantPartialMatchQueryViewTest {
 
     private static final String CASE_REFERENCE = "20GB12345666";
@@ -54,9 +56,6 @@ public class DefendantPartialMatchQueryViewTest {
     public static final String PAGE_SIZE = "pageSize";
     public static final String SORT_FIELD = "sortField";
     public static final String SORT_ORDER = "sortOrder";
-
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     @InjectMocks
     private DefendantPartialMatchQueryView defendantPartialMatchQueryView;
@@ -82,22 +81,9 @@ public class DefendantPartialMatchQueryViewTest {
     @Captor
     private ArgumentCaptor<Integer> size;
 
-    private final JsonObject jsonObject;
-    private final Integer expectedPage;
-    private final Integer expectedSize;
-    private final long expectedCount;
-    private final String invokedMethodName;
     private final UUID defendantId = UUID.randomUUID();
 
-    public DefendantPartialMatchQueryViewTest(JsonObject jsonObject, Integer expectedPage, Integer expectedSize, long expectedCount, String invokedMethodName) {
-        this.jsonObject = jsonObject;
-        this.expectedPage = expectedPage;
-        this.expectedSize = expectedSize;
-        this.expectedCount = expectedCount;
-        this.invokedMethodName = invokedMethodName;
-    }
-
-    @Before
+    @BeforeEach
     public void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
         setField(this.listToJsonArrayConverter, "mapper", objectMapper);
@@ -105,19 +91,25 @@ public class DefendantPartialMatchQueryViewTest {
         setField(this.jsonObjectConverter, "objectMapper", objectMapper);
     }
 
-    @Test
-    public void shouldCallRepositoryPageAndSizeSortFieldAndSortOrderWhenSortFieldIsAddedAsParameter() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void shouldCallRepositoryPageAndSizeSortFieldAndSortOrderWhenSortFieldIsAddedAsParameter(
+            final JsonObject jsonObject,
+            final Integer expectedPage,
+            final Integer expectedSize,
+            final long expectedCount,
+            final String invokedMethodName) {
         //given
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.defendant-partial-match").build(),
                 jsonObject);
-        mockRepository();
+        mockRepository(expectedCount, invokedMethodName);
 
         //when
         JsonEnvelope response = defendantPartialMatchQueryView.getDefendantPartialMatches(jsonEnvelope);
 
         //then
-        verifyRepository();
+        verifyRepository(invokedMethodName);
         assertEquals(expectedCount, response.payloadAsJsonObject().getInt("totalMatchedDefendants"));
 
         if (StringUtils.isEmpty(invokedMethodName)) {
@@ -167,7 +159,10 @@ public class DefendantPartialMatchQueryViewTest {
         assertEquals("1234", defendantMatched.getJsonObject("croNumber").getString("string"));
     }
 
-    private void mockRepository() {
+    private void mockRepository(
+            final long expectedCount,
+            final String invokedMethodName) {
+        
         when(defendantPartialMatchRepository.count()).thenReturn(expectedCount);
 
         when(queryResult.toPage(page.capture())).thenReturn(queryResult);
@@ -185,18 +180,18 @@ public class DefendantPartialMatchQueryViewTest {
         }
     }
 
-    private int getRepositoryVerifyTimes(String methodName) {
+    private int getRepositoryVerifyTimes(final String invokedMethodName, final String methodName) {
         if (StringUtils.equals(invokedMethodName, methodName)) {
             return 1;
         }
         return 0;
     }
 
-    private void verifyRepository() {
-        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes("findAllOrderByCaseReceivedDatetimeAsc"))).findAllOrderByCaseReceivedDatetimeAsc();
-        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes("findAllOrderByCaseReceivedDatetimeDesc"))).findAllOrderByCaseReceivedDatetimeDesc();
-        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes("findAllOrderByDefendantNameAsc"))).findAllOrderByDefendantNameAsc();
-        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes("findAllOrderByDefendantNameDesc"))).findAllOrderByDefendantNameDesc();
+    private void verifyRepository(final String invokedMethodName) {
+        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes(invokedMethodName, "findAllOrderByCaseReceivedDatetimeAsc"))).findAllOrderByCaseReceivedDatetimeAsc();
+        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes(invokedMethodName, "findAllOrderByCaseReceivedDatetimeDesc"))).findAllOrderByCaseReceivedDatetimeDesc();
+        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes(invokedMethodName, "findAllOrderByDefendantNameAsc"))).findAllOrderByDefendantNameAsc();
+        verify(defendantPartialMatchRepository, atLeast(getRepositoryVerifyTimes(invokedMethodName, "findAllOrderByDefendantNameDesc"))).findAllOrderByDefendantNameDesc();
     }
 
     private List<DefendantPartialMatchEntity> getDefendantPartialMatchData(UUID defendantId) {
@@ -212,7 +207,6 @@ public class DefendantPartialMatchQueryViewTest {
         return defendantPartialMatches;
     }
 
-    @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(
                 new Object[]{Json.createObjectBuilder().build(), 0, 20, 22, "findAllOrderByCaseReceivedDatetimeDesc"},
@@ -305,7 +299,7 @@ public class DefendantPartialMatchQueryViewTest {
             "     \"addressLine4\": \"addressLine4\",\n" +
             "     \"addressLine5\": \"addressLine5\",\n" +
             "     \"postcode\": \"HA1 1QF\"\n" +
-            "  },\n"+
+            "  },\n" +
             "  \"pncId\": \"415 1231111\",\n" +
             "  \"croNumber\": \"1234\",\n" +
             "  \"defendantsMatchedCount\": 2,\n" +
@@ -327,7 +321,7 @@ public class DefendantPartialMatchQueryViewTest {
             "         \"addressLine4\": \"addressLine4\",\n" +
             "         \"addressLine5\": \"addressLine5\",\n" +
             "         \"postcode\": \"HA1 1QF\" \n" +
-            "      },\n"+
+            "      },\n" +
             "      \"pncId\": \"415 1231111\",\n" +
             "      \"croNumber\": \"1234\"\n" +
             "    },\n" +
@@ -348,7 +342,7 @@ public class DefendantPartialMatchQueryViewTest {
             "         \"addressLine4\": \"addressLine4\",\n" +
             "         \"addressLine5\": \"addressLine5\",\n" +
             "         \"postcode\": \"HA1 1QF\" \n" +
-            "      },\n"+
+            "      },\n" +
             "      \"pncId\": \"415 1231111\",\n" +
             "      \"croNumber\": \"543 565454\"\n" +
             "    }\n" +

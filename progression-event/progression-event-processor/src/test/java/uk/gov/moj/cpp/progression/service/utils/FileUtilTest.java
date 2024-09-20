@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.service.utils;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -20,14 +20,14 @@ import javax.json.JsonObject;
 
 import org.apache.http.client.utils.DateUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class FileUtilTest {
 
     @InjectMocks
@@ -42,7 +42,7 @@ public class FileUtilTest {
     private static FileReference fileReference;
     private static final String FILE_NAME = "MaterialFile";
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         fileReference = getFileReference();
     }

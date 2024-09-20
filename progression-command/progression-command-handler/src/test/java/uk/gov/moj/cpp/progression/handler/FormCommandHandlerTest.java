@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZonedDateTime.now;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -10,9 +11,9 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CreateForm.createForm;
 import static uk.gov.justice.core.courts.FinaliseForm.finaliseForm;
@@ -42,6 +43,7 @@ import uk.gov.justice.core.courts.FormUpdated;
 import uk.gov.justice.core.courts.RequestEditForm;
 import uk.gov.justice.core.courts.UpdateForm;
 import uk.gov.justice.core.courts.UpdateFormDefendants;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -62,15 +64,15 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class FormCommandHandlerTest {
 
     private static final int FORM_LOCK_DURATION_TIME = 1;
@@ -104,7 +106,7 @@ public class FormCommandHandlerTest {
     @Spy
     private FormCommandHandler formCommandHandler;
 
-    @Before
+    @BeforeEach
     public void setup() {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
@@ -262,12 +264,9 @@ public class FormCommandHandlerTest {
                 .build();
 
         final Envelope<FinaliseForm> envelope = envelopeFrom(metadata, finaliseForm);
-        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
         when(caseAggregate.getLatestHearingId()).thenReturn(UUID.fromString(latestHearingId));
-        when(hearingAggregate.getHearingDate()).thenReturn(hearingDateTime);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-        when(hearingAggregate.getHearingDate()).thenReturn(hearingDateTime);
 
         when(caseAggregate.finaliseForm(any(), any(), any(), anyList(), any()))
                 .thenReturn(Stream.of(formFinalised()
@@ -333,7 +332,7 @@ public class FormCommandHandlerTest {
 
     @Test
     public void shouldEditForm_ForSecondTime_ByAnotherUser_WhenFormIsLocked() throws EventStreamException {
-        final ZonedDateTime requestEditTime = now();
+        final ZonedDateTime requestEditTime = new UtcClock().now();
 
         final CaseAggregate caseAggregate = new CaseAggregate();
         caseAggregate.createForm(COURT_FORM_ID, CASE_ID, FORM_ID, ImmutableList.of(DEFENDANT_ID), "blah", USER_ID_FOR_BILL, BCM, randomUUID(), null);
@@ -442,7 +441,7 @@ public class FormCommandHandlerTest {
 
     @Test
     public void shouldEditForm_AfterUpdate_ByAnyUser() throws EventStreamException {
-        final ZonedDateTime originalRequestEditTime = now();
+        final ZonedDateTime originalRequestEditTime = new UtcClock().now().truncatedTo(MILLIS);
 
         final CaseAggregate caseAggregate = new CaseAggregate();
         caseAggregate.createForm(COURT_FORM_ID, CASE_ID, FORM_ID, ImmutableList.of(DEFENDANT_ID), "blah", USER_ID_FOR_BILL, BCM, randomUUID(), null);
@@ -483,7 +482,7 @@ public class FormCommandHandlerTest {
     }
 
     private String getZonedDateTimeToString(final ZonedDateTime datetime){
-        return datetime.toLocalDateTime().toString()+"Z";
+        return datetime.truncatedTo(MILLIS).toLocalDateTime().toString()+"Z";
     }
 
     private Envelope<RequestEditForm> createEnvelope(final UUID courtFormId, final UUID caseId, final UUID userId) {

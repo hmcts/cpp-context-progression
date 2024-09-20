@@ -1,6 +1,7 @@
 package rules;
 
-import static org.mockito.Matchers.any;
+import static java.util.Collections.singletonMap;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -19,10 +20,13 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 public class ProgressionQueryRuleExecutorTest extends BaseDroolsAccessControlTest {
 
     protected Action action;
@@ -30,11 +34,13 @@ public class ProgressionQueryRuleExecutorTest extends BaseDroolsAccessControlTes
     protected UserAndGroupProvider userAndGroupProvider;
 
 
+    public ProgressionQueryRuleExecutorTest() {
+        super("QUERY_API_SESSION");
+    }
+
     @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder()
-                .put(UserAndGroupProvider.class, userAndGroupProvider)
-                .build();
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 
     @Test
@@ -59,7 +65,6 @@ public class ProgressionQueryRuleExecutorTest extends BaseDroolsAccessControlTes
             final JsonEnvelope envelope = JsonEnvelopeBuilder.envelope().with(MetadataBuilderFactory.metadataOf(UUID.randomUUID().toString(), (String)metadata.get("name"))).withPayloadOf(UUID.randomUUID().toString(),"defenceClientId").build();
             action = new Action(envelope);
             when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, ruleTest.allowedUserGroups)).thenReturn(false);
-            when(userAndGroupProvider.hasPermission(any(), any())).thenReturn(false);
             final ExecutionResults executionResults = executeRulesWith(action);
             assertFailureOutcome(executionResults);
             verify(userAndGroupProvider).isMemberOfAnyOfTheSuppliedGroups(action, ruleTest.allowedUserGroups);

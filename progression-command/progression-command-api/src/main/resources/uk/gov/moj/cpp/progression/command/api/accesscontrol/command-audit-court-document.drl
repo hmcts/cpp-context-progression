@@ -1,0 +1,20 @@
+package uk.gov.moj.cpp.progression.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import java.util.ArrayList;
+global uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider rbacProvider;
+global uk.gov.justice.api.resource.CourtDocumentCommandProvider courtDocumentCommandProvider;
+
+rule "Command - audit court document"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.audit-court-document");
+     eval(rbacProvider.isLoggedInUserAllowedToReadDocument(courtDocumentCommandProvider.getDocumentTypeId($action)))
+     or eval(rbacProvider.isLoggedInUserAllowedToDownloadDocument(courtDocumentCommandProvider.getDocumentTypeId($action)))
+      then
+        $outcome.setSuccess(true);
+end
+
+
+

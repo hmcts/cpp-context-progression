@@ -6,12 +6,12 @@ import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
+import static javax.json.Json.createReader;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -61,17 +61,17 @@ import com.google.common.io.Resources;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings("unused")
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RefDataServiceTest {
 
     public static final String PS_90010 = "PS90010";
@@ -125,7 +125,7 @@ public class RefDataServiceTest {
     public void shouldRequestForOffenceByCjsOffenceCode() {
         //given
 
-        final JsonObject payload = Json.createReader(
+        final JsonObject payload = createReader(
                         new ByteArrayInputStream(getJsonPayload().getBytes()))
                 .readObject();
 
@@ -201,7 +201,7 @@ public class RefDataServiceTest {
 
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.offences"),
                 JsonValue.NULL);
-        final JsonObject payload = Json.createReader(
+        final JsonObject payload = createReader(
                         new ByteArrayInputStream("{\"offences\":[]}".getBytes()))
                 .readObject();
 
@@ -230,7 +230,7 @@ public class RefDataServiceTest {
         //given
 
         final UUID judgeId = randomUUID();
-        final JsonObject payload = Json.createReader(
+        final JsonObject payload = createReader(
                         new ByteArrayInputStream(getJudgePayload(judgeId).getBytes()))
                 .readObject();
 
@@ -262,7 +262,7 @@ public class RefDataServiceTest {
     public void shouldRequestForOrganisationByCourtCentreId() {
 
         final UUID courtCentreId = randomUUID();
-        final JsonObject payload = Json.createReader(
+        final JsonObject payload = createReader(
                         new ByteArrayInputStream(getOrganisationPayload(courtCentreId).getBytes()))
                 .readObject();
         when(requester.requestAsAdmin(any(), any()))
@@ -303,7 +303,7 @@ public class RefDataServiceTest {
         //given
 
         final UUID documentTypeId = randomUUID();
-        final JsonObject payload = Json.createReader(
+        final JsonObject payload = createReader(
                         new ByteArrayInputStream(getDocumentTypeDataById(documentTypeId).getBytes()))
                 .readObject();
         when(requester.request(any())).thenReturn(JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName(REFERENCEDATA_GET_DOCUMENT_ACCESS), payload));
@@ -543,7 +543,7 @@ public class RefDataServiceTest {
     @Test
     public void shouldGetPetFormData() {
 
-        final JsonObject payload = Json.createReader(
+        final JsonObject payload = createReader(
                         new ByteArrayInputStream(generatePetFormData().getBytes()))
                 .readObject();
         final JsonEnvelope inputEnvelope = JsonEnvelope.envelopeFrom(DefaultJsonMetadata.metadataBuilder().withId(randomUUID()).withName("referencedata.query.latest-pet-form"),
@@ -767,7 +767,7 @@ public class RefDataServiceTest {
                 .withId(UUID.randomUUID())
                 .withName(REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS);
 
-        final JsonObject payload = Json.createReader(
+        final JsonObject payload = createReader(
                         new ByteArrayInputStream(jsonString.getBytes()))
                 .readObject();
 

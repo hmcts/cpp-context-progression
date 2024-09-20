@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
 

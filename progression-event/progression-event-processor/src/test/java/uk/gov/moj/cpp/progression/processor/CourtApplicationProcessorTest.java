@@ -17,10 +17,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentCaptor.forClass;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -126,33 +128,30 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
-@RunWith(DataProviderRunner.class)
 @SuppressWarnings({"squid:S1607"})
+@ExtendWith(MockitoExtension.class)
 public class CourtApplicationProcessorTest {
 
     private static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
@@ -168,14 +167,10 @@ public class CourtApplicationProcessorTest {
     private Enveloper enveloper;
 
     @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
-
-    @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -210,18 +205,12 @@ public class CourtApplicationProcessorTest {
     @Mock
     private ListHearingBoxworkService listHearingBoxworkService;
 
-    @DataProvider
-    public static Object[][] applicationSummonsSpecification() {
-        return new Object[][]{
+    public static Stream<Arguments> applicationSummonsSpecification() {
+        return Stream.of(
                 // summons code, type, template name, youth defendant, number of documents
-                {SummonsTemplateType.BREACH, SummonsType.BREACH},
-                {SummonsTemplateType.GENERIC_APPLICATION, SummonsType.APPLICATION},
-        };
-    }
-
-    @Before
-    public void initMocks() {
-        MockitoAnnotations.initMocks(this);
+                Arguments.of(SummonsTemplateType.BREACH, SummonsType.BREACH),
+                Arguments.of(SummonsTemplateType.GENERIC_APPLICATION, SummonsType.APPLICATION)
+        );
     }
 
     @Test
@@ -778,7 +767,7 @@ public class CourtApplicationProcessorTest {
 
         final Envelope firstCommandEvent = envelopes.get(0);
 
-        Assert.assertThat(firstCommandEvent.metadata().name(), CoreMatchers.is("public.progression.court-application-updated"));
+        assertThat(firstCommandEvent.metadata().name(), is("public.progression.court-application-updated"));
         assertThat(firstCommandEvent.payload(), notNullValue());
     }
 
@@ -801,7 +790,7 @@ public class CourtApplicationProcessorTest {
         final JsonObject payload = stringToJsonObjectConverter.convert(inputPayload);
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
 
-        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_1)))
+        when(progressionService.getProsecutionCaseDetailById(any(), eq(caseId_1)))
                 .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId_1)
                         .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId1)
                                 .add("offences", createArrayBuilder()
@@ -827,7 +816,7 @@ public class CourtApplicationProcessorTest {
         assertEquals(expectedPayload, currentEvents.get(0).payload().toString(), getCustomComparator());
     }
 
-    @Test(expected = CaseNotFoundException.class)
+    @Test
     public void shouldThrowExceptionForBoxWorkApplicationWhenProsecutionCaseNotFound() throws IOException {
         //Given
         final UUID applicationId = randomUUID();
@@ -859,7 +848,7 @@ public class CourtApplicationProcessorTest {
                 .thenReturn(Optional.empty());
 
         //When
-        courtApplicationProcessor.processBoxWorkApplication(event);
+        assertThrows(CaseNotFoundException.class, () -> courtApplicationProcessor.processBoxWorkApplication(event));
     }
 
 
@@ -1043,17 +1032,6 @@ public class CourtApplicationProcessorTest {
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
 
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ApplicationReferredToExistingHearing.class)).thenReturn(applicationReferredToExistingHearing);
-        when(progressionService.getHearing(event, hearingId.toString())).thenReturn(Optional.of(createObjectBuilder().add("hearing", createObjectBuilder().
-                add("prosecutionCases", Json.createArrayBuilder().add(createObjectBuilder().add("id", caseId_1.toString()).build()).build()).build()).build()));
-
-        when(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
-
-        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_1.toString())))
-                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId_1.toString()).build()).build()));
-
-        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_2.toString())))
-                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId_2.toString()).build()).build()));
 
         courtApplicationProcessor.processCourtApplicationReferredToExistingHearing(event);
         final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
@@ -1110,12 +1088,6 @@ public class CourtApplicationProcessorTest {
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ApplicationReferredToExistingHearing.class)).thenReturn(applicationReferredToExistingHearing);
         when(progressionService.getHearing(event, hearingId.toString())).thenReturn(Optional.of(createObjectBuilder().add("hearing", createObjectBuilder().
                 add("prosecutionCases", Json.createArrayBuilder().add(createObjectBuilder().add("id", caseId_1.toString()).build()).build()).build()).build()));
-
-        when(enveloper.withMetadataFrom(event, PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
-
-        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_1.toString())))
-                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId_1.toString()).build()).build()));
 
         when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_2.toString())))
                 .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder()
@@ -1599,8 +1571,7 @@ public class CourtApplicationProcessorTest {
                 .build();
         final JsonObject payload = objectToJsonObjectConverter.convert(hearingResultedApplicationUpdated);
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
-        when(listHearingBoxworkService.isLHBWResultedAndNeedToSendNotifications(hearingResultedApplicationUpdated.getCourtApplication().getJudicialResults())).thenReturn(true);
-        when(listHearingBoxworkService.getNextHearingFromLHBWResult(hearingResultedApplicationUpdated.getCourtApplication().getJudicialResults())).thenReturn(nextHearing);
+        lenient().when(listHearingBoxworkService.isLHBWResultedAndNeedToSendNotifications(hearingResultedApplicationUpdated.getCourtApplication().getJudicialResults())).thenReturn(true);
 
         courtApplicationProcessor.processHearingResultedApplicationUpdated(event);
 
@@ -1709,8 +1680,8 @@ public class CourtApplicationProcessorTest {
 
     }
 
-    @UseDataProvider("applicationSummonsSpecification")
-    @Test
+    @MethodSource("applicationSummonsSpecification")
+    @ParameterizedTest
     public void shouldTestInitiateCourtHearingAfterSummonsApproved(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired) {
         final UUID masterDefendantId = randomUUID();
         final InitiateCourtHearingAfterSummonsApproved eventPayload = initiateCourtHearingAfterSummonsApproved()

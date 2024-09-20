@@ -9,13 +9,13 @@ import static uk.gov.moj.cpp.progression.helper.StubUtil.setupReferenceDataQuery
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupStagingPubHubCommandStub;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SearchCourtListIT extends AbstractIT {
     private static final String DOCUMENT_TEXT = STRING.next();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         setupListingQueryStub();
         setupStagingPubHubCommandStub();

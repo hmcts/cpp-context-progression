@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.service;
 import static com.google.common.io.Resources.getResource;
 import static java.nio.charset.Charset.defaultCharset;
 import static javax.json.Json.createObjectBuilder;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -22,15 +22,16 @@ import java.util.UUID;
 import javax.ws.rs.core.Response;
 
 import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CpsRestNotificationServiceTest {
 
     private static final String COURT_DOCUMENT_REST_API_URL = "https://spnl-apim-int-gw.cpp.nonlive/probation/api/v1/hearing/details";
@@ -52,7 +53,7 @@ public class CpsRestNotificationServiceTest {
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         setField(cpsRestNotificationService, "cpsPayloadTransformAndSendUrl", COURT_DOCUMENT_REST_API_URL);
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());

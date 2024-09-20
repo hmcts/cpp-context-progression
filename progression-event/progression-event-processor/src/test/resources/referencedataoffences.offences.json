@@ -1,0 +1,24 @@
+{
+  "offences": [
+    {
+      "title": "Obstruct person acting in the execution of these Regulations",
+      "legislation": "LEGISLATION_1",
+      "welshoffencetitle": "",
+      "welshlegislation": "",
+      "cjsOffenceCode": "OFFENCE_CODE_1",
+      "offenceId": "OFFENCE_ID_1",
+      "modeOfTrial": "Either Way",
+      "reportRestrictResultCode": "YES"
+    },
+    {
+      "title": "Obstruct person acting in the execution of these Regulations",
+      "legislation": "LEGISLATION_2",
+      "welshoffencetitle": "",
+      "welshlegislation": "",
+      "cjsOffenceCode": "OFFENCE_CODE_2",
+      "offenceId": "OFFENCE_ID_2",
+      "modeOfTrial": "Either Way",
+      "reportRestrictResultCode": "YES"
+    }
+  ]
+}

@@ -5,18 +5,17 @@ import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
+import static org.awaitility.Awaitility.await;
 
 import java.util.List;
 
-import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 
 public class VejHearingStub {
 
@@ -47,11 +46,12 @@ public class VejHearingStub {
 
     public static void verifyVejHearingStubCommandInvoked(final String commandEndPoint, final List<String> expectedValues) {
         await().atMost(30, SECONDS).pollInterval(10, SECONDS).until(() -> {
-            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlMatching(commandEndPoint));
+            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(commandEndPoint));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
             );
             verify(requestPatternBuilder);
+            return true;
         });
     }
 }

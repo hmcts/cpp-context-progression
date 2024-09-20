@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.query;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -17,13 +17,13 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Lists;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class CourtRegisterDocumentRequestQueryViewTest {
 
     @Mock
@@ -126,7 +126,6 @@ public class CourtRegisterDocumentRequestQueryViewTest {
                 .add("registerDate", requestDate.toString())
                 .build();
         when(objectToJsonObjectConverter.convert(courtRegisterRequestEntity)).thenReturn(transformedJsonEntity);
-        when(courtRegisterRequestRepository.findByRequestDateAndCourtHouse(LocalDate.now(), courtHouse)).thenReturn(Lists.newArrayList(courtRegisterRequestEntity));
         when(courtRegisterRequestRepository.findByRequestDate(requestDate)).thenReturn(Lists.newArrayList(courtRegisterRequestEntity));
         final JsonEnvelope courtRegisterRequests = courtRegisterDocumentRequestQueryView.getCourtRegistersByRequestDate(envelope);
         assertThat(courtRegisterRequests.payloadAsJsonObject().getJsonArray("courtRegisterDocumentRequests").size(), is(1));

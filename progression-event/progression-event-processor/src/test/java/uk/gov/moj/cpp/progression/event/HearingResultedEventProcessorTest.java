@@ -4,9 +4,9 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -48,7 +48,6 @@ import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
-import uk.gov.justice.listing.courts.ListNextHearings;
 import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.progression.courts.StoreBookingReferenceCourtScheduleIds;
@@ -88,20 +87,18 @@ import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.hamcrest.CoreMatchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 
 public class HearingResultedEventProcessorTest {
 
@@ -133,18 +130,13 @@ public class HearingResultedEventProcessorTest {
     private SummonsHelper summonsHelper;
 
     @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 
-    @Spy
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    @Mock
+    private ObjectToJsonValueConverter objectToJsonValueConverter;
 
-    @Spy
-    @InjectMocks
-    private final ObjectToJsonValueConverter objectToJsonValueConverter = new ObjectToJsonValueConverter(objectMapper);
-
-    @Spy
-    @InjectMocks
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    @Mock
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Captor
     private ArgumentCaptor<Envelope> envelopeArgumentCaptor;
@@ -204,6 +196,8 @@ public class HearingResultedEventProcessorTest {
                 metadataWithRandomUUID("public.events.hearing.hearing-resulted"),
                 objectToJsonObjectConverter.convert(publicEventPayload));
 
+        when(jsonObjectToObjectConverter.convert(any(),any())).thenReturn(hearing);
+
         this.eventProcessor.handlePublicHearingResulted(event);
 
         verify(sender).send(envelopeArgumentCaptor.capture());
@@ -244,6 +238,7 @@ public class HearingResultedEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("public.events.hearing.hearing-resulted"),
                 objectToJsonObjectConverter.convert(publicEventPayload));
+        when(jsonObjectToObjectConverter.convert(any(),any())).thenReturn(hearing);
 
         this.eventProcessor.handlePublicHearingResulted(event);
 
@@ -288,6 +283,7 @@ public class HearingResultedEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.prosecution-cases-resulted-v2"),
                 objectToJsonObjectConverter.convert(hearingResulted));
+        when(jsonObjectToObjectConverter.convert(any(),any())).thenReturn(hearingResulted);
 
         this.eventProcessor.handleProsecutionCasesResultedV2(event);
 
@@ -301,8 +297,8 @@ public class HearingResultedEventProcessorTest {
         assertTrue(capturedCases.stream().anyMatch(c -> caseId2.equals(c.getId())));
 
         assertThat(courtApplicationsArgumentCaptor.getValue().get(0).getId(), is(applicationId));
-        assertThat(hearingIdCaptor.getValue(), CoreMatchers.is(hearingId));
-        assertThat(jurisdictionTypeCaptor.getValue(), CoreMatchers.is(JurisdictionType.CROWN));
+        assertThat(hearingIdCaptor.getValue(), is(hearingId));
+        assertThat(jurisdictionTypeCaptor.getValue(), is(JurisdictionType.CROWN));
     }
 
     @Test
@@ -343,12 +339,13 @@ public class HearingResultedEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.next-hearings-requested"),
                 objectToJsonObjectConverter.convert(hearingResulted));
+        when(jsonObjectToObjectConverter.convert(any(),any())).thenReturn(hearingResulted);
 
         this.eventProcessor.handleNextHearingsRequested(event);
 
         verify(progressionService).updateHearingListingStatusToSentForListing(eq(event), listNextHearingsArgumentCaptor.capture());
         assertThat(listNextHearingsArgumentCaptor.getValue().getHearingId(), is(seedingHearing.getSeedingHearingId()));
-        assertThat(listNextHearingsArgumentCaptor.getValue().getHearings().size(), CoreMatchers.is(1));
+        assertThat(listNextHearingsArgumentCaptor.getValue().getHearings().size(), is(1));
         assertThat(listNextHearingsArgumentCaptor.getValue().getHearings().get(0).getId(), is(hearingId));
 
         verify(progressionService).storeBookingReferencesWithCourtScheduleIds(eq(event), storeBookingReferenceCourtScheduleIdsArgumentCaptor.capture());
@@ -392,6 +389,7 @@ public class HearingResultedEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.next-hearings-requested"),
                 objectToJsonObjectConverter.convert(hearingResulted));
+        when(jsonObjectToObjectConverter.convert(any(),any())).thenReturn(hearingResulted);
         this.eventProcessor.handleNextHearingsRequested(event);
 
         // Zero times execution of sending hearing to listing and updating status
@@ -418,6 +416,7 @@ public class HearingResultedEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.unscheduled-next-hearings-requested"),
                 objectToJsonObjectConverter.convert(unscheduledNextHearingsRequested));
+        when(jsonObjectToObjectConverter.convert(any(),any())).thenReturn(unscheduledNextHearingsRequested);
 
         this.eventProcessor.handUnscheduledNextHearingsRequested(event);
 
@@ -450,6 +449,7 @@ public class HearingResultedEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.unscheduled-next-hearings-requested"),
                 objectToJsonObjectConverter.convert(unscheduledNextHearingsRequested));
+        when(jsonObjectToObjectConverter.convert(any(),any())).thenReturn(unscheduledNextHearingsRequested);
 
         this.eventProcessor.handUnscheduledNextHearingsRequested(event);
 
@@ -488,6 +488,7 @@ public class HearingResultedEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.hearing-for-application-created"),
                 objectToJsonObjectConverter.convert(hearingForApplicationCreated));
+        when(jsonObjectToObjectConverter.convert(any(),any())).thenReturn(hearingForApplicationCreated);
 
         this.eventProcessor.processCreateHearingForApplication(event);
 
@@ -525,6 +526,7 @@ public class HearingResultedEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.hearing-for-application-created-v2"),
                 objectToJsonObjectConverter.convert(hearingForApplicationCreated));
+        when(jsonObjectToObjectConverter.convert(any(),any())).thenReturn(hearingForApplicationCreated);
 
         this.eventProcessor.processCreateHearingForApplicationV2(event);
 
@@ -555,6 +557,7 @@ public class HearingResultedEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.hearing-for-application-created-v2"),
                 objectToJsonObjectConverter.convert(hearingForApplicationCreated));
+        when(jsonObjectToObjectConverter.convert(any(),any())).thenReturn(hearingForApplicationCreated);
 
         this.eventProcessor.processCreateHearingForApplicationV2(event);
 
@@ -600,6 +603,8 @@ public class HearingResultedEventProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.initiate-application-for-case-requested"),
                 objectToJsonObjectConverter.convert(initiateApplicationForCaseRequested));
+
+        when(jsonObjectToObjectConverter.convert(any(), any())).thenReturn(initiateApplicationForCaseRequested);
 
         this.eventProcessor.processInitiateApplicationForCaseRequested(event);
 

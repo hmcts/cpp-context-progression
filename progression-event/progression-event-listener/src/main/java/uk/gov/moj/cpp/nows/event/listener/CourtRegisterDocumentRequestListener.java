@@ -7,6 +7,7 @@ import uk.gov.justice.progression.courts.CourtRegisterGenerated;
 import uk.gov.justice.progression.courts.CourtRegisterNotified;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.domain.constant.RegisterStatus;
@@ -52,7 +53,7 @@ public class CourtRegisterDocumentRequestListener {
     public void generateCourtRegister(final JsonEnvelope event) {
         final JsonObject payload = event.payloadAsJsonObject();
         final CourtRegisterGenerated courtRegisterGenerated = jsonObjectConverter.convert(payload, CourtRegisterGenerated.class);
-        final ZonedDateTime currentDateTime = ZonedDateTime.now();
+        final ZonedDateTime currentDateTime = new UtcClock().now();
 
         final List<CourtRegisterRequestEntity> courtRegisters = repository.findByCourtCenterIdAndStatusRecorded(courtRegisterGenerated.getCourtRegisterDocumentRequests().get(0).getCourtCentreId());
         courtRegisters.forEach(courtRegisterRequestEntity -> {

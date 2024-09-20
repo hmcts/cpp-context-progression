@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
@@ -19,14 +19,14 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RemoveConvictionDateHandlerTest {
     protected static final UUID CASE_ID = UUID.randomUUID();
     protected static final UUID APPLICATION_ID = UUID.randomUUID();
@@ -59,22 +59,15 @@ public class RemoveConvictionDateHandlerTest {
     @InjectMocks
     private RemoveConvictionDateHandler removeConvictionDateHandler;
 
-    @Before
-    public void setup(){
-        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
-        when(eventSource.getStreamById(APPLICATION_ID)).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class))
-                .thenReturn(caseAggregate);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class))
-                .thenReturn(applicationAggregate);
-        when(events.map(function)).thenReturn(jsonEvents);
-    }
 
     @Test
     public void removeConvictionDateToOffenceUnderProsecutionCase() throws EventStreamException {
 
         final UUID offenceId = UUID.randomUUID();
 
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class))
+                .thenReturn(caseAggregate);
         when(caseAggregate.removeConvictionDate(eq(CASE_ID), eq(offenceId)))
                 .thenReturn(events);
 
@@ -93,6 +86,10 @@ public class RemoveConvictionDateHandlerTest {
     public void addConvictionDateToOffenceUnderCourtApplicationCaseCase() throws EventStreamException {
 
         final UUID offenceId = UUID.randomUUID();
+
+        when(eventSource.getStreamById(APPLICATION_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class))
+                .thenReturn(applicationAggregate);
 
         when(applicationAggregate.removeConvictionDate(eq(APPLICATION_ID), eq(offenceId)))
                 .thenReturn(events);

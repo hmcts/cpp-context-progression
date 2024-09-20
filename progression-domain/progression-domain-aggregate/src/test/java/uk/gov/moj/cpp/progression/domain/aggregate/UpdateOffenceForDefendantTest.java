@@ -5,20 +5,20 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.command.defendant.AddDefendant;
+import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantBuilder;
+import uk.gov.moj.cpp.progression.domain.event.defendant.OffenceForDefendant;
+import uk.gov.moj.cpp.progression.domain.event.defendant.OffencesForDefendantUpdated;
+
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-
-import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
-import uk.gov.moj.cpp.progression.command.defendant.AddDefendant;
-import uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantBuilder;
-import uk.gov.moj.cpp.progression.domain.event.defendant.OffenceForDefendant;
-import uk.gov.moj.cpp.progression.domain.event.defendant.OffencesForDefendantUpdated;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -33,7 +33,7 @@ public class UpdateOffenceForDefendantTest {
     private CaseAggregate caseAggregate;
 
 
-    @Before
+    @BeforeEach
     public void setUp(){
         caseAggregate =new CaseAggregate();
         caseAggregate.addDefendant(addDefendant);

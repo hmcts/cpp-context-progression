@@ -5,12 +5,12 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>10.9.10</version>
+        <version>17.21.11</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>8.0.210-SNAPSHOT</version>
+    <version>17.0.7-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
@@ -28,6 +28,7 @@
         <module>progression-test-utilities</module>
         <module>progression-refdata-service</module>
         <module>progression-event-sources</module>
+        <module>progression-healthchecks</module>
     </modules>
 
     <properties>
@@ -57,37 +58,43 @@
             **/uk/gov/justice/services/domain/CaseDocuments.java,
             **/uk/gov/moj/cpp/progression/value/object/**/*
         </sonar.exclusions>
-        <cpp.platform-libraries.version>8.3.28</cpp.platform-libraries.version>
-        <file-alfresco.version>2.3.0</file-alfresco.version>
-        <cpp-common-test-utils.version>0.1.0</cpp-common-test-utils.version>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
-        <junit4-dataprovider.version>2.6</junit4-dataprovider.version>
         <javafaker.version>1.0.2</javafaker.version>
         <material.version>8.0.12</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
-        <access.control.version>6.4.1</access.control.version>
         <referencedata.version>17.0.16</referencedata.version>
         <listing.version>8.0.102</listing.version>
         <hearing.version>8.0.150</hearing.version>
         <usersgroups.version>8.0.39</usersgroups.version>
         <defence.version>8.0.55</defence.version>
         <referencedata.offence.version>8.0.23</referencedata.offence.version>
-        <coredomain.version>8.0.4</coredomain.version>
+        <coredomain.version>17.21.11</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
-        <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
-        <results.version>8.0.57</results.version>
+        <results.version>8.0.59</results.version>
         <notification.notify.version>8.0.16</notification.notify.version>
-        <unifiedsearch.version>8.0.10</unifiedsearch.version>
+        <unifiedsearch.version>17.0.3-FRAMEWORK-SNAPSHOT</unifiedsearch.version>
         <systemdocgenerator.version>8.0.92</systemdocgenerator.version>
         <applicationscourtorders.version>8.0.31</applicationscourtorders.version>
         <sjp.version>8.0.87</sjp.version>
-        <jackson-data-format.version>2.8.8</jackson-data-format.version>
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>8.0.1</stagingpubhub.version>
         <pdfbox.version>2.0.11</pdfbox.version>
         <correspondence.version>8.0.26</correspondence.version>
+        <stream-transformation.version>7.0.0</stream-transformation.version>
+        <stream-transformation-tool.version>6.4.5</stream-transformation-tool.version>
+
+        <mireportdata-cc-dependency>1.0.48</mireportdata-cc-dependency>
+        <dbunit-maven-plugin.version>1.0-beta-3</dbunit-maven-plugin.version>
+        <jmeter-maven-plugin.version>1.10.1</jmeter-maven-plugin.version>
+        <jmeter-plugins-standard.version>1.3.1</jmeter-plugins-standard.version>
+
+
+        <jmeter-lightning-maven-plugin>0.1.1</jmeter-lightning-maven-plugin>
+        <powermock-reflect>2.0.2</powermock-reflect>
+        <byte-buddy.version>1.12.22</byte-buddy.version>
+        <podam>7.1.0.RELEASE</podam>
     </properties>
     <build>
         <plugins>
@@ -98,7 +105,6 @@
                     <attachClasses>true</attachClasses>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
     <distributionManagement>
@@ -111,16 +117,77 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>uk.gov.justice.services</groupId>
-                <artifactId>test-utils-enveloper-provider</artifactId>
-                <scope>test</scope>
-                <version>${cpp.framework.version}</version>
+                <groupId>uk.gov.moj.cpp.core.domain</groupId>
+                <artifactId>criminal-court-public-model</artifactId>
+                <version>${coredomain.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.tngtech.junit.dataprovider</groupId>
-                <artifactId>junit4-dataprovider</artifactId>
-                <version>${junit4-dataprovider.version}</version>
+                <groupId>uk.gov.moj.cpp.core.domain</groupId>
+                <artifactId>common-core-domain</artifactId>
+                <version>${coredomain.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>uk.gov.moj.cpp.core.domain</groupId>
+                <artifactId>core-domain-transform-model</artifactId>
+                <version>${coredomain.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>uk.gov.moj.cpp.core.domain</groupId>
+                <artifactId>sjp-public-model</artifactId>
+                <version>${coredomain.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>uk.gov.justice</groupId>
+                <artifactId>stream-transformation-tool-api</artifactId>
+                <version>${stream-transformation.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>uk.gov.justice</groupId>
+                <artifactId>stream-transformation-tool-anonymise</artifactId>
+                <version>${stream-transformation-tool.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>uk.gov.justice</groupId>
+                <artifactId>stream-transformation-tool-api</artifactId>
+                <version>${stream-transformation-tool.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>uk.gov.moj.cpp.core.domain</groupId>
+                <artifactId>mireportdata-cc-dependency</artifactId>
+                <version>${mireportdata-cc-dependency}</version>
+            </dependency>
+            <dependency>
+                <groupId>uk.gov.justice.json</groupId>
+                <artifactId>json-transformer-jolt</artifactId>
+                <version>${json-transformer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-reflect</artifactId>
+                <version>${powermock-reflect}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>uk.co.jemos.podam</groupId>
+                <artifactId>podam</artifactId>
+                <version>${podam}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>uk.gov.moj.cpp.listing</groupId>
+                <artifactId>listing-common</artifactId>
+                <version>${listing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpmime</artifactId>
+                <version>${httpmime.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${byte-buddy.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.javafaker</groupId>

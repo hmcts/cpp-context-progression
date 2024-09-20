@@ -1,7 +1,7 @@
 package uk.gov.justice.framework.tools.transformation;
 
 import static java.util.Collections.emptyMap;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.StringReader;
 import java.nio.charset.Charset;

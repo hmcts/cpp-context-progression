@@ -14,8 +14,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -77,22 +77,21 @@ import javax.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 
 public class ReferralDisqualificationWarningTest {
 
     public static final UUID APPLICATION_DOCUMENT_TYPE_ID = UUID.fromString("460fbe94-c002-11e8-a355-529269fb1459");
-    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     final private UUID prosecutionCaseId = randomUUID();
     final private UUID defendantId = randomUUID();
     final private UUID offenceId = randomUUID();
@@ -104,10 +103,8 @@ public class ReferralDisqualificationWarningTest {
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     @Spy
-    @InjectMocks
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
     @Spy
-    @InjectMocks
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
     @Captor
     ArgumentCaptor<JsonObject> disqualificationWarningContentArgumentCaptor;
@@ -196,17 +193,14 @@ public class ReferralDisqualificationWarningTest {
                 jsonObject);
 
         when(originatingEnvelope.metadata()).thenReturn(metadataBuilder().withId(randomUUID()).withName("progression.event.cases-referred-to-court").withUserId(randomUUID().toString()).build());
-        when(originatingEnvelope.payloadAsJsonObject()).thenReturn(courtReferralPayload);
         when(referenceDataService.getCourtByCourtHouseOUCode(any(), any(), any())).thenReturn(courtCentre);
         when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(ljaDetails.get());
-        when(referenceDataService.getCountryByPostcode(any(), any(), any())).thenReturn("country");
         when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(documentTypeData);
         when(dataAggregatorFactory.getAggregator(Locale.ENGLISH)).thenReturn(referralDisqualifyWarningEnglishDataAggregator);
         when(referralDisqualifyWarningEnglishDataAggregator.aggregateReferralDisqualifyWarningData(any(), any(), any(), any())).thenReturn(docEnglishPayload);
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(documentData);
-        when(fileStorer.store(any(), any())).thenReturn(randomUUID());
         when(documentGeneratorClient.generatePdfDocument(docEnglishPayload, "NPE_RefferalDisqualificationWarning", systemUserId)).thenReturn(documentData);
         when(documentGeneratorService.generatePdfDocument(any(), any(), any())).thenReturn(materialId);
 
@@ -259,31 +253,23 @@ public class ReferralDisqualificationWarningTest {
                 jsonObject);
 
         when(originatingEnvelope.metadata()).thenReturn(metadataBuilder().withId(randomUUID()).withName("progression.event.cases-referred-to-court").withUserId(randomUUID().toString()).build());
-        when(originatingEnvelope.payloadAsJsonObject()).thenReturn(courtReferralPayload);
         when(referenceDataService.getCourtByCourtHouseOUCode(any(), any(), any())).thenReturn(courtCentre);
         when(referenceDataService.getLjaDetails(any(), any(), any())).thenReturn(ljaDetails.get());
-        when(referenceDataService.getCountryByPostcode(any(), any(), any())).thenReturn("country");
         when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(documentTypeData);
         when(dataAggregatorFactory.getAggregator(Locale.ENGLISH)).thenReturn(referralDisqualifyWarningEnglishDataAggregator);
         when(referralDisqualifyWarningEnglishDataAggregator.aggregateReferralDisqualifyWarningData(any(), any(), any(), any())).thenReturn(docEnglishPayload);
 
         final Locale WELSH_LOCALE = new Locale("cy");
-        when(dataAggregatorFactory.getAggregator(WELSH_LOCALE)).thenReturn(referralDisqualifyWarningWelshDataAggregator);
         when(referralDisqualifyWarningEnglishDataAggregator.aggregateReferralDisqualifyWarningData(any(), any(), any(), any())).thenReturn(docWelshPayload);
 
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(englishDocumentData);
         //when(fileStorer.store(any(), any())).thenReturn(randomUUID());
-        when(documentGeneratorClient.generatePdfDocument(docEnglishPayload, "NPE_RefferalDisqualificationWarning", systemUserId)).thenReturn(englishDocumentData);
-        when(pdfHelper.insertEmptyPage(englishDocumentData, emptypage, 1)).thenReturn(englishDocumentData);
 
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(welshDocumentData);
         //when(fileStorer.store(any(), any())).thenReturn(randomUUID());
-        when(documentGeneratorClient.generatePdfDocument(docWelshPayload, "NPB_RefferalDisqualificationWarning", systemUserId)).thenReturn(welshDocumentData);
-        when(pdfHelper.insertEmptyPage(welshDocumentData, emptypage, 1)).thenReturn(englishDocumentData);
 
-        when(pdfHelper.mergePdfDocuments(welshDocumentData, emptypage, englishDocumentData)).thenReturn(documentData);
 
         when(documentGeneratorService.generatePdfDocument(any(), any(), any())).thenReturn(materialId);
 

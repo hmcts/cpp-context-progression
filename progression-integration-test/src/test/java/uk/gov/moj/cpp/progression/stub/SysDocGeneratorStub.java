@@ -1,31 +1,32 @@
 package uk.gov.moj.cpp.progression.stub;
 
-import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.jayway.awaitility.core.ConditionTimeoutException;
-import org.hamcrest.Matcher;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.common.http.HeaderConstants;
-
-import java.util.Collection;
-import java.util.List;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static com.jayway.awaitility.Awaitility.await;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
+import static org.awaitility.Awaitility.await;
 import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
+
+import uk.gov.justice.services.common.http.HeaderConstants;
+
+import java.util.Collection;
+import java.util.List;
+
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import org.awaitility.core.ConditionTimeoutException;
+import org.hamcrest.Matcher;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SysDocGeneratorStub {
 
@@ -52,7 +53,13 @@ public class SysDocGeneratorStub {
                     findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))
                             .stream()
                             .map(LoggedRequest::getBodyAsString)
-                            .map(JSONObject::new)
+                            .map(t -> {
+                                try {
+                                    return new JSONObject(t);
+                                } catch (JSONException e) {
+                                    return null;
+                                }
+                            })
                             .collect(toList()), matcher);
 
             return postRequests;

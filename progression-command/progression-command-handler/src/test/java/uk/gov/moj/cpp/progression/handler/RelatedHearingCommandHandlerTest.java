@@ -6,7 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -37,15 +37,15 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RelatedHearingCommandHandlerTest {
 
     @Mock
@@ -62,15 +62,6 @@ public class RelatedHearingCommandHandlerTest {
 
     @InjectMocks
     private RelatedHearingCommandHandler relatedHearingCommandHandler;
-
-    private HearingAggregate hearingAggregate;
-
-    @Before
-    public void setup() {
-        hearingAggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-    }
 
     @Test
     public void shouldHandleCommand() {
@@ -89,6 +80,11 @@ public class RelatedHearingCommandHandlerTest {
         final UUID offenceId = randomUUID();
 
         final UpdateRelatedHearingCommand command = createUpdateRelatedHearingCommand(hearingId, seedingHearingId, prosecutionCaseId, offenceId);
+
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
         hearingAggregate.updateRelatedHearing(command.getHearingRequest(), command.getIsAdjourned(), command.getExtendedHearingFrom(), command.getIsPartiallyAllocated(), command.getSeedingHearing(), command.getShadowListedOffences());
 
         final Metadata metadata = Envelope
@@ -102,19 +98,19 @@ public class RelatedHearingCommandHandlerTest {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
         assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.event.related-hearing-updated"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.hearingRequest", notNullValue()),
-                                withJsonPath("$.hearingRequest.id", is(hearingId.toString())),
-                                withJsonPath("$.hearingRequest.prosecutionCases", notNullValue()),
-                                withJsonPath("$.hearingRequest.prosecutionCases[0].id", is(prosecutionCaseId.toString())),
-                                withJsonPath("$.seedingHearing", notNullValue()),
-                                withJsonPath("$.seedingHearing.seedingHearingId", is(seedingHearingId.toString())),
-                                withJsonPath("$.shadowListedOffences", notNullValue()),
-                                withJsonPath("$.shadowListedOffences[0]", is(offenceId.toString())))
-                        ))
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.related-hearing-updated"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                        withJsonPath("$.hearingRequest", notNullValue()),
+                                        withJsonPath("$.hearingRequest.id", is(hearingId.toString())),
+                                        withJsonPath("$.hearingRequest.prosecutionCases", notNullValue()),
+                                        withJsonPath("$.hearingRequest.prosecutionCases[0].id", is(prosecutionCaseId.toString())),
+                                        withJsonPath("$.seedingHearing", notNullValue()),
+                                        withJsonPath("$.seedingHearing.seedingHearingId", is(seedingHearingId.toString())),
+                                        withJsonPath("$.shadowListedOffences", notNullValue()),
+                                        withJsonPath("$.shadowListedOffences[0]", is(offenceId.toString())))
+                                ))
                 )
         );
     }

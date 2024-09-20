@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,17 +29,16 @@ import java.util.function.Function;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.apache.http.HttpStatus;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseApplicationEjectedEventProcessorTest {
 
     private static final String REMOVAL_REASON = "REASON";
@@ -90,7 +89,7 @@ public class CaseApplicationEjectedEventProcessorTest {
     @Mock
     private AzureFunctionService azureFunctionService;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -119,9 +118,7 @@ public class CaseApplicationEjectedEventProcessorTest {
         when(prosecutionCase.getProsecutionCaseIdentifier()).thenReturn(prosecutionCaseIdentifier);
         when(prosecutionCase.getOriginatingOrganisation()).thenReturn(SURREY_POLICE_ORIG_ORGANISATION);
         when(prosecutionCaseIdentifier.getProsecutionAuthorityReference()).thenReturn(prosecutionCaseURN);
-        when(prosecutionCaseIdentifier.getProsecutionAuthorityCode()).thenReturn(prosecutionCaseAuthorityCode);
         when(prosecutionCase.getInitiationCode()).thenReturn(initiationCode);
-        when(azureFunctionService.makeFunctionCall(payload.toString())).thenReturn(HttpStatus.SC_ACCEPTED);
 
         //When
         caseApplicationEjectedEventProcessor.processCaseEjected(envelope);

@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.LENIENT;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.ProgressionEventFactory;
@@ -24,12 +25,13 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 
 /**
  *
@@ -37,7 +39,10 @@ import org.mockito.runners.MockitoJUnitRunner;
  *
  */
 @Deprecated
-@RunWith(MockitoJUnitRunner.class)
+// FIXME!!! Temporarily using lenient strictness to get this
+// context running with junit 5. This test really needs re-writing.
+@MockitoSettings(strictness = LENIENT)
+@ExtendWith(MockitoExtension.class)
 public class ProgressionEventFactoryTest {
 
     private static final String CASE_ID = randomUUID();
@@ -87,21 +92,12 @@ public class ProgressionEventFactoryTest {
     @Mock
     JsonObject jsonObj;
 
-    @Before
+    @BeforeEach
     public void SetUp() {
         when(this.envelope.payloadAsJsonObject()).thenReturn(this.jsonObj);
         when(this.jsonObj.getString(Mockito.eq("caseId"))).thenReturn(CASE_ID);
-        when(this.jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
-        when(this.jsonObj.getString(Mockito.eq("planDate"))).thenReturn(LocalDate.now().toString());
         when(this.jsonObj.getString(Mockito.eq("sendingCommittalDate")))
                         .thenReturn(LocalDate.now().toString());
-        when(this.jsonObj.getString(Mockito.eq("sentenceHearingDate")))
-                        .thenReturn(LocalDate.now().toString());
-
-        when(this.jsonObj.getJsonArray(Mockito.eq("defendants")))
-                        .thenReturn(Json.createArrayBuilder().add(Json.createObjectBuilder()
-                                        .add("id", randomUUID()).build()).build());
-
 
         when(this.jsonObj.getJsonObject("hearing")).thenReturn(Json.createObjectBuilder()
                 .add("courtCentreName", COURT_CENTRE_NAME)

@@ -3,13 +3,14 @@ package uk.gov.moj.cpp.progression.handler;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.codehaus.groovy.runtime.InvokerHelper.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterCaseOrApplication.courtRegisterCaseOrApplication;
@@ -21,8 +22,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.progression.test.TestUtilities.asList;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
@@ -38,7 +37,6 @@ import uk.gov.justice.progression.courts.NotifyCourtRegister;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -50,6 +48,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
+import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.progression.aggregate.CourtCentreAggregate;
 import uk.gov.moj.cpp.progression.command.GenerateCourtRegisterByDate;
 import uk.gov.moj.cpp.progression.test.FileUtil;
@@ -64,16 +63,14 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CourtRegisterHandlerTest {
     private static final String ADD_COURT_REGISTER_COMMAND_NAME = "progression.command.add-court-register";
     private static final UUID COURT_CENTRE_ID = randomUUID();
@@ -82,8 +79,10 @@ public class CourtRegisterHandlerTest {
 
     @Mock
     private EventSource eventSource;
+
     @Mock
     private EventStream eventStream;
+
     @Mock
     private AggregateService aggregateService;
     @Mock
@@ -93,34 +92,24 @@ public class CourtRegisterHandlerTest {
 
     @InjectMocks
     private CourtRegisterHandler courtRegisterHandler;
+
     @Mock
     private JsonEnvelope envelope;
+
     @Mock
     private Requester requester;
-    private CourtCentreAggregate aggregate;
-    @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-    @Spy
-    private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @Spy
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectConvertersFactory().jsonObjectToObjectConverter();
 
     @Spy
-    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new JsonObjectConvertersFactory().objectToJsonObjectConverter();
+
+    @Spy
+    private final StringToJsonObjectConverter stringToJsonObjectConverter = new JsonObjectConvertersFactory().stringToJsonObjectConverter();
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CourtRegisterRecorded.class, CourtRegisterGenerated.class, CourtRegisterNotified.class, CourtRegisterNotificationIgnored.class);
 
-    @Before
-    public void setup() {
-        aggregate = new CourtCentreAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(aggregate);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-
-        setField(this.jsonToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
-        setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
-    }
 
     @Test
     public void shouldHandleCommand() {
@@ -135,8 +124,12 @@ public class CourtRegisterHandlerTest {
                 .getPayload("json/progression.event.court-application-for-applicant.json")
                 .replaceAll("%APPLICATION_ID%", APPLICATION_ID.toString()));
 
-        final CourtApplication courtApplication = jsonToObjectConverter.convert(jsonObject, CourtApplication.class);
-        when(applicationAggregate.getCourtApplication()).thenReturn(courtApplication);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
+        final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
+        when(eventSource.getStreamById(COURT_CENTRE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
 
         final Envelope<CourtRegisterDocumentRequest> envelope = createCourtRegisterDocumentRequestHandlerEnvelope(createCourtRegisterDocumentRequest());
 
@@ -157,6 +150,11 @@ public class CourtRegisterHandlerTest {
         final JsonObject jsonObject = Json.createObjectBuilder().add("courtRegisterDocumentRequests", jsonValues).build();
         when(queryEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.request(any(Envelope.class))).thenReturn(queryEnvelope);
+
+        final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
+
         courtRegisterHandler.handleGenerateCourtRegister(generateCourtRegisterEnvelope);
         verifyCourtRegisterGenerateDocumentResults();
 
@@ -167,7 +165,12 @@ public class CourtRegisterHandlerTest {
         final UUID courtCentreId = randomUUID();
         final UUID systemDocGeneratorId = randomUUID();
         final CourtRegisterRecipient recipient = CourtRegisterRecipient.courtRegisterRecipient().withRecipientName("John").build();
-        aggregate.setCourtRegisterRecipients(Collections.singletonList(recipient));
+
+        final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
+
+        courtCentreAggregate.setCourtRegisterRecipients(Collections.singletonList(recipient));
         final Envelope<NotifyCourtRegister> notifyCourtRegisterEnvelope = prepareNotifyCourtCentreEnvelope(courtCentreId, systemDocGeneratorId);
         courtRegisterHandler.handleNotifyCourtCentre(notifyCourtRegisterEnvelope);
         verifyNotifyCourtHandlerResults();
@@ -185,6 +188,11 @@ public class CourtRegisterHandlerTest {
         final JsonObject jsonObject = Json.createObjectBuilder().add("courtRegisterDocumentRequests", jsonValues).build();
         when(queryEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.request(any(Envelope.class))).thenReturn(queryEnvelope);
+
+        final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
+
         courtRegisterHandler.handleGenerateCourtRegisterByDate(generateCourtRegisterEnvelope);
         verifyCourtRegisterGenerateDocumentResults();
 
@@ -198,6 +206,13 @@ public class CourtRegisterHandlerTest {
 
         final CourtApplication courtApplication = jsonToObjectConverter.convert(jsonObject, CourtApplication.class);
         when(applicationAggregate.getCourtApplication()).thenReturn(courtApplication);
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
+        final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
+        when(eventSource.getStreamById(COURT_CENTRE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
 
         courtRegisterHandler.handleAddCourtRegister(createCourtRegisterDocumentRequestHandlerEnvelope(createCourtRegisterDocumentRequest()));
 
@@ -223,6 +238,13 @@ public class CourtRegisterHandlerTest {
         final CourtApplication courtApplication = jsonToObjectConverter.convert(jsonObject, CourtApplication.class);
         when(applicationAggregate.getCourtApplication()).thenReturn(null);
 
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
+        final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
+        when(eventSource.getStreamById(COURT_CENTRE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
+
         courtRegisterHandler.handleAddCourtRegister(createCourtRegisterDocumentRequestHandlerEnvelope(createCourtRegisterDocumentRequest()));
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -245,6 +267,13 @@ public class CourtRegisterHandlerTest {
         when(applicationAggregate.getCourtApplication()).thenReturn(courtApplication);
         when(courtApplication.getApplicant()).thenReturn(null);
 
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
+        final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
+        when(eventSource.getStreamById(COURT_CENTRE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
+
         courtRegisterHandler.handleAddCourtRegister(createCourtRegisterDocumentRequestHandlerEnvelope(createCourtRegisterDocumentRequest()));
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -265,6 +294,13 @@ public class CourtRegisterHandlerTest {
         when(applicationAggregate.getCourtApplication()).thenReturn(courtApplication);
         when(courtApplication.getApplicant()).thenReturn(courtApplicationParty);
         when(courtApplicationParty.getMasterDefendant()).thenReturn(null);
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
+        final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
+        when(eventSource.getStreamById(COURT_CENTRE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
 
         courtRegisterHandler.handleAddCourtRegister(createCourtRegisterDocumentRequestHandlerEnvelope(createCourtRegisterDocumentRequest()));
 
@@ -288,6 +324,13 @@ public class CourtRegisterHandlerTest {
 
         final CourtApplication courtApplication = jsonToObjectConverter.convert(jsonObject, CourtApplication.class);
         when(applicationAggregate.getCourtApplication()).thenReturn(courtApplication);
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
+        final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
+        when(eventSource.getStreamById(COURT_CENTRE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
 
         courtRegisterHandler.handleAddCourtRegister(createCourtRegisterDocumentRequestHandlerEnvelope(createCourtRegisterDocumentRequest()));
 
@@ -314,6 +357,13 @@ public class CourtRegisterHandlerTest {
         final CourtApplication courtApplication = jsonToObjectConverter.convert(jsonObject, CourtApplication.class);
         when(applicationAggregate.getCourtApplication()).thenReturn(courtApplication);
 
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
+        final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
+        when(eventSource.getStreamById(COURT_CENTRE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
+
         courtRegisterHandler.handleAddCourtRegister(createCourtRegisterDocumentRequestHandlerEnvelope(createCourtRegisterDocumentRequest()));
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -337,7 +387,10 @@ public class CourtRegisterHandlerTest {
                 .replaceAll("%MASTER_DEFENDANT_ID%", MASTER_DEFENDANT_ID.toString()));
 
         final CourtApplication courtApplication = jsonToObjectConverter.convert(jsonObject, CourtApplication.class);
-        when(applicationAggregate.getCourtApplication()).thenReturn(courtApplication);
+
+        final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
+        when(eventSource.getStreamById(COURT_CENTRE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
 
 
         courtRegisterHandler.handleAddCourtRegister(createCourtRegisterDocumentRequestHandlerEnvelope(createCourtRegisterDocumentRequestWithNullApplicationId()));

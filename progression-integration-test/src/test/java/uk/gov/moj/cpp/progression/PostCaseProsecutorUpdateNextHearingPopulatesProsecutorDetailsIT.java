@@ -8,26 +8,26 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearingWithProsecutorInfo;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
 import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
 
-import javax.jms.MessageConsumer;
-
-import com.jayway.restassured.path.json.JsonPath;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import io.restassured.path.json.JsonPath;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class PostCaseProsecutorUpdateNextHearingPopulatesProsecutorDetailsIT extends AbstractIT {
     private static final String DOCUMENT_TEXT = STRING.next();
@@ -36,7 +36,11 @@ public class PostCaseProsecutorUpdateNextHearingPopulatesProsecutorDetailsIT ext
 
     private CaseProsecutorUpdateHelper caseProsecutorUpdateHelper;
 
-    @Before
+    private static final JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.cps-prosecutor-updated").getMessageConsumerClient();
+    private static final JmsMessageConsumerClient caseProsecutorUpdatedPrivateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.case-cps-prosecutor-updated").getMessageConsumerClient();
+    private static final JmsMessageConsumerClient publicEventsCaseProsecutorUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.events.cps-prosecutor-updated").getMessageConsumerClient();
+
+    @BeforeEach
     public void setUp() {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -56,29 +60,28 @@ public class PostCaseProsecutorUpdateNextHearingPopulatesProsecutorDetailsIT ext
         caseProsecutorUpdateHelper.updateCaseProsecutor();
 
         // verify updated prosecutor details
-        caseProsecutorUpdateHelper.verifyInActiveMQ();
-        caseProsecutorUpdateHelper.verifyInMessagingQueueForProsecutorUpdated(0);
+        caseProsecutorUpdateHelper.verifyInActiveMQ(privateEventsConsumer, caseProsecutorUpdatedPrivateEventsConsumer);
+        caseProsecutorUpdateHelper.verifyInMessagingQueueForProsecutorUpdated(0, publicEventsCaseProsecutorUpdated);
 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         //Create an ad-hock Hearing
-        try (final MessageConsumer messageConsumerListHearingRequested = privateEvents
-                .createPrivateConsumer("progression.event.list-hearing-requested")) {
+        final JmsMessageConsumerClient messageConsumerListHearingRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.list-hearing-requested").getMessageConsumerClient();
 
-            // Ad-hock hearing
-            PreAndPostConditionHelper.listNewHearing(caseId, defendantId);
-            final JsonPath message = retrieveMessage(messageConsumerListHearingRequested, isJson(allOf(
-                    withJsonPath("$.listNewHearing.listDefendantRequests[0].prosecutionCaseId", is(caseId)),
-                    withJsonPath("$.listNewHearing.listDefendantRequests[0].defendantId", is(defendantId)),
-                    withJsonPath("$.listNewHearing.bookingType", is("Video")),
-                    withJsonPath("$.listNewHearing.priority", is("High")),
-                    withJsonPath("$.listNewHearing.specialRequirements", hasSize(2)),
-                    withJsonPath("$.listNewHearing.specialRequirements", hasItems("RSZ", "CELL"))
-            )));
-            assertNotNull(message);
-        }
+        // Ad-hock hearing
+        PreAndPostConditionHelper.listNewHearing(caseId, defendantId);
+        final JsonPath message = retrieveMessageAsJsonPath(messageConsumerListHearingRequested, isJson(allOf(
+                withJsonPath("$.listNewHearing.listDefendantRequests[0].prosecutionCaseId", is(caseId)),
+                withJsonPath("$.listNewHearing.listDefendantRequests[0].defendantId", is(defendantId)),
+                withJsonPath("$.listNewHearing.bookingType", is("Video")),
+                withJsonPath("$.listNewHearing.priority", is("High")),
+                withJsonPath("$.listNewHearing.specialRequirements", hasSize(2)),
+                withJsonPath("$.listNewHearing.specialRequirements", hasItems("RSZ", "CELL"))
+        )));
+        assertNotNull(message);
         //Verify hearing with prosecutors details populated into it.
         verifyPostListCourtHearingWithProsecutorInfo(caseId, defendantId, "8e837de0-743a-4a2c-9db3-b2e678c48729");
     }
+
 }
 

@@ -13,6 +13,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
@@ -20,16 +21,16 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CreateCourtDocumentApiTest {
 
     private static final String CREATE_COURT_DOCUMENTS_COMMAND = "progression.create-court-documents";
@@ -44,7 +45,7 @@ public class CreateCourtDocumentApiTest {
     private CreateCourtDocumentApi createCourtDocumentApi;
 
     @Captor
-    private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
+    private ArgumentCaptor<DefaultEnvelope> envelopeCaptor;
 
     @Test
     public void shouldHandleAddDocumentCommand() {

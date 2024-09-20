@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-query</artifactId>
-        <version>8.0.210-SNAPSHOT</version>
+        <version>17.0.7-SNAPSHOT</version>
     </parent>
     <artifactId>progression-query-api</artifactId>
     <packaging>war</packaging>
@@ -18,6 +18,11 @@
                 <artifactId>rest-client-generator-plugin</artifactId>
                 <version>${cpp.framework.version}</version>
                 <dependencies>
+                    <dependency>
+                        <groupId>javax</groupId>
+                        <artifactId>javaee-api</artifactId>
+                        <version>${javaee-api.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.progression</groupId>
                         <artifactId>progression-query-view</artifactId>
@@ -160,13 +165,15 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>uk.gov.moj.cpp.system.authorisation</groupId>
-            <artifactId>authorisation-interceptor</artifactId>
-        </dependency>
-        <dependency>
             <groupId>uk.gov.moj.cpp.material</groupId>
             <artifactId>material-client</artifactId>
             <version>${material.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>uk.gov.justice.services</groupId>
+                    <artifactId>test-utils-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.access-control</groupId>
@@ -176,8 +183,8 @@
 
         <!-- JUnit regression testing framework. -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -187,7 +194,7 @@
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-library</artifactId>
+            <artifactId>hamcrest</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -212,7 +219,11 @@
         <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>test-utils-common</artifactId>
-            <version>2.4.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>test-utils-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -231,6 +242,12 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.10.10</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

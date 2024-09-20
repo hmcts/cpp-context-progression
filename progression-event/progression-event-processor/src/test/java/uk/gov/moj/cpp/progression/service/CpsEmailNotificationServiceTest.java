@@ -7,8 +7,7 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.doNothing;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,15 +55,15 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CpsEmailNotificationServiceTest {
 
     private final String prosecutionCaseSampleWithCourtDocument = "progression.event.court-document-send-to-cps.json";
@@ -102,7 +101,7 @@ public class CpsEmailNotificationServiceTest {
     @Mock
     private GetHearingsAtAGlance getHearingsAtAGlance;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         setField(this.jsonObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
     }
@@ -175,8 +174,8 @@ public class CpsEmailNotificationServiceTest {
             final HearingVO hearingVO = hearingVOOptional.get();
             final ZonedDateTime zonedDateTime = ZonedDateTime.parse(hearingVO.getHearingDate());
             assertThat("Hearing date mismatched", zonedDateTime.toLocalDate().isEqual(now().minusDays(1).toLocalDate()), is(true));
-            assertNotNull("Court center name should not be empty", hearingVO.getCourtName());
-            assertNotNull("Court center id should not be empty", hearingVO.getCourtCenterId());
+            assertNotNull(hearingVO.getCourtName(), "Court center name should not be empty");
+            assertNotNull(hearingVO.getCourtCenterId(), "Court center id should not be empty");
         }
     }
 
@@ -203,7 +202,6 @@ public class CpsEmailNotificationServiceTest {
 
         when(referenceDataService.getOrganisationUnitById(uuid, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
         when(applicationParameters.getCpsCourtDocumentTemplateId()).thenReturn(courtDocumentTemplateId);
-        doNothing().when(notificationService).sendCPSNotification(jsonEnvelope, cpsNotificationVO);
 
         invokeMethod(cpsEmailNotificationService, "populateCPSNotificationAndSendEmail",
                 jsonEnvelope, courtDocument, prosecutionCaseJsonOptional.get(), materialUrl, hearingVOMock, prosecutionCaseId, materialId, EmailTemplateType.COURT_DOCUMENT);
@@ -213,21 +211,7 @@ public class CpsEmailNotificationServiceTest {
 
     @Test
     public void shouldGetHearingDetails() throws Exception {
-        final Optional<JsonObject> prosecutionCaseJsonOptional = Optional.of(getPayloadAsJsonObject(prosecutionCaseSampleWithCourtDocument));
-        final String testCPSEmail = "abc@xyz.com";
-
-        final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress", testCPSEmail).build();
-        final UUID randomUUID = UUID.randomUUID();
-
-        final JsonObject jsonObject = createObjectBuilder().add("caseId", randomUUID.toString())
-                .add("defendantId", randomUUID.toString())
-                .add("organisationId", randomUUID.toString()).build();
         final GetHearingsAtAGlance getHearingsAtAGlance = getCaseAtAGlanceWithPastHearings();
-
-        when(progressionService.getProsecutionCaseDetailById(jsonEnvelope, randomUUID.toString())).thenReturn(prosecutionCaseJsonOptional);
-        when(referenceDataService.getOrganisationUnitById(randomUUID, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
-        doNothing().when(notificationService).sendCPSNotification(jsonEnvelope, cpsNotificationVO);
-        when(jsonObjectConverter.convert(jsonObject, GetHearingsAtAGlance.class)).thenReturn(getHearingsAtAGlance);
 
         Optional<HearingVO> hearingVO = invokeMethod(cpsEmailNotificationService, "getHearingDetails", getHearingsAtAGlance);
 
@@ -237,21 +221,6 @@ public class CpsEmailNotificationServiceTest {
 
     @Test
     public void shouldGetHearingDetailsWithNullHearingVO() throws Exception {
-        final Optional<JsonObject> prosecutionCaseJsonOptional = Optional.of(getPayloadAsJsonObject(prosecutionCaseSampleWithCourtDocument));
-        final String testCPSEmail = "abc@xyz.com";
-
-        final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress", testCPSEmail).build();
-        final UUID randomUUID = UUID.randomUUID();
-
-        final JsonObject jsonObject = createObjectBuilder().add("caseId", randomUUID.toString())
-                .add("defendantId", randomUUID.toString())
-                .add("organisationId", randomUUID.toString()).build();
-
-        when(progressionService.getProsecutionCaseDetailById(jsonEnvelope, randomUUID.toString())).thenReturn(prosecutionCaseJsonOptional);
-        when(referenceDataService.getOrganisationUnitById(randomUUID, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
-        doNothing().when(notificationService).sendCPSNotification(jsonEnvelope, cpsNotificationVO);
-        when(jsonObjectConverter.convert(jsonObject, GetHearingsAtAGlance.class)).thenReturn(getHearingsAtAGlance);
-
         Optional<HearingVO> hearingVO = invokeMethod(cpsEmailNotificationService, "getHearingDetails", getHearingsAtAGlance);
 
         assertThat("Hearing vo is not null", hearingVO.isPresent(), is(false));

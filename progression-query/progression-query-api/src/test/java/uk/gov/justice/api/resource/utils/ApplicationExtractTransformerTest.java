@@ -10,8 +10,7 @@ import static org.apache.commons.lang3.StringUtils.SPACE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.api.resource.DefaultQueryApiApplicationsApplicationIdExtractResource.STANDALONE_APPLICATION;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -25,7 +24,6 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
@@ -65,17 +63,15 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ApplicationExtractTransformerTest {
     private static final UUID HEARING_ID_1 = randomUUID();
     private static final UUID HEARING_ID_2 = randomUUID();
@@ -131,9 +127,8 @@ public class ApplicationExtractTransformerTest {
     @Mock
     private RequestedNameMapper requestedNameMapper;
 
-    @Before
+    @BeforeEach
     public void init() {
-        Mockito.when(referenceDataService.getCourtCentreAddress(any(), any())).thenReturn(createAddress());
         setField(this.applicationExtractTransformer, "transformationHelper", transformationHelper);
         setField(this.applicationExtractTransformer, "jsonObjectToObjectConverter", jsonObjectToObjectConverter);
     }
@@ -144,8 +139,9 @@ public class ApplicationExtractTransformerTest {
         final CourtApplication courtApplication = createCourtApplication();
         List<Hearing> hearingsForApplication = createHearingsForApplication();
 
-        when(requestedNameMapper.getRequestedJudgeName(argThat(Matchers.any(JsonObject.class)))).thenReturn("Denial");
-        when(referenceDataService.getJudiciary(argThat(Matchers.any(UUID.class)))).thenReturn(Optional.ofNullable(createJudiciaryJsonObject()));
+        when(referenceDataService.getCourtCentreAddress(any(), any())).thenReturn(createAddress());
+        when(requestedNameMapper.getRequestedJudgeName(any(JsonObject.class))).thenReturn("Denial");
+        when(referenceDataService.getJudiciary(any(UUID.class))).thenReturn(Optional.ofNullable(createJudiciaryJsonObject()));
 
         //when
         final ApplicationCourtExtractRequested applicationCourtExtractRequested = applicationExtractTransformer
@@ -172,8 +168,9 @@ public class ApplicationExtractTransformerTest {
         final CourtApplication courtApplication = createCourtApplictionWithDefendantApplicant();
         List<Hearing> hearingsForApplication = createHearingsForApplicationWithHearingHeardInYouthCourt();
 
-        when(requestedNameMapper.getRequestedJudgeName(argThat(Matchers.any(JsonObject.class)))).thenReturn("Denial");
-        when(referenceDataService.getJudiciary(argThat(Matchers.any(UUID.class)))).thenReturn(Optional.ofNullable(createJudiciaryJsonObject()));
+        when(referenceDataService.getCourtCentreAddress(any(), any())).thenReturn(createAddress());
+        when(requestedNameMapper.getRequestedJudgeName(any(JsonObject.class))).thenReturn("Denial");
+        when(referenceDataService.getJudiciary(any(UUID.class))).thenReturn(Optional.ofNullable(createJudiciaryJsonObject()));
 
         //when
         final ApplicationCourtExtractRequested applicationCourtExtractRequested = applicationExtractTransformer

@@ -9,36 +9,36 @@ import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 
 import java.util.Optional;
 
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
-import com.jayway.restassured.response.Response;
-import org.junit.Test;
+import io.restassured.response.Response;
+import org.junit.jupiter.api.Test;
 
 public class EditCaseNoteIT extends AbstractIT {
 
-    private static final MessageConsumer consumerForCaseNoteEdited = publicEvents.createPublicConsumer("public.progression.case-note-edited");
+    private static final JmsMessageConsumerClient consumerForCaseNoteEdited = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.case-note-edited").getMessageConsumerClient();
     private final String caseId = randomUUID().toString();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     private static void verifyInMessageIsPresentInPublicEvent() {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(consumerForCaseNoteEdited);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCaseNoteEdited);
         assertTrue(message.isPresent());
     }
 
@@ -69,7 +69,6 @@ public class EditCaseNoteIT extends AbstractIT {
         assertThat(writeResponseForFalse.getStatusCode(), equalTo(SC_ACCEPTED));
         verifyInMessageIsPresentInPublicEvent();
         verifyCaseNotesAndGetCaseNoteId(caseId, false);
-
 
 
     }

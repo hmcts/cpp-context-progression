@@ -7,22 +7,23 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_ENFORCEMENT_ACKNOWLEDGMENT_ERROR;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_NOW_REQUEST_IGNORED_WITH_ACCOUNT_NUMBER;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_NOW_REQUEST_WITH_ACCOUNT_NUMBER;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 
 import java.util.concurrent.TimeUnit;
 
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.Is;
 
@@ -36,22 +37,22 @@ public class NowsRequestHelper extends AbstractTestHelper {
     }
 
     public void verifyAccountNumberAddedToRequest(final String accountNumber, final String requestId) {
-        privateEventsConsumer = privateEvents.createPrivateConsumer(EVENT_NOW_REQUEST_WITH_ACCOUNT_NUMBER);
-        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        final JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(EVENT_NOW_REQUEST_WITH_ACCOUNT_NUMBER).getMessageConsumerClient();
+        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
         assertThat(jsonResponse.getString("accountNumber"), Is.is(accountNumber));
         assertThat(jsonResponse.getString("requestId"), Is.is(requestId));
     }
 
     public void verifyAccountNumberIgnoredToRequest(final String accountNumber, final String requestId) {
-        privateEventsConsumer = privateEvents.createPrivateConsumer(EVENT_NOW_REQUEST_IGNORED_WITH_ACCOUNT_NUMBER);
-        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        final JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(EVENT_NOW_REQUEST_IGNORED_WITH_ACCOUNT_NUMBER).getMessageConsumerClient();
+        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
         assertThat(jsonResponse.getString("accountNumber"), Is.is(accountNumber));
         assertThat(jsonResponse.getString("requestId"), Is.is(requestId));
     }
 
     public void verifyErrorEventRaised(final String errorCode, final String errorMessage) {
-        privateEventsConsumer = privateEvents.createPrivateConsumer(EVENT_ENFORCEMENT_ACKNOWLEDGMENT_ERROR);
-        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        final JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(EVENT_ENFORCEMENT_ACKNOWLEDGMENT_ERROR).getMessageConsumerClient();
+        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
         assertThat(jsonResponse.getString("errorCode"), Is.is(errorCode));
         assertThat(jsonResponse.getString("errorMessage"), Is.is(errorMessage));
     }
@@ -73,9 +74,4 @@ public class NowsRequestHelper extends AbstractTestHelper {
                         ))).getPayload();
     }
 
-    @Override
-    public void close() {
-        super.close();
-        closeSilently(privateEventsConsumer);
-    }
 }

@@ -1,0 +1,16 @@
+package uk.gov.moj.cpp.progression.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - eject case or application"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.eject-case-or-application");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Eject Case Group"));
+  then
+    $outcome.setSuccess(true);
+end
+
+

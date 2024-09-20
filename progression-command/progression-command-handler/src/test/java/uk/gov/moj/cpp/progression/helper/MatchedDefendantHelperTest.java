@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.helper;
 
 import static com.fasterxml.jackson.annotation.JsonCreator.Mode.PROPERTIES;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.Address;
@@ -16,6 +16,7 @@ import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.additionalproperties.AdditionalPropertiesModule;
 import uk.gov.justice.services.common.converter.jackson.jsr353.InclusionAwareJSR353Module;
+import uk.gov.justice.services.common.util.UtcClock;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -31,14 +32,14 @@ import javax.json.JsonObjectBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MatchedDefendantHelperTest {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -60,7 +61,7 @@ public class MatchedDefendantHelperTest {
     private static final String SAMPLE_ADDRESS_LINE4 = "addressLine4";
     private static final String SAMPLE_ADDRESS_LINE5 = "addressLine5";
     private static final LocalDate SAMPLE_DATE_OF_BIRTH = LocalDate.of(1987, 12, 5);
-    private static final ZonedDateTime SAMPLE_COURT_PROCEEDINGS_INITIATED = ZonedDateTime.now();
+    private static final ZonedDateTime SAMPLE_COURT_PROCEEDINGS_INITIATED = new UtcClock().now();
 
     private static final UUID SAMPLE_CASE_DEFENDANT_ID = UUID.randomUUID();
     private static final UUID SAMPLE_CASE_MASTER_DEFENDANT_ID = UUID.randomUUID();
@@ -78,7 +79,7 @@ public class MatchedDefendantHelperTest {
     private static final String SAMPLE_CASE_ADDRESS_LINE4 = "addressLine4_";
     private static final String SAMPLE_CASE_ADDRESS_LINE5 = "addressLine5_";
     private static final String SAMPLE_CASE_POSTCODE = "HA1 1QG";
-    private static final ZonedDateTime SAMPLE_CASE_COURT_PROCEEDINGS_INITIATED = ZonedDateTime.now().plusDays(-1);
+    private static final ZonedDateTime SAMPLE_CASE_COURT_PROCEEDINGS_INITIATED = new UtcClock().now().plusDays(-1);
     public static final UUID SAMPLE_PROSECUTION_ID = UUID.randomUUID();
 
     @Spy
@@ -90,7 +91,7 @@ public class MatchedDefendantHelperTest {
     @InjectMocks
     private MatchedDefendantHelper matchedDefendantHelper;
 
-    @Before
+    @BeforeEach
     public void setup() {
         ObjectMapper objectMapper = new ObjectMapper()
                 .registerModule(new ParameterNamesModule(PROPERTIES))

@@ -55,18 +55,17 @@ import javax.json.JsonObject;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.minidev.json.JSONValue;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProsecutionOffencesUpdatedEventListenerTest {
 
     @Mock
@@ -122,7 +121,7 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
     @Spy
     private ListToJsonArrayConverter jsonConverter;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
 
         setField(this.jsonConverter, "mapper",
@@ -211,8 +210,6 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseOffencesUpdated.class))
                 .thenReturn(prosecutionCaseOffencesUpdated);
-        when(envelope.metadata()).thenReturn(metadata);
-
 
         when(prosecutionCaseOffencesUpdated.getDefendantCaseOffences()).thenReturn(defendantCaseOffences);
         final JsonObject jsonObject = createObjectBuilder()
@@ -325,8 +322,6 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseOffencesUpdated.class))
                 .thenReturn(prosecutionCaseOffencesUpdated);
-        when(envelope.metadata()).thenReturn(metadata);
-
 
         when(prosecutionCaseOffencesUpdated.getDefendantCaseOffences()).thenReturn(defendantCaseOffences);
         final JsonObject jsonObject = createObjectBuilder()
@@ -580,7 +575,6 @@ public class ProsecutionOffencesUpdatedEventListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseOffencesUpdated.class)).thenReturn(prosecutionCaseOffencesUpdated);
 
         JsonObject hearing1Json = objectToJsonObjectConverter.convert(hearing1);
-        when(jsonObjectToObjectConverter.convert(hearing1Json, Hearing.class)).thenReturn(hearing1);
         JsonObject hearing2Json = objectToJsonObjectConverter.convert(hearing2);
         when(jsonObjectToObjectConverter.convert(hearing2Json, Hearing.class)).thenReturn(hearing2);
 

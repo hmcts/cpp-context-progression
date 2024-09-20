@@ -8,7 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
@@ -51,16 +51,15 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProcessHearingUpdatedHandlerTest {
 
     @Mock
@@ -82,7 +81,7 @@ public class ProcessHearingUpdatedHandlerTest {
     @InjectMocks
     private ProcessHearingUpdatedHandler processHearingUpdatedHandler;
 
-    @Before
+    @BeforeEach
     public void setup() {
 
         hearingAggregate = new HearingAggregate();
@@ -261,7 +260,7 @@ public class ProcessHearingUpdatedHandlerTest {
         final JsonEnvelope  resultEnvelope = (JsonEnvelope)envelopes.stream().filter(
                 env -> env.metadata().name().equals("progression.event.hearing-listing-number-updated")).findFirst().get();
 
-        MatcherAssert.assertThat(resultEnvelope.payloadAsJsonObject()
+        assertThat(resultEnvelope.payloadAsJsonObject()
                 , notNullValue());
     }
 }

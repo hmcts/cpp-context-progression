@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,16 +40,15 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantDefenceOrganisationSavedListenerTest {
 
     private UUID hearingId;
@@ -97,7 +96,7 @@ public class DefendantDefenceOrganisationSavedListenerTest {
     @Captor
     private ArgumentCaptor<HearingEntity> hearingEntityArgumentCaptor;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         hearingId = randomUUID();
         caseId = randomUUID();
@@ -129,8 +128,6 @@ public class DefendantDefenceOrganisationSavedListenerTest {
                 .withFundingType(FundingType.REPRESENTATION_ORDER)
                 .withIsAssociatedByLAA(false)
                 .build();
-
-        when(envelope.metadata()).thenReturn(metadata);
 
         final UUID prosecutionCaseId = randomUUID();
 
@@ -164,10 +161,8 @@ public class DefendantDefenceOrganisationSavedListenerTest {
         when(repository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
 
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(prosecutionCaseEntity.getCaseId()).thenReturn(prosecutionCaseId);
         when(objectToJsonObjectConverter.convert(prosCase)).thenReturn(jsonObject);
         when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
-        when(repository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
         when(caseDefendantHearingRepository.findByDefendantId(defendantId)).thenReturn(caseDefendantHearingEntityList);
 
         eventListener.processDefendantDefenceOrganisationSaved(envelope);

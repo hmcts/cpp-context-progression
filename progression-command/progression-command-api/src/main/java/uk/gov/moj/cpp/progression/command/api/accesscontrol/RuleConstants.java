@@ -3,8 +3,6 @@ package uk.gov.moj.cpp.progression.command.api.accesscontrol;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.util.Arrays.asList;
-
 
 /**
  *

@@ -8,14 +8,13 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createReferProsecutionCaseToCrownCourtJsonBody;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplicationForIngestion;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyAddCourtApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyEmbeddedApplication;
@@ -23,26 +22,28 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtAppli
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"squid:S1607", "squid:S2925"})
 public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
@@ -69,20 +70,20 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
     private String applicationReference;
     private String applicationStatus;
 
-    @Before
+    @BeforeEach
     public void setup() {
         deleteAndCreateIndex();
         initializeIds();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         cleanEventStoreTables();
         cleanViewStoreTables();
     }
 
-    private void verifyMessageReceived(final MessageConsumer messageConsumer) {
-        assertTrue(retrieveMessageAsJsonObject(messageConsumer).isPresent());
+    private void verifyMessageReceived(final JmsMessageConsumerClient messageConsumer) {
+        assertThat(retrieveMessageBody(messageConsumer).isPresent(), is(true));
     }
 
     @Test
@@ -91,13 +92,13 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         final String caseUrn = applicationReference;
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
-        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-initiated")) {
-            addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1,
-                    respondentId1,
-                    respondentDefendantId1,
-                    applicationReference,applicationStatus, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
-            verifyMessageReceived(messageConsumer);
-        }
+        final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-proceedings-initiated").getMessageConsumerClient();
+
+        addCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1,
+                respondentId1,
+                respondentDefendantId1,
+                applicationReference, applicationStatus, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        verifyMessageReceived(messageConsumer);
 
         final Matcher[] addApplication1Matcher = {allOf(
                 withJsonPath("$.caseId", equalTo(caseId)),
@@ -106,11 +107,9 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         Optional<JsonObject> addApplication1ResponseJsonObject = findBy(addApplication1Matcher);
         assertThat(addApplication1ResponseJsonObject.isPresent(), is(true));
 
-
-        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-initiated")) {
-            addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, applicationReference, applicationStatus,CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
-            verifyMessageReceived(messageConsumer);
-        }
+        final JmsMessageConsumerClient initiatedMessageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-proceedings-initiated").getMessageConsumerClient();
+        addCourtApplicationForIngestion(caseId, applicationId2, applicantId2, applicantDefendantId2, respondentId2, respondentDefendantId2, applicationReference, applicationStatus, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        verifyMessageReceived(initiatedMessageConsumer);
 
         final Matcher[] addApplication2Matcher = {allOf(
                 withJsonPath("$.caseId", equalTo(caseId)),
@@ -119,10 +118,9 @@ public class MultipleLinkedApplicationWithCaseIT extends AbstractIT {
         Optional<JsonObject> addApplication2ResponseJsonObject = findBy(addApplication2Matcher);
         assertThat(addApplication2ResponseJsonObject.isPresent(), is(true));
 
-        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-edited")) {
-            updateCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
-            verifyMessageReceived(messageConsumer);
-        }
+        final JmsMessageConsumerClient editedMessageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-proceedings-edited").getMessageConsumerClient();
+        updateCourtApplicationForIngestion(caseId, applicationId1, applicantId1, applicantDefendantId1, respondentId1, respondentDefendantId1, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        verifyMessageReceived(editedMessageConsumer);
 
         final Matcher[] updateApplication1Matcher = {allOf(
                 withJsonPath("$.caseId", equalTo(caseId)),

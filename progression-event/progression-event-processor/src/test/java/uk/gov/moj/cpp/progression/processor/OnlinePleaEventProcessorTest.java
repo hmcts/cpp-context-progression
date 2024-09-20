@@ -27,9 +27,11 @@ import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
-import uk.gov.moj.cpp.progression.events.PleaDocumentForOnlinePleaSubmitted;
+import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.progression.events.FinanceDocumentForOnlinePleaSubmitted;
+import uk.gov.moj.cpp.progression.events.PleaDocumentForOnlinePleaSubmitted;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
+import uk.gov.moj.cpp.progression.service.MaterialService;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
@@ -39,24 +41,20 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import uk.gov.moj.cpp.progression.service.MaterialService;
-
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OnlinePleaEventProcessorTest {
 
     public static final String FINANCE_DOCUMENT_FOR_ONLINE_PLEA_SUBMITTED = "progression.event.finance-document-for-online-plea-submitted";
@@ -66,25 +64,32 @@ public class OnlinePleaEventProcessorTest {
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     @Spy
-    @InjectMocks
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectConvertersFactory().jsonObjectToObjectConverter();
+
     @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
-    @InjectMocks
-    private OnlinePleaEventProcessor onlinePleaEventProcessor;
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new JsonObjectConvertersFactory().objectToJsonObjectConverter();
+
     @Mock
     private FileStorer fileStorer;
+
     @Mock
     private SystemUserProvider systemUserProvider;
+
     @Mock
     private Sender sender;
+
     @Mock
     private MaterialService materialService;
+
     @Mock
     private SystemUserProvider userProvider;
+
     @Mock
     private FileRetriever fileRetriever;
+
+    @InjectMocks
+    private OnlinePleaEventProcessor onlinePleaEventProcessor;
+
     @Captor
     private ArgumentCaptor<JsonObject> filestorerMetadata;
 
@@ -106,14 +111,10 @@ public class OnlinePleaEventProcessorTest {
         return new StringToJsonObjectConverter().convert(response);
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws FileServiceException {
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-        when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
         personDefendantPleadOnline = new JsonObjectToObjectConverter(objectMapper).convert(getPayload("person-defendant-online-plea-payload.json"), PleadOnline.class);
         legalEntityDefendantPleadOnline = new JsonObjectToObjectConverter(objectMapper).convert(getPayload("legal-entity-defendant-online-plea-payload.json"), PleadOnline.class);
-        setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
-        setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
     }
 
     @Test
@@ -131,6 +132,8 @@ public class OnlinePleaEventProcessorTest {
         final JsonEnvelope requestMessage = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID(PLEA_DOCUMENT_FOR_ONLINE_PLEA_SUBMITTED),
                 jsonObject);
+
+        when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
 
         onlinePleaEventProcessor.generateOnlinePleaDocument(requestMessage);
 
@@ -165,6 +168,8 @@ public class OnlinePleaEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID(PLEA_DOCUMENT_FOR_ONLINE_PLEA_SUBMITTED),
                 jsonObject);
 
+        when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
+
         onlinePleaEventProcessor.generateOnlinePleaDocument(requestMessage);
 
         verify(fileStorer).store(filestorerMetadata.capture(), any(ByteArrayInputStream.class));
@@ -189,6 +194,8 @@ public class OnlinePleaEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID(FINANCE_DOCUMENT_FOR_ONLINE_PLEA_SUBMITTED),
                 jsonObject);
 
+        when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
+
         onlinePleaEventProcessor.generateFinanceOnlinePleaDocument(requestMessage);
 
         verify(fileStorer).store(filestorerMetadata.capture(), any(ByteArrayInputStream.class));
@@ -212,6 +219,8 @@ public class OnlinePleaEventProcessorTest {
         final JsonEnvelope requestMessage = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID(FINANCE_DOCUMENT_FOR_ONLINE_PLEA_SUBMITTED),
                 jsonObject);
+
+        when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
 
         onlinePleaEventProcessor.generateFinanceOnlinePleaDocument(requestMessage);
 
@@ -238,7 +247,6 @@ public class OnlinePleaEventProcessorTest {
         final JsonObject fileRetrieverResponseJson = createObjectBuilder()
                 .add("fileName", "documentFileName")
                 .build();
-
 
         when(userProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(fileRetriever.retrieveMetadata(fileId)).thenReturn(Optional.of(fileRetrieverResponseJson));

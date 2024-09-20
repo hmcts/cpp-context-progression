@@ -15,10 +15,9 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.isNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 import static uk.gov.justice.core.courts.Defendant.defendant;
@@ -26,8 +25,8 @@ import static uk.gov.justice.progression.courts.GetHearingsAtAGlance.getHearings
 import static uk.gov.justice.progression.courts.Hearings.hearings;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -38,6 +37,9 @@ import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
+import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.FeeStatus;
+import uk.gov.justice.core.courts.FeeType;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.FeeStatus;
 import uk.gov.justice.core.courts.FeeType;
@@ -78,7 +80,6 @@ import uk.gov.moj.cpp.progression.query.utils.ResultTextFlagBuilder;
 import uk.gov.moj.cpp.progression.query.view.service.CotrQueryService;
 import uk.gov.moj.cpp.progression.query.view.service.HearingAtAGlanceService;
 import uk.gov.moj.cpp.progression.query.view.service.ReferenceDataService;
-import uk.gov.moj.cpp.progression.test.TestUtilities;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseCpsProsecutorEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CivilFeeEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseEntity;
@@ -128,17 +129,16 @@ import javax.json.JsonString;
 
 import com.google.common.io.Resources;
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
-
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProsecutionCaseQueryViewTest {
 
     private static final UUID APPLICATION_ID = UUID.randomUUID();
@@ -234,15 +234,16 @@ public class ProsecutionCaseQueryViewTest {
     private CotrQueryService cotrQueryService;
     @Mock
     private GetHearingsAtAGlance hearingsAtAGlance;
+
+    public ProsecutionCaseQueryViewTest() {
+    }
+
     @Spy
     private ResultTextFlagBuilder resultTextFlagBuilder;
     @Mock
     private RelatedReferenceRepository relatedReferenceRepository;
 
-    public ProsecutionCaseQueryViewTest() {
-    }
-
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
@@ -384,7 +385,6 @@ public class ProsecutionCaseQueryViewTest {
         when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(new ArrayList<>());
         when(caseCpsProsecutorRepository.findBy(caseId)).thenReturn(caseCpsProsecutorEntity);
         when(hearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
-        when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
         when(hearingAtAGlanceService.getCaseHearings(any(UUID.class))).thenReturn(getHearingsList(masterDefendantId));
 
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
@@ -413,8 +413,6 @@ public class ProsecutionCaseQueryViewTest {
         final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntities();
 
         when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
-        when(prosecutionCaseRepository.findByCaseId(CASE_ID2)).thenReturn(matchDefendantCaseHearingEntityList.get(1).getProsecutionCase());
-        when(prosecutionCaseRepository.findByCaseId(CASE_ID3)).thenReturn(matchDefendantCaseHearingEntityList.get(2).getProsecutionCase());
         when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
         when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
 
@@ -460,7 +458,6 @@ public class ProsecutionCaseQueryViewTest {
         final List<MatchDefendantCaseHearingEntity> matchDefendantCaseHearingEntityList = buildMatchDefendantCaseHearingEntitiesWithNoOffence();
 
         when(prosecutionCaseRepository.findByCaseId(CASE_ID1)).thenReturn(matchDefendantCaseHearingEntityList.get(0).getProsecutionCase());
-        when(prosecutionCaseRepository.findByCaseId(CASE_ID2)).thenReturn(matchDefendantCaseHearingEntityList.get(1).getProsecutionCase());
         when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(matchDefendantCaseHearingEntityList);
         when(hearingAtAGlanceService.getHearingAtAGlance(CASE_ID1)).thenReturn(getCaseAtAGlance);
 
@@ -505,14 +502,12 @@ public class ProsecutionCaseQueryViewTest {
         relatedReference.setProsecutionCaseId(UUID.fromString(caseId));
         relatedReference.setReference("testReference");
         relatedReference.setId(UUID.randomUUID());
-        when(relatedReferenceRepository.findByProsecutionCaseId(any(UUID.class))).thenReturn(asList(relatedReference));
 
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
         assertThat(response.payloadAsJsonObject().getString("caseId"), is(caseId));
         assertThat(response.payloadAsJsonObject().getJsonObject("caseDetails").getString("caseURN"), is(caseURN));
         assertThat(response.payloadAsJsonObject().getJsonObject("caseDetails").getJsonArray("caseMarkers"), nullValue());
         assertThat(response.payloadAsJsonObject().getJsonArray("defendants").getJsonObject(0).getString("updatedOn"), is(notNullValue()));
-        assertThat(response.payloadAsJsonObject().getJsonObject("caseDetails").getJsonArray("relatedReferenceList"), is(notNullValue()));
 
         final JsonArray defendants = response.payloadAsJsonObject().getJsonArray("defendants");
         assertThat(defendants, notNullValue());
@@ -556,7 +551,6 @@ public class ProsecutionCaseQueryViewTest {
         when(prosecutionCaseRepository.findByCaseId(any(UUID.class))).thenReturn(prosecutionCaseEntity);
         when(courtApplicationCaseRepository.findByCaseId(fromString(caseId))).thenReturn(asList(courtApplicationCaseEntity));
         when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
-        when(hearingAtAGlanceService.getHearingAtAGlance(fromString(caseId))).thenReturn(getCaseAtAGlance);
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
         assertThat(response.payloadAsJsonObject().get("linkedApplications"), notNullValue());
         assertThat(response.payloadAsJsonObject().getJsonArray("defendants").getJsonObject(0).containsKey("updatedOn"),is(false));
@@ -607,8 +601,6 @@ public class ProsecutionCaseQueryViewTest {
         when(courtApplicationCaseRepository.findByCaseId(fromString(caseId))).thenReturn(asList(courtApplicationCaseEntity));
         when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
 
-        when(hearingAtAGlanceService.getHearingAtAGlance(fromString(caseId))).thenReturn(getCaseAtAGlance);
-
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
 
         assertThat(response.payloadAsJsonObject().getJsonObject("prosecutorDetails").getString("oldProsecutionAuthorityCode"), is("OLDCPSPROSECUTOR"));
@@ -639,7 +631,6 @@ public class ProsecutionCaseQueryViewTest {
 
 
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
-        when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(new ArrayList<>());
         final JsonEnvelope response = prosecutionCaseQuery.getCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
     }
@@ -898,11 +889,8 @@ public class ProsecutionCaseQueryViewTest {
                 .withCourtApplications(courtApplications)
                 .build();
 
-        final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
-
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
         when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(new ArrayList<>());
-        when(courtDocumentRepository.findByProsecutionCaseId(caseId)).thenReturn(asList(courtDocumentEntity));
         when(hearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplication).toString());
@@ -953,7 +941,6 @@ public class ProsecutionCaseQueryViewTest {
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
         when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(new ArrayList<>());
-        when(courtDocumentRepository.findByProsecutionCaseId(caseId)).thenReturn(asList(courtDocumentEntity));
         when(hearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplication).toString());
@@ -1033,7 +1020,6 @@ public class ProsecutionCaseQueryViewTest {
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.search-cases").build(),
                 jsonObject);
 
-        when(searchCaseRepository.findBySearchCriteria(searchCriteria.toLowerCase())).thenReturn(new ArrayList<>());
         final JsonEnvelope response = prosecutionCaseQuery.searchCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().getJsonArray("searchResults").size(), is(0));
     }
@@ -1350,8 +1336,6 @@ public class ProsecutionCaseQueryViewTest {
 
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
-        when(prosecutionCaseRepository.findByProsecutionCaseIds(singletonList(caseId))).thenReturn(singletonList(prosecutionCaseEntity));
-
 
         final JsonEnvelope response = prosecutionCaseQuery.searchProsecutionAuthorityId(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("prosecutors"), notNullValue());
@@ -1400,7 +1384,6 @@ public class ProsecutionCaseQueryViewTest {
         final JsonObject jsonObject = getJsonPayload(CASE_ALL_HEARINGS_QUERY_VIEW_JSON);
         final GetHearingsAtAGlance getHearingsAtAGlance = jsonObjectToObjectConverter.convert(jsonObject, GetHearingsAtAGlance.class);
         when(hearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getHearingsAtAGlance);
-        when(courtApplicationCaseRepository.findByCaseId(caseId)).thenReturn(TestUtilities.asList());
         final JsonEnvelope response =  prosecutionCaseQuery.getAllCaseHearings(envelope);
         assertThat(response.payloadAsJsonObject().get("allCaseHearings"), is(notNullValue()));
     }

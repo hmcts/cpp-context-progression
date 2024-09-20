@@ -3,13 +3,14 @@ package uk.gov.moj.cpp.progression.ingester;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.eventstore.management.commands.IndexerCatchupCommand.INDEXER_CATCHUP;
 import static uk.gov.justice.services.jmx.system.command.client.connection.JmxParametersBuilder.jmxParameters;
 import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.getHost;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
@@ -26,20 +27,19 @@ import java.util.Optional;
 import javax.json.JsonObject;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InitialIndexerIngestionIT extends AbstractIT{
+public class InitialIndexerIngestionIT extends AbstractIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(InitialIndexerIngestionIT.class);
     private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";
 
     private static final String HOST = getHost();
     private static final int PORT = 9990;
-    private static final String CONTEXT = "progression";
     private static final String USERNAME = "admin";
     private static final String PASSWORD = "admin";
 
@@ -47,17 +47,17 @@ public class InitialIndexerIngestionIT extends AbstractIT{
     private final TestSystemCommanderClientFactory testSystemCommanderClientFactory = new TestSystemCommanderClientFactory();
 
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
-        databaseCleaner.cleanEventStoreTables(CONTEXT);
-        databaseCleaner.cleanSystemTables(CONTEXT);
-        databaseCleaner.cleanStreamStatusTable(CONTEXT);
-        databaseCleaner.cleanStreamBufferTable(CONTEXT);
-        databaseCleaner.cleanViewStoreTables(CONTEXT, "processed_event");
+        databaseCleaner.cleanEventStoreTables(CONTEXT_NAME);
+        databaseCleaner.cleanSystemTables(CONTEXT_NAME);
+        databaseCleaner.cleanStreamStatusTable(CONTEXT_NAME);
+        databaseCleaner.cleanStreamBufferTable(CONTEXT_NAME);
+        databaseCleaner.cleanViewStoreTables(CONTEXT_NAME, "processed_event");
         deleteAndCreateIndex();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         cleanEventStoreTables();
         cleanViewStoreTables();
@@ -78,7 +78,7 @@ public class InitialIndexerIngestionIT extends AbstractIT{
 
         checkCaseCountInElasticSearch(0);
 
-        databaseCleaner.cleanViewStoreTables(CONTEXT, "processed_event", "stream_status", "stream_buffer");
+        databaseCleaner.cleanViewStoreTables(CONTEXT_NAME, "processed_event", "stream_status", "stream_buffer");
 
         runIndexerCatchup();
 
@@ -97,7 +97,7 @@ public class InitialIndexerIngestionIT extends AbstractIT{
 
     private void runIndexerCatchup() throws Exception {
         final JmxParameters jmxParameters = jmxParameters()
-                .withContextName(CONTEXT)
+                .withContextName(CONTEXT_NAME)
                 .withHost(HOST)
                 .withPort(PORT)
                 .withUsername(USERNAME)
@@ -105,7 +105,7 @@ public class InitialIndexerIngestionIT extends AbstractIT{
                 .build();
         try (final SystemCommanderClient systemCommanderClient = testSystemCommanderClientFactory.create(jmxParameters)) {
 
-            systemCommanderClient.getRemote(CONTEXT).call(INDEXER_CATCHUP);
+            systemCommanderClient.getRemote(CONTEXT_NAME).call(INDEXER_CATCHUP);
         }
     }
 

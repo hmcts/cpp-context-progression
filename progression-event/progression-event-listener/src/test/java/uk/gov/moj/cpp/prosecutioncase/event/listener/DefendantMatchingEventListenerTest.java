@@ -40,16 +40,15 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantMatchingEventListenerTest {
 
     @Mock
@@ -70,7 +69,7 @@ public class DefendantMatchingEventListenerTest {
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -230,7 +229,6 @@ public class DefendantMatchingEventListenerTest {
                 .withDefendants(createDefendants(incomingDefendantId))
                 .build();
         prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
-        when(prosecutionCaseRepository.findByCaseId(incomingProsecutionCaseId)).thenReturn(prosecutionCaseEntity);
         final MasterDefendantIdUpdated event = MasterDefendantIdUpdated.masterDefendantIdUpdated()
                 .withDefendantId(incomingDefendantId)
                 .withProsecutionCaseId(incomingProsecutionCaseId)
@@ -339,8 +337,6 @@ public class DefendantMatchingEventListenerTest {
                 .withDefendants(createDefendants(matchedDefendantId_1))
                 .build();
         matchedProsecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(matchedProsecutionCase).toString());
-        when(prosecutionCaseRepository.findByCaseId(matchedProsecutionCaseId_1)).thenReturn(matchedProsecutionCaseEntity);
-        when(prosecutionCaseRepository.findOptionalByCaseId(matchedProsecutionCaseId_1)).thenReturn(matchedProsecutionCaseEntity);
 
         final DefendantsMasterDefendantIdUpdated event = DefendantsMasterDefendantIdUpdated.defendantsMasterDefendantIdUpdated()
                 .withProsecutionCaseId(incomingProsecutionCaseId)

@@ -5,7 +5,7 @@ import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,7 +21,6 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.service.CpsEmailNotificationService;
 import uk.gov.moj.cpp.progression.service.CpsRestNotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -34,15 +33,15 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class CourtDocumentNotifiedProcessorTest {
 
     private final String prosecutionCaseSampleWithCourtDocument = "progression.event.court-document-send-to-cps.json";
@@ -55,9 +54,6 @@ public class CourtDocumentNotifiedProcessorTest {
 
     @Mock
     private JsonObject payload;
-
-    @Mock
-    private Metadata metadata;
 
     @Mock
     private ProgressionService progressionService;
@@ -81,7 +77,7 @@ public class CourtDocumentNotifiedProcessorTest {
     private Optional<JsonObject> prosecutionCaseJsonOptional;
     private CourtDocument courtDocument;
 
-    @Before
+    @BeforeEach
     public void initMocks() throws IOException {
         setField(this.jsonObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
 
@@ -100,8 +96,6 @@ public class CourtDocumentNotifiedProcessorTest {
         final JsonObject courtDocumentJsonObject = createObjectBuilder().build();
 
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonEnvelope.metadata()).thenReturn(metadata);
-        when(metadata.userId()).thenReturn(Optional.of(randomUUID().toString()));
 
 
         when(payload.getJsonObject("courtDocument")).thenReturn(courtDocumentJsonObject);
@@ -120,7 +114,7 @@ public class CourtDocumentNotifiedProcessorTest {
     @Test
     public void shouldProcessCourtDocumentSendToCPS_WhenFeatureToggleIsOnForDefenceDisclosure() {
         final String transformedPayload = Json.createObjectBuilder().add("a", "b").build().toString();
-        when(courtDocumentTransformer.transform(any(CourtDocument.class), any(Optional.class), any(JsonEnvelope.class), any(String.class))).thenReturn(of(transformedPayload));
+        when(courtDocumentTransformer.transform(any(), any(), any(), any())).thenReturn(of(transformedPayload));
         when(featureControlGuard.isFeatureEnabled("defenceDisclosure")).thenReturn(true);
 
         courtDocumentNotifiedProcessor.processCourtDocumentSendToCPS(jsonEnvelope);
@@ -132,7 +126,7 @@ public class CourtDocumentNotifiedProcessorTest {
     @Test
     public void shouldProcessCourtDocumentSendToCPS_WhenSendToCpsTrue() {
         final String transformedPayload = Json.createObjectBuilder().add("a", "b").build().toString();
-        when(courtDocumentTransformer.transform(any(CourtDocument.class), any(Optional.class), any(JsonEnvelope.class), any(String.class))).thenReturn(of(transformedPayload));
+        when(courtDocumentTransformer.transform(any(), any(), any(), any())).thenReturn(of(transformedPayload));
 
         courtDocument = courtDocument()
                 .withCourtDocumentId(randomUUID())
@@ -157,7 +151,7 @@ public class CourtDocumentNotifiedProcessorTest {
     @Test
     public void shouldProcessOPACourtDocumentSendToCPS_WhenSendToCpsTrue() {
         final String transformedPayload = Json.createObjectBuilder().add("a", "b").build().toString();
-        when(courtDocumentTransformer.transform(any(CourtDocument.class), any(Optional.class), any(JsonEnvelope.class), any(String.class))).thenReturn(of(transformedPayload));
+        when(courtDocumentTransformer.transform(any(), any(), any(), any())).thenReturn(of(transformedPayload));
 
         courtDocument = courtDocument()
                 .withCourtDocumentId(randomUUID())

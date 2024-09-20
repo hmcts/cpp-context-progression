@@ -1,9 +1,10 @@
 package uk.gov.moj.cpp.progression.command.rules;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.LENIENT;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.adhocHearingCreatePermission;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getBCMCreatePermission;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getBCMEditPermission;
@@ -30,14 +31,18 @@ import java.util.Arrays;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.slf4j.Logger;
 
-@RunWith(MockitoJUnitRunner.class)
+// FIXME!!! Temporarily using lenient strictness to get this
+// context running with junit 5. This test really needs re-writing.
+@MockitoSettings(strictness = LENIENT)
+@ExtendWith(MockitoExtension.class)
 public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlTest {
 
     protected Action action;
@@ -49,14 +54,17 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
     @Mock
     private static Logger LOGGER;
 
-    @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder()
-                .put(RbacProvider.class, rbacProvider)
-                .put(UserAndGroupProvider.class, userAndGroupProvider)
-                .build();
+    public ProgressionCommandRuleExecutorTest() {
+        super("COMMAND_API_SESSION");
     }
 
+
+    @Override
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return ImmutableMap.<Class<?>, Object>builder()
+                .put(RbacProvider.class, rbacProvider)
+                .put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    }
 
     @Test
     public void whenUserIsAMemberOfAllowedUserGroups() {

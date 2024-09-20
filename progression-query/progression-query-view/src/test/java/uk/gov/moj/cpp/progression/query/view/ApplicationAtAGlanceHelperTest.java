@@ -41,8 +41,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ApplicationAtAGlanceHelperTest {
 
@@ -50,7 +50,7 @@ public class ApplicationAtAGlanceHelperTest {
     private static final BooleanGenerator BOOLEAN_GENERATOR = new BooleanGenerator();
     private ApplicationAtAGlanceHelper applicationAtAGlanceHelper;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         applicationAtAGlanceHelper = new ApplicationAtAGlanceHelper();
     }

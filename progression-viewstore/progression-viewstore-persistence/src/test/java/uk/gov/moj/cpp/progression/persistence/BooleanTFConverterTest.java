@@ -1,23 +1,23 @@
 package uk.gov.moj.cpp.progression.persistence;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import uk.gov.moj.cpp.progression.persistence.entity.BooleanTFConverter;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 /**
  * @deprecated This is deprecated for Release 2.4
- *
  */
 @Deprecated
 public class BooleanTFConverterTest {
 
     BooleanTFConverter converter;
 
-    @Before
+    @BeforeEach
     public void SetUp() {
         converter = new BooleanTFConverter();
     }

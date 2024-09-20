@@ -3,32 +3,13 @@ package uk.gov.moj.cpp.progression.handler;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Stream;
-import javax.json.JsonObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.HearingType;
@@ -57,7 +38,27 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
-@RunWith(MockitoJUnitRunner.class)
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import javax.json.JsonObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.CoreMatchers.is;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class ListNewHearingHandlerTest {
 
     private static final UUID CASE_ID = randomUUID();
@@ -84,14 +85,11 @@ public class ListNewHearingHandlerTest {
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     @Spy
-    @InjectMocks
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 
-    private HearingAggregate aggregate;
 
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(ListHearingRequested.class);
@@ -106,13 +104,6 @@ public class ListNewHearingHandlerTest {
             .withProsecutionCaseId(CASE_ID)
             .withPersonDefendant(PersonDefendant.personDefendant().build()).build();
 
-    @Before
-    public void setup() {
-        aggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
-    }
-
     @Test
     public void shouldNotRaiseEventWhenCaseDoesNotExist() throws EventStreamException {
         final Envelope<ListNewHearing> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerListNewHearing(), receivePayloadOfListNewHearing(randomUUID(), randomUUID(), false));
@@ -122,7 +113,6 @@ public class ListNewHearingHandlerTest {
         listNewHearingHandler.handle(envelope);
 
         verify(eventSource, never()).getStreamById(any());
-
     }
 
     @Test
@@ -144,6 +134,10 @@ public class ListNewHearingHandlerTest {
         final ProsecutionCase prosecutionCase = getProsecutionCaseWithMultiOffence();
         final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
 
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
         when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
 
         listNewHearingHandler.handle(envelope);
@@ -164,6 +158,10 @@ public class ListNewHearingHandlerTest {
         final Envelope<ListNewHearing> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerListNewHearing(), receivePayloadOfListNewHearing(CASE_ID, MULTI_OFFENCE_DEFENDANT_ID, true));
         final ProsecutionCase prosecutionCase = getProsecutionCaseWithMultiOffence();
         final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
+
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
 
         when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
 

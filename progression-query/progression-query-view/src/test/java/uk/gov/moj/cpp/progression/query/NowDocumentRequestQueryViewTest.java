@@ -18,13 +18,13 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class NowDocumentRequestQueryViewTest {
     private static final String NOW_DOCUMENT_REQUESTS_BY_REQUEST_ID_QUERY = "progression.query.now-document-requests-by-request-id";
     private static final String NOW_DOCUMENT_REQUEST_BY_HEARING_QUERY = "progression.query.now-document-request-by-hearing";

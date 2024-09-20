@@ -7,7 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
@@ -42,21 +42,19 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CustodyTimeLimitCommandHandlerTest {
 
     @Spy
@@ -75,25 +73,17 @@ public class CustodyTimeLimitCommandHandlerTest {
     @InjectMocks
     private CustodyTimeLimitCommandHandler custodyTimeLimitCommandHandler;
 
-    private HearingAggregate hearingAggregate;
-
-    private CaseAggregate caseAggregate;
-
-    @Before
-    public void setup() {
-        hearingAggregate = new HearingAggregate();
-        caseAggregate = new CaseAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-    }
-
     @Test
     public void shouldHandleStopCustodyTimeLimitClock() throws EventStreamException {
 
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
         final UUID offenceId = randomUUID();
+
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
         hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
                 .withHearing(Hearing.hearing()
                         .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
@@ -150,6 +140,10 @@ public class CustodyTimeLimitCommandHandlerTest {
         final UUID offenceId = randomUUID();
         final LocalDate extendedTimeLimit = LocalDate.now();
 
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
         caseAggregate.apply(CaseLinkedToHearing.caseLinkedToHearing().withHearingId(hearingId));
 
         final Metadata metadata = Envelope
@@ -168,7 +162,6 @@ public class CustodyTimeLimitCommandHandlerTest {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
         assertThat(envelopeStream.findFirst().isPresent(), is(false));
-
     }
 
     @Test
@@ -180,16 +173,20 @@ public class CustodyTimeLimitCommandHandlerTest {
         final UUID offenceId = randomUUID();
         final LocalDate extendedTimeLimit = LocalDate.now();
 
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
         caseAggregate.apply(ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(ProsecutionCase.prosecutionCase()
-                .withId(caseId)
-                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
-                .withDefendants(asList(Defendant.defendant()
-                        .withId(defendantId)
-                        .withOffences(new ArrayList<>(asList(Offence.offence()
-                                .withId(offenceId)
-                                .build())))
-                        .build()))
-                .build())
+                        .withId(caseId)
+                        .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                        .withDefendants(asList(Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(new ArrayList<>(asList(Offence.offence()
+                                        .withId(offenceId)
+                                        .build())))
+                                .build()))
+                        .build())
                 .build());
         caseAggregate.apply(CaseLinkedToHearing.caseLinkedToHearing().withHearingId(firstHearingId).build());
         caseAggregate.apply(CaseLinkedToHearing.caseLinkedToHearing().withHearingId(hearingId).build());

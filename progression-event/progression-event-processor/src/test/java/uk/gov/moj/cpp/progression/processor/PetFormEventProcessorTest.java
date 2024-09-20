@@ -10,10 +10,10 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -54,6 +54,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
 import uk.gov.moj.cpp.progression.helper.DocmosisTextHelper;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
@@ -71,18 +72,18 @@ import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PetFormEventProcessorTest {
 
     public static final String userId = randomUUID().toString();
@@ -117,6 +118,9 @@ public class PetFormEventProcessorTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
 
+    @Captor
+    private ArgumentCaptor<DefaultEnvelope> defaultEnvelopeArgumentCaptor;
+
     @Mock
     private MaterialService materialService;
 
@@ -142,7 +146,7 @@ public class PetFormEventProcessorTest {
     private UsersGroupService usersGroupService;
 
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
@@ -355,7 +359,7 @@ public class PetFormEventProcessorTest {
 
         petFormEventProcessor.handleServePetSubmittedPublicEvent(envelope);
 
-        verify(sender, atLeastOnce()).send(envelopeArgumentCaptor.capture());
+        verify(sender, atLeastOnce()).send(defaultEnvelopeArgumentCaptor.capture());
     }
 
     @Test
@@ -375,8 +379,8 @@ public class PetFormEventProcessorTest {
 
         petFormEventProcessor.handleServePetSubmittedPublicEvent(envelope);
 
-        verify(sender, times(2)).send(envelopeArgumentCaptor.capture());
-        final List<JsonEnvelope> envelopeList = envelopeArgumentCaptor.getAllValues();
+        verify(sender, times(2)).send(defaultEnvelopeArgumentCaptor.capture());
+        final List<DefaultEnvelope> envelopeList = defaultEnvelopeArgumentCaptor.getAllValues();
         assertThat(((Envelope) envelopeList.get(0)).metadata().name(), is(PROGRESSION_COMMAND_CREATE_PET_FORM));
         assertThat(((Envelope) envelopeList.get(0)).payload().toString(), isJson(allOf(
                 withJsonPath("$.isYouth", equalTo(true))

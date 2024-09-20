@@ -4,8 +4,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -42,15 +42,15 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CreateHearingApplicationLinkHandlerTest {
 
     @Mock
@@ -76,13 +76,10 @@ public class CreateHearingApplicationLinkHandlerTest {
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK
             = "progression.command.create-hearing-application-link";
 
-    @Before
+    @BeforeEach
     public void setup() {
         aggregate = new ApplicationAggregate();
         hearingAggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(aggregate);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
     }
 
     @Test
@@ -116,6 +113,8 @@ public class CreateHearingApplicationLinkHandlerTest {
                 .build();
 
         final Envelope<CreateHearingApplicationLink> envelope = envelopeFrom(metadata, createHearingApplicationLink);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(aggregate);
         createHearingApplicationLinkHandler.handle(envelope);
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
@@ -156,6 +155,8 @@ public class CreateHearingApplicationLinkHandlerTest {
                 .build();
 
         final Envelope<UpdateHearingForAllocationFields> envelope = envelopeFrom(metadata, updateHearingForAllocationFields);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         createHearingApplicationLinkHandler.handleForAllocationFields(envelope);
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 

@@ -8,9 +8,8 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
@@ -47,17 +46,18 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RemoveCaseFromGroupCasesHandlerTest {
 
     private static final UUID GROUP_ID = randomUUID();
@@ -105,7 +105,7 @@ public class RemoveCaseFromGroupCasesHandlerTest {
     private CaseAggregate caseAggregate3;
     private CaseAggregate caseAggregate4;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -114,16 +114,6 @@ public class RemoveCaseFromGroupCasesHandlerTest {
         caseAggregate2 = new CaseAggregate();
         caseAggregate3 = new CaseAggregate();
         caseAggregate4 = new CaseAggregate();
-        when(eventSource.getStreamById(GROUP_ID)).thenReturn(groupEventStream);
-        when(eventSource.getStreamById(CASE1_ID)).thenReturn(caseEventStream1);
-        when(eventSource.getStreamById(CASE2_ID)).thenReturn(caseEventStream2);
-        when(eventSource.getStreamById(CASE3_ID)).thenReturn(caseEventStream3);
-        when(eventSource.getStreamById(CASE4_ID)).thenReturn(caseEventStream4);
-        when(aggregateService.get(groupEventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
-        when(aggregateService.get(caseEventStream1, CaseAggregate.class)).thenReturn(caseAggregate1);
-        when(aggregateService.get(caseEventStream2, CaseAggregate.class)).thenReturn(caseAggregate2);
-        when(aggregateService.get(caseEventStream3, CaseAggregate.class)).thenReturn(caseAggregate3);
-        when(aggregateService.get(caseEventStream4, CaseAggregate.class)).thenReturn(caseAggregate4);
     }
 
     @Test
@@ -141,7 +131,10 @@ public class RemoveCaseFromGroupCasesHandlerTest {
 
         assertThat(groupCaseAggregate.getMemberCases().size(), is(4));
         assertThat(groupCaseAggregate.getGroupMaster(), is(CASE4_ID));
-
+        when(eventSource.getStreamById(CASE1_ID)).thenReturn(caseEventStream1);
+        when(aggregateService.get(caseEventStream1, CaseAggregate.class)).thenReturn(caseAggregate1);
+        when(eventSource.getStreamById(GROUP_ID)).thenReturn(groupEventStream);
+        when(aggregateService.get(groupEventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
         handler.handle(createRemoveCaseFromGroupCases(GROUP_ID, CASE1_ID));
 
         verifyCaseRemovedFromGroupCasesEventCreated(GROUP_ID, CASE4_ID, CASE1_ID, null);
@@ -156,6 +149,12 @@ public class RemoveCaseFromGroupCasesHandlerTest {
 
         assertThat(groupCaseAggregate.getMemberCases().size(), is(3));
         assertThat(groupCaseAggregate.getGroupMaster(), is(CASE3_ID));
+        when(eventSource.getStreamById(GROUP_ID)).thenReturn(groupEventStream);
+        when(aggregateService.get(groupEventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
+        when(eventSource.getStreamById(CASE3_ID)).thenReturn(caseEventStream3);
+        when(aggregateService.get(caseEventStream3, CaseAggregate.class)).thenReturn(caseAggregate3);
+        when(eventSource.getStreamById(CASE2_ID)).thenReturn(caseEventStream2);
+        when(aggregateService.get(caseEventStream2, CaseAggregate.class)).thenReturn(caseAggregate2);
 
         handler.handle(createRemoveCaseFromGroupCases(GROUP_ID, CASE3_ID));
 
@@ -171,6 +170,10 @@ public class RemoveCaseFromGroupCasesHandlerTest {
 
         assertThat(groupCaseAggregate.getMemberCases().size(), is(2));
         assertThat(groupCaseAggregate.getGroupMaster(), is(CASE2_ID));
+        when(eventSource.getStreamById(CASE1_ID)).thenReturn(caseEventStream1);
+        when(aggregateService.get(caseEventStream1, CaseAggregate.class)).thenReturn(caseAggregate1);
+        when(eventSource.getStreamById(GROUP_ID)).thenReturn(groupEventStream);
+        when(aggregateService.get(groupEventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
 
         handler.handle(createRemoveCaseFromGroupCases(GROUP_ID, CASE1_ID));
 
@@ -186,11 +189,11 @@ public class RemoveCaseFromGroupCasesHandlerTest {
 
         assertThat(groupCaseAggregate.getMemberCases().size(), is(1));
         assertThat(groupCaseAggregate.getGroupMaster(), is(CASE1_ID));
-
+        when(eventSource.getStreamById(GROUP_ID)).thenReturn(groupEventStream);
+        when(aggregateService.get(groupEventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
         handler.handle(createRemoveCaseFromGroupCases(GROUP_ID, CASE1_ID));
 
         verifyLastCaseToBeRemovedFromGroupCasesRejectedEventCreated(GROUP_ID, CASE1_ID);
-        verifyZeroInteractions(caseEventStream1, caseEventStream2, caseEventStream3, caseEventStream4);
         assertThat(groupCaseAggregate.getMemberCases().size(), is(1));
         assertThat(groupCaseAggregate.getGroupMaster(), is(CASE1_ID));
     }

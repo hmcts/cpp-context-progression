@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
@@ -14,15 +13,15 @@ import java.util.function.Function;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class BoxWorkApplicationAssignedEventProcessorTest {
 
     @InjectMocks
@@ -54,8 +53,6 @@ public class BoxWorkApplicationAssignedEventProcessorTest {
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
         when(enveloper.withMetadataFrom(jsonEnvelope, "public.progression.boxwork-assignment-changed")).thenReturn(enveloperFunction);
-
-        doNothing().when(logger).info(any());
 
         boxWorkApplicationAssignedEventProcessor.processBoxWAssignmentChanged(jsonEnvelope);
 
