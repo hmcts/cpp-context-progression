@@ -61,27 +61,27 @@
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <javafaker.version>1.0.2</javafaker.version>
-        <material.version>8.0.12</material.version>
+        <material.version>17.0.20</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
-        <referencedata.version>17.0.16</referencedata.version>
-        <listing.version>8.0.102</listing.version>
+        <referencedata.version>17.0.22</referencedata.version>
+        <listing.version>17.0.4</listing.version>
         <hearing.version>8.0.150</hearing.version>
-        <usersgroups.version>8.0.39</usersgroups.version>
-        <defence.version>8.0.55</defence.version>
-        <referencedata.offence.version>8.0.23</referencedata.offence.version>
+        <usersgroups.version>17.0.19</usersgroups.version>
+        <defence.version>17.0.16</defence.version>
+        <referencedata.offence.version>17.0.17</referencedata.offence.version>
         <coredomain.version>17.21.11</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
-        <results.version>8.0.59</results.version>
-        <notification.notify.version>8.0.16</notification.notify.version>
-        <unifiedsearch.version>17.0.3-FRAMEWORK-SNAPSHOT</unifiedsearch.version>
-        <systemdocgenerator.version>8.0.92</systemdocgenerator.version>
-        <applicationscourtorders.version>8.0.31</applicationscourtorders.version>
-        <sjp.version>8.0.87</sjp.version>
+        <results.version>17.0.1</results.version>
+        <notification.notify.version>17.0.1</notification.notify.version>
+        <unifiedsearch.version>17.0.12</unifiedsearch.version>
+        <systemdocgenerator.version>17.0.6</systemdocgenerator.version>
+        <applicationscourtorders.version>17.0.19</applicationscourtorders.version>
+        <sjp.version>17.0.6</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>
-        <stagingpubhub.version>8.0.1</stagingpubhub.version>
+        <stagingpubhub.version>17.0.2</stagingpubhub.version>
         <pdfbox.version>2.0.11</pdfbox.version>
-        <correspondence.version>8.0.26</correspondence.version>
+        <correspondence.version>17.0.11</correspondence.version>
         <stream-transformation.version>7.0.0</stream-transformation.version>
         <stream-transformation-tool.version>6.4.5</stream-transformation-tool.version>
 
