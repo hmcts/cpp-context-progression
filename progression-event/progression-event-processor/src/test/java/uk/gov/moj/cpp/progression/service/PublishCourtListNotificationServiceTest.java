@@ -15,9 +15,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
@@ -122,7 +122,7 @@ public class PublishCourtListNotificationServiceTest {
 
         final PublishCourtListPayload publishCourtListPayload = preparePublishCourtListPayloadWithNoEmailButWithPostalAddress(publishCourtListType);
         doNothing().when(documentGeneratorService).generateNonNowDocument(eq(envelope), any(JsonObject.class), eq(documentTemplateName), any(), anyString());
-        lenient().when(materialUrlGenerator.pdfFileStreamUrlFor(materialId)).thenReturn(materialUrl);
+        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn(materialUrl);
 
         underTest.sendNotification(envelope, publishCourtListPayload, documentTemplateName);
 

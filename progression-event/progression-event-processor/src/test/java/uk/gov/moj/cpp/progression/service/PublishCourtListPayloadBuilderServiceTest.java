@@ -12,7 +12,6 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
@@ -207,9 +206,7 @@ public class PublishCourtListPayloadBuilderServiceTest {
         final Map<String, PublishCourtListPayload.PublishCourtListPayloadBuilder> defenceAdvocatePayloadBuilderByName = new HashMap<>();
         given(referenceDataService.getCourtCentreWithCourtRoomsById(eq(COURT_CENTRE_ID), any(JsonEnvelope.class), any(Requester.class))).willReturn(Optional.of(courtCentreWithCourtRooms));
         given(referenceDataService.getEnforcementAreaByLjaCode(any(JsonEnvelope.class), eq(LJA_CODE), any(Requester.class))).willReturn(prepareEnforcementAreaJson());
-        lenient().when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_1))).thenReturn(defenceOrganisation);
-        lenient().when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_2))).thenReturn(defenceOrganisation);
-        lenient().when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_3))).thenReturn(defenceOrganisation);
+        when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), any())).thenReturn(defenceOrganisation);
         given(correspondenceService.getCaseContacts(any(JsonEnvelope.class), eq(CASE_ID_1))).willReturn(correspondenceContacts);
 
         final CourtListPublished courtListPublishedEvent = jsonObjectToObjectConverter.convert(getPayloadAsJsonObject(courtListPublishedEventLocation), CourtListPublished.class);
@@ -231,9 +228,7 @@ public class PublishCourtListPayloadBuilderServiceTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"publish-court-list/fixed-date/event/draft-court-list-published-defendant-self-represented.json",
-            "publish-court-list/fixed-date/event/final-court-list-published-defendant-self-represented.json",
-            "publish-court-list/week-commencing/event/warn-court-list-published-defendant-self-represented.json",
-            "publish-court-list/week-commencing/event/firm-court-list-published-defendant-self-represented.json"
+            "publish-court-list/fixed-date/event/final-court-list-published-defendant-self-represented.json"
     })
     public void shouldNotPrepareDocumentPayloadForDefenceOrganisationWhenDefendantIsSelfRepresented(final String courtListPublishedEventLocation) throws Exception {
         final JsonEnvelope envelope = prepareEnvelope();
@@ -242,10 +237,29 @@ public class PublishCourtListPayloadBuilderServiceTest {
         final Map<String, PublishCourtListPayload.PublishCourtListPayloadBuilder> defenceAdvocatePayloadBuilderByName = new HashMap<>();
         given(referenceDataService.getCourtCentreWithCourtRoomsById(eq(COURT_CENTRE_ID), any(JsonEnvelope.class), any(Requester.class))).willReturn(Optional.of(prepareCourtCentreWithCourtRooms()));
         given(referenceDataService.getEnforcementAreaByLjaCode(any(JsonEnvelope.class), eq(LJA_CODE), any(Requester.class))).willReturn(prepareEnforcementAreaJson());
-        lenient().when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(SELF_REPRESENTING_DEFENDANT_ID_1))).thenReturn(null);
-        lenient().when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(SELF_REPRESENTING_DEFENDANT_ID_2))).thenReturn(null);
-        lenient().when(referenceDataService.getProsecutor(envelope, PROSECUTOR_ID_1, requester)).thenReturn(Optional.of(prepareProsecutorDetails1()));
-        lenient().when(progressionService.getProsecutionCase(envelope, CASE_ID_1.toString())).thenReturn(Optional.of(prepareProsecutionCaseJson(PROSECUTOR_ID_1)));
+        when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), any())).thenReturn(null);
+
+        final CourtListPublished courtListPublishedEvent = jsonObjectToObjectConverter.convert(getPayloadAsJsonObject(courtListPublishedEventLocation), CourtListPublished.class);
+        underTest.buildPayloadForInterestedParties(envelope, courtListPublishedEvent, defenceOrganisationPayloadBuilderByName, prosecutionPayloadBuilderByName, defenceAdvocatePayloadBuilderByName);
+
+        assertThat(defenceOrganisationPayloadBuilderByName.isEmpty(), is(true));
+        assertThat(defenceAdvocatePayloadBuilderByName.isEmpty(), is(true));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"publish-court-list/week-commencing/event/warn-court-list-published-defendant-self-represented.json",
+            "publish-court-list/week-commencing/event/firm-court-list-published-defendant-self-represented.json"
+    })
+    public void shouldNotPrepareDocumentPayloadForDefenceOrganisationWhenDefendantIsSelfRepresented1(final String courtListPublishedEventLocation) throws Exception {
+        final JsonEnvelope envelope = prepareEnvelope();
+        final Map<String, PublishCourtListPayload.PublishCourtListPayloadBuilder> defenceOrganisationPayloadBuilderByName = new HashMap<>();
+        final Map<String, PublishCourtListPayload.PublishCourtListPayloadBuilder> prosecutionPayloadBuilderByName = new HashMap<>();
+        final Map<String, PublishCourtListPayload.PublishCourtListPayloadBuilder> defenceAdvocatePayloadBuilderByName = new HashMap<>();
+        given(referenceDataService.getCourtCentreWithCourtRoomsById(eq(COURT_CENTRE_ID), any(JsonEnvelope.class), any(Requester.class))).willReturn(Optional.of(prepareCourtCentreWithCourtRooms()));
+        given(referenceDataService.getEnforcementAreaByLjaCode(any(JsonEnvelope.class), eq(LJA_CODE), any(Requester.class))).willReturn(prepareEnforcementAreaJson());
+        when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), any())).thenReturn(null);
+        when(referenceDataService.getProsecutor(envelope, PROSECUTOR_ID_1, requester)).thenReturn(Optional.of(prepareProsecutorDetails1()));
+        when(progressionService.getProsecutionCase(any(), any())).thenReturn(Optional.of(prepareProsecutionCaseJson(PROSECUTOR_ID_1)));
 
         final CourtListPublished courtListPublishedEvent = jsonObjectToObjectConverter.convert(getPayloadAsJsonObject(courtListPublishedEventLocation), CourtListPublished.class);
         underTest.buildPayloadForInterestedParties(envelope, courtListPublishedEvent, defenceOrganisationPayloadBuilderByName, prosecutionPayloadBuilderByName, defenceAdvocatePayloadBuilderByName);
@@ -292,9 +306,7 @@ public class PublishCourtListPayloadBuilderServiceTest {
 
         given(referenceDataService.getCourtCentreWithCourtRoomsById(eq(COURT_CENTRE_ID), any(JsonEnvelope.class), any(Requester.class))).willReturn(Optional.of(courtCentreWithCourtRooms));
         given(referenceDataService.getEnforcementAreaByLjaCode(any(JsonEnvelope.class), eq(LJA_CODE), any(Requester.class))).willReturn(prepareEnforcementAreaJson());
-        given(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_1))).willReturn(defenceOrganisation);
-        given(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_2))).willReturn(defenceOrganisation);
-        lenient().when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), eq(DEFENDANT_ID_3))).thenReturn(defenceOrganisation);
+        when(defenceService.getDefenceOrganisationByDefendantId(any(JsonEnvelope.class), any())).thenReturn(defenceOrganisation);
         given(referenceDataService.getProsecutor(envelope, PROSECUTOR_ID_1, requester)).willReturn(Optional.of(prosecutor));
         when(progressionService.getProsecutionCase(envelope, CASE_ID_1.toString())).thenReturn(Optional.of(prepareProsecutionCaseJson(PROSECUTOR_ID_1)));
         given(correspondenceService.getCaseContacts(any(JsonEnvelope.class), eq(CASE_ID_1))).willReturn(correspondenceContacts);

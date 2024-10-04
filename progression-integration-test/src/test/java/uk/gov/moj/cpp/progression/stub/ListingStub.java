@@ -32,6 +32,7 @@ import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBe
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -604,7 +605,7 @@ public class ListingStub {
         waitForStubToBeReady(urlPath, LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE);
     }
 
-    public static void setupListingAnyFutureAllocationQuery(final String resource, final ZonedDateTime startDateTime ) {
+    public static void setupListingAnyFutureAllocationQuery(final String resource, final String startDateTime ) {
         stubPingFor("listing-service");
 
         final String urlPath = "/listing-service/query/api/rest/listing/hearings/any-allocation";
@@ -612,7 +613,7 @@ public class ListingStub {
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
-                        .withBody(getPayload(resource).replaceAll("START_TIME",startDateTime.toString()))));
+                        .withBody(getPayload(resource).replaceAll("START_TIME",startDateTime))));
 
         waitForStubToBeReady(urlPath, "application/vnd.listing.search.hearings+json");
     }

@@ -56,7 +56,6 @@ import com.jayway.jsonpath.DocumentContext;
 import junit.framework.TestCase;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
@@ -81,7 +80,6 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         deleteAndCreateIndex();
     }
 
-    @Disabled("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldInvokeDefendantsAddedToCaseAndListHearingRequestEvents() throws Exception {
 

@@ -23,7 +23,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -1354,7 +1353,7 @@ public class ProgressionServiceTest {
                 .withId(randomUUID())
                 .build());
         final JsonObject jsonObject = createObjectBuilder().build();
-        lenient().when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
 

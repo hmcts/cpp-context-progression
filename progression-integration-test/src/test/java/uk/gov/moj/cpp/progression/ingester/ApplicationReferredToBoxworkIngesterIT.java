@@ -22,10 +22,7 @@ import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
-
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class ApplicationReferredToBoxworkIngesterIT extends AbstractIT {
@@ -47,7 +44,6 @@ public class ApplicationReferredToBoxworkIngesterIT extends AbstractIT {
         cleanViewStoreTables();
     }
 
-    @Disabled("DD-33449")
     @Test
     public void shouldIngestApplicationReferredToBoxworkEvent() throws IOException, InterruptedException {
 

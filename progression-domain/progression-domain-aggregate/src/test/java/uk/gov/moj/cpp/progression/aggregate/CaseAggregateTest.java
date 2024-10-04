@@ -21,12 +21,11 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.mockito.quality.Strictness.LENIENT;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.DefendantJudicialResult.defendantJudicialResult;
@@ -243,19 +242,13 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
 import org.slf4j.Logger;
 
-// FIXME!!! Temporarily using lenient strictness to get this
-// context running with junit 5. This test really needs re-writing.
-@MockitoSettings(strictness = LENIENT)
 @ExtendWith(MockitoExtension.class)
 public class CaseAggregateTest {
 
@@ -1113,6 +1106,10 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldApplyCompleteSendingSheet() {
+        when(this.jsonObj.getJsonObject("crownCourtHearing"))
+                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
+                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
+                        .build());
         final List<Object> objects = applySendingSheet(a -> {
         });
         assertThat(objects.size(), is(1));
@@ -1123,6 +1120,10 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldInvalidateSendingSheetWrongCourtCentre() {
+        when(this.jsonObj.getJsonObject("crownCourtHearing"))
+                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
+                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
+                        .build());
         final List<Object> objects = applySendingSheet(a -> {
             ReflectionUtil.setField(this.caseAggregate, "courtCentreId", null);
         });
@@ -1147,6 +1148,10 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldInvalidateSendingSheetWrongDefendants() {
+        when(this.jsonObj.getJsonObject("crownCourtHearing"))
+                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
+                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
+                        .build());
         final List<Object> objects = applySendingSheet(a -> {
             final uk.gov.moj.cpp.progression.domain.event.Defendant defendant = new uk.gov.moj.cpp.progression.domain.event.Defendant();
             defendant.setId(UUID.randomUUID());
@@ -1161,6 +1166,11 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldInvalidateSendingSheetWrongOffences() {
+        when(this.jsonObj.getJsonObject("crownCourtHearing"))
+                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
+                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
+                        .build());
+
         final List<Object> objects = applySendingSheet(a -> {
             final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
             ReflectionUtil.setField(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
@@ -1302,10 +1312,6 @@ public class CaseAggregateTest {
                                 .add("endDate", END_DATE).build()))
                         .build()).build())
                 .build());
-        when(this.jsonObj.getJsonObject("crownCourtHearing"))
-                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
-                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
-                        .build());
     }
 
     private void assertSendingSheetCompletedValues(final SendingSheetCompleted ssCompleted) {
@@ -6470,8 +6476,6 @@ public class CaseAggregateTest {
         caseAggregate.createProsecutionCase(prosecutionCase).collect(toList());
         final Stream<Object> eventStream = caseAggregate.receiveDisAssociateDefenceOrganisation(defendant.getId(), prosecutionCase.getId(), randomUUID());
 
-        doNothing().when(logger).debug(any());
-
         final List events = eventStream.collect(toList());
         assertThat(events.get(0), instanceOf(DefendantDefenceOrganisationChanged.class));
         assertThat(events.get(1), instanceOf(DefenceOrganisationDissociatedByDefenceContext.class));
@@ -6481,8 +6485,6 @@ public class CaseAggregateTest {
     public void shouldReceiveAssociateDefenceOrganisation() {
         caseAggregate.createProsecutionCase(prosecutionCase).collect(toList());
         final Stream<Object> eventStream = caseAggregate.receiveAssociateDefenceOrganisation("orgName", defendant.getId(), prosecutionCase.getId(), "LAANumber", ZonedDateTime.now(), "REPRESENTATION_ORDER", OrganisationDetails.newBuilder().build());
-
-        doNothing().when(logger).debug(any());
 
         final List events = eventStream.collect(toList());
         assertThat(events.get(0), instanceOf(DefendantDefenceOrganisationChanged.class));

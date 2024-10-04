@@ -21,7 +21,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
-import static org.mockito.quality.Strictness.LENIENT;
 import static uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated.sendNotificationForAutoApplicationInitiated;
 import static uk.gov.justice.core.courts.SummonsTemplateType.NOT_APPLICABLE;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -103,10 +102,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
 import org.powermock.reflect.Whitebox;
 
-@MockitoSettings(strictness = LENIENT)
 @ExtendWith(MockitoExtension.class)
 public class NotificationServiceTest {
 
@@ -192,18 +189,8 @@ public class NotificationServiceTest {
         this.notificationId = randomUUID();
         this.applicationId = randomUUID();
         this.materialService = new MaterialService();
-        final JsonObject jsonObj = Mockito.mock(JsonObject.class);
-
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(jsonObj);
-
-        when(postalService.getPostalNotificationForCourtApplicationParty(eq(envelope), anyString(), anyString(), anyString(),
-                anyString(), anyString(), anyString(), anyString(), any(CourtCentre.class), any(CourtApplicationParty.class),
-                any(JurisdictionType.class), anyString(), any(CourtApplication.class), anyString(), anyBoolean(), anyBoolean(), any(LocalDate.class))).thenReturn(postalNotification);
-
         final UUID materialId = UUID.randomUUID();
-        when(documentGeneratorService.generateDocument(eq(envelope), any(JsonObject.class), eq(PostalService.POSTAL_NOTIFICATION), eq(sender), any(), any(UUID.class), eq(false))).thenReturn(materialId);
         final String materialUrl = "http://localhost:8080/material/asPdf";
-        when(materialUrlGenerator.pdfFileStreamUrlFor(materialId)).thenReturn(materialUrl);
     }
 
     @Test
@@ -341,7 +328,7 @@ public class NotificationServiceTest {
 
     @Test
     public void sendNotificationForTheApplicant() {
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -377,7 +364,7 @@ public class NotificationServiceTest {
 
     @Test
     public void sendNotificationForTheApplicantAmend() {
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -406,9 +393,7 @@ public class NotificationServiceTest {
         notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, true);
 
         final UUID materialId = UUID.randomUUID();
-        when(documentGeneratorService.generateDocument(eq(envelope), any(JsonObject.class), eq(PostalService.POSTAL_NOTIFICATION), eq(sender), any(), any(UUID.class), eq(false))).thenReturn(materialId);
         final String materialUrl = "http://localhost:8080/material/asPdf";
-        when(materialUrlGenerator.pdfFileStreamUrlFor(materialId)).thenReturn(materialUrl);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_COMMAND_EMAIL),
@@ -420,7 +405,7 @@ public class NotificationServiceTest {
 
     @Test
     public void sendNotificationForTheApplicantDefendantAndAssociatedToDefenceOrganisationEmail() {
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         final UUID defendantId = UUID.randomUUID();
         final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder()
@@ -464,14 +449,11 @@ public class NotificationServiceTest {
 
     @Test
     public void sendNotificationForTheApplicantDefendantAndAssociatedToDefenceOrganisationPrint() {
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
-
         final UUID defendantId = UUID.randomUUID();
         final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder()
                 .withAddress(DefenceOrganisationAddress.defenceOrganisationAddressBuilder().withAddress1("add1").withAddress2("add2").withAddress3("add3").withAddress4("add4").withAddressPostcode("postcode").build())
                 .build();
 
-        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
         when(defenceService.getDefenceOrganisationByDefendantId(envelope, defendantId)).thenReturn(associatedDefenceOrganisation);
 
         final CourtApplication courtApplication = CourtApplication.courtApplication()
@@ -501,7 +483,7 @@ public class NotificationServiceTest {
     @Test
     public void sendNotificationForTheApplicantAsOrganisation() {
 
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -527,7 +509,7 @@ public class NotificationServiceTest {
     @Test
     public void sendNotificationForTheApplicantAsDefendant() {
 
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -577,7 +559,7 @@ public class NotificationServiceTest {
     @Test
     public void sendNotificationForTheApplicantAsNonCPSProsecutingAuthority() {
 
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -604,7 +586,7 @@ public class NotificationServiceTest {
     @Test
     public void sendNotificationForTheRespondents() {
 
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -648,7 +630,7 @@ public class NotificationServiceTest {
 
     @Test
     public void sendNotificationToRespondentsDefendantAndAssociatedToDefenceOrganisationEmail() {
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         final UUID defendantId = UUID.randomUUID();
         final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder()
@@ -694,14 +676,11 @@ public class NotificationServiceTest {
 
     @Test
     public void sendNotificationToRespondentDefendantAndAssociatedToDefenceOrganisationPrint() {
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
-
         final UUID defendantId = UUID.randomUUID();
         final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder()
                 .withAddress(DefenceOrganisationAddress.defenceOrganisationAddressBuilder().withAddress1("add1").withAddress2("add2").withAddress3("add3").withAddress4("add4").withAddressPostcode("postcode").build())
                 .build();
 
-        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
         when(defenceService.getDefenceOrganisationByDefendantId(envelope, defendantId)).thenReturn(associatedDefenceOrganisation);
 
         final List<CourtApplicationParty> respondents = singletonList(
@@ -740,7 +719,7 @@ public class NotificationServiceTest {
     @Test
     public void sendNotificationForAutoApplicationWhenWelshIsRequired() {
         ArgumentCaptor<Envelope> argumentCaptor = ArgumentCaptor.forClass(Envelope.class);
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -809,7 +788,7 @@ public class NotificationServiceTest {
     @Test
     public void sendNotificationForAutoApplicationWhenWelshIsNotRequired() {
         ArgumentCaptor<Envelope> argumentCaptor = ArgumentCaptor.forClass(Envelope.class);
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -878,7 +857,7 @@ public class NotificationServiceTest {
     @Test
     public void sendNotificationForAutoApplicationWhenWelshIsRequiredFlagIsNull() {
         ArgumentCaptor<Envelope> argumentCaptor = ArgumentCaptor.forClass(Envelope.class);
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -946,7 +925,7 @@ public class NotificationServiceTest {
     @Test
     public void sendNotificationForTheThirdParties() {
 
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -1002,7 +981,7 @@ public class NotificationServiceTest {
     @Test
     public void sendNotificationForTheRespondentsAsOrganisation() {
 
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -1046,7 +1025,7 @@ public class NotificationServiceTest {
     @Test
     public void sendNotificationForTheRespondentsAsDefendant() {
 
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -1091,10 +1070,6 @@ public class NotificationServiceTest {
 
     @Test
     public void doNotSendNotificationWhenRespondentsIsCPSProsecutingAuthority() {
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
-
-        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
-
         final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.prosecutingAuthority().withContact(ContactNumber.contactNumber().withPrimaryEmail("ProsecutingAuthority@test.com").build()).build();
         final List<CourtApplicationParty> respondents = singletonList(
                 CourtApplicationParty.courtApplicationParty()
@@ -1117,7 +1092,7 @@ public class NotificationServiceTest {
     @Test
     public void sendNotificationForTheRespondentsAsNonCPSProsecutingAuthority() {
 
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -1163,7 +1138,7 @@ public class NotificationServiceTest {
     @Test
     public void sendNotificationForTheApplicantOnlyEmailIfBothDetailsAreAvailable() {
 
-        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(any(), any());
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
@@ -1305,7 +1280,7 @@ public class NotificationServiceTest {
                 .withUrn("caseURN456")
                 .withProsecutingAuthorityOUCode("ouCode456")
                 .build());
-
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(Mockito.mock(JsonObject.class));
         notificationService.sendApiNotification(envelope, notificationId, materialDetails, caseSubjects, Arrays.asList("defAsn,defAsn2"),  null);
         verify(cpsRestNotificationService, times(1)).sendMaterial(apiNotificationArgumentCaptor.capture(), any(), any());
 // Check later
@@ -1325,6 +1300,8 @@ public class NotificationServiceTest {
                 .withUrn("caseURN123")
                 .withProsecutingAuthorityOUCode("ouCode123")
                 .build());
+
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(Mockito.mock(JsonObject.class));
 
         notificationService.sendApiNotification(envelope, notificationId, materialDetails, caseSubjects, Arrays.asList("defAsn"),  null);
         verify(cpsRestNotificationService, times(1)).sendMaterial(apiNotificationArgumentCaptor.capture(),any(), any());

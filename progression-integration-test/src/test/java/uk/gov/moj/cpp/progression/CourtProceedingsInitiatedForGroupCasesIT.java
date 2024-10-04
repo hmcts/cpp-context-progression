@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
@@ -29,6 +30,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollGr
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.removeCaseFromGroupCases;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
@@ -62,7 +64,9 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
+import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -318,10 +322,10 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
 
     private void verifyInMessagingQueueForLinkProsecutionCaseToHearingEvent(final List<UUID> caseIds, final String hearingId) {
         caseIds.forEach(caseId -> {
-            final Optional<JsonObject> message = retrieveMessageBody(consumerForLinkProsecutionCasesToHearing);
-            assertTrue(message.isPresent());
-            assertThat(message.get().getString("hearingId"), is(hearingId));
-            assertThat(message.get().getString("caseId"), is(caseId.toString()));
+            final JsonPath messageDaysMatchers = retrieveMessageAsJsonPath(consumerForLinkProsecutionCasesToHearing, isJson(Matchers.allOf(
+                    withJsonPath("$.hearingId", is(hearingId)),
+                    withJsonPath("$.caseId", is(caseId.toString())))));
+            assertThat(messageDaysMatchers, notNullValue());
         });
     }
 

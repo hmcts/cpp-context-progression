@@ -75,7 +75,6 @@ import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -228,7 +227,6 @@ public class HearingUpdatedIT {
         verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(hearingId);
     }
 
-    @Disabled("DD-33449")
     @Test
     public void shouldHearingWithApplicationWhenLinkedApplicationToHearing() throws Exception {
         String prosecutionAuthorityReference;

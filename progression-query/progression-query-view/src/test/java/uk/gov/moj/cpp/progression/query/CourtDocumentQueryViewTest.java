@@ -11,7 +11,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -430,24 +429,24 @@ public class CourtDocumentQueryViewTest {
 
     @Test
     public void shouldFindDocumentsByCaseIdPermitted() throws IOException {
-        shouldFindDocuments(true, true, singletonList(randomUUID()), null, null, "Court Clerks", false);
+        shouldFindDocuments(true, true, singletonList(randomUUID()), null, null, "Court Clerks", false, true);
     }
 
     @Test
     public void shouldFindDocumentsByCaseIdPermittedWhenProsecutingTrue() throws IOException {
-        shouldFindDocuments(true, true, singletonList(randomUUID()), null, null, "Court Clerks", true);
+        shouldFindDocuments(true, true, singletonList(randomUUID()), null, null, "Court Clerks", true, true);
     }
 
 
     @Test
     public void shouldFindDocumentsByCaseIdsAndApplicationIdPermitted() throws IOException {
-        shouldFindDocuments(true, true, asList(UUID.randomUUID(), UUID.randomUUID()), null, asList(UUID.randomUUID(), UUID.randomUUID()), "Court Clerks", false);
+        shouldFindDocuments(true, true, asList(UUID.randomUUID(), UUID.randomUUID()), null, asList(UUID.randomUUID(), UUID.randomUUID()), "Court Clerks", false, true);
     }
 
 
     @Test
     public void shouldFindDocumentsByDefendantIdPermitted() throws IOException {
-        shouldFindDocuments(true, true, null, UUID.randomUUID(), null, "Court Clerks", false);
+        shouldFindDocuments(true, true, null, UUID.randomUUID(), null, "Court Clerks", false, true);
     }
 
     @Test
@@ -929,12 +928,12 @@ public class CourtDocumentQueryViewTest {
 
     @Test
     public void shouldFindDocumentsByCaseIdNotPermitted() throws IOException {
-        shouldFindDocuments(true, false, asList(UUID.randomUUID()), null, null, "group1", false);
+        shouldFindDocuments(true, false, asList(UUID.randomUUID()), null, null, "group1", false, false);
     }
 
     @Test
     public void shouldNotFindDocumentsByDefendantIdPermitted() throws IOException {
-        shouldFindDocuments(false, true, null, UUID.randomUUID(), null, "group1", false);
+        shouldFindDocuments(false, true, null, UUID.randomUUID(), null, "group1", false, false);
     }
 
     private void addId(List<UUID> caseId, UUID defendantId, List<UUID> applicationId, Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex,
@@ -985,7 +984,7 @@ public class CourtDocumentQueryViewTest {
 
     }
 
-    private void shouldFindDocuments(final boolean rbackReadPermitted, final boolean permitted, final List<UUID> caseIds, final UUID defendantId, final List<UUID> applicationIds, final String userGroup, final boolean isProsecuting) throws IOException {
+    private void shouldFindDocuments(final boolean rbackReadPermitted, final boolean permitted, final List<UUID> caseIds, final UUID defendantId, final List<UUID> applicationIds, final String userGroup, final boolean isProsecuting, final boolean shouldStub) throws IOException {
         final JsonArray userGroupArray = Json.createArrayBuilder()
                 .add(Json.createObjectBuilder().add("groupName", userGroup).build())
                 .build();
@@ -1031,9 +1030,9 @@ public class CourtDocumentQueryViewTest {
                 return id2ExpectedCourtDocumentIndex.get(id);
             }
         };
-
-        lenient().when(courtDocumentTransform.transform(any(), any())).thenAnswer(transformResult);
-
+        if(shouldStub) {
+            when(courtDocumentTransform.transform(any(), any())).thenAnswer(transformResult);
+        }
         final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
         final CourtDocumentsSearchResult result = jsonObjectToObjectConverter
                 .convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
@@ -1455,7 +1454,7 @@ public class CourtDocumentQueryViewTest {
 
     @Test
     public void shouldGetCourtDocumentByCaseIdAndDefedantId() throws IOException {
-        shouldFindDocuments(true, true, asList(UUID.randomUUID(), UUID.randomUUID()), UUID.randomUUID(), null, "Legal Advisers", false);
+        shouldFindDocuments(true, true, asList(UUID.randomUUID(), UUID.randomUUID()), UUID.randomUUID(), null, "Legal Advisers", false, true);
     }
 }
 

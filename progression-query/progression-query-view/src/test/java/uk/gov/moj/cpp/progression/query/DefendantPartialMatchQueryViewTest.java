@@ -3,10 +3,7 @@ package uk.gov.moj.cpp.progression.query;
 import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.quality.Strictness.LENIENT;
+import static org.mockito.Mockito.*;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -42,9 +39,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 
-// FIXME!!! Temporarily using lenient strictness to get this
-// context running with junit 5. This test really needs re-writing.
-@MockitoSettings(strictness = LENIENT)
 @WireMockTest
 @ExtendWith(MockitoExtension.class)
 public class DefendantPartialMatchQueryViewTest {
@@ -98,12 +92,13 @@ public class DefendantPartialMatchQueryViewTest {
             final Integer expectedPage,
             final Integer expectedSize,
             final long expectedCount,
-            final String invokedMethodName) {
+            final String invokedMethodName,
+            final boolean shouldStub) {
         //given
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.defendant-partial-match").build(),
                 jsonObject);
-        mockRepository(expectedCount, invokedMethodName);
+        mockRepository(expectedCount, invokedMethodName, shouldStub);
 
         //when
         JsonEnvelope response = defendantPartialMatchQueryView.getDefendantPartialMatches(jsonEnvelope);
@@ -161,14 +156,16 @@ public class DefendantPartialMatchQueryViewTest {
 
     private void mockRepository(
             final long expectedCount,
-            final String invokedMethodName) {
-        
+            final String invokedMethodName,
+            final boolean shouldStub) {
+
+
         when(defendantPartialMatchRepository.count()).thenReturn(expectedCount);
-
-        when(queryResult.toPage(page.capture())).thenReturn(queryResult);
-        when(queryResult.withPageSize(size.capture())).thenReturn(queryResult);
-        when(queryResult.getResultList()).thenReturn(getDefendantPartialMatchData(defendantId));
-
+        if(shouldStub) {
+            when(queryResult.toPage(page.capture())).thenReturn(queryResult);
+            when(queryResult.withPageSize(size.capture())).thenReturn(queryResult);
+            when(queryResult.getResultList()).thenReturn(getDefendantPartialMatchData(defendantId));
+        }
         if (StringUtils.equals(invokedMethodName, "findAllOrderByDefendantNameAsc")) {
             when(defendantPartialMatchRepository.findAllOrderByDefendantNameAsc()).thenReturn(queryResult);
         } else if (StringUtils.equals(invokedMethodName, "findAllOrderByDefendantNameDesc")) {
@@ -209,76 +206,76 @@ public class DefendantPartialMatchQueryViewTest {
 
     public static Collection<Object[]> data() {
         return Arrays.asList(
-                new Object[]{Json.createObjectBuilder().build(), 0, 20, 22, "findAllOrderByCaseReceivedDatetimeDesc"},
-                new Object[]{Json.createObjectBuilder().add("page", 1).build(), 0, 20, 22, "findAllOrderByCaseReceivedDatetimeDesc"},
+                new Object[]{Json.createObjectBuilder().build(), 0, 20, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
+                new Object[]{Json.createObjectBuilder().add("page", 1).build(), 0, 20, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
                 new Object[]{Json.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
-                        .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc"},
+                        .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
                 new Object[]{Json.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "XXXX")
                         .add(SORT_ORDER, "XXXX")
-                        .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc"},
+                        .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
                 new Object[]{Json.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "caseReceivedDate")
-                        .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc"},
+                        .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
                 new Object[]{Json.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "caseReceivedDate")
                         .add(SORT_ORDER, "XXXX")
-                        .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc"},
+                        .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
                 new Object[]{Json.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "caseReceivedDate")
                         .add(SORT_ORDER, "Desc")
-                        .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc"},
+                        .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeDesc",true},
                 new Object[]{Json.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "caseReceivedDate")
                         .add(SORT_ORDER, "Asc")
-                        .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeAsc"},
+                        .build(), 1, 10, 22, "findAllOrderByCaseReceivedDatetimeAsc",true},
                 new Object[]{Json.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "defendantName")
-                        .build(), 1, 10, 22, "findAllOrderByDefendantNameAsc"},
+                        .build(), 1, 10, 22, "findAllOrderByDefendantNameAsc",true},
                 new Object[]{Json.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "defendantName")
                         .add(SORT_ORDER, "XXXX")
-                        .build(), 1, 10, 22, "findAllOrderByDefendantNameAsc"},
+                        .build(), 1, 10, 22, "findAllOrderByDefendantNameAsc",true},
                 new Object[]{Json.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "defendantName")
                         .add(SORT_ORDER, "Asc")
-                        .build(), 1, 10, 22, "findAllOrderByDefendantNameAsc"},
+                        .build(), 1, 10, 22, "findAllOrderByDefendantNameAsc",true},
                 new Object[]{Json.createObjectBuilder()
                         .add(PAGE, 2)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "defendantName")
                         .add(SORT_ORDER, "Desc")
-                        .build(), 1, 10, 22, "findAllOrderByDefendantNameDesc"},
+                        .build(), 1, 10, 22, "findAllOrderByDefendantNameDesc",true},
                 new Object[]{Json.createObjectBuilder()
                         .add(PAGE, 7)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "defendantName")
                         .add(SORT_ORDER, "Desc")
-                        .build(), null, null, 59, ""},
+                        .build(), null, null, 59, "",false},
                 new Object[]{Json.createObjectBuilder()
                         .add(PAGE, 1)
                         .add(PAGE_SIZE, 10)
                         .add(SORT_FIELD, "defendantName")
                         .add(SORT_ORDER, "Desc")
-                        .build(), 0, 10, 2, "findAllOrderByDefendantNameDesc"}
+                        .build(), 0, 10, 2, "findAllOrderByDefendantNameDesc",true}
         );
     }
 

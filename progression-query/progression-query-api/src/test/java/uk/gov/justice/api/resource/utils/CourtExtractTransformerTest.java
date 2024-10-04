@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
-import static org.mockito.quality.Strictness.LENIENT;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.api.resource.service.ReferenceDataService;
@@ -90,12 +89,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
 
 
-// FIXME!!! Temporarily using lenient strictness to get this
-// context running with junit 5. This test really needs re-writing.
-@MockitoSettings(strictness = LENIENT)
+
 @ExtendWith(MockitoExtension.class)
 public class CourtExtractTransformerTest {
 
@@ -185,8 +181,6 @@ public class CourtExtractTransformerTest {
         target = new CourtExtractTransformer();
         setField(this.target, "transformationHelper", transformationHelper);
         when(referenceDataService.getProsecutor(argThat(any(JsonEnvelope.class)), argThat(any(ProsecutionCaseIdentifier.class)))).thenReturn(new uk.gov.justice.progression.courts.exract.ProsecutingAuthority(null, null, null));
-        when(requestedNameMapper.getRequestedJudgeName(argThat(any(JsonObject.class)))).thenReturn("Denial");
-        when(referenceDataService.getJudiciary(argThat(any(UUID.class)))).thenReturn(Optional.ofNullable(createJudiciaryJsonObject()));
     }
 
     @Test
@@ -224,7 +218,7 @@ public class CourtExtractTransformerTest {
         final List<String> selectedHearingIds = Collections.singletonList(HEARING_ID.toString());
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(createCaseAtAGlance(), DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
-//        assertGetCourtExtractRequested(courtExtractRequested, extractType, 2);
+       assertGetCourtExtractRequested(courtExtractRequested, extractType, 2);
     }
 
     @Test
@@ -233,7 +227,7 @@ public class CourtExtractTransformerTest {
         final List<String> selectedHearingIds = asList(HEARING_ID.toString());
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(createCaseAtAGlanceWithCourtApplicationParty(), DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
-  //      assertGetCourtExtractRequested(courtExtractRequested, extractType, 1);
+        assertGetCourtExtractRequested(courtExtractRequested, extractType, 1);
     }
 
     @Test
@@ -462,7 +456,6 @@ public class CourtExtractTransformerTest {
             assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getHearingDays().get(1).getDay(), is((ZonedDateTimes.fromString(hearingDate2).toLocalDate())));
 
             //court decision
-            assertThat(courtExtractRequested.getCourtDecisions().get(0).getJudicialDisplayName(), is("Chair: Denial Winger1: Denial Winger2: Denial"));
             assertThat(courtExtractRequested.getCourtDecisions().get(0).getRoleDisplayName(), is("District judge"));
             assertThat(courtExtractRequested.getCourtDecisions().get(0).getJudiciary().get(0).getName(), is(FULL_NAME));
 

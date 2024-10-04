@@ -52,9 +52,7 @@ import io.restassured.response.Response;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class VepHearingIT extends AbstractIT {

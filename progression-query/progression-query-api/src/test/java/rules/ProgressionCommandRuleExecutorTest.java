@@ -18,9 +18,8 @@ import java.util.Map;
 import static java.util.Collections.singletonMap;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.quality.Strictness.LENIENT;
 
-@MockitoSettings(strictness = LENIENT)
+
 @ExtendWith(MockitoExtension.class)
 public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlTest {
 

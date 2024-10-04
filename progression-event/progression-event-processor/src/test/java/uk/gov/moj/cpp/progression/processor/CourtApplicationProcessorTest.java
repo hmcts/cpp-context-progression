@@ -22,7 +22,6 @@ import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -1571,7 +1570,8 @@ public class CourtApplicationProcessorTest {
                 .build();
         final JsonObject payload = objectToJsonObjectConverter.convert(hearingResultedApplicationUpdated);
         final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
-        lenient().when(listHearingBoxworkService.isLHBWResultedAndNeedToSendNotifications(hearingResultedApplicationUpdated.getCourtApplication().getJudicialResults())).thenReturn(true);
+        when(listHearingBoxworkService.isLHBWResultedAndNeedToSendNotifications(any())).thenReturn(true);
+        when(listHearingBoxworkService.getNextHearingFromLHBWResult(any())).thenReturn(nextHearing);
 
         courtApplicationProcessor.processHearingResultedApplicationUpdated(event);
 

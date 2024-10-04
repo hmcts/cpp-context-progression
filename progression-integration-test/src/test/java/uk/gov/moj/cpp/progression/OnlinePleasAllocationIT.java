@@ -3,16 +3,16 @@ package uk.gov.moj.cpp.progression;
 import static com.google.common.io.Resources.getResource;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.nio.charset.Charset.defaultCharset;
+import static java.time.LocalDateTime.now;
+import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
@@ -50,7 +50,6 @@ import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
@@ -63,10 +62,8 @@ import com.google.common.io.Resources;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("all")
@@ -111,6 +108,7 @@ public class OnlinePleasAllocationIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_RESULT_LIST_OPA_NOTICE_SENT = "public.stagingpubhub.opa-result-list-notice-sent";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED = "public.progression.hearing-resulted";
+    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
     private JmsMessageProducerClient messageProducerClientPublic;
     private JmsMessageConsumerClient messageConsumerPublicNoticeSent;
@@ -253,7 +251,6 @@ public class OnlinePleasAllocationIT extends AbstractIT {
     }
 
     @Test
-    @Disabled("DD-33449")
     public void shouldGeneratePublicAndPressOpaNotices() throws Exception {
         final UUID allocationId = randomUUID();
         final String caseId = randomUUID().toString();
@@ -287,7 +284,6 @@ public class OnlinePleasAllocationIT extends AbstractIT {
 
 
     @Test
-    @Disabled("DD-33449")
     public void shouldNotGeneratePublicAndPressOpaNoticesWhenFeatureToggleIsOff() throws Exception {
         final UUID allocationId = randomUUID();
         final String caseId = randomUUID().toString();
@@ -513,13 +509,17 @@ public class OnlinePleasAllocationIT extends AbstractIT {
                         .replaceAll("DEFENDANT_ID", defendantId)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
                         .replaceAll("COURT_CENTRE_NAME", courtCentreName)
+                        .replaceAll("SITTING_DAY_1", now().plus(5, DAYS).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)))
+                        .replaceAll("SITTING_DAY_2", now().plus(6, DAYS).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)))
+                        .replaceAll("SITTING_DAY_3", now().plus(7, DAYS).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)))
+                        .replaceAll("SITTING_DAY_4", now().plus(8, DAYS).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)))
         );
     }
 
     private JsonObject getHearingWithSingleCaseJsonObject(final String path, final String caseId, final String hearingId,
                                                           final String defendantId, final String courtCentreId, final String bailStatusCode,
                                                           final String bailStatusDescription, final String bailStatusId) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
         return stringToJsonObjectConverter.convert(
                 getPayload(path)
                         .replaceAll("CASE_ID", caseId)
@@ -529,8 +529,8 @@ public class OnlinePleasAllocationIT extends AbstractIT {
                         .replaceAll("BAIL_STATUS_ID", bailStatusId)
                         .replaceAll("BAIL_STATUS_CODE", bailStatusCode)
                         .replaceAll("BAIL_STATUS_DESCRIPTION", bailStatusDescription)
-                        .replaceAll("SITTING_DAY", formatter.format(LocalDateTime.now().plusMonths(1)))
-                        .replaceAll("SHARED_TIME", formatter.format(LocalDateTime.now().minusDays(1)))
+                        .replaceAll("SITTING_DAY", formatter.format(now().plusMonths(1)))
+                        .replaceAll("SHARED_TIME", formatter.format(now().minusDays(1)))
         );
     }
 

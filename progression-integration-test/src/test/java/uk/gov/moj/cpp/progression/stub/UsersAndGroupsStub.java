@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.stub;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.removeStub;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
@@ -22,6 +23,7 @@ import java.util.List;
 
 import javax.json.Json;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import org.apache.http.HttpHeaders;
 
 public class UsersAndGroupsStub {
@@ -239,6 +241,7 @@ public class UsersAndGroupsStub {
     }
 
     public static void stubUserWithPermission(final String userId, final String body) {
+        removeStub(get(urlPathEqualTo("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permissions")));
         stubPingFor("usersgroups-service");
 
         stubFor(get(urlPathEqualTo("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permissions"))

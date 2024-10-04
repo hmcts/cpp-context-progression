@@ -31,8 +31,6 @@ import com.google.common.io.Resources;
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
-
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 
@@ -62,7 +60,6 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
         deleteAndCreateIndex();
     }
 
-    @Disabled("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldInitiateCourtProceedingsWithCourtDocuments() throws IOException {
 

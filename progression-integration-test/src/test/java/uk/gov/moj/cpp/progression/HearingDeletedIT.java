@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.lang.Thread.sleep;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
@@ -47,7 +48,6 @@ import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,7 +91,7 @@ public class HearingDeletedIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        doVerifyProsecutionCaseDefendantListingStatusChanged();
+        doVerifyProsecutionCaseDefendantListingStatusChanged(caseId);
 
         final JsonObject hearingDeletedJson = getHearingMarkedAsDeletedObject(hearingId);
 
@@ -137,7 +137,7 @@ public class HearingDeletedIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        doVerifyProsecutionCaseDefendantListingStatusChanged();
+        doVerifyProsecutionCaseDefendantListingStatusChanged(caseId);
 
         final JsonObject hearingDeletedJson = getHearingMarkedAsDeletedObject(hearingId);
 
@@ -150,7 +150,6 @@ public class HearingDeletedIT extends AbstractIT {
         verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(hearingId, messageConsumerDeletedHearingPopulatedToProbationCaseWorker);
     }
 
-    @Disabled("need to fix by DD-32605")
     @Test
     public void shouldReopenCaseWhenAnewApplicationAddedAndHasFutureHearingsAndDeleteHearing() throws IOException, InterruptedException, JSONException {
         final String caseId = randomUUID().toString();
@@ -161,13 +160,13 @@ public class HearingDeletedIT extends AbstractIT {
         final String courtCentreName = "Lavender Hill Magistrate's Court";
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        final String hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+        final String hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(caseId);
         LOGGER.info("hearingId : {}", hearingId);
 
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED, userId), getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED + ".json", caseId,
                 hearingId, defendantId, courtCentreId, "C", "Remedy", "2593cf09-ace0-4b7d-a746-0703a29f33b5"));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED, publicEventEnvelope);
-        doVerifyProsecutionCaseDefendantListingStatusChanged();
+        doVerifyProsecutionCaseDefendantListingStatusChanged(caseId);
 
         pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(INACTIVE.getDescription(), caseId));
 
@@ -175,10 +174,11 @@ public class HearingDeletedIT extends AbstractIT {
 
         pollForApplication(applicationId);
 
+        sleep(1000*5);
         final JsonEnvelope publicEventConfirmedEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed-case-reopen.json",
                 caseId, hearingId, defendantId, courtCentreId, courtCentreName, applicationId));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventConfirmedEnvelope);
-        doVerifyProsecutionCaseDefendantListingStatusChanged();
+        doVerifyProsecutionCaseDefendantListingStatusChanged(caseId);
         pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(ACTIVE.getDescription(), caseId));
 
         final JsonObject hearingDeletedJson = getHearingMarkedAsDeletedObject(hearingId);
@@ -245,10 +245,9 @@ public class HearingDeletedIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged() {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
-        return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
+    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final String caseId) {
+        final JsonPath message = retrieveMessageAsJsonPath(messageConsumerProsecutionCaseDefendantListingStatusChanged, isJson(allOf(withJsonPath("$.hearing.prosecutionCases[0].id", is(caseId)))));
+        return message.getJsonObject("hearing.id");
     }
 
     private void verifyInMessagingQueueForHearingDeleted() {

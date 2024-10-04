@@ -53,6 +53,7 @@ import uk.gov.moj.cpp.progression.util.Utilities;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -67,9 +68,7 @@ import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +85,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private static final String DOCUMENT_TEXT = STRING.next();
+    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
     private String caseId;
     private String defendantId;
@@ -130,7 +130,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         //Create payload for
-        final ZonedDateTime startDateTime = ZonedDateTime.now().plusWeeks(2);
+        final String startDateTime = ZonedDateTime.now().plusWeeks(2).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
         final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
                 true, caseId, defendantId, defendantId2, offenceId, startDateTime);
         final String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
@@ -166,7 +166,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     public void shouldInvokeDefendantsNotAddedToCaseAndListHearingRequestEvents() throws Exception {
         final String defendantId2 = randomUUID().toString();
 
-        final ZonedDateTime startDateTime = ZonedDateTime.now().plusWeeks(1);
+        final String startDateTime = ZonedDateTime.now().plusWeeks(1).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
 
         ListingStub.setupListingAnyAllocationQuery(caseUrn, "stub-data/listing.any-allocation.search.hearings.json");
 
@@ -189,7 +189,6 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         verifyDefendantsNotAddedInViewStore(caseId, defendantId2);
     }
 
-    @Disabled("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldListHearingRequestsInvokePublicMessage() throws Exception {
 
@@ -199,7 +198,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final String userId = randomUUID().toString();
         final String courtCentreId = "3d2cf089-63ec-4bbf-a330-402540f200ba";
         final String defendantId2 = randomUUID().toString();
-        final ZonedDateTime startDateTime = ZonedDateTime.now().plusWeeks(1);
+        final String startDateTime = ZonedDateTime.now().plusWeeks(1).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
         ListingStub.setupListingAnyFutureAllocationQuery("stub-data/listing.any-allocation.search.future-hearings.json", startDateTime);
 
 
@@ -284,7 +283,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
     private AddDefendantsToCourtProceedings buildAddDefendantsToCourtProceedings(
             final boolean forAdded, final String caseId, final String defendantId,
-            final String defendantId2, final String offenceId, final ZonedDateTime startDateTime) {
+            final String defendantId2, final String offenceId, final String startDateTime) {
 
         final List<Defendant> defendantsList = new ArrayList<>();
 
@@ -348,7 +347,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
                 .withListDefendantRequests(Collections.singletonList(listDefendantRequest2))
                 .withEarliestStartDateTime(ZonedDateTime.now().plusWeeks(1))
-                .withListedStartDateTime(startDateTime)
+                .withListedStartDateTime(ZonedDateTime.parse(startDateTime))
                 .withEstimateMinutes(20)
                 .build();
 

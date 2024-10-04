@@ -41,7 +41,6 @@ import org.hamcrest.Matcher;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
@@ -164,7 +163,6 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, matchers);
     }
 
-    @Disabled("CPI-301 - Flaky IT, temporarily ignored for release")
     @Test
     public void shouldRemoveAndAddDocuments() throws Exception {
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");

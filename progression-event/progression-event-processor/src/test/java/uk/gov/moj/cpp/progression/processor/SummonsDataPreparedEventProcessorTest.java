@@ -17,7 +17,6 @@ import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.quality.Strictness.LENIENT;
 import static uk.gov.justice.core.courts.Address.address;
 import static uk.gov.justice.core.courts.AssociatedPerson.associatedPerson;
 import static uk.gov.justice.core.courts.ConfirmedProsecutionCaseId.confirmedProsecutionCaseId;
@@ -102,12 +101,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
-// FIXME!!! Temporarily using lenient strictness to get this
-// context running with junit 5. This test really needs re-writing.
-@MockitoSettings(strictness = LENIENT)
 @ExtendWith(MockitoExtension.class)
 public class SummonsDataPreparedEventProcessorTest {
 
@@ -177,7 +171,12 @@ public class SummonsDataPreparedEventProcessorTest {
         return Stream.of(
                 Arguments.of(MCA, false, 1),
                 Arguments.of(WITNESS, false, 1),
-                Arguments.of(EITHER_WAY, false, 1),
+                Arguments.of(EITHER_WAY, false, 1)
+        );
+    }
+
+    public static Stream<Arguments> firstHearingSummonsSpecificationsForYouth() {
+        return Stream.of(
                 Arguments.of(MCA, true, 2),
                 Arguments.of(WITNESS, true, 2),
                 Arguments.of(EITHER_WAY, true, 2)
@@ -195,10 +194,16 @@ public class SummonsDataPreparedEventProcessorTest {
         return Stream.of(
                 // summons required, is youth, number of documents
                 Arguments.of(APPLICATION, false, 1),
-                Arguments.of(APPLICATION, true, 1),
-                Arguments.of(BREACH, false, 1),
-                Arguments.of(BREACH, true, 2)
+                Arguments.of(BREACH, false, 1)
                 );
+    }
+
+    public static Stream<Arguments> applicationSummonsSpecificationsForYouth() {
+        return Stream.of(
+                // summons required, is youth, number of documents
+                Arguments.of(APPLICATION, true, 1),
+                Arguments.of(BREACH, true, 1)
+        );
     }
 
     @BeforeEach
@@ -209,6 +214,60 @@ public class SummonsDataPreparedEventProcessorTest {
     @MethodSource("firstHearingSummonsSpecifications")
     @ParameterizedTest
     public void shouldGenerateEnglishSummonsPayloadForFirstHearing(final SummonsCode summonsCode, final boolean isYouth, final int numberOfDocuments) {
+        final boolean sendForRemotePrinting =  !summonsSuppressed;
+
+        //Given
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase(FIRST_HEARING);
+        final JsonObject summonsDataPreparedAsJsonObject = objectToJsonObjectConverter.convert(summonsDataPrepared);
+        final ProsecutionCase prosecutionCase = getProsecutionCase(InitiationCode.S, summonsCode);
+        final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+        final Optional<JsonObject> optionalCase = of(createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).build());
+        final Optional<JsonObject> courtCentreJson = getCourtCentreJson(false);
+        final SummonsProsecutor summonsProsecutor = getSummonsProsecutor();
+        final Optional<LjaDetails> ljaDetails = getLjaDetails();
+        final String defendantTemplateName = randomAlphabetic(15);
+        final String parentGuardianTemplateName = randomAlphabetic(15);
+        final SummonsDocumentContent defendantTemplatePayload = getDefendantTemplatePayload(isYouth);
+
+        when(envelope.payloadAsJsonObject()).thenReturn(summonsDataPreparedAsJsonObject);
+
+        when(progressionService.getProsecutionCaseDetailById(envelope, CASE_ID.toString())).thenReturn(optionalCase);
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
+        when(summonsService.getLjaDetails(envelope, LJA_CODE)).thenReturn(ljaDetails);
+        when(summonsService.getProsecutor(eq(envelope), eq(prosecutionCaseIdentifier))).thenReturn(summonsProsecutor);
+        when(summonsTemplateNameService.getCaseSummonsTemplateName(FIRST_HEARING, summonsCode, false)).thenReturn(defendantTemplateName);
+        when(caseDefendantSummonsService.generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor))).thenReturn(defendantTemplatePayload);
+        when(summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), any(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), anyBoolean(), any(UUID.class), eq(FIRST_HEARING))).thenReturn(of(EMAIL_CHANNEL));
+
+        summonsDataPreparedEventProcessor.requestSummons(envelope);
+
+        //When
+        verify(progressionService).getProsecutionCaseDetailById(envelope, CASE_ID.toString());
+        verify(referenceDataService).getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester);
+        verify(summonsService).getLjaDetails(envelope, LJA_CODE);
+        verify(summonsService).getProsecutor(eq(envelope), eq(prosecutionCaseIdentifier));
+        verify(summonsTemplateNameService).getCaseSummonsTemplateName(FIRST_HEARING, summonsCode, false);
+        verify(caseDefendantSummonsService).generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor));
+        verify(publishSummonsDocumentService).generateCaseSummonsCourtDocument(eq(envelope), eq(DEFENDANT_ID), eq(CASE_ID), eq(defendantTemplatePayload), eq(defendantTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), notNull(UUID.class));
+        verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), eq(defendantTemplatePayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), any(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), eq(isYouth), any(UUID.class), eq(FIRST_HEARING));
+
+        // verification for parent document (if applicable)
+        if (numberOfDocuments > 1) {
+            verify(summonsTemplateNameService).getCaseSummonsParentTemplateName(false);
+            verify(publishSummonsDocumentService).generateCaseSummonsCourtDocument(eq(envelope), eq(DEFENDANT_ID), eq(CASE_ID), parentSummonsDocumentContentArgumentCaptor.capture(), eq(parentGuardianTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), any(UUID.class));
+            final SummonsDocumentContent parentDocumentPayload = parentSummonsDocumentContentArgumentCaptor.getValue();
+            verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendantParent(any(SummonsDataPrepared.class), eq(parentDocumentPayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), anyList(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), any(UUID.class), eq(FIRST_HEARING));
+            assertThat(parentDocumentPayload.getAddressee(), notNullValue());
+            assertThat(parentDocumentPayload.getAddressee().getName(), is("parent first name parent middle name parent last name"));
+            assertThat(parentDocumentPayload.getAddressee().getAddress().getLine1(), is("parent address 1"));
+        }
+
+        verifyNoMoreInteractions(progressionService, referenceDataService, summonsService, summonsTemplateNameService, caseDefendantSummonsService, publishSummonsDocumentService, summonsNotificationEmailPayloadService);
+    }
+
+    @MethodSource("firstHearingSummonsSpecificationsForYouth")
+    @ParameterizedTest
+    public void shouldGenerateEnglishSummonsPayloadForFirstHearingForYouth(final SummonsCode summonsCode, final boolean isYouth, final int numberOfDocuments) {
         verifySummonsPayloadGeneratedForCaseSummons(InitiationCode.S, FIRST_HEARING, summonsCode, false, isYouth, numberOfDocuments, !summonsSuppressed);
     }
 
@@ -216,25 +275,264 @@ public class SummonsDataPreparedEventProcessorTest {
     @MethodSource("firstHearingSummonsSpecifications")
     @ParameterizedTest
     public void shouldGenerateBilingualSummonsPayloadForFirstHearing(final SummonsCode summonsCode, final boolean isYouth, final int numberOfDocuments) {
+        final boolean sendForRemotePrinting =  !summonsSuppressed;
+
+        //Given
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase(FIRST_HEARING);
+        final JsonObject summonsDataPreparedAsJsonObject = objectToJsonObjectConverter.convert(summonsDataPrepared);
+        final ProsecutionCase prosecutionCase = getProsecutionCase(InitiationCode.S, summonsCode);
+        final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+        final Optional<JsonObject> optionalCase = of(createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).build());
+        final Optional<JsonObject> courtCentreJson = getCourtCentreJson(false);
+        final SummonsProsecutor summonsProsecutor = getSummonsProsecutor();
+        final Optional<LjaDetails> ljaDetails = getLjaDetails();
+        final String defendantTemplateName = randomAlphabetic(15);
+        final String parentGuardianTemplateName = randomAlphabetic(15);
+        final SummonsDocumentContent defendantTemplatePayload = getDefendantTemplatePayload(isYouth);
+
+        when(envelope.payloadAsJsonObject()).thenReturn(summonsDataPreparedAsJsonObject);
+
+        when(progressionService.getProsecutionCaseDetailById(envelope, CASE_ID.toString())).thenReturn(optionalCase);
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
+        when(summonsService.getLjaDetails(envelope, LJA_CODE)).thenReturn(ljaDetails);
+        when(summonsService.getProsecutor(eq(envelope), eq(prosecutionCaseIdentifier))).thenReturn(summonsProsecutor);
+        when(summonsTemplateNameService.getCaseSummonsTemplateName(FIRST_HEARING, summonsCode, false)).thenReturn(defendantTemplateName);
+        when(caseDefendantSummonsService.generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor))).thenReturn(defendantTemplatePayload);
+        when(summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), any(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), anyBoolean(), any(UUID.class), eq(FIRST_HEARING))).thenReturn(of(EMAIL_CHANNEL));
+
+        summonsDataPreparedEventProcessor.requestSummons(envelope);
+
+        //When
+        verify(progressionService).getProsecutionCaseDetailById(envelope, CASE_ID.toString());
+        verify(referenceDataService).getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester);
+        verify(summonsService).getLjaDetails(envelope, LJA_CODE);
+        verify(summonsService).getProsecutor(eq(envelope), eq(prosecutionCaseIdentifier));
+        verify(summonsTemplateNameService).getCaseSummonsTemplateName(FIRST_HEARING, summonsCode, false);
+        verify(caseDefendantSummonsService).generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor));
+        verify(publishSummonsDocumentService).generateCaseSummonsCourtDocument(eq(envelope), eq(DEFENDANT_ID), eq(CASE_ID), eq(defendantTemplatePayload), eq(defendantTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), notNull(UUID.class));
+        verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), eq(defendantTemplatePayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), any(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), eq(isYouth), any(UUID.class), eq(FIRST_HEARING));
+
+        // verification for parent document (if applicable)
+        if (numberOfDocuments > 1) {
+            verify(summonsTemplateNameService).getCaseSummonsParentTemplateName(false);
+            verify(publishSummonsDocumentService).generateCaseSummonsCourtDocument(eq(envelope), eq(DEFENDANT_ID), eq(CASE_ID), parentSummonsDocumentContentArgumentCaptor.capture(), eq(parentGuardianTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), any(UUID.class));
+            final SummonsDocumentContent parentDocumentPayload = parentSummonsDocumentContentArgumentCaptor.getValue();
+            verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendantParent(any(SummonsDataPrepared.class), eq(parentDocumentPayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), anyList(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), any(UUID.class), eq(FIRST_HEARING));
+            assertThat(parentDocumentPayload.getAddressee(), notNullValue());
+            assertThat(parentDocumentPayload.getAddressee().getName(), is("parent first name parent middle name parent last name"));
+            assertThat(parentDocumentPayload.getAddressee().getAddress().getLine1(), is("parent address 1"));
+        }
+
+        verifyNoMoreInteractions(progressionService, referenceDataService, summonsService, summonsTemplateNameService, caseDefendantSummonsService, publishSummonsDocumentService, summonsNotificationEmailPayloadService);
+    }
+
+    @MethodSource("firstHearingSummonsSpecificationsForYouth")
+    @ParameterizedTest
+    public void shouldGenerateBilingualSummonsPayloadForFirstHearingForYouth(final SummonsCode summonsCode, final boolean isYouth, final int numberOfDocuments) {
         verifySummonsPayloadGeneratedForCaseSummons(InitiationCode.S, FIRST_HEARING, summonsCode, true, isYouth, numberOfDocuments, !summonsSuppressed);
     }
 
     @MethodSource("sjpReferralSummonsSpecifications")
     @ParameterizedTest
     public void shouldGenerateEnglishSummonsForSjpReferral(final boolean isYouth, final int numberOfDocuments) {
-        verifySummonsPayloadGeneratedForCaseSummons(InitiationCode.J, SJP_REFERRAL, null, false, isYouth, numberOfDocuments, true);
+        boolean sendForRemotePrinting = true;
+        //Given
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase(SJP_REFERRAL);
+        final JsonObject summonsDataPreparedAsJsonObject = objectToJsonObjectConverter.convert(summonsDataPrepared);
+        final ProsecutionCase prosecutionCase = getProsecutionCase(InitiationCode.J, null);
+        final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+        final Optional<JsonObject> optionalCase = of(createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).build());
+        final Optional<JsonObject> courtCentreJson = getCourtCentreJson(false);
+        final SummonsProsecutor summonsProsecutor = getSummonsProsecutor();
+        final Optional<LjaDetails> ljaDetails = getLjaDetails();
+        final String defendantTemplateName = randomAlphabetic(15);
+        final String parentGuardianTemplateName = randomAlphabetic(15);
+        final SummonsDocumentContent defendantTemplatePayload = getDefendantTemplatePayload(isYouth);
+
+        when(envelope.payloadAsJsonObject()).thenReturn(summonsDataPreparedAsJsonObject);
+
+        when(progressionService.getProsecutionCaseDetailById(envelope, CASE_ID.toString())).thenReturn(optionalCase);
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
+        when(summonsService.getLjaDetails(envelope, LJA_CODE)).thenReturn(ljaDetails);
+        when(summonsService.getProsecutor(eq(envelope), eq(prosecutionCaseIdentifier))).thenReturn(summonsProsecutor);
+        when(summonsTemplateNameService.getCaseSummonsTemplateName(SJP_REFERRAL, null, false)).thenReturn(defendantTemplateName);
+        when(caseDefendantSummonsService.generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor))).thenReturn(defendantTemplatePayload);
+        when(summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), any(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), anyBoolean(), any(UUID.class), eq(SJP_REFERRAL))).thenReturn(of(EMAIL_CHANNEL));
+
+        summonsDataPreparedEventProcessor.requestSummons(envelope);
+
+        //When
+        verify(progressionService).getProsecutionCaseDetailById(envelope, CASE_ID.toString());
+        verify(referenceDataService).getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester);
+        verify(summonsService).getLjaDetails(envelope, LJA_CODE);
+        verify(summonsService).getProsecutor(eq(envelope), eq(prosecutionCaseIdentifier));
+        verify(summonsTemplateNameService).getCaseSummonsTemplateName(SJP_REFERRAL, null, false);
+        verify(caseDefendantSummonsService).generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor));
+        verify(publishSummonsDocumentService).generateCaseSummonsCourtDocument(eq(envelope), eq(DEFENDANT_ID), eq(CASE_ID), eq(defendantTemplatePayload), eq(defendantTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), notNull(UUID.class));
+        verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), eq(defendantTemplatePayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), any(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), eq(isYouth), any(UUID.class), eq(SJP_REFERRAL));
+
+        // verification for parent document (if applicable)
+        if (numberOfDocuments > 1) {
+            verify(summonsTemplateNameService).getCaseSummonsParentTemplateName(false);
+            verify(publishSummonsDocumentService).generateCaseSummonsCourtDocument(eq(envelope), eq(DEFENDANT_ID), eq(CASE_ID), parentSummonsDocumentContentArgumentCaptor.capture(), eq(parentGuardianTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), any(UUID.class));
+            final SummonsDocumentContent parentDocumentPayload = parentSummonsDocumentContentArgumentCaptor.getValue();
+            verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendantParent(any(SummonsDataPrepared.class), eq(parentDocumentPayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), anyList(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), any(UUID.class), eq(SJP_REFERRAL));
+            assertThat(parentDocumentPayload.getAddressee(), notNullValue());
+            assertThat(parentDocumentPayload.getAddressee().getName(), is("parent first name parent middle name parent last name"));
+            assertThat(parentDocumentPayload.getAddressee().getAddress().getLine1(), is("parent address 1"));
+        }
+
+        verifyNoMoreInteractions(progressionService, referenceDataService, summonsService, summonsTemplateNameService, caseDefendantSummonsService, publishSummonsDocumentService, summonsNotificationEmailPayloadService);
     }
 
     @MethodSource("sjpReferralSummonsSpecifications")
     @ParameterizedTest
     public void shouldGenerateBilingualSummonsForSjpReferral(final boolean isYouth, final int numberOfDocuments) {
-        verifySummonsPayloadGeneratedForCaseSummons(InitiationCode.J, SJP_REFERRAL, null, true, isYouth, numberOfDocuments, true);
+        final boolean sendForRemotePrinting = true;
+        //Given
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForCase(SJP_REFERRAL);
+        final JsonObject summonsDataPreparedAsJsonObject = objectToJsonObjectConverter.convert(summonsDataPrepared);
+        final ProsecutionCase prosecutionCase = getProsecutionCase(InitiationCode.J, null);
+        final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+        final Optional<JsonObject> optionalCase = of(createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).build());
+        final Optional<JsonObject> courtCentreJson = getCourtCentreJson(false);
+        final SummonsProsecutor summonsProsecutor = getSummonsProsecutor();
+        final Optional<LjaDetails> ljaDetails = getLjaDetails();
+        final String defendantTemplateName = randomAlphabetic(15);
+        final String parentGuardianTemplateName = randomAlphabetic(15);
+        final SummonsDocumentContent defendantTemplatePayload = getDefendantTemplatePayload(isYouth);
+
+        when(envelope.payloadAsJsonObject()).thenReturn(summonsDataPreparedAsJsonObject);
+
+        when(progressionService.getProsecutionCaseDetailById(envelope, CASE_ID.toString())).thenReturn(optionalCase);
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
+        when(summonsService.getLjaDetails(envelope, LJA_CODE)).thenReturn(ljaDetails);
+        when(summonsService.getProsecutor(eq(envelope), eq(prosecutionCaseIdentifier))).thenReturn(summonsProsecutor);
+        when(summonsTemplateNameService.getCaseSummonsTemplateName(SJP_REFERRAL, null, false)).thenReturn(defendantTemplateName);
+        when(caseDefendantSummonsService.generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor))).thenReturn(defendantTemplatePayload);
+        when(summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), any(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), anyBoolean(), any(UUID.class), eq(SJP_REFERRAL))).thenReturn(of(EMAIL_CHANNEL));
+
+        summonsDataPreparedEventProcessor.requestSummons(envelope);
+
+        //When
+        verify(progressionService).getProsecutionCaseDetailById(envelope, CASE_ID.toString());
+        verify(referenceDataService).getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester);
+        verify(summonsService).getLjaDetails(envelope, LJA_CODE);
+        verify(summonsService).getProsecutor(eq(envelope), eq(prosecutionCaseIdentifier));
+        verify(summonsTemplateNameService).getCaseSummonsTemplateName(SJP_REFERRAL, null, false);
+        verify(caseDefendantSummonsService).generateSummonsPayloadForDefendant(eq(envelope), any(SummonsDataPrepared.class), any(ProsecutionCase.class), any(Defendant.class), any(ListDefendantRequest.class), eq(courtCentreJson.get()), eq(ljaDetails), eq(summonsProsecutor));
+        verify(publishSummonsDocumentService).generateCaseSummonsCourtDocument(eq(envelope), eq(DEFENDANT_ID), eq(CASE_ID), eq(defendantTemplatePayload), eq(defendantTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), notNull(UUID.class));
+        verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendant(any(SummonsDataPrepared.class), eq(defendantTemplatePayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), any(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), eq(isYouth), any(UUID.class), eq(SJP_REFERRAL));
+
+        // verification for parent document (if applicable)
+        if (numberOfDocuments > 1) {
+            verify(summonsTemplateNameService).getCaseSummonsParentTemplateName(false);
+            verify(publishSummonsDocumentService).generateCaseSummonsCourtDocument(eq(envelope), eq(DEFENDANT_ID), eq(CASE_ID), parentSummonsDocumentContentArgumentCaptor.capture(), eq(parentGuardianTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), any(UUID.class));
+            final SummonsDocumentContent parentDocumentPayload = parentSummonsDocumentContentArgumentCaptor.getValue();
+            verify(summonsNotificationEmailPayloadService).getEmailChannelForCaseDefendantParent(any(SummonsDataPrepared.class), eq(parentDocumentPayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), anyList(), any(Defendant.class), anyList(), eq(sendForRemotePrinting), any(UUID.class), eq(SJP_REFERRAL));
+            assertThat(parentDocumentPayload.getAddressee(), notNullValue());
+            assertThat(parentDocumentPayload.getAddressee().getName(), is("parent first name parent middle name parent last name"));
+            assertThat(parentDocumentPayload.getAddressee().getAddress().getLine1(), is("parent address 1"));
+        }
+
+        verifyNoMoreInteractions(progressionService, referenceDataService, summonsService, summonsTemplateNameService, caseDefendantSummonsService, publishSummonsDocumentService, summonsNotificationEmailPayloadService);
     }
 
     @MethodSource("applicationSummonsSpecifications")
     @ParameterizedTest
     public void shouldGenerateEnglishSummonsForApplications(final SummonsType summonsRequired, final boolean isYouth, final int numberOfDocuments) {
-        verifySummonsPayloadGeneratedForApplications(summonsRequired, true, isYouth, numberOfDocuments, !summonsSuppressed);
+        final boolean sendForRemotePrinting = !summonsSuppressed;
+        //Given
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication(summonsRequired);
+        final JsonObject summonsDataPreparedAsJsonObject = objectToJsonObjectConverter.convert(summonsDataPrepared);
+        final Optional<JsonObject> optionalApplication = of(createObjectBuilder().add("courtApplication", objectToJsonObjectConverter.convert(getCourtApplication())).build());
+        final Optional<JsonObject> courtCentreJson = getCourtCentreJson(false);
+        final Optional<LjaDetails> ljaDetails = getLjaDetails();
+        final String subjectTemplateName = randomAlphabetic(15);
+        final String parentGuardianTemplateName = randomAlphabetic(15);
+        final SummonsDocumentContent subjectTemplatePayload = getDefendantTemplatePayload(isYouth);
+
+        when(envelope.payloadAsJsonObject()).thenReturn(summonsDataPreparedAsJsonObject);
+
+        when(progressionService.getCourtApplicationById(envelope, APPLICATION_ID.toString())).thenReturn(optionalApplication);
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
+        when(summonsService.getLjaDetails(envelope, LJA_CODE)).thenReturn(ljaDetails);
+        when(summonsTemplateNameService.getApplicationTemplateName(summonsRequired, false)).thenReturn(subjectTemplateName);
+        when(applicationSummonsService.generateSummonsDocumentContent(any(SummonsDataPrepared.class), any(CourtApplication.class), any(CourtApplicationPartyListingNeeds.class), eq(courtCentreJson.get()), eq(ljaDetails))).thenReturn(subjectTemplatePayload);
+        when(summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddressee(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), eq(sendForRemotePrinting), anyBoolean(), any(UUID.class), eq(summonsRequired))).thenReturn(of(EMAIL_CHANNEL));
+
+        summonsDataPreparedEventProcessor.requestSummons(envelope);
+
+        //When
+        verify(progressionService).getCourtApplicationById(envelope, APPLICATION_ID.toString());
+        verify(referenceDataService).getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester);
+        verify(summonsService).getLjaDetails(envelope, LJA_CODE);
+        verify(summonsTemplateNameService).getApplicationTemplateName(summonsRequired, false);
+        verify(applicationSummonsService).generateSummonsDocumentContent(any(SummonsDataPrepared.class), any(CourtApplication.class), any(CourtApplicationPartyListingNeeds.class), eq(courtCentreJson.get()), eq(ljaDetails));
+        verify(publishSummonsDocumentService).generateApplicationSummonsCourtDocument(eq(envelope), eq(APPLICATION_ID), eq(subjectTemplatePayload), eq(subjectTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), notNull(UUID.class));
+        verify(summonsNotificationEmailPayloadService).getEmailChannelForApplicationAddressee(any(SummonsDataPrepared.class), eq(subjectTemplatePayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), eq(sendForRemotePrinting), eq(isYouth), any(UUID.class), eq(summonsRequired));
+
+        // verification for parent document (if applicable)
+        if (numberOfDocuments > 1) {
+            verify(summonsTemplateNameService).getBreachSummonsParentTemplateName(false);
+            verify(publishSummonsDocumentService).generateApplicationSummonsCourtDocument(eq(envelope), eq(APPLICATION_ID), parentSummonsDocumentContentArgumentCaptor.capture(), eq(parentGuardianTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), notNull(UUID.class));
+            final SummonsDocumentContent parentDocumentPayload = parentSummonsDocumentContentArgumentCaptor.getValue();
+            verify(summonsNotificationEmailPayloadService).getEmailChannelForApplicationAddresseeParent(any(SummonsDataPrepared.class), eq(parentDocumentPayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), eq(sendForRemotePrinting), any(UUID.class), eq(summonsRequired));
+            assertThat(parentDocumentPayload.getAddressee(), notNullValue());
+            assertThat(parentDocumentPayload.getAddressee().getName(), is("parent first name parent middle name parent last name"));
+            assertThat(parentDocumentPayload.getAddressee().getAddress().getLine1(), is("parent address 1"));
+
+        }
+
+        verifyNoMoreInteractions(progressionService, referenceDataService, summonsService, summonsTemplateNameService, caseDefendantSummonsService, publishSummonsDocumentService, summonsNotificationEmailPayloadService);
+    }
+
+    @MethodSource("applicationSummonsSpecificationsForYouth")
+    @ParameterizedTest
+    public void shouldGenerateEnglishSummonsForApplicationsForYouth(final SummonsType summonsRequired, final boolean isYouth, final int numberOfDocuments) {
+        final boolean sendForRemotePrinting = !summonsSuppressed;
+
+        //Given
+        final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication(summonsRequired);
+        final JsonObject summonsDataPreparedAsJsonObject = objectToJsonObjectConverter.convert(summonsDataPrepared);
+        final Optional<JsonObject> optionalApplication = of(createObjectBuilder().add("courtApplication", objectToJsonObjectConverter.convert(getCourtApplication())).build());
+        final Optional<JsonObject> courtCentreJson = getCourtCentreJson(false);
+        final Optional<LjaDetails> ljaDetails = getLjaDetails();
+        final String subjectTemplateName = randomAlphabetic(15);
+        final String parentGuardianTemplateName = randomAlphabetic(15);
+        final SummonsDocumentContent subjectTemplatePayload = getDefendantTemplatePayload(isYouth);
+
+        when(envelope.payloadAsJsonObject()).thenReturn(summonsDataPreparedAsJsonObject);
+
+        when(progressionService.getCourtApplicationById(envelope, APPLICATION_ID.toString())).thenReturn(optionalApplication);
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester)).thenReturn(courtCentreJson);
+        when(summonsService.getLjaDetails(envelope, LJA_CODE)).thenReturn(ljaDetails);
+        when(summonsTemplateNameService.getApplicationTemplateName(summonsRequired, false)).thenReturn(subjectTemplateName);
+        when(applicationSummonsService.generateSummonsDocumentContent(any(SummonsDataPrepared.class), any(CourtApplication.class), any(CourtApplicationPartyListingNeeds.class), eq(courtCentreJson.get()), eq(ljaDetails))).thenReturn(subjectTemplatePayload);
+        when(summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddressee(any(SummonsDataPrepared.class), any(SummonsDocumentContent.class), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), eq(sendForRemotePrinting), anyBoolean(), any(UUID.class), eq(summonsRequired))).thenReturn(of(EMAIL_CHANNEL));
+
+        summonsDataPreparedEventProcessor.requestSummons(envelope);
+
+        //When
+        verify(progressionService).getCourtApplicationById(envelope, APPLICATION_ID.toString());
+        verify(referenceDataService).getCourtCentreWithCourtRoomsById(COURT_CENTRE_ID, envelope, requester);
+        verify(summonsService).getLjaDetails(envelope, LJA_CODE);
+        verify(summonsTemplateNameService).getApplicationTemplateName(summonsRequired, false);
+        verify(applicationSummonsService).generateSummonsDocumentContent(any(SummonsDataPrepared.class), any(CourtApplication.class), any(CourtApplicationPartyListingNeeds.class), eq(courtCentreJson.get()), eq(ljaDetails));
+        verify(publishSummonsDocumentService).generateApplicationSummonsCourtDocument(eq(envelope), eq(APPLICATION_ID), eq(subjectTemplatePayload), eq(subjectTemplateName), eq(sendForRemotePrinting), any(), notNull(UUID.class));
+        verify(summonsNotificationEmailPayloadService).getEmailChannelForApplicationAddressee(any(SummonsDataPrepared.class), eq(subjectTemplatePayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), eq(sendForRemotePrinting), eq(isYouth), any(UUID.class), eq(summonsRequired));
+
+        // verification for parent document (if applicable)
+        if (numberOfDocuments > 1) {
+            verify(summonsTemplateNameService).getBreachSummonsParentTemplateName(false);
+            verify(publishSummonsDocumentService).generateApplicationSummonsCourtDocument(eq(envelope), eq(APPLICATION_ID), parentSummonsDocumentContentArgumentCaptor.capture(), eq(parentGuardianTemplateName), eq(sendForRemotePrinting), eq(EMAIL_CHANNEL), notNull(UUID.class));
+            final SummonsDocumentContent parentDocumentPayload = parentSummonsDocumentContentArgumentCaptor.getValue();
+            verify(summonsNotificationEmailPayloadService).getEmailChannelForApplicationAddresseeParent(any(SummonsDataPrepared.class), eq(parentDocumentPayload), eq(SUMMONS_APPROVED_EMAIL_ADDRESS), eq(sendForRemotePrinting), any(UUID.class), eq(summonsRequired));
+            assertThat(parentDocumentPayload.getAddressee(), notNullValue());
+            assertThat(parentDocumentPayload.getAddressee().getName(), is("parent first name parent middle name parent last name"));
+            assertThat(parentDocumentPayload.getAddressee().getAddress().getLine1(), is("parent address 1"));
+
+        }
     }
 
     public void verifySummonsPayloadGeneratedForCaseSummons(final InitiationCode initiationCode, final SummonsType summonsRequired, final SummonsCode summonsCode, final boolean isWelsh, final boolean isYouth, final int numberOfDocuments, final boolean sendForRemotePrinting) {

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.command.rules;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.quality.Strictness.LENIENT;
@@ -39,9 +40,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.slf4j.Logger;
 
-// FIXME!!! Temporarily using lenient strictness to get this
-// context running with junit 5. This test really needs re-writing.
-@MockitoSettings(strictness = LENIENT)
 @ExtendWith(MockitoExtension.class)
 public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlTest {
 
@@ -71,7 +69,7 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         Arrays.stream(ProgressionRules.values()).forEach(ruleTest -> {
             action = createActionFor(ruleTest.actionName);
             when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, ruleTest.allowedUserGroups)).thenReturn(true);
-            when(rbacProvider.isLoggedInUserAllowedToUploadDocument(action)).thenReturn(true);
+            lenient().when(rbacProvider.isLoggedInUserAllowedToUploadDocument(action)).thenReturn(true);
             final ExecutionResults executionResults = executeRulesWith(action);
             assertSuccessfulOutcome(executionResults);
             verify(userAndGroupProvider).isMemberOfAnyOfTheSuppliedGroups(action, ruleTest.allowedUserGroups);
@@ -95,7 +93,7 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
 
         Arrays.stream(ProgressionPermissions.values()).forEach(ruleTest -> {
             action = createActionFor(ruleTest.actionName);
-            when(userAndGroupProvider.hasPermission(action, ruleTest.allowedPermissions)).thenReturn(true);
+            lenient().when(userAndGroupProvider.hasPermission(action, ruleTest.allowedPermissions)).thenReturn(true);
             final ExecutionResults executionResults = executeRulesWith(action);
             assertSuccessfulOutcome(executionResults);
             verify(userAndGroupProvider).hasPermission(action, ruleTest.allowedPermissions);

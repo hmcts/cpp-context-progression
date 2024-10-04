@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.command.api.accesscontrol;
 
-import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.command.api.accesscontrol.TestRuleConstants.getAddDefendantActionGroups;
 
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
@@ -28,7 +28,7 @@ public class AddDefendantTest extends BaseDroolsAccessControlTest {
     @Test
     public void shouldAllowUserInAuthorisedGroupToAddDefendant() {
         final Action action = createActionFor(PROGRESSION_COMMAND_ADD_DEFENDANT);
-        lenient().when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getAddDefendantActionGroups())).thenReturn(true);
+        when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getAddDefendantActionGroups())).thenReturn(true);
         final ExecutionResults results = executeRulesWith(action);
         assertSuccessfulOutcome(results);
     }

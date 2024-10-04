@@ -39,10 +39,8 @@ import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"squid:S1607", "squid:S2925"})

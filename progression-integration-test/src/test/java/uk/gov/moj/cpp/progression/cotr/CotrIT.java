@@ -55,6 +55,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollFo
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
@@ -94,7 +95,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.PolarQuestion;
 import uk.gov.moj.cpp.progression.command.ServeProsecutionCotr;
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
-import uk.gov.moj.cpp.progression.helper.CpsServeHelper;
 import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.DefenceStub;
 import uk.gov.moj.cpp.progression.stub.DirectionsManagementStub;
@@ -186,7 +186,6 @@ public class CotrIT {
 
     private static final JmsMessageConsumerClient consumerForPetFormCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-created").getMessageConsumerClient();
     private static final JmsMessageConsumerClient publicEventConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient publicCotrConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.cotr-created").getMessageConsumerClient();
     private static final JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.cps-prosecutor-updated").getMessageConsumerClient();
     private static final JmsMessageConsumerClient caseProsecutorUpdatedPrivateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.case-cps-prosecutor-updated").getMessageConsumerClient();
     private String caseId;
@@ -667,8 +666,6 @@ public class CotrIT {
     @Test
     public void shouldCreateServetCpsCotrForm() throws IOException {
 
-        final CpsServeHelper cpsServeHelper = new CpsServeHelper();
-
         //given
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         //when
@@ -692,9 +689,9 @@ public class CotrIT {
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_COTR_SUBMITTED, randomUUID()), cpsServeCotrSubmittedPublicEvent);
         messageProducerClientPublic.sendMessage(PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_COTR_SUBMITTED, publicEventEnvelope);
 
-        assertThat(cpsServeHelper.getPrivateEventsCotrCreatedConsumer(), is(notNullValue()));
-        assertThat(cpsServeHelper.getPrivateEventsCotrServedConsumer(), is(notNullValue()));
-        final JsonEnvelope publicEvent = cpsServeHelper.getPublicEventsCotrCreatedConsumer();
+        assertThat(getPrivateEventsCotrCreatedConsumer(), is(notNullValue()));
+        assertThat(getPrivateEventsCotrServedConsumer(), is(notNullValue()));
+        final JsonEnvelope publicEvent = getPublicEventsCotrCreatedConsumer();
         assertThat(publicEvent, is(notNullValue()));
         assertThat(publicEvent.payloadAsJsonObject(), notNullValue());
 
@@ -710,8 +707,6 @@ public class CotrIT {
 
     @Test
     public void shouldUpdateServetCpsCotrForm() throws IOException {
-
-        final CpsServeHelper cpsServeHelper = new CpsServeHelper();
 
         //given
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
@@ -738,7 +733,7 @@ public class CotrIT {
         messageProducerClientPublic.sendMessage(PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_COTR_SUBMITTED, publicEventEnvelope);
 
         verifyInMessagingQueueForCotrCreated();
-        final JsonEnvelope jsonCotrCreatedEnvelope = cpsServeHelper.getPrivateEventsCotrCreatedConsumer();
+        final JsonEnvelope jsonCotrCreatedEnvelope = getPrivateEventsCotrCreatedConsumer();
         assertThat(jsonCotrCreatedEnvelope, is(notNullValue()));
         final JsonObject privatePayload = jsonCotrCreatedEnvelope.payloadAsJsonObject();
         final String submissionId = privatePayload.getString("submissionId");
@@ -748,8 +743,8 @@ public class CotrIT {
         final JsonEnvelope publicEventUpdateEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_PROSECUTIONCASEFILE_CPS_UPDATE_COTR_SUBMITTED, randomUUID()), cpsServeCotrUpdatePublicEvent);
         messageProducerClientPublic.sendMessage(PUBLIC_PROSECUTIONCASEFILE_CPS_UPDATE_COTR_SUBMITTED, publicEventUpdateEnvelope);
 
-        assertThat(cpsServeHelper.getPrivateEventsCotrServedConsumer(), is(notNullValue()));
-        final JsonEnvelope publicEvent = cpsServeHelper.getPublicEventsCotrServedConsumer();
+        assertThat(getPrivateEventsCotrServedConsumer(), is(notNullValue()));
+        final JsonEnvelope publicEvent = getPublicEventsCotrServedConsumer();
         assertThat(publicEvent, is(notNullValue()));
         final JsonObject eventPayload = publicEvent.payloadAsJsonObject();
         assertThat(eventPayload, notNullValue());
@@ -764,7 +759,8 @@ public class CotrIT {
         final String inputEvent = getPayload("stub-data/cps-serve-cotr-submitted.json")
                 .replace("%CASE_ID%", caseId)
                 .replace("%DEFENDANT_ID%", defendantId)
-                .replace("%CPS_DEFENDANT_ID%", cpsDefendantId);
+                .replace("%CPS_DEFENDANT_ID%", cpsDefendantId)
+                .replace("%SUBMISSION_ID%", randomUUID().toString());
 
 
         final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
@@ -783,7 +779,7 @@ public class CotrIT {
     }
 
     private void verifyInMessagingQueueForCotrCreated() {
-        final Optional<JsonObject> message = retrieveMessageBody(publicCotrConsumer);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForPublicForCotrCreated);
         assertTrue(message.isPresent());
     }
 
@@ -791,5 +787,21 @@ public class CotrIT {
     private void verifyInMessagingQueueForProsecutionCaseCreated() {
         final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumer);
         assertTrue(message.isPresent());
+    }
+
+    public JsonEnvelope getPrivateEventsCotrCreatedConsumer() {
+        return retrieveMessage(consumerForCotrCreated).orElse(null);
+    }
+
+    public JsonEnvelope getPublicEventsCotrCreatedConsumer() {
+        return retrieveMessage(consumerForPublicForCotrCreated).orElse(null);
+    }
+
+    public JsonEnvelope getPrivateEventsCotrServedConsumer() {
+        return retrieveMessage(consumerForServeProsecutionCotrCreated).orElse(null);
+    }
+
+    public JsonEnvelope getPublicEventsCotrServedConsumer() {
+        return retrieveMessage(consumerForPublicServeProsecutionCotrCreated).orElse(null);
     }
 }

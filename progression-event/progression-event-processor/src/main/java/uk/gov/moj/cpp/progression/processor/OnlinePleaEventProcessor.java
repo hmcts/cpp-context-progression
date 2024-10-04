@@ -307,9 +307,11 @@ public class OnlinePleaEventProcessor {
         ofNullable(pleadOnline.getLegalEntityFinancialMeans()).ifPresent(financialMeans -> {
             builder.add(OUTSTANDING_FINES, financialMeans.getOutstandingFines())
                     .add(FINANCIAL_DETAILS, true)
-                    .add(EMPLOYEES, financialMeans.getNumberOfEmployees())
                     .add(GROSS_TURNOVER, financialMeans.getGrossTurnover())
                     .add(NET_TURNOVER, financialMeans.getNetTurnover());
+            if(nonNull(financialMeans.getNumberOfEmployees())){
+                builder.add(EMPLOYEES, financialMeans.getNumberOfEmployees());
+            }
             ofNullable(financialMeans.getTradingMoreThan12Months()).ifPresent(tradingMoreThan12Months -> builder.add(TRADING, tradingMoreThan12Months.toString()));
         });
 

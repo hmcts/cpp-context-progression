@@ -48,7 +48,6 @@ import com.jayway.jsonpath.Filter;
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +87,6 @@ public class CPSNotificationIT extends AbstractIT {
         stubGetOrganisationDetails(ORGANISATION_ID, ORGANISATION_NAME);
     }
 
-    @Disabled("Will be fixed as part of CPI-353")
     @Test
     public void shouldNotifyCPS() throws Exception {
 
@@ -104,7 +102,7 @@ public class CPSNotificationIT extends AbstractIT {
         // Instruct
         final JsonObject recordInstructedPublicEvent =
                 getInstructedJsonObject(PUBLIC_DEFENCE_RECORD_INSTRUCTED_FILE, caseId, hearingId, defendantId, courtCentreId, courtCentreName);
-
+        Thread.sleep(1000*5);
         final JsonEnvelope publicEventInstructedEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_DEFENCE_RECORD_INSTRUCTED, userId), recordInstructedPublicEvent);
         messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_RECORD_INSTRUCTED, publicEventInstructedEnvelope);
 

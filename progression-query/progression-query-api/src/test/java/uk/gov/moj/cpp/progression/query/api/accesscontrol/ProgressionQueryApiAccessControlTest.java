@@ -10,7 +10,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.quality.Strictness.LENIENT;
 
 import uk.gov.justice.api.resource.service.CourtDocumentProvider;
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
@@ -31,11 +30,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
 
-// FIXME!!! Temporarily using lenient strictness to get this
-// context running with junit 5. This test really needs re-writing.
-@MockitoSettings(strictness = LENIENT)
 @ExtendWith(MockitoExtension.class)
 public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessControlTest {
 
@@ -327,8 +322,8 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
 
     private void assertFailureOutcomeOnActionForTheSuppliedGroups(final String actionName, final String... groupNames) {
         final Action action = createActionFor(actionName);
-        given(this.userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, groupNames))
-                .willReturn(false);
+   /*     given(this.userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, groupNames))
+                .willReturn(false);*/
 
         assertFailureOutcome(executeRulesWith(action));
 
