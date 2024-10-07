@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.domain.constant.OnlinePleaNotificationType.COMPANY_FINANCE_DATA;
 import static uk.gov.moj.cpp.progression.domain.constant.OnlinePleaNotificationType.COMPANY_ONLINE_PLEA;
 import static uk.gov.moj.cpp.progression.domain.constant.OnlinePleaNotificationType.INDIVIDUAL_FINANCE_DATA;
@@ -48,7 +47,8 @@ import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -254,5 +254,32 @@ public class OnlinePleaEventProcessorTest {
         onlinePleaEventProcessor.processOnlinePleaMaterialUploadRequest(event);
 
         verify(materialService).uploadMaterial(fileId, materialId, systemUserId);
+    }
+
+    @Test
+    public void shouldGenerateCompanyFinanceDocumentWhenLegalEntityFinancialMeansIsNotPresent() throws FileServiceException {
+
+        final PleadOnline legalEntityDefendantPleadOnline1 = new JsonObjectToObjectConverter(objectMapper).convert(getPayload("legal-entity-defendant-online-plea-payload1.json"), PleadOnline.class);
+        final FinanceDocumentForOnlinePleaSubmitted pleaDocumentForOnlinePleaSubmitted = FinanceDocumentForOnlinePleaSubmitted.financeDocumentForOnlinePleaSubmitted()
+                .withCaseId(caseId)
+                .withPleadOnline(legalEntityDefendantPleadOnline1)
+                .withDateOfPlea(DATE_FORMATTER.format(LocalDate.now()))
+                .withTimeOfPlea(TIME_FORMATTER.format(LocalTime.now()))
+                .build();
+
+        final JsonObject jsonObject = objectToJsonObjectConverter.convert(pleaDocumentForOnlinePleaSubmitted);
+
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID(FINANCE_DOCUMENT_FOR_ONLINE_PLEA_SUBMITTED),
+                jsonObject);
+
+        when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
+
+        onlinePleaEventProcessor.generateFinanceOnlinePleaDocument(requestMessage);
+
+        verify(fileStorer).store(filestorerMetadata.capture(), any(ByteArrayInputStream.class));
+        ArgumentCaptor<Envelope> captor = ArgumentCaptor.forClass(Envelope.class);
+        verify(sender).sendAsAdmin(captor.capture());
+        assertCommonProps(captor, COMPANY_FINANCE_DATA.getDescription(), COMPANY_FINANCE_DATA.getDescription(), caseId, fileId);
     }
 }

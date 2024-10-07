@@ -9,7 +9,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
@@ -46,7 +49,6 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -149,12 +151,28 @@ public class RemoveCaseFromGroupCasesHandlerTest {
 
         assertThat(groupCaseAggregate.getMemberCases().size(), is(3));
         assertThat(groupCaseAggregate.getGroupMaster(), is(CASE3_ID));
-        when(eventSource.getStreamById(GROUP_ID)).thenReturn(groupEventStream);
-        when(aggregateService.get(groupEventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
-        when(eventSource.getStreamById(CASE3_ID)).thenReturn(caseEventStream3);
-        when(aggregateService.get(caseEventStream3, CaseAggregate.class)).thenReturn(caseAggregate3);
-        when(eventSource.getStreamById(CASE2_ID)).thenReturn(caseEventStream2);
-        when(aggregateService.get(caseEventStream2, CaseAggregate.class)).thenReturn(caseAggregate2);
+
+        lenient().when(aggregateService.get(groupEventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
+        lenient().when(aggregateService.get(caseEventStream1, CaseAggregate.class)).thenReturn(caseAggregate1);
+        lenient().when(aggregateService.get(caseEventStream2, CaseAggregate.class)).thenReturn(caseAggregate2);
+        lenient().when(aggregateService.get(caseEventStream3, CaseAggregate.class)).thenReturn(caseAggregate3);
+        lenient().when(aggregateService.get(caseEventStream4, CaseAggregate.class)).thenReturn(caseAggregate4);
+
+        when(eventSource.getStreamById(any(UUID.class))).thenAnswer(invoke -> {
+            final UUID caseId = invoke.getArgument(0, UUID.class);
+            if (GROUP_ID.equals(caseId)) {
+                return groupEventStream;
+            } else if (CASE1_ID.equals(caseId)) {
+                return caseEventStream1;
+            } else if (CASE2_ID.equals(caseId)) {
+                return caseEventStream2;
+            } else if (CASE3_ID.equals(caseId)) {
+                return caseEventStream3;
+            } else if (CASE4_ID.equals(caseId)) {
+                return caseEventStream4;
+            }
+            return groupEventStream;
+        });
 
         handler.handle(createRemoveCaseFromGroupCases(GROUP_ID, CASE3_ID));
 
@@ -194,6 +212,7 @@ public class RemoveCaseFromGroupCasesHandlerTest {
         handler.handle(createRemoveCaseFromGroupCases(GROUP_ID, CASE1_ID));
 
         verifyLastCaseToBeRemovedFromGroupCasesRejectedEventCreated(GROUP_ID, CASE1_ID);
+        verifyNoMoreInteractions(caseEventStream1, caseEventStream2, caseEventStream3, caseEventStream4);
         assertThat(groupCaseAggregate.getMemberCases().size(), is(1));
         assertThat(groupCaseAggregate.getGroupMaster(), is(CASE1_ID));
     }
