@@ -191,7 +191,7 @@ public class HearingNotificationHelper {
     }
 
     public void addCourtDocument(final JsonEnvelope jsonEnvelope, final UUID caseId, final UUID materialId, final String fileName) {
-        LOGGER.info("Adding court document with caseId : {}, materialId : {} , fileName : {}", caseId, materialId, fileName);
+        LOGGER.info("2047 Adding court document with caseId : {}, materialId : {} , fileName : {}", caseId, materialId, fileName);
         final CourtDocument courtDocument = buildCourtDocument(caseId, materialId, fileName);
         final JsonObject jsonObject = createObjectBuilder()
                 .add("materialId", materialId.toString())

@@ -49,7 +49,7 @@ public class NotificationNotifyEventProcessor {
     private static final String NOTIFICATION_ID = "notificationId";
     private static final String MATERIAL_ID = "materialId";
     private static final String COMPLETED_AT = "completedAt";
-    private static final String EMAIL_DOCUMENT_TEMPLATE_NAME = "EmailNotification";
+    private static final String EMAIL_DOCUMENT_TEMPLATE_NAME = "HearingEmailNotification";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSS");
 
     @Inject
@@ -113,7 +113,8 @@ public class NotificationNotifyEventProcessor {
 
         final Optional<SystemIdMapping> systemIdMapping = systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString());
 
-        logger.info(format("received public.notificationnotify.events.notification-sent with metadata originator as : %s", event.metadata().asJsonObject().getString(SOURCE)));
+        logger.info(format("2047 received public.notificationnotify.events.notification-sent with metadata originator as : %s", event.metadata().asJsonObject().getString(SOURCE)));
+        logger.info("2047 received public.notificationnotify.events.notification-sent with PAYLOAD : {}", event.payloadAsJsonObject());
         if (event.metadata().asJsonObject().containsKey(SOURCE) && SourceType.EMAIL.toString().equalsIgnoreCase(event.metadata().asJsonObject().getString(SOURCE))) {
             generateAndAddEmailDocument(event);
         }
@@ -150,7 +151,7 @@ public class NotificationNotifyEventProcessor {
         final UUID caseId = UUID.fromString(emailDocumentJson.getString(CASE_ID));
         final String recipientType = emailDocumentJson.getString("recipientType");
 
-        logger.info("payload received in generateAndAddEmailDocument {}", emailDocumentJson);
+        logger.info("2047 payload received in generateAndAddEmailDocument {}", emailDocumentJson);
         try {
             final UUID materialId = randomUUID();
             final String fileName = format("Email notification of hearing %s %s copy", formatter.format(LocalDateTime.now()), recipientType);
