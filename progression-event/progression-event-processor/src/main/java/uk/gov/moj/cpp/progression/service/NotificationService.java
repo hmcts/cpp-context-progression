@@ -24,6 +24,7 @@ import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DefendantSubject;
 import uk.gov.justice.core.courts.EventNotification;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -72,6 +73,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -645,6 +647,14 @@ public class NotificationService {
         } else {
             emailAddressOptional.ifPresent(emailAddress -> sendEmail(event, notificationId, null, postalNotificationDetails.getCourtApplication().getId(), null, Collections.singletonList(buildEmailChannel(emailAddress, postalNotificationDetails.getCourtApplication().getApplicationReference(), postalNotificationDetails.getCourtApplication().getType().getType(), postalNotificationDetails.getCourtApplication().getType().getLegislation(), postalNotificationDetails.getHearingDate(), postalNotificationDetails.getHearingTime(), ofNullable(postalNotificationDetails.getCourtCentre()).map(CourtCentre::getName).orElse(EMPTY), ofNullable(postalNotificationDetails.getCourtCentre()).map(CourtCentre::getAddress).orElse(null), materialUrl))));
 
+            emailAddressOptional.ifPresent(email -> {
+                final CourtDocument courtDocument = postalService.courtDocument(postalNotificationDetails.getCourtApplication().getId(), materialId, event, null);
+                final JsonObject courtDocumentPayload = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+
+                LOGGER.info("creating court document payload - {}", courtDocumentPayload);
+
+                sender.send(enveloper.withMetadataFrom(event, PostalService.PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).apply(courtDocumentPayload));
+            });
 
             addressOptional.ifPresent(address -> {
                 // send postal notification only if email notification was not sent.

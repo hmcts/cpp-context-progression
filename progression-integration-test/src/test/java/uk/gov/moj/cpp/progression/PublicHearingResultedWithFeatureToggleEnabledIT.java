@@ -61,7 +61,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableMap;
@@ -767,7 +770,33 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         pollProsecutionCasesProgressionFor(caseId, personDefendantOffenceUpdatedMatchers);
 
     }
+    @Test
+    public void shouldSendLAAConcludedEventWithOffencesWhenConsecutiveHearingResultedForSingleOffenceWithNoJudiciaryResults() throws Exception {
+        final String offenceId1 = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
+        final String offenceId2 = "4789ab16-0bb7-4ef1-87ef-c936bf0364f1";
 
+        final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
+
+        addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+
+        Consumer<String> resultHearingWithJudiciaryResult = (offenceId) -> {
+            final JsonObject hearingConfirmedJson = getHearingJsonObject("public.events.hearing.hearing-resulted-with-one-offence-without-judical-results.json", caseId, hearingId, defendantId, newCourtCentreId, newCourtCentreName, reportingRestrictionId, "2021-03-29",s -> s.replace("OFFENCE_ID1", offenceId));
+
+            final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_EVENTS_HEARING_HEARING_RESULTED, userId), hearingConfirmedJson);
+
+            messageProducerClientPublic.sendMessage(PUBLIC_EVENTS_HEARING_HEARING_RESULTED, publicEventEnvelope);
+                doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+                verifyInMessagingQueueForHearingResultedPrivateEvent();
+                verifyInMessagingQueueForProsecutionCasesResultedV2PrivateEvent();
+                verifyInMessagingQueueForProceedingConcludedPrivateEventWithOffences(1);
+
+        };
+        resultHearingWithJudiciaryResult.accept(offenceId1);
+        resultHearingWithJudiciaryResult.accept(offenceId2);
+    }
     @Test
     public void whenDefendantJudicialResultWithFinalCategoryIsPresentAtDefendantLevel() throws Exception {
 
@@ -928,6 +957,22 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
                                             final String defendantId, final String courtCentreId, final String courtCentreName,
+                                            final String reportingRestrictionId, final String orderedDate, Function<String, String> payloadModifier) {
+        final String payload = getPayload(path)
+                .replaceAll("CASE_ID", caseId)
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("DEFENDANT_ID", defendantId)
+                .replaceAll("COURT_CENTRE_ID", courtCentreId)
+                .replaceAll("COURT_CENTRE_NAME", courtCentreName)
+                .replaceAll("ORDERED_DATE", orderedDate)
+                .replaceAll("REPORTING_RESTRICTION_ID", reportingRestrictionId);
+        String modifiedPayload = payloadModifier.apply(payload);
+
+        return stringToJsonObjectConverter.convert(modifiedPayload);
+    }
+
+    private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
+                                            final String defendantId, final String courtCentreId, final String courtCentreName,
                                             final String reportingRestrictionId, final String orderedDate) {
         final String payload = getPayload(path)
                 .replaceAll("CASE_ID", caseId)
@@ -1010,6 +1055,18 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         assertThat(defendantArray.size(), is(1));
         HashMap map = defendantArray.get(0);
         assertThat(map.get("proceedingsConcluded"), Matchers.is(true));
+    }
+
+    private void verifyInMessagingQueueForProceedingConcludedPrivateEventWithOffences(int noOfOffences) {
+
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProceedingConcludedPrivateEvent);
+        Assert.assertTrue(message.isPresent());
+        final JsonObject proceedingConcludedEvent = message.get();
+        final JsonArray defendantArray = proceedingConcludedEvent.getJsonArray("defendants");
+        assertThat(defendantArray.size(), is(1));
+        final JsonObject defendantObject = defendantArray.getJsonObject(0);
+        final JsonArray offences = defendantObject.getJsonArray("offences");
+        assertThat(offences.size(), is(noOfOffences));
     }
 
     private void verifyInMessagingQueueForProceedingConcludedResentPrivateEvent() {

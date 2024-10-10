@@ -60,7 +60,7 @@ public class DefendantLegalAidStatusUpdatedProcessorTest {
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
 
         //When
-        this.eventProcessor.handleDefendantLegalAidStatusUpdated(envelope);
+        this.eventProcessor.handleDefendantLegalAidStatusUpdatedV2(envelope);
 
         //Then
         verify(sender).send(finalEnvelope);

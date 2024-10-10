@@ -34,7 +34,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseOffencesUpdated;
 import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.core.courts.ReceiveRepresentationOrderForDefendant;
 import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
-import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdated;
+import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdatedV2;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -115,7 +115,7 @@ public class ReceiveRepresentationOrderHandlerTest {
             DefendantDefenceOrganisationChanged.class,
             DefendantDefenceOrganisationAssociated.class,
             DefendantDefenceOrganisationDisassociated.class,
-            DefendantLegalaidStatusUpdated.class,
+            DefendantLegalaidStatusUpdatedV2.class,
             DefendantLaaAssociated.class,
             DefendantDefenceAssociationLocked.class,
             ProsecutionCaseDefendantUpdated.class,

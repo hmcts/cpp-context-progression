@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/progression/courts/defendant-legalaid-status-updated.json",
+  "id": "http://justice.gov.uk/progression/courts/defendant-legalaid-status-updated-v2.json",
   "type": "object",
   "properties": {
     "defendantId": {

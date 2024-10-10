@@ -180,7 +180,7 @@ import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.CaseRetentionLengthCalculated;
 import uk.gov.justice.progression.courts.CustodyTimeLimitExtended;
-import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdated;
+import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdatedV2;
 import uk.gov.justice.progression.courts.DefendantsAndListingHearingRequestsStored;
 import uk.gov.justice.progression.courts.HearingDeletedForProsecutionCase;
 import uk.gov.justice.progression.courts.HearingEventLogsDocumentCreated;
@@ -1559,9 +1559,10 @@ public class CaseAggregate implements Aggregate {
         });
 
         if (isNotEmpty(defendantListForProceedingsConcludedEventTrigger)) {
+            final UUID resultedHearingId = hearingId != null ? hearingId : latestHearingId;
             streamBuilder.add(laaDefendantProceedingConcludedChanged()
                     .withDefendants(defendantListForProceedingsConcludedEventTrigger)
-                    .withHearingId(latestHearingId)
+                    .withHearingId(resultedHearingId)
                     .withProsecutionCaseId(prosecutionCase.getId())
                     .build());
         }
@@ -1978,10 +1979,11 @@ public class CaseAggregate implements Aggregate {
                         .withLegalAidStatus(legalAidStatus)
                         .withProsecutionCaseId(prosecutionCaseId)
                         .build();
-                final DefendantLegalaidStatusUpdated defendantLegalaidStatusUpdated = DefendantLegalaidStatusUpdated.defendantLegalaidStatusUpdated() //Not used on listener
+                final DefendantLegalaidStatusUpdatedV2 defendantLegalaidStatusUpdated = DefendantLegalaidStatusUpdatedV2.defendantLegalaidStatusUpdatedV2() //Not used on listener
                         .withCaseId(prosecutionCaseId)
                         .withDefendantId(defendantId)
                         .withLegalAidStatus(legalAidStatus)
+                        .withLaaContractNumber(laaReference.getLaaContractNumber())
                         .build();
 
                 final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper.getOffencesForDefendantUpdated(Arrays.asList(updatedOffence), offencesList, prosecutionCaseId, defendantId);
@@ -2038,10 +2040,11 @@ public class CaseAggregate implements Aggregate {
                 updatedOffenceList.add(updatedOffence);
             }
             final String legalAidStatus = getDefendantLevelLegalStatus(updatedOffenceList);
-            final DefendantLegalaidStatusUpdated defendantLegalaidStatusUpdated = DefendantLegalaidStatusUpdated.defendantLegalaidStatusUpdated()
+            final DefendantLegalaidStatusUpdatedV2 defendantLegalaidStatusUpdated = DefendantLegalaidStatusUpdatedV2.defendantLegalaidStatusUpdatedV2()
                     .withCaseId(prosecutionCaseId)
                     .withDefendantId(defendantId)
                     .withLegalAidStatus(legalAidStatus)
+                    .withLaaContractNumber(laaReference.getLaaContractNumber())
                     .build();
             final DefendantCaseOffences newDefendantCaseOffences = DefendantCaseOffences.defendantCaseOffences()
                     .withOffences(updatedOffenceList)
@@ -2909,6 +2912,9 @@ public class CaseAggregate implements Aggregate {
 
     private void onHearingRemovedForProsecutionCase(final HearingRemovedForProsecutionCase hearingRemovedForProsecutionCase) {
         this.hearingIds.remove(hearingRemovedForProsecutionCase.getHearingId());
+        if(hearingRemovedForProsecutionCase.getHearingId().equals(latestHearingId)) {
+            latestHearingId = null;
+        }
     }
 
     private void onCustodyTimeLimitExtended(final CustodyTimeLimitExtended custodyTimeLimitExtended) {

@@ -513,6 +513,15 @@ rule "Query - API - progression.search.court.list"
     $outcome.setSuccess(true);
 end
 
+rule "Query - API - progression.search.prison.court.list"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.search.prison.court.list");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Prison Admin", "Listing Officers", "Legal Advisers", "Court Clerks", "CTSC Admin", "Operational Delivery Admin"));
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Command - Rule for query pet"
   when
     $outcome: Outcome();

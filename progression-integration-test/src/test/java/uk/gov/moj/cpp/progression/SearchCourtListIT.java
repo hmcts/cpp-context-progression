@@ -29,4 +29,10 @@ public class SearchCourtListIT extends AbstractIT {
         assertThat(documentContentResponse, equalTo(DOCUMENT_TEXT));
     }
 
+    @Test
+    public void shouldCreatePrisonCourtList() {
+        final String documentContentResponse = pollForResponse("/courtlist?courtCentreId=f8254db1-1683-483e-afb3-b87fde5a0a26&startDate=2022-07-12&endDate=2022-07-12&_=bc9153c0-8278-494e-8f72-d63973bab35f", "application/vnd.progression.search.prison.court.list+json");
+        assertThat(documentContentResponse, equalTo(DOCUMENT_TEXT));
+    }
+
 }

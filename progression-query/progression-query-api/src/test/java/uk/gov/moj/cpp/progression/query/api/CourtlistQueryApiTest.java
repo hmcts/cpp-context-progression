@@ -34,4 +34,10 @@ public class CourtlistQueryApiTest {
         when(courtlistQueryView.searchCourtlist(query)).thenReturn(response);
         assertThat(courtListQueryApi.searchCourtlist(query), equalTo(response));
     }
+
+    @Test
+    public void shouldHandlePrisonCourtListQuery() {
+        when(courtlistQueryView.searchPrisonCourtlist(query)).thenReturn(response);
+        assertThat(courtListQueryApi.searchPrisonCourtlist(query), equalTo(response));
+    }
 }

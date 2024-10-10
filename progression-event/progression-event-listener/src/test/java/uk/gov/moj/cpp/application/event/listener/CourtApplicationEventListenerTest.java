@@ -341,6 +341,89 @@ public class CourtApplicationEventListenerTest {
         assertEquals(ApplicationStatus.EJECTED.name(), hearingNode.path(COURT_APPLICATIONS).get(0).path(APPLICATION_STATUS).asText(), "Check if the application status is ejected");
     }
 
+
+
+    @Test
+    public void shouldHandleCourtApplicationAddedToCaseEventWihCaseURNAndCourtOrderForSameCase() {
+        final UUID applicationId = randomUUID();
+        final UUID caseId = randomUUID();
+        final CourtApplicationEntity persistedEntity = new CourtApplicationEntity();
+        persistedEntity.setApplicationId(applicationId);
+        persistedEntity.setPayload(payload.toString());
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withCourtApplicationCases(
+                        singletonList(
+                                CourtApplicationCase.courtApplicationCase()
+                                        .withProsecutionCaseId(caseId)
+                                        .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                                                .withCaseURN("CaseURN")
+                                                .build())
+                                        .build()
+                        )
+                )
+                .withCourtOrder(CourtOrder.courtOrder().withId(randomUUID())
+                        .withOrderingCourt(CourtCentre.courtCentre().withId(randomUUID()).build())
+                        .withCourtOrderOffences(singletonList(courtOrderOffence().withOffence(offence().build())
+                                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withProsecutionAuthorityReference("CaseURN").build())
+                                .withProsecutionCaseId(caseId)
+                                .build()))
+                        .build())
+                .build();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CourtApplicationAddedToCase.class))
+                .thenReturn(courtApplicationAddedToCase);
+        when(courtApplicationAddedToCase.getCourtApplication()).thenReturn(courtApplication);
+        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+
+        eventListener.processCourtApplicationAddedToCase(envelope);
+
+        verify(courtApplicationCaseRepository, times(1)).save(courtApplicationCaseArgumentCaptor.capture());
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = courtApplicationCaseArgumentCaptor.getValue();
+        assertThat(courtApplicationCaseEntity.getCaseReference(), is("CaseURN"));
+    }
+
+    @Test
+    public void shouldHandleCourtApplicationAddedToCaseEventWihCaseURNAndCourtOrderForDifferentCase() {
+        final UUID applicationId = randomUUID();
+        final UUID caseId = randomUUID();
+        final CourtApplicationEntity persistedEntity = new CourtApplicationEntity();
+        persistedEntity.setApplicationId(applicationId);
+        persistedEntity.setPayload(payload.toString());
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withCourtApplicationCases(
+                        singletonList(
+                                CourtApplicationCase.courtApplicationCase()
+                                        .withProsecutionCaseId(caseId)
+                                        .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                                                .withCaseURN("CaseURN")
+                                                .build())
+                                        .build()
+                        )
+                )
+                .withCourtOrder(CourtOrder.courtOrder().withId(randomUUID())
+                        .withOrderingCourt(CourtCentre.courtCentre().withId(randomUUID()).build())
+                        .withCourtOrderOffences(singletonList(courtOrderOffence().withOffence(offence().build())
+                                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withProsecutionAuthorityReference("CaseURN").build())
+                                .withProsecutionCaseId(randomUUID())
+                                .build()))
+                        .build())
+                .build();
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CourtApplicationAddedToCase.class))
+                .thenReturn(courtApplicationAddedToCase);
+        when(courtApplicationAddedToCase.getCourtApplication()).thenReturn(courtApplication);
+        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+
+        eventListener.processCourtApplicationAddedToCase(envelope);
+
+        verify(courtApplicationCaseRepository, times(2)).save(courtApplicationCaseArgumentCaptor.capture());
+        final CourtApplicationCaseEntity courtApplicationCaseEntity = courtApplicationCaseArgumentCaptor.getValue();
+        assertThat(courtApplicationCaseEntity.getCaseReference(), is("CaseURN"));
+    }
     @Test
     public void shouldHandleCourtApplicationAddedToCaseEventWihCaseURN() {
         final UUID applicationId = randomUUID();

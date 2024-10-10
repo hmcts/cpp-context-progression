@@ -187,8 +187,8 @@ subscriptions_descriptor:
 
           ############  Association End ############
 
-        - name: progression.event.defendant-legalaid-status-updated
-          schema_uri: http://justice.gov.uk/progression/courts/defendant-legalaid-status-updated.json
+        - name: progression.event.defendant-legalaid-status-updated-v2
+          schema_uri: http://justice.gov.uk/progression/courts/defendant-legalaid-status-updated-v2.json
 
         - name: progression.event.hearing-resulted-case-updated
           schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-case-updated.json

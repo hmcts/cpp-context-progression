@@ -570,6 +570,15 @@ public class HearingResultHelperTest {
     }
 
     @Test
+    public void shouldReturnFalseForApplicationContainsNoNextHearingWhenIsAmended() {
+        final Hearing hearing = buildHearingWithCourtApplications(
+                emptyList(),
+                asList(buildCourtApplicationsWithNoNextHearingJudicialResults(PROSECUTION_CASE_ID_1, true)));
+
+        assertThat(HearingResultHelper.doHearingContainNewOrAmendedNextHearingResults(hearing), is(false));
+    }
+
+    @Test
     public void shouldReturnFalseWhenFirstTimeResult(){
         final Hearing hearing = buildHearingWithCourtApplications(
                 asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
@@ -795,6 +804,13 @@ public class HearingResultHelperTest {
         return CourtApplication.courtApplication()
                 .withId(caseId)
                 .withJudicialResults(asList(buildRelatedNextHearingJudicialResultWithAmendmentAs(buildNextHearing(HEARING_ID_1), isNewAmendment)))
+                .build();
+    }
+
+    private CourtApplication buildCourtApplicationsWithNoNextHearingJudicialResults(final UUID caseId, final boolean isNewAmendment) {
+        return CourtApplication.courtApplication()
+                .withId(caseId)
+                .withJudicialResults(asList(buildRelatedNextHearingJudicialResultWithAmendmentAs(null, isNewAmendment)))
                 .build();
     }
 

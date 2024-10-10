@@ -6,6 +6,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_DISPOSITION;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,6 +21,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource.COURT_LIST_QUERY_NAME;
 import static uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource.PDF_DISPOSITION;
+import static uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource.PRISON_COURT_LIST;
 import static uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource.WORD_DISPOSITION;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -203,6 +205,14 @@ public class DefaultQueryApiCourtlistResourceTest {
     public void shouldOverrideGeneratedDefaultAdapterClass() {
         assertThat(defaultQueryApiCourtlistResource.getClass().getName(),
                 is("uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource"));
+    }
+
+    @Test
+    public void shouldErrorWhenCourtListCalledForPrisonList() {
+        final Response courtlistResponse = defaultQueryApiCourtlistResource
+                .getCourtlist(courtCentreId.toString(), courtRoomId.toString(), PRISON_COURT_LIST,
+                        startDate, endDate, false, userId);
+        assertThat(courtlistResponse.getStatus(), is(FORBIDDEN.getStatusCode()));
     }
 
     private void verifyInterceptorChainExecution() {
