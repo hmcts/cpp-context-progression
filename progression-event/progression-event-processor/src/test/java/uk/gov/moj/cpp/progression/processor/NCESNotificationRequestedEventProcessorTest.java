@@ -24,9 +24,7 @@ import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -73,9 +71,6 @@ public class NCESNotificationRequestedEventProcessorTest {
                 this.jsonObjectToObjectConverter,this.materialUrlGenerator, this.notificationService , this.applicationParameters
         );
     }
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void shouldGenerateNowAndStoreInFileStore()  {

@@ -25,10 +25,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.rules.ExpectedException;
 
 import org.mockito.InjectMocks;import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;

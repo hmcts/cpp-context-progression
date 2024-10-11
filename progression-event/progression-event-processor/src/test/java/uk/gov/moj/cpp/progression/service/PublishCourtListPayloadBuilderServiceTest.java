@@ -38,6 +38,7 @@ import uk.gov.moj.cpp.progression.service.payloads.AssociatedDefenceOrganisation
 import uk.gov.moj.cpp.progression.service.payloads.PublishCourtListPayload;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -384,6 +385,8 @@ public class PublishCourtListPayloadBuilderServiceTest {
 
     @Test
     public void shouldPrepareDocumentPayloadForDefenceOrganisationAndProsecutorWhenWeekCommencingCourtListIsPublishedForMultipleHearings() throws Exception {
+        System.out.println("---------------------------------");
+        System.out.println(Locale.getDefault());
         final JsonEnvelope envelope = prepareEnvelope();
         final JsonObject courtCentreWithCourtRooms = prepareCourtCentreWithCourtRooms();
         final AssociatedDefenceOrganisation defenceOrganisation1 = prepareDefenceOrganisation1();
