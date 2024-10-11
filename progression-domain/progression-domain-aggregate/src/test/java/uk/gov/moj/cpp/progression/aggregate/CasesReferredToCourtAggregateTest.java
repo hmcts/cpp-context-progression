@@ -5,6 +5,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.core.courts.NextHearing.nextHearing;
 
+
+import java.util.UUID;
 import uk.gov.justice.core.courts.CasesReferredToCourt;
 import uk.gov.justice.core.courts.CourtProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtReferral;
@@ -49,6 +51,19 @@ public class CasesReferredToCourtAggregateTest {
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtProceedingsInitiated.class)));
+    }
+
+    @Test
+    public void shouldNotProcessInitiateCourtProceedingsItAlreadyInitiated(){
+        final CourtReferral courtReferral = CourtReferral.courtReferral().build();
+        List<Object> eventStream = aggregate.initiateCourtProceedings(courtReferral).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtProceedingsInitiated.class)));
+
+        eventStream = aggregate.initiateCourtProceedings(courtReferral).collect(toList());
+        assertThat(eventStream.size(), is(0));
     }
 
     @Test

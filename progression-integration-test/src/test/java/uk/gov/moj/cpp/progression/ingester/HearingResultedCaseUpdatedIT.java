@@ -125,15 +125,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
     }
 
-    private Matcher[] getDefendantUpdatedMatchers() {
-        return new Matcher[]{
-                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.prosecutionCase.caseStatus", equalTo(INACTIVE.getDescription())),
-                withJsonPath("$.prosecutionCase.defendants[0].proceedingsConcluded", equalTo(true)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].proceedingsConcluded", equalTo(true))
-
-        };
-    }
 
     private void verifyMessageReceivedInViewStore(final String caseStatus) {
         final Matcher[] matcher = {

@@ -1,0 +1,205 @@
+{
+  "hearings": [
+    {
+      "id": "034c36e7-a7be-44e3-9783-e827ae10d72b",
+      "type": {
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776",
+        "description": "First hearing"
+      },
+      "endDate": "2024-08-22",
+      "allocated": true,
+      "judiciary": [],
+      "startDate": "2024-08-22",
+      "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "hearingDays": [
+        {
+          "endTime": "2024-08-22T09:50:00.000Z",
+          "sequence": 0,
+          "startTime": "2024-08-22T09:30:00.000Z",
+          "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "hearingDate": "2024-08-22",
+          "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "durationMinutes": 20
+        }
+      ],
+      "listedCases": [
+        {
+          "id": "9234c0ef-f000-4b41-bd90-28c8c3fe4b9b",
+          "markers": [],
+          "defendants": [
+            {
+              "id": "e2d8868f-48c7-4dc8-8b6e-3a909d770fc6",
+              "address": {
+                "address1": "12",
+                "address2": "Woburn Road",
+                "address3": "Bedford",
+                "address4": "Bedfordshire",
+                "postcode": "MK40 1EG"
+              },
+              "isYouth": false,
+              "lastName": "Test2lm",
+              "offences": [
+                {
+                  "id": "3faf4cca-f391-458a-aae3-cd214745ca08",
+                  "count": 0,
+                  "startDate": "2023-12-06",
+                  "orderIndex": 1,
+                  "offenceCode": "RR84223",
+                  "shadowListed": false,
+                  "offenceWording": "Shoplifting at xyz",
+                  "statementOfOffence": {
+                    "title": "Exceed a 50 mph speed limit in contravention of a Local Traffic Order - automatic camera device",
+                    "welshTitle": "Gyrru'n gyflymach na'r terfyn cyflymder o 50 milltir yr awr yn groes i Orchymyn Traffig Lleol - dyfais camera awtomatig",
+                    "legislation": "Contrary to the above local traffic order and sections 84 and 89(1) of the Road Traffic Regulation Act 1984 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                    "welshLegislation": "Yn groes i'r Gorchymyn Traffig Lleol uchod, ac adrannau 84 ac 89 (1) Deddf Rheoleiddio Traffig Ffyrdd 1984 ac Atodlen 2 Deddf Tramgwyddwyr Traffig Ffyrdd 1988."
+                  },
+                  "restrictFromCourtList": false
+                }
+              ],
+              "firstName": "Test2 second Defdnant",
+              "bailStatus": {
+                "id": "12e69486-4d01-3403-a50a-7419ca040635",
+                "code": "C",
+                "description": "Custody"
+              },
+              "dateOfBirth": "1994-02-01",
+              "masterDefendantId": "e2d8868f-48c7-4dc8-8b6e-3a909d770fc6",
+              "hearingLanguageNeeds": "ENGLISH",
+              "restrictFromCourtList": false,
+              "courtProceedingsInitiated": "2024-08-21T16:10:34.013Z"
+            }
+          ],
+          "shadowListed": false,
+          "caseIdentifier": {
+            "authorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+            "authorityCode": "DERPF",
+            "caseReference": "AAC21170817"
+          },
+          "restrictFromCourtList": false
+        }
+      ],
+      "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "isSlotsBooked": false,
+      "nonDefaultDays": [
+        {
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "duration": 20,
+          "startTime": "2024-08-22T09:30:00.000Z",
+          "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26"
+        }
+      ],
+      "nonSittingDays": [],
+      "hearingLanguage": "ENGLISH",
+      "estimatedMinutes": 20,
+      "jurisdictionType": "MAGISTRATES",
+      "courtApplications": [],
+      "courtCentreDetails": {
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "defaultDuration": 420,
+        "defaultStartTime": "10:00:00"
+      },
+      "isGroupProceedings": false,
+      "numberOfGroupCases": 1
+    },
+    {
+      "id": "3afdad9f-f687-4e01-9f42-8264d62dbe08",
+      "type": {
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776",
+        "description": "First hearing"
+      },
+      "endDate": "2024-08-23",
+      "allocated": true,
+      "judiciary": [],
+      "startDate": "2024-08-23",
+      "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "hearingDays": [
+        {
+          "endTime": "2024-08-23T09:50:00.000Z",
+          "sequence": 0,
+          "startTime": "2024-08-23T09:30:00.000Z",
+          "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "hearingDate": "2024-08-23",
+          "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "durationMinutes": 20
+        }
+      ],
+      "listedCases": [
+        {
+          "id": "9234c0ef-f000-4b41-bd90-28c8c3fe4b9b",
+          "markers": [],
+          "defendants": [
+            {
+              "id": "d7b46ba0-1979-4b8e-a9d5-016956d0acd3",
+              "address": {
+                "address1": "12",
+                "address2": "Woburn Road",
+                "address3": "Bedford",
+                "address4": "Bedfordshire",
+                "postcode": "MK40 1EG"
+              },
+              "isYouth": false,
+              "lastName": "Test2lm",
+              "offences": [
+                {
+                  "id": "c3345922-47ba-4fab-99fb-43674cba0e4a",
+                  "count": 0,
+                  "startDate": "2023-12-06",
+                  "orderIndex": 1,
+                  "offenceCode": "RR84223",
+                  "shadowListed": false,
+                  "offenceWording": "Shoplifting at xyz",
+                  "statementOfOffence": {
+                    "title": "Exceed a 50 mph speed limit in contravention of a Local Traffic Order - automatic camera device",
+                    "welshTitle": "Gyrru'n gyflymach na'r terfyn cyflymder o 50 milltir yr awr yn groes i Orchymyn Traffig Lleol - dyfais camera awtomatig",
+                    "legislation": "Contrary to the above local traffic order and sections 84 and 89(1) of the Road Traffic Regulation Act 1984 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                    "welshLegislation": "Yn groes i'r Gorchymyn Traffig Lleol uchod, ac adrannau 84 ac 89 (1) Deddf Rheoleiddio Traffig Ffyrdd 1984 ac Atodlen 2 Deddf Tramgwyddwyr Traffig Ffyrdd 1988."
+                  },
+                  "restrictFromCourtList": false
+                }
+              ],
+              "firstName": "Test2 1st Defdnant",
+              "bailStatus": {
+                "id": "12e69486-4d01-3403-a50a-7419ca040635",
+                "code": "C",
+                "description": "Custody"
+              },
+              "dateOfBirth": "1996-02-01",
+              "masterDefendantId": "d7b46ba0-1979-4b8e-a9d5-016956d0acd3",
+              "hearingLanguageNeeds": "ENGLISH",
+              "restrictFromCourtList": false,
+              "courtProceedingsInitiated": "2024-08-21T16:12:44.989Z"
+            }
+          ],
+          "shadowListed": false,
+          "caseIdentifier": {
+            "authorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+            "authorityCode": "DERPF",
+            "caseReference": "AAC21170817"
+          },
+          "restrictFromCourtList": false
+        }
+      ],
+      "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "isSlotsBooked": false,
+      "nonDefaultDays": [
+        {
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "duration": 20,
+          "startTime": "2024-08-23T09:30:00.000Z",
+          "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26"
+        }
+      ],
+      "nonSittingDays": [],
+      "hearingLanguage": "ENGLISH",
+      "estimatedMinutes": 20,
+      "jurisdictionType": "MAGISTRATES",
+      "courtApplications": [],
+      "courtCentreDetails": {
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "defaultDuration": 420,
+        "defaultStartTime": "10:00:00"
+      },
+      "numberOfGroupCases": 1
+    }
+  ]
+}

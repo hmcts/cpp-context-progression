@@ -12,3 +12,12 @@ rule "Command - Rule for result hearing"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Rule for resulted hearing update"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.command.api-update-hearing-bdf");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"));
+  then
+    $outcome.setSuccess(true);
+end

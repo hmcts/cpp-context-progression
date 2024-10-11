@@ -253,6 +253,9 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.update-related-hearing+json:
           example: !include json/progression.command.update-related-hearing.json
           schema: !include json/schema/progression.command.update-related-hearing.json
+        application/vnd.progression.command.update-related-hearing-for-adhoc-hearing+json:
+          example: !include json/progression.command.update-related-hearing-for-adhoc-hearing.json
+          schema: !include json/schema/progression.command.update-related-hearing-for-adhoc-hearing.json
         application/vnd.progression.command.add-now-document-request+json:
           example:  !include json/progression.command.add-now-document-request.json
           schema: !include json/schema/progression.command.add-now-document-request.json
@@ -598,6 +601,15 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.handler.result-hearing-bdf+json:
             example: !include json/progression.command.handler.result-hearing-bdf.json
             schema: !include json/schema/progression.command.handler.result-hearing-bdf.json
+
+
+        application/vnd.progression.command.request-related-hearing-for-adhoc-hearing+json:
+#            example: !include json/progression.command.request-related-hearing-for-adhoc-hearing.json
+            schema: !include json/schema/progression.command.request-related-hearing-for-adhoc-hearing.json
+
+        application/vnd.progression.command.handler.update-hearing-bdf+json:
+            example: !include json/progression.command.handler.update-hearing-bdf.json
+            schema: !include json/schema/progression.command.handler.update-hearing-bdf.json
 
 
 # ***** Deprecated API - Start ********

@@ -361,6 +361,19 @@ public class PreAndPostConditionHelper {
                 payload);
     }
 
+    public static Response initiateCourtProceedingsWithUrn(final String caseId, final String defendantId, final String materialIdOne,
+                                                    final String materialIdTwo,
+                                                    final String referralId,
+                                                    final String listedStartDateTime, final String earliestStartDateTime, final String dob,
+                                                    final String urn,
+                                                           final String id) throws IOException {
+        return postCommand(getWriteUrl("/initiatecourtproceedings"),
+                "application/vnd.progression.initiate-court-proceedings+json",
+                getInitiateCourtProceedingsJsonBodyWithId(caseId, defendantId, materialIdOne, materialIdTwo, referralId, urn, listedStartDateTime, earliestStartDateTime, dob, id));
+
+    }
+
+
     public static Response initiateCourtProceedings(final String commandPayload) throws IOException {
         return postCommand(getWriteUrl("/initiatecourtproceedings"), "application/vnd.progression.initiate-court-proceedings+json", commandPayload);
 
@@ -900,6 +913,26 @@ public class PreAndPostConditionHelper {
 
     }
 
+    private static String getInitiateCourtProceedingsJsonFromResourceWithId(final String resourceLocation, final String caseId, final String defendantId, final String materialIdOne,
+                                                                      final String materialIdTwo,
+                                                                      final String referralId, final String caseUrn,
+                                                                      final String listedStartDateTime, final String earliestStartDateTime,
+                                                                      final String dob,
+                                                                            final String streamID) {
+        return getPayload(resourceLocation)
+                .replace("RANDOM_CASE_ID", caseId)
+                .replace("RANDOM_REFERENCE", caseUrn)
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId)
+                .replace("RANDOM_MATERIAL_ID_ONE", materialIdOne)
+                .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
+                .replace("RANDOM_REFERRAL_ID", referralId)
+                .replace("LISTED_START_DATE_TIME", listedStartDateTime)
+                .replace("EARLIEST_START_DATE_TIME", earliestStartDateTime)
+                .replace("DOB", dob)
+                .replace("STREAM_ID", streamID);
+
+    }
+
     private static String getInitiateCourtProceedingsJsonFromResource(final String resourceLocation, final String caseId, final String defendantId, final String defendantId2, final String materialIdOne,
                                                                       final String materialIdTwo,
                                                                       final String referralId, final String caseUrn,
@@ -989,6 +1022,17 @@ public class PreAndPostConditionHelper {
         return payload.toString();
     }
 
+
+    private static String getInitiateCourtProceedingsJsonBodyWithId(final String caseId, final String defendantId, final String materialIdOne,
+                                                              final String materialIdTwo,
+                                                              final String referralId, final String caseUrn,
+                                                              final String listedStartDateTime, final String earliestStartDateTime,
+                                                              final String dob,
+                                                                    final String streamId) {
+        return getInitiateCourtProceedingsJsonFromResourceWithId("progression.command.initiate-court-proceedings-with-id.json", caseId,
+                defendantId, materialIdOne, materialIdTwo, referralId, caseUrn, listedStartDateTime, earliestStartDateTime, dob, streamId);
+
+    }
 
     private static String getInitiateCourtProceedingsJsonBodyForDefendantMatching(final String caseId, final String defendantId, final String masterDefendantId, final String materialIdOne,
                                                                                   final String materialIdTwo,

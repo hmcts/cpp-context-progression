@@ -17,11 +17,23 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+
+import java.util.ArrayList;
+import java.util.Collections;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.HearingUpdatedProcessed;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.core.courts.SeedingHearing;
+import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
+import uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing;
 import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
+import uk.gov.justice.core.courts.UpdateRelatedHearingCommandForAdhocHearing;
+import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -58,10 +70,18 @@ public class RelatedHearingCommandHandlerTest {
     private AggregateService aggregateService;
 
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(RelatedHearingUpdated.class);
+    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(RelatedHearingUpdated.class, ProsecutionCaseDefendantListingStatusChangedV2.class,
+            RelatedHearingUpdatedForAdhocHearing.class, VejHearingPopulatedToProbationCaseworker.class, HearingPopulatedToProbationCaseworker.class);
 
     @InjectMocks
     private RelatedHearingCommandHandler relatedHearingCommandHandler;
+
+    private HearingAggregate hearingAggregate;
+
+    @BeforeEach
+    public void setup() {
+        hearingAggregate = new HearingAggregate();
+    }
 
     @Test
     public void shouldHandleCommand() {
@@ -115,6 +135,77 @@ public class RelatedHearingCommandHandlerTest {
         );
     }
 
+    @Test
+    public void shouldProcessAdhocHearingsCommandForProsecutionCase() throws Exception {
+
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID oldProsecutionCaseId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        hearingAggregate.apply(HearingUpdatedProcessed.hearingUpdatedProcessed()
+                .withHearing(Hearing.hearing()
+                        .withProsecutionCases(Collections.singletonList(ProsecutionCase.prosecutionCase()
+                                .withId(oldProsecutionCaseId)
+                                .withDefendants(Collections.singletonList(Defendant.defendant()
+                                        .withId(randomUUID())
+                                        .withOffences(Collections.singletonList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .build()))
+                                        .build()))
+                                .build()))
+                        .build()).build());
+        final UpdateRelatedHearingCommandForAdhocHearing command = createUpdateRelatedHearingCommandForAdhocHearing(hearingId, prosecutionCaseId, offenceId);
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-related-hearing-for-adhoc-hearing")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<UpdateRelatedHearingCommandForAdhocHearing> envelope = envelopeFrom(metadata, command);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+        relatedHearingCommandHandler.handleUpdateRelatedHearingCommandForAdhocHearing(envelope);
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.prosecutionCase-defendant-listing-status-changed-v2"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearing.id", is(hearingId.toString())),
+                                withJsonPath("$.hearing.prosecutionCases.length()", is(2)))
+                        )),
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.related-hearing-updated-for-adhoc-hearing"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearingRequest", notNullValue()),
+                                withJsonPath("$.hearingRequest.id", is(hearingId.toString())),
+                                withJsonPath("$.hearingRequest.prosecutionCases", notNullValue()),
+                                withJsonPath("$.hearingRequest.prosecutionCases.length()", is(2)),
+                                withJsonPath("$.sendNotificationToParties", is(true)))
+                        )),
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.events.hearing-populated-to-probation-caseworker"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearing.id", is(hearingId.toString())),
+                                withJsonPath("$.hearing.prosecutionCases", notNullValue()),
+                                withJsonPath("$.hearing.prosecutionCases.length()", is(2))
+                        ))),
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.events.vej-hearing-populated-to-probation-caseworker"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearing.id", is(hearingId.toString())),
+                                withJsonPath("$.hearing.prosecutionCases", notNullValue()),
+                                withJsonPath("$.hearing.prosecutionCases.length()", is(2))
+                        )))
+        ));
+    }
+
     private static UpdateRelatedHearingCommand createUpdateRelatedHearingCommand(final UUID hearingId, final UUID seedingHearingId, final UUID prosecutionCaseId, final UUID offenceId) {
 
         return UpdateRelatedHearingCommand.updateRelatedHearingCommand()
@@ -129,6 +220,30 @@ public class RelatedHearingCommandHandlerTest {
                                 .build()))
                         .build())
                 .withShadowListedOffences(Arrays.asList(offenceId))
+                .build();
+
+    }
+
+    private static UpdateRelatedHearingCommandForAdhocHearing createUpdateRelatedHearingCommandForAdhocHearing(final UUID hearingId, final UUID prosecutionCaseId, final UUID offenceId) {
+
+        final ArrayList cases = new ArrayList();
+        cases.add(ProsecutionCase.prosecutionCase()
+                .withId(prosecutionCaseId)
+                .withDefendants(Collections.singletonList(Defendant.defendant()
+                        .withId(randomUUID())
+                        .withOffences(Collections.singletonList(Offence.offence()
+                                .withId(randomUUID())
+                                .build()))
+                        .build()))
+                .build());
+        return UpdateRelatedHearingCommandForAdhocHearing.updateRelatedHearingCommandForAdhocHearing()
+                .withExtendedHearingFrom(randomUUID())
+                .withHearingRequest(HearingListingNeeds.hearingListingNeeds()
+                        .withId(hearingId)
+                        .withProsecutionCases(cases)
+                        .build())
+                .withShadowListedOffences(Arrays.asList(offenceId))
+                .withSendNotificationToParties(true)
                 .build();
 
     }

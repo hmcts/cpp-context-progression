@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/progression.command.api-update-hearing-bdf.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "offenceId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantCaseJudicialResults": {
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
+      }
+    },
+    "offenceJudicialResults": {
+      "description": "A record of any judicial decisions and results made against the defendant's offence on a given case",
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

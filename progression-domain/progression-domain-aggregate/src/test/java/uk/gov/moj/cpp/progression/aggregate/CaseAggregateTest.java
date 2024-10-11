@@ -25,6 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.Defendant.defendant;
@@ -6582,12 +6584,30 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldReceiveAssociateDefenceOrganisation() {
+    public void shouldReceiveAssociateDefenceOrganisationWithOrganisationAddressNotPassedAsEmptyObjectWhenOrganisationDetailsDoesNotHaveAddress() {
         caseAggregate.createProsecutionCase(prosecutionCase).collect(toList());
         final Stream<Object> eventStream = caseAggregate.receiveAssociateDefenceOrganisation("orgName", defendant.getId(), prosecutionCase.getId(), "LAANumber", ZonedDateTime.now(), "REPRESENTATION_ORDER", OrganisationDetails.newBuilder().build());
 
         final List events = eventStream.collect(toList());
         assertThat(events.get(0), instanceOf(DefendantDefenceOrganisationChanged.class));
+        assertNull(((DefendantDefenceOrganisationChanged)events.get(0)).getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getAddress());
+        assertNull(((DefendantDefenceOrganisationChanged)events.get(0)).getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getContact());
+        assertThat(events.get(1), instanceOf(DefenceOrganisationAssociatedByDefenceContext.class));
+    }
+
+    @Test
+    public void shouldReceiveAssociateDefenceOrganisationWithOrganisationAddressPassedAsEmptyObjectWhenOrganisationDetailsHaveAddress() {
+        caseAggregate.createProsecutionCase(prosecutionCase).collect(toList());
+        final Stream<Object> eventStream = caseAggregate.receiveAssociateDefenceOrganisation("orgName", defendant.getId(), prosecutionCase.getId(), "LAANumber", ZonedDateTime.now(), "REPRESENTATION_ORDER", OrganisationDetails.newBuilder()
+                .withAddressLine1("AddressLine1")
+                .withName("orgName")
+                .withLaaContractNumber("LAANumber")
+                .build());
+
+        final List events = eventStream.collect(toList());
+        assertThat(events.get(0), instanceOf(DefendantDefenceOrganisationChanged.class));
+        assertNotNull(((DefendantDefenceOrganisationChanged)events.get(0)).getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getAddress());
+        assertThat(((DefendantDefenceOrganisationChanged)events.get(0)).getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getAddress().getAddress1(), is("AddressLine1"));
         assertThat(events.get(1), instanceOf(DefenceOrganisationAssociatedByDefenceContext.class));
     }
 

@@ -1,0 +1,123 @@
+{
+  "defendants": [
+    {
+      "courtProceedingsInitiated": "2024-08-21T19:44:46.550Z",
+      "id": "1a8e0012-6656-47ea-b4ee-50cc10f5aad1",
+      "initiationCode": "C",
+      "isYouth": false,
+      "masterDefendantId": "1a8e0012-6656-47ea-b4ee-50cc10f5aad1",
+      "offences": [
+        {
+          "arrestDate": "2024-06-06",
+          "chargeDate": "2024-06-06",
+          "count": 0,
+          "dvlaOffenceCode": "SP30",
+          "endorsableFlag": true,
+          "id": "c10377bc-ed1b-4526-89ad-33a45f129823",
+          "maxPenalty": "S:L3 LE 3-6pp",
+          "modeOfTrial": "Summary",
+          "offenceCode": "RR84223",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "64202e97-e7c1-3be2-9c8b-d8bc5d2e876b",
+          "offenceLegislation": "Contrary to the above local traffic order and sections 84 and 89(1) of the Road Traffic Regulation Act 1984 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+          "offenceLegislationWelsh": "Yn groes i'r Gorchymyn Traffig Lleol uchod, ac adrannau 84 ac 89 (1) Deddf Rheoleiddio Traffig Ffyrdd 1984 ac Atodlen 2 Deddf Tramgwyddwyr Traffig Ffyrdd 1988.",
+          "offenceTitle": "Exceed a 50 mph speed limit in contravention of a Local Traffic Order - automatic camera device",
+          "offenceTitleWelsh": "Gyrru'n gyflymach na'r terfyn cyflymder o 50 milltir yr awr yn groes i Orchymyn Traffig Lleol - dyfais camera awtomatig",
+          "orderIndex": 1,
+          "startDate": "2024-06-05",
+          "wording": "Shoplifting at xyz"
+        },
+        {
+          "arrestDate": "2024-07-06",
+          "chargeDate": "2024-07-06",
+          "count": 0,
+          "dvlaOffenceCode": "SP30",
+          "endorsableFlag": true,
+          "id": "79ff45de-d594-4002-a09d-251bb6c59d6b",
+          "maxPenalty": "S:L3 LE 3-6pp",
+          "modeOfTrial": "Summary",
+          "offenceCode": "RR84223",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "64202e97-e7c1-3be2-9c8b-d8bc5d2e876b",
+          "offenceLegislation": "Contrary to the above local traffic order and sections 84 and 89(1) of the Road Traffic Regulation Act 1984 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+          "offenceLegislationWelsh": "Yn groes i'r Gorchymyn Traffig Lleol uchod, ac adrannau 84 ac 89 (1) Deddf Rheoleiddio Traffig Ffyrdd 1984 ac Atodlen 2 Deddf Tramgwyddwyr Traffig Ffyrdd 1988.",
+          "offenceTitle": "Exceed a 50 mph speed limit in contravention of a Local Traffic Order - automatic camera device",
+          "offenceTitleWelsh": "Gyrru'n gyflymach na'r terfyn cyflymder o 50 milltir yr awr yn groes i Orchymyn Traffig Lleol - dyfais camera awtomatig",
+          "orderIndex": 2,
+          "startDate": "2024-07-05",
+          "wording": "Robbery at xyz"
+        }
+      ],
+      "personDefendant": {
+        "arrestSummonsNumber": "3113NX0000000012415A",
+        "bailStatus": {
+          "code": "C",
+          "description": "Custody",
+          "id": "12e69486-4d01-3403-a50a-7419ca040635"
+        },
+        "driverNumber": "VANFL002222OW9PH",
+        "personDetails": {
+          "address": {
+            "address1": "12",
+            "address2": "Woburn Road",
+            "address3": "Bedford",
+            "address4": "Bedfordshire",
+            "postcode": "MK40 1EG"
+          },
+          "contact": {
+            "home": "02012345678",
+            "mobile": "07771234567",
+            "primaryEmail": "test01@gmail.com"
+          },
+          "dateOfBirth": "1982-01-01",
+          "documentationLanguageNeeds": "ENGLISH",
+          "ethnicity": {
+            "observedEthnicityCode": "1",
+            "observedEthnicityDescription": "White",
+            "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+            "selfDefinedEthnicityCode": "W1",
+            "selfDefinedEthnicityDescription": "British",
+            "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+          },
+          "firstName": "Test2 Third Defenant",
+          "gender": "MALE",
+          "hearingLanguageNeeds": "ENGLISH",
+          "lastName": "Vinddchi",
+          "title": "Mr"
+        }
+      },
+      "prosecutionAuthorityReference": "3113NX0000000012415A",
+      "prosecutionCaseId": "9234c0ef-f000-4b41-bd90-28c8c3fe4b9b"
+    }
+  ],
+  "listHearingRequests": [
+    {
+      "courtCentre": {
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01",
+        "welshName": "Llys Ynadon Lavender Hill"
+      },
+      "estimateMinutes": 20,
+      "hearingType": {
+        "description": "First hearing",
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+      },
+      "jurisdictionType": "MAGISTRATES",
+      "listDefendantRequests": [
+        {
+          "defendantId": "1a8e0012-6656-47ea-b4ee-50cc10f5aad1",
+          "defendantOffences": [
+            "c10377bc-ed1b-4526-89ad-33a45f129823",
+            "79ff45de-d594-4002-a09d-251bb6c59d6b"
+          ],
+          "hearingLanguageNeeds": "ENGLISH",
+          "prosecutionCaseId": "9234c0ef-f000-4b41-bd90-28c8c3fe4b9b",
+          "summonsRequired": "FIRST_HEARING"
+        }
+      ],
+      "listedStartDateTime": "2024-08-22T09:30:00.000Z"
+    }
+  ]
+}

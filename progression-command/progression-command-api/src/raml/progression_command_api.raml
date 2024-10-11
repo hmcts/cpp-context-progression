@@ -1544,3 +1544,20 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
     responses:
       202:
         description: OK
+
+/hearings/{hearingId}/update-hearing-bdf:
+  post:
+    description:  |
+      Update resulted hearing BDF
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.api-update-hearing-bdf+json
+          name: progression.command.api-update-hearing-bdf
+      ...
+    body:
+      application/vnd.progression.command.api-update-hearing-bdf+json:
+        schema:
+          !include json/schema/progression.command.api-update-hearing-bdf.json
+    responses:
+      202:
+        description: OK

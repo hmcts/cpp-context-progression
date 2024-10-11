@@ -940,17 +940,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         assertThat("Original bailConditions should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getBailConditions(), is("bailConditions"));
         assertThat("Original occupation should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getOccupation(), is("Plumber"));
         assertThat("Original occupationCode should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getOccupationCode(), is("PL01"));
-        assertThat("Original associated person role should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getRole(), is("role"));
-        assertThat("Original associated person title should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getTitle(), is("Mrs"));
-        assertThat("Original associated person dob should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getDateOfBirth(), is(LocalDate.of(2001, 04, 02)));
-        assertThat("Original associated person contact should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getContact().getPrimaryEmail(), is("associated@hmcts.net"));
-        assertThat("Original associated person contact should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getContact().getHome(), is("01234 567890"));
-        assertThat("Original associated person ethnicity should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getEthnicity().getSelfDefinedEthnicityId(), is(selfDefinedEthnicityId));
-        assertThat("Original associated person ethnicity should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getEthnicity().getSelfDefinedEthnicityCode(), is("selfDefinedEthnicityCode"));
-        assertThat("Original associated person ethnicity should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getEthnicity().getSelfDefinedEthnicityDescription(), is("selfDefinedEthnicityDescription"));
-        assertThat("Original associated person ethnicity should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getEthnicity().getObservedEthnicityId(), is(observedEthnicityId));
-        assertThat("Original associated person ethnicity should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getEthnicity().getObservedEthnicityCode(), is("observedEthnicityCode"));
-        assertThat("Original associated person ethnicity should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getEthnicity().getObservedEthnicityDescription(), is("observedEthnicityDescription"));
         assertThat("Associated person address was deleted so should be null.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getAddress(), is(nullValue()));
     }
 

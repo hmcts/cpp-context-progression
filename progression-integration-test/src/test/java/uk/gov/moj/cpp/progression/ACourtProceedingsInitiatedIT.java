@@ -1,18 +1,25 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForPartialOrExactMatchDefendants;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPartialMatchDefendantFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithResults;
@@ -27,6 +34,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 import javax.json.JsonObject;
@@ -39,6 +47,7 @@ import org.junit.jupiter.api.Test;
 public class ACourtProceedingsInitiatedIT extends AbstractIT {
 
     private static final JmsMessageConsumerClient publicEventConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
+    final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-proceedings-initiated").getMessageConsumerClient();
 
     private String caseId;
     private String materialIdActive;
@@ -71,6 +80,30 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
         final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
 
         pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
+    }
+
+    @Test
+    public void shouldNotCreateSecondHearingWhenReplayInitiateCourtProceedings() throws IOException,InterruptedException {
+        final String urn = generateUrn();
+        final String id = randomUUID().toString();
+        //given
+        initiateCourtProceedingsWithUrn(caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB, urn, id);
+
+        //when
+        String message = messageConsumer.retrieveMessage().get();
+        assertNotNull(message);
+
+        //when
+        verifyInMessagingQueueForProsecutionCaseCreated();
+
+
+        //given
+        initiateCourtProceedingsWithUrn(caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB, urn, id);
+
+        final String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId,  getHearingsAtAGlanceMatchers());
+
+        assertNotNull(prosecutionCasesResponse);
+
     }
 
     @Test
@@ -142,5 +175,12 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
         final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumer);
         assertTrue(message.isPresent());
     }
+
+    private Matcher[] getHearingsAtAGlanceMatchers() {
+        final List<Matcher> newMatchers = newArrayList();
+        newMatchers.add(withJsonPath("$.hearingsAtAGlance.defendantHearings", hasSize(1)));
+        return newMatchers.toArray(new Matcher[0]);
+    }
 }
+
 

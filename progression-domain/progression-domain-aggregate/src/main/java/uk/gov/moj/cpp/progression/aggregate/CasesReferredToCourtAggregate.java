@@ -7,6 +7,7 @@ import static java.util.Objects.nonNull;
 import static uk.gov.justice.core.courts.CasesReferredToCourtV2.casesReferredToCourtV2;
 import static  java.util.stream.Stream.of;
 
+
 import uk.gov.justice.core.courts.CasesReferredToCourt;
 import uk.gov.justice.core.courts.CourtProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtReferral;
@@ -23,7 +24,9 @@ public class CasesReferredToCourtAggregate implements Aggregate {
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CasesReferredToCourtAggregate.class);
-    private static final long serialVersionUID = 101L;
+    private static final long serialVersionUID = 102L;
+
+    private Boolean isInitiated = false;
 
     @Override
     public Object apply(final Object event) {
@@ -32,9 +35,9 @@ public class CasesReferredToCourtAggregate implements Aggregate {
                             //do nothing
                         }
                 ),
-                when(CourtProceedingsInitiated.class).apply(courtProceedingsInitiated -> {
-                    // do nothing
-                }),
+                when(CourtProceedingsInitiated.class).apply(courtProceedingsInitiated ->
+                    isInitiated = true
+                ),
                 otherwiseDoNothing());
 
     }
@@ -51,7 +54,11 @@ public class CasesReferredToCourtAggregate implements Aggregate {
 
 
     public Stream<Object> initiateCourtProceedings(final CourtReferral courtReferral) {
-        LOGGER.info("Court Proceedings being initiated");
-        return apply(Stream.of(CourtProceedingsInitiated.courtProceedingsInitiated().withCourtReferral(courtReferral).build()));
+        if(isInitiated){
+            return Stream.empty();
+        } else {
+            return apply(Stream.of(CourtProceedingsInitiated.courtProceedingsInitiated().withCourtReferral(courtReferral)
+                    .build()));
+        }
     }
 }

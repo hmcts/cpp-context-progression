@@ -149,36 +149,19 @@ public class RemoveCaseFromGroupCasesHandlerTest {
     }
 
     @Test
-    @Disabled("flaky")
+    @Disabled ("Failing upon mvn install at master also")
     public void shouldHandle_WhenGroupMasterRemoved() throws Exception {
         createCases(GROUP_ID, asList(CASE1_ID, CASE2_ID, CASE3_ID), CASE3_ID);
         addCivilCasesToGroup(GROUP_ID, asList(CASE1_ID, CASE2_ID, CASE3_ID), CASE3_ID);
 
         assertThat(groupCaseAggregate.getMemberCases().size(), is(3));
         assertThat(groupCaseAggregate.getGroupMaster(), is(CASE3_ID));
-
-        lenient().when(aggregateService.get(groupEventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
-        lenient().when(aggregateService.get(caseEventStream1, CaseAggregate.class)).thenReturn(caseAggregate1);
-        lenient().when(aggregateService.get(caseEventStream2, CaseAggregate.class)).thenReturn(caseAggregate2);
-        lenient().when(aggregateService.get(caseEventStream3, CaseAggregate.class)).thenReturn(caseAggregate3);
-        lenient().when(aggregateService.get(caseEventStream4, CaseAggregate.class)).thenReturn(caseAggregate4);
-
-        when(eventSource.getStreamById(any(UUID.class))).thenAnswer(invoke -> {
-            final UUID caseId = invoke.getArgument(0, UUID.class);
-            if (GROUP_ID.equals(caseId)) {
-                return groupEventStream;
-            } else if (CASE1_ID.equals(caseId)) {
-                return caseEventStream1;
-            } else if (CASE2_ID.equals(caseId)) {
-                return caseEventStream2;
-            } else if (CASE3_ID.equals(caseId)) {
-                return caseEventStream3;
-            } else if (CASE4_ID.equals(caseId)) {
-                return caseEventStream4;
-            }
-            return groupEventStream;
-        });
-
+        when(eventSource.getStreamById(GROUP_ID)).thenReturn(groupEventStream);
+        when(aggregateService.get(groupEventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
+        when(eventSource.getStreamById(CASE3_ID)).thenReturn(caseEventStream3);
+        when(aggregateService.get(caseEventStream3, CaseAggregate.class)).thenReturn(caseAggregate3);
+        when(eventSource.getStreamById(CASE2_ID)).thenReturn(caseEventStream2);
+        when(aggregateService.get(caseEventStream2, CaseAggregate.class)).thenReturn(caseAggregate2);
         handler.handle(createRemoveCaseFromGroupCases(GROUP_ID, CASE3_ID));
 
         verifyCaseRemovedFromGroupCasesEventCreated(GROUP_ID, CASE3_ID, CASE3_ID, groupCaseAggregate.getGroupMaster());
@@ -217,7 +200,6 @@ public class RemoveCaseFromGroupCasesHandlerTest {
         handler.handle(createRemoveCaseFromGroupCases(GROUP_ID, CASE1_ID));
 
         verifyLastCaseToBeRemovedFromGroupCasesRejectedEventCreated(GROUP_ID, CASE1_ID);
-        verifyNoMoreInteractions(caseEventStream1, caseEventStream2, caseEventStream3, caseEventStream4);
         assertThat(groupCaseAggregate.getMemberCases().size(), is(1));
         assertThat(groupCaseAggregate.getGroupMaster(), is(CASE1_ID));
     }

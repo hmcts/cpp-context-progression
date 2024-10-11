@@ -18,8 +18,10 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CasesReferredToCourtAggregate;
 import uk.gov.moj.cpp.progression.service.MatchedDefendantLoadService;
 
+import java.util.Optional;
 import java.util.List;
 import java.util.stream.Stream;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonValue;
@@ -51,8 +53,8 @@ public class InitiateCourtProceedingsHandler {
                 matchedDefendantLoadService.aggregateDefendantsSearchResultForAProsecutionCase(initiateCourtProceedingsEnvelope, prosecutionCase);
             }
         }
-
-        final EventStream stream = eventSource.getStreamById(randomUUID());
+        final UUID streamId = Optional.ofNullable(command.getId()).orElseGet(UUID::randomUUID);
+        final EventStream stream = eventSource.getStreamById(streamId);
         final CasesReferredToCourtAggregate aggregate = aggregateService.get(stream, CasesReferredToCourtAggregate.class);
         final Stream<Object> events = aggregate.initiateCourtProceedings(command.getInitiateCourtProceedings());
         appendEventsToStream(initiateCourtProceedingsEnvelope, stream, events);

@@ -78,7 +78,7 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 @ExtendWith(JmsResourceManagementExtension.class)
 @SuppressWarnings({"squid:S1607"})
-public class AddCourtDocumentIT {
+public class AddCourtDocumentIT extends AbstractIT {
 
     private static final String USER_ID = "07e9cd55-0eff-4eb3-961f-0d83e259e415";
     public static final String ACCESS_CONTROL_FAILED = "Access Control failed for json envelope";
@@ -108,13 +108,17 @@ public class AddCourtDocumentIT {
 
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws JSONException, IOException {
 
         caseId = randomUUID().toString();
         docId = randomUUID().toString();
         defendantId = randomUUID().toString();
         updatedDefendantId = randomUUID().toString();
         caseProsecutorUpdateHelper = new CaseProsecutorUpdateHelper(caseId);
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
+
 
         stubMaterialMetadata();
     }

@@ -362,6 +362,9 @@ subscriptions_descriptor:
         - name: progression.event.application-hearing-defendant-updated
           schema_uri: http://justice.gov.uk/progression/event/progression.event.application-hearing-defendant-updated.json
 
+        - name: progression.event.hearing-add-missing-results-bdf
+          schema_uri: http://moj.gov.uk/cpp/progression/court/progression.event.hearing-add-missing-results-bdf.json
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

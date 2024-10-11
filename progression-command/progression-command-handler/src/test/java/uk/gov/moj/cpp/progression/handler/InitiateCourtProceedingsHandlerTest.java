@@ -80,6 +80,7 @@ public class InitiateCourtProceedingsHandlerTest {
     private InitiateCourtProceedingsHandler initiateCourtProceedingsHandler;
 
     private static final UUID CASE_ID = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a66");
+    private CasesReferredToCourtAggregate aggregate;
 
     @Test
     public void shouldHandleCommand() {
@@ -89,21 +90,10 @@ public class InitiateCourtProceedingsHandlerTest {
                 ));
     }
 
+
     @Test
     public void shouldProcessCommand() throws Exception {
         final InitiateCourtProceedings initiateCourtProceedings = generateInitiateCourtProceedings();
-        final PartialMatchDefendant partialMatchDefendant = PartialMatchDefendant.partialMatchDefendant()
-                .withDefendantId(randomUUID())
-                .withProsecutionCaseId(randomUUID())
-                .withCaseReference("CASE123")
-                .withDefendantName("Justin Adam Scot")
-                .build();
-
-        final CasesReferredToCourtAggregate casesReferredToCourtAggregate = new CasesReferredToCourtAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CasesReferredToCourtAggregate.class)).thenReturn(casesReferredToCourtAggregate);
-
-        casesReferredToCourtAggregate.initiateCourtProceedings(initiateCourtProceedings.getInitiateCourtProceedings());
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -112,6 +102,11 @@ public class InitiateCourtProceedingsHandlerTest {
                 .build();
 
         final Envelope<InitiateCourtProceedings> envelope = envelopeFrom(metadata, initiateCourtProceedings);
+
+        aggregate = new CasesReferredToCourtAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CasesReferredToCourtAggregate.class)).thenReturn(aggregate);
 
         initiateCourtProceedingsHandler.handle(envelope);
 

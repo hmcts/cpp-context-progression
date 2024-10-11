@@ -297,6 +297,7 @@ public class ListCourtHearingTransformerTest {
         assertThat(listCourtHearing.getHearings().get(0).getSpecialRequirements(), hasItems("RSZ", "CELL"));
         assertThat(listCourtHearing.getHearings().get(0).getWeekCommencingDate().getStartDate(), is(LocalDate.now()));
         assertThat(listCourtHearing.getHearings().get(0).getWeekCommencingDate().getDuration(), is(1));
+        assertThat(listCourtHearing.getHearings().get(0).getNonDefaultDays().size(), is(1));
     }
 
     @Test
@@ -699,6 +700,7 @@ public class ListCourtHearingTransformerTest {
         assertThat(listCourtHearing.getHearings().get(0).getSpecialRequirements(), hasItems("RSZ", "CELL"));
         assertThat(listCourtHearing.getHearings().get(0).getWeekCommencingDate().getStartDate(), is(LocalDate.now()));
         assertThat(listCourtHearing.getHearings().get(0).getWeekCommencingDate().getDuration(), is(1));
+        assertThat(listCourtHearing.getHearings().get(0).getNonDefaultDays().size(), is(1));
     }
 
     private List<CourtApplication> createCourtApplications() {
@@ -1012,6 +1014,19 @@ public class ListCourtHearingTransformerTest {
     }
 
     private List<CourtHearingRequest> getCourtHearingRequest() {
+        final uk.gov.justice.core.courts.NonDefaultDay nonDefaultDay = uk.gov.justice.core.courts.NonDefaultDay.nonDefaultDay()
+                .withDuration(1)
+                .withStartTime(ZonedDateTime.now())
+                .withCourtCentreId("courtCentreId")
+                .withCourtRoomId(1)
+                .withCourtScheduleId("courtScheduleId")
+                .withOucode("oucode")
+                .withSession("PM")
+                .withRoomId("roomId")
+                .build();
+        final List<uk.gov.justice.core.courts.NonDefaultDay> nonDefaultDays = new ArrayList<>();
+        nonDefaultDays.add(nonDefaultDay);
+
         //Either EarliestStartDateTime or ListedStartDateTime can be present. Not both.
         return Arrays.asList(CourtHearingRequest.courtHearingRequest()
                 .withCourtCentre(createCourtCenter())
@@ -1033,6 +1048,7 @@ public class ListCourtHearingTransformerTest {
                         .withStartDate(LocalDate.now())
                         .withDuration(1)
                         .build())
+                .withNonDefaultDays(nonDefaultDays)
                 .build());
     }
 

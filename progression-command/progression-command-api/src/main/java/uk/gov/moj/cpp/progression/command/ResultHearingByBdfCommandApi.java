@@ -32,4 +32,16 @@ public class ResultHearingByBdfCommandApi {
                 .withMetadataFrom(envelope));
     }
 
+    @Handles("progression.command.api-update-hearing-bdf")
+    public void handleUpdateHearingBdf(final JsonEnvelope envelope) {
+        /**
+         * DO NOT USE THIS COMMAND API EXCEPT FOR THE PURPOSE MENTIONED BELOW.
+         * The command api is being added to be invoked only by the BDF, purpose of this command to raise 'progression.event.hearing-resulted-bdf'
+         * event to add missing results from a hearing in view store.
+         */
+        sender.send(Enveloper
+                .envelop(envelope.payloadAsJsonObject())
+                .withName("progression.command.handler.update-hearing-bdf")
+                .withMetadataFrom(envelope));
+    }
 }

@@ -364,16 +364,13 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         // with the original defendant to avoid losing data. See Jira GPE-14200 for details.
         // Please read full description of method signature for more details.
         final PersonDefendant updatedPersonDefendant = getUpdatedPersonDefendant(originDefendant, defendant);
-        final List<AssociatedPerson> updatedAssociatedPeople =
-                defendant.getAssociatedPersons() == null
-                        ? originDefendant.getAssociatedPersons()
-                        : getUpdatedAssociatedPeople(originDefendant.getAssociatedPersons(), defendant.getAssociatedPersons());
+
 
         return Defendant.defendant()
                 .withValuesFrom(originDefendant)
                 .withPersonDefendant(updatedPersonDefendant)
                 .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
-                .withAssociatedPersons(updatedAssociatedPeople)
+                .withAssociatedPersons(defendant.getAssociatedPersons())
                 .withId(defendant.getId())
                 .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
                 .withDefenceOrganisation(defendant.getDefenceOrganisation())

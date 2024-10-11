@@ -228,8 +228,8 @@ public class HearingUpdatedIT {
         verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(hearingId);
     }
 
+    @Disabled("DD-33449")
     @Test
-    @Disabled("flaky")
     public void shouldHearingWithApplicationWhenLinkedApplicationToHearing() throws Exception {
         String prosecutionAuthorityReference;
         String courtCentreName = "Lavender Hill Magistrate's Court";
