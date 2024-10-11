@@ -103,7 +103,7 @@
   "nowTypeId": "603a6581-6e57-44fe-b998-ab461c518676",
   "materialId": "%MATERIAL_ID%",
   "storageRequired": false,
-  "templateName": "OPE_Layout16",
+  "templateName": "EDT_OPE_Layout16",
   "subscriberName": "Defendant",
   "cases": [
       "%CASE_ID1%", "%CASE_ID2%"

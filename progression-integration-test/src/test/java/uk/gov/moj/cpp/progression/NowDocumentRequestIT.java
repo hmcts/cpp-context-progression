@@ -44,6 +44,7 @@ import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoLe
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import io.restassured.path.json.JsonPath;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -66,6 +67,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import javax.jms.JMSException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -93,6 +95,7 @@ public class NowDocumentRequestIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED = "public.progression.now-document-requested";
     private static final JmsMessageConsumerClient messageConsumerClientPublicForNowDocumentRequested = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED).getMessageConsumerClient();
 
+    private static final JmsMessageConsumerClient privateCourtDocumentAddedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-added").getMessageConsumerClient();
     private String materialId;
     private String hearingId;
     private String caseId1;
@@ -230,7 +233,7 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSendApiNotificationNowDocumentRequest() throws IOException, JSONException {
+    public void shouldSendApiNotificationNowDocumentRequest() throws IOException, JSONException, JMSException {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
         stubForApiNotification();
         List<String> caseUrns = createCaseAndFetchCaseUrn(1);
@@ -258,7 +261,7 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSendApiNotificationNowDocumentRequest_multipleCases() throws IOException, JSONException {
+    public void shouldSendApiNotificationNowDocumentRequest_multipleCases() throws IOException, JSONException, JMSException {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
         stubForApiNotification();
         List<String> caseUrns = createCaseAndFetchCaseUrn(2);
@@ -278,6 +281,8 @@ public class NowDocumentRequestIT extends AbstractIT {
 
         sendMaterialFileUploadedPublicEvent(fromString(materialId), userId);
 
+        verifyCourtDocumentAdded();
+
         final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
         final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray(NOW_DOCUMENT_REQUESTS).getJsonObject(0);
         assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
@@ -285,7 +290,15 @@ public class NowDocumentRequestIT extends AbstractIT {
         verifyInMessagingQueue(messageConsumerClientPublicForNowDocumentRequested);
     }
 
-    private List<String> createCaseAndFetchCaseUrn(int noOfCases) throws IOException, JSONException {
+    private static void verifyCourtDocumentAdded() {
+        final JsonPath prosecutionCaseDefendantListingStatusChanged = QueueUtil.retrieveMessageAsJsonPath(privateCourtDocumentAddedConsumer);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.get("courtDocument.documentTypeDescription"), is("Electronic Notifications"));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.get("courtDocument.documentTypeId"), is("f471eb51-614c-4447-bd8d-28f9c2815c9e"));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.get("courtDocument.mimeType"), is("application/pdf"));
+    }
+
+    private List<String> createCaseAndFetchCaseUrn(int noOfCases) throws IOException, JMSException , JSONException {
         List<String> caseUrns = new ArrayList<>();
         int i = 0;
         String caseId = caseId1;

@@ -131,10 +131,11 @@ public class DocumentGeneratorService {
     }
 
     @Transactional(REQUIRES_NEW)
-    public void generateNow(final Sender sender, final JsonEnvelope originatingEnvelope,
+    public String generateNow(final Sender sender, final JsonEnvelope originatingEnvelope,
                             final UUID userId, final NowDocumentRequest nowDocumentRequest) {
+        final String orderName = nowDocumentRequest.getNowContent().getOrderName();
+        final String fileName = getTimeStampAmendedFileName(orderName);
         try {
-            final String orderName = nowDocumentRequest.getNowContent().getOrderName();
             final DocumentGeneratorClient documentGeneratorClient = documentGeneratorClientProducer.documentGeneratorClient();
             final JsonObject nowDocumentContentJson = objectToJsonObjectConverter.convert(nowDocumentRequest.getNowContent());
             final JsonObject updatedNowContent = updateNowContentWithAccountDivisionCode(nowDocumentContentJson);
@@ -149,6 +150,7 @@ public class DocumentGeneratorService {
             updateMaterialStatusAsFailed(sender, originatingEnvelope, nowDocumentRequest.getMaterialId());
             throw new RuntimeException("Progression : exception while generating NOWs document ", e);
         }
+        return fileName;
     }
 
     @Transactional(REQUIRES_NEW)

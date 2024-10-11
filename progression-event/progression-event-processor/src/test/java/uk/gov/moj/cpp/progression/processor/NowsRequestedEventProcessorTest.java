@@ -211,7 +211,7 @@ public class NowsRequestedEventProcessorTest {
         assertThat(jsonObjectArgumentCaptor.getValue().getString(FILE_NAME), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
         assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
 
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
         final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
         final JsonObject jsonObject = (JsonObject) jsonEnvelope.payload();
         final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
@@ -225,7 +225,7 @@ public class NowsRequestedEventProcessorTest {
         assertTrue(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains(DEFENCE_USERS));
         assertTrue(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains("Defence Lawyers"));
 
-        final DefaultEnvelope<?> publicNowDocumentRequestedEnvelope = this.envelopeArgumentCaptor.getAllValues().get(1);
+        final DefaultEnvelope<?> publicNowDocumentRequestedEnvelope = this.envelopeArgumentCaptor.getAllValues().get(2);
         assertThat(publicNowDocumentRequestedEnvelope.metadata().name(), is(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED));
         assertThat(((JsonObject) publicNowDocumentRequestedEnvelope.payload()).getString("materialId"), is(nowDocumentRequested.getMaterialId().toString()));
         final String updatedNowContent = ((JsonObject) (nowContentArgumentCaptor.getValue().get(FINANCIAL_ORDER_DETAILS))).toString();
@@ -259,7 +259,7 @@ public class NowsRequestedEventProcessorTest {
         assertThat(jsonObjectArgumentCaptor.getValue().getString(FILE_NAME), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
         assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
 
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
         final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
         final JsonObject jsonObject = (JsonObject) jsonEnvelope.payload();
         final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
@@ -305,7 +305,7 @@ public class NowsRequestedEventProcessorTest {
         assertThat(jsonObjectArgumentCaptor.getValue().getString(FILE_NAME), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
         assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
 
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
         final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
         final JsonObject jsonObject = (JsonObject) jsonEnvelope.payload();
         final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
@@ -321,6 +321,12 @@ public class NowsRequestedEventProcessorTest {
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Crown Court Admin"));
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains(MAGISTRATES));
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Court Associate"));
+
+        DefaultEnvelope<?> addCourtDocjsonEnvelope =  envelopeArgumentCaptor.getAllValues().get(1);
+        assertThat(addCourtDocjsonEnvelope.metadata().name(), is("progression.command.add-court-document"));
+        final JsonObject addCourtDocjsonObject = (JsonObject) addCourtDocjsonEnvelope.payload();
+        final CourtDocument addCourtDocument = jsonObjectToObjectConverter.convert(addCourtDocjsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
+        assertThat(addCourtDocument.getDocumentTypeDescription(), is("Electronic Notifications"));
     }
 
     @Test
