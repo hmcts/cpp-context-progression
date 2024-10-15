@@ -23,7 +23,6 @@ import java.util.function.Function;
 
 import javax.json.JsonObject;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;import org.mockito.Captor;
@@ -103,7 +102,7 @@ public class NewCaseDocumentReceivedListenerTest {
 
 
         final JsonEnvelope envelope2 = envelopes.get(0);
-        Assert.assertThat(envelope2.metadata().name(), equalTo("public.progression.case-document-added"));
+        assertThat(envelope2.metadata().name(), equalTo("public.progression.case-document-added"));
         final JsonObject payload2 = envelope2.payloadAsJsonObject();
         assertThat(payload2, JsonEnvelopePayloadMatcher.payloadIsJson(allOf(
                 withJsonPath("$.fileName", equalTo(fileName)),

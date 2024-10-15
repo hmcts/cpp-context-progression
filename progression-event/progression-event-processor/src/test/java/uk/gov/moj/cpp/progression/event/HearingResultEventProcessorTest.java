@@ -9,7 +9,6 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.rules.ExpectedException.none;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
@@ -99,10 +98,7 @@ import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.Rule;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -122,8 +118,6 @@ public class HearingResultEventProcessorTest {
     @Spy
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
-    @Rule
-    public ExpectedException expectedException = none();
 
     @InjectMocks
     private HearingResultEventProcessor eventProcessor;

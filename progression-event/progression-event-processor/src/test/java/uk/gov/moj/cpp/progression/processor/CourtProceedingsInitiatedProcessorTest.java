@@ -67,11 +67,9 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -128,9 +126,6 @@ public class CourtProceedingsInitiatedProcessorTest {
 
     @Spy
     private ListToJsonArrayConverter<ListHearingRequest> hearingRequestListToJsonArrayConverter;
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;

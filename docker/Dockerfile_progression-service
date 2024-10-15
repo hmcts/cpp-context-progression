@@ -1,6 +1,7 @@
 #ARG base_image=crmdvrepo01.azurecr.io/wildfly:310122
 
-FROM {base_image}
+ARG baseImageTag
+FROM crmdvrepo01.azurecr.io/hmcts/wildfly:${baseImageTag}
 
 ARG version
 ARG repo_loc=https://libraries-internal.mdv.cpp.nonlive/artifactory/repocentral
@@ -35,4 +36,4 @@ RUN mkdir /opt/cpp-tools
 ADD ${repo_loc}/uk/gov/justice/services/framework-jmx-command-client/${framework_version}/framework-jmx-command-client-${framework_version}.jar /opt/cpp-tools/framework-jmx-command-client.jar
 RUN chown ${wildfly_user}:${wildfly_user} /opt/cpp-tools/framework-jmx-command-client.jar && chmod 755 /opt/cpp-tools/framework-jmx-command-client.jar
 USER ${wildfly_user}
-LABEL base_image {base_image}
+LABEL base_image ${baseImageTag}
