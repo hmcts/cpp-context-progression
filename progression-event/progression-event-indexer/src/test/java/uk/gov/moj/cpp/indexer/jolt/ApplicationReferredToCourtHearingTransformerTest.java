@@ -53,5 +53,4 @@ public class ApplicationReferredToCourtHearingTransformerTest {
         jsonValidator.validate(transformedJson, "/json/schema/crime-case-index-schema.json");
         verifyCourtApplication(inputDocumentContext, transformedJson);
     }
-
 }
